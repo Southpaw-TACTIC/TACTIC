@@ -1582,8 +1582,45 @@ class AutoInfoWdg(BaseRefreshWdg):
         pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
 
-
         pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+        # get the process sobject
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        event = "process|action"
+
+        # get the trigger
+        script = None
+        if process_sobj:
+            search = Search("config/trigger")
+            search.add_filter("process", process_sobj.get_code())
+            search.add_filter("event", event)
+            trigger = search.get_sobject()
+
+            # get the custom script 
+            if trigger:
+                script_path = trigger.get("script_path")
+
+                if script_path:
+                    parts = script_path.split("/")
+                    folder = parts[0]
+                    title = "/".join(parts[1:])
+
+                    search = Search("config/custom_script")
+                    search.add_filter("folder", folder)
+                    search.add_filter("title", title)
+                    custom_script = search.get_sobject()
+                    if custom_script:
+                        script = custom_script.get("script")
+
+
+
+
 
 
         title_wdg = DivWdg()
@@ -1641,6 +1678,8 @@ class AutoInfoWdg(BaseRefreshWdg):
             form_wdg.add("Inline Script:<br/>")
             text = TextAreaWdg(name="on_action")
             text.add_class("form-control")
+            if script:
+                text.set_value(script)
             text.add_style("height: 300px")
             text.add_style("width: 100%")
             form_wdg.add(text)
@@ -1655,6 +1694,8 @@ class AutoInfoWdg(BaseRefreshWdg):
             text = TextAreaWdg(name="on_action")
             text.add_class("form-control")
             text.add_style("height: 300px")
+            if script:
+                text.set_value(script)
             form_wdg.add(text)
             form_wdg.add("<br/>")
 

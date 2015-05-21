@@ -58,13 +58,14 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_manual()
+            my._test_task()
+            my._test_auto_process()
+            my._test_check()
+            my._test_choice()
+            my._test_input()
             my._test_trigger()
-            #my._test_manual()
-            #my._test_task()
-            #my._test_auto_process()
-            #my._test_check()
-            #my._test_choice()
-            #my._test_input()
+            my._test_approval()
         except Exception, e:
             print "Error: ", e
             raise
@@ -102,6 +103,10 @@ class WorkflowCmd(Command):
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process_name,
+                'on_approve': '''
+                sobject.set_value('%s', "approve")
+                ''' % process_name,
+ 
             } )
             process.commit()
 
@@ -497,6 +502,52 @@ class WorkflowCmd(Command):
 
 
 
+    def _test_approval(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="a"/>
+          <process type="approval" name="b"/>
+          <process type="auto" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        # ensure there are not tasks
+        tasks = Task.get_by_sobject(sobject, process="b")
+        my.assertEquals(0, len(tasks))
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+        # ensure there are not tasks
+        tasks = Task.get_by_sobject(sobject, process="b")
+        my.assertEquals(1, len(tasks))
+
+        task = tasks[0]
+        my.assertEquals("b", task.get("process"))
+
+        # approve the task
+        task.set_value("status", "approve")
+        task.commit()
+        my.assertEquals( "approve", sobject.get_value("b"))
+        my.assertEquals( "complete", sobject.get_value("c"))
+
 
 
     def assertEquals(my, a, b):
@@ -507,7 +558,6 @@ class WorkflowCmd(Command):
 
 
 def main():
-    # Not sure why the unit test doesn't activate the trigger system
     unittest.main()
     #cmd = WorkflowCmd()
     #Command.execute_cmd(cmd)

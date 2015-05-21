@@ -61,7 +61,10 @@ class Process(Base):
             return my.get_name()
 
     def get_type(my):
-        return Xml.get_attribute( my.node, "type" )
+        node_type = Xml.get_attribute( my.node, "type" )
+        if not node_type:
+            node_type = "node"
+        return node_type
 
     def get_group(my):
         return Xml.get_attribute( my.node, "group" )
@@ -505,14 +508,24 @@ class Pipeline(SObject):
         #    (my.get_name(),name) )
 
 
-    def get_processes(my, recurse=False):
+    def get_processes(my, recurse=False, type=None):
         '''returns all the Process objects in this pipeline'''
+
+        if type and isinstance(type, basestring):
+            types = [type]
+        else:
+            types = type
+
         if recurse:
             if my.recursive_processes:
                 return my.recursive_processes
             else:
-            # add child processes
+                # add child processes
                 for process in my.processes:
+
+                    if types and process.get_type() in types:
+                        continue
+
                     my.recursive_processes.append(process)
 
                     child_pipeline = process.get_child_pipeline()
@@ -526,7 +539,15 @@ class Pipeline(SObject):
                 return my.recursive_processes
 
         else:
-            return my.processes
+            if types:
+                ret_processes = []
+                for process in my.processes:
+                    if process.get_type() not in types:
+                        continue
+                    ret_processes.append(process)
+                return ret_processes
+            else:
+                return my.processes
 
 
 
@@ -538,12 +559,21 @@ class Pipeline(SObject):
             return {}
 
 
-    def get_process_names(my,recurse=False):
+    def get_process_names(my,recurse=False, type=None):
         '''returns all the Process names in this pipeline'''
-        processes = my.get_processes(recurse)
+
+        if type and isinstance(type, basestring):
+            types = [type]
+        else:
+            types = type
+
+        processes = my.get_processes(recurse, type=type)
         if recurse:
             process_names = []
             for process in processes:
+                if types and process.get_type() in types:
+                    continue
+
                 if process.is_from_sub_pipeline():
                     process_names.append(process.get_full_name()) 
                 else:

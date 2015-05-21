@@ -2763,7 +2763,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     if ( to_node && from_node &&
         spt.pipeline.get_node_name(to_node) == spt.pipeline.get_node_name(from_node) )
     {
-        spt.alert("Source node and destination node are the same");
+        //spt.alert("Source node and destination node are the same");
         return;
     }
 

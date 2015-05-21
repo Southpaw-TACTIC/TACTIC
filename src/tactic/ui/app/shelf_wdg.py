@@ -412,7 +412,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
 
         title = DivWdg()
-        title.add("aved Scripts")
+        title.add("Saved Scripts")
         title.add_style("font-size: 14px")
         title.add_color("color", "color")
         title.add_style("padding: 8px 3px")

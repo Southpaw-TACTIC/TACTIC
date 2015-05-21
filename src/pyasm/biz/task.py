@@ -35,6 +35,7 @@ TASK_PIPELINE = '''
   <process completion="20" color="#a96ccf" name="Waiting"/>
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
   <process completion="80" color="#e84a4d" name="Review"/>
+  <process completion="100" color="#a3d991" name="Complete"/>
   <process completion="100" color="#a3d991" name="Approved"/>
   <connect to="Review" from="Need Assistance"/>
   <connect to="In Progress" from="Pending"/>
@@ -42,6 +43,8 @@ TASK_PIPELINE = '''
   <connect to="Need Assistance" from="Waiting"/>
   <connect to="Waiting" from="In Progress"/>
   <connect to="Approved" from="Review"/>
+  <connect to="Complete" from="Review"/>
+  <connect to="Approved" from="Complete"/>
 </pipeline>
 '''
 
@@ -50,10 +53,9 @@ APPROVAL_PIPELINE = '''
 <pipeline type="serial">
   <process completion="10" color="#8ad3e5" name="Pending"/>
   <process completion="50" color="#e84a4d" name="Revise"/>
-  <process completion="100" color="#a3d991" name="Approved"/>
-  <connect to="Approved" from="Pending"/>
+  <process completion="100" color="#a3d991" name="Approve"/>
+  <connect to="Approve" from="Pending"/>
   <connect to="Revise" from="Pending"/>
-  <connect to="Approved" from="Needs Work"/>
 </pipeline>
 
 '''
@@ -619,7 +621,7 @@ class Task(SObject):
     get_by_sobject = staticmethod(get_by_sobject)
 
 
-    def create(cls, sobject, process, description, assigned="", supervisor="",\
+    def create(cls, sobject, process, description="", assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
             start_date=None, end_date=None, context='', bid_duration=8):
 
@@ -814,7 +816,7 @@ class Task(SObject):
         if processes:
             process_names = processes
         else:
-            process_names = pipeline.get_process_names(recurse=True)
+            process_names = pipeline.get_process_names(recurse=True, types=["node","approval"])
 
 
         # remember which ones already exist
@@ -934,7 +936,6 @@ class Task(SObject):
             if duration >= 1:
                 # for a task to be x days long, we need duration x-1.
                 end_date.add_days(duration-1)
-
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':

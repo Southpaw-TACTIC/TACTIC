@@ -529,16 +529,11 @@ class TaskElementWdg(BaseTableElementWdg):
             search.add_order_by("id")
             tasks = search.get_sobjects()
 
-
             schema = Schema.get()
 
             # process the tasks
             for task in tasks:
                 search_type = task.get_value("search_type")
-                #search_id = task.get_value("search_id")
-                #search_id = task.get_value("search_code")
-                #key = "%s|%s" % (search_type, search_id)
-                #key = "%s&id=%s" % (search_type, search_id)
 
                 attrs = schema.get_relationship_attrs("sthpw/task", search_type)
                 attrs = schema.resolve_relationship_attrs(attrs, "sthpw/task", search_type)
@@ -579,16 +574,11 @@ class TaskElementWdg(BaseTableElementWdg):
         # all other processes should follow after this
         default_pipeline = []
 
-        # get all the processes
-        
-        # prevent expression error
-        project_code = Project.get_project_code()
-        pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
-        pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
         
         if pipelines:
             for pipeline in pipelines:
-                processes = pipeline.get_processes()
+                processes = pipeline.get_processes(type=["node","auto","approval"])
+
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
                     default_pipeline = processes
@@ -1788,8 +1778,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 else:
                     select.add_style("width", my.width)
                     div.add(select)
-
-                if status not in filtered_statuses:
+                if status and status not in filtered_statuses:
                     filtered_statuses.append(status)
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)

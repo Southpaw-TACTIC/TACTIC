@@ -175,6 +175,9 @@ class DisplayNameTrigger(Trigger):
 class WebInit(Common):
 
     def execute(my):
+
+        Trigger.clear_db_cache()
+
         event = "change|config/widget_config"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
@@ -245,6 +248,8 @@ class WebInit(Common):
 #        trigger.set_value("mode", "same process,same transaction")
 #        Trigger.append_static_trigger(trigger, startup=True)
 
+        from pyasm.biz.workflow import Workflow
+        Workflow().init()
 
 
 

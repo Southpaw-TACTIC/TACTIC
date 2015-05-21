@@ -1,4 +1,4 @@
-###########################################################
+##########################################################
 #
 # Copyright (c) 2015, Southpaw Technology
 #                     All Rights Reserved
@@ -31,14 +31,14 @@ class Workflow(object):
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessPendingTrigger)
         trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger)
+        Trigger.append_static_trigger(trigger, startup=True)
 
         event = "process|action"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessActionTrigger)
         trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger)
+        Trigger.append_static_trigger(trigger, startup=True)
 
 
         event = "process|complete"
@@ -46,21 +46,29 @@ class Workflow(object):
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessCompleteTrigger)
         trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger)
+        Trigger.append_static_trigger(trigger, startup=True)
+
+        event = "process|approve"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessApproveTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=True)
+
 
         event = "process|revise"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessReviseTrigger)
         trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger)
+        Trigger.append_static_trigger(trigger, startup=True)
 
         event = "process|error"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessErrorTrigger)
         trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger)
+        Trigger.append_static_trigger(trigger, startup=True)
 
         # by default a stataus change to a trigger calls the node's trigger
         event = "change|sthpw/task|status"
@@ -68,7 +76,7 @@ class Workflow(object):
         trigger.set_value("event", event)
         trigger.set_value("class_name", TaskStatusChangeTrigger)
         trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger)
+        Trigger.append_static_trigger(trigger, startup=True)
 
 
 
@@ -82,6 +90,8 @@ class TaskStatusChangeTrigger(Trigger):
         if not sobject:
             return
 
+        #print "status change: ", task.get_value("process"), task.get_value("status")
+
         pipeline = Pipeline.get_by_sobject(sobject)
         if not pipeline:
             return
@@ -94,11 +104,10 @@ class TaskStatusChangeTrigger(Trigger):
         process_name = process.get_name()
 
         event = "process|%s" % status.lower()
-        print "event: ", event
         output = {
             'sobject': sobject,
             'pipeline': pipeline,
-            'process': process,
+            'process': process_name,
         }
         Trigger.call(task, event, output=output)
 
@@ -188,11 +197,20 @@ class ProcessPendingTrigger(BaseProcessTrigger):
 
         my.run_callback(process, "on_pending")
 
-        if node_type == None or node_type != "manual":
+        if node_type == None or node_type not in ["node", "manual", "approval"]:
             my.set_all_tasks(sobject, process, "pending")
 
         if node_type in ["auto", "condition"]:
             Trigger.call(my, "process|action", output=my.input)
+
+        if node_type in ["approval"]:
+
+            # check to see if the tasks exist and if they don't then create one
+            tasks = Task.get_by_sobject(sobject, process=process)
+            if not tasks:
+                tasks = Task.add_initial_tasks(sobject, processes=[process], mode="simple process")
+
+
 
 
  
@@ -244,7 +262,6 @@ class ProcessActionTrigger(BaseProcessTrigger):
                 ret_val = cmd.execute()
             else:
                 # or call a trigger
-                print "input: ", my.input
                 Trigger.call(my, "process|action", input, process=process_sobj.get_code())
 
             Trigger.call(my, "process|complete", my.input)
@@ -269,10 +286,17 @@ class ProcessActionTrigger(BaseProcessTrigger):
             ret_val = cmd.execute()
 
         else:
+
+            # find the process sobject
+            #Trigger.call(my, "process|action", process=process.get_code()
+
             ret_val = True
 
         # run the completion trigger for this node
+        print "runinng completion"
         Trigger.call(my, "process|complete", my.input)
+
+        print "ret_val: ", ret_val
 
 
         if ret_val == True:
@@ -287,6 +311,12 @@ class ProcessActionTrigger(BaseProcessTrigger):
                 attr = "success"
 
         elif ret_val == False:
+            print "!!!!"
+            print "!!!!"
+            print "!!!!"
+            print "!!!!"
+            print "!!!!"
+
             fail_cbk = triggers.get("on_fail")
             if fail_cbk:
                 cmd = PythonCmd(code=fail_cbk, sobject=sobject)
@@ -294,8 +324,15 @@ class ProcessActionTrigger(BaseProcessTrigger):
                 return
             else:
                 event = "process|revise"
-                direction = "output"
-                attr = "fail"
+
+                # check to see if there is an output process
+                processes = pipeline.get_input_processes(process, to_attr=attr)
+                if processes:
+                    direction = "output"
+                    attr = "fail"
+                else:
+                    direction = "input"
+                    attr = None
 
         else:
             event = "process|pending"
@@ -325,12 +362,6 @@ class ProcessActionTrigger(BaseProcessTrigger):
             processes = pipeline.get_output_processes(process, from_attr=attr)
 
 
-        # or use connection attrs
-        #processes = pipeline.get_output_processes(process, attr="success")
-        #processes = pipeline.get_input_processes(process, attr="fail")
-
-
-
         for process in processes:
             process_name = process.get_name()
             output = {
@@ -346,21 +377,26 @@ class ProcessActionTrigger(BaseProcessTrigger):
 
 class ProcessCompleteTrigger(BaseProcessTrigger):
 
+    def get_status(my):
+        return "complete"
+
     def execute(my):
 
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+        status = my.get_status()
+
         # run a nodes complete trigger
         #event = "process|complete|%s" % process
         #Trigger.call(my, event, output=my.input)
-        my.run_callback(process, "on_complete")
+        my.run_callback(process, "on_%s" % status)
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        if node_type in ["auto"]:
+        if node_type in ["auto", "approval", "manual", "node"]:
             # call the process|pending event for all output processes
             output_processes = pipeline.get_output_processes(process)
             for output_process in output_processes:
@@ -376,12 +412,19 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
                 Trigger.call(my, event, output)
 
 
+class ProcessApproveTrigger(ProcessCompleteTrigger):
+    def get_status(my):
+        return "approve"
+
+
 
 class ProcessReviseTrigger(BaseProcessTrigger):
 
     def execute(my):
         process = my.input.get("process")
         my.run_callback(process, "on_revise")
+
+        print "REVISE!!!!!!"
 
 
 
