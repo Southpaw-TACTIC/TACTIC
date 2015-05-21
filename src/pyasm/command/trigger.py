@@ -186,8 +186,6 @@ class Trigger(Command):
             #in_transaction = trigger.is_in_transaction()
 
 
-
-
     call_all_triggers = staticmethod(call_all_triggers)
 
 
@@ -417,7 +415,7 @@ class Trigger(Command):
         triggers_sobjs = cls._get_triggers(call_event, project_code=project_code)
 
         if not triggers_sobjs:
-            return
+            return []
 
         return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode, project_code=project_code)
 

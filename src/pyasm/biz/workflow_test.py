@@ -408,6 +408,8 @@ class WorkflowCmd(Command):
 
     def _test_task(my):
 
+        print "test task"
+
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
 
@@ -447,7 +449,7 @@ class WorkflowCmd(Command):
 
         task.set_value("status", "complete")
         task.commit()
-        my.assertEquals( "a", sobject.get_value("name_first"))
+        my.assertEquals( "b", sobject.get_value("name_first"))
 
 
 

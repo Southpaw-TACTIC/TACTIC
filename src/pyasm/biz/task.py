@@ -35,6 +35,7 @@ TASK_PIPELINE = '''
   <process completion="20" color="#a96ccf" name="Waiting"/>
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
   <process completion="80" color="#e84a4d" name="Review"/>
+  <process completion="80" color="#e84a4d" name="Revise"/>
   <process completion="100" color="#a3d991" name="Complete"/>
   <process completion="100" color="#a3d991" name="Approved"/>
   <connect to="Review" from="Need Assistance"/>
@@ -52,10 +53,12 @@ TASK_PIPELINE = '''
 APPROVAL_PIPELINE = '''
 <pipeline type="serial">
   <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="10" color="#8ad3e5" name="Review"/>
   <process completion="50" color="#e84a4d" name="Revise"/>
   <process completion="100" color="#a3d991" name="Approve"/>
-  <connect to="Approve" from="Pending"/>
-  <connect to="Revise" from="Pending"/>
+  <connect to="Review" from="Pending"/>
+  <connect to="Revise" from="Review"/>
+  <connect to="Approve" from="Review"/>
 </pipeline>
 
 '''
@@ -816,7 +819,7 @@ class Task(SObject):
         if processes:
             process_names = processes
         else:
-            process_names = pipeline.get_process_names(recurse=True, types=["node","approval"])
+            process_names = pipeline.get_process_names(recurse=True, type=["node","approval"])
 
 
         # remember which ones already exist

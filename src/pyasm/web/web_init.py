@@ -249,7 +249,7 @@ class WebInit(Common):
 #        Trigger.append_static_trigger(trigger, startup=True)
 
         from pyasm.biz.workflow import Workflow
-        Workflow().init()
+        Workflow().init(startup=True)
 
 
 

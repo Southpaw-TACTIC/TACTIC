@@ -123,6 +123,7 @@ class PythonTrigger(Trigger):
     def __init__(my, **kwargs):
         super(PythonTrigger,my).__init__()
         my.kwargs = kwargs
+        my.ret_val = None
         my.script_path = my.kwargs.get("script_path")
 
 
@@ -131,6 +132,9 @@ class PythonTrigger(Trigger):
 
     def get_title(my):
         return my.script_path
+
+    def get_ret_val(my):
+        return my.ret_val
 
 
     def execute(my):
@@ -168,6 +172,8 @@ class PythonTrigger(Trigger):
             my.input['trigger_sobject'] = trigger_sobj
         cmd = PythonCmd(code=script, input=my.input)
         ret_val = cmd.execute()
+
+        my.ret_val = ret_val
 
         #print "input: ", my.input
         #print "output: ", my.output

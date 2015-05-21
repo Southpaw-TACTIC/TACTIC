@@ -1698,15 +1698,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 status_div.add(status)
              
             elif my.permission['status']['is_editable']:
-                pipeline_code = task.get_value("pipeline_code")
+                task_pipeline_code = task.get_value("pipeline_code")
                 if not pipeline_code:
-                    pipeline_code = 'task'
-                pipeline = Pipeline.get_by_code(pipeline_code)
-                if not pipeline:
-                    pipeline = Pipeline.get_by_code("task")
-                processes = pipeline.get_process_names()
+                    task_pipeline_code = 'task'
+                task_pipeline = Pipeline.get_by_code(task_pipeline_code)
+                if not task_pipeline:
+                    task_pipeline = Pipeline.get_by_code("task")
+                task_statuses = task_pipeline.get_process_names()
                
-                filtered_statuses = [x for x in processes if x in my.allowed_statuses]
+                filtered_statuses = [x for x in task_statuses if x in my.allowed_statuses]
 
                 context = task.get_value("context")
                 search_key = task.get_search_key()
@@ -1799,13 +1799,18 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             for subtask in tasks:
 
+                process = task.get_value("process")
+                if process in ["Youtube", "Facebook", "Twitter"]:
+                    node_type = "auto"
+                else:
+                    node_type = "manual"
+
                 assigned = subtask.get_value("assigned")
-                if my.edit_assigned == 'true' and my.permission['assigned']['is_editable']:
+                if node_type != "auto" and my.edit_assigned == 'true' and my.permission['assigned']['is_editable']:
                     select_div = DivWdg()
                     assigned_div.add(select_div)
 
                     if task.is_insert():
-                        process = task.get_value("process")
                         name = 'assigned|NEW|%s' % process
                     else:
                         name = 'assigned|EDIT|%s' % task.get_id()
