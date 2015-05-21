@@ -468,8 +468,9 @@ class PipelineListWdg(BaseRefreshWdg):
             pipeline = SearchType.create("sthpw/pipeline")
             pipeline.set_value("code", "%s/__TEMPLATE__" % project_code)
             pipeline.set_project()
-            pipeline.set_value("name", "VFX Processes")
-            pipeline.commit()
+        pipeline.set_value("search_type", "")
+        pipeline.set_value("name", "Template Processes")
+        pipeline.commit()
 
 
         pipeline_div = my.get_pipeline_wdg(pipeline)
@@ -513,6 +514,7 @@ class PipelineListWdg(BaseRefreshWdg):
             search.add_filter("search_type", "NULL", op='is', quoted=False)
             search.add_op("or")
             search.add_op("and")
+            search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
             pipelines = search.get_sobjects()
             for pipeline in pipelines:
                 # build each pipeline menu item
@@ -554,6 +556,7 @@ class PipelineListWdg(BaseRefreshWdg):
         search.add_filter("search_type", "sthpw/task")
         search.add_filter("search_type", "NULL", op='is', quoted=False)
         search.add_op("or")
+        search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
         pipelines = search.get_sobjects()
 
         colors = {}
@@ -1539,6 +1542,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
         #show error message if the node has not been registered 
+        """
         if not process_sobj:
             warning_div = DivWdg()
             #width = 16 makes the icon smaller
@@ -1563,6 +1567,8 @@ class ProcessInfoWdg(BaseRefreshWdg):
             top.add(edit)
 
             top.add("<br clear='all'/>")
+        """
+
 
 
         return top
@@ -1573,6 +1579,32 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
 class AutoInfoWdg(BaseRefreshWdg):
+
+
+    def get_input_output_wdg(my, pipeline, process):
+            
+        div = DivWdg()
+        div.add_style("margin: 10px")
+
+        input_processes = pipeline.get_input_processes(process)
+        output_processes = pipeline.get_output_processes(process)
+
+        input_list = ", ".join([x.get_name() for x in input_processes]) or "<i>None</i>"
+        output_list = ", ".join([x.get_name() for x in output_processes]) or "<i>None</i>"
+
+        input_div = DivWdg()
+        div.add(input_div)
+        input_div.add("Inputs: %s" % input_list)
+
+        output_div = DivWdg()
+        div.add(output_div)
+        output_div.add("Outputs: %s" % output_list)
+
+        return div
+
+
+
+
     def get_display(my):
 
         top = my.top
@@ -1632,17 +1664,10 @@ class AutoInfoWdg(BaseRefreshWdg):
         title_wdg.add_color("background", "background", -5)
         title_wdg.add_style("padding: 15px 10px")
 
-        input_processes = pipeline.get_input_processes(process)
-        output_processes = pipeline.get_output_processes(process)
 
-        input_div = DivWdg()
-        top.add(input_div)
-        input_div.add("Inputs: %s" % [x.get_name() for x in input_processes])
 
-        output_div = DivWdg()
-        top.add(output_div)
-        output_div.add("Outputs: %s" % [x.get_name() for x in output_processes])
-
+        input_output_wdg = my.get_input_output_wdg(pipeline, process)
+        top.add(input_output_wdg)
 
 
         form_wdg = DivWdg()
@@ -1657,7 +1682,7 @@ class AutoInfoWdg(BaseRefreshWdg):
             form_wdg.add("<br/>")
             form_wdg.add("<br/>")
 
-
+            """
             #form_wdg.add("Script Path:<br/>")
             text = TextInputWdg(name="on_action_path")
             form_wdg.add(text)
@@ -1673,9 +1698,10 @@ class AutoInfoWdg(BaseRefreshWdg):
             form_wdg.add("<br/>")
             form_wdg.add("OR")
             form_wdg.add("<br/>")
+            """
 
 
-            form_wdg.add("Inline Script:<br/>")
+            form_wdg.add("Script:<br/>")
             text = TextAreaWdg(name="on_action")
             text.add_class("form-control")
             if script:
@@ -1690,13 +1716,38 @@ class AutoInfoWdg(BaseRefreshWdg):
 
         else:
             form_wdg.add("<b>Check Condition</b><br/>")
-            form_wdg.add("This will be executed on the completion event of an input process.  The condition check will either return True or False.")
+            form_wdg.add("This will be executed on the completion event of an input process.  The condition check should either return True or False or a list of the output streams.")
+
+            script_path = "Big/Test"
+
+            form_wdg.add("<br/>")
+
+            edit = ActionButtonWdg(title="Edit")
+            form_wdg.add(edit)
+            edit.add_style("float: right")
+            edit.add_style("margin: 5px 0px")
+            edit.add_behavior( {
+            'type': 'click_up',
+            'script_path': script_path,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.app.ScriptEditorWdg';
+
+            var kwargs = {
+                script_path: bvr.script_path
+            };
+            spt.panel.load_popup("TACTIC Script Editor", class_name, kwargs);
+
+            '''
+            } )
+
             text = TextAreaWdg(name="on_action")
+            form_wdg.add(text)
             text.add_class("form-control")
             text.add_style("height: 300px")
+            text.add_style("width: 100%")
             if script:
                 text.set_value(script)
-            form_wdg.add(text)
+
             form_wdg.add("<br/>")
 
 
@@ -1801,6 +1852,8 @@ class AutoInfoWdg(BaseRefreshWdg):
 
 class ApprovalInfoWdg(BaseRefreshWdg):
 
+
+
     def get_display(my):
 
 
@@ -1830,11 +1883,11 @@ class ApprovalInfoWdg(BaseRefreshWdg):
 
         input_div = DivWdg()
         top.add(input_div)
-        input_div.add("Inputs: %s" % [x.get_name() for x in input_processes])
+        input_div.add("Inputs: %s" % ", ".join([x.get_name() for x in input_processes]))
 
         output_div = DivWdg()
         top.add(output_div)
-        output_div.add("Outputs: %s" % [x.get_name() for x in output_processes])
+        output_div.add("Outputs: %s" % ", ".join([x.get_name() for x in output_processes]))
 
 
 
@@ -1912,8 +1965,7 @@ class ProcessInfoCmd(Command):
 
         event = "process|action"
 
-        folder = "_triggers"
-        title = event
+        folder = "_triggers/%s" % pipeline.get_code()
 
         # check to see if the trigger already exists
         search = Search("config/trigger")
@@ -1927,17 +1979,22 @@ class ProcessInfoCmd(Command):
             trigger.set_value("mode", "same process,same transaction")
 
         if on_action:
-            trigger.set_value("script_path", "%s/%s_trigger" % (folder, process))
+            trigger.set_value("script_path", "%s/%s" % (folder, process))
         else:
             trigger.set_value("class_name", on_action_class)
         trigger.commit()
 
         if on_action:
             # check to see if the script already exists
+            search = Search("config/custom_script")
+            search.add_filter("folder", folder)
+            search.add_filter("title", "%s" % process)
+            script = search.get_sobject()
+            if not script:
+                script = SearchType.create("config/custom_script")
+                script.set_value("folder", folder)
+                script.set_value("title", "%s" % process)
 
-            script = SearchType.create("config/custom_script")
-            script.set_value("folder", folder)
-            script.set_value("title", "%s_trigger" % process)
             script.set_value("script", on_action)
             script.commit()
  

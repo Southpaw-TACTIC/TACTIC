@@ -562,8 +562,16 @@ class TaskElementWdg(BaseTableElementWdg):
         if pipeline_codes:
             # prevent expression error
             pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
+
+
         
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
+
+        # remember the pipelines by code
+        my.pipelines_dict = {}
+        for pipeline in pipelines:
+            my.pipelines_dict[pipeline.get_code()] = pipeline
+
 
         # get all of the processes that appear in all the pipelines, without duplicates
         my.all_processes_set = set()
@@ -1480,9 +1488,24 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_task_wdg(my, tasks, parent_key, pipeline_code, last_one):
 
+        if pipeline_code:
+            pipeline = my.pipelines_dict.get(pipeline_code)
+        else:
+            pipeline = None
+
+
         # if there are multiple tasks, assume all properties are the same
         # except the assignment
         task = tasks[0]
+
+
+        process = task.get_value("process")
+        process_obj = pipeline.get_process(process)
+        node_type = process_obj.get_type()
+
+
+
+
 
         div = DivWdg()
         width = my.width.replace('px','')
@@ -1724,6 +1747,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
 
+                if node_type in ['auto', 'condition']:
+                    select.add_attr("readonly","true")
 
 
                 select.add_behavior( {
@@ -1798,14 +1823,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
             for subtask in tasks:
-
-                process = task.get_value("process")
-                if process in ["Youtube", "Facebook", "Twitter"]:
-                    node_type = "auto"
-                else:
-                    node_type = "manual"
-
                 assigned = subtask.get_value("assigned")
+                if node_type == "auto":
+                    assigned_div.add("Automated")
+                    assigned_div.add_style("padding: 8px")
+
                 if node_type != "auto" and my.edit_assigned == 'true' and my.permission['assigned']['is_editable']:
                     select_div = DivWdg()
                     assigned_div.add(select_div)

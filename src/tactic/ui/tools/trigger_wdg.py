@@ -326,9 +326,18 @@ class TriggerDetailWdg(BaseRefreshWdg):
             my.process = my.kwargs.get("process")
             my.pipeline = Pipeline.get_by_code(my.pipeline_code)
 
-            process_obj = my.pipeline.get_process(my.process)
-            process_type = process_obj.get_type()
-            #print "process_type: ", process_type
+            my.process_obj = my.pipeline.get_process(my.process)
+            if my.process_obj:
+                process_type = my.process_obj.get_type()
+            else:
+                process_type = None
+
+
+            search = Search("config/process")
+            search.add_filter("pipeline_code", my.pipeline_code)
+            search.add_filter("process", my.process)
+            my.process_sobj = search.get_sobject()
+
 
             #my.search_type = ""
             my.search_type = my.kwargs.get("search_type")
@@ -342,6 +351,8 @@ class TriggerDetailWdg(BaseRefreshWdg):
             my.pipeline_code = ""
             my.process = None
             my.pipeline = None
+            my.process_obj = None
+            my.process_sobj = None
 
 
         top = DivWdg()
@@ -488,6 +499,21 @@ class TriggerDetailWdg(BaseRefreshWdg):
         content_div.add(table)
         table.add_style("width: 100%")
         table.add_color("color", "color")
+
+
+        # TODO: not sure if this is necessary ... maybe should always be local
+        # unless you create it from scratch in the TableLayout
+        """
+        tr, td = table.add_row_cell()
+        td.add("Scope:<br/>")
+        radio = RadioWdg("spt_scope")
+        td.add(radio)
+        td.add(" Local to pipeline<br/>")
+        radio = RadioWdg("spt_scope")
+        td.add(radio)
+        td.add(" All [%s] processes<br/>" % my.process)
+        td.add("<br/>")
+        """
 
         tr = table.add_row()
         td = table.add_cell()
@@ -736,6 +762,13 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 select.set_value("python_script")
 
 
+            # process used
+            if my.process_sobj:
+                process_code = my.process_sobj.get_code()
+            else:
+                process_code = my.process
+
+
             select.add_empty_option("-- Choose action --")
             td.add(select)
             trigger_sk = ''
@@ -745,7 +778,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             'type': 'change',
             'kwargs': {
                 'pipeline_code': my.pipeline_code,
-                'process': my.process,
+                'process': process_code,
                 'search_key': trigger_sk
             },
             'cbjs_action': '''
