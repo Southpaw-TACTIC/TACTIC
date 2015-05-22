@@ -1073,6 +1073,27 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return sobject_dict
 
 
+    @xmlrpc_decorator
+    def unsubscribe(my, ticket, key):
+        '''Allow a user to unsubscribe from this message key.
+
+        @params
+        ticket - authentication ticket
+        key - unique key for this message
+        '''
+
+        search = Search("sthpw/subscription")
+        search.add_user_filter()
+        search.add_filter("message_code", key)
+        subscription  = search.get_sobject()
+
+        if not subscription:
+            raise ApiException('[%s] is not subscribed to.'%key)
+            # nothing to do ... item is not subscribed to
+
+        subscription.delete()
+
+
 
     #
     # user interaction
