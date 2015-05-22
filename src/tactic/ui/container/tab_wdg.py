@@ -886,7 +886,7 @@ spt.tab.close = function(src_el) {
     }
     else if (changed_row) {
         changed_element = changed_row;
-        changed_type = "stp_row_changed";
+        changed_type = "spt_row_changed";
         spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null);
     }
     else {
