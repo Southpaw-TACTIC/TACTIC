@@ -625,7 +625,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
                     # else create a new one
-                    folder_wdg = divwdg()
+                    folder_wdg = DivWdg()
                     if i != 1:
                         folder_wdg.add_style("padding-left: 13px")
 
@@ -640,16 +640,16 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     parent_wdg = folder_wdg
 
                     # fill it in
-                    icon = iconwdg(folder, iconwdg.folder, inline=false)
+                    icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
                     icon.add_style("margin-top: -2px")
                     icon.add_style("margin-left: -5px")
 
-                    folder_header = divwdg()
-                    folder_content = divwdg()
+                    folder_header = DivWdg()
+                    folder_content = DivWdg()
 
 
-                    from tactic.ui.widget import swapdisplaywdg
-                    swap = swapdisplaywdg()
+                    from tactic.ui.widget import SwapDisplayWdg
+                    swap = SwapDisplayWdg()
                     folder_wdg.add(swap)
                     swap.set_title_wdg(folder_header)
                     folder_wdg.add_widget(folder_content, "content")
@@ -657,9 +657,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     swap.add_attr("spt_folder", folder)
 
                     if folder_states.get(folder) == "open":
-                        is_on = true
+                        is_on = True
                     else:
-                        is_on = false
+                        is_on = False
 
                     swap.set_on(is_on)
                     if not is_on:
@@ -678,7 +678,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         folder_header.add_style("opacity: 0.5")
                         folder_header.add_style("font-style: italic")
                     else:
-                        smartmenu.assign_as_local_activator( folder_header, 'dir_layout_ctx' )
+                        SmartMenu.assign_as_local_activator( folder_header, 'dir_layout_ctx' )
                         folder_header.add_attr("spt_folder", folder)
 
 
