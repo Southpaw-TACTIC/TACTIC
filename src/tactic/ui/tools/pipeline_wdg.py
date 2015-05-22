@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ProcessConnectorWdg', 'ProcessInfoWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg']
 
 import re
 from tactic.ui.common import BaseRefreshWdg
@@ -421,7 +421,7 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div.add_style("padding-left: 5px")
         title_div.add_style("padding-top: 10px")
         title_div.add_color("background", "background", -10)
-        title_div.add("<b>Pipelines</b>")
+        title_div.add("<b>Pipeline</b>")
 
 
 
@@ -517,6 +517,9 @@ class PipelineListWdg(BaseRefreshWdg):
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
             pipelines = search.get_sobjects()
             for pipeline in pipelines:
+                if pipeline.get_value("parent_process"):
+                    continue
+
                 # build each pipeline menu item
                 pipeline_div = my.get_pipeline_wdg(pipeline)
                 content_div.add(pipeline_div)
@@ -728,6 +731,7 @@ class PipelineListWdg(BaseRefreshWdg):
         // add to the current list
         var value = bvr.pipeline_code;
         var title = bvr.title;
+        /*
         var select = top.getElement(".spt_pipeline_editor_current");
         for ( var i = 0; i < select.options.length; i++) {
             var select_value = select.options[i].value;
@@ -739,8 +743,14 @@ class PipelineListWdg(BaseRefreshWdg):
 
         var option = new Option(title, value);
         select.options[select.options.length] = option;
-
         select.value = value;
+        */
+
+        var text = top.getElement(".spt_pipeline_editor_current2");
+        //text.value = title;
+        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
+        text.innerHTML = html;
+
         spt.pipeline.set_current_group(value);
         '''
         } )
@@ -876,7 +886,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
             var group_name = spt.pipeline.get_current_group();
 
-            var class_name = 'tactic.ui.tools.ProcessConnectorWdg';
+            var class_name = 'tactic.ui.tools.ConnectorInfoWdg';
             var kwargs = {
                 pipeline_code: group_name,
                 from_node: from_node.spt_name,
@@ -888,7 +898,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             return;
         }
 
+        return;
 
+/*
         var prop_top = spt.get_element(top, ".spt_pipeline_properties_top");
         var connect_top = spt.get_element(top, ".spt_connector_properties_top");
 
@@ -919,7 +931,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 spt.show(no_process);
                 spt.hide(connector_prop);
             }
-     
+ */    
         
         '''
         }
@@ -1188,7 +1200,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
 
 
-class ProcessConnectorWdg(BaseRefreshWdg):
+class ConnectorInfoWdg(BaseRefreshWdg):
 
     def get_display(my):
 
@@ -1234,24 +1246,47 @@ class ProcessConnectorWdg(BaseRefreshWdg):
         td = table.add_header(from_node)
         td.add_style("padding: 10px")
         td.add_style("vertical-align: top")
+        td.add_style("text-align: center")
+
+        table.add_cell(">>")
 
         td = table.add_header(to_node)
         td.add_style("padding: 10px")
         td.add_style("vertical-align: top")
+        td.add_style("text-align: center")
 
 
         tr, td = table.add_row_cell()
         td.add("<br/>Using Attributes:")
 
         left_process = pipeline.get_process(from_node)
-        right_process = pipeline.get_process(from_node)
+        right_process = pipeline.get_process(to_node)
 
+        """
+        connects = pipeline.get_output_connects(from_node)
+        for connect in connects:
+            to = connect.get_to()
+            if to == to_node:
+                break;
 
+        from_attr = connect.get_attr("from_attr")
+        if not from_attr:
+            from_attr = "output"
+        to_attr = connect.get_attr("to_attr")
+        if not to_attr:
+            to_attr = "input"
+
+        """
 
 
         left_selected = my.kwargs.get("from_attr")
+        if not left_selected:
+            left_selected = "output"
         right_selected = my.kwargs.get("to_attr")
+        if not right_selected:
+            right_selected = "input"
 
+ 
         table.add_row()
 
         # handle output
@@ -1264,6 +1299,7 @@ class ProcessConnectorWdg(BaseRefreshWdg):
         #left.add_color("background", "background3")
 
 
+        table.add_cell(">>")
 
         hidden = TextWdg("left")
         left.add(hidden)
@@ -1271,7 +1307,7 @@ class ProcessConnectorWdg(BaseRefreshWdg):
         if left_selected:
             hidden.set_value(left_selected)
 
-        left.add("<br/>")
+        left.add("<br/>"*3)
         left.add("<hr/>")
 
 
@@ -1308,7 +1344,7 @@ class ProcessConnectorWdg(BaseRefreshWdg):
         if right_selected:
             hidden.set_value(right_selected)
 
-        right.add("<br/>")
+        right.add("<br/>"*3)
         right.add("<hr/>")
 
 
@@ -2132,17 +2168,21 @@ class PipelineEditorWdg(BaseRefreshWdg):
         my.unique_id = canvas.get_unique_id()
         canvas_top.add(canvas)
 
-
-
+        """
         canvas_title = DivWdg()
         canvas_top.add(canvas_title)
-        canvas_title.add("Pipelines")
         canvas_title.add_border()
         canvas_title.add_style("padding: 3px")
         canvas_title.add_style("position: absolute")
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
         canvas_title.add_style("left: 0px")
+
+        #canvas_title.add("Pipelines")
+        canvas_text = TextInputWdg(name="current_pipeline")
+        canvas_title.add(canvas_text)
+        canvas_text.add_class("spt_pipeline_editor_current2")
+        """
 
 
 
@@ -2253,13 +2293,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         shelf_wdg.add(spacing_divs[0])
 
-        group_div = my.get_pipeline_select_wdg();
-        group_div.add_style("float: left")
-        group_div.add_style("margin-top: 1px")
-        group_div.add_style("margin-left: 10px")
-        shelf_wdg.add(group_div)
-
-        shelf_wdg.add(spacing_divs[1])
+        #group_div = my.get_pipeline_select_wdg();
+        #group_div.add_style("float: left")
+        #group_div.add_style("margin-top: 1px")
+        #group_div.add_style("margin-left: 10px")
+        #shelf_wdg.add(group_div)
+        #shelf_wdg.add(spacing_divs[1])
 
         button_div = my.get_zoom_buttons_wdg();
         button_div.add_style("margin-left: 10px")
@@ -2780,12 +2819,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
     def get_pipeline_select_wdg(my):
         div = DivWdg()
-        #div.add_border(modifier=10)
         div.add_style("padding: 3px")
-        #div.set_round_corners()
-        #div.add("Current Pipeline: " )
+
         pipeline_select = SelectWdg("current_pipeline")
-        div.add(pipeline_select)
+        #div.add(pipeline_select)
         pipeline_select.add_style("display: table-cell")
         pipeline_select.add_class("spt_pipeline_editor_current")
         pipeline_select.set_option("values", "default")
@@ -2802,115 +2839,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.set_current_group(group_name);
             '''
         } )
-
-
-        # Button to add a new pipeline to the canvas
-        # NOTE: this is disabled ... workflow is not up to the level we
-        # need it to be.
-        button = IconButtonWdg(title="Add Pipeline to Canvas", icon=IconWdg.ARROWHEAD_DARK_DOWN)
-        #div.add(button)
-        button.add_style("float: right")
-        dialog = DialogWdg()
-        div.add(dialog)
-        dialog.add_title("Add Pipeline to Canvas")
-
-
-        dialog_div = DivWdg()
-        dialog_div.add_style("padding: 5px")
-        dialog_div.add_color("background", "background")
-        dialog_div.add_border()
-        dialog.add(dialog_div)
-
-        table = Table()
-        table.add_color("color", "color")
-        table.add_style("margin: 10px")
-        table.add_style("width: 270px")
-        dialog_div.add(table)
-
-        table.add_row()
-        td = table.add_cell()
-        td.add("Pipeline code: ")
-        text = TextWdg("new_pipeline")
-        td = table.add_cell()
-        td.add_style("height: 40px")
-        td.add(text)
-        text.add_class("spt_new_pipeline")
-
-        from tactic.ui.input import ColorInputWdg
-
-
-        table.add_row()
-        td = table.add_cell()
-        td.add("Color: ")
-        color_input = ColorInputWdg(name="spt_color")
-        color_input.add_style("float: left")
-        td = table.add_cell()
-        td.add(color_input)
-
-
-        dialog_div.add("<hr/>")
-
-
-
-        add_button = ActionButtonWdg(title='Add', tip='Add New Pipeline to Canvas')
-        dialog_div.add(add_button)
-        add_button.add_behavior( {
-        'type': 'click_up',
-        'dialog_id': dialog.get_id(),
-        'cbjs_action': '''
-        var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
-        var close_event = bvr.dialog_id + "|dialog_close";
-
-        var values = spt.api.get_input_values(dialog_top, null, false);
-        var value = values.new_pipeline;
-        if (value == '') {
-            alert("Cannot add empty pipeline");
-            return;
-        }
-
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var select = top.getElement(".spt_pipeline_editor_current");
-
-        for ( var i = 0; i < select.options.length; i++) {
-            var select_value = select.options[i].value;
-            if (select_value == value) {
-                alert("Pipeline ["+value+"] already exists");
-                return;
-            }
-        }
-
-
-        var option = new Option(value, value);
-        select.options[select.options.length] = option;
-
-        select.value = value;
-        spt.pipeline.set_current_group(value);
-
-        // Add this to the colors
-        var colors = spt.pipeline.get_data().colors;
-        if (values.spt_color != '') {
-            colors[value] = values.spt_color;
-        }
-        else {
-            colors[value] = '#333333';
-        }
-
-        spt.named_events.fire_event(close_event, {});
-
-        spt.pipeline.add_node();
-
-        '''
-        } )
-        dialog.set_as_activator(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'dialog_id': dialog.get_id(),
-        'cbjs_action': '''
-        spt.api.Utility.clear_inputs( $(bvr.dialog_id) );
-        '''
-        } )
-
 
 
         return div
@@ -3504,7 +3432,6 @@ spt.pipeline_properties.set_properties = function(node) {
         node = bvr.src_el;
     }
     var top = node.getParent(".spt_pipeline_editor_top");
-    console.log(top);
     var wrapper = top.getElement(".spt_pipeline_wrapper");
     spt.pipeline.init_cbk(wrapper);
 
@@ -3611,9 +3538,14 @@ spt.pipeline_properties.show_node_properties = function(node) {
         }
     }
     // set the current pipeline
+    /*
     current = top.getElement(".spt_pipeline_editor_current");
     current.value = group_name;
+    */
 
+    current = top.getElement(".spt_pipeline_editor_current2");
+    //current.value = group_name;
+    current.innerHTML = group_name;
 
 
 }
@@ -3660,6 +3592,9 @@ spt.pipeline_properties.set_properties2 = function(prop_top, node) {
 
         '''
 
+
+
+"""
 class ConnectorPropertyWdg(PipelinePropertyWdg):
 
     def get_display(my):
@@ -3736,6 +3671,7 @@ class ConnectorPropertyWdg(PipelinePropertyWdg):
 
 
         return div
+"""
 
 
 class PipelineSaveCbk(Command):

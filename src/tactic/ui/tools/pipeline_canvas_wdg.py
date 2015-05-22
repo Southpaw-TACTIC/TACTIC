@@ -80,12 +80,71 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             
 
 
+        canvas_title = DivWdg()
+        top.add(canvas_title)
+        canvas_title.add_border()
+        canvas_title.add_style("padding: 3px")
+        canvas_title.add_style("position: absolute")
+        canvas_title.add_style("font-weight: bold")
+        canvas_title.add_style("top: 0px")
+        canvas_title.add_style("left: 0px")
+        canvas_title.add_style("z-index: 200")
+
+        #canvas_title.add("Pipelines")
+        #from tactic.ui.input import TextInputWdg
+        #canvas_text = TextInputWdg(name="current_pipeline")
+        #canvas_title.add(canvas_text)
+        #canvas_text.add_class("spt_pipeline_editor_current2")
+
+        canvas_title.add_class("spt_pipeline_editor_current2")
+        canvas_title.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_pipeline_link',
+            'cbjs_action': '''
+            spt.pipeline.clear_canvas();
+            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
+            spt.pipeline.import_pipeline(pipeline_code);
+
+            var pipeline_name = bvr.src_el.innerHTML;
+
+            var parent = bvr.src_el.getParent(".spt_pipeline_editor_current2");
+            var els = parent.getElements(".spt_pipeline_link");
+
+            var html = [];
+            for (var i = 0; i < els.length; i++) {
+                html.push(els[i].outerHTML);
+                if (els[i].innerHTML == pipeline_name) {
+                    break;
+                }
+            }
+
+            parent.innerHTML = html.join(" / ");
+            '''
+        } )
+        canvas_title.add_relay_behavior( {
+            'type': 'mouseover',
+            'bvr_match_class': 'spt_pipeline_link',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "rgba(0,0,0,0.2)");
+            '''
+        } )
+        canvas_title.add_relay_behavior( {
+            'type': 'mouseout',
+            'bvr_match_class': 'spt_pipeline_link',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+
+
+
         # outer is used to resize canvas
         outer = DivWdg()
 
         top.add(outer);
         outer.add_class("spt_pipeline_resize")
-
         outer.add_class("spt_resizable")
        
 
@@ -176,6 +235,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
+        """
         canvas.add_behavior( {
         "type": 'wheel',
         "cbjs_action": '''
@@ -189,6 +249,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
         '''
         } )
+        """
 
 
  
@@ -765,19 +826,38 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             icon_div.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
+            var server = TacticServerStub.get();
+
             var node = bvr.src_el.getParent(".spt_pipeline_node");
             var node_name = spt.pipeline.get_node_name(node);
+            var pipeline_code = spt.pipeline.get_current_group();
 
-            var pipeline_code = "S2_PIPELINE00066";
+            var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
+            var process = server.eval(expr, {single: true});
 
-            var server = TacticServerStub.get();
-            pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+pipeline_code+"'])", {single: true});
-            if (!pipeline) {
+            var process_code = process.code;
+
+            var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+            if (!subpipeline) {
                 // create the pipeline
+                var data = {
+                    name: node_name + "_pipeline",
+                    parent_process: process_code
+                }
+                subpipeline = server.insert("sthpw/pipeline", data);
             }
 
-            //spt.pipeline.clear_canvas();
-            spt.pipeline.import_pipeline(pipeline_code);
+            var subpipeline_code = subpipeline.code;
+
+            spt.pipeline.clear_canvas();
+            spt.pipeline.import_pipeline(subpipeline_code);
+
+            var top = spt.pipeline.top;
+            var text = top.getElement(".spt_pipeline_editor_current2");
+            //text.value = text.value + " / " + subpipeline.name;
+
+            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
+            text.innerHTML = text.innerHTML + " / " + html;
 
             evt.stopPropagation();
             '''
@@ -1727,6 +1807,7 @@ spt.pipeline.clear_canvas = function() {
     data.groups = {};
 
     // clear the current_pipeline select
+    /*
     var top = spt.pipeline.top.getParent(".spt_pipeline_tool_top");
     var select = top.getElement(".spt_pipeline_editor_current");
     for (var i = select.options.length-1; i >=0; i--) {
@@ -1735,6 +1816,7 @@ spt.pipeline.clear_canvas = function() {
            select.remove(i);
         }
     }
+    */
    
     spt.pipeline.redraw_canvas();
 }

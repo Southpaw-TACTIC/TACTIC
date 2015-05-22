@@ -140,6 +140,11 @@ class BaseProcessTrigger(Trigger):
         search.add_filter("pipeline_code", pipeline.get_code())
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
+
+        print "callback process: ", process, pipeline.get_code()
+        assert(process_sobj)
+
+
         triggers = {}
         if process_sobj:
             triggers = process_sobj.get_json_value("trigger")
@@ -163,7 +168,8 @@ class BaseProcessTrigger(Trigger):
             event = "process|%s" % status
 
             # how to get the value here?
-            triggers = Trigger.call(my, event, kwargs, process=process_sobj.get_code())
+            process_code = process_sobj.get_code()
+            triggers = Trigger.call(my, event, kwargs, process=process_code)
             if triggers:
                 ret_val = triggers[0].get_ret_val()
 
@@ -233,21 +239,39 @@ class ProcessPendingTrigger(BaseProcessTrigger):
                 my.set_all_tasks(sobject, process, "pending")
 
 
-        elif node_type in ["heirarchy"]:
-            child_pipeline = process_obj.get_child_pipeline()
-            child_processes = child_pipeline.get_processes()
+        elif node_type in ["hierarchy"]:
+
+            search = Search("config/process")
+            search.add_filter("pipeline_code", pipeline.get_code())
+            search.add_filter("process", process)
+            process_sobj = search.get_sobject()
+
+            process_code = process_sobj.get_code()
+
+            search = Search("sthpw/pipeline")
+            search.add_filter("parent_process", process_code)
+            subpipeline = search.get_sobject()
+            if not subpipeline:
+                return
+
+            print "subpipeline: ", subpipeline.get_code()
+
+            child_processes = subpipeline.get_processes()
+            #child_pipeline = process_obj.get_child_pipeline()
+            #child_processes = child_pipeline.get_processes()
+
             if child_processes:
                 first_process = child_processes[0]
                 first_name = first_process.get_name()
 
                 input = {
-                        'pipeline': pipeline,
+                        'pipeline': subpipeline,
                         'sobject': sobject,
-                        'process': first_process,
+                        'process': first_process.get_name(),
                 }
 
                 event = "process|pending"
-                Trigger.call(my, "process|complete", input)
+                Trigger.call(my, event, input)
 
 
 
@@ -437,7 +461,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        if node_type in ["auto", "approval", "manual", "node"]:
+        if node_type in ["auto", "approval", "manual", "node", "hierarchy"]:
             # call the process|pending event for all output processes
             output_processes = pipeline.get_output_processes(process)
             for output_process in output_processes:
@@ -454,6 +478,29 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         if node_type in ["auto", "condition"]:
             my.set_all_tasks(sobject, process, "complete")
+
+
+        parent_process = pipeline.get_value("parent_process")
+        print "parent: ", parent_process
+        if parent_process:
+            output_processes = pipeline.get_output_processes(process)
+            if not output_processes:
+                # look at the parent pipelline
+                parent_process_sobj = Search.get_by_code("config/process", parent_process)
+                parent_pipeline_code = parent_process_sobj.get_value("pipeline_code")
+                parent_pipeline = Search.get_by_code("sthpw/pipeline", parent_pipeline_code)
+                parent_process = parent_process_sobj.get_value("process")
+
+                output = {
+                    'pipeline': parent_pipeline,
+                    'sobject': sobject,
+                    'process': parent_process,
+                }
+
+                event = "process|complete"
+                Trigger.call(my, event, output)
+
+
 
 
         # if pipeline has a parent and this is the last node, then notify the

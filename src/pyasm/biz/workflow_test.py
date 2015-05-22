@@ -58,6 +58,8 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_hierarchy()
+            """
             my._test_manual()
             my._test_task()
             my._test_auto_process()
@@ -66,6 +68,7 @@ class WorkflowCmd(Command):
             my._test_input()
             my._test_trigger()
             my._test_approval()
+            """
         except Exception, e:
             print "Error: ", e
             raise
@@ -549,6 +552,67 @@ class WorkflowCmd(Command):
         task.commit()
         my.assertEquals( "approve", sobject.get_value("b"))
         my.assertEquals( "complete", sobject.get_value("c"))
+
+
+
+    def _test_hierarchy(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="a"/>
+          <process type="hierarchy" name="b"/>
+          <process type="auto" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+        parent_process = processes.get("b")
+        print "parent: ", pipeline.get_code()
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        # create the sub pipeline
+        subpipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="suba"/>
+          <process type="auto" name="subb"/>
+          <process type="auto" name="subc"/>
+          <connect from="suba" to="subb"/>
+          <connect from="subb" to="subc"/>
+        </pipeline>
+        '''
+        subpipeline, subprocesses = my.get_pipeline(subpipeline_xml)
+        subpipeline.set_value("parent_process", parent_process.get_code())
+        subpipeline.commit()
+        print "sub: ", subpipeline.get_code()
+
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+        my.assertEquals( "complete", sobject.get_value("a"))
+        my.assertEquals( "complete", sobject.get_value("b"))
+        my.assertEquals( "complete", sobject.get_value("c"))
+        my.assertEquals( "complete", sobject.get_value("suba"))
+        my.assertEquals( "complete", sobject.get_value("subb"))
+        my.assertEquals( "complete", sobject.get_value("subc"))
+
+        
+
+
+
 
 
 
