@@ -233,6 +233,24 @@ class ProcessPendingTrigger(BaseProcessTrigger):
                 my.set_all_tasks(sobject, process, "pending")
 
 
+        elif node_type in ["heirarchy"]:
+            child_pipeline = process_obj.get_child_pipeline()
+            child_processes = child_pipeline.get_processes()
+            if child_processes:
+                first_process = child_processes[0]
+                first_name = first_process.get_name()
+
+                input = {
+                        'pipeline': pipeline,
+                        'sobject': sobject,
+                        'process': first_process,
+                }
+
+                event = "process|pending"
+                Trigger.call(my, "process|complete", input)
+
+
+
 
 
  
@@ -436,6 +454,18 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         if node_type in ["auto", "condition"]:
             my.set_all_tasks(sobject, process, "complete")
+
+
+        # if pipeline has a parent and this is the last node, then notify the
+        # parent process
+        #if pipeline.has_parent()?? and process == last_process:
+        #    output = {
+        #       'pipeline': parent_pipeline,
+        #       'process': parent_process,
+        #       'sobject': sobject
+        #    }
+        #    event = "process|complete"
+        #    Trigger.call(my, event, input=output)
 
 
 class ProcessApproveTrigger(ProcessCompleteTrigger):

@@ -21,6 +21,7 @@ from pyasm.search import Search, SearchType
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 
+from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 
 class PipelineCanvasWdg(BaseRefreshWdg):
@@ -311,6 +312,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         auto = my.get_node("XXXXX", node_type="auto")
         template_div.add(auto)
 
+        # add approval node
+        auto = my.get_node("XXXXX", node_type="hierarchy")
+        template_div.add(auto)
+
+
+
         # add trigger node
         trigger = my.get_trigger_node()
         template_div.add(trigger)
@@ -497,8 +504,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         group_div.add(group_name)
         group_div.add_style("font-weight: bold")
 
-        from tactic.ui.widget import ActionButtonWdg
-        from tactic.ui.widget import IconButtonWdg
         button = IconButtonWdg(title="Create First Node", icon=IconWdg.ADD)
         content_div.add( button )
 
@@ -545,16 +550,21 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
     def get_node(my, name, node_type="node"):
 
+        node = DivWdg()
+
         width, height = my.get_node_size()
 
         if node_type == "auto":
             border_radius = 20 
+        elif node_type == "hierarchy":
+            border_radius =  50 
+            width = width
+            height = height + 50
         else:
             border_radius = 3
 
 
         # add a node
-        node = DivWdg()
         node.add_class("spt_pipeline_node")
         if node_type !="node":
             node.add_class("spt_pipeline_%s" % node_type)
@@ -696,6 +706,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content.add_style("z-index: 200")
         content.add_style("overflow: 200")
 
+
         # parallelogram
         #content.add_style("-webkit-transform", "skewX(-20deg)")
         #content.add_style("transform", "skewX(-20deg)")
@@ -731,6 +742,47 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         text.add_style("left: %spx" % (height/4) )
         text.add_style("width: 75px")
         text.set_value(name)
+
+
+
+
+        if node_type == "hierarchy":
+
+
+            icon_div = DivWdg()
+            node.add(icon_div)
+            icon = IconButtonWdg(name="Expand", icon="BS_ARROW_DOWN")
+            icon_div.add(icon)
+            icon_div.add_style("margin: 0px auto")
+            icon_div.add_style("top: 50px")
+            icon_div.add_style("left: %spx" % (width/2-12))
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("z-index: 300")
+            icon_div.add_style("border: solid 1px transparent")
+            icon_div.add_style("width: 24px");
+            icon_div.add_style("text-align: center");
+
+            icon_div.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var node = bvr.src_el.getParent(".spt_pipeline_node");
+            var node_name = spt.pipeline.get_node_name(node);
+
+            var pipeline_code = "S2_PIPELINE00066";
+
+            var server = TacticServerStub.get();
+            pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+pipeline_code+"'])", {single: true});
+            if (!pipeline) {
+                // create the pipeline
+            }
+
+            //spt.pipeline.clear_canvas();
+            spt.pipeline.import_pipeline(pipeline_code);
+
+            evt.stopPropagation();
+            '''
+            } )
+
 
 
 
@@ -945,12 +997,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # on normal click, select single node if not selected, otherwise
         # select the whole group
         node.add_behavior( {
-        'type': 'click',
+        'type': 'click_up',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
         if (node.spt_is_selected) {
-            //spt.pipeline.select_nodes_by_group(node.spt_group);
+            spt.pipeline.unselect_all_nodes();
+            spt.pipeline.select_single_node(node);
         }
         else {
             spt.pipeline.select_single_node(node);
