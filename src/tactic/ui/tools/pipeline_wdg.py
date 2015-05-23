@@ -1208,6 +1208,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
         top = my.top
+        top.add_class("spt_pipeline_connector_info")
 
         top.add_style("padding: 20px 0px")
         top.add_color("background", "background")
@@ -1237,7 +1238,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
         table = Table()
         top.add(table)
-        table.add_border()
         table.add_style("width: 100%")
         table.add_style("margin: 0px -3px 5px 0px")
 
@@ -1248,7 +1248,8 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         td.add_style("text-align: center")
 
-        table.add_cell(">>")
+        td = table.add_cell(">>")
+        td.add_style("text-align: center")
 
         td = table.add_header(to_node)
         td.add_style("padding: 10px")
@@ -1258,6 +1259,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
         tr, td = table.add_row_cell()
         td.add("<br/>Using Attributes:")
+        td.add_style("padding: 5px")
 
         left_process = pipeline.get_process(from_node)
         right_process = pipeline.get_process(to_node)
@@ -1299,15 +1301,18 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         #left.add_color("background", "background3")
 
 
-        table.add_cell(">>")
+        td = table.add_cell(">>")
+        td.add_style("text-align: center")
 
-        hidden = TextWdg("left")
-        left.add(hidden)
-        hidden.add_class("spt_input")
+        text = TextInputWdg(name="left")
+        text.add_style("width: 150px")
+        left.add(text)
+        text.add_class("spt_output_attr")
         if left_selected:
-            hidden.set_value(left_selected)
+            text.set_value(left_selected)
 
         left.add("<br/>"*3)
+        left.add("Standard Options")
         left.add("<hr/>")
 
 
@@ -1326,7 +1331,34 @@ class ConnectorInfoWdg(BaseRefreshWdg):
             left_div.add(attr_div)
             attr_div.add(attr)
             attr_div.add_style("padding: 3px")
+            attr_div.add_class("spt_attr")
+            attr_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_pipeline_connector_info");
+                var left = top.getElement(".spt_output_attr");
+                left.value = bvr.src_el.innerHTML;
+                '''
+            } )
 
+            attr_div.add_behavior( {
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "#EEE");
+                '''
+            } )
+
+
+            attr_div.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "");
+                '''
+            } )
+
+
+
+ 
 
         # handle input
 
@@ -1338,11 +1370,12 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         right.add_style("padding: 5px")
         #right.add_color("background", "background3")
 
-        hidden = TextWdg("right")
-        right.add(hidden)
-        hidden.add_class("spt_input")
+        text = TextInputWdg(name="right")
+        text.add_style("width: 150px")
+        right.add(text)
+        text.add_class("spt_input_attr")
         if right_selected:
-            hidden.set_value(right_selected)
+            text.set_value(right_selected)
 
         right.add("<br/>"*3)
         right.add("<hr/>")
@@ -1362,6 +1395,34 @@ class ConnectorInfoWdg(BaseRefreshWdg):
             right_div.add(attr_div)
             attr_div.add(attr)
             attr_div.add_style("padding: 3px")
+
+
+
+
+        save = ActionButtonWdg(title="Save")
+        save.add_style("float: right")
+        top.add(save)
+        save.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_info_top");
+            var input = spt.api.get_input_values(top, null, false);
+
+            /*
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = {
+                node_type: 'auto',
+                pipeline_code: bvr.pipeline_code,
+                process: bvr.process,
+                on_action: input.on_action,
+                on_action_class: input.on_action_class,
+            }
+
+            server.execute_cmd(class_name, kwargs);
+            */
+
+            '''
+        } )
 
 
 

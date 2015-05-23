@@ -77,9 +77,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-        title.add_color("background", "background3")
-        title.add_style("height: 20px")
-        title.add_style("padding: 6px")
+        title.add_color("background", "background", -5)
+        title.add_style("height: 23px")
+        title.add_style("padding: 10px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
         title.add_border()

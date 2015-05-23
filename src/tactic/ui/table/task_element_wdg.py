@@ -2422,14 +2422,23 @@ class TaskSummaryElementWdg(TaskElementWdg):
 
         for task in my.tasks:
             bgColor = ''
-            process = task.get_value("process")
-            parts = re.split( re.compile("[ -]"), process)
-            parts = [x[:1] for x in parts]
-            title = "&nbsp;".join(parts)
-            title = "".join(parts)
+            process = task.get_value("process").lower()
+            parts = re.split( re.compile("[ -_]"), process)
+            if len(parts) == 1:
+                #title = parts[0][:3]
+                title = parts[0]
+            else:
+                parts = [x[:1] for x in parts]
+                title = "".join(parts)
+            parts = re.split( re.compile("[ -_]"), process)
+            #if len(parts) == 1:
+            #    parts.append("")
+            #    parts.append("")
+            #else:
+            #    parts.append("")
+            title = "<br/>".join(parts)
 
             status = task.get_value("status")
-
 
             task_pipeline_code = task.get_value("pipeline_code")
 
@@ -2444,7 +2453,26 @@ class TaskSummaryElementWdg(TaskElementWdg):
             td = table.add_cell()
             td.add_attr("spt_task_key", task.get_search_key())
 
-            td.add(title)
+            td.add_behavior({
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "#EEE");
+                '''
+            })
+            td.add_behavior({
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "");
+                '''
+            })
+
+            title_div = DivWdg()
+            title_div.add(title)
+            title_div.add_style("max-height: 30px")
+            title_div.add_style("height: 25px")
+            title_div.add_style("overflow: hidden")
+
+            td.add(title_div)
             td.add_style("text-align: center")
             div = DivWdg()
             td.add(div)

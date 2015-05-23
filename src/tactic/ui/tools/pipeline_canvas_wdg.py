@@ -2987,6 +2987,19 @@ spt.pipeline.draw_curve = function(start, end) {
     var width = (end.x - start.x)/2;
     ctx.bezierCurveTo(start.x+width, start.y, end.x-width, end.y, end.x, end.y);
 }
+
+
+spt.pipeline.draw_curve_vertical = function(start, end) {
+    var ctx = spt.pipeline.get_ctx();
+    //var width = (end.x - start.x)/2;
+    //ctx.bezierCurveTo(start.x+width, start.y, end.x-width, end.y, end.x, end.y);
+    var height = (end.y - start.y)/2;
+    ctx.bezierCurveTo(start.x, start.y+height, end.x, end.y-height, end.x, end.y);
+}
+
+
+
+
 spt.pipeline.draw_arc = function(start, end, offset) {
     var ctx = spt.pipeline.get_ctx();
     var width = (end.x - start.x)/2;
@@ -3025,52 +3038,96 @@ spt.pipeline.draw_connector = function(start, end, color) {
 
     if (start.x > end.x) {
 
-        var x_arc = 25;
+        var offset = {}
+
+        var x_diff = - end.x + start.x;
+        if (x_diff > 50) {
+            x_diff = 50;
+        }
+        offset.x = x_diff/4;
+        
 
         var y_diff = end.y - start.y
-        if (y_diff < 0) y_diff = -y_diff
-        var y_arc = 25 + (y_diff - 50)/4;
-        if (y_arc > 50) y_arc = 50;
-
-        // scale the results
-        var scale = spt.pipeline.get_scale();
-        x_arc = x_arc * scale;
-        y_arc = y_arc * scale;
-
-        var offset = {x: 0, y: y_arc};
-        if (start.y < end.y) {
-            offset.y = - offset.y;
+        if (y_diff < 0) {
+            if (y_diff < -50) {
+                y_diff = - 50;
+            }
         }
+        else {
+            if (y_diff > 50) {
+                y_diff = 50;
+            }
+        }
+        offset.y = y_diff/4;
+
+
+
+        var scale = spt.pipeline.get_scale();
+        offset.x = offset.x * scale;
+        offset.y = offset.y * scale;
+
 
 
         tmp_start = start;
         if (back) {
             tmp_end = start;
-            offset.y = offset.y * 3.0;
-            x_arc = x_arc * 3.0;
+            offset.x = offset.x * 10.0;
+            offset.y = offset.y * 10.0;
         }
         else {
-            tmp_end = { x: start.x - offset.x, y: start.y - offset.y };
-            spt.pipeline.draw_arc(tmp_start, tmp_end, x_arc);
+            tmp_end = { x: start.x + offset.x, y: start.y + offset.y };
+            ctx.bezierCurveTo(
+                tmp_start.x + offset.x/2, tmp_start.y,
+                tmp_end.x, tmp_end.y - offset.y,
+                tmp_end.x, tmp_end.y
+            );
+
         }
 
         tmp_start = tmp_end;
-        tmp_end = { x: end.x + offset.x, y: end.y + offset.y};
-        spt.pipeline.draw_curve(tmp_start, tmp_end);
+        if (back) {
+            tmp_end = { x: end.x, y: end.y - offset.y};
+        }
+        else {
+            tmp_end = { x: end.x - offset.x, y: end.y - offset.y};
+        }
+        if (back) {
+            spt.pipeline.draw_curve(tmp_start, tmp_end);
+        }
+        else {
+            spt.pipeline.draw_curve_vertical(tmp_start, tmp_end);
+        }
 
         // draw the arrow
         var halfway = { x:(tmp_end.x-tmp_start.x)/2+tmp_start.x, y:(tmp_end.y-tmp_start.y)/2+tmp_start.y };
 
         // fudge factor to make angle of arrow look better (rather than finding the
         // the true derivative of a bezier curve (this looks good enough)
-        var ff = 1.5;
+        var ff = 0.5;
         var len = Math.sqrt( (tmp_end.x-tmp_start.x)*(tmp_end.x-tmp_start.x)+(tmp_end.y-tmp_start.y)*(tmp_end.y-tmp_start.y)*ff*ff );
         var point0 = { x: (tmp_end.x-tmp_start.x)/len, y: (tmp_end.y-tmp_start.y)*ff/len };
 
 
         tmp_start = tmp_end;
         tmp_end = end;
-        spt.pipeline.draw_arc(tmp_start, tmp_end, -x_arc);
+
+
+        if (back) {
+            ctx.bezierCurveTo(
+                tmp_start.x - offset.x, tmp_start.y,
+                tmp_end.x - offset.x, tmp_end.y,
+                tmp_end.x, tmp_end.y
+            );
+        }
+        else {
+            ctx.bezierCurveTo(
+                tmp_start.x, tmp_start.y + offset.y,
+                tmp_end.x - offset.x/2, tmp_end.y,
+                tmp_end.x, tmp_end.y
+            );
+        }
+
+
 
         spt.pipeline.draw_arrow(halfway, point0, 8);
 
