@@ -89,9 +89,23 @@ class TaskStatusChangeTrigger(Trigger):
         if not sobject:
             return
 
-        #print "status change: ", task.get_value("process"), task.get_value("status")
+        pipeline = None
 
-        pipeline = Pipeline.get_by_sobject(sobject)
+        process_code = task.get_value("process_code", no_exception=True)
+        if process_code:
+            process_sobj = Search.get_by_code("config/process", process_code)
+            if process_sobj:
+                pipeline_code = process_sobj.get_value("pipeline_code")
+                pipeline = Pipeline.get_by_code("sthpw/pipeline", pipeline_code) 
+
+        if not pipeline:
+            pipeline = Pipeline.get_by_sobject(sobject)
+
+
+
+
+
+
         if not pipeline:
             return
 
@@ -99,6 +113,10 @@ class TaskStatusChangeTrigger(Trigger):
         status = task.get_value("status")
 
         process = pipeline.get_process(process_name)
+        if not process:
+            # we don't have enough info here
+            return
+
         node_type = process.get_type()
         process_name = process.get_name()
 
@@ -147,7 +165,7 @@ class BaseProcessTrigger(Trigger):
 
         triggers = {}
         if process_sobj:
-            triggers = process_sobj.get_json_value("trigger")
+            triggers = process_sobj.get_json_value("workflow")
         if not triggers:
             triggers = {}
 

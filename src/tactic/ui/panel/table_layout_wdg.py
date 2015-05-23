@@ -592,8 +592,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("has_extra_header", "true")
 
 
-        if my.config_xml:
-            inner.add_attr("spt_config_xml", my.config_xml)
+        #if my.config_xml:
+        #    inner.add_attr("spt_config_xml", my.config_xml)
 
         save_class_name = my.kwargs.get("save_class_name")
         if save_class_name:
