@@ -165,7 +165,6 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
 
-        # TEST
         # NOTE: the canvas in PipelineCanvasWdg requires a set size ... it does not respond
         # well to sizes like 100% or auto.  Unless this is fixed, we cannot have a table
         # responsively respond to a changing window size.
@@ -173,6 +172,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         #info.add_style("display: none")
         info.add_class("spt_pipeline_tool_info")
         info.add_style("width: 400px")
+        info.add_style("min-width: 400px")
         info.add_border()
         info_wdg = DivWdg()
         info.add(info_wdg)
@@ -1431,8 +1431,23 @@ class ProcessInfoWdg(BaseRefreshWdg):
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
 
-        #if not process_sobj:
-        #    return top
+
+
+        #show error message if the node has not been registered 
+        if not process_sobj:
+            warning_div = DivWdg()
+            #width = 16 makes the icon smaller
+            warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
+            warning_msg = "This process node has not been registered in the process table, please save your changes."
+           
+            warning_div.add(warning_icon)
+            warning_div.add(warning_msg)
+            top.add(warning_div)
+            warning_div.add_style("padding: 20px 30px")
+            warning_div.add_style("font-size: 15px")
+
+            return top
+
 
 
         # triggers
@@ -1586,6 +1601,8 @@ class ProcessInfoWdg(BaseRefreshWdg):
             div.add("<br/><hr/><br/>")
             div.add("<b>Task setup</b><br/>")
             div.add("Task options allow you to control various default properties of tasks.")
+
+            process_key = process_sobj.get_search_key()
 
             div.add("<br/>"*2)
 
@@ -2262,7 +2279,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg.add_style("padding: 5px")
         shelf_wdg.add_style("margin-bottom: 5px")
         shelf_wdg.add_style("overflow-x: hidden")
-        shelf_wdg.add_style("min-width: 800px")
+        shelf_wdg.add_style("min-width: 500px")
 
         show_shelf = my.kwargs.get("show_shelf")
         show_shelf = True

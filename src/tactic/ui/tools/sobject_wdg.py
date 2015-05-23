@@ -1131,9 +1131,18 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
 
         spt.pipeline.set_status_color(bvr.search_key);
-        spt.pipeline.load_triggers();
 
+        var top = spt.pipeline.top;
+        var text = top.getElement(".spt_pipeline_editor_current2");
+        spt.pipeline.load_triggers();
         spt.pipeline.fit_to_canvas(bvr.pipeline);
+
+        var server = TacticServerStub.get();
+        var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
+        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
+        text.innerHTML = html;
+
+
 
         '''
         } )

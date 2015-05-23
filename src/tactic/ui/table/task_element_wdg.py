@@ -1531,8 +1531,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         else:
             node_type = "node"
 
-        print "node_type: ", node_type
-
 
         div = DivWdg()
         width = my.width.replace('px','')
@@ -1964,16 +1962,39 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         """
 
+        div.add_behavior( {
+            'type': 'mouseenter',
+            'cbjs_action': '''
+            var els = bvr.src_el.getElements(".spt_process_buttons");
+            for (var i = 0; i < els.length; i++) {
+                els.setStyle("display", "");
+            }
+            '''
+        } )
+
+        div.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            var els = bvr.src_el.getElements(".spt_process_buttons");
+            for (var i = 0; i < els.length; i++) {
+                els.setStyle("display", "none");
+            }
+            '''
+        } )
 
 
 
         button_div = DivWdg()
+        button_div.add_style("display: none")
+        button_div.add_class("spt_process_buttons")
+        #button_div.add_border()
         button_table = Table()
         button_div.add(button_table)
         button_table.add_row()
-        button_table.add_style("float: right")
+        #button_table.add_style("float: right")
         if my.show_task_edit != 'false' or my.show_track == 'true':
             div.add(button_div)
+            button_div.add_style("padding: 5px 0px")
 
             if my.layout in ['horizontal', 'vertical']:
                 button_div.add_style("float: left")
@@ -1981,29 +2002,60 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if my.show_task_edit != 'false':
             #edit_div.add_style('float: right')
-            icon = IconButtonWdg(tip='Edit Task', icon=IconWdg.EDIT)
+            icon = IconButtonWdg(tip='Edit Task', icon="BS_EDIT")
             icon.add_class('hand')
-            icon.add_behavior({'type': 'click_up',
-        'view': my.task_edit_view,
+            icon.add_behavior({
+                'type': 'click_up',
+                'view': my.task_edit_view,
                 'search_key': SearchKey.get_by_sobject(task, use_id=True),
-                'cbjs_edit': '''spt.edit.edit_form_cbk(evt, bvr);
-                         update_event = "update|%s";
-                        spt.named_events.fire_event(update_event, {})''' %parent_key,
-        'cbjs_action': '''
-                        var kwargs = {search_key: bvr.search_key,
-                        
-                                  view: bvr.view, cbjs_edit: bvr.cbjs_edit
-                         };
-            var title = 'edit_popup';
-                        var cls_name = 'tactic.ui.panel.EditWdg';
-                        spt.api.load_popup(title, cls_name, kwargs);
-        '''}) 
+                'cbjs_edit': '''
+                    spt.edit.edit_form_cbk(evt, bvr);
+                    update_event = "update|%s";
+                    spt.named_events.fire_event(update_event, {})
+                ''' %parent_key,
+                'cbjs_action': '''
+                var kwargs = {
+                    search_key: bvr.search_key,
+                    view: bvr.view,
+                    cbjs_edit: bvr.cbjs_edit
+                };
+                var title = 'edit_popup';
+                var cls_name = 'tactic.ui.panel.EditWdg';
+                spt.api.load_popup(title, cls_name, kwargs);
+            '''}) 
+            icon.add_style("display: inline-block")
 
             icon_div = DivWdg(icon)
-            icon_div.add_style("margin-top: -6px")
+            #icon_div.add_style("margin-top: -6px")
             icon_div.add_style("margin-right: -6px")
             button_table.add_cell(icon_div)
 
+            # add a note
+            icon = IconButtonWdg(tip='Edit Task', icon="BS_INFO_SIGN")
+            icon_div.add(icon)
+            icon.add_style("display: inline-block")
+            icon.add_class('hand')
+            icon.add_behavior({
+                'type': 'click_up',
+                'parent_key': parent_key,
+                'process': process,
+                'cbjs_action': '''
+                var class_name = "tactic.ui.widget.DiscussionAddNoteWdg";
+                var kwargs = {
+                    search_key: bvr.parent_key,
+                    process: bvr.process,
+                    display: 'block',
+                }
+                spt.panel.load_popup("Add Note ["+bvr.process+"]", class_name, kwargs);
+                '''
+            } )
+
+
+
+
+
+
+        #my.show_track = 'true'
         if my.show_track == 'true':
             icon = IconButtonWdg(tip='', icon=IconWdg.HISTORY)
             icon.add_color('color','color', +20)

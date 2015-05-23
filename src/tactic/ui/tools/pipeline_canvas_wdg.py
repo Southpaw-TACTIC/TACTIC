@@ -44,44 +44,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return my.unique_id
 
 
-    def get_display(my):
-
-        top = my.top
-
-        my.width = my.kwargs.get("width")
-        if not my.width:
-            my.width = "auto"
-        my.height = my.kwargs.get("height")
-        if not my.height:
-            my.height = 600
-
-
-        # create an inner and outer divs
-        my.nob_mode = my.kwargs.get('nob_mode')
-        if not my.nob_mode:
-            my.nob_mode = "visible"
-
-        my.line_mode = my.kwargs.get('line_mode')
-        if not my.line_mode:
-            my.line_mode = "bezier"
-
-
-        my.has_prefix = my.kwargs.get('has_prefix')
-        if my.has_prefix in [True, 'true']:
-            my.has_prefix = True
-        else:
-            my.has_prefix = False
-
-        my.filter_node_name = my.kwargs.get('filter_node_name')
-        if my.filter_node_name in [True, 'true']:
-            my.filter_node_name = True
-        else:
-            my.filter_node_name = False
-            
-
+    def get_canvas_title(my):
 
         canvas_title = DivWdg()
-        top.add(canvas_title)
         canvas_title.add_border()
         canvas_title.add_style("padding: 3px")
         canvas_title.add_style("position: absolute")
@@ -89,12 +54,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_title.add_style("top: 0px")
         canvas_title.add_style("left: 0px")
         canvas_title.add_style("z-index: 200")
-
-        #canvas_title.add("Pipelines")
-        #from tactic.ui.input import TextInputWdg
-        #canvas_text = TextInputWdg(name="current_pipeline")
-        #canvas_title.add(canvas_text)
-        #canvas_text.add_class("spt_pipeline_editor_current2")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
         canvas_title.add_relay_behavior( {
@@ -136,8 +95,46 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
         } )
 
+        return canvas_title
 
 
+    def get_display(my):
+
+        top = my.top
+
+        my.width = my.kwargs.get("width")
+        if not my.width:
+            my.width = "auto"
+        my.height = my.kwargs.get("height")
+        if not my.height:
+            my.height = 600
+
+
+        # create an inner and outer divs
+        my.nob_mode = my.kwargs.get('nob_mode')
+        if not my.nob_mode:
+            my.nob_mode = "visible"
+
+        my.line_mode = my.kwargs.get('line_mode')
+        if not my.line_mode:
+            my.line_mode = "bezier"
+
+
+        my.has_prefix = my.kwargs.get('has_prefix')
+        if my.has_prefix in [True, 'true']:
+            my.has_prefix = True
+        else:
+            my.has_prefix = False
+
+        my.filter_node_name = my.kwargs.get('filter_node_name')
+        if my.filter_node_name in [True, 'true']:
+            my.filter_node_name = True
+        else:
+            my.filter_node_name = False
+            
+
+        top.add_style("position: relative")
+        top.add(my.get_canvas_title())
 
 
         # outer is used to resize canvas
@@ -207,13 +204,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         
  
       
-        
-       
-        
-        
-
-
-
         #canvas.add_style("width: 100%")
         #canvas.add_style("height: 100%")
 
@@ -854,7 +844,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             var top = spt.pipeline.top;
             var text = top.getElement(".spt_pipeline_editor_current2");
-            //text.value = text.value + " / " + subpipeline.name;
 
             var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
             text.innerHTML = text.innerHTML + " / " + html;
@@ -1176,9 +1165,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
+        scale = 1.12 # size to corner of square
 
-
-        my.add_nobs(node, width, height)
+        my.add_nobs(node, width*scale, height)
 
 
         content = DivWdg()
@@ -2685,8 +2674,12 @@ spt.pipeline.get_canvas_size = function(node) {
 
 spt.pipeline.get_size = function(node) {
     // find the relative pos on the canvas
-    var node_pos = node.getSize();
-    return node_pos;
+    var node_size = node.getSize();
+    if (node.hasClass(".spt_pipeline_condition")) {
+        node_size.x = node_size.x * 1.12 // distance to corner of square
+    }
+
+    return node_size;
 }
 
 
@@ -2854,14 +2847,13 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
     var node_lastpos;
     
     if (data.line_mode == 'bezier') {
-        node = bvr.src_el;
+        node = bvr.src_el.getParent(".spt_pipeline_node");
         node_pos = spt.pipeline.get_position(node);
         node_lastpos = spt.pipeline.get_el_last_position(node);
+
+        var size = spt.pipeline.get_size(node);
         
-        node_pos = { x: (node_pos.x), y: (node_pos.y + 20 )};
-        
-        
-        var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
+        node_pos = { x: (node_pos.x + size.x), y: (node_pos.y + size.y/2)};
         
     }
     else {
@@ -2869,10 +2861,7 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
         node_pos = spt.pipeline.get_position(node);
         node_pos = { x: (node_pos.x + 50), y: (node_pos.y + 20)};
  
-        var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
-        
     }
-
 
     var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
     
@@ -3026,8 +3015,6 @@ spt.pipeline.draw_connector = function(start, end, color) {
 
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeStyle = color; 
-    //ctx.fillStyle = color;
-    //ctx.textBaseline = 'middle';
     ctx.lineWidth = 1;
 
     ctx.beginPath();
@@ -3498,7 +3485,6 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
-        //var scale = 1;
         var from_width = from_size.x;
         var from_height = from_size.y;
         var to_width = to_size.x;
@@ -3508,7 +3494,6 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // offset by the size
         from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
         to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
-
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
