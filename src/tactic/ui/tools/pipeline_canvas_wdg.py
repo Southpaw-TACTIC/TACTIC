@@ -868,7 +868,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-    def add_nobs(my, node, width, height):
+    def add_nobs(my, node, height, offset=0):
 
         # add nobbies on the node
         left_nob = DivWdg()
@@ -884,7 +884,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         left_nob.add_style("width: 10px")
         left_nob.add_style("height: 10px")
         left_nob.add_style("top: %spx" % (height/2-5))
-        left_nob.add_style("left: -11px")
+        left_nob.add_style("left: %spx" % (-11-offset))
         left_nob.add_style("z-index: 100")
         left_nob.add("")
         
@@ -896,7 +896,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob.add_style("cursor: pointer")
         right_nob.add_style("position: absolute")
         right_nob.add_style("top: 0px")
-        right_nob.add_style("left: %spx" % (width+1))
+        #right_nob.add_style("left: %spx" % (width+1))
+        right_nob.add_style("right: %spx" % (-11-offset))
         right_nob.add_style("z-index: 100")
         right_nob.add_style("width: 12px")
         right_nob.add_style("height: 40px")
@@ -1165,9 +1166,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
-        scale = 1.12 # size to corner of square
+        offset = width * 0.12 # size to corner of square
 
-        my.add_nobs(node, width*scale, height)
+        my.add_nobs(node, height, 5)
 
 
         content = DivWdg()
@@ -1251,7 +1252,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-        my.add_nobs(node, width, height)
+        my.add_nobs(node, height)
 
 
         content = DivWdg()
@@ -1325,7 +1326,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-        #my.add_nobs(node, width, height)
+        #my.add_nobs(node, height)
 
         content = DivWdg()
         node.add(content)
@@ -3546,6 +3547,16 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var from_height = from_size.y;
         var to_width = to_size.x;
         var to_height = to_size.y;
+
+
+        // HACKY offset for condition nodes.  This is because rotate square does
+        // not give the widget of the corners
+        if (spt.pipeline.get_node_type(this.from_node) == "condition") {
+            from_pos.x = from_pos.x + from_width*0.12;
+        }
+        if (spt.pipeline.get_node_type(this.to_node) == "condition") {
+            to_pos.x = to_pos.x - to_width*0.12;
+        }
 
 
         // offset by the size

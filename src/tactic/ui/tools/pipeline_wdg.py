@@ -1822,8 +1822,8 @@ class AutoInfoWdg(BaseRefreshWdg):
 
                 if script_path:
                     parts = script_path.split("/")
-                    folder = parts[0]
-                    title = "/".join(parts[1:])
+                    folder = "/".join(parts[:-1])
+                    title = parts[-1]
 
                     search = Search("config/custom_script")
                     search.add_filter("folder", folder)

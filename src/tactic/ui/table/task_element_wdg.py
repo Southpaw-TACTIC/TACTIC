@@ -589,7 +589,7 @@ class TaskElementWdg(BaseTableElementWdg):
         
         if pipelines:
             for pipeline in pipelines:
-                processes = pipeline.get_processes(type=["node","auto","approval","hierarchy"])
+                processes = pipeline.get_processes(type=["node","approval","hierarchy"])
 
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
@@ -2031,7 +2031,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             button_table.add_cell(icon_div)
 
             # add a note
-            icon = IconButtonWdg(tip='Edit Task', icon="BS_INFO_SIGN")
+            icon = IconButtonWdg(tip='View / Add Notes', icon="BS_PENCIL")
             icon_div.add(icon)
             icon.add_style("display: inline-block")
             icon.add_class('hand')
@@ -2388,6 +2388,16 @@ class TaskElementCbk(DatabaseAction):
 
 __all__.append("TaskSummaryElementWdg")
 class TaskSummaryElementWdg(TaskElementWdg):
+
+    def get_width(my):
+        return 400
+
+
+    def get_title(my):
+        return "Task Summary"
+
+
+
     def get_display(my):
 
         my.kwargs["show_filler_tasks"] = True
