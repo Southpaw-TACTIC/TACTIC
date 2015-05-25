@@ -1099,7 +1099,6 @@ spt.popup.get_widget = function( evt, bvr )
             popup_footer_height = $(popup_footer).getSize().y;
         }
 
-        var window_size = $(window).getSize();
         content_wdg.setStyle("overflow-y","hidden");
         content_wdg.setStyle("max-height", "none");
         popup_body.setStyle("overflow-y","auto");

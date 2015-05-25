@@ -256,7 +256,7 @@ class EditWdg(BaseRefreshWdg):
 
         override_element_names = my.kwargs.get("element_names")
         if override_element_names:
-            element_names = override_element_names
+            my.element_names = override_element_names
 
 
 
