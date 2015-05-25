@@ -1409,9 +1409,12 @@ spt.error = function(msg, options){
 
 }
 
-/* var ok = function(ok_arg) {alert('passed in an arg ' + ok_arg)};
-   var cancel = null;
-   spt.confirm("Continue? ", ok, cancel, {ok_args: 'first', cancel_args: 'nothing'});
+/* Control flow for MooDialog confirm. On OK, calls OK function with argument
+ * ok_args  and on cancel, calls cancel function with cancel_args.
+ * Example usage: 
+ * var ok = function(ok_arg_list) {alert('passed in multiple arguments: ' + ok_arg_list)};
+ * var cancel = function(cancel_arg) {alert('passed in one argument: ' + cancel_arg')}
+   spt.confirm("Continue? ", ok, cancel, {ok_args: ["one","two","three"], cancel_args: 'nothing'});
  */
 spt.confirm = function(msg, button_fn1, button_fn2, options){
   

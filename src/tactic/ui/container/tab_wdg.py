@@ -846,12 +846,16 @@ spt.tab.close = function(src_el) {
         return;
     }
     
-    var changed_element = false;
-    var changed_type = false;
-    function ok() {
+    /* If there are changed elements in the current tab, changedParameters
+     * is a list with index 0 containing changed element, and index 1 containing
+     * change type class. Otherwise, changedParameters is false. 
+     */
+    function ok(changedParameters) {
         //Remove unsaved changes flags
-        if (changed_element) {
-             changed_element.removeClass(changed_type);
+        if (changedParameters) {
+            var changed_element = changedParameters[0];
+            var changed_type = changedParameters[1];
+            changed_element.removeClass(changed_type);
         }
 
         var opener = header.getAttribute("spt_tab_opener");
@@ -880,17 +884,13 @@ spt.tab.close = function(src_el) {
     var changed_row = content.getElement(".spt_row_changed");
     
     if (changed_el) {
-        changed_element = changed_el;
-        changed_type = "spt_has_changed";
-        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null);
+        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null, {ok_args : [changed_el, "spt_has_changed"]});
     }
     else if (changed_row) {
-        changed_element = changed_row;
-        changed_type = "spt_row_changed";
-        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null);
+        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null, {ok_args: [changed_row, "spt_row_changed"]});
     }
     else {
-       ok();
+       ok(false);
     }
 }
 
