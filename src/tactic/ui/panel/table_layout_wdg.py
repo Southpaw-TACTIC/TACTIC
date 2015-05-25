@@ -2818,6 +2818,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_class( 'SPT_DTS' )
         #td.add_color("background-color", "background", -0)
         td.add_color("opacity", "0.5")
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            td.add_border(direction="right", color="#ecbf7f", size="2px")
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
