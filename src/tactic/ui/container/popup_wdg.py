@@ -22,6 +22,18 @@ class PopupWdg(BaseRefreshWdg):
     '''Container widget which creates a popup on the screen.  This popup
     window current has a title widget and a content widget
 
+    Popup contains special functionality regarding the existence of a
+    "spt_popup_body" class in combination with a "spt_popup_header"
+    and/or "spt_popup_footer" class within an html body.
+
+    When "spt_popup_body" and one or both of "spt_popup_header"
+    "spt_popup_footer" exist, popup applies a scrollbar to the div
+    containing spt_popup_body as opposed to the container div. 
+
+    It should be noted that popup will not rearrange or separate the
+    header and footer, meaning that the order in which you add the 
+    elements still matters. 
+
     @usage
     popup = PopupWdg(id='name')
     popup.add("My Title", "title")
@@ -29,6 +41,7 @@ class PopupWdg(BaseRefreshWdg):
     '''
     RIGHT = 'right'
     BOTTOM = 'bottom'
+    PAGE_MARGIN = 100
 
     def get_args_keys(my):
         return {
@@ -75,7 +88,7 @@ class PopupWdg(BaseRefreshWdg):
             my.destroy_on_close = True
 
         my.allow_close = True
-        if my.kwargs.get('allow_close') == 'false':
+        if my.kwargs.get('allow_close') in ['false', 'False', False]:
             my.allow_close = False
 
 
@@ -92,7 +105,8 @@ class PopupWdg(BaseRefreshWdg):
         #TODO: when the add_named_listener is fixed, will add these closing function into the listener
         cbjs_action = '''
             var popup=spt.popup.get_popup( bvr.src_el );
-            spt.named_events.fire_event('preclose_' + popup.id, {});
+            var popup_id = popup.id;
+            spt.named_events.fire_event('preclose_' + popup_id, {});
         '''
 
         if my.destroy_on_close:
@@ -206,6 +220,7 @@ class PopupWdg(BaseRefreshWdg):
         table.add_behavior( {
         'type': 'load',
         'width': width,
+        'page_margin': my.PAGE_MARGIN,
         'cbjs_action': '''
         bvr.src_el.setStyle("width", bvr.width)
 
@@ -216,6 +231,10 @@ class PopupWdg(BaseRefreshWdg):
         var top = window_size.y/2 - size.y/2;
         popup.setStyle("left", left);
         //popup.setStyle("top", top);
+
+        var content = popup.getElement(".spt_popup_content");
+        content.setStyle("max-height", window_size.y - bvr.page_margin);
+        content.setStyle("overflow-y", "auto");
 
         '''
         } )
@@ -334,7 +353,7 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 12px;")
+        drag_handle_div.add_style("padding: 6px;")
         #drag_handle_div.add_gradient("background", "background", +10)
         drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
@@ -381,12 +400,14 @@ class PopupWdg(BaseRefreshWdg):
             title_wdg = "No Title"
         #else:
         #    title_wdg = title_wdg
-
-        drag_handle_div.add_behavior({
+       
+        if my.allow_close:
+            drag_handle_div.add_behavior({
             'type': 'double_click',
-            'cbjs_action': my.get_cancel_script()
-        })
-
+            'cbjs_action': '''
+                               if (bvr.src_el.getAttribute('allow_close') =='false') return;
+                                %s'''%my.get_cancel_script()
+            })
 
         drag_handle_div.add(title_wdg)
         drag_handle_div.add_class("spt_popup_title")
@@ -447,6 +468,7 @@ class PopupWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.popup.resize_drag'
         } )
+
         content_td.add(icon)
 
         #return widget
@@ -877,7 +899,7 @@ spt.popup.get_widget = function( evt, bvr )
         bvr.options = {};
     }
     var options = bvr.options;
-
+    var page_margin = options.page_margin ? options.page_margin : 100;
 
     var title = "-No Title-";
     if( bvr.options.hasOwnProperty("title") ) {
@@ -899,6 +921,7 @@ spt.popup.get_widget = function( evt, bvr )
     // get the title
     var width = options["width"];
     var height = options["height"];
+    var on_close = options["on_close"];
     var allow_close = options["allow_close"];
 
     // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
@@ -947,9 +970,12 @@ spt.popup.get_widget = function( evt, bvr )
 
     var close_wdg = popup.getElement('.spt_popup_close');
     var min_wdg = popup.getElement('.spt_popup_min');
+    var title_bar = popup.getElement('.spt_popup_title');
     if ([false, 'false'].contains(allow_close)) {
         spt.hide(close_wdg);
         spt.hide(min_wdg);
+        title_bar.setAttribute('allow_close', 'false');
+
     }
     else {
         spt.show(close_wdg);
@@ -957,7 +983,15 @@ spt.popup.get_widget = function( evt, bvr )
     }
     // display the popup clone, and bring it forward on top of other popups ...
     // but put it off screen first
-    popup.setStyle("left", "-10000px")
+    popup.setStyle("left", "-10000px");
+    var cbjs_action;
+    if (typeof on_close == "function") {
+        cbjs_action = String(on_close) + "; on_close();";
+    }
+    else {
+        cbjs_action = on_close;
+    }
+    spt.behavior.add(popup, {'type':'listen', 'event_name':"preclose_" + popup_id, 'cbjs_action': cbjs_action});
     spt.popup.open( popup );
 
     // add the place holder
@@ -1043,10 +1077,35 @@ spt.popup.get_widget = function( evt, bvr )
     var kwargs = {'args': args, 'values': values};
 
 
-
-    //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
+    //the following code deals with a specified header/footer + body
     var widget_html = server.get_widget(class_name, kwargs);
+
     spt.behavior.replace_inner_html( content_wdg, widget_html );
+
+    var popup_header = content_wdg.getElement(".spt_popup_header");
+    var popup_body = content_wdg.getElement(".spt_popup_body");
+    var popup_footer = content_wdg.getElement(".spt_popup_footer");
+
+    var popup_header_height = 0;
+    var popup_footer_height = 0;
+
+    var window_size = $(window).getSize();
+
+    if (popup_body && (popup_header || popup_footer)) {
+        if (popup_header) {
+            popup_header_height = $(popup_header).getSize().y;
+        }
+        if (popup_footer) {
+            popup_footer_height = $(popup_footer).getSize().y;
+        }
+
+        content_wdg.setStyle("overflow-y","hidden");
+        content_wdg.setStyle("max-height", "none");
+        popup_body.setStyle("overflow-y","auto");
+        popup_body.setStyle("overflow-x", "hidden");
+        var max_height = window_size.y - page_margin - popup_header_height - popup_footer_height;
+        popup_body.setStyle("max-height", max_height);
+    }
 
     setTimeout(function(){callback()}, 10);
 
@@ -1291,5 +1350,6 @@ spt.popup.resize_drag_motion = function(evt, bvr, mouse_411) {
 
         '''
 
-            
 
+
+            
