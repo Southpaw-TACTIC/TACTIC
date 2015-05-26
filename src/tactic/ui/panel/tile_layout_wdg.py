@@ -153,7 +153,16 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '15',
             'category': 'Display'
 
+    },
+    ARGS_KEYS['gallery_align'] = {
+            'description': 'top or bottom gallery vertical alignment',
+            'type': 'SelectWdg',
+            'values': 'top|bottom',
+            'order' : '16',
+            'category': 'Display'
+
     }
+
 
 
 
@@ -493,7 +502,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.allow_drag = my.kwargs.get('allow_drag') not in ['false', False]
         my.upload_mode = my.kwargs.get('upload_mode')
         if not my.upload_mode:
-            my.upload_mode = 'false'
+            my.upload_mode = 'drop'
+
+        my.gallery_align = my.kwargs.get('gallery_align')
 
         super(TileLayoutWdg, my).init()
 
@@ -627,6 +638,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'width': gallery_width,
+                'align': my.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -646,6 +658,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var kwargs = {
                     search_keys: search_keys,
                     search_key: search_key,
+                    align: bvr.align
                 };
                 if (bvr.width) 
                     kwargs['width'] = bvr.width;
@@ -867,20 +880,25 @@ class TileLayoutWdg(ToolLayoutWdg):
                             var upload_file_kwargs =  {
                                 files: files,
                                 upload_complete: function() {
-                                    var server = TacticServerStub.get();
-                                    var kwargs = {mode: 'uploaded'};
-                                    server.simple_checkin( search_key, context, filename, kwargs);
+                                    try {
+                                        var server = TacticServerStub.get();
+                                        var kwargs = {mode: 'uploaded'};
+                                        server.simple_checkin( search_key, context, filename, kwargs);
+                                        spt.notify.show_message("Check-in completed for " + search_key);
+                                    } catch(e) {
+                                        spt.alert(spt.exception.handler(e));
+                                        server.abort();
+                                        
+                                    }
                                 }
                             };
                             spt.html5upload.upload_file(upload_file_kwargs);
-                            
-
-
              
                         }
-                        spt.notify.show_message("Check-in completed for " + search_key);
                     }
-                    spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes)
+                    
+                    spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes);
+                    
 
                 }
                 '''
