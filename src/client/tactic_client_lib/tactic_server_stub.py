@@ -711,6 +711,21 @@ class TacticServerStub(object):
         return my.server.subscribe(my.ticket, key, category)
 
 
+    def unsubscribe(my, key):
+        '''API Function: unsubscribe(key)
+
+        Allow a user to unsubscribe from this message key.
+
+        @params
+        key - unique key for this message
+
+        @return
+        dictionary - the values of the subscription sobject in the
+        form name:value pairs
+        '''
+        return my.server.unsubscribe(my.ticket, key)
+
+
 
     #
     # Interaction methods

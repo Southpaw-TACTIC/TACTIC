@@ -1039,7 +1039,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @params
         ticket - authentication ticket
-        key - unique key for this message
+        key - unique key for this message in the message_code column
 
         @keyparam
         category - value to categorize this message
@@ -1071,6 +1071,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         sobject_dict = my._get_sobject_dict(subscription)
         return sobject_dict
+
+
+    @xmlrpc_decorator
+    def unsubscribe(my, ticket, key):
+        '''Allow a user to unsubscribe from this message key.
+
+        @params
+        ticket - authentication ticket
+        key - unique key for this message in the message_code column
+
+        @return:
+        dictionary - the values of the subscription sobject in the
+        form name:value pairs
+        '''
+
+        project_code = Project.get_project_code()
+
+        search = Search("sthpw/subscription")
+        search.add_user_filter()
+        search.add_filter("message_code", key)
+        search.add_filter("project_code", project_code)
+        subscription  = search.get_sobject()
+
+        if not subscription:
+            raise ApiException('[%s] is not subscribed to.'%key)
+            # nothing to do ... item is not subscribed to
+
+        subscription.delete()
+
+        return my._get_sobject_dict(subscription)
 
 
 

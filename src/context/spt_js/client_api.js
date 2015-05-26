@@ -236,6 +236,9 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+    this.unsubscribe = function(key, kwargs) {
+        return this._delegate("unsubscribe", arguments, kwargs);
+    }
 
     /*
      * interaction logging
