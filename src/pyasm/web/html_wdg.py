@@ -355,6 +355,7 @@ class HtmlElement(Widget):
 
     def add_border(my, modifier=None, style="solid", direction=None, color="border", size="1px"):
         '''@params: direction can be top left bottom right, default to None''' 
+        # border is a palette color; color argument may take a color name or a hex value also
         border_direction = 'border'
         if direction:
             border_direction = 'border-%s'% direction

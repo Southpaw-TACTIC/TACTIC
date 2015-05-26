@@ -719,7 +719,7 @@ class TacticServerStub(object):
         @params
         key - unique key for this message
 
-        @return:
+        @return
         dictionary - the values of the subscription sobject in the
         form name:value pairs
         '''

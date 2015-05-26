@@ -2884,7 +2884,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             spt.notify.show_message('Subscribed to [' + sub.message_code + ']');
                             spt.table.refresh_rows([activator]);
                         } catch(e) {
-                            spt.info(spt.exception.handler(e));
+                            spt.error(spt.exception.handler(e));
                         }
      
                         ''' },
@@ -2930,7 +2930,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             spt.notify.show_message('Unsubscribed from [' + search_key + ']');
                             spt.table.refresh_rows([activator]);
                         } catch(e) {
-                            spt.info(spt.exception.handler(e));
+                            spt.error(spt.exception.handler(e));
                         }
      
                         ''' },

@@ -16,15 +16,20 @@ __all__ = ["Subscription"]
 from pyasm.search import Search, SObject, SearchType
 
 class Subscription(SObject):
+    '''
+    This class is associated with the sthpw/subscription table.
+    It contains methods that are relevant to operations that affect
+    or read from this table.
+    '''
 
     SEARCH_TYPE = "sthpw/subscription"
-    def get_subscriptions_by_stype(login, search_type):
+    def get_by_search_type(login, search_type):
         subs_expr = "@SOBJECT(sthpw/subscription['login','%s'])" %(login)
 
         sobjects = Search.eval(subs_expr)
 
         return sobjects
-    get_subscriptions_by_stype = staticmethod(get_subscriptions_by_stype)
+    get_by_search_type = staticmethod(get_by_search_type)
 
 
 

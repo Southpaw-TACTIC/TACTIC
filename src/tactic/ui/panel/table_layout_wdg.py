@@ -856,7 +856,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # generate dictionary of subscribed search_keys to affect context menu
         my.subscribed_search_keys = {}
         login = Environment.get_login().get("login")
-        subscribed = Subscription.get_subscriptions_by_stype(login, my.search_type)
+        subscribed = Subscription.get_by_search_type(login, my.search_type)
         for item in subscribed:
             item_search_key = item.get("message_code")
             my.subscribed_search_keys[item_search_key] = True
