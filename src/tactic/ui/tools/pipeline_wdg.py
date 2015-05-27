@@ -648,49 +648,43 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
         var editor_top = top.getElement(".spt_pipeline_editor_top");
-        if (editor_top && editor_top.hasClass("spt_has_changes")) {
-            if (!confirm("Current pipeline has changes.  Do you wish to continue?")) {
-            }
-        }
-
-
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-
-        // check if the group already exists
-        var group_name = bvr.pipeline_code;
-        var group = spt.pipeline.get_group(bvr.pipeline_code);
-        if (group != null) {
-
-            // if it already exists, then select all from the group
-            spt.pipeline.select_nodes_by_group(group_name);
-            spt.pipeline.fit_to_canvas(group_name);
-            return;
-
-        }
-
-        spt.pipeline.clear_canvas();
-
-        spt.pipeline.import_pipeline(bvr.pipeline_code);
-
-
-        // add to the current list
-        var value = bvr.pipeline_code;
-        var title = bvr.title;
-        var select = top.getElement(".spt_pipeline_editor_current");
-        for ( var i = 0; i < select.options.length; i++) {
-            var select_value = select.options[i].value;
-            if (select_value == value) {
-                alert("Pipeline ["+value+"] already exists");
+        
+        var ok = function () {
+            editor_top.removeClass("spt_has_changes");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+            // check if the group already exists
+            var group_name = bvr.pipeline_code;
+            var group = spt.pipeline.get_group(bvr.pipeline_code);
+            if (group != null) {
+                 // if it already exists, then select all from the group
+                spt.pipeline.select_nodes_by_group(group_name);
+                spt.pipeline.fit_to_canvas(group_name);
                 return;
             }
+            spt.pipeline.clear_canvas();
+            spt.pipeline.import_pipeline(bvr.pipeline_code);
+            // add to the current list
+            var value = bvr.pipeline_code;
+            var title = bvr.title;
+            var select = top.getElement(".spt_pipeline_editor_current");
+            for ( var i = 0; i < select.options.length; i++) {
+                var select_value = select.options[i].value;
+                if (select_value == value) {
+                    spt.alert("Pipeline ["+value+"] already exists");
+                    return;
+                }
+            }  
+            var option = new Option(title, value);
+            select.options[select.options.length] = option;
+            select.value = value;
+            spt.pipeline.set_current_group(value);
+        };
+        if (editor_top && editor_top.hasClass("spt_has_changes")) {
+            spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", ok, null); 
+        } else {
+            ok();
         }
-
-        var option = new Option(title, value);
-        select.options[select.options.length] = option;
-
-        select.value = value;
-        spt.pipeline.set_current_group(value);
         '''
         } )
 
@@ -736,7 +730,7 @@ class PipelineListWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Copy to Project')
         menu_item.add_behavior( {
             'cbjs_action': '''
-            alert('Not implemented');
+            spt.alert('Not implemented');
             '''
         } )
         menu.add(menu_item)
@@ -1590,9 +1584,16 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.panel.refresh(top);
+            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            var ok = function () { 
+                editor_top.removeClass("spt_has_changes");
+                spt.panel.refresh(editor_top); 
+            }
+            if (editor_top && editor_top.hasClass("spt_has_changes")) {
+                spt.confirm("Current pipeline has changes.  Do you wish to continue?", ok, null);
+            } else {
+                ok();
+            }
         '''
         } )
 
@@ -1605,8 +1606,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'project_code': project_code,
         'save_event': my.save_new_event,
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.removeClass("spt_has_changes");
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
         var group_name = spt.pipeline.get_current_group();
@@ -1648,7 +1650,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        //spt.panel.refresh(top);
+        //spt.panel.refresh(editor_top);
 
         spt.app_busy.hide();
 
@@ -1684,8 +1686,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
         var act = spt.smenu.get_activator(bvr);
-        var top = act.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.removeClass("spt_has_changes");
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+
         spt.pipeline.init_cbk(wrapper);
 
         var group_name = spt.pipeline.get_current_group();
@@ -1734,8 +1739,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var cancel = null;
             var ok = function() {
             var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            
+            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            editor_top.removeClass("spt_has_changes");
+            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+            
             spt.pipeline.init_cbk(wrapper);
 
             server = TacticServerStub.get();
@@ -1775,12 +1783,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
+        
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
         spt.pipeline.add_node();
 
-        top.addClass("spt_has_changes");
         '''
         } )
 
@@ -1803,8 +1813,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'process': process,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            // Add edited flag
+            var editor_top = act.getParent(".spt_pipeline_editor_top");
+            editor_top.addClass("spt_has_changes");
+            
+            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
 
             var process = bvr.process;
@@ -1831,12 +1844,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
+            
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
         spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
 
-        top.addClass("spt_has_changes");
         '''
         } )
 
@@ -1848,11 +1863,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
 
         spt.pipeline.load_triggers();
 
-        top.addClass("spt_has_changes");
+        editor_top.addClass("spt_has_changes");
         '''
         } )
 
@@ -1867,8 +1882,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
+            
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
         spt.pipeline.delete_selected();
@@ -1918,7 +1936,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
         return button_row
-
 
 
     def get_zoom_buttons_wdg(my):
@@ -2056,8 +2073,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
         pipeline_select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            // Add edited flag
+            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            editor_top.addClass("spt_has_changes");
+            
+            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+ 
             spt.pipeline.init_cbk(wrapper);
 
             var group_name = bvr.src_el.value;
@@ -2126,7 +2147,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var values = spt.api.get_input_values(dialog_top, null, false);
         var value = values.new_pipeline;
         if (value == '') {
-            alert("Cannot add empty pipeline");
+            spt.alert("Cannot add empty pipeline");
             return;
         }
 
@@ -2136,7 +2157,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         for ( var i = 0; i < select.options.length; i++) {
             var select_value = select.options[i].value;
             if (select_value == value) {
-                alert("Pipeline ["+value+"] already exists");
+                spt.alert("Pipeline ["+value+"] already exists");
                 return;
             }
         }
@@ -2755,7 +2776,7 @@ spt.pipeline_properties.set_properties = function() {
     var selected_nodes = spt.pipeline.get_selected_nodes();
     var selected = spt.pipeline.get_selected();
     if (selected_nodes.length > 1) {
-        alert('Please select only 1 node to set property');
+        spt.alert('Please select only 1 node to set property');
         return;
     }
         
