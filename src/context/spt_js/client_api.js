@@ -80,6 +80,8 @@ TacticServerStub = function() {
         if (column == null) {
             column = 'code';
         }
+        var temps = search_type.split("?project=");
+        search_type = temps[0];
         var search_key;
         if (search_type.test(/^sthpw\//))
             search_key = search_type +"?"+ column +"="+ code;
