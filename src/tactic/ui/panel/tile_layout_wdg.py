@@ -464,7 +464,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = None
 
         my.bottom_expr = my.kwargs.get("bottom_expr")
-
+        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") not in ['false', False]
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
@@ -730,6 +730,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'type': 'load',
                 'search_type': search_type,
                 'search_key': my.parent_key,
+                'drop_shadow': my.show_drop_shadow,
                 'process': process,
                 'border_color': border_color,
                 'cbjs_action': '''
@@ -829,11 +830,16 @@ class TileLayoutWdg(ToolLayoutWdg):
      
                 spt.thumb.noop_enter = function(evt, el) {
                     evt.preventDefault();
-                    el.setStyle('border','2px dashed ' + bvr.border_color);
+                    el.setStyle("box-shadow", "0px 0px 15px #970");
                 }
                 spt.thumb.noop_leave = function(evt, el) {
                     evt.preventDefault();
-                    el.setStyle('border','none');
+                    if (bvr.drop_shadow)
+                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    else
+                        el.setStyle("box-shadow", "none");
+
+
                 }
 
                 spt.thumb.noop = function(evt, el) {
@@ -842,7 +848,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                     evt.stopPropagation();
                     evt.preventDefault();
 
-                    el.setStyle('border','none');
+                    if (bvr.drop_shadow)
+                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    else
+                        el.setStyle("box-shadow", "none");
                     var top = $(el);
                     var thumb_el = top.getElement(".spt_thumb_top");
 
@@ -1122,7 +1131,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         
-        if my.kwargs.get("show_drop_shadow") not in ['false', False]:
+        if my.show_drop_shadow:
             div.set_box_shadow()
         div.add_color("background", "background", -3)
         
