@@ -437,6 +437,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <show_shelf>false</show_shelf>
                     <upload_mode>both</upload_mode>
                     <no_results_msg>Drag and drop file here to upload.</no_results_msg>
+                    <expand_mode>view</expand_mode>
                   </display>
                 </element>
                 ''' % values)
