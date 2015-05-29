@@ -37,6 +37,9 @@ class GalleryWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
+
+        # make the whole Gallery unselectable
+        inner.add_class('unselectable')
         inner.add_style("position: fixed")
         inner.add_style("top: 0")
         inner.add_style("left: 0")
@@ -52,6 +55,13 @@ class GalleryWdg(BaseRefreshWdg):
 
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
+        
+        # default to top.
+        align = my.kwargs.get("align")
+        if not align:
+            align = "top"
+
+
         if not width:
             width = 1300
         else:
@@ -261,7 +271,6 @@ class GalleryWdg(BaseRefreshWdg):
         scroll = DivWdg(css='spt_gallery_scroll')
         inner.add(scroll)
         scroll.set_box_shadow()
-
         scroll.add_style("width: %s" % width)
         if height:
             scroll.add_style("height: %s" % height)
@@ -282,8 +291,14 @@ class GalleryWdg(BaseRefreshWdg):
 
         scroll.add(content)
         content.add_class("spt_gallery_content")
-        # make the itesm vertically align to bottom
-        content.add_styles("display: flex; flex-flow: row nowrap; align-items: flex-end;")
+        # make the items vertically align to bottom (flex-emd)
+        # on a regular monitor, align to top (flex-start) is better
+        if align == 'bottom':
+            align_items = 'flex-end'
+        else:
+            align_items = 'flex-start'
+        content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s; justify-content: center;"%align_items)
+
         content.add_style("width: %s" % total_width)
 
         top.add_behavior( {
@@ -392,6 +407,7 @@ class GalleryWdg(BaseRefreshWdg):
         #icon.add_style("text-align: center")
         #icon.add_style("border-radius: 30px")
         #icon.add_style("border: solid 3px #ddd")
+        icon.add_class("unselectable")
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
         icon.add_style("bottom: 80px")
