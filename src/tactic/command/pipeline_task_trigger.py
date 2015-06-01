@@ -17,6 +17,7 @@ from pyasm.common import Common, Xml, jsonloads, Container
 from pyasm.biz import Task
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
+from pyasm.security import Sudo
 
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
@@ -321,6 +322,8 @@ class RelatedTaskUpdateTrigger(Trigger):
     the same context'''
     def execute(my):
 
+        sudo = Sudo()
+
         input = my.get_input()
         search_key = input.get("search_key")
         update_data = input.get("update_data")
@@ -364,7 +367,7 @@ class RelatedTaskUpdateTrigger(Trigger):
                 # this should run trigger where applicable
                 task.commit(triggers=True)
 
-
+        del sudo
 
 
 
