@@ -487,11 +487,12 @@ class GalleryWdg(BaseRefreshWdg):
 
     def get_paths(my, file_type='main'):
 
+        # this is the selected one
         search_key = my.kwargs.get("search_key")
-        
       
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")
+
         if not paths:
             paths = []
         """
@@ -516,8 +517,8 @@ class GalleryWdg(BaseRefreshWdg):
             if sobjects and sobjects[0].get_base_search_type() == "sthpw/snapshot":
                 sobj_snapshot_dict = {}
                 for sobject in sobjects:
-                    search_key = sobject.get_search_key()
-                    sobj_snapshot_dict[search_key] = sobject
+                    tmp_search_key = sobject.get_search_key()
+                    sobj_snapshot_dict[tmp_search_key] = sobject
                 snapshots = sobjects
 
             else:
@@ -539,11 +540,12 @@ class GalleryWdg(BaseRefreshWdg):
                 file_list = file_dict.get(snapshot.get_code())
                 if not file_list: 
                     continue
+                
                 for file_object in file_list:
                     path = file_object.get_web_path()
                     my.sobject_data[path] = sobject
                     paths.append(path)  
-	        # set the current path the user clicks on
+	            # set the current path the user clicks on
                 if not my.curr_path and sobject.get_search_key() == search_key and file_type=='main':
                     my.curr_path = path
                         

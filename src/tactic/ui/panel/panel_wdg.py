@@ -3275,6 +3275,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'card':
             kwargs['preview_width'] = my.kwargs.get("preview_width")
+            kwargs['process'] = my.kwargs.get("process")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 

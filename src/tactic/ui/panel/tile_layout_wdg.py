@@ -154,11 +154,20 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     },
+    ARGS_KEYS['expand_mode'] = {
+            'description': 'support gallery, single_gallery, plain, detail, and custom mode',
+            'type': 'SelectWdg',
+            'values': 'gallery|single_gallery|plain|detail|custom',
+            'order' : '16',
+            'category': 'Display'
+
+    },
+
     ARGS_KEYS['gallery_align'] = {
             'description': 'top or bottom gallery vertical alignment',
             'type': 'SelectWdg',
             'values': 'top|bottom',
-            'order' : '16',
+            'order' : '17',
             'category': 'Display'
 
     }
@@ -578,6 +587,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
+        process = my.kwargs.get("process")
+        if not process:
+            process = "publish"
 
 
         mode = my.kwargs.get("expand_mode")
@@ -588,25 +600,34 @@ class TileLayoutWdg(ToolLayoutWdg):
         gallery_width = my.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
-        if mode == "view":
+        if mode == "plain":
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'process': process,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_tile_top");
                 var search_key = top.getAttribute("spt_search_key");
                 var server = TacticServerStub.get();
-                var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
-                if (snapshot.__search_key__) {
-                    window.open(snapshot.__web_paths_dict__.main);
+                var tmps = server.split_search_key(search_key);
+                if (/sthpw\/snapshot/.test(search_key)) {
+                    snapshots = server.query_snapshots({filters: [['id', tmps[1]]], include_web_paths_dict: true});
+                    
+                    window.open(snapshots[0].__web_paths_dict__.main);
                 }
                 else {
-                    var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+                    var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
                         window.open(snapshot.__web_paths_dict__.main);
                     }
                     else {
-                        alert("WARNING: No file for this asset");
+                        var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
+                        if (snapshot.__search_key__) {
+                            window.open(snapshot.__web_paths_dict__.main);
+                        }
+                        else {
+                            alert("WARNING: No file for this asset");
+                        }
                     }
                 }
                 '''
@@ -667,6 +688,54 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 '''
             } )
+        elif mode == "single_gallery":
+            gallery_div = DivWdg()
+            layout_wdg.add( gallery_div )
+            gallery_div.add_class("spt_tile_gallery")
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'width': gallery_width,
+                'align': my.gallery_align,
+                'process': process,
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+                var tile_top = bvr.src_el.getParent(".spt_tile_top");
+                
+                var search_keys = [];
+                var snapshot_list = []
+                var server = TacticServerStub.get();
+               
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
+                search_keys.push(search_key);
+                var tmps = server.split_search_key(search_key)
+                var search_type = tmps[0];
+                var search_code = tmps[1];
+
+                snapshots = server.query_snapshots( {filters: [['process', bvr.process], ['search_type', search_type],
+                    ['search_code', search_code]] , include_paths_dict:true});
+                   
+                for (var k=0; k < snapshots.length; k++)
+                    snapshot_list.push(snapshots[k].__search_key__);
+                
+
+                var tile_top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_keys: snapshot_list,
+                    search_key: snapshot_list[0],
+                    align: bvr.align
+                };
+
+                if (bvr.width) 
+                    kwargs['width'] = bvr.width;
+                var gallery_el = layout.getElement(".spt_tile_gallery");
+                spt.panel.load(gallery_el, class_name, kwargs);
+
+                '''
+            } )
  
         elif mode == "custom":
             
@@ -716,9 +785,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
-        process = my.kwargs.get("process")
-        if not process:
-            process = "publish"
         if my.parent_key:
             search_type = None
         else:

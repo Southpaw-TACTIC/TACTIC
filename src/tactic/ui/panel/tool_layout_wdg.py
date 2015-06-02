@@ -35,6 +35,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'order': 1,
             'category': 'Display'
         },
+        "expand_mode" : {
+            'description': 'support Tile Layout gallery, single_gallery, plain, detail, and custom mode',
+            'type': 'SelectWdg',
+            'values': 'gallery|single_gallery|plain|detail|custom',
+            'order' : '16',
+            'category': 'Display'
+
+    },
+
 
 
     } 
@@ -72,6 +81,10 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         else:
             my.show_context_menu = True
 
+        my.expand_mode = my.kwargs.get("expand_mode")
+        my.process = my.kwargs.get("process")
+       
+        
     def get_display(my):
 
         my.view_editable = True
@@ -82,7 +95,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         #my.kwargs['show_gear'] = 'false'
 
         from tile_layout_wdg import TileLayoutWdg
-        my.tile_layout = TileLayoutWdg(search_type=my.search_type)
+        my.tile_layout = TileLayoutWdg(search_type=my.search_type, expand_mode=my.expand_mode, process=my.process)
 
 
         # set the sobjects to all the widgets then preprocess

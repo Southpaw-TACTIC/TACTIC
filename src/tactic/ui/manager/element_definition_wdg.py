@@ -2546,7 +2546,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     edit_wdg.set_value(value)
                     #edit_wdg.add_style("background: #a3d991")
                 else:
-                    edit_wdg.add_style("opacity: 0.5")
+                    edit_wdg.add_style("opacity: 0.7")
 
                 labels = option.get('labels')
                 if labels:
