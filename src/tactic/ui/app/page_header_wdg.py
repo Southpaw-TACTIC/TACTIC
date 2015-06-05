@@ -488,7 +488,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 category_projects.append(project)
 
             if category_projects:
-                suffix = Common.get_filesystem_name(category)
+                suffix = Common.clean_filesystem_name(category)
                 label = "%s (%s)" % (category, len(category_projects))
                 menu_item = MenuItem(type='submenu', label=label)
                 menu_item.set_submenu_tag_suffix(suffix)

@@ -413,7 +413,8 @@ spt.smenu.show_on_submenu_activate_cbk = function( evt, bvr )
     var submenu_tag = bvr.submenu_tag;
     var submenu = spt.get_cousin( bvr.src_el, ".SPT_SMENU_SUBSET", ("." + submenu_tag), [] );
 
-    spt.smenu._show_action( evt, submenu, "submenu", bvr );
+    if (submenu)
+        spt.smenu._show_action( evt, submenu, "submenu", bvr );
 }
 
 
