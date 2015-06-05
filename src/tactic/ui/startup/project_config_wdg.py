@@ -813,7 +813,8 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div = DivWdg()
         # tool_div.add_style('margin-bottom','8px')
         tool_div.add_style('display','flex')
-
+        tool_div.add_style('width','50%')
+        tool_div.add_style('float','left')
         tool_div.add_style('margin-bottom','-4px')
        
         button = ActionButtonWdg(title="Add", tip="Add New User")
@@ -856,7 +857,15 @@ class UserPanelWdg(BaseRefreshWdg):
         div.add(badge_span)
         tool_div.add(div)
 
+        tool_div2 = DivWdg()
+        # tool_div.add_style('margin-bottom','8px')
+        tool_div2.add_style('display','flex')
+        tool_div2.add_style('justify-content','flex-end')
+        tool_div2.add_style('width','50%')
+        tool_div2.add_style('margin-bottom','-4px') 
+
         top.add(tool_div)
+        top.add(tool_div2)
 
 
         if num_left < 1000:
@@ -876,8 +885,8 @@ class UserPanelWdg(BaseRefreshWdg):
         if show_security not in ['false', False]:
             button = ActionButtonWdg(title="Security")
             button.add_style('align-self: flex-end')
-            button.add_styles("position: absolute; right: 10px;")
-            tool_div.add(button)
+            #button.add_styles("position: absolute; right: 10px;")
+            tool_div2.add(button)
             #button.add_style("margin-top: -8px")
             button.add_behavior( {
             'type': 'click_up',
