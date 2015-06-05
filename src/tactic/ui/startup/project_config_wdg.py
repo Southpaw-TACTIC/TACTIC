@@ -212,47 +212,30 @@ class UserConfigWdg(ProjectConfigWdg):
 
         show_security = my.kwargs.get("show_security")
 
-
-        user_panel = DivWdg()
-        user_panel.add_style("padding-top: 3px")
-        user_panel.add_style("overflow-y: auto")
-        user_panel.add( UserPanelWdg(show_security=show_security) )
-        user_panel.add_style("min-height: 100px")
-        user_panel.add_style("height: 300px")
-        user_panel.add_class("spt_resizable")
-
-        panel = {
-            'widget': user_panel,
-            'title': 'User List',
-        }
-        panels.append(panel)
-
-
         from tactic.ui.container import TabWdg
         config_xml = []
 
         config_xml.append('''
         <config>
-        <tab>
         ''')
 
-        """
-        <element name="Help">
-            <display class='tactic.ui.app.HelpContentWideWdg'>
-              <alias>main</alias>
-              <width>1000px</width>
-            </display>
-        </element>''')
-        """
-
         config_xml.append('''
-        <element name="Group Assignment">
-            <display class='tactic.ui.startup.UserSecurityWdg'/>
+        <tab>
+        <element name="Users">
+            <display class='tactic.ui.startup.UserPanelWdg'/>
         </element>
+        </tab>
           ''')
 
         config_xml.append('''
+        <tab>
+        <element name="Group Assignment">
+            <display class='tactic.ui.startup.UserSecurityWdg'/>
+        </element>
         </tab>
+          ''')
+
+        config_xml.append('''
         </config>
         ''')
 
@@ -264,7 +247,6 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panel = {
             'widget': tab,
-            #'title': 'Data',
             'title': None,
             'width': '100%',
             'height': '100%'
@@ -858,26 +840,12 @@ class UserPanelWdg(BaseRefreshWdg):
         } )
 
 
-        show_security = my.kwargs.get("show_security")
-        if show_security not in ['false', False]:
-            button = ActionButtonWdg(title="Security")
-            button.add_style('align-self: flex-end')
-            tool_div.add(button)
-            #button.add_style("margin-top: -8px")
-            button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.startup.SecurityWdg';
-            spt.tab.set_main_body_tab()
-            spt.tab.add_new("Security", "Security", class_name)
-            '''
-            } )
-
         security = Environment.get_security()
         license = security.get_license()
         num_left = license.get_num_licenses_left()
         current_users = license.get_current_users()
         #max_users = license.get_max_users()
+
 
         div = DivWdg('Users')
         div.add_style('align-self: flex-end')
@@ -891,17 +859,36 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add(tool_div)
 
 
-
         if num_left < 1000:
-            top.add('''
-            <span style="margin-left: 20px; margin-top: 10px">
-            Users Left &nbsp;
-            <span class="badge">%s</span>
-            </span>
-            ''' % num_left)
+            div = DivWdg('Users Left')
+            div.add_style('align-self: flex-end')
+            div.add_styles("margin: 0 0 6px 20px")
+            badge_span = SpanWdg(css='badge')
+            badge_span.add_style('margin-left','6px')
+            badge_span.add(num_left)
+            div.add(badge_span)
+            tool_div.add(div)
+
+            top.add(tool_div)
 
 
-      
+        show_security = my.kwargs.get("show_security")
+        if show_security not in ['false', False]:
+            button = ActionButtonWdg(title="Security")
+            button.add_style('align-self: flex-end')
+            button.add_styles("position: absolute; right: 10px;")
+            tool_div.add(button)
+            #button.add_style("margin-top: -8px")
+            button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.startup.SecurityWdg';
+            spt.tab.set_main_body_tab()
+            spt.tab.add_new("Security", "Security", class_name)
+            '''
+            } )
+
+
 
 
         br = HtmlElement.br(clear=True)
