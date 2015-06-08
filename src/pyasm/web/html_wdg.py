@@ -319,7 +319,7 @@ class HtmlElement(Widget):
 
 
 
-    def get_gradient(my, palette_key, modifier=0, range=-20, reverse=False, default=None):
+    def get_gradient(my, palette_key, modifier=0, range=-20, reverse=False, default=None,angle=180):
 
         from palette import Palette
         from web_container import WebContainer
@@ -336,11 +336,14 @@ class HtmlElement(Widget):
                 color2 = palette.color(palette_key, modifier, default=default)
                 color1 = palette.color(palette_key, modifier+range, default=default)
 
-
+            """
             if web.get_browser() == 'Mozilla':
                 gradient = "-moz-linear-gradient(top, %s, %s)" % (color1, color2)
             else:
                 gradient = "-webkit-gradient(linear, 0%% 0%%, 0%% 100%%, from(%s), to(%s))" % (color1, color2)
+            """
+
+            gradient = "linear-gradient(%sdeg, %s, %s)" % (angle, color1, color2)
             return gradient
 
 

@@ -2454,12 +2454,23 @@ spt.pipeline.set_color = function(node, color) {
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
     var color2 = spt.css.modify_color_value(color, -10);
+    /*
     if( spt.browser.is_Firefox() ) {
         content.setStyle("background", "-moz-linear-gradient(top, "+color1+" 30%, "+color2+" 95%)");
     } 
     else {
         content.setStyle("background", "-webkit-gradient(linear, 0% 0%, 0% 100%, from("+color1+"), to("+color2+"))");
     }
+    */
+
+    if (spt.pipeline.get_node_type(node) == "condition") {
+        angle = 225;
+    } else {
+        angle = 180;
+    }
+
+    content.setStyle("background", "linear-gradient("+angle+"deg, "+color1+", 70%, "+color2+")");
+
     node.spt_color = color;
 }
 
