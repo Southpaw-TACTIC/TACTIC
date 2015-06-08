@@ -769,19 +769,28 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if extra_wdg:
             content.add(extra_wdg)
 
-        label = DivWdg()
+
+
+        label = Table()
+        label.add_row()
         node.add(label)
         label.add_style("position: absolute")
 
         label.add_style("width: %spx" % width)
-        label.add_style("height: %spx" % height)
+        if node_type == "hierarchy":
+            label.add_style("height: %spx" % (height*0.75))
+        else:
+            label.add_style("height: %spx" % height)
 
-        label.add_style("top: %spx" % (height/4+2) )
-        label.add_class("spt_label");
-        label.add(name)
-        label.add_style("vertical-align: middle")
+        label.add_style("top: 0px")
+        td = label.add_cell(name)
+        td.add_class("spt_label")
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
         label.add_style("overflow: hidden")
-        label.add_style("text-align: center")
+
+
+
 
 
         from tactic.ui.input import LookAheadTextInputWdg, TextInputWdg
@@ -1182,19 +1191,20 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content.add_style("transform: rotate(-45deg)")
 
 
-        label = DivWdg()
+        label = Table()
+        label.add_row()
         node.add(label)
         label.add_style("position: absolute")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
 
-        label.add_style("top: %spx" % (height/4+7) )
-        label.add_class("spt_label");
-        label.add(name)
-        label.add_style("vertical-align: middle")
+        label.add_style("top: 0px")
+        td = label.add_cell(name)
+        td.add_class("spt_label")
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
         label.add_style("overflow: hidden")
-        label.add_style("text-align: center")
 
         text = TextWdg()
         node.add(text)
@@ -1233,8 +1243,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("z-index", "200");
 
 
-        width = 60
-        height = 60
+        width = 65
+        height = 65
 
 
         node.add_style("position: absolute")
@@ -1266,19 +1276,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-        label = DivWdg()
+
+        label = Table()
+        label.add_row()
         node.add(label)
         label.add_style("position: absolute")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
 
-        label.add_style("top: %spx" % (height/4+7) )
-        label.add_class("spt_label");
-        label.add(name)
-        label.add_style("vertical-align: middle")
+        label.add_style("top: 0px")
+        td = label.add_cell(name)
+        td.add_class("spt_label")
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
         label.add_style("overflow: hidden")
-        label.add_style("text-align: center")
+
 
         text = TextWdg()
         node.add(text)
@@ -1682,7 +1695,7 @@ spt.pipeline.get_paint = function() {
 // hit test functionality
 spt.pipeline.hit_test_mouse = function(mouse_411) {
     var pos = spt.pipeline.get_mouse_position(mouse_411);
-    return spt.pipeline.hit_test(pos.x-1, pos.y-1, pos.x+1, pos.y+1);
+    return spt.pipeline.hit_test(pos.x-2, pos.y-2, pos.x+2, pos.y+2);
 }
 
 
@@ -3600,15 +3613,18 @@ spt.pipeline.Connector = function(from_node, to_node) {
             attrs = this.get_attrs();
             if (attrs) {
                 var scale = spt.pipeline.get_scale();
-                var delta_x =  (from_pos.x > to_pos.x) ? -10 : 10;
-                delta_x *= scale;
-                var delta_y = -10;
-                delta_y *= scale; 
-                var from_attr = attrs['from_attr'] ? attrs['from_attr'] : 'foo';
-                var to_attr = attrs['to_attr'] ? attrs['to_attr'] : '';
+
+                var from_attr = attrs['from_attr'] ? attrs['from_attr'] : 'output';
+                var to_attr = attrs['to_attr'] ? attrs['to_attr'] : 'input';
+
+                var from_dx =  5 * scale;
+                var from_dy = -15 * scale;
+                var to_dx = -30 * scale;
+                var to_dy = -15 * scale;
+
                     
-                spt.pipeline.draw_text(from_attr, from_pos.x + delta_x, from_pos.y + delta_y);
-                spt.pipeline.draw_text(to_attr, to_pos.x - delta_x, to_pos.y +delta_y);
+                spt.pipeline.draw_text(from_attr, from_pos.x + from_dx, from_pos.y + from_dy);
+                spt.pipeline.draw_text(to_attr, to_pos.x + to_dx, to_pos.y + to_dy);
             }
         }
 

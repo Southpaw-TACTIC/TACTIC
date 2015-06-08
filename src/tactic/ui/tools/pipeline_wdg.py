@@ -881,6 +881,12 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 return;
             }
 
+            to_attr = connector.get_attr("from_attr"),
+            from_attr = connector.get_attr("from_attr")
+            draw_attr = true;
+
+            connector.draw_spline(draw_attr);
+
             var from_node = connector.get_from_node();
             var to_node = connector.get_to_node();
 
@@ -890,9 +896,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             var kwargs = {
                 pipeline_code: group_name,
                 from_node: from_node.spt_name,
-                from_attr: connector.get_attr("from_attr"),
+                from_attr: from_attr,
                 to_node: to_node.spt_name,
-                to_attr: connector.get_attr("to_attr"),
+                to_attr: to_attr,
             }
             spt.panel.load(info, class_name, kwargs);
             return;
@@ -1438,23 +1444,152 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        process = my.kwargs.get("process")
-        pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
 
+        top = my.top
+        top.add_class(".spt_process_info_top")
+
+        widget = None
 
         if node_type == 'approval':
             widget = ApprovalInfoWdg(**my.kwargs)
-            return widget
 
         if node_type == 'action':
             widget = AutoInfoWdg(**my.kwargs)
-            return widget
 
         if node_type == 'condition':
             widget = ConditionInfoWdg(**my.kwargs)
-            return widget
 
+        if node_type == 'hierarchy':
+            widget = HierarchyInfoWdg(**my.kwargs)
+
+        if not widget:
+            widget = DefaultInfoWdg(**my.kwargs)
+
+        top.add(widget)
+
+        return top
+
+
+
+
+class BaseInfoWdg(BaseRefreshWdg):
+
+
+    def get_title_wdg(my, process, node_type):
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: -20px 0px 10px 0px")
+        title_wdg.add("%s" % (process))
+        title_wdg.add_style("font-size: 1.2em")
+        title_wdg.add_style("font-weight: bold")
+        title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px")
+
+
+        select = SelectWdg("event")
+        title_wdg.add(select)
+        select.set_option("values", ['manual','action','condition','approval', 'hierarchy'])
+        select.add_style("width: 100px")
+        if node_type == "node":
+            select.set_value("manual")
+        else:
+            select.set_value(node_type)
+
+        select.add_behavior( {
+            'type': 'change',
+            'process': process,
+            'cbjs_action': '''
+
+            var server = TacticServerStub.get();
+
+            var node_type = bvr.src_el.value;
+            var process = bvr.process;
+
+            // change node_type
+            var node = spt.pipeline.get_node_by_name(process);
+            var parent = node.getParent();
+
+            node.setStyle("box-shadow", "0px 0px 15px rgba(255,0,0,0.5)"); 
+
+            var pos = spt.pipeline.get_position(node);
+
+            //parent.removeChild(node);
+
+            var group = spt.pipeline.get_group_by_node(node);
+            for (var i = 0; i < group.nodes.length; i++) {
+                if (node == group.nodes[i]) {
+                    group.nodes.splice(i, 1);
+                    break;
+                }
+            }
+
+
+
+            var new_node = spt.pipeline.add_node(process, null, null, {node_type: node_type});
+            new_node.position(pos)
+
+
+            var canvas = spt.pipeline.get_canvas();
+            var connectors = canvas.connectors;
+            for (var i = 0; i < connectors.length; i++) {
+                var connector = connectors[i];
+                if (connector.from_node == node) {
+                    connector.from_node = new_node;
+                }
+                if (connector.to_node == node) {
+                    connector.to_node = new_node;
+                }
+            }
+
+
+            // destroy the old node
+            spt.behavior.destroy_element(node);
+
+            spt.pipeline.redraw_canvas();
+
+            // click on the new node
+            new_node.click();
+
+
+            var top = bvr.src_el.getParent(".spt_process_info_top");
+
+            // change node type on the server
+            var class_name = 'tactic.ui.tools.ChangeNodeTypeCmd';
+            var kwargs = {
+            }
+
+            server.execute_cmd(class_name, kwargs);
+
+            '''
+        } )
+        select.add_style("float: right")
+        select.add_style("margin-top: -5px")
+
+        return title_wdg
+
+
+
+__all__.append("ChangeNodeTypeCmd")
+class ChangeNodeTypeCmd(Command):
+
+    def execute(my):
+        pass
+
+
+
+
+
+
+
+
+class DefaultInfoWdg(BaseInfoWdg):
+
+
+    def get_display(my):
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
 
 
         top = my.top
@@ -1478,14 +1613,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
         top.add_style("min-width: 300px")
 
 
-        title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px 0px 10px 0px")
-        top.add(title_wdg)
-        title_wdg.add("%s: %s" % (node_type.title(), process))
-        title_wdg.add_style("font-size: 1.2em")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px")
+
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add( title_wdg )
 
 
         search = Search("config/process")
@@ -1760,7 +1890,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
 
-class AutoInfoWdg(BaseRefreshWdg):
+
+
+class AutoInfoWdg(BaseInfoWdg):
 
 
     def get_input_output_wdg(my, pipeline, process):
@@ -1833,10 +1965,10 @@ class AutoInfoWdg(BaseRefreshWdg):
                         script = custom_script.get("script")
 
 
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
 
-
-
-
+        """
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         top.add(title_wdg)
@@ -1845,6 +1977,7 @@ class AutoInfoWdg(BaseRefreshWdg):
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_color("background", "background", -5)
         title_wdg.add_style("padding: 15px 10px")
+        """
 
 
 
@@ -2032,7 +2165,7 @@ class AutoInfoWdg(BaseRefreshWdg):
         return form_wdg
 
 
-class ApprovalInfoWdg(BaseRefreshWdg):
+class ApprovalInfoWdg(BaseInfoWdg):
 
 
 
@@ -2050,14 +2183,8 @@ class ApprovalInfoWdg(BaseRefreshWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
 
-        title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px 0px 10px 0px")
+        title_wdg = my.get_title_wdg(process, node_type)
         top.add(title_wdg)
-        title_wdg.add("%s: %s" % (node_type.title(), process))
-        title_wdg.add_style("font-size: 1.2em")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px")
 
 
         input_processes = pipeline.get_input_processes(process)
@@ -2112,6 +2239,24 @@ class ApprovalInfoWdg(BaseRefreshWdg):
 
 class ConditionInfoWdg(AutoInfoWdg):
     pass
+
+
+class HierarchyInfoWdg(BaseInfoWdg):
+
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+
+ 
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
+
+        return top
 
 
 
@@ -2634,7 +2779,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu = Menu(width=200)
 
 
-        menu_item = MenuItem(type='action', label='Add Auto Process')
+        menu_item = MenuItem(type='action', label='Add Action')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'cbjs_action': '''
