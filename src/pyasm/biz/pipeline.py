@@ -62,6 +62,8 @@ class Process(Base):
 
     def get_type(my):
         node_type = Xml.get_attribute( my.node, "type" )
+        if node_type == "auto":
+            node_type = "action"
         if not node_type:
             node_type = "node"
         return node_type

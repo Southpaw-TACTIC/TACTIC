@@ -4054,6 +4054,9 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
 
 
         var node_type = xml_nodes[i].getAttribute("type");
+        if (node_type == "auto") {
+            node_type = "action";
+        }
 
         var options = {
             group: group,
