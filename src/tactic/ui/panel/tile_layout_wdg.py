@@ -220,7 +220,7 @@ class TileLayoutWdg(ToolLayoutWdg):
     def alter_search(my, search):
         # TODO: this should be applied to ViewPanelWdg level
         process = my.kwargs.get("process")
-        if process:
+        if process and search.column_exists('process'):
             search.add_filter("process", process)
 
         context = my.kwargs.get("context")
@@ -714,7 +714,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 snapshots = server.query_snapshots( {filters: [['process', bvr.process], ['search_type', search_type],
                     ['search_code', search_code]] , include_paths_dict:true});
-                   
                 for (var k=0; k < snapshots.length; k++)
                     snapshot_list.push(snapshots[k].__search_key__);
                 
@@ -1020,17 +1019,112 @@ class TileLayoutWdg(ToolLayoutWdg):
                     end_index = last_index;
                 }
 
-
-                var select = last_selected.hasClass("spt_table_selected");
-                for (var i = start_index; i < end_index+1; i++) {
+                
+                var select = last_selected ? last_selected.hasClass("spt_table_selected") : false;
+                for (var i = start_index; i < end_index + 1; i++) {
 
                     var row = rows[i];
-                    var checkbox = row.getElement(".spt_tile_checkbox");
+                    if (row) {
+
+                        var checkbox = row.getElement(".spt_tile_checkbox");
+
+                        if (select) {
+                            checkbox.checked = true;
+                            row.removeClass("spt_table_selected");
+                            spt.table.select_row(row);
+                            row.setStyle("box-shadow", "0px 0px 15px #FF0");
+
+
+                        }
+                        else {
+                            checkbox.checked = false;
+                            row.addClass("spt_table_selected");
+                            spt.table.unselect_row(row);
+
+                            row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+
+                        }
+                    }
+                }
+
+            }
+            else {
+
+                var row = bvr.src_el.getParent(".spt_table_row");
+                var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
+
+                if (checkbox.checked == true) {
+                    checkbox.checked = false;
+                   
+                    spt.table.unselect_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+
+                }
+                else {
+                    checkbox.checked = true;
+                    
+                    spt.table.select_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px #FF0");
+
+                }
+
+            }
+
+            '''
+        } )
+
+        # this is working in conjunction with the above mouseup event for the tile header
+        # TODO: make the shift select work when the shift clicked index is < the first click
+        layout_wdg.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_tile_checkbox',
+            'cbjs_action': '''
+             var row = bvr.src_el.getParent(".spt_table_row");
+
+             if (evt.shift == true) {
+              
+                spt.table.set_table(row);
+
+                var rows = spt.table.get_all_rows(true);
+                var last_selected = spt.table.last_selected_row;
+                var last_index = -1;
+                var cur_index = -1;
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i] == last_selected) {
+                        last_index = i;
+                    }
+                    if (rows[i] == row) {
+                        cur_index = i;
+                    }
+
+                    if (cur_index != -1 && last_index != -1) {
+                        break;
+                    }
+
+                }
+                var start_index;
+                var end_index;
+                if (last_index < cur_index) {
+                    start_index = last_index;
+                    end_index = cur_index;
+                }
+                else {
+                    start_index = cur_index;
+                    end_index = last_index;
+                }
+
+                
+                var select = last_selected ? last_selected.hasClass("spt_table_selected") : false;
+
+
+                var row = rows[end_index];
+                if (row) {
+
+                    var checkbox = bvr.src_el;
 
                     if (select) {
                         checkbox.checked = true;
                         row.removeClass("spt_table_selected");
-
                         spt.table.select_row(row);
                         row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
@@ -1045,49 +1139,21 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                     }
                 }
-
             }
             else {
-
-                var row = bvr.src_el.getParent(".spt_table_row");
-                var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
-
-                if (checkbox.checked == true) {
-                    checkbox.checked = false;
-                    
-                    spt.table.unselect_row(row);
-                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-
-                }
-                else {
-                    checkbox.checked = true;
-                    
-                    
+                if (bvr.src_el.checked) {
                     spt.table.select_row(row);
                     row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
                 }
-
-            }
-
-            '''
-        } )
-
-
-        layout_wdg.add_relay_behavior( {
-            'type': 'mouseup',
-            'bvr_match_class': 'spt_tile_checkbox',
-            'cbjs_action': '''
-            if (bvr.src_el.checked) {
-                bvr.src_el.checked = false;
-            }
-            else {
-                bvr.src_el.checked = true;
+                else {
+                    spt.table.unselect_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                }
             }
             evt.stopPropagation();
             '''
         } )
-
 
 
         if my.kwargs.get("temp") != True:
