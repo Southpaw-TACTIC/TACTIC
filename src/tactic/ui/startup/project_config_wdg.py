@@ -226,11 +226,9 @@ class UserConfigWdg(ProjectConfigWdg):
                 <show_security>%s</show_security>
             </display>
         </element>
-        </tab>
           ''' %(show_security))
 
         config_xml.append('''
-        <tab>
         <element name="Group Assignment">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
