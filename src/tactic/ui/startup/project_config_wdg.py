@@ -222,10 +222,12 @@ class UserConfigWdg(ProjectConfigWdg):
         config_xml.append('''
         <tab>
         <element name="Users">
-            <display class='tactic.ui.startup.UserPanelWdg'/>
+            <display class='tactic.ui.startup.UserPanelWdg'>
+                <show_security>%s</show_security>
+            </display>
         </element>
         </tab>
-          ''')
+          ''' %(show_security))
 
         config_xml.append('''
         <tab>
@@ -812,9 +814,8 @@ class UserPanelWdg(BaseRefreshWdg):
         
         tool_div = DivWdg()
         # tool_div.add_style('margin-bottom','8px')
-        tool_div.add_style('display','flex')
+        tool_div.add_style('display','inline-flex')
         tool_div.add_style('width','50%')
-        tool_div.add_style('float','left')
         tool_div.add_style('margin-bottom','-4px')
        
         button = ActionButtonWdg(title="Add", tip="Add New User")
@@ -859,10 +860,9 @@ class UserPanelWdg(BaseRefreshWdg):
 
         tool_div2 = DivWdg()
         # tool_div.add_style('margin-bottom','8px')
-        tool_div2.add_style('display','flex')
+        tool_div2.add_style('display','inline-flex')
         tool_div2.add_style('justify-content','flex-end')
         tool_div2.add_style('width','50%')
-        tool_div2.add_style('margin-bottom','-4px') 
 
         top.add(tool_div)
         top.add(tool_div2)
@@ -940,6 +940,7 @@ class UserPanelWdg(BaseRefreshWdg):
             simple_search_view='simple_manage_filter', show_column_manager='false',\
             show_layout_switcher='false', show_expand='false')
         div.add(panel)
+        div.add_style('margin-top', '4px')
         
         return top
 
