@@ -2452,6 +2452,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         }
         var server = TacticServerStub.get();
         server.get_unique_sobject( "config/process", data );
+
+        node.click();
         '''
         } )
 
@@ -3332,7 +3334,7 @@ class PipelineTaskTriggerCommitCbk(Command):
 
         data_str = my.kwargs.get("data")
         if not data_str:
-            print "No data supplied"
+            print("No data supplied")
             return
         if isinstance(data_str, basestring):
             data = jsonloads(data_str)
@@ -3970,3 +3972,51 @@ class PipelineSaveCbk(Command):
                         break
 
         """
+
+
+
+
+class ProcessCopyCmd(Command):
+    '''Deep process copy'''
+
+    def execute(my):
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+        process_code = process_sobj.get_value("code")
+
+
+        # copy the process
+
+
+        # copy the notifications
+
+
+        # copy the triggers
+        search = Search("config/trigger")
+        search.add_filter("process", process_code)
+        triggers = search.get_sobjects()
+
+        for trigger in triggers:
+            pass
+
+
+
+        # copy custom scripts
+
+
+
+
+class PipelineCopyCmd(Command):
+
+    def execute(my):
+        pass
+
+
