@@ -95,12 +95,14 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
 
         tab_element_names = my.kwargs.get("tab_element_names") or ""
+        detail_view = my.kwargs.get("detail_view") or ""
 
         widget.add_behavior( {
         'type': 'click_up',
         'search_key': my.search_key,
         'use_parent': use_parent,
         'tab_element_names': tab_element_names,
+        'detail_view': detail_view,
         'show_task_process': my.show_task_process,
         'code': code,
         'name': name,
@@ -111,9 +113,9 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             search_key: bvr.search_key,
             use_parent: bvr.use_parent,
             tab_element_names: bvr.tab_element_names,
-            show_task_process: bvr.show_task_process
+            show_task_process: bvr.show_task_process,
+            detail_view: bvr.detail_view
         };
-
 
         var mode = 'xxx';
         var layout = bvr.src_el.getParent(".spt_tool_top");
