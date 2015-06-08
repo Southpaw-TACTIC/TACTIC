@@ -59,16 +59,14 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
             my._test_hierarchy()
-            """
             my._test_manual()
             my._test_task()
-            my._test_auto_process()
+            my._test_action_process()
             my._test_check()
             my._test_choice()
             my._test_input()
             my._test_trigger()
             my._test_approval()
-            """
         except Exception, e:
             print "Error: ", e
             raise
@@ -102,7 +100,7 @@ class WorkflowCmd(Command):
             process = SearchType.create("config/process")
             process.set_value("process", process_name)
             process.set_value("pipeline_code", pipeline.get_code())
-            process.set_json_value("trigger", {
+            process.set_json_value("workflow", {
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process_name,
@@ -128,7 +126,7 @@ class WorkflowCmd(Command):
 
 
 
-    def _test_auto_process(my):
+    def _test_action_process(my):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -141,11 +139,11 @@ class WorkflowCmd(Command):
 
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
-          <process type="auto" name="b"/>
-          <process type="auto" name="c"/>
-          <process type="auto" name="d"/>
-          <process type="auto" name="e"/>
+          <process type="action" name="a"/>
+          <process type="action" name="b"/>
+          <process type="action" name="c"/>
+          <process type="action" name="d"/>
+          <process type="action" name="e"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c"/>
           <connect from="b" to="d"/>
@@ -189,12 +187,14 @@ class WorkflowCmd(Command):
         # simple condition
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
+          <process type="action" name="a"/>
           <process type="condition" name="b"/>
-          <process type="auto" name="c"/>
+          <process type="action" name="c"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c" from_attr="success"/>
+          <!--
           <connect from="b" to="a" from_attr="fail"/>
+          -->
         </pipeline>
 
         '''
@@ -203,7 +203,7 @@ class WorkflowCmd(Command):
 
         for process in processes.keys():
             a_process = processes.get(process)
-            a_process.set_json_value("trigger", {
+            a_process.set_json_value("workflow", {
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process,
@@ -215,7 +215,7 @@ class WorkflowCmd(Command):
 
 
         process = processes.get("b")
-        process.set_json_value("trigger", {
+        process.set_json_value("workflow", {
             'on_action': '''
             # ... some code to determine True or False
             return False
@@ -236,7 +236,7 @@ class WorkflowCmd(Command):
 
 
         process = processes.get("b")
-        process.set_json_value("trigger", {
+        process.set_json_value("workflow", {
             'on_action': '''
             # ... some code to determine True or False
             return True
@@ -273,10 +273,10 @@ class WorkflowCmd(Command):
         # simple condition
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
+          <process type="action" name="a"/>
           <process type="condition" name="b"/>
-          <process type="auto" name="c"/>
-          <process type="auto" name="d"/>
+          <process type="action" name="c"/>
+          <process type="action" name="d"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c" from_attr="success"/>
           <connect from="b" to="d" from_attr="success"/>
@@ -287,7 +287,7 @@ class WorkflowCmd(Command):
 
         # check input values
         process = processes.get("b")
-        process.set_json_value("trigger", {
+        process.set_json_value("workflow", {
             'on_action': '''
             inputs = input.get("inputs")
             sobject.set_value("b_input", inputs[0]);
@@ -332,11 +332,11 @@ class WorkflowCmd(Command):
 
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
+          <process type="action" name="a"/>
           <process type="condition" name="b"/>
-          <process type="auto" name="c"/>
-          <process type="auto" name="d"/>
-          <process type="auto" name="e"/>
+          <process type="action" name="c"/>
+          <process type="action" name="d"/>
+          <process type="action" name="e"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c" from_attr="stream1"/>
           <connect from="b" to="d" from_attr="stream2"/>
@@ -348,7 +348,7 @@ class WorkflowCmd(Command):
         pipeline, processes = my.get_pipeline(pipeline_xml)
 
         process = processes.get("b")
-        process.set_json_value("trigger", {
+        process.set_json_value("workflow", {
             'on_action': '''
             # ... some code to determine True or False
             return ['stream1', 'stream3']
@@ -389,7 +389,7 @@ class WorkflowCmd(Command):
         pipeline_xml = '''
         <pipeline>
           <process name="a"/>
-          <process type="auto" name="b"/>
+          <process type="action" name="b"/>
           <connect from="a" to="b"/>
         </pipeline>
         '''
@@ -421,7 +421,7 @@ class WorkflowCmd(Command):
         pipeline_xml = '''
         <pipeline>
           <process name="a"/>
-          <process type="auto" name="b"/>
+          <process type="action" name="b"/>
           <connect from="a" to="b"/>
         </pipeline>
         '''
@@ -432,7 +432,7 @@ class WorkflowCmd(Command):
         sobject.commit()
 
         for process_name, process in processes.items():
-            process.set_json_value("trigger", {
+            process.set_json_value("workflow", {
                 #'on_in_progress': '''
                 #sobject.set_value('name_first', '%s')
                 #''' % process_name,
@@ -463,13 +463,13 @@ class WorkflowCmd(Command):
 
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
+          <process type="action" name="a"/>
         </pipeline>
         '''
         pipeline, processes = my.get_pipeline(pipeline_xml)
 
         process = processes.get("a")
-        process.set_value("trigger", "")
+        process.set_value("workflow", "")
         process.commit()
 
 
@@ -514,9 +514,9 @@ class WorkflowCmd(Command):
 
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
+          <process type="action" name="a"/>
           <process type="approval" name="b"/>
-          <process type="auto" name="c"/>
+          <process type="action" name="c"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c"/>
         </pipeline>
@@ -562,9 +562,9 @@ class WorkflowCmd(Command):
 
         pipeline_xml = '''
         <pipeline>
-          <process type="auto" name="a"/>
+          <process type="action" name="a"/>
           <process type="hierarchy" name="b"/>
-          <process type="auto" name="c"/>
+          <process type="action" name="c"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c"/>
         </pipeline>
@@ -579,9 +579,9 @@ class WorkflowCmd(Command):
         # create the sub pipeline
         subpipeline_xml = '''
         <pipeline>
-          <process type="auto" name="suba"/>
-          <process type="auto" name="subb"/>
-          <process type="auto" name="subc"/>
+          <process type="action" name="suba"/>
+          <process type="action" name="subb"/>
+          <process type="action" name="subc"/>
           <connect from="suba" to="subb"/>
           <connect from="subb" to="subc"/>
         </pipeline>

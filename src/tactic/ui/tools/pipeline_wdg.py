@@ -1411,7 +1411,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
             /*
             var class_name = 'tactic.ui.tools.ProcessInfoCmd';
             var kwargs = {
-                node_type: 'auto',
+                node_type: 'action',
                 pipeline_code: bvr.pipeline_code,
                 process: bvr.process,
                 on_action: input.on_action,
@@ -1447,7 +1447,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
             widget = ApprovalInfoWdg(**my.kwargs)
             return widget
 
-        if node_type == 'auto':
+        if node_type == 'action':
             widget = AutoInfoWdg(**my.kwargs)
             return widget
 
@@ -1857,7 +1857,7 @@ class AutoInfoWdg(BaseRefreshWdg):
         form_wdg.add_style("padding: 10px")
 
 
-        if node_type == "auto":
+        if node_type == "action":
 
             form_wdg.add("<b>Action:</b><br/>")
             form_wdg.add("This will be the automatically executed action for this process.")
@@ -1948,7 +1948,7 @@ class AutoInfoWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var class_name = 'tactic.ui.tools.ProcessInfoCmd';
             var kwargs = {
-                node_type: 'auto',
+                node_type: 'action',
                 pipeline_code: bvr.pipeline_code,
                 process: bvr.process,
                 on_action: input.on_action,
@@ -2122,11 +2122,11 @@ class ProcessInfoCmd(Command):
 
         node_type = my.kwargs.get("node_type")
 
-        if node_type in ["auto", "condition"]:
-            return my.handle_auto()
+        if node_type in ["action", "condition"]:
+            return my.handle_action()
 
 
-    def handle_auto(my):
+    def handle_action(my):
 
         on_action = my.kwargs.get("on_action")
         on_action_class = my.kwargs.get("on_action_class")
@@ -2642,7 +2642,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var top = act.getParent(".spt_pipeline_editor_top");
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
-            spt.pipeline.add_node(null, null, null, {node_type: 'auto'});
+            spt.pipeline.add_node(null, null, null, {node_type: 'action'});
 
             top.addClass("spt_has_changes");
             '''

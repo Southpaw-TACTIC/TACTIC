@@ -242,7 +242,7 @@ class ProcessPendingTrigger(BaseProcessTrigger):
 
 
 
-        if node_type in ["auto", "condition"]:
+        if node_type in ["action", "condition"]:
             Trigger.call(my, "process|action", output=my.input)
 
         elif node_type in ["approval"]:
@@ -322,7 +322,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
         process_sobj = search.get_sobject()
         triggers = {}
         if process_sobj:
-            triggers = process_sobj.get_json_value("trigger")
+            triggers = process_sobj.get_json_value("workflow")
         if not triggers:
             triggers = {}
 
@@ -335,7 +335,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
         if node_type == "condition":
             my.handle_condition_node(sobject, pipeline, process, triggers)
 
-        elif node_type == "auto":
+        elif node_type == "action":
 
             action = triggers.get("action")
             action_path = triggers.get("action_path")
@@ -397,7 +397,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
 
                 # check to see if there is an output process
                 attr = "fail"
-                processes = pipeline.get_input_processes(process, to_attr=attr)
+                processes = pipeline.get_output_processes(process, from_attr=attr)
                 if processes:
                     direction = "output"
                 else:
@@ -413,7 +413,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
             for attr in ret_val: 
                 outputs = pipeline.get_output_processes(process, from_attr=attr)
                 if outputs:
-                    output_process.extend(outputs)
+                    output_processes.extend(outputs)
 
             # if there are no output attrs, then check the node names
             if not output_processes:
@@ -479,7 +479,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        if node_type in ["auto", "approval", "manual", "node", "hierarchy"]:
+        if node_type in ["action", "approval", "manual", "node", "hierarchy"]:
             # call the process|pending event for all output processes
             output_processes = pipeline.get_output_processes(process)
             for output_process in output_processes:
@@ -494,7 +494,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
                 event = "process|pending"
                 Trigger.call(my, event, output)
 
-        if node_type in ["auto", "condition"]:
+        if node_type in ["action", "condition"]:
             my.set_all_tasks(sobject, process, "complete")
 
 
@@ -552,15 +552,14 @@ class ProcessReviseTrigger(BaseProcessTrigger):
 
         print "Revise: ", process, node_type
 
-        #process = my.input.get("process")
-        #my.run_callback(pipeline, process, "revise")
+        my.run_callback(pipeline, process, "revise")
 
         if node_type in ['manual', 'node']:
             my.set_all_tasks(sobject, process, "revise")
-        if node_type in ['auto']:
+        if node_type in ['action']:
             my.set_all_tasks(sobject, process, "revise")
 
-        if node_type in ['approval','auto','condition']:
+        if node_type in ['approval','action','condition']:
 
             input_processes = pipeline.get_input_processes(process)
             for input_process in input_processes:

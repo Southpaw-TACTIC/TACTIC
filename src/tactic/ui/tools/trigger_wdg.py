@@ -63,6 +63,9 @@ class TriggerToolWdg(BaseRefreshWdg):
         top.add_class("spt_trigger_top")
         my.set_as_panel(top)
 
+        inner = DivWdg()
+        top.add(inner)
+
         if my.mode == 'pipeline':
             my.pipeline_code = my.kwargs.get("pipeline_code")
             my.process = my.kwargs.get("process")
@@ -92,7 +95,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         #table.add_style("width: 100%")
         table.add_color("background", "background")
         table.add_color("color", "color")
-        top.add(table)
+        inner.add(table)
 
 
         table.add_row()
@@ -251,8 +254,10 @@ class TriggerToolWdg(BaseRefreshWdg):
             div.add("<b>No Triggers Selected</b>")
 
 
-
-        return top
+        if my.kwargs.get("is_refresh") in [True, 'true']:
+            return inner
+        else:
+            return top
 
 
 

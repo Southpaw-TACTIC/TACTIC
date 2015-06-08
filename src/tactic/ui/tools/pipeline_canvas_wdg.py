@@ -360,12 +360,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add(approval)
 
         # add approval node
-        auto = my.get_node("XXXXX", node_type="auto")
-        template_div.add(auto)
+        action = my.get_node("XXXXX", node_type="action")
+        template_div.add(action)
 
         # add approval node
-        auto = my.get_node("XXXXX", node_type="hierarchy")
-        template_div.add(auto)
+        approval = my.get_node("XXXXX", node_type="hierarchy")
+        template_div.add(approval)
 
 
 
@@ -605,7 +605,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         width, height = my.get_node_size()
 
-        if node_type == "auto":
+        if node_type == "action":
             border_radius = 20 
         elif node_type == "hierarchy":
             border_radius =  50 

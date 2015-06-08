@@ -23,7 +23,7 @@ class ConfigUpgrade(BaseUpgrade):
     #
     def upgrade_v4_4_0_a01_002(my):
         my.run_sql('''
-        ALTER TABLE "spt_process" ADD "trigger" text;
+        ALTER TABLE "spt_process" ADD "workflow" text;
         ''')
 
 
