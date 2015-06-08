@@ -5588,12 +5588,16 @@ spt.table.resize_layout = null;
 spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
 {
     var src_el = spt.behavior.get_bvr_src( bvr );
+   
+    if (src_el.getAttribute('no_drag') == 'true') return;
+
     var layout = src_el.getParent(".spt_layout");
     spt.table.set_layout(layout);
     spt.table.resize_layout = layout;
 
-    var table = src_el.getParent(".spt_table_table");
-
+    // should not need to set the table here
+    //var table = src_el.getParent(".spt_table_table");
+    //spt.table.last_table = table;
     var cell = src_el.getParent(".spt_table_header");
     var size = cell.getSize();
 
@@ -5601,7 +5605,7 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
     var layout_pos = layout.getPosition(document.body);
 
 
-    spt.table.last_table = table;
+    
     spt.table.pos = layout_pos;
 
     // create a clone
