@@ -567,6 +567,7 @@ class ThumbWdg(BaseTableElementWdg):
         div = my.top
         div.add_style("position: relative")
         div.add_style("margin: 3px")
+        div.add_class("spt_thumb_top")
 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         icon_size = my.get_icon_size()
@@ -672,6 +673,7 @@ class ThumbWdg(BaseTableElementWdg):
             div.add("&nbsp;")
             div.add_style("text-align: center")
             return div
+
 
 
 
@@ -795,6 +797,7 @@ class ThumbWdg(BaseTableElementWdg):
           
         # define a div
         div = my.top
+        div.add_class("spt_thumb_top")
 
         div.force_default_context_menu()
  
@@ -816,14 +819,21 @@ class ThumbWdg(BaseTableElementWdg):
         elif not repo_path or not os.path.exists(repo_path):
             return my.get_no_icon_wdg(missing=True)
 
+        elif repo_path.endswith(".svg"):
+            f = open(repo_path, 'r')
+            html = f.read()
+            f.close()
+            div.add(html)
+            return div
+
         if my.icon_type == 'default':
-            # fix template icon_size=100% icon_type which always loads web version
+            # Fix Template icon_size=100% icon_type always load web versions
             if type(icon_size) == types.StringType and icon_size.endswith("%"):
-               icon_size_check = int(icon_size[0:-1])
+                icon_size_check = int(icon_size[0:-1])
             else:
-               icon_size_check = icon_size
+                icon_size_check = icon_size
 	
-            if icon_size_check > 120:    
+            if icon_size_check > 120:
                 icon_type = 'web'
             else:
                 icon_type = 'icon'
@@ -898,9 +908,9 @@ class ThumbWdg(BaseTableElementWdg):
             from pyasm.prod.biz import ProdSetting
             protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
 
+        #deals with the icon attributes
         if detail == "false":
             if my.has_img_link:
-
                 if protocol =='file':
                     dir_naming = DirNaming()
                     client_base_dir = dir_naming.get_base_dir('client_repo')
@@ -915,7 +925,6 @@ class ThumbWdg(BaseTableElementWdg):
                 
                 else: # protocol not set or equals 'http'
                     is_dir = True
-
                     # add a file browser for directories
                     if repo_path and os.path.isdir(repo_path):
                         img.add_behavior( {
@@ -1390,7 +1399,7 @@ class ThumbCmd(Command):
             icon_path = icon_creator.get_icon_path()
             if web_path and icon_path:
                 sub_file_paths = [path, web_path, icon_path]
-                sub_file_types = [path, 'web', 'icon']
+                sub_file_types = ['main', 'web', 'icon']
 
                 from pyasm.checkin import FileCheckin
                 checkin = FileCheckin(sobject, sub_file_paths, sub_file_types, context='icon', mode="copy")
