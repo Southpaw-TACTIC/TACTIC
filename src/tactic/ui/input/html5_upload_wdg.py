@@ -465,20 +465,24 @@ class CheckinButtonWdg(UploadButtonWdg):
 
         search_key = my.kwargs.get("search_key")
 
+        checkin_type = my.kwargs.get("checkin_type")
+        if not checkin_type:
+            checkin_type = 'auto'
+
         return '''
             var server = TacticServerStub.get();
             var file = spt.html5upload.get_file();
             if (file) {
                file_name = file.name;
 
-               server.simple_checkin("%s", "%s", file_name, {mode:'uploaded', checkin_type:'auto'});
+               server.simple_checkin("%s", "%s", file_name, {mode:'uploaded', checkin_type:'%s'});
                spt.notify.show_message("Check-in of ["+file_name+"] successful");
             }
             else  {
               alert('Error: file object cannot be found.')
             }
             spt.app_busy.hide();
-        ''' % (search_key, context)
+        ''' % (search_key, context, checkin_type)
 
 
 
