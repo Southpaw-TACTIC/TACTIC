@@ -985,11 +985,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             'border': border,
             'bvr_match_class': 'spt_tile_select',
             'cbjs_action': '''
+            spt.table.set_table(bvr.src_el);
             if (evt.shift == true) {
-
-                spt.table.set_table(bvr.src_el);
                 var row = bvr.src_el.getParent(".spt_table_row");
-
 
                 var rows = spt.table.get_all_rows(true);
                 var last_selected = spt.table.last_selected_row;
@@ -1081,9 +1079,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
              var row = bvr.src_el.getParent(".spt_table_row");
 
+            spt.table.set_table(row);
              if (evt.shift == true) {
               
-                spt.table.set_table(row);
 
                 var rows = spt.table.get_all_rows(true);
                 var last_selected = spt.table.last_selected_row;
@@ -1144,7 +1142,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (bvr.src_el.checked) {
                     spt.table.select_row(row);
                     row.setStyle("box-shadow", "0px 0px 15px #FF0");
-
                 }
                 else {
                     spt.table.unselect_row(row);

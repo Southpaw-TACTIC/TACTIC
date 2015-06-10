@@ -3015,7 +3015,6 @@ spt.table.drop_row = function(evt, el) {
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
     var size = thumb_el.getSize();
-    console.log(size);
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
