@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['WebInit', 'SidebarTrigger', 'StatusLogTrigger','TaskApprovalTrigger', 'DisplayNameTrigger']
+__all__ = ['WebInit', 'SidebarTrigger', 'StatusLogTrigger', 'DisplayNameTrigger']
 
 from pyasm.common import Common, Config, Environment
 from pyasm.command import Trigger
@@ -96,54 +96,6 @@ class StatusLogTrigger(Trigger):
         if prev_value != value:
             # if this is successful, the store it in the status_log
             StatusLog.create(sobject, value, prev_value)
-
-
-
-
-class TaskApprovalTrigger(Trigger):
-    def execute(my):
-        from pyasm.biz import Task, Pipeline
-
-
-        src_task = my.get_caller()
-        process = src_task.get_value("process")
-        status = src_task.get_value("status")
-
-        pipeline_code = src_task.get_value("pipeline_code")
-        if pipeline_code == "approval":
-            tasks = src_task.get_output_tasks()
-
-            if status == "Revise":
-                pass
-
-        else:
-            tasks = src_task.get_output_tasks(type="approval")
-
-
-        # for approval, the task must be completed
-        completion = src_task.get_completion()
-        if completion != 100:
-            return
-
-
-        if not tasks:
-            # autocreate ??
-            parent = src_task.get_parent()
-            pipeline = Pipeline.get_by_sobject(parent)
-            if not pipeline:
-                return
-            processes = pipeline.get_output_processes(process, type="approval")
-            if not processes:
-                return
-
-            if processes:
-                print "Missing task: ", processes
-
-
-        # set those approvals to "Pending"
-        for task in tasks:
-            task.set_value("status", "Pending")
-            task.commit()
 
 
 
@@ -241,13 +193,8 @@ class WebInit(Common):
         Trigger.append_static_trigger(trigger, startup=True)
 
 
-#        event = "change|sthpw/task|status"
-#        trigger = SearchType.create("sthpw/trigger")
-#        trigger.set_value("event", event)
-#        trigger.set_value("class_name", "pyasm.web.web_init.TaskApprovalTrigger")
-#        trigger.set_value("mode", "same process,same transaction")
-#        Trigger.append_static_trigger(trigger, startup=True)
 
+        # FIXME: should this be here??
         from pyasm.biz.workflow import Workflow
         Workflow().init(startup=True)
 

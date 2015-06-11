@@ -1402,10 +1402,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             else:
 
-                print "items: ", items
-                print "sorted_processes: ", my.sorted_processes
-                print "--------"
-
                 # go through each sorted process
                 for idx, process in enumerate(my.sorted_processes):
 

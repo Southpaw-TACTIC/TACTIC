@@ -14,7 +14,7 @@ __all__ = ['Workflow']
 
 import tacticenv
 
-from pyasm.common import Common
+from pyasm.common import Common, Config
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
@@ -24,6 +24,13 @@ from tactic.command import PythonCmd
 class Workflow(object):
 
     def init(my, startup=False):
+
+        #workflow = Config.get_value("services", "workflow")
+        #if workflow not in [True, 'true']:
+        #    return
+
+        print "Starting Workflow Engine"
+
         # initialize the triggers for the workflow
         event = "process|pending"
         trigger = SearchType.create("sthpw/trigger")
@@ -82,6 +89,13 @@ class Workflow(object):
 class TaskStatusChangeTrigger(Trigger):
 
     def execute(my):
+
+        key = "enable_workflow_engine"
+        from prod_setting import ProdSetting
+        setting = ProdSetting.get_value_by_key(key)
+        if setting not in [True, 'true']:
+            return
+
 
         # find the node in the pipeline
         task = my.get_caller()
