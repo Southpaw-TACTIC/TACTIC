@@ -3855,7 +3855,8 @@ class SObject(object):
                     'sthpw/sync_log',
                     'sthpw/sync_job',
                     'sthpw/message',
-                    'sthpw/message_log',
+            # enabled triggers from message_log so that inserts to this table can send out notifications
+            #        'sthpw/message_log',
                     'sthpw/change_timestamp',
                     'sthpw/sobject_list',
                     'sthpw/sobject_log'

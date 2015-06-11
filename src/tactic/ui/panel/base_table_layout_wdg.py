@@ -2881,6 +2881,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     
                     { "type": "action", "label": "Subscribe to %s"%subscribe_label,
                         #"icon": IconWdg.PICTURE_EDIT,
+                        "enabled_check_setup_key": "is_not_subscribed",
+                        "hide_when_disabled": True,
                         "bvr_cb": { 'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");
@@ -2912,6 +2914,53 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         try {
                             var sub = server.subscribe(search_key, {category: "sobject"} );
                             spt.notify.show_message('Subscribed to [' + sub.message_code + ']');
+                            spt.table.refresh_rows([activator]);
+                        } catch(e) {
+                            spt.info(spt.exception.handler(e));
+                        }
+     
+                        ''' },
+                        "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                          'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                                 my.look_row_selected, my.look_row ] }
+                    },
+
+                    { "type": "action", "label": "Unsubscribe from %s"%subscribe_label,
+                        #"icon": IconWdg.PICTURE_EDIT,
+                        "enabled_check_setup_key": "is_subscribed",
+                        "hide_when_disabled": True,
+                        "bvr_cb": { 'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
+
+                        var search_key;
+
+                        var tbody;
+                        if (version == "2") {
+                            spt.table.set_layout(layout);
+                            tbody = activator;
+                        }
+                        else {
+                            tbody = activator.getParent('.spt_table_tbody');
+                        }
+                        
+                        var search_key = tbody.getAttribute("spt_search_key");
+                        var server = TacticServerStub.get();
+                        // search_key here is "id" based: need code based
+                        var sobject = server.get_by_search_key(search_key);
+                        var temps = server.split_search_key(search_key);
+                        var st = temps[0];
+                        
+                        if (['sthpw/note','sthpw/snapshot','sthpw/task'].contains(st))
+                            search_key = server.build_search_key(sobject.search_type, sobject.search_code);
+                        else
+                            search_key = sobject.__search_key__;
+                       
+                        try {
+                            server.unsubscribe(search_key);
+                            spt.notify.show_message('Unsubscribed from [' + search_key + ']');
+                            spt.table.refresh_rows([activator]);
                         } catch(e) {
                             spt.info(spt.exception.handler(e));
                         }
@@ -2921,6 +2970,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  my.look_row_selected, my.look_row ] }
                     }
+
                     ])   
 
         spec_list.extend( [

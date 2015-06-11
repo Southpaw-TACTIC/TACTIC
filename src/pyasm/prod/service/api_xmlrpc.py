@@ -1039,7 +1039,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @params
         ticket - authentication ticket
-        key - unique key for this message
+        key - unique key for this message in the message_code column
 
         @keyparam
         category - value to categorize this message
@@ -1071,6 +1071,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         sobject_dict = my._get_sobject_dict(subscription)
         return sobject_dict
+
+
+    @xmlrpc_decorator
+    def unsubscribe(my, ticket, key):
+        '''Allow a user to unsubscribe from this message key.
+
+        @params
+        ticket - authentication ticket
+        key - unique key for this message in the message_code column
+
+        @return:
+        dictionary - the values of the subscription sobject in the
+        form name:value pairs
+        '''
+
+        project_code = Project.get_project_code()
+
+        search = Search("sthpw/subscription")
+        search.add_user_filter()
+        search.add_filter("message_code", key)
+        search.add_filter("project_code", project_code)
+        subscription  = search.get_sobject()
+
+        if not subscription:
+            raise ApiException('[%s] is not subscribed to.'%key)
+            # nothing to do ... item is not subscribed to
+
+        subscription.delete()
+
+        return my._get_sobject_dict(subscription)
 
 
 
@@ -3946,7 +3976,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def query_snapshots(my, ticket, filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False):
+    def query_snapshots(my, ticket, filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False, include_web_paths_dict=False):
         '''thin wrapper around query, but is specific to querying snapshots
         with some useful included flags that are specific to snapshots
 
@@ -3965,6 +3995,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         include_paths_dict - flag to specify whether to include a
             __paths_dict__ property containing a dict of all paths in the
             dependent snapshots
+        include_web_paths_dict - flag to specify whether to include a
+            __web_paths_dict__ property containing a dict of all web paths in
+            the returned snapshots
+
         include_full_xml - flag to return the full xml definition of a snapshot
         include_parent - includes all of the parent attributes in a __parent__ dictionary
         include_files - includes all of the file objects referenced in the
@@ -4045,6 +4079,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if include_paths_dict:
                 paths = snapshot.get_all_client_lib_paths_dict()
                 snapshot_dict['__paths_dict__'] = paths
+
+            if include_web_paths_dict:
+                paths = snapshot.get_all_web_paths_dict()
+                snapshot_dict['__web_paths_dict__'] = paths
 
             if include_parent:
                 search_key = snapshot_dict.get('__search_key__')

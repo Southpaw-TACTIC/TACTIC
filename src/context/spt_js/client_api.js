@@ -80,6 +80,8 @@ TacticServerStub = function() {
         if (column == null) {
             column = 'code';
         }
+        var temps = search_type.split("?project=");
+        search_type = temps[0];
         var search_key;
         if (search_type.test(/^sthpw\//))
             search_key = search_type +"?"+ column +"="+ code;
@@ -236,6 +238,9 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+    this.unsubscribe = function(key, kwargs) {
+        return this._delegate("unsubscribe", arguments, kwargs);
+    }
 
     /*
      * interaction logging

@@ -26,7 +26,7 @@ from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, WidgetConfigView, Swap
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
-from pyasm.biz import Project, ExpressionParser
+from pyasm.biz import Project, ExpressionParser, Subscription
 from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
@@ -908,6 +908,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         table.set_id(my.table_id)
         
+        # generate dictionary of subscribed search_keys to affect context menu
+        my.subscribed_search_keys = {}
+        login = Environment.get_login().get("login")
+        subscribed = Subscription.get_by_search_type(login, my.search_type)
+        for item in subscribed:
+            item_search_key = item.get("message_code")
+            my.subscribed_search_keys[item_search_key] = True
 
         # set up the context menus
         show_context_menu = my.kwargs.get("show_context_menu")
@@ -2544,6 +2551,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
+
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            tr.set_attr("spt_is_subscribed","true")
+
         if sobject.is_retired():
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
@@ -2861,6 +2872,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_class( 'SPT_DTS' )
         #td.add_color("background-color", "background", -0)
         td.add_color("opacity", "0.5")
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            td.add_border(direction="right", color="#ecbf7f", size="2px")
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
@@ -3056,7 +3069,6 @@ spt.table.drop_row = function(evt, el) {
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
     var size = thumb_el.getSize();
-    console.log(size);
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
@@ -5927,6 +5939,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
 
     var commit_enabled = true;
     var row_is_retired = false;
+    var row_is_subscribed = false;
     var display_label = "not found";
 
     
@@ -5942,6 +5955,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
                             "Use 'search_key' as display_label." );
             display_label = tr.get("spt_search_key");
         }
+        row_is_subscribed = tr.getAttribute('spt_is_subscribed');
     }
    
 
@@ -5949,7 +5963,9 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
         'commit_enabled' : commit_enabled,
         'is_retired': row_is_retired,
         'is_not_retired': (! row_is_retired),
-        'display_label': display_label
+        'display_label': display_label,
+        'is_subscribed': row_is_subscribed,
+        'is_not_subscribed': (! row_is_subscribed)
     }
     return setup_info;
 }

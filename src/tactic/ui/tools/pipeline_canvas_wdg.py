@@ -261,7 +261,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         } )
 
-
+        canvas.add_behavior( {
+        "type": 'click_up',
+        "cbjs_action": '''
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
+        '''
+        }) 
 
 
 

@@ -356,22 +356,19 @@ class HtmlElement(Widget):
 
 
 
-    def add_border(my, modifier=None, style=None, direction=None, color=None, size=None):
+    def add_border(my, modifier=None, style="solid", direction=None, color="border", size="1px"):
         '''@params: direction can be top left bottom right, default to None''' 
-        if not style:
-            style = "solid"
-        style_name = 'border'
+        # border is a palette color; color argument may take a color name or a hex value also
+        border_direction = 'border'
         if direction:
-            style_name = 'border-%s'% direction
-        if not color:
-            color = "border"
+            border_direction = 'border-%s'% direction
 
-        if size and style_name == "border":
+        if size and border_direction == "border":
             my.add_style("border-style: %s" % style)
             my.add_style("border-width: %s" % size)
             my.add_style("border-color: %s" % my.get_color(color,modifier=modifier))
         else:
-            my.add_style("%s: %s 1px %s" % (style_name, style, my.get_color(color, modifier=modifier) ))
+            my.add_style("%s: %s %s %s" % (border_direction, style, size, my.get_color(color, modifier=modifier) ))
         
 
     def add_hover(my, palette_key='background', modifier=-10):

@@ -1420,7 +1420,7 @@ class ThumbCmd(Command):
             icon_path = icon_creator.get_icon_path()
             if web_path and icon_path:
                 sub_file_paths = [path, web_path, icon_path]
-                sub_file_types = [path, 'web', 'icon']
+                sub_file_types = ['main', 'web', 'icon']
 
                 from pyasm.checkin import FileCheckin
                 checkin = FileCheckin(sobject, sub_file_paths, sub_file_types, context='icon', mode="copy")
