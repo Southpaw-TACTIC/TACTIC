@@ -153,7 +153,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         msg_div.add_style("width: 300px")
         msg_div.add_style("height: 150px")
         msg_div.add_style("margin-top: 20%")
-        msg_div.add_style("margin: 0px auto")
+        msg_div.add_style("margin: 20% auto")
         msg_div.add_border()
         msg_div.add_color("background", "background3")
         msg_div.add_style("padding-top: 40px")
@@ -673,7 +673,7 @@ class PipelineListWdg(BaseRefreshWdg):
             title = name
         else:
             title = pipeline_code.split("/")[-1]
-        pipeline_div.add("&nbsp;&nbsp;&nbsp;%s" % title)
+        pipeline_div.add("<div style='display: inline-block; margin-top: 3px'>&nbsp;&nbsp;&nbsp;%s</div>" % title)
 
         pipeline_div.add_behavior( {
         'type': 'listen',
@@ -696,102 +696,56 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
         var editor_top = top.getElement(".spt_pipeline_editor_top");
-<<<<<<< HEAD
-        if (editor_top && editor_top.hasClass("spt_has_changes")) {
-            if (!confirm("Current pipeline has changes.  Do you wish to continue?")) {
-                return;
-            }
-            editor_top.removeClass("spt_has_changes");
-        }
 
 
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-
-        // check if the group already exists
-        var group_name = bvr.pipeline_code;
-        var group = spt.pipeline.get_group(bvr.pipeline_code);
-        if (group != null) {
-
-            // if it already exists, then select all from the group
-            spt.pipeline.select_nodes_by_group(group_name);
-            spt.pipeline.fit_to_canvas(group_name);
-            return;
-
-        }
-
-
-        var start_el = top.getElement(".spt_pipeline_editor_start")
-        start_el.setStyle("display", "none")
-
-        spt.pipeline.clear_canvas();
-
-        spt.pipeline.import_pipeline(bvr.pipeline_code);
-
-
-        // add to the current list
-        var value = bvr.pipeline_code;
-        var title = bvr.title;
-        /*
-        var select = top.getElement(".spt_pipeline_editor_current");
-        for ( var i = 0; i < select.options.length; i++) {
-            var select_value = select.options[i].value;
-            if (select_value == value) {
-                alert("Pipeline ["+value+"] already exists");
-=======
-        
         var ok = function () {
             editor_top.removeClass("spt_has_changes");
+
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
+
             // check if the group already exists
             var group_name = bvr.pipeline_code;
             var group = spt.pipeline.get_group(bvr.pipeline_code);
             if (group != null) {
-                 // if it already exists, then select all from the group
+
+                // if it already exists, then select all from the group
                 spt.pipeline.select_nodes_by_group(group_name);
                 spt.pipeline.fit_to_canvas(group_name);
->>>>>>> 3cde8c815403ef8e48a05affa9c2074b0f3b6550
                 return;
+
             }
+
+
+            var start_el = top.getElement(".spt_pipeline_editor_start")
+            start_el.setStyle("display", "none")
+
             spt.pipeline.clear_canvas();
+
             spt.pipeline.import_pipeline(bvr.pipeline_code);
+
+
             // add to the current list
             var value = bvr.pipeline_code;
             var title = bvr.title;
-            var select = top.getElement(".spt_pipeline_editor_current");
-            for ( var i = 0; i < select.options.length; i++) {
-                var select_value = select.options[i].value;
-                if (select_value == value) {
-                    spt.alert("Pipeline ["+value+"] already exists");
-                    return;
-                }
-            }  
-            var option = new Option(title, value);
-            select.options[select.options.length] = option;
-            select.value = value;
+
+            
+            var text = top.getElement(".spt_pipeline_editor_current2");
+            //text.value = title;
+            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
+            text.innerHTML = html;
+
             spt.pipeline.set_current_group(value);
+
+
         };
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
             spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", ok, null); 
         } else {
             ok();
         }
-<<<<<<< HEAD
 
-        var option = new Option(title, value);
-        select.options[select.options.length] = option;
-        select.value = value;
-        */
 
-        var text = top.getElement(".spt_pipeline_editor_current2");
-        //text.value = title;
-        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
-        text.innerHTML = html;
-
-        spt.pipeline.set_current_group(value);
-=======
->>>>>>> 3cde8c815403ef8e48a05affa9c2074b0f3b6550
         '''
         } )
 
@@ -2624,7 +2578,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
-
+        # Do we even need a refresh button?
+        """
         button = ButtonNewWdg(title="REFRESH", icon="BS_REFRESH")
         button_row.add(button)
 
@@ -2643,6 +2598,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             }
         '''
         } )
+        """
 
 
         button = ButtonNewWdg(title="Save Current Pipeline", icon="BS_SAVE")
