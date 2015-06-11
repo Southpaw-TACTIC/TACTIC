@@ -30,5 +30,7 @@ from rsync import *
 from run_transaction_cmd import *
 from watch_handoff_folder import *
 
+from sobject_copy_cmd import *
+
 
 

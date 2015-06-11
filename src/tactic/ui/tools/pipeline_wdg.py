@@ -881,7 +881,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 return;
             }
 
-            to_attr = connector.get_attr("from_attr"),
+            to_attr = connector.get_attr("to_attr"),
             from_attr = connector.get_attr("from_attr")
             draw_attr = true;
 
@@ -1318,7 +1318,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
             text.set_value(left_selected)
 
         left.add("<br/>"*3)
-        left.add("Standard Options")
+        left.add("Standard Attributes")
         left.add("<hr/>")
 
 
@@ -1410,22 +1410,40 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         top.add(save)
         save.add_behavior( {
             'type': 'click_up',
+            'kwargs': my.kwargs,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_pipeline_info_top");
-            var input = spt.api.get_input_values(top, null, false);
+            var info_top = bvr.src_el.getParent(".spt_pipeline_connector_info");
+            var input = spt.api.get_input_values(info_top, null, false);
 
-            /*
-            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
-            var kwargs = {
-                node_type: 'action',
-                pipeline_code: bvr.pipeline_code,
-                process: bvr.process,
-                on_action: input.on_action,
-                on_action_class: input.on_action_class,
+            console.log(input);
+
+            // find the current connector
+            var pipeline_code = spt.pipeline.get_current_group();
+            var group = spt.pipeline.get_group(pipeline_code);
+            var connectors = group.get_connectors();
+            var connector = null;
+            for (var i = 0; i < connectors.length; i++) {
+
+                from_node = connectors[i].get_from_node();
+                to_node = connectors[i].get_to_node();
+
+
+                if (   (from_node.spt_name == bvr.kwargs.from_node) &&
+                       (to_node.spt_name == bvr.kwargs.to_node )     ) {
+
+                    connector = connectors[i];
+                    break;
+               }
             }
 
-            server.execute_cmd(class_name, kwargs);
-            */
+            if (!connector) return;
+
+            connector.set_attr("from_attr", input.left);
+            connector.set_attr("to_attr", input.right);
+
+            // export group??
+
 
             '''
         } )
@@ -1474,6 +1492,30 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
 class BaseInfoWdg(BaseRefreshWdg):
+
+
+    def get_input_output_wdg(my, pipeline, process):
+            
+        div = DivWdg()
+        div.add_style("margin: 10px")
+
+        input_processes = pipeline.get_input_processes(process)
+        output_processes = pipeline.get_output_processes(process)
+
+        input_list = ", ".join([x.get_name() for x in input_processes]) or "<i>None</i>"
+        output_list = ", ".join([x.get_name() for x in output_processes]) or "<i>None</i>"
+
+        input_div = DivWdg()
+        div.add(input_div)
+        input_div.add("Inputs: %s" % input_list)
+
+        output_div = DivWdg()
+        div.add(output_div)
+        output_div.add("Outputs: %s" % output_list)
+
+        return div
+
+
 
 
     def get_title_wdg(my, process, node_type):
@@ -1895,30 +1937,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 class AutoInfoWdg(BaseInfoWdg):
 
 
-    def get_input_output_wdg(my, pipeline, process):
-            
-        div = DivWdg()
-        div.add_style("margin: 10px")
-
-        input_processes = pipeline.get_input_processes(process)
-        output_processes = pipeline.get_output_processes(process)
-
-        input_list = ", ".join([x.get_name() for x in input_processes]) or "<i>None</i>"
-        output_list = ", ".join([x.get_name() for x in output_processes]) or "<i>None</i>"
-
-        input_div = DivWdg()
-        div.add(input_div)
-        input_div.add("Inputs: %s" % input_list)
-
-        output_div = DivWdg()
-        div.add(output_div)
-        output_div.add("Outputs: %s" % output_list)
-
-        return div
-
-
-
-
     def get_display(my):
 
         top = my.top
@@ -2187,23 +2205,16 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(title_wdg)
 
 
-        input_processes = pipeline.get_input_processes(process)
-        output_processes = pipeline.get_output_processes(process)
-
-        input_div = DivWdg()
-        top.add(input_div)
-        input_div.add("Inputs: %s" % ", ".join([x.get_name() for x in input_processes]))
-
-        output_div = DivWdg()
-        top.add(output_div)
-        output_div.add("Outputs: %s" % ", ".join([x.get_name() for x in output_processes]))
 
 
+        input_output_wdg = my.get_input_output_wdg(pipeline, process)
+        top.add( input_output_wdg )
 
         form_wdg = DivWdg()
         top.add(form_wdg)
         form_wdg.add_style("padding: 10px")
 
+        input_processes = pipeline.get_input_processes(process)
         form_wdg.add("Add groups or people that need to approve the '%s' process" % [x.get_name() for x in input_processes])
 
         form_wdg.add("<br/>")
@@ -2324,7 +2335,6 @@ class ProcessInfoCmd(Command):
 
             script.set_value("script", on_action)
             script.commit()
- 
 
 
 
@@ -3994,9 +4004,19 @@ class ProcessCopyCmd(Command):
 
 
         # copy the process
+        from tactic.command import SObjectCopyCmd
+        copy_cmd = SObjectCopyCmd(sobject=process_sobj)
+        copy_cmd.execute()
+
+        new_process_sobj = SearchType.create("config/process")
+        data = process_sobj.get_data()
+        for name, value in data.items():
+            pass
 
 
         # copy the notifications
+        search = Search("config/notification")
+        notifications = search.get_sobjects()
 
 
         # copy the triggers
