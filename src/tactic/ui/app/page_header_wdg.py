@@ -820,7 +820,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
           
           
             var filename = file.name;
-            filename = spt.path.get_filesystem_name(filename);
+            //filename = spt.path.get_filesystem_name(filename);
             var kwargs = {
                 ticket: ticket,
                 filename: filename
