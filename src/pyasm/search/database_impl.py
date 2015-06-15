@@ -1013,6 +1013,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
         types = ['config', type]
+        if db_resource == 'sthpw':
+            types.insert(0, 'bootstrap')
+
         for schema_type in types:
             schema_dir = my.get_schema_dir()
             schema_path = "%s/%s_schema.sql" % (schema_dir, schema_type)
