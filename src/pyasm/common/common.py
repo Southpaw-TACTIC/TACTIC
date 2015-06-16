@@ -371,20 +371,34 @@ class Common(Base):
 
 
 
-    def generate_alphanum_key(num_digits=10, mode="alpha"):
+    def generate_alphanum_key(num_digits=10, mode="alpha", delimit=0):
         if mode == "alpha":
             low = 65
             high = 90
+        elif mode == "hex":
+            low = 48
+            high = 71
+        elif mode == "numeric":
+            low = 48
+            high = 58
         else:
-            log = 48
+            low = 48
             high = 90
         # generate a random key
         key = ""
+
+        items = []
+        for idx in range(low, high):
+            if idx >= 58 and idx <= 64:
+                continue
+            items.append(chr(idx))
+
+
         for i in range(0, num_digits):
-            idx = 58
-            while idx >= 58 and idx <= 64:
-                idx = random.randint(low, high)
-            key += chr(idx)
+            idx = random.randint(0, len(items)-1)
+            if i and delimit and i % delimit == 0:
+                key += "-"
+            key += items[idx]
 
         return key
     generate_alphanum_key = staticmethod(generate_alphanum_key)
