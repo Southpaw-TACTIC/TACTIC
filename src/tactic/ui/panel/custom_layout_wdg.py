@@ -713,18 +713,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 '''
             })
 
-
-
-            # remove objects that cannot be json marshalled
-            view_kwargs = my.kwargs.copy()
-            for key, value in view_kwargs.items():
-                try:
-                    test = jsonloads(value)
-                except:
-                    del(view_kwargs[key])
-
-
-
             for behavior_node in behavior_nodes:
 
                 bvr_div = DivWdg()
@@ -764,7 +752,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
                     # add the kwargs to this so behaviors have access
-                    bvr['kwargs'] = view_kwargs
+                    bvr['kwargs'] = my.kwargs
                     bvr['class_name'] = Common.get_full_class_name(my)
 
                     if relay_class:
