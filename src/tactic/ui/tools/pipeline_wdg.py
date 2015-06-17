@@ -1588,15 +1588,7 @@ class BaseInfoWdg(BaseRefreshWdg):
             // click on the new node
             new_node.click();
 
-
-            var top = bvr.src_el.getParent(".spt_process_info_top");
-
-            // change node type on the server
-            var class_name = 'tactic.ui.tools.ChangeNodeTypeCmd';
-            var kwargs = {
-            }
-
-            server.execute_cmd(class_name, kwargs);
+            spt.named_events.fire_event('pipeline|change', {});
 
             '''
         } )
@@ -1604,17 +1596,6 @@ class BaseInfoWdg(BaseRefreshWdg):
         select.add_style("margin-top: -5px")
 
         return title_wdg
-
-
-
-__all__.append("ChangeNodeTypeCmd")
-class ChangeNodeTypeCmd(Command):
-
-    def execute(my):
-        pass
-
-
-
 
 
 
@@ -2349,7 +2330,7 @@ class ProcessInfoCmd(Command):
                 script.set_value("folder", folder)
                 script.set_value("title", "%s" % process)
 
-            search.set_value("language", langauge)
+            script.set_value("language", language)
             script.set_value("script", on_action)
             script.commit()
 
@@ -2493,10 +2474,22 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'type': 'listen',
         'event_name': event_name,
         'cbjs_action': '''
+        var node = bvr.firing_element;
         var data = bvr.firing_data;
-        // rename the process on the server
-        //var process = server.get_by_code("config/process", data.old_name);
 
+        var old_name = data.old_name;
+        var name = data.name;
+
+        // rename the process on the server
+        var group_name = spt.pipeline.get_current_group();
+        var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
+
+        server.update(process, {process: name});
+
+        // select the node
+        node.click();
+
+        spt.named_events.fire_event('pipeline|change', {});
         '''
         } )
  
@@ -2686,10 +2679,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
         icon = button.get_icon_wdg()    
         # makes it glow
         glow_action = ''' 
-        bvr.src_el.setStyles(
-        {'outline': 'none', 
-        'border-color': '#CF7e1B', 
-        'box-shadow': '0 0 8px #CF7e1b'});
+        bvr.src_el.setStyles( {
+            'outline': 'none', 
+            'border-color': '#CF7e1B', 
+            'box-shadow': '0 0 20px #CF7e1b',
+            'border-radius': '20px',
+        });
         '''
 
         icon.add_named_listener('pipeline|change', glow_action)

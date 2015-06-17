@@ -2871,6 +2871,7 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
     var node = bvr.drag_el;
     node.removeClass("move");
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
