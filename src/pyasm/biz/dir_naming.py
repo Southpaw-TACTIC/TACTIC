@@ -15,6 +15,7 @@ __all__ = ['DirNaming']
 '''Base class for all directory structures'''
 
 import re, os, types
+import sys
 
 from pyasm.common import Common, Config, Container, Environment, TacticException
 from pyasm.search import SearchType, Search
@@ -343,7 +344,10 @@ class DirNaming(object):
         if client_os == 'nt':
             prefix = "win32"
         else:
-            prefix = "linux"
+            if sys.platform == 'darwin':
+                prefix = "mac"
+            else:
+                prefix = "linux"
 
         if not alias:
             alias = "default"
@@ -409,10 +413,7 @@ class DirNaming(object):
                 #base_dir = remote_repo.get_value("repo_base_dir")
                 base_dir = Environment.get_asset_dir()
             else:
-                if Environment.get_env_object().get_client_os() =='nt':
-                    base_dir = Config.get_value("checkin","win32_local_base_dir")
-                else:
-                    base_dir = Config.get_value("checkin","linux_local_base_dir")
+                base_dir = Config.get_value("checkin","%s_local_base_dir"%prefix)
                 base_dir += "/repo"
 
         # The local repo
@@ -421,10 +422,7 @@ class DirNaming(object):
             if remote_repo:
                 base_dir = remote_repo.get_value("repo_base_dir")
             else:
-                if Environment.get_env_object().get_client_os() =='nt':
-                    base_dir = Config.get_value("checkin","win32_local_repo_dir")
-                else:
-                    base_dir = Config.get_value("checkin","linux_local_repo_dir")
+                base_dir = Config.get_value("checkin","%s_local_repo_dir"%prefix)
                 if not base_dir:
                     base_dir = Environment.get_asset_dir()
 

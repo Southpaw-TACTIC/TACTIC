@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     if os.name != 'nt' and os.getuid() == 0:
         print 
-        print "You should not run this as root. Run it as the Web server process's user. e.g. apache"
+        print "You should not run this as root. Run it as the Web server process's user. e.g. tactic or apache(for older TACTIC VM)"
         print 
         sys.exit(0)
 
