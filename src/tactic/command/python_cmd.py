@@ -14,7 +14,7 @@ __all__ = ['PythonCmd', 'PythonTrigger']
 import tacticenv
 
 from pyasm.common import TacticException, Environment, Config, jsondumps, jsonloads
-from pyasm.command import Command, CommandExitException
+from pyasm.command import Command, CommandExitException, Trigger
 from pyasm.biz import Project
 from pyasm.search import Search
 from tactic_client_lib import TacticServerStub
@@ -104,19 +104,17 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
 
         # set info and description
         my.info['spt_ret_val'] = results 
+        class_name = my.__class__.__name__
         if script_path:
-            desc = 'Run PythonCmd with script path [%s]'%script_path
+            desc = 'Run %s with script path [%s]' % (class_name, script_path)
         else:
-            desc = "Run PythonCmd with explicit code"
+            desc = "Run %s with explicit code" % class_name
         my.add_description(desc)
 
         return results
 
 
 
-from tactic_client_lib import TacticServerStub
-from tactic_client_lib.interpreter import Handler
-from pyasm.command import Trigger
 
 class PythonTrigger(Trigger):
 
@@ -151,6 +149,7 @@ class PythonTrigger(Trigger):
 
         if not script_sobj:
             try:
+                # get from the sthpw database
                 search = Search("sthpw/custom_script")
                 search.add_filter("folder", dirname)
                 search.add_filter("title", basename)
@@ -167,10 +166,19 @@ class PythonTrigger(Trigger):
             print("WARNING: Empty python script [%s]" %script_sobj.get_code())
             return {}
 
+
+
         if my.trigger_sobj:
             trigger_sobj = my.trigger_sobj.get_sobject_dict()
             my.input['trigger_sobject'] = trigger_sobj
-        cmd = PythonCmd(code=script, input=my.input)
+
+        language = script_sobj.get_value("language")
+        if language == "server_js":
+            from tactic.command import JsCmd
+            cmd = JsCmd(code=script, input=my.input)
+        else:
+            cmd = PythonCmd(code=script, input=my.input)
+
         ret_val = cmd.execute()
 
         my.ret_val = ret_val
@@ -180,6 +188,8 @@ class PythonTrigger(Trigger):
         #print "options: ", my.options
 
         return ret_val
+
+
 
 
 

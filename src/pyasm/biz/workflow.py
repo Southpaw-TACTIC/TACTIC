@@ -186,6 +186,7 @@ class BaseProcessTrigger(Trigger):
         ret_val = None
 
         action = triggers.get("on_%s" % status)
+        js_action = triggers.get("cbjs_%s" % status)
         action_path = triggers.get("on_%s_path" % status)
 
         kwargs, input = my.build_trigger_input()
@@ -194,6 +195,16 @@ class BaseProcessTrigger(Trigger):
                 cmd = PythonCmd(code=action, input=input, **kwargs)
             else:
                 cmd = PythonCmd(script_path=script_path, input=input, **kwargs)
+
+            ret_val = cmd.execute()
+
+        elif js_action:
+            from tactic.command import JsCmd
+            if action:
+                cmd = JsCmd(code=action, input=input, **kwargs)
+            else:
+                cmd = JsCmd(script_path=script_path, input=input, **kwargs)
+
             ret_val = cmd.execute()
         else:
             # or call a trigger
@@ -247,7 +258,7 @@ class ProcessPendingTrigger(BaseProcessTrigger):
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        print "pending: ", process, node_type
+        #print "pending: ", process, node_type
 
         my.run_callback(pipeline, process, "pending")
 
@@ -266,8 +277,6 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             if not tasks:
                 tasks = Task.add_initial_tasks(sobject, processes=[process])
             else:
-                print "tasks: ", tasks
-                print tasks[0].get_data()
                 my.set_all_tasks(sobject, process, "pending")
 
 
@@ -286,7 +295,6 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             if not subpipeline:
                 return
 
-            print "subpipeline: ", subpipeline.get_code()
 
             child_processes = subpipeline.get_processes()
             #child_pipeline = process_obj.get_child_pipeline()
@@ -324,7 +332,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        print "action: ", process, node_type
+        #print "action: ", process, node_type
 
         if node_type not in ["node", "manual", "approval"]:
             my.set_all_tasks(sobject, process, "in_progress")
@@ -350,15 +358,25 @@ class ProcessActionTrigger(BaseProcessTrigger):
             my.handle_condition_node(sobject, pipeline, process, triggers)
 
         elif node_type == "action":
-
-            action = triggers.get("action")
-            action_path = triggers.get("action_path")
+            action = triggers.get("on_action")
+            cbjs_action = triggers.get("cbjs_action")
+            action_path = triggers.get("on_action_path")
             kwargs, input = my.build_trigger_input()
             if action or action_path:
                 if action:
                     cmd = PythonCmd(code=action, input=input, **kwargs)
                 else:
                     cmd = PythonCmd(script_path=script_path, input=input, **kwargs)
+
+                ret_val = cmd.execute()
+
+            elif cbjs_action:
+                from tactic.command import JsCmd
+                if action:
+                    cmd = JsCmd(code=action, input=input, **kwargs)
+                else:
+                    cmd = JsCmd(script_path=script_path, input=input, **kwargs)
+
                 ret_val = cmd.execute()
             else:
                 # or call a trigger
@@ -481,7 +499,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
-        print "complete: ", process, node_type
+        #print "complete: ", process, node_type
 
         status = my.get_status()
 
@@ -513,7 +531,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
 
         parent_process = pipeline.get_value("parent_process")
-        print "parent: ", parent_process
+        #print "parent: ", parent_process
         if parent_process:
             output_processes = pipeline.get_output_processes(process)
             if not output_processes:

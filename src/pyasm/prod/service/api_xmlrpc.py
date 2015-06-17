@@ -5055,6 +5055,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
    
 
+    @xmlrpc_decorator
+    def execute_js_script(my, ticket, script_path, kwargs={}):
+        '''execute a js script in the script editor
+
+        @params
+        ticket - authentication ticket
+        script_path - script path in Script Editor, e.g. test/eval_sobj
+      
+        @return
+        dictionary - returned data structure
+
+        '''
+        ret_val = {}
+        try:
+            from tactic.command import JsCmd
+            cmd = JsCmd(script_path=script_path, **kwargs)
+            Command.execute_cmd(cmd)
+        
+        except Exception, e:
+            raise
+        else:
+            ret_val['status'] = 'OK'
+            ret_val['description'] = cmd.get_description()
+
+            info = cmd.get_info()
+            ret_val['info'] = info
+
+        return ret_val
+
+
         
     @xmlrpc_decorator
     def execute_cmd(my, ticket, class_name, args={}, values={}, use_transaction=True):

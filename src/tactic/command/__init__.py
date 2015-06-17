@@ -12,6 +12,7 @@
 from scheduler import *
 from create_project_cmd import *
 from python_cmd import *
+from js_cmd import *
 from plugin import *
 from naming_migrator_cmd import *
 

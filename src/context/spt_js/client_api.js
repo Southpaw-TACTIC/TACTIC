@@ -1219,6 +1219,14 @@ TacticServerStub = function() {
     }
 
 
+    this.execute_js_script = function(script_path, script_kwargs, kwargs) {
+        if (kwargs) callback = kwargs.on_complete;
+        else callback = null;
+        return this._delegate("execute_js_script", arguments, kwargs, null, callback);
+    }
+
+
+
 
 
     this.execute = function(code) {
@@ -1353,6 +1361,12 @@ TacticServerStub = function() {
     //   on_error: A function that is run when a request throws an error.
     //      This is used be get_async_widget() and others
     this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
+
+
+        if (spt._delegate) {
+            return spt._delegate(func_name, passed_args, kwargs);
+        }
+
 
         var client = new AjaxService( this.url, '' );
 
