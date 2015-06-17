@@ -1953,7 +1953,7 @@ class AutoInfoWdg(BaseInfoWdg):
 
         event = "process|action"
 
-        lanaguage = ""
+        language = ""
 
         # get the trigger
         script = None
