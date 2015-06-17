@@ -15,6 +15,7 @@ __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'Pip
 import re
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.common import Environment
 from pyasm.biz import Pipeline, Project
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
@@ -1952,6 +1953,8 @@ class AutoInfoWdg(BaseInfoWdg):
 
         event = "process|action"
 
+        lanaguage = ""
+
         # get the trigger
         script = None
         if process_sobj:
@@ -1975,6 +1978,7 @@ class AutoInfoWdg(BaseInfoWdg):
                     custom_script = search.get_sobject()
                     if custom_script:
                         script = custom_script.get("script")
+                        language = custom_script.get("language")
 
 
         title_wdg = my.get_title_wdg(process, node_type)
@@ -2001,6 +2005,7 @@ class AutoInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 10px")
 
+        is_admin = Environment.get_security().is_admin()
 
         if node_type == "action":
 
@@ -2009,26 +2014,19 @@ class AutoInfoWdg(BaseInfoWdg):
             form_wdg.add("<br/>")
             form_wdg.add("<br/>")
 
-            """
-            #form_wdg.add("Script Path:<br/>")
-            text = TextInputWdg(name="on_action_path")
-            form_wdg.add(text)
-
-            form_wdg.add("<br/>")
-            form_wdg.add("OR")
-            form_wdg.add("<br/>")
-
-            form_wdg.add("Python Trigger:<br/>")
-            text = TextInputWdg(name="on_action_class")
-            form_wdg.add(text)
-
-            form_wdg.add("<br/>")
-            form_wdg.add("OR")
-            form_wdg.add("<br/>")
-            """
+            if is_admin:
+                form_wdg.add("Language:")
+                select = SelectWdg("language")
+                form_wdg.add(select)
+                select.set_option("labels", "Python|Javascript")
+                select.set_option("values", "python|server_js")
+                select.set_value(language)
+                form_wdg.add("<br/>")
+                form_wdg.add("Script:<br/>")
+            else:
+                form_wdg.add("Javascript:<br/>")
 
 
-            form_wdg.add("Script:<br/>")
             text = TextAreaWdg(name="on_action")
             text.add_class("form-control")
             if script:
@@ -2048,7 +2046,24 @@ class AutoInfoWdg(BaseInfoWdg):
             script_path = "Big/Test"
 
             form_wdg.add("<br/>")
+            form_wdg.add("<br/>")
 
+
+            if is_admin:
+                form_wdg.add("Language:")
+                select = SelectWdg("language")
+                form_wdg.add(select)
+                select.set_option("labels", "Python|Javascript")
+                select.set_option("values", "python|server_js")
+                select.set_value(language)
+                form_wdg.add("<br/>")
+                form_wdg.add("Script:<br/>")
+            else:
+                form_wdg.add("Javascript:<br/>")
+
+
+
+            """
             edit = ActionButtonWdg(title="Edit")
             form_wdg.add(edit)
             edit.add_style("float: right")
@@ -2066,6 +2081,7 @@ class AutoInfoWdg(BaseInfoWdg):
 
             '''
             } )
+            """
 
             text = TextAreaWdg(name="on_action")
             form_wdg.add(text)
@@ -2098,6 +2114,7 @@ class AutoInfoWdg(BaseInfoWdg):
                 process: bvr.process,
                 on_action: input.on_action,
                 on_action_class: input.on_action_class,
+                language: input.language,
             }
 
             server.execute_cmd(class_name, kwargs);
@@ -2286,6 +2303,11 @@ class ProcessInfoCmd(Command):
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")
+        is_admin = Environment.get_security().is_admin()
+        if is_admin:
+            language = my.kwargs.get("language")
+        else:
+            language = "server_js"
 
         pipeline = Pipeline.get_by_code(pipeline_code)
 
@@ -2327,6 +2349,7 @@ class ProcessInfoCmd(Command):
                 script.set_value("folder", folder)
                 script.set_value("title", "%s" % process)
 
+            search.set_value("language", langauge)
             script.set_value("script", on_action)
             script.commit()
 
