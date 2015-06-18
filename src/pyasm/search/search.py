@@ -222,7 +222,8 @@ class Search(Base):
         my.select.set_database(my.db_resource)
         my.select.set_id_col(my.get_id_col())
 
-        assert isinstance(my.db_resource, DbResource)
+        assert DbResource.is_instance(my.db_resource)
+
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
@@ -493,6 +494,12 @@ class Search(Base):
         '''add operator like begin, and, or. with an idx number, it will be inserted instead of appended'''
         my.select.add_op(op, idx=idx)
 
+    def is_expr(value):
+        '''return True if it is an expression based on starting chars'''
+        is_expr = re.search("^(@|\$\w|{@|{\$\w)", value)
+        return is_expr
+
+    is_expr = staticmethod(is_expr)
     def add_op_filters(my, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
@@ -518,6 +525,8 @@ class Search(Base):
 
             elif len(filter) == 2:
                 name, value = filter
+                if my.is_expr(value):
+                    value = Search.eval(value, single=True)
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
@@ -547,9 +556,13 @@ class Search(Base):
                     my.add_filters(name, value, table=table)
             elif len(filter) == 3:
                 name, op, value = filter
-
+               
                 op = op.replace("lt", "<")
                 op = op.replace("gt", ">")
+                if my.is_expr(value):
+                    value = Search.eval(value, single=True)
+
+
 
                 table = ""
                 if name.find(".") != -1:
@@ -575,7 +588,7 @@ class Search(Base):
                         op = '>='
                     elif op == 'is before':
                         op = '<='
-
+                    
                     quoted = True
                     # special case for NULL
                     if value == 'NULL':
@@ -1005,9 +1018,11 @@ class Search(Base):
 
             # see if a multi database join can be made
             can_join = DatabaseImpl.can_search_types_join(full_search_type, full_related_type)
+            
             if can_join and use_multidb != None:
                 can_join = use_multidb
-
+            if Config.get_value('database','join') == 'false':
+                can_join = False 
             if can_join:
                 my.add_op('begin')
                 if my_is_from:
@@ -5281,7 +5296,7 @@ class SearchType(SObject):
             if not num:
                 raise SqlException('setval needs a number larger than 0')
             if impl.get_database_type() == "SQLServer":
-                sql.execute( impl.get_setval_select(sequence, num))
+                sql.do_update( impl.get_setval_select(sequence, num))
                 id = sql.get_value( impl.get_currval_select(sequence))
             else:
                 id = sql.get_value( impl.get_setval_select(sequence, num))
