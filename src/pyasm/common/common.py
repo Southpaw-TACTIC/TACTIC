@@ -393,7 +393,6 @@ class Common(Base):
                 continue
             items.append(chr(idx))
 
-
         for i in range(0, num_digits):
             idx = random.randint(0, len(items)-1)
             if i and delimit and i % delimit == 0:

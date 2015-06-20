@@ -307,7 +307,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 # this will raise an exception if it is not in a table element
                 sobject = my.get_current_sobject()
             except:
-	        sobject = SearchKey.get_by_search_key(my.search_key)
+                sobject = SearchKey.get_by_search_key(my.search_key)
             sobjects = [sobject]
         else:
             try:
