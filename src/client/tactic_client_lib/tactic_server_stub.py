@@ -3517,6 +3517,23 @@ class TacticServerStub(object):
 
 
 
+    def execute_js_script(my, script_path, kwargs={}):
+        '''API Function: execute_js_script(script_path, kwargs) 
+        Execute a js script defined in Script Editor
+
+        @param:
+            script_path - script path in Script Editor, e.g. test/eval_sobj
+        @keyparam:
+            kwargs  - keyword arguments for this script
+
+        @return:
+            dictionary - returned data structure
+        '''
+        return my.server.execute_js_script(my.ticket, script_path, kwargs)
+
+
+
+
     def execute_transaction(my, transaction_xml, file_mode=None):
         '''Run a tactic transaction a defined by the instructions in the
         given transaction xml.  The format of the xml is identical to

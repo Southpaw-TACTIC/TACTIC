@@ -749,7 +749,7 @@ class AceEditorWdg(BaseRefreshWdg):
         select.add_style("display: inline")
         options_div.add(select)
         select.add_class("spt_language")
-        select.set_option("values", "javascript|python|expression|xml")
+        select.set_option("values", "javascript|server_js|python|expression|xml")
         select.add_behavior( {
             'type': 'change',
             'editor_id': my.get_editor_id(),
@@ -1265,6 +1265,12 @@ else {
                     var path = folder + "/" + title;
                     var server = TacticServerStub.get();
                     var info = server.execute_python_script(path);
+                    log.critical(info);
+                }
+                else if (language == 'server_js') {
+                    var path = folder + "/" + title;
+                    var server = TacticServerStub.get();
+                    var info = server.execute_js_script(path);
                     log.critical(info);
                 }
                 else {

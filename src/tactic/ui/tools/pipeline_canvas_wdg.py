@@ -1041,6 +1041,23 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
  
 	 
+        text.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+            var key = evt.key;
+            if (key == "enter") {
+                bvr.src_el.blur();
+            }
+            else if (key == "esc") {
+                var node = bvr.src_el.getParent(".spt_pipeline_node");
+                var old_name = node.spt_name;
+                bvr.src_el.value = old_name;
+                bvr.src_el.blur();
+            }
+            '''
+        } )
+
+
 
 
         # When the text is blur, it will accept the value entered
@@ -1218,10 +1235,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         text.add_style("position: absolute")
         text.add_style("display: none")
         text.add_style("top: %spx" % (height/4+5) )
-        text.add_style("left: %spx" % (height/4+5) )
+        text.add_style("left: 0px")
         text.add_style("width: 65px")
         text.set_value(name)
-
 
         active = DivWdg()
         node.add(active)
@@ -2517,21 +2533,24 @@ spt.pipeline.rename_node = function(node, value) {
     var input = node.getElement(".spt_input");
     var text = node.getElement(".spt_label");
 
-    // see if the name already exists in this group
-    var group_name = spt.pipeline.get_current_group();
-    var group = spt.pipeline.get_group(group_name);
-    var nodes = group.get_nodes();
-    for (var i = 0; i < nodes.length; i++) {
-        var node_name = spt.pipeline.get_node_name(nodes[i]);
-        if (value == node_name) {
-            spt.alert("Name ["+value+"] already exists");
-            input.value = "";
-            return;
+
+    var old_name = node.spt_name;
+    if (old_name != value) {
+        // see if the name already exists in this group
+        var group_name = spt.pipeline.get_current_group();
+        var group = spt.pipeline.get_group(group_name);
+        var nodes = group.get_nodes();
+        for (var i = 0; i < nodes.length; i++) {
+            var node_name = spt.pipeline.get_node_name(nodes[i]);
+            if (value == node_name) {
+                spt.alert("Name ["+value+"] already exists");
+                input.value = "";
+                return;
+            }
         }
     }
 
 
-    var old_name = node.spt_name;
     node.spt_name = value;
     node.setAttribute("spt_element_name", value);
     node.setAttribute("title", value);
@@ -2852,6 +2871,7 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
     var node = bvr.drag_el;
     node.removeClass("move");
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -3964,6 +3984,8 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     spt.pipeline.redraw_canvas();
+
+    spt.named_events.fire_event('pipeline|save', {});
 }
 
 

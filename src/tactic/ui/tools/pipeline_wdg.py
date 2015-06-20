@@ -15,6 +15,7 @@ __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'Pip
 import re
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.common import Environment
 from pyasm.biz import Pipeline, Project
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
@@ -1587,15 +1588,7 @@ class BaseInfoWdg(BaseRefreshWdg):
             // click on the new node
             new_node.click();
 
-
-            var top = bvr.src_el.getParent(".spt_process_info_top");
-
-            // change node type on the server
-            var class_name = 'tactic.ui.tools.ChangeNodeTypeCmd';
-            var kwargs = {
-            }
-
-            server.execute_cmd(class_name, kwargs);
+            spt.named_events.fire_event('pipeline|change', {});
 
             '''
         } )
@@ -1603,17 +1596,6 @@ class BaseInfoWdg(BaseRefreshWdg):
         select.add_style("margin-top: -5px")
 
         return title_wdg
-
-
-
-__all__.append("ChangeNodeTypeCmd")
-class ChangeNodeTypeCmd(Command):
-
-    def execute(my):
-        pass
-
-
-
 
 
 
@@ -1952,6 +1934,8 @@ class AutoInfoWdg(BaseInfoWdg):
 
         event = "process|action"
 
+        language = ""
+
         # get the trigger
         script = None
         if process_sobj:
@@ -1975,6 +1959,7 @@ class AutoInfoWdg(BaseInfoWdg):
                     custom_script = search.get_sobject()
                     if custom_script:
                         script = custom_script.get("script")
+                        language = custom_script.get("language")
 
 
         title_wdg = my.get_title_wdg(process, node_type)
@@ -2001,6 +1986,7 @@ class AutoInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 10px")
 
+        is_admin = Environment.get_security().is_admin()
 
         if node_type == "action":
 
@@ -2009,26 +1995,19 @@ class AutoInfoWdg(BaseInfoWdg):
             form_wdg.add("<br/>")
             form_wdg.add("<br/>")
 
-            """
-            #form_wdg.add("Script Path:<br/>")
-            text = TextInputWdg(name="on_action_path")
-            form_wdg.add(text)
-
-            form_wdg.add("<br/>")
-            form_wdg.add("OR")
-            form_wdg.add("<br/>")
-
-            form_wdg.add("Python Trigger:<br/>")
-            text = TextInputWdg(name="on_action_class")
-            form_wdg.add(text)
-
-            form_wdg.add("<br/>")
-            form_wdg.add("OR")
-            form_wdg.add("<br/>")
-            """
+            if is_admin:
+                form_wdg.add("Language:")
+                select = SelectWdg("language")
+                form_wdg.add(select)
+                select.set_option("labels", "Python|Javascript")
+                select.set_option("values", "python|server_js")
+                select.set_value(language)
+                form_wdg.add("<br/>")
+                form_wdg.add("Script:<br/>")
+            else:
+                form_wdg.add("Javascript:<br/>")
 
 
-            form_wdg.add("Script:<br/>")
             text = TextAreaWdg(name="on_action")
             text.add_class("form-control")
             if script:
@@ -2048,7 +2027,24 @@ class AutoInfoWdg(BaseInfoWdg):
             script_path = "Big/Test"
 
             form_wdg.add("<br/>")
+            form_wdg.add("<br/>")
 
+
+            if is_admin:
+                form_wdg.add("Language:")
+                select = SelectWdg("language")
+                form_wdg.add(select)
+                select.set_option("labels", "Python|Javascript")
+                select.set_option("values", "python|server_js")
+                select.set_value(language)
+                form_wdg.add("<br/>")
+                form_wdg.add("Script:<br/>")
+            else:
+                form_wdg.add("Javascript:<br/>")
+
+
+
+            """
             edit = ActionButtonWdg(title="Edit")
             form_wdg.add(edit)
             edit.add_style("float: right")
@@ -2066,6 +2062,7 @@ class AutoInfoWdg(BaseInfoWdg):
 
             '''
             } )
+            """
 
             text = TextAreaWdg(name="on_action")
             form_wdg.add(text)
@@ -2098,6 +2095,7 @@ class AutoInfoWdg(BaseInfoWdg):
                 process: bvr.process,
                 on_action: input.on_action,
                 on_action_class: input.on_action_class,
+                language: input.language,
             }
 
             server.execute_cmd(class_name, kwargs);
@@ -2286,6 +2284,11 @@ class ProcessInfoCmd(Command):
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")
+        is_admin = Environment.get_security().is_admin()
+        if is_admin:
+            language = my.kwargs.get("language")
+        else:
+            language = "server_js"
 
         pipeline = Pipeline.get_by_code(pipeline_code)
 
@@ -2298,6 +2301,7 @@ class ProcessInfoCmd(Command):
         event = "process|action"
 
         folder = "_triggers/%s" % pipeline.get_code()
+        title = process_sobj.get_code()
 
         # check to see if the trigger already exists
         search = Search("config/trigger")
@@ -2311,7 +2315,7 @@ class ProcessInfoCmd(Command):
             trigger.set_value("mode", "same process,same transaction")
 
         if on_action:
-            trigger.set_value("script_path", "%s/%s" % (folder, process))
+            trigger.set_value("script_path", "%s/%s" % (folder, title))
         else:
             trigger.set_value("class_name", on_action_class)
         trigger.commit()
@@ -2325,8 +2329,9 @@ class ProcessInfoCmd(Command):
             if not script:
                 script = SearchType.create("config/custom_script")
                 script.set_value("folder", folder)
-                script.set_value("title", "%s" % process)
+                script.set_value("title", "%s" % title)
 
+            script.set_value("language", language)
             script.set_value("script", on_action)
             script.commit()
 
@@ -2470,10 +2475,22 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'type': 'listen',
         'event_name': event_name,
         'cbjs_action': '''
+        var node = bvr.firing_element;
         var data = bvr.firing_data;
-        // rename the process on the server
-        //var process = server.get_by_code("config/process", data.old_name);
 
+        var old_name = data.old_name;
+        var name = data.name;
+
+        // rename the process on the server
+        var group_name = spt.pipeline.get_current_group();
+        var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
+
+        server.update(process, {process: name});
+
+        // select the node
+        node.click();
+
+        spt.named_events.fire_event('pipeline|change', {});
         '''
         } )
  
@@ -2663,10 +2680,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
         icon = button.get_icon_wdg()    
         # makes it glow
         glow_action = ''' 
-        bvr.src_el.setStyles(
-        {'outline': 'none', 
-        'border-color': '#CF7e1B', 
-        'box-shadow': '0 0 8px #CF7e1b'});
+        bvr.src_el.setStyles( {
+            'outline': 'none', 
+            'border-color': '#CF7e1B', 
+            'box-shadow': '0 0 20px #CF7e1b',
+            'border-radius': '20px',
+        });
         '''
 
         icon.add_named_listener('pipeline|change', glow_action)

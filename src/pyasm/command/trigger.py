@@ -191,6 +191,7 @@ class Trigger(Command):
 
 
     def _get_triggers(cls, call_event, integral_only=False, project_code=None):
+
         if integral_only:
             trigger_key = "%s:integral" % cls.TRIGGER_EVENT_KEY
         else:
@@ -466,9 +467,6 @@ class Trigger(Command):
                 else:
                     if trigger_class == '':
                         script_path = trigger_sobj.get_value("script_path")
-                        #from tactic.command.python_cmd import PythonTrigger
-                        #trigger = PythonTrigger()
-                        #trigger.set_script_path(script_path)
 
                         trigger_class = "tactic.command.PythonTrigger"
                         kwargs = {

@@ -719,10 +719,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
             view_kwargs = my.kwargs.copy()
             for key, value in view_kwargs.items():
                 try:
-                    test = jsonloads(value)
-                except:
+                    test = jsondumps(value)
+                except Exception, e:
                     del(view_kwargs[key])
-
 
 
             for behavior_node in behavior_nodes:

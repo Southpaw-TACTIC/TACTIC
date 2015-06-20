@@ -58,6 +58,8 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_js()
+            """
             my._test_hierarchy()
             my._test_manual()
             my._test_task()
@@ -67,6 +69,7 @@ class WorkflowCmd(Command):
             my._test_input()
             my._test_trigger()
             my._test_approval()
+            """
         except Exception, e:
             print "Error: ", e
             raise
@@ -123,6 +126,45 @@ class WorkflowCmd(Command):
 
 
         return pipeline, processes_dict
+
+
+
+    def _test_js(my):
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        sobject.set_value("code", "test")
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        process = processes.get("a")
+        process.set_json_value("workflow", {
+            'cbjs_action': '''
+            console.log("This is javascript");
+            console.log(input);
+            return false
+            '''
+        } )
+        process.commit()
+
+
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+
+        import time
+        start = time.time()
+        Trigger.call(my, "process|pending", output)
+        #my.assertEquals( "complete", sobject.get_value("a"))
+
 
 
 
