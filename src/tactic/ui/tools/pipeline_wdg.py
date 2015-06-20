@@ -2301,6 +2301,7 @@ class ProcessInfoCmd(Command):
         event = "process|action"
 
         folder = "_triggers/%s" % pipeline.get_code()
+        title = process_sobj.get_code()
 
         # check to see if the trigger already exists
         search = Search("config/trigger")
@@ -2314,7 +2315,7 @@ class ProcessInfoCmd(Command):
             trigger.set_value("mode", "same process,same transaction")
 
         if on_action:
-            trigger.set_value("script_path", "%s/%s" % (folder, process))
+            trigger.set_value("script_path", "%s/%s" % (folder, title))
         else:
             trigger.set_value("class_name", on_action_class)
         trigger.commit()
@@ -2328,7 +2329,7 @@ class ProcessInfoCmd(Command):
             if not script:
                 script = SearchType.create("config/custom_script")
                 script.set_value("folder", folder)
-                script.set_value("title", "%s" % process)
+                script.set_value("title", "%s" % title)
 
             script.set_value("language", language)
             script.set_value("script", on_action)

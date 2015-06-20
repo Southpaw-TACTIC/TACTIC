@@ -3984,6 +3984,8 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     spt.pipeline.redraw_canvas();
+
+    spt.named_events.fire_event('pipeline|save', {});
 }
 
 
