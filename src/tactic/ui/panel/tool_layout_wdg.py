@@ -89,8 +89,12 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         my.view_editable = True
 
-        if my.kwargs.get("do_search") != "false":
-            my.handle_search()
+
+
+        #if my.kwargs.get("do_search") != "false":
+        #    my.handle_search()
+        my._process_search_args()
+
 
         #my.kwargs['show_gear'] = 'false'
 
@@ -311,9 +315,14 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         layout_div.add_style("min-height: 500px")
         td.add(layout_div)
 
-        my.kwargs['element_names'] = ['name','description','detail', 'file_list','general_checkin']
-        my.kwargs['show_shelf'] = False
-        layout = FastTableLayoutWdg(**my.kwargs)
+        element_names = my.kwargs.get("element_names")
+        if not element_names:
+            kwargs['element_names'] = ['name','description','detail', 'file_list','general_checkin']
+        #kwargs['element_names'] = ['preview','name','detail', 'task_summary']
+
+        kwargs['show_shelf'] = False
+        kwargs['show_search_limit'] = False
+        layout = FastTableLayoutWdg(**kwargs)
         layout_div.add(layout)
         #from tactic.ui.panel import TileLayoutWdg
         #layout = TileLayoutWdg(**my.kwargs)

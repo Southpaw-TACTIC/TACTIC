@@ -173,26 +173,33 @@ class ThumbWdg(BaseTableElementWdg):
             'use_delta': 'true',
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
-            #'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
-             # don't use cbjs_pre_motion_setup as it assumes the drag el
-                                
-            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background")),
-            'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; max-width: 250px; background: %s' % (layout.get_color("border"), layout.get_color("background")),
 
-            "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
-                            var target_el = spt.get_event_target(evt);
-                            target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
-                            if (target_el) {
-                                var orig_border_color = target_el.getStyle('border-color');
-                                var orig_border_style = target_el.getStyle('border-style');
-                                target_el.setStyle('border','dashed 2px ' + bvr.border_color);
-                                if (!target_el.getAttribute('orig_border_color')) {
-                                    target_el.setAttribute('orig_border_color', orig_border_color);
-                                    target_el.setAttribute('orig_border_style', orig_border_style);
-                                }
-                            }''',
+            'cbjs_setup': '''
+                if(spt.drop) {
+                    spt.drop.sobject_drop_setup( evt, bvr );
+                }
+            ''',
+            "cbjs_motion": '''
+                spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                var target_el = spt.get_event_target(evt);
+                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                if (target_el) {
+                    var orig_border_color = target_el.getStyle('border-color');
+                    var orig_border_style = target_el.getStyle('border-style');
+                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                    if (!target_el.getAttribute('orig_border_color')) {
+                        target_el.setAttribute('orig_border_color', orig_border_color);
+                        target_el.setAttribute('orig_border_style', orig_border_style);
+                    }
+                }
+            ''',
+            "cbjs_action": '''
+                if (spt.drop) {
+                    spt.drop.sobject_drop_action(evt, bvr);
+                }
 
-            "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
+            '''
         } )
 
 
@@ -798,8 +805,20 @@ class ThumbWdg(BaseTableElementWdg):
         # define a div
         div = my.top
         div.add_class("spt_thumb_top")
+        div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
-        div.force_default_context_menu()
+        if sobject.get_value("_is_collection", no_exception=True):
+            expr = "@COUNT(jobs/media_in_media)"
+            num_items = Search.eval(expr, sobject)
+            if not num_items:
+                num_items = "0"
+            num_div = DivWdg(num_items)
+            num_div.add_class("badge")
+            num_div.add_style("font-size: 0.8em")
+            num_div.add_style("margin: 2px")
+            num_div.add_style("position: absolute")
+            div.add(num_div)
+             
  
       
         # if no link path is found, display the no icon image
@@ -986,7 +1005,9 @@ class ThumbWdg(BaseTableElementWdg):
         if my.show_file_type:
             links_list = ThumbWdg.get_file_info_list(xml, file_objects, sobject, snapshot, my.show_versionless)
             my.set_type_link(div, links_list) 
-             
+
+
+
         return div
 
 

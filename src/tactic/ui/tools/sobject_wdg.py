@@ -77,9 +77,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-        title.add_color("background", "background3")
-        title.add_style("height: 20px")
-        title.add_style("padding: 6px")
+        title.add_color("background", "background", -5)
+        title.add_style("height: 23px")
+        title.add_style("padding: 10px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
         title.add_border()
@@ -378,7 +378,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if tabs:
             tabs = tabs.split(",")
         else:
-            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit","pipeline"]
+            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit"]
+
+
+        if my.sobject.get_value("pipeline_code", no_exception=True):
+            tabs.append("pipeline")
+        if my.sobject.get_value("_is_collection", no_exception=True):
+            tabs.append("collection")
 
         for tab in tabs:
 
@@ -494,6 +500,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
                   </display>
                 </element>
                 ''' % values)
+
+
+            elif tab == "collection":
+                config_xml.append('''
+                <element name="collection" title="Collection">
+                  <display class='tactic.ui.panel.ViewPanelWdg'>
+                    <view>table</view>
+                    <layout>tile</layout>
+                    <show_shelf>false</show_shelf>
+                    <search_key>%(search_key)s</search_key>
+                    <search_type>jobs/media_in_media</search_type>
+                    <element_names>preview,search_code</element_names>
+                  </display>
+                </element>
+                ''' % values)
+
+
 
             elif tab.find("/") != -1:
                 parts = tab.split("/")
@@ -1109,9 +1132,18 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
 
         spt.pipeline.set_status_color(bvr.search_key);
-        spt.pipeline.load_triggers();
 
+        var top = spt.pipeline.top;
+        var text = top.getElement(".spt_pipeline_editor_current2");
+        spt.pipeline.load_triggers();
         spt.pipeline.fit_to_canvas(bvr.pipeline);
+
+        var server = TacticServerStub.get();
+        var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
+        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
+        text.innerHTML = html;
+
+
 
         '''
         } )

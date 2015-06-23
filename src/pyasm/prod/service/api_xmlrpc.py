@@ -2532,7 +2532,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     # Directory methods
     #
     @xmlrpc_decorator
-    def get_paths(my, ticket, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False):
+    def get_paths(my, ticket, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None):
         '''method to get paths from an sobject
 
         @params
@@ -2565,6 +2565,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         search_id = sobject.get_id()
         search_key = SearchKey.get_by_sobject(sobject)
 
+        if process:
+            context = None
+
         # get the level object
         if level_key:
             level = SearchKey.get_by_search_key(level_key)
@@ -2577,16 +2580,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
             level_id = None
 
         if not versionless:
-            snapshot = Snapshot.get_snapshot(search_type, search_id, context, version, level_type=level_type, level_id=level_id)
+            snapshot = Snapshot.get_snapshot(search_type, search_id, context, version, level_type=level_type, level_id=level_id, process=process)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'
             else:
                 versionless_mode = 'current'
-            snapshot = Snapshot.get_versionless(search_type, search_id, context , mode=versionless_mode, create=False)
+            snapshot = Snapshot.get_versionless(search_type, search_id, context , mode=versionless_mode, create=False, process=process)
 
         if not snapshot:
-            # This is probaby to strict
+            # This is probaby to0 strict
             #raise ApiException("Snapshot for [%s] with context [%s], version [%s] does not exist" % (search_key, context, version))
             paths = {}
             return paths
@@ -5051,6 +5054,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return ret_val
 
    
+
+    @xmlrpc_decorator
+    def execute_js_script(my, ticket, script_path, kwargs={}):
+        '''execute a js script in the script editor
+
+        @params
+        ticket - authentication ticket
+        script_path - script path in Script Editor, e.g. test/eval_sobj
+      
+        @return
+        dictionary - returned data structure
+
+        '''
+        ret_val = {}
+        try:
+            from tactic.command import JsCmd
+            cmd = JsCmd(script_path=script_path, **kwargs)
+            Command.execute_cmd(cmd)
+        
+        except Exception, e:
+            raise
+        else:
+            ret_val['status'] = 'OK'
+            ret_val['description'] = cmd.get_description()
+
+            info = cmd.get_info()
+            ret_val['info'] = info
+
+        return ret_val
+
 
         
     @xmlrpc_decorator

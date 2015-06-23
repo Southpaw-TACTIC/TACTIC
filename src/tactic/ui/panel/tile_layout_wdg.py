@@ -587,6 +587,40 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
+        # For collections
+        parts = my.search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+        layout_wdg.add_attr("spt_collection_type", collection_type)
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'collection_type': collection_type,
+            'search_type': my.search_type,
+            'bvr_match_class': 'spt_tile_collection',
+            'cbjs_action': '''
+            var layout = bvr.src_el.getParent(".spt_layout");
+            var top = bvr.src_el.getParent(".spt_tile_top");
+
+            var name = top.getAttribute("spt_name");
+            var search_code = top.getAttribute("spt_search_code");
+
+            var search_key = top.getAttribute("spt_search_key");
+            var parent_code = top.getAttribute("spt_search_code");
+
+            var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
+            //spt.table.run_search( { expression: expr } );
+            var class_name = "tactic.ui.panel.ViewPanelWdg";
+            var kwargs = {
+                search_type: bvr.search_type,
+                layout: 'tile',
+                expression: expr,
+                keywords: "__NONE__",
+                use_last_search: false,
+            }
+            spt.tab.add_new(search_code, name, class_name, kwargs);
+            '''
+        } )
+
+
         process = my.kwargs.get("process")
         if not process:
             process = "publish"
@@ -1582,8 +1616,37 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 }
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
-    if (spt.drop) {
 
+    var dst_el = spt.get_event_target(evt);
+    var dst_top = dst_el.getParent(".spt_tile_top");
+    if (dst_top) {
+        if( bvr._drag_copy_el ) {
+            spt.behavior.destroy_element(bvr._drag_copy_el);
+        }
+
+        // add to the collection
+        var parent_key = dst_top.getAttribute("spt_search_key");
+        var server = TacticServerStub.get();
+        var parent = server.get_by_search_key(parent_key);
+        if (parent._is_collection == true) {
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            var collection_type = layout.getAttribute("spt_collection_type");
+            var src_top = bvr.src_el.getParent(".spt_tile_top");
+            var src_code = src_top.getAttribute("spt_search_code");
+            var parent_code = dst_top.getAttribute("spt_search_code");
+            var data = {
+                parent_code: parent_code,
+                search_code: src_code
+            };
+            var sobject = server.get_unique_sobject(collection_type, data);
+            //server.insert(collection_type, data);
+            spt.table.refresh_rows([dst_top], null, null);
+        }
+        return;
+    }
+
+    if (spt.drop) {
         spt.drop.sobject_drop_action(evt, bvr);
     }
     else {
@@ -1754,13 +1817,26 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
             detail_div = DivWdg()
             div.add(detail_div)
-            detail_div.add_class("spt_tile_detail")
             detail_div.add_style("float: right")
             detail_div.add_style("margin-top: -2px")
 
-            #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
-            detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
-            detail_div.add(detail)
+            if sobject.get_value("_is_collection", no_exception=True) == True:
+                detail_div.add_class("spt_tile_collection");
+
+                search_type = sobject.get_base_search_type()
+                parts = search_type.split("/")
+                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+                #collection_type = "jobs/media_in_media"
+
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
+                #detail = IconButtonWdg(title="Detail", icon="BS_FOLDER_CLOSE")
+                #detail_div.add(detail)
+            else:
+                detail_div.add_class("spt_tile_detail")
+
+                detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
+                detail_div.add(detail)
 
 
         header_div = DivWdg()
@@ -1892,11 +1968,16 @@ class ThumbWdg2(BaseRefreshWdg):
 
         if path and path.startswith("/context"):
             img.add_style("padding: 10px 15%")
-            img.add_style("width: 70%")
+            img.add_style("width: 100%")
+            img.add_style("height: auto")
+            div.add_style("height: 100%")
+            div.add_style("text-align: center")
         elif path:
             img.add_style("width: %s" % width)
             if height:
                 img.add_style("height: %s" % height)
+            else:
+                img.add_style("height: auto")
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
 
@@ -1926,6 +2007,15 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
     def get_path_from_sobject(my, sobject):
+
+        if sobject.get_value("_is_collection", no_exception=True):
+            from pyasm.common import Environment
+            install_dir = Environment.get().get_install_dir()
+            path = "/context/icons/mime-types/folder2.jpg"
+
+            my.lib_path = "%s/src%s" % (install_dir, path)
+            my.icon_path = "%s/src%s" % (install_dir, path)
+            return path
 
         icon_path = None
         path = None

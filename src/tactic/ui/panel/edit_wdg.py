@@ -23,6 +23,7 @@ from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckb
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg, Menu, MenuItem, SmartMenu
 from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 class EditException(Exception):
     pass
@@ -554,7 +555,7 @@ class EditWdg(BaseRefreshWdg):
         tr = table.add_row()
 
         stype_type = search_type_obj.get_value("type", no_exception=True)
-        if stype_type in ['media'] and my.sobjects:
+        if my.mode != 'insert' and stype_type in ['media'] and my.sobjects:
 
             td = table.add_cell()
 
@@ -608,17 +609,18 @@ class EditWdg(BaseRefreshWdg):
         if single in ['false', False] and my.mode == 'insert':
             multi_div = DivWdg()
             multi_div.add_style("text-align: left")
+            multi_div.add_style("padding: 5px 10px")
 
-            multi_div.add("Specify the number of items that will be added with this form:<br/><br/>")
 
-
-            multi_div.add("<b># of new items to add: </b>")
+            multi_div.add("<b>Specify number of new items to add: </b>")
             multi_div.add("&nbsp;"*4)
 
 
             multi_text = TextWdg("multiplier")
-            multi_text.add_style("width: 30px")
+            multi_text.add_class("form-control")
             multi_div.add(multi_text)
+            multi_text.add_style("display: inline-block")
+            multi_text.add_style("width: 60px")
 
             tr, td = table.add_row_cell( multi_div )
 

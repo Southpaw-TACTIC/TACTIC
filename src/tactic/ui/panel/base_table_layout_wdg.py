@@ -854,15 +854,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         show_search = my.kwargs.get("show_search") != 'false'
 
-       
-        if show_keyword_search:
+        if show_search and show_keyword_search:
+            from tactic.ui.filter import FilterData
+            filter_data = FilterData.get_from_cgi()
+
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
             hidden = HiddenWdg("prefix", "keyword")
             keyword_div.add(hidden)
 
-            from tactic.ui.filter import FilterData
-            filter_data = FilterData.get_from_cgi()
             values_list = filter_data.get_values_by_prefix("keyword")
             if values_list:
                 values = values_list[0]
@@ -1524,7 +1524,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                       parent_key: '%s',
                       mode: 'insert',
                       view: '%s',
-                      save_event: bvr.event_name
+                      save_event: bvr.event_name,
                     };
                     spt.panel.load_popup('Single-Insert', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%(my.parent_key, insert_view)
@@ -1552,8 +1552,40 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%(my.parent_key, insert_view)
             } )
-
             menu.add(menu_item)
+
+
+            # collection
+            #if SearchType.column_exists(my.search_type, "is_collection"):
+            if True:
+                menu_item = MenuItem(type='action', label='Add New Collection')
+                menu_item.add_behavior( {
+                    'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var top = activator.getParent(".spt_table_top");
+                        var table = top.getElement(".spt_table");
+                        var search_type = top.getAttribute("spt_search_type")
+                        kwargs = {
+                          search_type: search_type,
+                          parent_key: '%s',
+                          mode: 'insert',
+                          view: '%s',
+                          save_event: bvr.event_name,
+                          show_header: false,
+                          default: {
+                            _is_collection: true
+                          }
+                        };
+                        spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
+                    ''' % (my.parent_key, insert_view)
+
+                } )
+                menu.add(menu_item)
+
+
+
+
+
             menu_item = MenuItem(type='action', label='Edit Multiple Items (NA)')
             menu_item.add_behavior( {
                 'cbjs_action': '''

@@ -291,6 +291,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         scroll.add(content)
         content.add_class("spt_gallery_content")
+
         # make the items vertically align to bottom (flex-emd)
         # on a regular monitor, align to top (flex-start) is better
         if align == 'bottom':
@@ -358,7 +359,9 @@ class GalleryWdg(BaseRefreshWdg):
         for i, path in enumerate(paths):
             path_div = DivWdg(css='spt_gallery_item')
             content.add(path_div)
-            path_div.add_style("float: left")
+            #path_div.add_style("float: left")
+            path_div.add_style("display: inline-block")
+            path_div.add_style("vertical-align: middle")
 
             if path == my.curr_path:
                 curr_index = i
@@ -398,16 +401,6 @@ class GalleryWdg(BaseRefreshWdg):
         #icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
         icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
         inner.add(icon)
-        #icon = DivWdg()
-        #icon.add("X")
-        #icon.add_style("font-size: 42px")
-        #icon.add_style("color: #ddd")
-        #icon.add_style("width: 48px")
-        #icon.add_style("height: 48px")
-        #icon.add_style("text-align: center")
-        #icon.add_style("border-radius: 30px")
-        #icon.add_style("border: solid 3px #ddd")
-        icon.add_class("unselectable")
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
         icon.add_style("bottom: 80px")
@@ -420,6 +413,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.behavior.destroy_element(top);
             '''
         } )
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
         icon = IconWdg(title="Previous", icon="/context/icons/glyphs/chevron_left.png")
@@ -437,6 +432,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_prev(arrow); 
             '''
         } )
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
         icon = IconWdg(title="Next", icon="/context/icons/glyphs/chevron_right.png")
@@ -454,6 +451,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_next(arrow); 
             '''
         } )
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
 

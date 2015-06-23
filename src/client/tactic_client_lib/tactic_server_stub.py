@@ -3049,7 +3049,7 @@ class TacticServerStub(object):
     #
     # Directory methods
     #
-    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False):
+    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None):
         '''API Function: get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False)
         Get paths from an sobject
 
@@ -3064,6 +3064,7 @@ class TacticServerStub(object):
             was checked into
         single - If set to True, the first of each path set is returned
         versionless - boolean to return the versionless snapshot, which takes a version of -1 (latest)  or 0 (current)
+        process - the process of the snapshot
 
         @return
         A dictionary of lists representing various paths.  The paths returned
@@ -3513,6 +3514,23 @@ class TacticServerStub(object):
             string - description of command
         '''
         return my.server.execute_cmd(my.ticket, class_name, args, values)
+
+
+
+    def execute_js_script(my, script_path, kwargs={}):
+        '''API Function: execute_js_script(script_path, kwargs) 
+        Execute a js script defined in Script Editor
+
+        @param:
+            script_path - script path in Script Editor, e.g. test/eval_sobj
+        @keyparam:
+            kwargs  - keyword arguments for this script
+
+        @return:
+            dictionary - returned data structure
+        '''
+        return my.server.execute_js_script(my.ticket, script_path, kwargs)
+
 
 
 

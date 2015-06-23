@@ -36,4 +36,6 @@ except:
 from system import *
 from watch_folder import *
 
+from js_wrapper import *
+
 

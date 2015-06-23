@@ -469,7 +469,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-        my.total_days = (my.end_date - my.start_date).days
+        my.total_days = (my.end_date - my.start_date).days + 1
         my.percent_width = 100 
         if my.total_days:
             my.percent_per_day = float(my.percent_width) / float(my.total_days)

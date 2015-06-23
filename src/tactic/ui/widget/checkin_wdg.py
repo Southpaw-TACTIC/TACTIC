@@ -144,7 +144,7 @@ class CheckinWdg(BaseRefreshWdg):
             my.processes = ['publish']
             my.auto_process = True
         else:
-            my.processes = my.pipeline.get_process_names()
+            my.processes = my.pipeline.get_process_names(type=["node"])
             if not my.processes:
                 my.processes = ['publish']
                 my.auto_process = True

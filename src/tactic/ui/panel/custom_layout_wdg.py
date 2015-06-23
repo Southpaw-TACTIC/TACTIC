@@ -14,7 +14,7 @@ __all__ = ["CustomLayoutWdg", "SObjectHeaderWdg"]
 import os, types, re
 import cStringIO
 
-from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads
+from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads, jsondumps
 from pyasm.biz import Schema, ExpressionParser, Project
 from pyasm.search import Search, SearchKey, WidgetDbConfig, SObject
 from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table, Widget, Html, WebContainer
@@ -713,6 +713,17 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 '''
             })
 
+
+
+            # remove objects that cannot be json marshalled
+            view_kwargs = my.kwargs.copy()
+            for key, value in view_kwargs.items():
+                try:
+                    test = jsondumps(value)
+                except Exception, e:
+                    del(view_kwargs[key])
+
+
             for behavior_node in behavior_nodes:
 
                 bvr_div = DivWdg()
@@ -752,7 +763,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
                     # add the kwargs to this so behaviors have access
-                    bvr['kwargs'] = my.kwargs
+                    bvr['kwargs'] = view_kwargs
                     bvr['class_name'] = Common.get_full_class_name(my)
 
                     if relay_class:

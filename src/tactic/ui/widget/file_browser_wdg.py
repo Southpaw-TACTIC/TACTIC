@@ -169,7 +169,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
         var paths = [];
-
+#
         for (var i = 0; i < els.length; i++) {
             var el = els[i];
             if (el.hasClass("spt_dir")) {
@@ -396,8 +396,11 @@ class DirListWdg(BaseRefreshWdg):
 
             top.add(dir_title)
 
-            bg_color = dir_title.get_color("background")
-            hilight_color =  dir_title.get_color("background", -20)
+            background = my.kwargs.get("background")
+            if not background:
+                background = "background"
+            bg_color = dir_title.get_color(background)
+            hilight_color =  dir_title.get_color(background, -20)
 
             if show_selection:
                 select_wdg = my.get_selection_wdg(bg_color, hilight_color)
@@ -410,52 +413,6 @@ class DirListWdg(BaseRefreshWdg):
             else:
                 dir_title.add(HtmlElement.br())
 
-
-        # Test drag and drop files
-        """
-        top.add_attr("ondragenter", "return false")
-        top.add_attr("ondragover", "return false")
-        top.add_attr("ondrop", "spt.drag.noop(event, this)")
-        top.add_style("border: solid 1px green")
-        top.add_behavior( {
-            'type': 'load',
-            'base_dir': my.kwargs.get("base_dir"),
-            'class_name': Common.get_full_class_name(my),
-            'cbjs_action': '''
-            spt.drag = {}
-
-            spt.drag.noop = function(evt, el) {
-              evt.stopPropagation();
-              evt.preventDefault();
-              evt.dataTransfer.dropEffect = 'copy';
-              var files = evt.dataTransfer.files;
-              var applet = spt.Applet.get();
-
-              var base_dir = 'DRAGDROP';
-              var file_names = [];
-              var sizes = {};
-              var md5s = {};
-              for (var i = 0; i < files.length; i++) {
-                  var file = files[i];
-                  var file_name = base_dir + "/" + file_name;
-                  file_names.push(file_name);
-                  sizes[file_name] = file.size;
-                  md5s[file_name] = 0;
-              }
-              var search_key = bvr.src_el.getAttribute("spt_search_key");
-              var kwargs = {
-                search_key: search_key,
-                base_dir: base_dir,
-                location: 'client',
-                paths: file_names,
-                sizes: sizes,
-                md5s: md5s
-              }
-              spt.panel.load(bvr.src_el, bvr.class_name, kwargs);
-            }
-            '''
-        } )
-        """
 
 
         all_open = my.kwargs.get("all_open")
@@ -743,8 +700,11 @@ class DirListWdg(BaseRefreshWdg):
         swap.add_action_script(swap_action)
 
 
-        hover = div.get_color("background", -5)
-        div.add_color("background", "background")
+        background = my.kwargs.get("background")
+        if not background:
+            background = "background"
+        hover = div.get_color(background, -5)
+        div.add_color("background", background)
         div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
         div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
      
@@ -822,8 +782,13 @@ class DirListWdg(BaseRefreshWdg):
         my.add_file_behaviors(item_div, dirname, basename)
 
 
-        hover = item_div.get_color("background", -5)
-        item_div.add_color("background", "background")
+        background = my.kwargs.get("background")
+        if not background:
+            background = "background"
+        hover = item_div.get_color(background, -5)
+        item_div.add_color("background", background)
+
+
         item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
         item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
      
