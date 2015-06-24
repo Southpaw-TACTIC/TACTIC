@@ -806,7 +806,11 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             related_types = my.get_related_types(search_type)
             for related_type in related_types:
 
-                search = Search(related_type)
+                try:
+                    search = Search(related_type)
+                except Exception, e:
+                    print "WARNING: ", e
+                    continue
                 full_search_type = "%s?project=%s" % (search_type, project_code)
                 if related_type.startswith("sthpw/"):
                     search.add_filter("search_type", full_search_type)

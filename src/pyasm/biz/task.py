@@ -53,12 +53,10 @@ TASK_PIPELINE = '''
 APPROVAL_PIPELINE = '''
 <pipeline type="serial">
   <process completion="10" color="#8ad3e5" name="Pending"/>
-  <process completion="10" color="#8ad3e5" name="Review"/>
-  <process completion="50" color="#e84a4d" name="Revise"/>
-  <process completion="100" color="#a3d991" name="Approve"/>
-  <connect to="Review" from="Pending"/>
-  <connect to="Revise" from="Review"/>
-  <connect to="Approve" from="Review"/>
+  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="100" color="#a3d991" name="Approved"/>
+  <connect to="Reject" from="Pending"/>
+  <connect to="Approved" from="Pending"/>
 </pipeline>
 
 '''
@@ -72,6 +70,7 @@ OTHER_COLORS = {
     "Done":     "#a3d991",
     "Final":    "#a3d991",
     "Revise":   "#e84a4d",
+    "Reject":   "#e84a4d",
     "Ready":    "#a3d991",
     "In_Progress":"#e9e386",
 }
