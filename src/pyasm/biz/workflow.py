@@ -99,13 +99,11 @@ class TaskStatusChangeTrigger(Trigger):
 
     def execute(my):
 
-        """
         key = "enable_workflow_engine"
         from prod_setting import ProdSetting
         setting = ProdSetting.get_value_by_key(key)
         if setting not in [True, 'true']:
             return
-        """
 
 
         # find the node in the pipeline
