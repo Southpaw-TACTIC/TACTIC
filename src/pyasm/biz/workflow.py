@@ -10,16 +10,16 @@
 #
 #
 
-__all__ = ['Workflow']
+__all__ = ['Workflow', 'BaseProcessTrigger']
 
 import tacticenv
 
 from pyasm.common import Common, Config
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
-from pyasm.biz import Pipeline, Task
-from tactic.command import PythonCmd
 
+from pipeline import Pipeline
+from task import Task
 
 class Workflow(object):
 
@@ -178,6 +178,7 @@ class BaseProcessTrigger(Trigger):
  
 
     def run_callback(my, pipeline, process, status):
+
         # get the node triggers
         # TODO: make this more efficient
         search = Search("config/process")        
@@ -203,6 +204,7 @@ class BaseProcessTrigger(Trigger):
 
         kwargs, input = my.build_trigger_input()
         if action or action_path:
+            from tactic.command import PythonCmd
             if action:
                 cmd = PythonCmd(code=action, input=input, **kwargs)
             else:
@@ -368,6 +370,16 @@ class ProcessActionTrigger(BaseProcessTrigger):
 
         if node_type == "condition":
             my.handle_condition_node(sobject, pipeline, process, triggers)
+
+        elif node_type == "custom":
+
+            # Where do we get this?
+            handler = 'tactic.ui.tools.NotificationNodeHandler'
+            cmd = Common.create_from_class_anme(handler)
+            cmd.execute()
+
+            Trigger.call(my, "process|complete", my.input)
+
 
         elif node_type == "action":
             action = triggers.get("on_action")
