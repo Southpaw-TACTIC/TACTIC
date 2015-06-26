@@ -26,6 +26,9 @@ try:
     HAS_PYV8 = True
 except:
     HAS_PYV8 = False
+    class PyV8:
+        class JSClass:
+            pass
 
 
 def has_pyv8():

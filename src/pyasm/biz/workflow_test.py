@@ -41,6 +41,13 @@ class WorkflowTest(unittest.TestCase):
             my._test_complete_trigger()
         finally:
             test_env.delete()
+
+            search = Search("sthpw/pipeline")
+            search.add_filter("project_code", "unittest")
+            pipelines = search.get_sobjects()
+            for pipeline in pipelines:
+                pipeline.delete()
+            
  
  
     def _test_complete_trigger(my):
@@ -59,17 +66,15 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
             my._test_js()
-            """
             my._test_hierarchy()
             my._test_manual()
+            my._test_check()
             my._test_task()
             my._test_action_process()
-            my._test_check()
             my._test_choice()
             my._test_input()
             my._test_trigger()
             my._test_approval()
-            """
         except Exception, e:
             print "Error: ", e
             raise
@@ -107,8 +112,8 @@ class WorkflowCmd(Command):
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process_name,
-                'on_approve': '''
-                sobject.set_value('%s', "approve")
+                'on_approved': '''
+                sobject.set_value('%s', "approved")
                 ''' % process_name,
  
             } )
@@ -453,8 +458,6 @@ class WorkflowCmd(Command):
 
     def _test_task(my):
 
-        print "test task"
-
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
 
@@ -590,9 +593,9 @@ class WorkflowCmd(Command):
         my.assertEquals("b", task.get("process"))
 
         # approve the task
-        task.set_value("status", "approve")
+        task.set_value("status", "approved")
         task.commit()
-        my.assertEquals( "approve", sobject.get_value("b"))
+        my.assertEquals( "complete", sobject.get_value("b"))
         my.assertEquals( "complete", sobject.get_value("c"))
 
 
