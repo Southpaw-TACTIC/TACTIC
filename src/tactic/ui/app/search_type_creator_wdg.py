@@ -1698,6 +1698,7 @@ class SearchTypeCreatorCmd(Command):
         create.add("login", "varchar")
         create.add("timestamp", "timestamp")
         create.add("s_status", "varchar")
+        create.add_constraint(["code"], mode="UNIQUE")
 
 
         for column_name, column_type in zip(my.column_names, my.column_types):
@@ -1730,7 +1731,8 @@ class SearchTypeCreatorCmd(Command):
         else:
             create.commit(sql)
             TableUndo.log(my.search_type_obj.get_base_key(), database, table)
-
+            
+            '''
             # add columns 
             db_resource = Project.get_db_resource_by_search_type(search_type)
             sql = DbContainer.get(db_resource)
@@ -1740,6 +1742,7 @@ class SearchTypeCreatorCmd(Command):
             statement = 'ALTER TABLE "%s" ADD CONSTRAINT "%s_code_unique" UNIQUE ("code")' % (table, table)
             #statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
             sql.do_update(statement)
+            '''
         
 
     def add_sidebar_views(my):
