@@ -231,7 +231,7 @@ class PopupWdg(BaseRefreshWdg):
         //popup.setStyle("top", top);
 
         var content = popup.getElement(".spt_popup_content");
-        content.setStyle("max-height", window_size.y - 200);
+        content.setStyle("max-height", window_size.y - 100);
         content.setStyle("overflow-y", "auto");
 
         '''
