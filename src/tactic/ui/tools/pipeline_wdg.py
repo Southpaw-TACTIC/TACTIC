@@ -1383,38 +1383,12 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
 
 
-<<<<<<< HEAD
-                // Does nothing just yet
-
-                '''
-            } )
-
-        #show error message if the node has not been registered 
-        if not process_sobj:
-            warning_div = DivWdg()
-            #width = 16 makes the icon smaller
-            warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
-            warning_msg = "This process node has not been registered in the process table, please save your changes."
-           
-            warning_div.add(warning_icon)
-            warning_div.add(warning_msg)
-            top.add(warning_div)
-            warning_div.add_style("padding: 20px 30px")
-            warning_div.add_style("font-size: 15px")
-           
-=======
         node_type = right_process.get_type()
         if node_type in ["condition", "approval"]:
             in_attrs = ['input']
->>>>>>> remkonoteboom/4.4
         else:
             in_attrs = ['input']
 
-<<<<<<< HEAD
-            top.add("<br clear='all'/>")
-
-
-=======
         right_div = DivWdg()
         right.add(right_div)
         for attr in in_attrs:
@@ -2132,7 +2106,6 @@ class AutoInfoWdg(BaseInfoWdg):
 
 
 
->>>>>>> remkonoteboom/4.4
         return top
 
 
