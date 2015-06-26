@@ -10,16 +10,16 @@
 #
 #
 
-__all__ = ['Workflow']
+__all__ = ['Workflow', 'BaseProcessTrigger']
 
 import tacticenv
 
 from pyasm.common import Common, Config
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
-from pyasm.biz import Pipeline, Task
-from tactic.command import PythonCmd
 
+from pipeline import Pipeline
+from task import Task
 
 class Workflow(object):
 
@@ -54,12 +54,21 @@ class Workflow(object):
         trigger.set_value("mode", "same process,same transaction")
         Trigger.append_static_trigger(trigger, startup=startup)
 
-        event = "process|approve"
+        event = "process|approved"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessApproveTrigger)
         trigger.set_value("mode", "same process,same transaction")
         Trigger.append_static_trigger(trigger, startup=startup)
+
+
+        event = "process|reject"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessRejectTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=startup)
+
 
 
         event = "process|revise"
@@ -90,11 +99,13 @@ class TaskStatusChangeTrigger(Trigger):
 
     def execute(my):
 
+        """
         key = "enable_workflow_engine"
         from prod_setting import ProdSetting
         setting = ProdSetting.get_value_by_key(key)
         if setting not in [True, 'true']:
             return
+        """
 
 
         # find the node in the pipeline
@@ -117,14 +128,15 @@ class TaskStatusChangeTrigger(Trigger):
 
 
 
-
-
-
         if not pipeline:
             return
 
         process_name = task.get_value("process")
         status = task.get_value("status")
+
+        # handle the approve case (which really means complete)
+        if status.lower() == "approved":
+            status = "complete"
 
         process = pipeline.get_process(process_name)
         if not process:
@@ -166,6 +178,7 @@ class BaseProcessTrigger(Trigger):
  
 
     def run_callback(my, pipeline, process, status):
+
         # get the node triggers
         # TODO: make this more efficient
         search = Search("config/process")        
@@ -173,7 +186,7 @@ class BaseProcessTrigger(Trigger):
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
 
-        print "callback process: ", process, pipeline.get_code()
+        #print "callback process: ", process, pipeline.get_code()
         assert(process_sobj)
 
 
@@ -191,6 +204,7 @@ class BaseProcessTrigger(Trigger):
 
         kwargs, input = my.build_trigger_input()
         if action or action_path:
+            from tactic.command import PythonCmd
             if action:
                 cmd = PythonCmd(code=action, input=input, **kwargs)
             else:
@@ -262,9 +276,9 @@ class ProcessPendingTrigger(BaseProcessTrigger):
 
         my.run_callback(pipeline, process, "pending")
 
-        if node_type not in ["node", "manual"]:
+        # NOTE: should these set the value if already complete?
+        if node_type not in ["nodeX", "manualX"]:
             my.set_all_tasks(sobject, process, "pending")
-
 
 
         if node_type in ["action", "condition"]:
@@ -357,6 +371,16 @@ class ProcessActionTrigger(BaseProcessTrigger):
         if node_type == "condition":
             my.handle_condition_node(sobject, pipeline, process, triggers)
 
+        elif node_type == "custom":
+
+            # Where do we get this?
+            handler = 'tactic.ui.tools.NotificationNodeHandler'
+            cmd = Common.create_from_class_anme(handler)
+            cmd.execute()
+
+            Trigger.call(my, "process|complete", my.input)
+
+
         elif node_type == "action":
             action = triggers.get("on_action")
             cbjs_action = triggers.get("cbjs_action")
@@ -366,14 +390,14 @@ class ProcessActionTrigger(BaseProcessTrigger):
                 if action:
                     cmd = PythonCmd(code=action, input=input, **kwargs)
                 else:
-                    cmd = PythonCmd(script_path=script_path, input=input, **kwargs)
+                    cmd = PythonCmd(script_path=action_path, input=input, **kwargs)
 
                 ret_val = cmd.execute()
 
             elif cbjs_action:
                 from tactic.command import JsCmd
-                if action:
-                    cmd = JsCmd(code=action, input=input, **kwargs)
+                if cbjs_action:
+                    cmd = JsCmd(code=cbjs_action, input=input, **kwargs)
                 else:
                     cmd = JsCmd(script_path=script_path, input=input, **kwargs)
 
@@ -499,7 +523,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
-        #print "complete: ", process, node_type
+        #print "complete: ", process, "type: ", node_type
 
         status = my.get_status()
 
@@ -510,6 +534,8 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
+
+
 
         if node_type in ["action", "approval", "manual", "node", "hierarchy"]:
             # call the process|pending event for all output processes
@@ -567,11 +593,14 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
 class ProcessApproveTrigger(ProcessCompleteTrigger):
     def get_status(my):
-        return "approve"
+        return "approved"
 
 
 
-class ProcessReviseTrigger(BaseProcessTrigger):
+class ProcessRejectTrigger(BaseProcessTrigger):
+
+    def get_status(my):
+        return "reject"
 
     def execute(my):
 
@@ -582,14 +611,14 @@ class ProcessReviseTrigger(BaseProcessTrigger):
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        print "Revise: ", process, node_type
+        print my.get_status(), ": ", process, node_type
 
         my.run_callback(pipeline, process, "revise")
 
         if node_type in ['manual', 'node']:
-            my.set_all_tasks(sobject, process, "revise")
+            my.set_all_tasks(sobject, process, my.get_status())
         if node_type in ['action']:
-            my.set_all_tasks(sobject, process, "revise")
+            my.set_all_tasks(sobject, process, my.get_status())
 
         if node_type in ['approval','action','condition']:
 
@@ -606,6 +635,12 @@ class ProcessReviseTrigger(BaseProcessTrigger):
                 event = "process|revise"
                 Trigger.call(my, event, input)
 
+
+
+class ProcessReviseTrigger(ProcessRejectTrigger):
+
+    def get_status(my):
+        return "revise"
 
 
 

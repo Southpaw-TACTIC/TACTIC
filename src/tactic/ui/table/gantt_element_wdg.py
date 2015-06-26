@@ -394,7 +394,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
         my.total_width = 1000
         my.offset_width = -300 
-        my.visible_width = 500
+        my.visible_width = 800
 
         if my.kwargs.get("test"):
             test_width = my.kwargs.get("test")
@@ -1025,8 +1025,10 @@ class GanttElementWdg(BaseTableElementWdg):
         height = my.kwargs.get("bar_height");
         if not height:
             height = 12
+            padding = 3
         else:
             height = int(height)
+            padding = int(height / 4.0)
 
 
 
@@ -1036,7 +1038,7 @@ class GanttElementWdg(BaseTableElementWdg):
         #inner_div.add_style("position: absolute")
         
         # WHY min-height?
-        inner_div.add_style("min-height: %spx" % (height+6))
+        inner_div.add_style("min-height: %spx" % (height+padding*2))
 
         # draw the dividers
         divider_wdg = my.get_divider_wdg()
@@ -1108,8 +1110,8 @@ class GanttElementWdg(BaseTableElementWdg):
 
                 bar.add_style("z-index: 2")
                 #bar.add_style("position: absolute")
-                bar.add_style("padding-top: 2px")
-                bar.add_style("padding-bottom: 2px")
+                bar.add_style("padding-top: %spx" % (padding-2))
+                bar.add_style("padding-bottom: %spx" % (padding-2))
                 #bar.add_style("border: solid 1px red")
 
                 if not my.has_start_date and my.hide_bar:
@@ -2419,7 +2421,7 @@ spt.gantt.fill_days = function(top, days, colors, labels) {
         el.setStyle("float", "left");
         el.setStyle("border-style", "solid");
         el.setStyle("border-width", "0 1 0 0");
-        el.setStyle("border-color", "#777");
+        el.setStyle("border-color", "#999");
         el.setStyle("font-size", "12px");
         el.setStyle("padding-top", "5px");
         el.setAttribute("spt_state", "on");
@@ -3115,7 +3117,15 @@ spt.gantt.drag_scroll_setup = function(evt, bvr, mouse_411)
     if (!spt.gantt.table)
         spt.gantt.table = bvr.src_el.getParent('.spt_table');
 
+
+
     spt.gantt.scroll_els = spt.gantt.table.getElements('.spt_gantt_scroll');
+
+    // add header
+    var header_table = spt.table.get_header_table()
+    spt.gantt.scroll_els.push(header_table.getElement(".spt_gantt_scroll"));
+
+
     spt.gantt.top_el = spt.gantt.table.getElement('.spt_gantt_top');
 
     var offset = spt.gantt.scroll_els[0].getStyle("margin-left");
@@ -3204,6 +3214,10 @@ spt.gantt.drag_scale_setup = function(evt, bvr, mouse_411)
         spt.gantt.table = bvr.src_el.getParent('.spt_table');
 
     spt.gantt.scroll_els = spt.gantt.table.getElements('.spt_gantt_scroll');
+
+    // add header
+    var header_table = spt.table.get_header_table()
+    spt.gantt.scroll_els.push(header_table.getElement(".spt_gantt_scroll"));
 
     var visible = spt.gantt.visible;
 
