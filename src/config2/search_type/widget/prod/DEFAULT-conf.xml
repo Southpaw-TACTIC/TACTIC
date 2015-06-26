@@ -355,6 +355,15 @@ display class, it will adopt the one defined here-->
 
 
 
+
+    <element name="task_status_summary">
+        <display class="tactic.ui.table.TaskSummaryElementWdg">
+        </display>
+    </element>
+
+
+
+
     <!-- DEPRECATED -->
     <element name="task_gear">
         <display class="TaskGearElementWdg"/>

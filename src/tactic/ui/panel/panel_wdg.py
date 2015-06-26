@@ -2816,7 +2816,16 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'type': 'TextWdg',
             'order': 13
+        },
+        "gallery_align" : {
+            'description': 'top or bottom gallery vertical alignment',
+            'type': 'SelectWdg',
+            'values': 'top|bottom',
+            'order' : 20,
+            'category': 'Display'
+
         }
+
     }
 
     def get_display(my):
@@ -3239,6 +3248,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['allow_drag'] = my.kwargs.get("allow_drag")
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             kwargs['process'] = my.kwargs.get("process")
+            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3265,6 +3275,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'card':
             kwargs['preview_width'] = my.kwargs.get("preview_width")
+            kwargs['process'] = my.kwargs.get("process")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 

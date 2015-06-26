@@ -3857,7 +3857,8 @@ class SObject(object):
                     'sthpw/sync_log',
                     'sthpw/sync_job',
                     'sthpw/message',
-                    'sthpw/message_log',
+            # enabled triggers from message_log so that inserts to this table can send out notifications
+            #        'sthpw/message_log',
                     'sthpw/change_timestamp',
                     'sthpw/sobject_list',
                     'sthpw/sobject_log'
@@ -5133,8 +5134,9 @@ class SObject(object):
     def get_sobject_dict(my, columns=None, use_id=False, language='python'):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
-
-        if not columns:
+        if my.get_base_search_type() == "sthpw/virtual":
+            columns = my.data.keys()
+        elif not columns:
             columns = SearchType.get_columns(my.get_search_type())
 
         result = {}

@@ -69,7 +69,7 @@
 </edit>
 
 
-<pipeline_tool_edit>
+<pipeline_tool_edit layout="EditWdg">
     <element name='color'/>
     <element name='sort_order'/>
     <element name="check_in_options">
@@ -80,6 +80,26 @@
     <element name='context_options'/>
     <element name='subcontext_options'/>
 </pipeline_tool_edit>
+
+
+<checkin_setup_edit layout="EditWdg">
+    <element name='process'/>
+    <element name="check_in_options">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
+        <action class="NullAction"/>
+    </element>
+    <element name='checkin_mode'>
+        <display class='SelectWdg'>
+            <values>file|dir|sequence|multi_file|workarea</values>
+            <labels>File|Directory|Sequence|Multiple Files|Work Area</labels>
+            <empty>true</empty>
+        </display>
+    </element>
+ 
+
+    <element name='context_options'/>
+    <element name='subcontext_options'/>
+</checkin_setup_edit>
 
 
 

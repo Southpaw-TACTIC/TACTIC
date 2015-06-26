@@ -73,7 +73,11 @@ else:
     except:
         pass
 
-if Common.which("ffprobe"):
+ffprobe_exe = "ffprobe"
+if os.name == 'nt':
+    ffprobe_exe = "ffprobe.exe"
+
+if Common.which(ffprobe_exe):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
@@ -589,23 +593,32 @@ class IconCreator(object):
 
         base, ext = os.path.splitext(file_name)
 
+        # naming convetion should take care of inserting a suffix like icon, web
+        # but these paths need a unique name
         icon_file_name = base + "_icon.png"
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
 
+        thumb_web_size = my.get_web_file_size()
+
+        web_file_name = base + "_web.png"
+        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
         if sys.platform == 'darwin':
             return
         else:
-            if not Common.which("convert"):
+            if not Common.which(convert_exe):
                 return
             try:
                 my.file_path = my.file_path.encode('utf-8')
                 import shlex, subprocess
-                subprocess.call(['convert', '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
+                subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
                         "%s"%tmp_icon_path]) 
+
+                subprocess.call([convert_exe, '-geometry','%sx%s'%(thumb_web_size[0], \
+                    thumb_web_size[1]),'-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
+
             except Exception, e:
                 print "Error extracting from pdf [%s]" % e
                 return
-
 
         # check that it actually got created
         if os.path.exists(tmp_icon_path):
@@ -613,6 +626,10 @@ class IconCreator(object):
         else:
             print "Warning: [%s] did not get created from pdf" % tmp_icon_path
 
+        if os.path.exists(tmp_web_path):
+            my.web_path = tmp_web_path
+        else:
+            print "Warning: [%s] did not get created from pdf" % tmp_web_path
 
     def get_web_file_size(my):
         from pyasm.prod.biz import ProdSetting
@@ -876,8 +893,8 @@ class IconCreator(object):
                 cmd = "sips --resampleWidth 25%% --out %s %s" \
                     % (large_path, small_path)
             else:
-                cmd = "convert -resize 25%% %s %s" \
-                    % (large_path, small_path)
+                cmd = "%s -resize 25%% %s %s" \
+                    % (convert_exe, large_path, small_path)
             os.system(cmd)
             if not os.path.exists(small_path):
                 raise

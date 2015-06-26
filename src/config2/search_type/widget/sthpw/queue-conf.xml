@@ -44,7 +44,7 @@
         <search_type>sthpw/queue</search_type>
         <show_search_limit>false</show_search_limit>
         <show_insert>false</show_insert>
-        <show_row_select>false</show_row_select>
+        <show_select>false</show_select>
         <show_gear>false</show_gear>
         <view>data</view>
       </display>
@@ -106,7 +106,7 @@
 
 
 <data>
-    <element name="serialized"/>
+    <element name="data"/>
 </data>
  
 

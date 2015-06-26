@@ -77,9 +77,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-        title.add_color("background", "background3")
-        title.add_style("height: 20px")
-        title.add_style("padding: 6px")
+        title.add_color("background", "background", -5)
+        title.add_style("height: 23px")
+        title.add_style("padding: 10px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
         title.add_border()
@@ -442,6 +442,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
                     <upload_mode>both</upload_mode>
+                    <expand_mode>plain</expand_mode>
                     <no_results_msg>Drag and drop file here to upload.</no_results_msg>
                   </display>
                 </element>
@@ -1131,9 +1132,18 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
 
         spt.pipeline.set_status_color(bvr.search_key);
-        spt.pipeline.load_triggers();
 
+        var top = spt.pipeline.top;
+        var text = top.getElement(".spt_pipeline_editor_current2");
+        spt.pipeline.load_triggers();
         spt.pipeline.fit_to_canvas(bvr.pipeline);
+
+        var server = TacticServerStub.get();
+        var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
+        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
+        text.innerHTML = html;
+
+
 
         '''
         } )

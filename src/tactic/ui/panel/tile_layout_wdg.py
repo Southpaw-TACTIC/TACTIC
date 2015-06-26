@@ -153,7 +153,25 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '15',
             'category': 'Display'
 
+    },
+    ARGS_KEYS['expand_mode'] = {
+            'description': 'support gallery, single_gallery, plain, detail, and custom mode',
+            'type': 'SelectWdg',
+            'values': 'gallery|single_gallery|plain|detail|custom',
+            'order' : '16',
+            'category': 'Display'
+
+    },
+
+    ARGS_KEYS['gallery_align'] = {
+            'description': 'top or bottom gallery vertical alignment',
+            'type': 'SelectWdg',
+            'values': 'top|bottom',
+            'order' : '17',
+            'category': 'Display'
+
     }
+
 
 
 
@@ -202,7 +220,7 @@ class TileLayoutWdg(ToolLayoutWdg):
     def alter_search(my, search):
         # TODO: this should be applied to ViewPanelWdg level
         process = my.kwargs.get("process")
-        if process:
+        if process and search.column_exists('process'):
             search.add_filter("process", process)
 
         context = my.kwargs.get("context")
@@ -455,7 +473,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = None
 
         my.bottom_expr = my.kwargs.get("bottom_expr")
-
+        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") not in ['false', False]
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
@@ -493,7 +511,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.allow_drag = my.kwargs.get('allow_drag') not in ['false', False]
         my.upload_mode = my.kwargs.get('upload_mode')
         if not my.upload_mode:
-            my.upload_mode = 'false'
+            my.upload_mode = 'drop'
+
+        my.gallery_align = my.kwargs.get('gallery_align')
 
         super(TileLayoutWdg, my).init()
 
@@ -567,7 +587,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
-        # TEST TEST TEST TEST
+        # For collections
         parts = my.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
         layout_wdg.add_attr("spt_collection_type", collection_type)
@@ -599,7 +619,11 @@ class TileLayoutWdg(ToolLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
- 
+
+
+        process = my.kwargs.get("process")
+        if not process:
+            process = "publish"
 
 
         mode = my.kwargs.get("expand_mode")
@@ -610,25 +634,34 @@ class TileLayoutWdg(ToolLayoutWdg):
         gallery_width = my.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
-        if mode == "view":
+        if mode == "plain":
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'process': process,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_tile_top");
                 var search_key = top.getAttribute("spt_search_key");
                 var server = TacticServerStub.get();
-                var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
-                if (snapshot.__search_key__) {
-                    window.open(snapshot.__web_paths_dict__.main);
+                var tmps = server.split_search_key(search_key);
+                if (/sthpw\/snapshot/.test(search_key)) {
+                    snapshots = server.query_snapshots({filters: [['id', tmps[1]]], include_web_paths_dict: true});
+                    
+                    window.open(snapshots[0].__web_paths_dict__.main);
                 }
                 else {
-                    var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+                    var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
                         window.open(snapshot.__web_paths_dict__.main);
                     }
                     else {
-                        alert("WARNING: No file for this asset");
+                        var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
+                        if (snapshot.__search_key__) {
+                            window.open(snapshot.__web_paths_dict__.main);
+                        }
+                        else {
+                            alert("WARNING: No file for this asset");
+                        }
                     }
                 }
                 '''
@@ -660,6 +693,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'width': gallery_width,
+                'align': my.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -679,7 +713,55 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var kwargs = {
                     search_keys: search_keys,
                     search_key: search_key,
+                    align: bvr.align
                 };
+                if (bvr.width) 
+                    kwargs['width'] = bvr.width;
+                var gallery_el = layout.getElement(".spt_tile_gallery");
+                spt.panel.load(gallery_el, class_name, kwargs);
+
+                '''
+            } )
+        elif mode == "single_gallery":
+            gallery_div = DivWdg()
+            layout_wdg.add( gallery_div )
+            gallery_div.add_class("spt_tile_gallery")
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'width': gallery_width,
+                'align': my.gallery_align,
+                'process': process,
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+                var tile_top = bvr.src_el.getParent(".spt_tile_top");
+                
+                var search_keys = [];
+                var snapshot_list = []
+                var server = TacticServerStub.get();
+               
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
+                search_keys.push(search_key);
+                var tmps = server.split_search_key(search_key)
+                var search_type = tmps[0];
+                var search_code = tmps[1];
+
+                snapshots = server.query_snapshots( {filters: [['process', bvr.process], ['search_type', search_type],
+                    ['search_code', search_code]] , include_paths_dict:true});
+                for (var k=0; k < snapshots.length; k++)
+                    snapshot_list.push(snapshots[k].__search_key__);
+                
+
+                var tile_top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_keys: snapshot_list,
+                    search_key: snapshot_list[0],
+                    align: bvr.align
+                };
+
                 if (bvr.width) 
                     kwargs['width'] = bvr.width;
                 var gallery_el = layout.getElement(".spt_tile_gallery");
@@ -736,9 +818,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
-        process = my.kwargs.get("process")
-        if not process:
-            process = "publish"
         if my.parent_key:
             search_type = None
         else:
@@ -750,6 +829,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'type': 'load',
                 'search_type': search_type,
                 'search_key': my.parent_key,
+                'drop_shadow': my.show_drop_shadow,
                 'process': process,
                 'border_color': border_color,
                 'cbjs_action': '''
@@ -849,11 +929,16 @@ class TileLayoutWdg(ToolLayoutWdg):
      
                 spt.thumb.noop_enter = function(evt, el) {
                     evt.preventDefault();
-                    el.setStyle('border','2px dashed ' + bvr.border_color);
+                    el.setStyle("box-shadow", "0px 0px 15px #970");
                 }
                 spt.thumb.noop_leave = function(evt, el) {
                     evt.preventDefault();
-                    el.setStyle('border','none');
+                    if (bvr.drop_shadow)
+                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    else
+                        el.setStyle("box-shadow", "none");
+
+
                 }
 
                 spt.thumb.noop = function(evt, el) {
@@ -862,7 +947,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                     evt.stopPropagation();
                     evt.preventDefault();
 
-                    el.setStyle('border','none');
+                    if (bvr.drop_shadow)
+                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    else
+                        el.setStyle("box-shadow", "none");
                     var top = $(el);
                     var thumb_el = top.getElement(".spt_thumb_top");
 
@@ -900,20 +988,25 @@ class TileLayoutWdg(ToolLayoutWdg):
                             var upload_file_kwargs =  {
                                 files: files,
                                 upload_complete: function() {
-                                    var server = TacticServerStub.get();
-                                    var kwargs = {mode: 'uploaded'};
-                                    server.simple_checkin( search_key, context, filename, kwargs);
+                                    try {
+                                        var server = TacticServerStub.get();
+                                        var kwargs = {mode: 'uploaded'};
+                                        server.simple_checkin( search_key, context, filename, kwargs);
+                                        spt.notify.show_message("Check-in completed for " + search_key);
+                                    } catch(e) {
+                                        spt.alert(spt.exception.handler(e));
+                                        server.abort();
+                                        
+                                    }
                                 }
                             };
                             spt.html5upload.upload_file(upload_file_kwargs);
-                            
-
-
              
                         }
-                        spt.notify.show_message("Check-in completed for " + search_key);
                     }
-                    spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes)
+                    
+                    spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes);
+                    
 
                 }
                 '''
@@ -926,11 +1019,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             'border': border,
             'bvr_match_class': 'spt_tile_select',
             'cbjs_action': '''
+            spt.table.set_table(bvr.src_el);
             if (evt.shift == true) {
-
-                spt.table.set_table(bvr.src_el);
                 var row = bvr.src_el.getParent(".spt_table_row");
-
 
                 var rows = spt.table.get_all_rows(true);
                 var last_selected = spt.table.last_selected_row;
@@ -960,17 +1051,112 @@ class TileLayoutWdg(ToolLayoutWdg):
                     end_index = last_index;
                 }
 
-
-                var select = last_selected.hasClass("spt_table_selected");
-                for (var i = start_index; i < end_index+1; i++) {
+                
+                var select = last_selected ? last_selected.hasClass("spt_table_selected") : false;
+                for (var i = start_index; i < end_index + 1; i++) {
 
                     var row = rows[i];
-                    var checkbox = row.getElement(".spt_tile_checkbox");
+                    if (row) {
+
+                        var checkbox = row.getElement(".spt_tile_checkbox");
+
+                        if (select) {
+                            checkbox.checked = true;
+                            row.removeClass("spt_table_selected");
+                            spt.table.select_row(row);
+                            row.setStyle("box-shadow", "0px 0px 15px #FF0");
+
+
+                        }
+                        else {
+                            checkbox.checked = false;
+                            row.addClass("spt_table_selected");
+                            spt.table.unselect_row(row);
+
+                            row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+
+                        }
+                    }
+                }
+
+            }
+            else {
+
+                var row = bvr.src_el.getParent(".spt_table_row");
+                var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
+
+                if (checkbox.checked == true) {
+                    checkbox.checked = false;
+                   
+                    spt.table.unselect_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+
+                }
+                else {
+                    checkbox.checked = true;
+                    
+                    spt.table.select_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px #FF0");
+
+                }
+
+            }
+
+            '''
+        } )
+
+        # this is working in conjunction with the above mouseup event for the tile header
+        # TODO: make the shift select work when the shift clicked index is < the first click
+        layout_wdg.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_tile_checkbox',
+            'cbjs_action': '''
+             var row = bvr.src_el.getParent(".spt_table_row");
+
+            spt.table.set_table(row);
+             if (evt.shift == true) {
+              
+
+                var rows = spt.table.get_all_rows(true);
+                var last_selected = spt.table.last_selected_row;
+                var last_index = -1;
+                var cur_index = -1;
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i] == last_selected) {
+                        last_index = i;
+                    }
+                    if (rows[i] == row) {
+                        cur_index = i;
+                    }
+
+                    if (cur_index != -1 && last_index != -1) {
+                        break;
+                    }
+
+                }
+                var start_index;
+                var end_index;
+                if (last_index < cur_index) {
+                    start_index = last_index;
+                    end_index = cur_index;
+                }
+                else {
+                    start_index = cur_index;
+                    end_index = last_index;
+                }
+
+                
+                var select = last_selected ? last_selected.hasClass("spt_table_selected") : false;
+
+
+                var row = rows[end_index];
+                if (row) {
+
+                    var checkbox = bvr.src_el;
 
                     if (select) {
                         checkbox.checked = true;
                         row.removeClass("spt_table_selected");
-
                         spt.table.select_row(row);
                         row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
@@ -985,49 +1171,20 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                     }
                 }
-
             }
             else {
-
-                var row = bvr.src_el.getParent(".spt_table_row");
-                var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
-
-                if (checkbox.checked == true) {
-                    checkbox.checked = false;
-                    
-                    spt.table.unselect_row(row);
-                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-
-                }
-                else {
-                    checkbox.checked = true;
-                    
-                    
+                if (bvr.src_el.checked) {
                     spt.table.select_row(row);
                     row.setStyle("box-shadow", "0px 0px 15px #FF0");
-
                 }
-
-            }
-
-            '''
-        } )
-
-
-        layout_wdg.add_relay_behavior( {
-            'type': 'mouseup',
-            'bvr_match_class': 'spt_tile_checkbox',
-            'cbjs_action': '''
-            if (bvr.src_el.checked) {
-                bvr.src_el.checked = false;
-            }
-            else {
-                bvr.src_el.checked = true;
+                else {
+                    spt.table.unselect_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                }
             }
             evt.stopPropagation();
             '''
         } )
-
 
 
         if my.kwargs.get("temp") != True:
@@ -1137,7 +1294,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         
-        if my.kwargs.get("show_drop_shadow") not in ['false', False]:
+        if my.show_drop_shadow:
             div.set_box_shadow()
         div.add_color("background", "background", -3)
         

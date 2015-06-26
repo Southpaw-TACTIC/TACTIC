@@ -32,6 +32,9 @@ class VideoWdg(BaseRefreshWdg):
 
     def init(my):
         my.video = Video()
+
+        my.video.add_attr("preload", "auto")
+
         my.index = my.kwargs.get('index')
 
     def get_video(my):
@@ -166,10 +169,14 @@ class VideoWdg(BaseRefreshWdg):
             preload = "none"
         video.add_attr("preload", preload)
 
-        if not controls:
+
+        # FIXME: this doesn't seem to work with videojs ... with videojs,
+        # you need to set player.controls(false).
+        if controls == None:
             controls = "true"
-        if controls not in [False, 'false']:
-            video.add_attr("controls", controls)
+        elif controls == False:
+            controls = "false"
+        video.add_attr("controls", controls)
 
 
 
@@ -198,6 +205,13 @@ spt.video.loaded = false;
 spt.video.player = null;
 
 spt.video.players = {};
+
+
+
+spt.video.get_player_el = function(el) {
+    var video = el.getElement(".video-js");
+    return video;
+}
 
 
 spt.video.get_player = function(el) {

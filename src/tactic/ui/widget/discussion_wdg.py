@@ -1877,6 +1877,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
         content_div = my.top
+        content_div.add_style("min-width: 300px")
 
         my.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
@@ -1997,6 +1998,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         content_div.add("<br/>Note:<br/>")
         text = TextAreaWdg("note")
+        text.add_class("form-control")
         text.add_style("width: 100%")
         text.add_style("height: 100px")
         content_div.add(text)
@@ -2129,21 +2131,27 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         table.add_color("color", "color")
         mail_div.add(table)
 
+        from tactic.ui.input import TextInputWdg
+
         # CC
         table.add_row()
         table.add_cell("Cc: ")
-        text = TextWdg("mail_cc")
+        text = TextInputWdg(name="mail_cc")
         text.add_style("width: 250px")
         table.add_cell(text)
 
-        table.add_row_cell()
+        tr, td = table.add_row_cell()
+        td.add("<br/>")
 
         # BCC 
         table.add_row()
         table.add_cell("Bcc: ")
-        text = TextWdg("mail_bcc")
+        text = TextInputWdg(name="mail_bcc")
         text.add_style("width: 250px")
         table.add_cell(text)
+
+        tr, td = table.add_row_cell()
+        td.add("<br/>")
 
         return content_div
 

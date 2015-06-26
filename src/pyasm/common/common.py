@@ -382,7 +382,7 @@ class Common(Base):
             low = 48
             high = 58
         else:
-            low = 49
+            low = 48
             high = 90
         # generate a random key
         key = ""
@@ -392,7 +392,6 @@ class Common(Base):
             if idx >= 58 and idx <= 64:
                 continue
             items.append(chr(idx))
-
 
         for i in range(0, num_digits):
             idx = random.randint(0, len(items)-1)
