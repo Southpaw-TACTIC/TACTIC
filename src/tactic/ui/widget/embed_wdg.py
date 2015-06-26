@@ -107,7 +107,9 @@ class EmbedWdg(BaseRefreshWdg):
             if not thumb_path:
                 thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
-            if not controls:
+            if controls == False:
+                controls = "false"
+            elif not controls:
                 controls = "true"
 
             video_id = None
