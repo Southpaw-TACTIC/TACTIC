@@ -65,8 +65,8 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_js()
             my._test_hierarchy()
+            my._test_js()
             my._test_manual()
             my._test_check()
             my._test_task()
@@ -452,6 +452,7 @@ class WorkflowCmd(Command):
         }
         Trigger.call(my, "process|pending", output)
 
+        # nothing should have run
         my.assertEquals( False, sobject.get_value("a"))
         my.assertEquals( False, sobject.get_value("b"))
 
@@ -616,7 +617,6 @@ class WorkflowCmd(Command):
         '''
         pipeline, processes = my.get_pipeline(pipeline_xml)
         parent_process = processes.get("b")
-        print "parent: ", pipeline.get_code()
 
         sobject.set_value("pipeline_code", pipeline.get_code())
         sobject.commit()
@@ -627,14 +627,20 @@ class WorkflowCmd(Command):
           <process type="action" name="suba"/>
           <process type="action" name="subb"/>
           <process type="action" name="subc"/>
+          <process type="output" name="end"/>
           <connect from="suba" to="subb"/>
           <connect from="subb" to="subc"/>
+          <connect from="subc" to="end"/>
         </pipeline>
         '''
         subpipeline, subprocesses = my.get_pipeline(subpipeline_xml)
         subpipeline.set_value("parent_process", parent_process.get_code())
         subpipeline.commit()
-        print "sub: ", subpipeline.get_code()
+        subpipeline_code = subpipeline.get_code()
+
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
 
 
 
@@ -653,6 +659,7 @@ class WorkflowCmd(Command):
         my.assertEquals( "complete", sobject.get_value("suba"))
         my.assertEquals( "complete", sobject.get_value("subb"))
         my.assertEquals( "complete", sobject.get_value("subc"))
+        my.assertEquals( "complete", sobject.get_value("end"))
 
         
 
