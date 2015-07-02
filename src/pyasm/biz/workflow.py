@@ -270,6 +270,12 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+        print "pending: ", process
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
         # simply calls action
         my.run_callback(pipeline, process, "pending")
         Trigger.call(my, "process|action", output=my.input)
@@ -279,6 +285,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
 
         my.run_callback(pipeline, process, "action")
         Trigger.call(my, "process|complete", output=my.input)
@@ -290,6 +301,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+        parts = None
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
         # run a nodes complete trigger
         status = "complete"
         my.run_callback(pipeline, process, status)
@@ -300,6 +316,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         output_processes = pipeline.get_output_processes(process)
         for output_process in output_processes:
             output_process = output_process.get_name()
+
+            if parts:
+                output_process = "%s.%s" % (parts[0], output_process)
 
             output = {
                 'pipeline': pipeline,
@@ -317,6 +336,14 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+
+        parts = None
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
+
+
         process_obj = pipeline.get_process(process)
 
         my.run_callback(pipeline, process, "revise")
@@ -329,6 +356,10 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         input_processes = pipeline.get_input_processes(process)
         for input_process in input_processes:
             input_process = input_process.get_name()
+
+            if parts:
+                input_process = "%s.%s" % (parts[0], input_process)
+
 
             input = {
                 'pipeline': pipeline,
@@ -347,6 +378,12 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+        parts = None
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
+
         process_obj = pipeline.get_process(process)
 
         my.run_callback(pipeline, process, "revise")
@@ -359,6 +396,10 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         input_processes = pipeline.get_input_processes(process)
         for input_process in input_processes:
             input_process = input_process.get_name()
+
+            if parts:
+                input_process = "%s.%s" % (parts[0], input_process)
+
 
             input = {
                 'pipeline': pipeline,
@@ -385,6 +426,10 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
         pipeline = my.input.get("pipeline")
         process = my.input.get("process")
         sobject = my.input.get("sobject")
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
 
         process_obj = pipeline.get_process(process)
 
@@ -450,6 +495,112 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
 
 
 
+class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
+
+    def handle_pending(my):
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline.get_code())
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+        process_code = process_sobj.get_code()
+
+
+
+        # use child process
+        subpipeline_code = process_sobj.get_value("subpipeline_code")
+        if subpipeline_code:
+            subpipeline = Search.get_by_code("sthpw/pipeline", subpipeline_code)
+        else:
+            search = Search("sthpw/pipeline")
+            search.add_filter("parent_process", process_code)
+            subpipeline = search.get_sobject()
+
+        if not subpipeline:
+            return
+
+
+        # get the input nodes
+        child_processes = subpipeline.get_processes(type=['input'])
+
+        if not child_processes:
+            child_processes = subpipeline.get_processes()
+
+        if child_processes:
+            first_process = child_processes[0]
+            first_name = first_process.get_name()
+
+            full_name = "%s.%s" % (process, first_name)
+
+            print "child: ", full_name
+
+            input = {
+                    'pipeline': subpipeline,
+                    'sobject': sobject,
+                    'process': full_name,
+            }
+
+            event = "process|pending"
+            Trigger.call(my, event, input)
+
+
+class WorkflowInputNodeHandler(BaseWorkflowNodeHandler):
+    def handle_pending(my):
+        # fast track to complete
+        Trigger.call(my, "process|complete", output=my.input)
+
+
+class WorkflowOutputNodeHandler(BaseWorkflowNodeHandler):
+
+    def handle_pending(my):
+        # fast track to complete
+        Trigger.call(my, "process|complete", output=my.input)
+
+
+    def handle_complete(my):
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
+        my.run_callback(pipeline, process, "complete")
+
+
+        search = Search("config/process")        
+        search.add_filter("subpipeline_code", pipeline.get_code())
+        if parts:
+            search.add_filter("process", parts[0])
+        supprocess_sobj = search.get_sobject()
+        suppipeline_code = supprocess_sobj.get_value("pipeline_code")
+        supprocess = supprocess_sobj.get_value("process")
+
+        suppipeline = Search.get_by_code("sthpw/pipeline", suppipeline_code)
+        output = {
+            'pipeline': suppipeline,
+            'sobject': sobject,
+            'process': supprocess
+        }
+
+        event = "process|complete"
+        Trigger.call(my, event, output)
+
+
+
+
+
+
+
+
 
 ###---------------------------------
 
@@ -464,6 +615,9 @@ class ProcessPendingTrigger(BaseProcessTrigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
@@ -471,11 +625,27 @@ class ProcessPendingTrigger(BaseProcessTrigger):
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=my.input)
             return handler.handle_pending()
+        elif node_type == "approval":
+            handler = WorkflowApprovalNodeHandler(input=my.input)
+            return handler.handle_pending()
+        elif node_type in ["manual", "node"]:
+            handler = WorkflowManualNodeHandler(input=my.input)
+            return handler.handle_pending()
+        elif node_type == "hierarchy":
+            handler = WorkflowHierarchyNodeHandler(input=my.input)
+            return handler.handle_pending()
+        elif node_type == "input":
+            handler = WorkflowOutputNodeHandler(input=my.input)
+            return handler.handle_pending()
+        elif node_type == "output":
+            handler = WorkflowOutputNodeHandler(input=my.input)
+            return handler.handle_pending()
 
 
 
 
-        print "pending: ", process, node_type
+
+
 
         my.run_callback(pipeline, process, "pending")
 
@@ -524,10 +694,8 @@ class ProcessPendingTrigger(BaseProcessTrigger):
                 return
 
 
+            # TODO: find the inputs
             child_processes = subpipeline.get_processes()
-            #child_pipeline = process_obj.get_child_pipeline()
-            #child_processes = child_pipeline.get_processes()
-
             if child_processes:
                 first_process = child_processes[0]
                 first_name = first_process.get_name()
@@ -558,6 +726,9 @@ class ProcessActionTrigger(BaseProcessTrigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
@@ -565,11 +736,25 @@ class ProcessActionTrigger(BaseProcessTrigger):
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=my.input)
             return handler.handle_action()
+        elif node_type == "approval":
+            handler = WorkflowApprovalNodeHandler(input=my.input)
+            return handler.handle_action()
+        elif node_type in ["manual", "node"]:
+            handler = WorkflowManualNodeHandler(input=my.input)
+            return handler.handle_action()
+        elif node_type == "hierarchy":
+            handler = WorkflowHierarchyNodeHandler(input=my.input)
+            return handler.handle_action()
+        elif node_type == "input":
+            handler = WorkflowInputNodeHandler(input=my.input)
+            return handler.handle_action()
+        elif node_type == "output":
+            handler = WorkflowOutputNodeHandler(input=my.input)
+            return handler.handle_action()
+ 
 
 
 
-
-        #print "action: ", process, node_type
 
         if node_type not in ["node", "manual", "approval"]:
             my.set_all_tasks(sobject, process, "in_progress")
@@ -749,14 +934,31 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
-        print "complete: ", process, node_type
 
-
+        handler = None
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=my.input)
+        elif node_type == "approval":
+            handler = WorkflowApprovalNodeHandler(input=my.input)
+        elif node_type in ["manual", "node"]:
+            handler = WorkflowManualNodeHandler(input=my.input)
+        elif node_type == "hierarchy":
+            handler = WorkflowHierarchyNodeHandler(input=my.input)
+        elif node_type == "input":
+            handler = WorkflowInputNodeHandler(input=my.input)
+        elif node_type == "output":
+            handler = WorkflowOutputNodeHandler(input=my.input)
+
+        if handler:
             return handler.handle_complete()
+
 
 
 
@@ -859,8 +1061,6 @@ class ProcessRejectTrigger(BaseProcessTrigger):
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
-
-        print my.get_status(), ": ", process, node_type
 
         my.run_callback(pipeline, process, "revise")
 

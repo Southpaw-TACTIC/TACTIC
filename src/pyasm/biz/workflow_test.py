@@ -610,35 +610,40 @@ class WorkflowCmd(Command):
         <pipeline>
           <process type="action" name="a"/>
           <process type="hierarchy" name="b"/>
-          <process type="action" name="c"/>
+          <process type="hierarchy" name="c"/>
+          <process type="action" name="d"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c"/>
+          <connect from="c" to="d"/>
         </pipeline>
         '''
         pipeline, processes = my.get_pipeline(pipeline_xml)
-        parent_process = processes.get("b")
 
-        sobject.set_value("pipeline_code", pipeline.get_code())
-        sobject.commit()
 
         # create the sub pipeline
         subpipeline_xml = '''
         <pipeline>
+          <process type="input" name="start"/>
           <process type="action" name="suba"/>
           <process type="action" name="subb"/>
           <process type="action" name="subc"/>
           <process type="output" name="end"/>
+          <connect from="start" to="suba"/>
           <connect from="suba" to="subb"/>
           <connect from="subb" to="subc"/>
           <connect from="subc" to="end"/>
         </pipeline>
         '''
         subpipeline, subprocesses = my.get_pipeline(subpipeline_xml)
-        subpipeline.set_value("parent_process", parent_process.get_code())
+        #subpipeline.set_value("parent_process", parent_process.get_code())
         subpipeline.commit()
         subpipeline_code = subpipeline.get_code()
 
         p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+
+        p = processes.get("c")
         p.set_value("subpipeline_code", subpipeline_code)
         p.commit()
 
@@ -656,6 +661,7 @@ class WorkflowCmd(Command):
         my.assertEquals( "complete", sobject.get_value("a"))
         my.assertEquals( "complete", sobject.get_value("b"))
         my.assertEquals( "complete", sobject.get_value("c"))
+        my.assertEquals( "complete", sobject.get_value("start"))
         my.assertEquals( "complete", sobject.get_value("suba"))
         my.assertEquals( "complete", sobject.get_value("subb"))
         my.assertEquals( "complete", sobject.get_value("subc"))
