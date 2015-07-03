@@ -375,7 +375,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add(approval)
 
         # add endpoint node
-        endpoint = my.get_endpoint_node("XXXXX")
+        endpoint = my.get_endpoint_node("XXXXX", node_type="output")
+        template_div.add(endpoint)
+
+        # add endpoint node
+        endpoint = my.get_endpoint_node("XXXXX", node_type="input")
         template_div.add(endpoint)
 
 
@@ -1184,12 +1188,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
-    def get_endpoint_node(my, name ):
+    def get_endpoint_node(my, name, node_type ):
 
         node = DivWdg()
-        node.add_class("spt_pipeline_endpoint")
+        node.add_class("spt_pipeline_%s" % node_type)
         node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "endpoint")
+        node.add_attr("spt_node_type", node_type)
 
 
         node.add_attr("spt_element_name", name)
@@ -1203,10 +1207,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
         width = 30
-        height = 30
+        height = 20
 
 
-        my.add_nobs(node, height, 5)
+        my.add_nobs(node, height)
 
 
         content = DivWdg()
@@ -1218,7 +1222,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content.add_style("width: %spx" % width)
         content.add_style("height: %spx" % height)
         content.add_style("border: solid 1px black")
-        content.add_style("border-radius: 15px")
+
+        if node_type == "input":
+            content.add_style("border-radius: 0px 15px 15px 0px")
+        else:
+            content.add_style("border-radius: 15px 0px 0px 15px")
 
 
         label = Table()
