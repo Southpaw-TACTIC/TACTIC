@@ -1158,7 +1158,7 @@ class WebLoginWdg(Widget):
         override_background = my.kwargs.get('override_background') == "true"
         override_logo = my.kwargs.get('override_logo') == "true"
         override_company_name = my.kwargs.get('override_company_name') == "true"
-        override_textfield = my.kwargs.get('override_textfield') == "true"
+        override_password = my.kwargs.get('override_password') == "true"
         override_login = my.kwargs.get('override_login') == "true"
         bottom_link = my.kwargs.get('bottom_link')
 
@@ -1268,7 +1268,7 @@ class WebLoginWdg(Widget):
         #div.add_style("padding-top: 95px")
         sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
         if override_company_name:
-            sthpw.add_class("spt_sthpw_company")
+            sthpw.add_class("spt_company")
         else:
             #sthpw.add_style("color: #CCCCCC")
             sthpw.add_color("color", "color")
@@ -1332,7 +1332,7 @@ class WebLoginWdg(Widget):
             if host and matched_idx > -1:
                 domain_wdg.set_value(domains[matched_idx])
             
-            if override_textfield:
+            if override_password:
                 domain_wdg.add_style("")
             else:
                 domain_wdg.add_style("background-color: #EEE")
@@ -1343,13 +1343,13 @@ class WebLoginWdg(Widget):
         
 
         th = table.add_header( "<b> %s: </b>"%name_label)
-        if override_textfield:
+        if override_password:
             th.add_style("")
         else:
             th.add_style("padding: 10px 5px")
 
         text_wdg = TextWdg("login")
-        if override_textfield:
+        if override_password:
             text_wdg.add_class("spt_textbox_style")
 
         else:
@@ -1378,7 +1378,7 @@ class WebLoginWdg(Widget):
             td = table.add_cell("Please change the \"admin\" password")
             td.add_styles('height: 24px; padding-left: 6px')
         else:
-            if override_textfield:
+            if override_password:
                 text_wdg.add_style("")
             else:
                 text_wdg.add_style("background: #EEE")
@@ -1386,7 +1386,7 @@ class WebLoginWdg(Widget):
 
         table.add_row()
         password_wdg = PasswordWdg("password")
-        if override_textfield:
+        if override_password:
             password_wdg.add_class("spt_textbox_style")
         else:
             password_wdg.add_style("color: black")
