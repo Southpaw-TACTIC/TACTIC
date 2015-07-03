@@ -790,7 +790,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         #button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
         button = ActionButtonWdg(title="Metadata")
-        button.add_style("float: right")
+        button.add_style("float: left")
         button.add_style("margin-top: -3px")
         buttons.add_cell(button)
         

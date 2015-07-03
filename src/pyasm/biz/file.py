@@ -697,7 +697,7 @@ class IconCreator(object):
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
 
-        if (ext == ".gif" and my.web_path is None):
+        if (ext == ".gif" and not my.web_path):
             my._process_image( file_name )
 
     def _process_image(my, file_name):
