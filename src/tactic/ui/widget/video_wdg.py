@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['VideoWdg']
+__all__ = ['VideoWdg', 'VideoJsWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 from pyasm.web import Video, HtmlElement, DivWdg
@@ -158,16 +158,7 @@ spt.video.init_video = function(video_id) {
 
 
 
-
-
-
-
-
-
-
-
-
-class VideoWdgX(BaseRefreshWdg):
+class VideoJsWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
         "sources": {
@@ -207,11 +198,6 @@ class VideoWdgX(BaseRefreshWdg):
         preload = my.kwargs.get("preload")
         controls = my.kwargs.get("controls")
         autoplay = my.kwargs.get("autoplay")
-
-        use_videojs = my.kwargs.get("use_videojs")
-        if not use_videojs:
-            use_videojs = True
-
 
         is_test = my.kwargs.get("is_test")
         is_test = False
@@ -274,19 +260,14 @@ class VideoWdgX(BaseRefreshWdg):
             'type': 'load',
             'index' : my.index,
             'video_id': my.video_id,
-            'use_videojs': use_videojs,
             'cbjs_action': '''
             if (!bvr.index) bvr.index = 0;
 
             var video_id = bvr.video_id;
 
 
-            if (bvr.use_videojs) {
-                spt.video.init_videojs(video_id);
-            }
-            else {
-                spt.video.init_video(video_id);
-            }
+            spt.video.init_videojs(video_id);
+
 
             if (spt.gallery) {
                 
@@ -325,21 +306,15 @@ class VideoWdgX(BaseRefreshWdg):
         autoplay = False
 
         # videojs uses a json data structre
-        if use_videojs not in [False, 'false']:
-            data = {
-                    'preload': preload,
-                    'controls': controls,
-                    'autoplay': autoplay
-            }
+        data = {
+                'preload': preload,
+                'controls': controls,
+                'autoplay': autoplay
+        }
 
-            from pyasm.common import jsondumps
-            data_str = jsondumps(data)
-            video.add_attr("data-setup", data_str)
-        else:
-            video.add_attr("preload", preload)
-            video.add_attr("autoplay", autoplay)
-            video.add_attr("controls", controls)
-
+        from pyasm.common import jsondumps
+        data_str = jsondumps(data)
+        video.add_attr("data-setup", data_str)
 
 
         for i, src in enumerate(sources):
