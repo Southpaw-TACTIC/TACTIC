@@ -77,7 +77,6 @@ class CalendarWdg(BaseRefreshWdg):
             css_class = "spt_calendar_top"
         my.top_wdg.add_class(css_class)
         my.top_wdg.add_style("-moz-user-select: none;")
-        my.top_wdg.add_style("margin-left: -100px;")
 
         #my.top_wdg.add_style("background: #444")
         my.top_wdg.add_color("background", "background")
@@ -763,7 +762,15 @@ class CalendarInputWdg(BaseInputWdg):
         'type': 'TextWdg',
         'category': 'Display',
         'order': 3
+        },
+
+        "offset" : {
+            'description': "offset the calendar, e.g. x, y",
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': 10,
         }
+
 
 
 
@@ -930,6 +937,15 @@ class CalendarInputWdg(BaseInputWdg):
         input_div.add(input)
         my.top.add(input_div)
 
+        offset_x = 0
+        offset_y = 0
+
+        offset = my.get_option('offset')
+        offsets = offset.split(",")
+        if len(offsets) > 1:
+            offset_x = offsets[0]
+            offset_y = offsets[1]
+
 
 
 
@@ -958,13 +974,16 @@ class CalendarInputWdg(BaseInputWdg):
                        
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
-                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:0, y:0}});
+                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:bvr.offset_x, y:bvr.offset_y}});
                     }
                     
                     spt.show(el);
                     spt.body.add_focus_element(el); 
                     //evt.stopPropagation();
-                    '''})
+                    ''', 
+                    'offset_x' : offset_x,
+                    'offset_y' : offset_y
+                    })
             # TODO: this onblur is nice because it hides the calendar,
             # but it stops the input from functioning
             #input.add_event('onblur', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
