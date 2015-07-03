@@ -98,9 +98,10 @@ class File(SObject):
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
-                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb']
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb', 'gif']
 
-    IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
+    #IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
+    IMAGE_EXT = ['jpg','png','tif','tiff','dds','dcm']
                 
 
 
@@ -695,6 +696,9 @@ class IconCreator(object):
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
+
+        if (ext == ".gif" and my.web_path is None):
+            my._process_image( file_name )
 
     def _process_image(my, file_name):
 
