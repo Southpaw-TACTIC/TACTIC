@@ -43,6 +43,7 @@ from pyasm.biz import Project, PrefSetting
 from widget_config import WidgetConfigView
 from pyasm.search import ExceptionLog
 from pyasm.prod.biz import ProdSetting
+from pyasm.common import jsonloads
 import random, os, re
 
 
@@ -1138,7 +1139,7 @@ class TacticLogoWdg(Widget):
         div.add(HtmlElement.br(4))
 
         return div
-        
+
 
 class WebLoginWdg(Widget):
 
@@ -1159,7 +1160,6 @@ class WebLoginWdg(Widget):
         override_company_name = my.kwargs.get('override_company_name') == "true"
         override_textfield = my.kwargs.get('override_textfield') == "true"
         override_login = my.kwargs.get('override_login') == "true"
-        bottom_help = my.kwargs.get('bottom_help') == "true"
         bottom_link = my.kwargs.get('bottom_link')
 
 
@@ -1449,10 +1449,18 @@ class WebLoginWdg(Widget):
         th = table2.add_header(span)
         th.add_style("text-align: center")
 
+
         table2.add_row()
         
         msg = web.get_form_value(my.LOGIN_MSG)
         td = table2.add_cell(css='center_content')
+
+        if bottom_link:
+            bottom_dict = jsonloads(bottom_link)
+            for key, value in bottom_dict.items():
+                td.add("<div class='spt_bottom_link'><a href=%s> %s </a></div>" % (value,key))
+        else:
+            td.add_style("")
         
         if my.hidden:
             msg = 'Your session has expired. Please login again.'
@@ -1513,10 +1521,7 @@ class WebLoginWdg(Widget):
         table.add_style("height: 85%")
         table.add_row()
         td = table.add_cell()
-        if bottom_help:
-            div.add("<div class='spt_bottom_help_link'><a href=%s>User Documentation</a></div>" % bottom_link)
-        else:
-            td.add_style("vertical-align: middle")
+        td.add_style("vertical-align: middle")
         td.add_style("text-align: center")
         td.add_style("background: transparent")
         td.add(box)
