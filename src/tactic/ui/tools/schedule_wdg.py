@@ -289,6 +289,17 @@ class ScheduleUserToolWdg(BaseRefreshWdg):
         config_xml.append('<tab>')
 
         config_xml.append('''
+        <element name='schedule'>
+          <display class='tactic.ui.widget.TaskCalendarWdg'>
+            <assigned>%s</assigned>
+            <sobject_display_expr>%s</sobject_display_expr>
+            <show_header>true</show_header>
+            <show_border>false</show_border>
+          </display>
+        </element> 
+        ''' % (login, my.sobject_display_expr))
+
+        config_xml.append('''
         <element name='activity'>
           <display class='tactic.ui.widget.ActivityCalendarWdg'>
             <login>%s</login>
@@ -300,17 +311,6 @@ class ScheduleUserToolWdg(BaseRefreshWdg):
         </element> 
         ''' % login)
  
-
-        config_xml.append('''
-        <element name='schedule'>
-          <display class='tactic.ui.widget.TaskCalendarWdg'>
-            <assigned>%s</assigned>
-            <sobject_display_expr>%s</sobject_display_expr>
-            <show_header>true</show_header>
-            <show_border>false</show_border>
-          </display>
-        </element> 
-        ''' % (login, my.sobject_display_expr))
         config_xml.append('''
         <element name='tasks'>
           <display class='tactic.ui.panel.FastTableLayoutWdg'>
