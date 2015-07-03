@@ -851,7 +851,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     #
     def process_value(my, name, value, column_type="varchar"):
 
-        if column_type in ['timestamp','datetime']:
+        if column_type in ['timestamp','datetime','datetime2']:
             quoted = False
             lower_value = ''
             if isinstance(value, datetime.datetime):
@@ -871,6 +871,12 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                     if value == 'NULL':
                         pass
                     else:
+                        
+                        if re.search(r"(\s\+\d{4})", value):
+                            # add : so it becomes +00:00
+                            parts = value.split(' +')
+                            parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
+                            value = '%s +%s'%(parts[0], parts[1])
                         value = "convert(datetime2, '%s', 0)" % value
                 
             return {"value": value, "quoted": quoted}
@@ -948,18 +954,23 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             print "no returned result from database creation (sqlcmd)"
 
 
-    def drop_database(my, database):
+    def drop_database(my, db_resource):
         '''remove a database in SQL Server. Note this is a very dangerous
         operation.  Use with care.'''
         # if the database does not exist, do nothing
         #if not database_exists(database):
         #    return
+        from sql import DbResource, DbContainer
+        if DbResource.is_instance(db_resource):
+            database = db_resource.get_database()
+        else:
+            database = db_resource
 
   
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -Q "dropdatabase test1"
         # note: The database we are connecting to must be 'sthpw'
-        drop_SQL_arg = '"DROP DATABASE %s"' %database
+        drop_SQL_arg = '"DROP DATABASE %s"' % (database)
         create = 'sqlcmd -S %s,%s -U %s -P %s -Q %s' % \
                  (my.server, my.port, my.user, my.password, drop_SQL_arg)
         cmd = os.popen(create)
@@ -971,7 +982,6 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         else:
             print result
         cmd.close()
-
 
     def get_modify_column(my, table, column, type, not_null=None):
         ''' get the statement for setting the column type '''
@@ -1122,7 +1132,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                     key = "%s:sthpw_column_info" % site
                 else:
                     key = "sthpw_column_info"
-                cache = CacheContainer.get()
+                cache = CacheContainer.get(key)
                 if cache:
                     dict = cache.get_value_by_key("data", table)
                     if dict != None:
@@ -3154,7 +3164,7 @@ class MySQLImpl(PostgresImpl):
         # TODO: if the database does not exist, do nothing
         # if not database_exists(database):
         #    return
-
+        
 
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.   mysql --host=localhost --port=5432 --user=root --password=south123paw --execute="create database unittest"

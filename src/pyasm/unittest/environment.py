@@ -18,7 +18,7 @@ from pyasm.common import TacticException
 from pyasm.biz import Project
 from pyasm.security import Batch
 from pyasm.command import Command
-from pyasm.search import SearchType
+from pyasm.search import SearchType, Search
 from tactic.command import CreateProjectCmd, PluginInstaller
 from tactic.ui.tools import DeleteProjectCmd
 
@@ -90,9 +90,10 @@ class Sample3dEnvironment(UnittestEnvironment):
             shot.set_value('sequence_code','SEQ_01')
             shot.commit(triggers=False)
 
-        seq = SearchType.create("prod/sequence")
-        seq.set_value('code','SEQ_01')
-        seq.commit(triggers=False)
+        if not Search.eval("@SOBJECT(prod/sequence['code','SEQ_01'])"):
+            seq = SearchType.create("prod/sequence")
+            seq.set_value('code','SEQ_01')
+            seq.commit(triggers=False)
 
 
 if __name__ == '__main__':

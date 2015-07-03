@@ -74,13 +74,16 @@ else:
         pass
 
 ffprobe_exe = "ffprobe"
+ffmpeg_exe = "ffmpeg"
 if os.name == 'nt':
     ffprobe_exe = "ffprobe.exe"
+    ffmpeg_exe = "ffmpeg.exe"
 
 if Common.which(ffprobe_exe):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
+
 
 
 
@@ -98,9 +101,10 @@ class File(SObject):
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
-                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb']
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb', 'gif']
 
-    IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
+    #IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
+    IMAGE_EXT = ['jpg','png','tif','tiff','dds','dcm']
                 
 
 
@@ -648,8 +652,7 @@ class IconCreator(object):
         return thumb_size
 
     def _process_video(my, file_name):
-        ffmpeg = Common.which("ffmpeg")
-        if not ffmpeg:
+        if not HAS_FFMPEG:
             return
 
         thumb_web_size = my.get_web_file_size()
@@ -669,21 +672,23 @@ class IconCreator(object):
 
         import subprocess
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
             
+           
             if os.path.exists(tmp_web_path):
                 my.web_path = tmp_web_path
             else:
                 my.web_path = None
 
         except Exception, e:
+
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
            
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
             
             if os.path.exists(tmp_icon_path):
@@ -695,6 +700,9 @@ class IconCreator(object):
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
+
+        if (ext == ".gif" and not my.web_path):
+            my._process_image( file_name )
 
     def _process_image(my, file_name):
 
