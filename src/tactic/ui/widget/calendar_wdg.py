@@ -76,7 +76,8 @@ class CalendarWdg(BaseRefreshWdg):
         if not css_class:
             css_class = "spt_calendar_top"
         my.top_wdg.add_class(css_class)
-        my.top_wdg.add_style("-moz-user-select: none")
+        my.top_wdg.add_style("-moz-user-select: none;")
+        my.top_wdg.add_style("margin-left: -100px;")
 
         #my.top_wdg.add_style("background: #444")
         my.top_wdg.add_color("background", "background")
