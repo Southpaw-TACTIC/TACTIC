@@ -4059,22 +4059,55 @@ class SObject(object):
             key = {'event': event}
             Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
-            key = {'event': event}
-            if process:
-                key['process'] = process
-                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
-
-
-            key = {'event': event}
             if parent_type:
+                key = {'event': event}
                 key['search_type'] = parent_type
                 Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
-            key = {'event': event}
+
+
+            if process:
+                key = {'event': event}
+                key['process'] = process
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+
             if process and parent_type:
+                key = {'event': event}
                 key['process'] = process
                 key['search_type'] = parent_type
                 Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+
+            # process can be either the process name or the process code
+            if process and my.get_base_search_type() in [
+                    'sthpw/task',
+                    'sthpw/note',
+                    'sthpw/snapshot',
+                    'sthpw/work_hour'
+            ]:
+                # need to to get the parent
+                parent = my.get_parent()
+                pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+                if pipeline_code:
+                    search = Search("config/process")
+                    search.add_filter("process", process)
+                    search.add_filter("pipeline_code", pipeline_code)
+                    process_sobj = search.get_sobject()
+                    if process_sobj:
+                        process_code = process_sobj.get_code()
+
+                        key = {'event': event}
+                        key['process'] = process_code
+                        Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+                        if parent_type:
+                            key = {'event': event}
+                            key['process'] = process_code
+                            key['search_type'] = parent_type
+                            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+
 
 
 
