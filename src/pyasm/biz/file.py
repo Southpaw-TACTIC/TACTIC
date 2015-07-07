@@ -672,7 +672,7 @@ class IconCreator(object):
 
         import subprocess
         try:
-            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
             
            
@@ -688,7 +688,7 @@ class IconCreator(object):
             pass
            
         try:
-            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
             
             if os.path.exists(tmp_icon_path):
