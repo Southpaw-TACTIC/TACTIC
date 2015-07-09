@@ -4485,7 +4485,7 @@ class SwitchLayoutMenu(object):
             ['show_related','detail','code','description'],
             ['preview','code','name','description','task_pipeline_vertical','task_edit','notes'],
             ['preview','code','name','general_checkin','file_list', 'history','description','notes'],
-            [],
+            ['name','description','detail', 'file_list','general_checkin'],
             [],
             [],
             ['preview','name','task_pipeline_report','summary','completion'],

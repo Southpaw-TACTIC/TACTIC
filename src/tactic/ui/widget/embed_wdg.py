@@ -104,11 +104,10 @@ class EmbedWdg(BaseRefreshWdg):
             embed = DivWdg()
 
 
-            if not thumb_path:
-                thumb_path = "/context/icons/logo/tactic_sml.png"
+            #if not thumb_path:
+            #    thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
-            if not controls:
-                controls = "true"
+
 
             video_id = None
             sources = [src]
