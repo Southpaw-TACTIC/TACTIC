@@ -284,12 +284,13 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
     def handle_pending(my):
         # simply calls action
+        my.set_all_tasks(my.sobject, my.process, "pending")
         my.run_callback(my.pipeline, my.process, "pending")
         Trigger.call(my, "process|action", output=my.input)
 
 
     def handle_action(my):
-        my.set_all_tasks(sobject, process, "in_progress")
+        my.set_all_tasks(my.sobject, my.process, "in_progress")
         my.run_callback(my.pipeline, my.process, "action")
         Trigger.call(my, "process|complete", output=my.input)
 
@@ -350,7 +351,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
-    def handle_review(my):
+    def handle_revise(my):
 
         process_obj = pipeline.get_process(my.process)
 
@@ -488,8 +489,6 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
             first_name = first_process.get_name()
 
             full_name = "%s.%s" % (my.process, first_name)
-
-            print "child: ", full_name
 
             input = {
                     'pipeline': subpipeline,
@@ -1135,12 +1134,42 @@ class ProcessRejectTrigger(BaseProcessTrigger):
 
         my.run_callback(pipeline, process, "revise")
 
-        if node_type in ['manual', 'node']:
-            my.set_all_tasks(sobject, process, my.get_status())
-        if node_type in ['action']:
-            my.set_all_tasks(sobject, process, my.get_status())
+        my.set_all_tasks(sobject, process, my.get_status())
 
-        if node_type in ['approval','action','condition']:
+        input_processes = pipeline.get_input_processes(process)
+        for input_process in input_processes:
+            input_process = input_process.get_name()
+
+            input = {
+                'pipeline': pipeline,
+                'sobject': sobject,
+                'process': input_process
+            }
+
+            event = "process|revise"
+            Trigger.call(my, event, input)
+
+
+
+
+class ProcessReviseTrigger(ProcessRejectTrigger):
+
+    def get_status(my):
+        return "revise"
+
+    def execute(my):
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+        pipeline = my.input.get("pipeline")
+
+        process_obj = pipeline.get_process(process)
+        node_type = process_obj.get_type()
+
+        my.run_callback(pipeline, process, "revise")
+
+        if node_type in ["condition", "action", "approval"]:
+
+            my.set_all_tasks(sobject, process, "")
 
             input_processes = pipeline.get_input_processes(process)
             for input_process in input_processes:
@@ -1156,12 +1185,8 @@ class ProcessRejectTrigger(BaseProcessTrigger):
                 Trigger.call(my, event, input)
 
 
-
-
-class ProcessReviseTrigger(ProcessRejectTrigger):
-
-    def get_status(my):
-        return "revise"
+        else:
+            my.set_all_tasks(sobject, process, my.get_status())
 
 
 
