@@ -34,18 +34,10 @@ TASK_PIPELINE = '''
   <process completion="20" color="#e9e386" name="In Progress"/>
   <process completion="20" color="#a96ccf" name="Waiting"/>
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
-  <process completion="80" color="#e84a4d" name="Review"/>
   <process completion="80" color="#e84a4d" name="Revise"/>
+  <process completion="80" color="#e84a4d" name="Reject"/>
   <process completion="100" color="#a3d991" name="Complete"/>
   <process completion="100" color="#a3d991" name="Approved"/>
-  <connect to="Review" from="Need Assistance"/>
-  <connect to="In Progress" from="Pending"/>
-  <connect to="Pending" from="Assignment"/>
-  <connect to="Need Assistance" from="Waiting"/>
-  <connect to="Waiting" from="In Progress"/>
-  <connect to="Approved" from="Review"/>
-  <connect to="Complete" from="Review"/>
-  <connect to="Approved" from="Complete"/>
 </pipeline>
 '''
 
