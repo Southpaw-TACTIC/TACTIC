@@ -1508,7 +1508,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                     # make the task slightly opaque
-                    if node_type in ['manual', 'node'] and tasks[0].get_id() == -1:
+                    if node_type in ['manual', 'node','approval'] and tasks[0].get_id() == -1:
                         td.add_style("opacity: 0.5")
 
 
@@ -2087,6 +2087,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 button_div.add_style("float: left")
                 button_div.add_style("width: 50px")
 
+
         if my.show_task_edit != 'false':
             #edit_div.add_style('float: right')
             icon = IconButtonWdg(tip='Edit Task', icon="BS_EDIT")
@@ -2136,6 +2137,29 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 spt.panel.load_popup("Add Note ["+bvr.process+"]", class_name, kwargs);
                 '''
             } )
+
+
+            # view schedule
+            """
+            icon = IconButtonWdg(tip='User Schedule', icon="BS_USER")
+            icon_div.add(icon)
+            icon.add_style("display: inline-block")
+            icon.add_class('hand')
+            icon.add_behavior({
+                'type': 'click_up',
+                'parent_key': parent_key,
+                'process': process,
+                'cbjs_action': '''
+                var login = "beth";
+
+                var class_name = "tactic.ui.widget.TaskCalendarWdg";
+                var kwargs = {
+                    assigned: login
+                }
+                spt.tab.add_new("test", "test", class_name, kwargs);
+                '''
+            } )
+            """
 
 
 
