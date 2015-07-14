@@ -1150,8 +1150,9 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
 
 
 
-
-
+        # TODO: can't use this for now because the action class is not passed through
+        # the table layout to the EditMultipleCmd
+        """
         config = '''
         <config>
         <test>
@@ -1176,16 +1177,17 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
         from pyasm.common import Xml
         xml = Xml()
         xml.read_string(config)
+        """
 
         element = TableLayoutWdg(
                 search_type=my.sobject.get_base_search_type(),
                 view="test",
-                config_xml=xml,
-                show_shelf=False,
+                show_shelf="false",
                 search_key=my.sobject.get_search_key(),
-                element_names=['tasks'],
-                show_select=False,
-                show_search_limit=False,
+                element_names=['task_pipeline_vertical'],
+                show_select="false",
+                show_search_limit="false",
+                show_row_highlight="false"
         )
         top.add(element)
 

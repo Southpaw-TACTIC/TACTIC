@@ -282,6 +282,7 @@ display class, it will adopt the one defined here-->
         <edit>true</edit>
         <edit_status>true</edit_status>
         <edit_assigned>true</edit_assigned>
+        <show_filler_tasks>true</show_filler_tasks>
       </display>
       <action class='tactic.ui.table.TaskElementCbk'/>
     </element>
@@ -296,7 +297,7 @@ display class, it will adopt the one defined here-->
         <edit>true</edit>
         <edit_status>true</edit_status>
         <edit_assigned>true</edit_assigned>
-        <edit_assigned>true</edit_assigned>
+        <show_filler_tasks>true</show_filler_tasks>
       </display>
       <action class='tactic.ui.table.TaskElementCbk'/>
     </element>
