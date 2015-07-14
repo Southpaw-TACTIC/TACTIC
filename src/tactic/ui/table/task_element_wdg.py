@@ -1128,13 +1128,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
         if show_filler_tasks in ["true", True]:
 
-            # NOTE: that this will contain all of the process for all pipelines
-            processes = my.sorted_processes
-
-
             pipeline_code = my.get_pipeline_code()
             pipeline = Pipeline.get_by_code(pipeline_code)
             assert(pipeline)
+
+            processes = pipeline.get_process_names(type=["node","approval","hierarchy"])
 
             if my.filler_cache == None:
                 my.filler_cache = {}
@@ -1151,7 +1149,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     full_process = "%s.%s" % (supprocess, process)
                 else:
                     full_process = process
-
 
                 # skip processes that already have tasks
                 if full_process in existing_processes:
@@ -1180,7 +1177,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             missing = []
             task_processes = [x.get_value("process") for x in tasks]
             for process in processes:
-
                 if supprocess:
                     full_process = "%s.%s" % (supprocess, process)
                 else:
@@ -1641,7 +1637,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             hierarchy_div = DivWdg()
             div.add(hierarchy_div)
-            hierarchy_div.add_style("margin: 8px 0px")
+            hierarchy_div.add_style("margin: 8px 0px 8px -8px")
             hierarchy_div.add_class("spt_hierarchy_top")
 
             search = Search("config/process")
@@ -1649,14 +1645,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             search.add_filter("process", process)
             process_sobj = search.get_sobject()
             subpipeline_code = process_sobj.get("subpipeline_code")
-            subpipeline = Pipeline.get_by_code(subpipeline_code)
-            processes = subpipeline.get_process_names()
-            num_processes = len(processes)
+            #subpipeline = Pipeline.get_by_code(subpipeline_code)
+            #processes = subpipeline.get_process_names()
+            #num_processes = len(processes)
 
             from tactic.ui.widget import SwapDisplayWdg
             SwapDisplayWdg.handle_top(hierarchy_div)
 
-            title = "<b>%s (%s)</b>" % (process, num_processes)
+            #title = "<b>%s (%s)</b>" % (process, num_processes)
+            title = "<b>%s</b>" % (process)
             swap = SwapDisplayWdg(title=title)
             hierarchy_div.add(swap)
 
@@ -2693,8 +2690,8 @@ class TaskSummaryElementWdg(TaskElementWdg):
 
             div.add_style("width: 5px")
             div.add_style("height: 15px")
-            div.add_style("margin-left: auto")
-            div.add_style("margin-right: auto")
+            #div.add_style("margin-left: auto")
+            #div.add_style("margin-right: auto")
 
             if status:
                 td.add_attr("title", "%s - %s" % (process, status))

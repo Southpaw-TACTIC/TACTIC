@@ -1131,7 +1131,7 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
             '''
         } )
  
-        button = ActionButtonWdg(title="Detail")
+        button = ActionButtonWdg(title="Details")
         shelf_wdg.add(button)
         button.add_style("display: inline-block")
         button.add_behavior( {
@@ -1144,7 +1144,16 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
             var kwargs = {
                 search_key: bvr.search_key
             }
-            spt.tab.add_new("Detail", "Detail", class_name, kwargs);
+
+            var server = TacticServerStub.get();
+            var sobject = server.get_by_search_key(bvr.search_key);
+            var name = sobject.name;
+            if (!name) {
+                name = sobject.code;
+            }
+
+            var title = "Detail ["+name+"]";
+            spt.tab.add_new(title, title, class_name, kwargs);
             '''
         } )
 
