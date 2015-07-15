@@ -299,31 +299,35 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         div = DivWdg()
         div.add_class("spt_tool_top")
 
-        table = Table()
+        #table = Table()
+        from tactic.ui.container import ResizableTableWdg
+        from table_layout_wdg import FastTableLayoutWdg
+
+        table = ResizableTableWdg()
+        table.add_style("table-layout", "fixed")
+        table.add_style("width: 100%")
         div.add(table)
         table.add_row()
 
         td = table.add_cell()
-        from table_layout_wdg import FastTableLayoutWdg
+
 
         kwargs = my.kwargs.copy()
 
 
-        td.add_style("width: 1%")
         td.add_style("vertical-align: top")
         layout_div = DivWdg()
         layout_div.add_style("min-height: 500px")
+        layout_div.add_style("height: auto")
         td.add(layout_div)
-
-        element_names = my.kwargs.get("element_names")
-        if not element_names:
-            kwargs['element_names'] = ['name','description','detail', 'file_list','general_checkin']
-        #kwargs['element_names'] = ['preview','name','detail', 'task_summary']
+        td.add_style("overflow: hidden")
 
         kwargs['show_shelf'] = False
         kwargs['show_search_limit'] = False
+        kwargs['expand_on_load'] = False
         layout = FastTableLayoutWdg(**kwargs)
         layout_div.add(layout)
+        layout.set_sobjects(my.sobjects)
         #from tactic.ui.panel import TileLayoutWdg
         #layout = TileLayoutWdg(**my.kwargs)
         #layout_div.add(layout)
@@ -336,7 +340,11 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         content = DivWdg()
         td.add(content)
         content.add_class("spt_tool_content")
-        #content.add_style("margin: -1px")
+        content.add_border(color="#EEE")
+        content.add_style("margin: -1px")
+        content.add_style("height: 100%")
+        #content.add_style("padding: 0px 20px")
+
 
 
         no_content_wdg = DivWdg()
@@ -352,6 +360,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         no_content_wdg.add_style("padding-bottom: 20px")
         no_content_wdg.add_style("width: 350px")
         no_content_wdg.add_style("height: 110px")
+        no_content_wdg.add_style("margin: 30px auto")
         no_content_wdg.add_border()
 
 

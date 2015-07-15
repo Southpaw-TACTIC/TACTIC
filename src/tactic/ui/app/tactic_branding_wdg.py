@@ -47,7 +47,7 @@ class TacticCopyrightNoticeWdg(BaseRefreshWdg):
         top_div.add( tactic_span )
         top_div.add( rel_span )
 
-        top_div.add( "&nbsp;&nbsp; &copy; 2005-2013, Southpaw Technology Inc. &nbsp; All Rights Reserved.&nbsp; " )
+        top_div.add( "&nbsp;&nbsp; &copy; 2005-2015, Southpaw Technology Inc. &nbsp; All Rights Reserved.&nbsp; " )
 
         show_license_info = my.kwargs.get("show_license_info")
         if show_license_info:
