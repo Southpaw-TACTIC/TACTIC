@@ -99,8 +99,8 @@ class SthpwUpgrade(BaseUpgrade):
        my.run_sql(''' 
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
-    
-   def upgrade_v4_2_0_a01_016(my):
+
+    def upgrade_v4_2_0_a01_016(my):
         my.run_sql('''
         ALTER TABLE login ADD  "login_attempt" INT;
         ''')
