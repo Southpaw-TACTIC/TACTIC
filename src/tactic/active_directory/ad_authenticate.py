@@ -15,7 +15,7 @@ __all__ = ['ADAuthenticate', 'ADException']
 import types, os
 
 from pyasm.common import SecurityException, Config, Common
-from pyasm.security import Authenticate, TacticAuthenticate, LoginInGroup
+from pyasm.security import Authenticate, TacticAuthenticate, Login, LoginInGroup
 from pyasm.search import Search
 
 from pyasm.common import Environment
