@@ -20,6 +20,10 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.4.0.a01
     #
+    def upgrade_v4_4_0_a01_007(my):
+       my.run_sql(''' 
+        ALTER TABLE "login" ADD "location" text NULL; 
+        ''') 
 
     def upgrade_v4_4_0_a01_006(my):
         my.run_sql('''
@@ -91,7 +95,12 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
-    def upgrade_v4_2_0_a01_016(my):
+    def upgrade_v4_2_0_a01_017(my):
+       my.run_sql(''' 
+        ALTER TABLE "login" ADD "location" text NULL; 
+        ''') 
+    
+   def upgrade_v4_2_0_a01_016(my):
         my.run_sql('''
         ALTER TABLE login ADD  "login_attempt" INT;
         ''')

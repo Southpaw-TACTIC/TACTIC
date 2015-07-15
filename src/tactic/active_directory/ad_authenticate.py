@@ -14,8 +14,8 @@ __all__ = ['ADAuthenticate', 'ADException']
 
 import types, os
 
-from pyasm.common import SecurityException, Config
-from pyasm.security import Authenticate, LoginInGroup
+from pyasm.common import SecurityException, Config, Common
+from pyasm.security import Authenticate, TacticAuthenticate, LoginInGroup
 from pyasm.search import Search
 
 from pyasm.common import Environment
@@ -116,7 +116,17 @@ class ADAuthenticate(Authenticate):
         # preload data for further use later with original full login_name
         if is_logged_in:
             my.load_user_data(base_login_name, domain)
-                
+        else:
+            # If AD authentication fails, attempt login via Tactic database+
+            # (Only allow login for external users)
+            login = Login.get_by_login(base_login_name)
+            if login and login.get_value('location', no_exception=True) == 'external':
+                auth_class = "pyasm.security.TacticAuthenticate"
+                authenticate = Common.create_from_class_path(auth_class)  
+                is_authenticated = authenticate.verify(base_login_name, password)
+                if is_authenticated == True:
+                    return True
+
         return is_logged_in
 
 
