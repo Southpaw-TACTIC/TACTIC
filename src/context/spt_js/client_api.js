@@ -1000,6 +1000,11 @@ TacticServerStub = function() {
         
     }
 
+    this.insert_multiple = function(search_type, data, kwargs) {
+        // server.insert(search_type, data, kwargs);
+        return this._delegate("insert_multiple", arguments, kwargs);
+        
+    }
 
     this.update = function(search_type, data, kwargs) {
         return this._delegate("update", arguments, kwargs);
