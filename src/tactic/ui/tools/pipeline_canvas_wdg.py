@@ -350,8 +350,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node = my.get_node("XXXXX")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
-        #canvas.add(node)
         template_div.add(node)
+
+        node = my.get_node("XXXXX", node_type="manual")
+        node.add_style("left: 0px")
+        node.add_style("top: 0px")
+        template_div.add(node)
+
 
 
         # add folder group node
