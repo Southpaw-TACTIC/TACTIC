@@ -370,8 +370,82 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_regex_filter(my, column, regex, op='EQI'):
         return None
 
-    
-    
+    def _get_cte_where(my, op_filters):
+        '''Get the where clause for cte used in parent and child search'''
+        from search import Search
+        search = Search('workflow/base_keyword')
+        search.add_op_filters(op_filters)
+        search_stmt = search.get_statement()
+       
+        wheres = search_stmt.split('WHERE')
+        where = wheres[-1]
+        where = where.replace('base_keyword','p2')
+        return where
+
+    def get_parent_cte(my, op_filters):
+        '''Postgres parent CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH RECURSIVE res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                   SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(ARRAY[r."child_keyword_code"] AS TEXT),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                  
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        path || r."child_keyword_code",
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."child_keyword_code" = ng."parent_keyword_code" and depth < 4
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+                Select * from res;'''%where
+
+        return stmt
+
+    def get_child_cte(my, op_filters):
+        '''Postgres child CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH RECURSIVE res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(ARRAY[r."parent_keyword_code"] AS TEXT),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        path || r."parent_keyword_code",
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."parent_keyword_code" = ng."child_keyword_code" and depth < 4
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+ 
     def get_text_search_filter(cls, column, keywords, column_type, table=None):
         '''default impl works with Postgres'''
         if isinstance(keywords, basestring):
@@ -437,6 +511,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     get_text_search_filter = classmethod(get_text_search_filter)
 
+    
     def get_columns(cls, db_resource, table):
         '''get ordered column names'''
          # do a dummy select to get the ordered columns
@@ -844,6 +919,70 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return where
 
     get_text_search_filter = classmethod(get_text_search_filter)
+
+
+    def get_parent_cte(my,  op_filters):
+        '''SQLServer parent CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(r."child_keyword_code" AS varchar(256)),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        CAST ((path + ' > ' + r."child_keyword_code") AS varchar(256)),
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."child_keyword_code" = ng."parent_keyword_code" and depth < 5
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+    def get_child_cte(my, op_filters):
+        '''SQLServer child CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(r."parent_keyword_code" AS varchar(256)),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE ( %s )
+                    
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        CAST((path + ' > ' + r."parent_keyword_code") AS varchar(256)),
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."parent_keyword_code" = ng."child_keyword_code" and depth < 10
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
 
 
     #

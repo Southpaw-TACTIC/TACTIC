@@ -319,14 +319,13 @@
 
     <element name="department"/>
 
-    <!--
     <element name="license_type">
       <display class="SelectWdg">
         <empty>true</empty>
-        <values>disabled|user|float</values>
+        <values>disabled|user</values>
       </display>
     </element>
-    -->
+
 </edit>
 
 <edit_account layout="EditWdg">
