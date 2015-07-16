@@ -51,14 +51,17 @@ if os.name == "nt":
                 convert_exe = '%s\\convert.exe'%exe
                 HAS_IMAGE_MAGICK = True
         except:
-            print "Running %s failed" %exe
+            continue
+        else:
+            
+            print "ImageMagick found in %s" %exe
     if not convert_exe_list:
         # IM might not be in Program Files but may still be in PATH
         try:
-            convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
+            convert_process = Popen(['convert.exe','-version'], stdout=PIPE, stderr=PIPE)
             convert_return,convert_err = convert_process.communicate()
             if 'ImageMagick' in convert_return:
-                convert_exe = 'convert'
+                convert_exe = 'convert.exe'
                 HAS_IMAGE_MAGICK = True
         except:
             pass
