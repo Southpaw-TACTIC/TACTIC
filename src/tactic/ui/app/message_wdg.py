@@ -198,7 +198,11 @@ class FormatMessageWdg(BaseRefreshWdg):
 
 
             else:
-                description = message_value.get("description")
+                message = message_value.get('message')
+                if message:
+                    description = message
+                else:
+                    description = message_value.get("description")
 
 
         else:
