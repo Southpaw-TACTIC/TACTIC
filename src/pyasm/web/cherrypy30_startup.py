@@ -94,11 +94,11 @@ class CherryPyStartup(CherryPyStartup20):
         if site == "plugins":
             return
 
-        print "on error page"
-        print "status: ", status
-        print "message: ", message
-        print "site: ", site
-        print "project_code: ", project_code
+        print "WARNING:"
+        print "    status: ", status
+        print "    message: ", message
+        #print "site: ", site
+        #print "project_code: ", project_code
 
         from pyasm.security import TacticInit
         TacticInit()

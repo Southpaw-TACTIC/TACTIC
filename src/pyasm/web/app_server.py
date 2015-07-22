@@ -325,12 +325,6 @@ class BaseAppServer(Base):
             return my.handle_not_logged_in()
 
  
-        print "is_logged_in: ", is_logged_in
-        print "is_logged_in: ", is_logged_in
-        print "is_logged_in: ", is_logged_in
-        print "is_logged_in: ", is_logged_in
-        print "is_logged_in: ", is_logged_in
-
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
             guest_mode = 'restricted'
@@ -641,6 +635,7 @@ class BaseAppServer(Base):
 
             # get the site from the ticket to determine where to authenticate the user
             # **only do this if the URL is pointing to the portal(??)
+            # FIXME: hard coded!!!!
             if site == "portal":
                 site = site_obj.get_by_ticket(ticket_key)
                 site_obj.set_site(site)

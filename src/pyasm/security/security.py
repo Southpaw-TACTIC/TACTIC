@@ -667,7 +667,6 @@ class Site(object):
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
         path = web.get_request_path()
-        print "path: ", path
         return my.break_up_request_path(path)
 
 
