@@ -54,6 +54,8 @@ class Process(Base):
     def get_name(my):
         return Xml.get_attribute( my.node, "name" )
 
+
+    # DEPRECATED
     def get_full_name(my):
         if my.parent_pipeline_code:
             return "%s/%s" % (my.parent_pipeline_code, my.get_name())
@@ -61,7 +63,12 @@ class Process(Base):
             return my.get_name()
 
     def get_type(my):
-        return Xml.get_attribute( my.node, "type" )
+        node_type = Xml.get_attribute( my.node, "type" )
+        if node_type == "auto":
+            node_type = "action"
+        if not node_type:
+            node_type = "node"
+        return node_type
 
     def get_group(my):
         return Xml.get_attribute( my.node, "group" )
@@ -274,8 +281,8 @@ class Pipeline(SObject):
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
         column, then update it.  It updates the process table also.'''
-        my.update_process_table()
         search_type = my.get_value('search_type')
+        my.update_process_table(search_type=search_type)
 
         # don't do anything for task table
         if search_type =='sthpw/task':
@@ -317,7 +324,7 @@ class Pipeline(SObject):
                     sobject.commit(triggers=False)
             """
 
-    def update_process_table(my):
+    def update_process_table(my, search_type=None):
         ''' make sure to update process table'''
 
         template = my.get_template_pipeline()
@@ -352,6 +359,10 @@ class Pipeline(SObject):
 
             if not exists:
                 process_sobj = SearchType.create("config/process")
+
+                # default to (main) for non-task status pipeline
+                if search_type and search_type != 'sthpw/task':
+                    process_sobj.set_value('subcontext_options', '(main)')
                 process_sobj.set_value("pipeline_code", pipeline_code)
                 process_sobj.set_value("process", process_name)
 
@@ -418,8 +429,12 @@ class Pipeline(SObject):
 
     def set_pipeline(my, pipeline_xml, cache=True):
         '''set the pipeline externally'''
-        # cache according to pipelne code, which will share the same xml object
+        # cache according to pipeline code, which will share the same xml object
+        if my.is_insert():
+            cache = False
+
         search_key = my.get_search_key()
+
         xml_dict = Container.get("Pipeline:xml")
             
         if xml_dict == None:
@@ -472,6 +487,8 @@ class Pipeline(SObject):
     def get_pipeline_xml(my):
         return my.xml
 
+    def to_string(my):
+        return my.xml.to_string()
 
 
     def get_process(my, name):
@@ -495,14 +512,24 @@ class Pipeline(SObject):
         #    (my.get_name(),name) )
 
 
-    def get_processes(my, recurse=False):
+    def get_processes(my, recurse=False, type=None):
         '''returns all the Process objects in this pipeline'''
+
+        if type and isinstance(type, basestring):
+            types = [type]
+        else:
+            types = type
+
         if recurse:
             if my.recursive_processes:
                 return my.recursive_processes
             else:
-            # add child processes
+                # add child processes
                 for process in my.processes:
+
+                    if types and process.get_type() not in types:
+                        continue
+
                     my.recursive_processes.append(process)
 
                     child_pipeline = process.get_child_pipeline()
@@ -516,7 +543,15 @@ class Pipeline(SObject):
                 return my.recursive_processes
 
         else:
-            return my.processes
+            if types:
+                ret_processes = []
+                for process in my.processes:
+                    if process.get_type() not in types:
+                        continue
+                    ret_processes.append(process)
+                return ret_processes
+            else:
+                return my.processes
 
 
 
@@ -528,12 +563,21 @@ class Pipeline(SObject):
             return {}
 
 
-    def get_process_names(my,recurse=False):
+    def get_process_names(my,recurse=False, type=None):
         '''returns all the Process names in this pipeline'''
-        processes = my.get_processes(recurse)
+
+        if type and isinstance(type, basestring):
+            types = [type]
+        else:
+            types = type
+
+        processes = my.get_processes(recurse, type=types)
         if recurse:
             process_names = []
             for process in processes:
+                if types and process.get_type() not in types:
+                    continue
+
                 if process.is_from_sub_pipeline():
                     process_names.append(process.get_full_name()) 
                 else:
@@ -541,30 +585,8 @@ class Pipeline(SObject):
             return process_names
         else:
             return [process.get_name() for process in processes]
-        '''
-        # FIXME: need to copy this because the names should have hierarchy,
-        # and the data structures aren't good enough for this yet
-        if recurse:
-            # add child processes
-            process_names = []
-            for process in my.processes:
-                process_names.append(process.get_name())
-
-                child_pipeline = process.get_child_pipeline()
-                if not child_pipeline:
-                    continue
-
-                child_processes = child_pipeline.get_processes(recurse=recurse)
-                child_process_names = [x.get_full_name() for x in child_processes]
-                process_names.extend(child_process_names)
-            return process_names
 
 
-        else:
-            return [process.get_name() for process in my.processes]
-                
-
-        '''
 
     def get_index(my, name):
         index = 0
@@ -582,7 +604,7 @@ class Pipeline(SObject):
             opposite = "to"
         else:
             opposite = "from"
-        
+
         if not process:
             connect_nodes = my.xml.get_nodes("pipeline/connect")
         else:
@@ -598,19 +620,27 @@ class Pipeline(SObject):
         return connects
 
 
-    def get_input_processes(my, process, type=None):
+    def get_input_processes(my, process, type=None, to_attr=None):
         connects = my._get_connects(process, direction='to')
         processes= []
         for connect in connects:
+
+            if to_attr:
+                connect_to_attr = connect.get_attr("to_attr")
+                if connect_to_attr != to_attr:
+                    continue
+
             from_connect = connect.get_from()
             process = my.get_process(from_connect)
             if process:
+                if type and process.get_type() != type:
+                    continue
                 processes.append(process)
 
         return processes
 
 
-    def get_output_processes(my, process, type=None):
+    def get_output_processes(my, process, type=None, from_attr=None):
         connects = my._get_connects(process, direction="from")
         if not connects:
             return []
@@ -620,12 +650,18 @@ class Pipeline(SObject):
             # make sure there are no empty contexts
             to = connect.get_to()
 
+            if from_attr:
+                connect_from_attr = connect.get_attr("from_attr")
+                if connect_from_attr != from_attr:
+                    continue
+
+
             to_pipeline = connect.get_to_pipeline()
             if to_pipeline:
                 pipeline = Pipeline.get_by_code(to_pipeline)
                 process = pipeline.get_process(to)
 
-                if type and type.get_type() != type:
+                if type and process.get_type() != type:
                     continue
 
                 if process:

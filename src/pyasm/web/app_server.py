@@ -448,9 +448,9 @@ class BaseAppServer(Base):
                     web_wdg = None
 
             if not web_wdg:
-                msg = "No widget for Guest defined"
+                msg = "No default page for Guest defined"
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
-                top.add(WebLoginWdg() )
+                return my.handle_not_logged_in(allow_change_admin=False)
 
 
             # create a web app and run it through the pipeline

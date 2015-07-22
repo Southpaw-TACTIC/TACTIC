@@ -11,10 +11,11 @@
 #
 
 
-__all__ = ['VideoWdg']
+__all__ = ['VideoWdg', 'VideoJsWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 from pyasm.web import Video, HtmlElement, DivWdg
+
 
 
 class VideoWdg(BaseRefreshWdg):
@@ -32,6 +33,147 @@ class VideoWdg(BaseRefreshWdg):
 
     def init(my):
         my.video = Video()
+
+
+
+    def get_video(my):
+        return my.video
+
+    def get_display(my):
+
+        top = my.top
+
+        sources = my.kwargs.get("sources")
+        if sources and isinstance(sources, basestring):
+            sources = sources.split("|")
+
+        source_types = my.kwargs.get("source_types")
+        if not source_types:
+            source_types = []
+
+
+        poster = my.kwargs.get("poster")
+        width = my.kwargs.get("width")
+        height = my.kwargs.get("height")
+        preload = my.kwargs.get("preload")
+        controls = my.kwargs.get("controls")
+        autoplay = my.kwargs.get("autoplay")
+
+        video = my.video
+        top.add(video)
+
+        my.video_id = my.kwargs.get("video_id")
+        if not my.video_id:
+            my.video_id = video.set_unique_id()
+        else:
+            video.set_attr("id", my.video_id)
+
+
+        top.add_behavior( {
+            'type': 'load',
+            'cbjs_action': my.get_onload_js()
+        } )
+
+        top.add_behavior( {
+            'type': 'load',
+            'video_id': my.video_id,
+            'cbjs_action': '''
+            spt.video.init_video(bvr.video_id);
+            '''
+        } )
+
+
+        if width:
+            video.add_attr("width", width)
+        if height:
+            video.add_attr("height", height)
+
+        if poster:
+            video.add_attr("poster", poster)
+
+        if preload == None:
+            preload = "auto"
+        elif preload == False:
+            preload = "none"
+
+
+        autoplay = "false"
+
+        video.add_attr("preload", preload)
+
+        #video.add_attr("autoplay", autoplay)
+        if controls:
+            video.add_attr("controls", controls)
+
+
+        for i, src in enumerate(sources):
+
+            source = HtmlElement(type="source")
+            source.add_attr("src", src)
+
+            if len(source_types) > i:
+                source_type = source_types[i]
+                source.add_attr("type", source_type)
+
+            video.add(source)
+
+        #print top.get_buffer_display()
+        return top
+
+
+
+    def get_onload_js(my):
+        return '''
+
+spt.video = {}
+
+spt.video.loaded = false;
+spt.video.player = null;
+
+spt.video.players = {};
+
+
+spt.video.get_player_el = function(el) {
+    var video = el.getElement("video");
+    return video;
+}
+
+spt.video.get_player = function(el) {
+    var video = el.getElement("video");
+    return video;
+}
+
+spt.video.init_video = function(video_id) {
+
+    spt.video.loaded = true;
+    spt.video.player = $(video_id);
+    spt.video.players[video_id] = spt.video.player;
+}
+        '''
+
+
+
+
+
+
+
+
+class VideoJsWdg(BaseRefreshWdg):
+
+    ARGS_KEYS = {
+        "sources": {
+            'description': 'List of URLs representing the sources for the videos, separate by "|"',
+            'type': 'TextAreaWdg',
+            'category': 'Options',
+        },
+        'width': 'The width to display the video',
+        'height': 'The height to display the video',
+        'poster': 'Link to an image for the poster representing the video',
+    }
+
+    def init(my):
+        my.video = Video()
+
         my.index = my.kwargs.get('index')
 
     def get_video(my):
@@ -55,7 +197,7 @@ class VideoWdg(BaseRefreshWdg):
         height = my.kwargs.get("height")
         preload = my.kwargs.get("preload")
         controls = my.kwargs.get("controls")
-
+        autoplay = my.kwargs.get("autoplay")
 
         is_test = my.kwargs.get("is_test")
         is_test = False
@@ -123,14 +265,8 @@ class VideoWdg(BaseRefreshWdg):
 
             var video_id = bvr.video_id;
 
-            spt.video.init_player(video_id);
-            /*
-            spt.dom.load_js(["video/video.js"], function() {
-                var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
-                } );
-            });
-            */
 
+            spt.video.init_videojs(video_id);
 
 
             if (spt.gallery) {
@@ -161,16 +297,24 @@ class VideoWdg(BaseRefreshWdg):
         if poster:
             video.add_attr("poster", poster)
 
-
-        if not preload:
+        if preload == None:
             preload = "none"
-        video.add_attr("preload", preload)
 
-        if not controls:
-            controls = "true"
-        if controls not in [False, 'false']:
-            video.add_attr("controls", controls)
+        if controls == None:
+            controls = True
 
+        autoplay = False
+
+        # videojs uses a json data structre
+        data = {
+                'preload': preload,
+                'controls': controls,
+                'autoplay': autoplay
+        }
+
+        from pyasm.common import jsondumps
+        data_str = jsondumps(data)
+        video.add_attr("data-setup", data_str)
 
 
         for i, src in enumerate(sources):
@@ -200,6 +344,13 @@ spt.video.player = null;
 spt.video.players = {};
 
 
+
+spt.video.get_player_el = function(el) {
+    var video = el.getElement(".video-js").getElement("video");
+    return video;
+}
+
+
 spt.video.get_player = function(el) {
     var video = el.getElement(".video-js");
     var video_id = video.getAttribute("id");
@@ -207,7 +358,23 @@ spt.video.get_player = function(el) {
 
 }
 
-spt.video.init_player = function(video_id, events) {
+spt.video.init_video = function(video_id, events) {
+
+    if (spt.video.loaded) {
+        spt.video._add_events(this, events);
+    }
+    else {
+        spt.video.loaded = true;
+        spt.video._add_events(this, events);
+
+        spt.video.player = $(video_id);
+        spt.video.players[video_id] = spt.video.player;
+    }
+
+}
+
+
+spt.video.init_videojs = function(video_id, events) {
 
     if (spt.video.loaded) {
         var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
@@ -217,10 +384,14 @@ spt.video.init_player = function(video_id, events) {
     else {
 
         spt.dom.load_js(["video/video.js"], function() {
-            var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
-                spt.video.loaded = true;
-                spt.video._add_events(this, events);
-            } );
+            var player = videojs(
+                    video_id,
+                    {"nativeControlsForTouch": false},
+                    function() {
+                        spt.video.loaded = true;
+                        spt.video._add_events(this, events);
+                    }
+            );
             spt.video.player = player;
             spt.video.players[video_id] = player;
         } )
@@ -228,15 +399,9 @@ spt.video.init_player = function(video_id, events) {
 
 }
 
+
 spt.video._add_events = function(player, events) {
-    player.on("pause", function() {
-        console.log("pause");
-    } );
-    player.on("ended", function() {
-        console.log("ended");
-    } );
-
-
+    return;
 }
 
 

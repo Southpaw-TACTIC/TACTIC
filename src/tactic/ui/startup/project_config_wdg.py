@@ -159,6 +159,9 @@ class ProjectConfigWdg(BaseRefreshWdg):
         title.add_style("padding: 10px")
         #title.add_style("margin: -10px -10px 10px -10px")
 
+        #temp solution. Disable the frame title showing, so have more space for the view table
+        title.add_style("display: none")
+
         title.add_color("background", "background3")
 
         #table = Table()
@@ -209,53 +212,30 @@ class UserConfigWdg(ProjectConfigWdg):
 
         show_security = my.kwargs.get("show_security")
 
-
-        user_panel = DivWdg()
-        user_panel.add_style("padding-top: 3px")
-        user_panel.add_style("overflow-y: auto")
-        user_panel.add( UserPanelWdg(show_security=show_security) )
-        user_panel.add_style("min-height: 100px")
-        user_panel.add_style("height: 300px")
-        user_panel.add_class("spt_resizable")
-
-        panel = {
-            'widget': user_panel,
-            'title': 'User List',
-        }
-        panels.append(panel)
-
-
         from tactic.ui.container import TabWdg
         config_xml = []
 
         config_xml.append('''
         <config>
-        <tab>
         ''')
 
-        """
-        <element name="Help">
-            <display class='tactic.ui.app.HelpContentWideWdg'>
-              <alias>main</alias>
-              <width>1000px</width>
+        config_xml.append('''
+        <tab>
+        <element name="Users">
+            <display class='tactic.ui.startup.UserPanelWdg'>
+                <show_security>%s</show_security>
             </display>
-        </element>''')
-        """
+        </element>
+          ''' %(show_security))
 
         config_xml.append('''
         <element name="Group Assignment">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
-        <element name="Group List">
-            <display class='tactic.ui.panel.ViewPanelWdg'>
-                <search_type>sthpw/login_group</search_type>
-                <view>startup</view>
-            </display>
-        </element>
-        ''')
+        </tab>
+          ''')
 
         config_xml.append('''
-        </tab>
         </config>
         ''')
 
@@ -267,7 +247,6 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panel = {
             'widget': tab,
-            #'title': 'Data',
             'title': None,
             'width': '100%',
             'height': '100%'
@@ -832,10 +811,10 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add_style("min-width: 400px")
         
         tool_div = DivWdg()
-        tool_div.add_style('margin-bottom','8px')
-        tool_div.add_style('display','flex')
-
-          
+        # tool_div.add_style('margin-bottom','8px')
+        tool_div.add_style('display','inline-flex')
+        tool_div.add_style('width','50%')
+        tool_div.add_style('margin-bottom','-4px')
        
         button = ActionButtonWdg(title="Add", tip="Add New User")
         button.add_style('align-self: flex-end')
@@ -861,11 +840,51 @@ class UserPanelWdg(BaseRefreshWdg):
         } )
 
 
+        security = Environment.get_security()
+        license = security.get_license()
+        num_left = license.get_num_licenses_left()
+        current_users = license.get_current_users()
+        #max_users = license.get_max_users()
+
+
+        div = DivWdg('Users')
+        div.add_style('align-self: flex-end')
+        div.add_styles("margin: 0 0 6px 20px")
+        badge_span = SpanWdg(css='badge')
+        badge_span.add_style('margin-left','6px')
+        badge_span.add(current_users)
+        div.add(badge_span)
+        tool_div.add(div)
+
+        tool_div2 = DivWdg()
+        # tool_div.add_style('margin-bottom','8px')
+        tool_div2.add_style('display','inline-flex')
+        tool_div2.add_style('justify-content','flex-end')
+        tool_div2.add_style('width','50%')
+
+        top.add(tool_div)
+        top.add(tool_div2)
+
+
+        if num_left < 1000:
+            div = DivWdg('Users Left')
+            div.add_style('align-self: flex-end')
+            div.add_styles("margin: 0 0 6px 20px")
+            badge_span = SpanWdg(css='badge')
+            badge_span.add_style('margin-left','6px')
+            badge_span.add(num_left)
+            div.add(badge_span)
+            tool_div.add(div)
+
+            top.add(tool_div)
+
+
         show_security = my.kwargs.get("show_security")
         if show_security not in ['false', False]:
             button = ActionButtonWdg(title="Security")
             button.add_style('align-self: flex-end')
-            tool_div.add(button)
+            #button.add_styles("position: absolute; right: 10px;")
+            tool_div2.add(button)
             #button.add_style("margin-top: -8px")
             button.add_behavior( {
             'type': 'click_up',
@@ -876,35 +895,7 @@ class UserPanelWdg(BaseRefreshWdg):
             '''
             } )
 
-        security = Environment.get_security()
-        license = security.get_license()
-        num_left = license.get_num_licenses_left()
-        current_users = license.get_current_users()
-        #max_users = license.get_max_users()
 
-        div = DivWdg('Users')
-        div.add_style('align-self: flex-end')
-        div.add_styles("margin: 0 0 6 20")
-        badge_span = SpanWdg(css='badge')
-        badge_span.add_style('margin-left','6px')
-        badge_span.add(current_users)
-        div.add(badge_span)
-        tool_div.add(div)
-
-        top.add(tool_div)
-
-
-
-        if num_left < 1000:
-            top.add('''
-            <span style="margin-left: 20px; margin-top: 10px">
-            Users Left &nbsp;
-            <span class="badge">%s</span>
-            </span>
-            ''' % num_left)
-
-
-      
 
 
         br = HtmlElement.br(clear=True)
@@ -943,10 +934,14 @@ class UserPanelWdg(BaseRefreshWdg):
         #div.add_style("overflow-y: auto")
         expr = "@SEARCH(%s)" %expr_filter
         panel = ViewPanelWdg(search_type='sthpw/login',view='manage_user',show_insert='false',\
-            show_gear='false', show_select='false', height='700', expression=expr, simple_search_view='simple_manage_filter')
+            show_gear='false', show_select='false', height='700', expression=expr,\
+            simple_search_view='simple_manage_filter', show_column_manager='false',\
+            show_layout_switcher='false', show_expand='false')
         div.add(panel)
+        div.add_style('margin-top', '4px')
         
         return top
+
         """
 
         table = Table()

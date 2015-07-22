@@ -282,6 +282,7 @@ display class, it will adopt the one defined here-->
         <edit>true</edit>
         <edit_status>true</edit_status>
         <edit_assigned>true</edit_assigned>
+        <show_filler_tasks>true</show_filler_tasks>
       </display>
       <action class='tactic.ui.table.TaskElementCbk'/>
     </element>
@@ -296,7 +297,7 @@ display class, it will adopt the one defined here-->
         <edit>true</edit>
         <edit_status>true</edit_status>
         <edit_assigned>true</edit_assigned>
-        <edit_assigned>true</edit_assigned>
+        <show_filler_tasks>true</show_filler_tasks>
       </display>
       <action class='tactic.ui.table.TaskElementCbk'/>
     </element>
@@ -355,6 +356,21 @@ display class, it will adopt the one defined here-->
 
 
 
+
+    <element name="task_status_summary" title="Task Summary">
+        <display class="tactic.ui.table.TaskSummaryElementWdg">
+        </display>
+    </element>
+
+    <element name='task_summary_minimal' title='Task Summary'>
+        <display class="tactic.ui.table.TaskSummaryElementWdg">
+            <mode>minimal</mode>
+        </display>
+    </element>
+
+
+
+
     <!-- DEPRECATED -->
     <element name="task_gear">
         <display class="TaskGearElementWdg"/>
@@ -393,6 +409,12 @@ display class, it will adopt the one defined here-->
     <element name="detail" title="Details" edit="false">
         <display class="tactic.ui.table.SObjectDetailElementWdg"/>
     </element>
+
+    <element name="task_detail" title="Tasks" edit="false">
+        <display class="tactic.ui.table.SObjectTaskStatusElementWdg"/>
+    </element>
+
+
 
     <!-- DEPRECATED -->
     <element name="expand" title="Expand" edit="false">

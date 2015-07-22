@@ -93,6 +93,8 @@ TacticServerStub = function() {
         if (column == null) {
             column = 'code';
         }
+        var temps = search_type.split("?project=");
+        search_type = temps[0];
         var search_key;
         if (search_type.test(/^sthpw\//))
             search_key = search_type +"?"+ column +"="+ code;
@@ -250,6 +252,9 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+    this.unsubscribe = function(key, kwargs) {
+        return this._delegate("unsubscribe", arguments, kwargs);
+    }
 
     /*
      * interaction logging
@@ -889,7 +894,7 @@ TacticServerStub = function() {
             else if (kwargs.mode == 'browser'){
                 var download_el = document.createElement("a");
                 download_el.setAttribute("href",path);
-                download_el.setAttribute("download","");
+                download_el.setAttribute("download",basename);
                 document.body.appendChild(download_el);
                 download_el.click();
                 document.body.removeChild(download_el);
@@ -1009,6 +1014,11 @@ TacticServerStub = function() {
         
     }
 
+    this.insert_multiple = function(search_type, data, kwargs) {
+        // server.insert(search_type, data, kwargs);
+        return this._delegate("insert_multiple", arguments, kwargs);
+        
+    }
 
     this.update = function(search_type, data, kwargs) {
         return this._delegate("update", arguments, kwargs);
@@ -1228,6 +1238,14 @@ TacticServerStub = function() {
     }
 
 
+    this.execute_js_script = function(script_path, script_kwargs, kwargs) {
+        if (kwargs) callback = kwargs.on_complete;
+        else callback = null;
+        return this._delegate("execute_js_script", arguments, kwargs, null, callback);
+    }
+
+
+
 
 
     this.execute = function(code) {
@@ -1362,6 +1380,12 @@ TacticServerStub = function() {
     //   on_error: A function that is run when a request throws an error.
     //      This is used be get_async_widget() and others
     this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
+
+
+        if (spt._delegate) {
+            return spt._delegate(func_name, passed_args, kwargs);
+        }
+
 
         var client = new AjaxService( this.url, '' );
 

@@ -1155,6 +1155,11 @@ class ActionButtonWdg(DivWdg):
             if size == 'l':
                 top_width = 127
                 my.add_style("width: %spx"%top_width)
+            if size == 'b':
+                top_width = "100%"
+                my.add_style("width: %spx"%top_width)
+                my.table.add_style("width: 100%")
+
 
         
 
@@ -1257,7 +1262,11 @@ class ActionButtonWdg(DivWdg):
                 button.add_class('btn-%s' % color)
         else:
             button.add_class('btn-default')
-        button.add_class('btn-sm')
+
+        if size == 'b':
+            button.add_class('btn-block')
+        else:
+            button.add_class('btn-sm')
         button.add_style("top: 0px")
 
 

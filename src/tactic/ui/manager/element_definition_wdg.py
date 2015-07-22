@@ -2546,7 +2546,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     edit_wdg.set_value(value)
                     #edit_wdg.add_style("background: #a3d991")
                 else:
-                    edit_wdg.add_style("opacity: 0.5")
+                    edit_wdg.add_style("opacity: 0.7")
 
                 labels = option.get('labels')
                 if labels:
@@ -2556,8 +2556,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg = TextAreaWdg(name)
                 if value:
                     edit_wdg.set_value(value)
-                edit_wdg.add_attr("cols", "60")
-                edit_wdg.add_attr("rows", "3")
+                edit_wdg.add_style("width", "100%")
+                edit_wdg.add_class("form-control")
 
             elif widget_type == 'CheckboxWdg':
                 edit_wdg = CheckboxWdg(name)
@@ -2601,6 +2601,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                         'display_options': display_options,
                     }
                     edit_wdg = Common.create_from_class_path(widget_type, [], kwargs)
+                    edit_wdg.add_class("form-control")
+                    edit_wdg.add_style("width: 100%")
                     if value and hasattr(edit_wdg,'set_value'):
                         edit_wdg.set_value(value)
                 except Exception, e:
@@ -2608,9 +2610,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
             if not edit_wdg:
                 edit_wdg = TextWdg(name)
+                edit_wdg.add_class("form-control")
+                edit_wdg.add_style("width: 100%")
                 if value:
                     edit_wdg.set_value(value)
-                edit_wdg.add_style("width: 250px")
 
 
            

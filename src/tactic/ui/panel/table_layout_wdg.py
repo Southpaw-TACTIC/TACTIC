@@ -26,7 +26,7 @@ from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, WidgetConfigView, Swap
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
-from pyasm.biz import Project, ExpressionParser
+from pyasm.biz import Project, ExpressionParser, Subscription
 from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
@@ -420,6 +420,52 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+    def _process_search_args(my):
+
+        # this is different name from the old table selected_search_keys
+        search_keys = my.kwargs.get("search_keys")
+      
+        # if a search key has been explicitly set without expression, use that
+        expression = my.kwargs.get('expression') 
+        matched_search_key = False
+        if my.search_key:
+            base_search_type = SearchKey.extract_base_search_type(my.search_key)
+        else:
+            base_search_type = ''
+
+        if my.search_type == base_search_type:
+            matched_search_key = True
+        if search_keys and search_keys != '[]':
+            if isinstance(search_keys, basestring):
+                if search_keys == "__NONE__":
+                    search_keys = []
+                else:
+                    search_keys = search_keys.split(",")
+
+            # keep the order for precise redrawing/ refresh_rows purpose
+            if not search_keys:
+
+                my.sobjects = []
+            else:
+                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+
+            my.items_found = len(my.sobjects)
+            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
+        elif my.search_key and matched_search_key and not expression:
+            sobject = Search.get_by_search_key(my.search_key)
+            if sobject: 
+                my.sobjects = [sobject]
+                my.items_found = len(my.sobjects)
+
+
+        elif my.kwargs.get("do_search") != "false":
+            my.handle_search()
+
+
+
+
+
+
     def get_display(my):
 
         # fast table should use 0 chunk size
@@ -455,6 +501,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         my.sobject_levels = []
+
+
+        # Make this into a function.  Former code is kept here for now.
+        my._process_search_args()
+        """
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
       
@@ -481,6 +532,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 my.sobjects = []
             else:
                 my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+
             my.items_found = len(my.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
         elif my.search_key and matched_search_key and not expression:
@@ -492,6 +544,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
+        """
+
+
 
 
         # set some grouping parameters
@@ -537,8 +592,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("has_extra_header", "true")
 
 
-        if my.config_xml:
-            inner.add_attr("spt_config_xml", my.config_xml)
+        #if my.config_xml:
+        #    inner.add_attr("spt_config_xml", my.config_xml)
 
         save_class_name = my.kwargs.get("save_class_name")
         if save_class_name:
@@ -853,6 +908,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         table.set_id(my.table_id)
         
+        # generate dictionary of subscribed search_keys to affect context menu
+        my.subscribed_search_keys = {}
+        login = Environment.get_login().get("login")
+        subscribed = Subscription.get_by_search_type(login, my.search_type)
+        for item in subscribed:
+            item_search_key = item.get("message_code")
+            my.subscribed_search_keys[item_search_key] = True
 
         # set up the context menus
         show_context_menu = my.kwargs.get("show_context_menu")
@@ -1530,7 +1592,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
-
         # selection behaviors
         table.add_behavior( {
         'type': 'smart_click_up',
@@ -1621,23 +1682,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # row highlighting
 
-        table.add_behavior( {
-        'type': 'load',
-        'cbjs_action': '''
-        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
-            function(event, src_el) {
-                // remember the original color
-                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
-                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
-            } )
+        if my.kwargs.get("show_row_highlight") not in [False, 'false']:
+            table.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
+                function(event, src_el) {
+                    // remember the original color
+                    src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
+                    spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
+                } )
 
-        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
-            function(event, src_el) {
-                src_el.setAttribute("spt_hover_background", "");
-                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+            bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
+                function(event, src_el) {
+                    src_el.setAttribute("spt_hover_background", "");
+                    spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+                } )
+            '''
             } )
-        '''
-        } )
 
 
         # set styles at the table level to be relayed down
@@ -2490,6 +2552,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
+
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            tr.set_attr("spt_is_subscribed","true")
+
         if sobject.is_retired():
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
@@ -2807,6 +2873,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_class( 'SPT_DTS' )
         #td.add_color("background-color", "background", -0)
         td.add_color("opacity", "0.5")
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            td.add_border(direction="right", color="#ecbf7f", size="2px")
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
@@ -3002,7 +3070,6 @@ spt.table.drop_row = function(evt, el) {
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
     var size = thumb_el.getSize();
-    console.log(size);
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
@@ -3359,11 +3426,14 @@ spt.table.get_selected_rows = function() {
 
 
 
-spt.table.get_selected_search_keys = function() {
+spt.table.get_selected_search_keys = function(use_id) {
     var rows = spt.table.get_selected_rows();
     var search_keys = [];
+    // if use_id is false, search_key uses code
+    if (use_id == null) use_id = true;
+
     for (var i = 0; i < rows.length; i++) {
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = use_id ? rows[i].getAttribute("spt_search_key") : rows[i].getAttribute("spt_search_key_v2");
         search_keys.push(search_key);
     }
 
@@ -4511,16 +4581,18 @@ spt.table.set_changed_color = function(row, cell) {
         row.setAttribute("spt_background", "#204411");
     } 
     else {
-        row.setStyle("background-color", "#C0CC99");
-        cell.setStyle("background-color", "#909977");
-        row.setAttribute("spt_background", "#C0CC99");
-        /*
-        var el = cell;
-        el.setStyle("background", "#EFE");
-        el.setStyle("border-color", "#0F0");
-        el.setStyle("border-style", "solid");
-        el.setStyle("border-width", "2px 1px 1px 2px");
-        */
+        //color = "rgba(188, 207, 215, 1.0)";
+        //color2 = "rgba(188, 207, 215, 0.6)";
+        color = "rgba(207, 215, 188, 1.0)";
+        color2 = "rgba(207, 215, 188, 0.6)";
+
+        row.setStyle("background-color", color2);
+        cell.setStyle("background-color", color);
+        row.setAttribute("spt_background", color2);
+
+        //row.setStyle("background-color", "#C0CC99");
+        //cell.setStyle("background-color", "#909977");
+        //row.setAttribute("spt_background", "#C0CC99");
     }
 }
 
@@ -5870,6 +5942,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
 
     var commit_enabled = true;
     var row_is_retired = false;
+    var row_is_subscribed = false;
     var display_label = "not found";
 
     
@@ -5885,6 +5958,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
                             "Use 'search_key' as display_label." );
             display_label = tr.get("spt_search_key");
         }
+        row_is_subscribed = tr.getAttribute('spt_is_subscribed');
     }
    
 
@@ -5892,7 +5966,9 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
         'commit_enabled' : commit_enabled,
         'is_retired': row_is_retired,
         'is_not_retired': (! row_is_retired),
-        'display_label': display_label
+        'display_label': display_label,
+        'is_subscribed': row_is_subscribed,
+        'is_not_subscribed': (! row_is_subscribed)
     }
     return setup_info;
 }

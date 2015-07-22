@@ -109,7 +109,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
 
         my.process_groups()
-        my.order_sobjects()
+        my.order_sobjects(my.sobjects, my.group_columns)
         my.remap_sobjects()
 
 

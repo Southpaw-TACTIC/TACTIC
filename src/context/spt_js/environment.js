@@ -38,11 +38,13 @@ spt.Environment = function() {
     this.libraries = {};
 
     // by default, look at the browser
-    var location = document.location;
-    var port = location.port;
-    this.server_url = location.protocol + "//" + location.hostname;
-    if (port)
-        this.server_url = this.server_url + ':' + port
+    if (typeof(document) != 'undefined') {
+        var location = document.location;
+        var port = location.port;
+        this.server_url = location.protocol + "//" + location.hostname;
+        if (port)
+            this.server_url = this.server_url + ':' + port
+    }
 
 
 
@@ -192,8 +194,11 @@ spt.Environment = function() {
     }
 
     this.read_cookie = function(key) {
-        var value = document.cookie.match('(?:^|;)\\s*' + key.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1') + '=([^;]*)');
-		return (value) ? decodeURIComponent(value[1]) : null;
+        if (typeof(document) != 'undefined') {
+            var value = document.cookie.match('(?:^|;)\\s*' + key.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1') + '=([^;]*)');
+                    return (value) ? decodeURIComponent(value[1]) : null;
+        }
+        else return null;
     }
 
 }

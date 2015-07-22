@@ -2928,6 +2928,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_select = target.getAttribute("spt_show_select");
     var show_shelf = target.getAttribute("spt_show_shelf");
     var show_gear = target.getAttribute("spt_show_gear");
+    var show_expand = target.getAttribute("spt_show_expand");
     var show_column_manager = target.getAttribute("spt_show_column_manager");
     var show_layout_switcher = target.getAttribute("spt_show_layout_switcher");
     var show_context_menu = target.getAttribute("spt_show_context_menu");
@@ -2948,6 +2949,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var do_initial_search = target.getAttribute("spt_do_initial_search");
     var init_load_num = target.getAttribute("spt_init_load_num");
     var mode = target.getAttribute("spt_mode");
+    var no_results_msg = target.getAttribute("spt_no_results_msg");
+
     var height = target.getAttribute("spt_height");
     var element_names;
     var column_widths = [];
@@ -3004,6 +3007,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_select': show_select,
         'show_shelf': show_shelf,
         'show_gear': show_gear,
+        'show_expand': show_expand,
         'show_column_manager': show_column_manager,
         'show_context_menu': show_context_menu,
         'show_layout_switcher': show_layout_switcher,
@@ -3019,6 +3023,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'ingest_data_view': ingest_data_view,
         'init_load_num': init_load_num,
         'mode': mode,
+        'no_results_msg': no_results_msg,
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
@@ -3026,7 +3031,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     var pat = /TileLayoutWdg/;
     if (pat.test(class_name)) {
-        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process'];
+        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align'];
         for (var k=0; k < attr_list.length; k++) {
             var attr_val = target.getAttribute('spt_'+ attr_list[k]);
             if (attr_val)

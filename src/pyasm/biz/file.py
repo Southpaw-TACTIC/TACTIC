@@ -51,14 +51,17 @@ if os.name == "nt":
                 convert_exe = '%s\\convert.exe'%exe
                 HAS_IMAGE_MAGICK = True
         except:
-            print "Running %s failed" %exe
+            continue
+        else:
+            
+            print "ImageMagick found in %s" %exe
     if not convert_exe_list:
         # IM might not be in Program Files but may still be in PATH
         try:
-            convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
+            convert_process = Popen(['convert.exe','-version'], stdout=PIPE, stderr=PIPE)
             convert_return,convert_err = convert_process.communicate()
             if 'ImageMagick' in convert_return:
-                convert_exe = 'convert'
+                convert_exe = 'convert.exe'
                 HAS_IMAGE_MAGICK = True
         except:
             pass
@@ -73,10 +76,17 @@ else:
     except:
         pass
 
-if Common.which("ffprobe"):
+ffprobe_exe = "ffprobe"
+ffmpeg_exe = "ffmpeg"
+if os.name == 'nt':
+    ffprobe_exe = "ffprobe.exe"
+    ffmpeg_exe = "ffmpeg.exe"
+
+if Common.which(ffprobe_exe):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
+
 
 
 
@@ -94,9 +104,10 @@ class File(SObject):
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
-                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb']
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb', 'gif']
 
-    IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
+    #IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
+    IMAGE_EXT = ['jpg','png','tif','tiff','dds','dcm']
                 
 
 
@@ -589,23 +600,32 @@ class IconCreator(object):
 
         base, ext = os.path.splitext(file_name)
 
+        # naming convetion should take care of inserting a suffix like icon, web
+        # but these paths need a unique name
         icon_file_name = base + "_icon.png"
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
 
+        thumb_web_size = my.get_web_file_size()
+
+        web_file_name = base + "_web.png"
+        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
         if sys.platform == 'darwin':
             return
         else:
-            if not Common.which("convert"):
+            if not Common.which(convert_exe):
                 return
             try:
                 my.file_path = my.file_path.encode('utf-8')
                 import shlex, subprocess
-                subprocess.call(['convert', '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
+                subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
                         "%s"%tmp_icon_path]) 
+
+                subprocess.call([convert_exe, '-geometry','%sx%s'%(thumb_web_size[0], \
+                    thumb_web_size[1]),'-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
+
             except Exception, e:
                 print "Error extracting from pdf [%s]" % e
                 return
-
 
         # check that it actually got created
         if os.path.exists(tmp_icon_path):
@@ -613,6 +633,10 @@ class IconCreator(object):
         else:
             print "Warning: [%s] did not get created from pdf" % tmp_icon_path
 
+        if os.path.exists(tmp_web_path):
+            my.web_path = tmp_web_path
+        else:
+            print "Warning: [%s] did not get created from pdf" % tmp_web_path
 
     def get_web_file_size(my):
         from pyasm.prod.biz import ProdSetting
@@ -631,8 +655,7 @@ class IconCreator(object):
         return thumb_size
 
     def _process_video(my, file_name):
-        ffmpeg = Common.which("ffmpeg")
-        if not ffmpeg:
+        if not HAS_FFMPEG:
             return
 
         thumb_web_size = my.get_web_file_size()
@@ -652,21 +675,23 @@ class IconCreator(object):
 
         import subprocess
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
             
+           
             if os.path.exists(tmp_web_path):
                 my.web_path = tmp_web_path
             else:
                 my.web_path = None
 
         except Exception, e:
+
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
            
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
             
             if os.path.exists(tmp_icon_path):
@@ -678,6 +703,9 @@ class IconCreator(object):
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
+
+        if (ext == ".gif" and not my.web_path):
+            my._process_image( file_name )
 
     def _process_image(my, file_name):
 
@@ -876,8 +904,8 @@ class IconCreator(object):
                 cmd = "sips --resampleWidth 25%% --out %s %s" \
                     % (large_path, small_path)
             else:
-                cmd = "convert -resize 25%% %s %s" \
-                    % (large_path, small_path)
+                cmd = "%s -resize 25%% %s %s" \
+                    % (convert_exe, large_path, small_path)
             os.system(cmd)
             if not os.path.exists(small_path):
                 raise

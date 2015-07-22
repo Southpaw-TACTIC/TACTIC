@@ -2711,6 +2711,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '11',
             'category': 'Display'
         },
+        "show_expand": {
+            'description': "determines whether or not to expand the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '11a',
+            'category': 'Display'
+        },
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
             'category': 'Check-in',
@@ -2809,7 +2816,16 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'type': 'TextWdg',
             'order': 13
+        },
+        "gallery_align" : {
+            'description': 'top or bottom gallery vertical alignment',
+            'type': 'SelectWdg',
+            'values': 'top|bottom',
+            'order' : 20,
+            'category': 'Display'
+
         }
+
     }
 
     def get_display(my):
@@ -3123,6 +3139,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_select = my.kwargs.get("show_select")
         show_refresh = my.kwargs.get("show_refresh")
         show_gear = my.kwargs.get("show_gear")
+        show_expand = my.kwargs.get("show_expand")
         show_shelf = my.kwargs.get("show_shelf")
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
@@ -3176,6 +3193,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
+            "show_expand": show_expand,
             "show_shelf": show_shelf,
             "search_key": search_key,
             "parent_key": parent_key,
@@ -3230,6 +3248,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['allow_drag'] = my.kwargs.get("allow_drag")
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             kwargs['process'] = my.kwargs.get("process")
+            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3256,6 +3275,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'card':
             kwargs['preview_width'] = my.kwargs.get("preview_width")
+            kwargs['process'] = my.kwargs.get("process")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 

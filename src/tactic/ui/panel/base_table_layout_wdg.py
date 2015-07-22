@@ -854,15 +854,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         show_search = my.kwargs.get("show_search") != 'false'
 
-       
-        if show_keyword_search:
+        if show_search and show_keyword_search:
+            from tactic.ui.filter import FilterData
+            filter_data = FilterData.get_from_cgi()
+
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
             hidden = HiddenWdg("prefix", "keyword")
             keyword_div.add(hidden)
 
-            from tactic.ui.filter import FilterData
-            filter_data = FilterData.get_from_cgi()
             values_list = filter_data.get_values_by_prefix("keyword")
             if values_list:
                 values = values_list[0]
@@ -1168,9 +1168,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
-
-        if my.show_search_limit:
             wdg_list.append( { 'wdg': spacing_divs[0] } )
+            
+        if my.show_search_limit:
+            
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
             wdg_list.append( { 'wdg': limit_span } )
@@ -1523,7 +1524,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                       parent_key: '%s',
                       mode: 'insert',
                       view: '%s',
-                      save_event: bvr.event_name
+                      save_event: bvr.event_name,
                     };
                     spt.panel.load_popup('Single-Insert', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%(my.parent_key, insert_view)
@@ -1551,8 +1552,40 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%(my.parent_key, insert_view)
             } )
-
             menu.add(menu_item)
+
+
+            # collection
+            #if SearchType.column_exists(my.search_type, "is_collection"):
+            if True:
+                menu_item = MenuItem(type='action', label='Add New Collection')
+                menu_item.add_behavior( {
+                    'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var top = activator.getParent(".spt_table_top");
+                        var table = top.getElement(".spt_table");
+                        var search_type = top.getAttribute("spt_search_type")
+                        kwargs = {
+                          search_type: search_type,
+                          parent_key: '%s',
+                          mode: 'insert',
+                          view: '%s',
+                          save_event: bvr.event_name,
+                          show_header: false,
+                          default: {
+                            _is_collection: true
+                          }
+                        };
+                        spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
+                    ''' % (my.parent_key, insert_view)
+
+                } )
+                menu.add(menu_item)
+
+
+
+
+
             menu_item = MenuItem(type='action', label='Edit Multiple Items (NA)')
             menu_item.add_behavior( {
                 'cbjs_action': '''
@@ -2848,6 +2881,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     
                     { "type": "action", "label": "Subscribe to %s"%subscribe_label,
                         #"icon": IconWdg.PICTURE_EDIT,
+                        "enabled_check_setup_key": "is_not_subscribed",
+                        "hide_when_disabled": True,
                         "bvr_cb": { 'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");
@@ -2879,6 +2914,53 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         try {
                             var sub = server.subscribe(search_key, {category: "sobject"} );
                             spt.notify.show_message('Subscribed to [' + sub.message_code + ']');
+                            spt.table.refresh_rows([activator]);
+                        } catch(e) {
+                            spt.info(spt.exception.handler(e));
+                        }
+     
+                        ''' },
+                        "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                          'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                                 my.look_row_selected, my.look_row ] }
+                    },
+
+                    { "type": "action", "label": "Unsubscribe from %s"%subscribe_label,
+                        #"icon": IconWdg.PICTURE_EDIT,
+                        "enabled_check_setup_key": "is_subscribed",
+                        "hide_when_disabled": True,
+                        "bvr_cb": { 'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
+
+                        var search_key;
+
+                        var tbody;
+                        if (version == "2") {
+                            spt.table.set_layout(layout);
+                            tbody = activator;
+                        }
+                        else {
+                            tbody = activator.getParent('.spt_table_tbody');
+                        }
+                        
+                        var search_key = tbody.getAttribute("spt_search_key");
+                        var server = TacticServerStub.get();
+                        // search_key here is "id" based: need code based
+                        var sobject = server.get_by_search_key(search_key);
+                        var temps = server.split_search_key(search_key);
+                        var st = temps[0];
+                        
+                        if (['sthpw/note','sthpw/snapshot','sthpw/task'].contains(st))
+                            search_key = server.build_search_key(sobject.search_type, sobject.search_code);
+                        else
+                            search_key = sobject.__search_key__;
+                       
+                        try {
+                            server.unsubscribe(search_key);
+                            spt.notify.show_message('Unsubscribed from [' + search_key + ']');
+                            spt.table.refresh_rows([activator]);
                         } catch(e) {
                             spt.info(spt.exception.handler(e));
                         }
@@ -2888,6 +2970,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  my.look_row_selected, my.look_row ] }
                     }
+
                     ])   
 
         spec_list.extend( [

@@ -17,6 +17,7 @@ from pyasm.common import Common, Xml, jsonloads, Container
 from pyasm.biz import Task
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
+from pyasm.security import Sudo
 
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
@@ -36,7 +37,6 @@ class PipelineTaskStatusTrigger(Trigger):
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         data = jsonloads(data)
-        print "trigger data: ", data, type(data)
 
         data_list = data
         if isinstance(data, dict):
@@ -64,7 +64,6 @@ class PipelineTaskStatusTrigger(Trigger):
             # make sure the caller process is the same as the source process
             if src_task.get_value("process") != data.get("src_process"):
                 continue
-
 
             #conditionx = "@GET(.status) != 'Approved'"
             #result = Search.eval(conditionx, src_task)
@@ -119,7 +118,6 @@ class PipelineTaskStatusTrigger(Trigger):
                 for task in tasks:
                     if task.get_value("process") == dst_process:
                         updated_tasks.append(task)
-
 
 
             for task in updated_tasks:
@@ -321,6 +319,8 @@ class RelatedTaskUpdateTrigger(Trigger):
     the same context'''
     def execute(my):
 
+        sudo = Sudo()
+
         input = my.get_input()
         search_key = input.get("search_key")
         update_data = input.get("update_data")
@@ -364,7 +364,7 @@ class RelatedTaskUpdateTrigger(Trigger):
                 # this should run trigger where applicable
                 task.commit(triggers=True)
 
-
+        del sudo
 
 
 

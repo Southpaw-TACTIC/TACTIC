@@ -37,6 +37,9 @@ class GalleryWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
+
+        # make the whole Gallery unselectable
+        inner.add_class('unselectable')
         inner.add_style("position: fixed")
         inner.add_style("top: 0")
         inner.add_style("left: 0")
@@ -52,6 +55,13 @@ class GalleryWdg(BaseRefreshWdg):
 
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
+        
+        # default to top.
+        align = my.kwargs.get("align")
+        if not align:
+            align = "top"
+
+
         if not width:
             width = 1300
         else:
@@ -261,7 +271,6 @@ class GalleryWdg(BaseRefreshWdg):
         scroll = DivWdg(css='spt_gallery_scroll')
         inner.add(scroll)
         scroll.set_box_shadow()
-
         scroll.add_style("width: %s" % width)
         if height:
             scroll.add_style("height: %s" % height)
@@ -282,8 +291,15 @@ class GalleryWdg(BaseRefreshWdg):
 
         scroll.add(content)
         content.add_class("spt_gallery_content")
-        # make the itesm vertically align to bottom
-        content.add_styles("display: flex; flex-flow: row nowrap; align-items: flex-end;")
+
+        # make the items vertically align to bottom (flex-emd)
+        # on a regular monitor, align to top (flex-start) is better
+        if align == 'bottom':
+            align_items = 'flex-end'
+        else:
+            align_items = 'flex-start'
+        content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s; justify-content: center;"%align_items)
+
         content.add_style("width: %s" % total_width)
 
         top.add_behavior( {
@@ -343,7 +359,9 @@ class GalleryWdg(BaseRefreshWdg):
         for i, path in enumerate(paths):
             path_div = DivWdg(css='spt_gallery_item')
             content.add(path_div)
-            path_div.add_style("float: left")
+            #path_div.add_style("float: left")
+            path_div.add_style("display: inline-block")
+            path_div.add_style("vertical-align: middle")
 
             if path == my.curr_path:
                 curr_index = i
@@ -383,15 +401,6 @@ class GalleryWdg(BaseRefreshWdg):
         #icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
         icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
         inner.add(icon)
-        #icon = DivWdg()
-        #icon.add("X")
-        #icon.add_style("font-size: 42px")
-        #icon.add_style("color: #ddd")
-        #icon.add_style("width: 48px")
-        #icon.add_style("height: 48px")
-        #icon.add_style("text-align: center")
-        #icon.add_style("border-radius: 30px")
-        #icon.add_style("border: solid 3px #ddd")
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
         icon.add_style("bottom: 80px")
@@ -404,6 +413,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.behavior.destroy_element(top);
             '''
         } )
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
         icon = IconWdg(title="Previous", icon="/context/icons/glyphs/chevron_left.png")
@@ -421,6 +432,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_prev(arrow); 
             '''
         } )
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
         icon = IconWdg(title="Next", icon="/context/icons/glyphs/chevron_right.png")
@@ -438,6 +451,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_next(arrow); 
             '''
         } )
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
 
@@ -471,11 +486,12 @@ class GalleryWdg(BaseRefreshWdg):
 
     def get_paths(my, file_type='main'):
 
+        # this is the selected one
         search_key = my.kwargs.get("search_key")
-        
       
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")
+
         if not paths:
             paths = []
         """
@@ -500,8 +516,8 @@ class GalleryWdg(BaseRefreshWdg):
             if sobjects and sobjects[0].get_base_search_type() == "sthpw/snapshot":
                 sobj_snapshot_dict = {}
                 for sobject in sobjects:
-                    search_key = sobject.get_search_key()
-                    sobj_snapshot_dict[search_key] = sobject
+                    tmp_search_key = sobject.get_search_key()
+                    sobj_snapshot_dict[tmp_search_key] = sobject
                 snapshots = sobjects
 
             else:
@@ -523,11 +539,12 @@ class GalleryWdg(BaseRefreshWdg):
                 file_list = file_dict.get(snapshot.get_code())
                 if not file_list: 
                     continue
+                
                 for file_object in file_list:
                     path = file_object.get_web_path()
                     my.sobject_data[path] = sobject
                     paths.append(path)  
-	        # set the current path the user clicks on
+	            # set the current path the user clicks on
                 if not my.curr_path and sobject.get_search_key() == search_key and file_type=='main':
                     my.curr_path = path
                         

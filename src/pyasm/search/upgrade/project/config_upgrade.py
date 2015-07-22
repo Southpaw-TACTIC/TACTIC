@@ -21,6 +21,20 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.4.0.a01
     #
+
+    def upgrade_v4_4_0_a01_003(my):
+        my.run_sql('''
+        ALTER TABLE "spt_process" ADD "subpipeline_code" varchar(256);
+        ''')
+
+
+
+    def upgrade_v4_4_0_a01_002(my):
+        my.run_sql('''
+        ALTER TABLE "spt_process" ADD "workflow" text;
+        ''')
+
+
     def upgrade_v4_4_0_a01_001(my):
         my.run_sql('''
         ALTER TABLE "custom_script" ADD "path" text;
