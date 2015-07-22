@@ -122,6 +122,14 @@ class CherryPyStartup(CherryPyStartup20):
             has_project = True
 
 
+        if project_code in ['plugins','default']:
+            startup = cherrypy.startup
+            config = startup.config
+            startup.register_project(project_code, config, site=site)
+            return
+
+
+
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
         try:
@@ -136,19 +144,17 @@ class CherryPyStartup(CherryPyStartup20):
             config = startup.config
             startup.register_project(project_code, config, site=site)
             #cherrypy.config.update( config )
+
             # give some time to refresh
-            import time
-            time.sleep(1)
+            #import time
+            #time.sleep(1)
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
             html_response = []
             html_response.append('''<html>''')
             html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>''')
-            if site:
-                html_response.append('''<script>document.location = "/tactic/%s/%s";</script>''' % (site, project.get_value("code") ))
-            else:
-                html_response.append('''<script>document.location = "/tactic/%s";</script>''' % project.get_value("code") )
+            html_response.append('''<script>document.location = "%s";</script>''' % path )
             html_response.append('''</body>''')
             html_response.append('''</html>''')
             html_response = "\n".join(html_response)
@@ -288,16 +294,6 @@ class CherryPyStartup(CherryPyStartup20):
 
         # find out if one of the projects is the root
         root_initialized = False
-        """
-        for project in projects:
-            project_code = project.get_code()
-            if False:
-                from tactic.ui.app import SitePage
-                cherrypy.root.tactic = SitePage(project_code)
-                cherrypy.root.projects = SitePage(project_code)
-                root_initialized = True
-                break
-        """
 
         if not root_initialized:
             project_code = Project.get_default_project()
@@ -319,7 +315,16 @@ class CherryPyStartup(CherryPyStartup20):
             project_code = project.get_code()
             my.register_project(project_code, config)
         my.register_project("default", config)
+        my.register_project("plugins", config)
 
+
+        from pyasm.security import Site
+        site_obj = Site.get()
+        site_obj.register_sites(my, config)
+ 
+
+        #my.register_project("vfx", config, site="vfx_demo")
+        #my.register_project("default", config, site="vfx_demo")
         return config
 
 
@@ -334,16 +339,25 @@ class CherryPyStartup(CherryPyStartup20):
         if project == "template":
             return
 
-        print "Registering project ... %s" % project
+        if site:
+            print "Registering project ... %s (%s)" % (project, site)
+        else:
+            print "Registering project ... %s" % project
+
 
         try:
             from tactic.ui.app import SitePage
             if site:
-                exec("cherrypy.root.tactic.%s = TacticIndex()" % (site))
-                exec("cherrypy.root.projects.%s = TacticIndex()" % (site))
+                # make sure the site exists
+                try:
+                    x = eval("cherrypy.root.tactic.%s" % (site))
+                except:
+                    exec("cherrypy.root.tactic.%s = TacticIndex()" % (site))
+                    exec("cherrypy.root.projects.%s = TacticIndex()" % (site))
 
                 exec("cherrypy.root.tactic.%s.%s = SitePage()" % (site, project))
                 exec("cherrypy.root.projects.%s.%s = SitePage()" % (site, project))
+
             else:
                 exec("cherrypy.root.tactic.%s = SitePage()" % project)
                 exec("cherrypy.root.projects.%s = SitePage()" % project)
@@ -356,6 +370,7 @@ class CherryPyStartup(CherryPyStartup20):
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
         except SyntaxError:
             print "WARNING: skipping project [%s]" % project
+
 
 
 

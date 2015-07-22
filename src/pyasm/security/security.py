@@ -688,6 +688,11 @@ class Site(object):
     def break_up_request_path(my, path):
         return {}
 
+    def register_sites(my, startup, config):
+        return
+ 
+
+
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)

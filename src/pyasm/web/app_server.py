@@ -652,7 +652,9 @@ class BaseAppServer(Base):
 
         # TEST TEST TEST
         try:
-            site_obj.handle_ticket(security.get_ticket())
+            ticket = security.get_ticket()
+            if ticket:
+                site_obj.handle_ticket(ticket)
         except Exception, e:
             print "ERRRRR: ", e
 
