@@ -89,7 +89,14 @@ class CherryPyStartup(CherryPyStartup20):
             project_code = parts[2]
             site = ""
 
+
+        # sites is already mapped in config for cherrypy
+        if site == "plugins":
+            return
+
         print "on error page"
+        print "status: ", status
+        print "message: ", message
         print "site: ", site
         print "project_code: ", project_code
 
@@ -108,7 +115,6 @@ class CherryPyStartup(CherryPyStartup20):
 
 
         # Dump out the error
-        print "WARNING: ", path, status, message
         try:
             if site:
                 eval("cherrypy.root.tactic.%s.%s" % (site, project_code))
@@ -122,7 +128,7 @@ class CherryPyStartup(CherryPyStartup20):
             has_project = True
 
 
-        if project_code in ['plugins','default']:
+        if project_code in ['default']:
             startup = cherrypy.startup
             config = startup.config
             startup.register_project(project_code, config, site=site)
@@ -273,7 +279,21 @@ class CherryPyStartup(CherryPyStartup20):
             '/tactic/dist': {
                         'tools.staticdir.on': True,
                         'tools.staticdir.dir': dist_dir,
-                        }
+                        },
+             '/plugins': {
+                         'tools.staticdir.on': True,
+                         'tools.staticdir.dir': plugin_dir,
+                        },
+            '/builtin_plugins': {
+                         'tools.staticdir.on': True,
+                         'tools.staticdir.dir': builtin_plugin_dir,
+                        },
+            '/dist': {
+                        'tools.staticdir.on': True,
+                        'tools.staticdir.dir': dist_dir,
+                        },
+ 
+
  
 
         }
@@ -315,7 +335,6 @@ class CherryPyStartup(CherryPyStartup20):
             project_code = project.get_code()
             my.register_project(project_code, config)
         my.register_project("default", config)
-        my.register_project("plugins", config)
 
 
         from pyasm.security import Site

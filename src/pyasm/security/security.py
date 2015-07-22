@@ -667,6 +667,7 @@ class Site(object):
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
         path = web.get_request_path()
+        print "path: ", path
         return my.break_up_request_path(path)
 
 
@@ -1055,7 +1056,6 @@ class Security(Base):
         #my._group_names = my.login_cache.get_attr("%s:group_names" % login)
         my._groups = None
         if my._groups == None:
-            #print "recaching!!!!"
             my._groups = []
             my._group_names = []
             my._find_all_login_groups()
@@ -1195,9 +1195,6 @@ class Security(Base):
             return None
 
         my._do_login()
-
-        #print "done: ", time.time() - start
-        #print "--- end security - login_with_ticket"
 
         if my._login.get("login") == "guest":
             access_manager = my.get_access_manager()

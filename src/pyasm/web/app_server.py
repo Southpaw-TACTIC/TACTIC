@@ -251,13 +251,12 @@ class BaseAppServer(Base):
                         Project.set_project(current_project)
 
                         try:
+                            Site.set_site("default")
+                            Project.set_project("portal")
                             web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
                         except Exception, e:
                             print "WARNING: ", e
                             raise
-                            from pyasm.widget import ExceptionMinimalWdg
-                            web_wdg = ExceptionMinimalWdg(e)
-                            web_wdg.add_style("margin: 50px auto")
 
 
                         if web_wdg:
@@ -268,7 +267,23 @@ class BaseAppServer(Base):
 
                 # display default web login
                 if not web_wdg:
-                    top.add(WebLoginWdg(allow_change_admin=allow_change_admin) )
+
+                    # get login screen from Site
+                    try:
+                        # FIXME: hard coded portal!!!!!
+                        print "HARD CODED"
+                        print "HARD CODED"
+                        print "HARD CODED"
+                        print "HARD CODED"
+                        Site.set_site("default")
+                        Project.set_project("portal")
+
+                        web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
+                    except:
+                        # else get the default one
+                        web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
+                    
+                    top.add(web_wdg)
 
             finally:
                 # sudo out of scope here
@@ -310,7 +325,11 @@ class BaseAppServer(Base):
             return my.handle_not_logged_in()
 
  
-
+        print "is_logged_in: ", is_logged_in
+        print "is_logged_in: ", is_logged_in
+        print "is_logged_in: ", is_logged_in
+        print "is_logged_in: ", is_logged_in
+        print "is_logged_in: ", is_logged_in
 
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
@@ -579,6 +598,7 @@ class BaseAppServer(Base):
         if not ticket_key:
             ticket_key = web.get_cookie("login_ticket")
 
+
         # We can define another place to look at ticket values and use
         # that. ie: Drupal session key
         session_key = Config.get_value("security", "session_key")
@@ -594,16 +614,19 @@ class BaseAppServer(Base):
         else:
             site = web.get_form_value("site")
 
+
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
                 security.login_with_session(ticket_key, add_access_rules=False)
         elif login and password:
-            if not site:
-                # get from the login
-                site = site_obj.get_by_login(login)
-                site_obj.set_site(site)
-            else:
+
+            # get the site for this user
+            login_site = site_obj.get_by_login(login)
+            if login_site:
+                site = login_site
+
+            if site:
                 site_obj.set_site(site)
 
             if login == "guest":
@@ -613,13 +636,13 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-                
+
         elif ticket_key:
 
-            # get from the ticket
-            #if not site:
-            #    site = site_obj.get_by_ticket(ticket_key)
-            if site:
+            # get the site from the ticket to determine where to authenticate the user
+            # **only do this if the URL is pointing to the portal(??)
+            if site == "portal":
+                site = site_obj.get_by_ticket(ticket_key)
                 site_obj.set_site(site)
 
             login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)

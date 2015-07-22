@@ -87,8 +87,8 @@ class TacticAuthenticate(Authenticate):
             raise SecurityException("Login/Password combination incorrect")
 
         # encrypt and check the password
-        print encrypted
-        print my.login.get_value("password")
+        #print encrypted
+        #print my.login.get_value("password")
         if encrypted != my.login.get_value("password"):
             raise SecurityException("Login/Password combination incorrect")
         return True
