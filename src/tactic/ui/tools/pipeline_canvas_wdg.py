@@ -152,10 +152,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add_style("width: %s" % my.width)
         outer.add_style("height: %s" % my.height)
 
-        menu = my.get_node_context_menu()
-        menus = [menu.get_data()]
+        process_menu = my.get_node_context_menu()
+        menus = [process_menu.get_data()]
+        
+        approval_menu = my.get_node_context_menu("approval")
+        menus2 = [approval_menu.get_data()]   
+    
         menus_in = {
             'NODE_CTX': menus,
+            'NODE_APPROVAL_CTX': menus2 
         }
         from tactic.ui.container.smart_menu_wdg import SmartMenu
         SmartMenu.attach_smart_context_menu( outer, menus_in, False )
@@ -362,15 +367,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
 
-        # add approval node
+        # add condition node
         approval = my.get_condition_node("XXXXX")
         template_div.add(approval)
 
-        # add approval node
+        # add action node
         action = my.get_node("XXXXX", node_type="action")
         template_div.add(action)
 
-        # add approval node
+        # add hierarchal node
         approval = my.get_node("XXXXX", node_type="hierarchy")
         template_div.add(approval)
 
@@ -378,7 +383,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         endpoint = my.get_endpoint_node("XXXXX", node_type="output")
         template_div.add(endpoint)
 
-        # add endpoint node
+        # add starter point node
         endpoint = my.get_endpoint_node("XXXXX", node_type="input")
         template_div.add(endpoint)
 
@@ -1502,7 +1507,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'NODE_CTX2')
+        # YOOOOO
+ 
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
         for node_behavior in node_behaviors:
@@ -1711,7 +1719,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
     def get_node_behaviors(my):
         return []
 
-    def get_node_context_menu(my):
+    def get_node_context_menu(my, node_type="default"):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1770,16 +1778,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
- 
-        menu_item = MenuItem(type='action', label='Delete Node')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var node = spt.smenu.get_activator(bvr);
-            spt.pipeline.init( { src_el: node } );
-            spt.pipeline.remove_node(node);
-            '''
-        } )
-        menu.add(menu_item)
+        if (node_type == "default"): 
+            menu_item = MenuItem(type='action', label='Delete Node')
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var node = spt.smenu.get_activator(bvr);
+                spt.pipeline.init( { src_el: node } );
+                spt.pipeline.remove_node(node);
+                '''
+            } )
+            menu.add(menu_item)
 
         if mode == "multiple":
             menu_item = MenuItem(type='action', label='Delete Group')
@@ -4555,7 +4563,7 @@ spt.pipeline.set_task_color = function(group_name) {
 
 // Export group
 spt.pipeline.export_group = function(group_name) {
-
+    
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
 
