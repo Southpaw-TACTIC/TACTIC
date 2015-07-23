@@ -363,9 +363,16 @@ class ProjectSelectWdg(BaseRefreshWdg):
         if not WebContainer.get_web().is_IE():
             widget.add_style("float: right")
 
-        from tactic.ui.widget import SingleButtonWdg
-        #button = SingleButtonWdg(title='Open Project', icon=IconWdg.PROJECT, show_arrow=True)
-        button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
+        from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
+
+        display = my.kwargs.get("display")
+        if display == "chevron":
+            button = IconButtonWdg(title='Open Project', icon="BS_CHEVRON_DOWN")
+        else:
+            button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
+
+
+
         widget.add(button)
 
 
