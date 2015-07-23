@@ -4093,7 +4093,9 @@ class SObject(object):
             ]:
                 # need to to get the parent
                 parent = my.get_parent()
-                pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+                pipeline_code = None
+                if parent:
+                    pipeline_code = parent.get_value("pipeline_code", no_exception=True)
                 if pipeline_code:
                     search = Search("config/process")
                     search.add_filter("process", process)
