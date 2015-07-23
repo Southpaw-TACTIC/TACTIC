@@ -270,6 +270,7 @@ spt.html5upload.upload_file = function(kwargs) {
 
     //xhr.addEventListener("abort", uploadCanceled, false);
     xhr.addEventListener("abort", function() {log.critical("abort")}, false);
+    //alert("/tactic/"+site+"/default/UploadServer/");
     if (site) {
         xhr.open("POST", "/tactic/"+site+"/default/UploadServer/", true);
     }

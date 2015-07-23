@@ -21,7 +21,7 @@ from pyasm.common import Environment, Container, Config
 from pyasm.web import WebEnvironment
 from pyasm.biz import Project
 
-from cherrypy_startup import TacticIndex, _cp_on_http_error
+#from cherrypy_startup import TacticIndex, _cp_on_http_error
 from cherrypy_startup import CherryPyStartup as CherryPyStartup20
 
 
@@ -37,6 +37,26 @@ class Root:
         return '''<META http-equiv="refresh" content="0;URL=/tactic">'''
     index.exposed = True
 
+
+
+class TacticIndex:
+    '''Dummy Index file'''
+    def index(my):
+        # check if this project exists
+        response = cherrypy.response
+        request = cherrypy.request
+        path = request.path_info
+
+        from pyasm.security import Site
+        default_project = Site.get().get_default_project()
+        if not default_project:
+            default_project = "admin"
+
+        path = path.rstrip("/")
+        path = "%s/%s" % (path, default_project)
+
+        return '''<META http-equiv="refresh" content="0;URL=%s">''' % path
+    index.exposed = True
 
 
 
