@@ -271,10 +271,6 @@ class BaseAppServer(Base):
                     # get login screen from Site
                     try:
                         # FIXME: hard coded portal!!!!!
-                        print "HARD CODED"
-                        print "HARD CODED"
-                        print "HARD CODED"
-                        print "HARD CODED"
                         Site.set_site("default")
                         Project.set_project("portal")
 
@@ -603,9 +599,13 @@ class BaseAppServer(Base):
 
         site_obj = Site.get()
         path_info = site_obj.get_request_path_info()
-        print "path: ", path_info
         if path_info:
             site = path_info['site']
+            if site == "default":
+                site = web.get_form_value("site")
+            if not site:
+                site = "default"
+
         else:
             site = web.get_form_value("site")
 
@@ -634,8 +634,8 @@ class BaseAppServer(Base):
 
         elif ticket_key:
 
-            print "ticket: ", ticket_key
-            print "site: ", site_obj.get_site()
+            #print "ticket: ", ticket_key
+            #print "site: ", site_obj.get_site()
 
             # get the site from the ticket to determine where to authenticate the user
             # **only do this if the URL is pointing to the portal(??)
