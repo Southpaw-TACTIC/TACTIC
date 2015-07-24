@@ -17,6 +17,7 @@ table.add('code',                     'varchar', length='256' )
 table.add('country_code',             'varchar', length='256' )
 table.add('id',                       'serial', primary_key=True)
 table.add('metadata',                 'text' )
+table.add('pipeline_code',            'varchar', length='256' )
 table.add('name',                     'varchar', length='256' )
 #-- End Entry --#
 

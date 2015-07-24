@@ -65,6 +65,8 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_messaging()
+            my._test_dependency()
             my._test_hierarchy()
             my._test_js()
             my._test_manual()
@@ -109,6 +111,9 @@ class WorkflowCmd(Command):
             process.set_value("process", process_name)
             process.set_value("pipeline_code", pipeline.get_code())
             process.set_json_value("workflow", {
+                'on_pending': '''
+                sobject.set_value('%s', "pending")
+                ''' % process_name,
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process_name,
@@ -669,6 +674,125 @@ class WorkflowCmd(Command):
 
         
 
+
+    def _test_dependency(my):
+
+        print "---"
+        print "test dependency"
+        print "---"
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="dependency" name="b" related="unittest/person" process="x" status="pending"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml)
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+
+
+        people = []
+
+        person_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="x"/>
+          <process type="action" name="y"/>
+          <process type="dependency" name="z" related="unittest/city" process="b" status="complete"/>
+          <connect from="x" to="y"/>
+          <connect from="y" to="z"/>
+        </pipeline>
+        '''
+        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml)
+
+        for name in ['Beth', 'Cindy', 'John','Amy','Jack','Steve','Karen']:
+            person = SearchType.create("unittest/person")
+            person.set_value("name_first", name)
+            person.set_value("pipeline_code", person_pipeline.get_code())
+            person.set_value("city_code", city.get_code())
+            person.commit()
+
+            person.set_value("x", "null")
+            person.set_value("y", "null")
+            person.set_value("z", "null")
+
+            people.append(person)
+
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+
+        #person_task = Task.create(person, process="a", description="Test Task")
+        #person_task.set_value("status", "complete")
+        #person_task.commit()
+        for person in people:
+            print "person: ", person.get_value("name_first")
+            print "   status of x: ", person.get_value("x")
+            print "   status of y: ", person.get_value("y")
+            print "   status of z: ", person.get_value("z")
+
+        print "city: ", city.get_value("c")
+
+        fdaafdsafdsfdsfsd
+
+
+
+    def _test_messaging(my):
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="action" name="b"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml)
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+        for process in city_processes:
+            key = "%s|%s|status" % (city.get_search_key(), process)
+            search = Search("sthpw/message")
+            search.add_filter("code", key)
+            sobject = search.get_sobject()
+            message = sobject.get_value("message")
+            my.assertEquals("complete", message)
+            
 
 
 

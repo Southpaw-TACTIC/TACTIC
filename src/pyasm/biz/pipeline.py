@@ -51,6 +51,11 @@ class Process(Base):
         return Xml.set_attribute(my.node, name, value)
 
 
+    def get_attribute(my, name):
+        return Xml.get_attribute( my.node, name )
+
+
+
     def get_name(my):
         return Xml.get_attribute( my.node, "name" )
 

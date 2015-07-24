@@ -960,7 +960,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             message = jsondumps(message)
 
         # go low level
-        sql = Sql("sthpw")
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site:
+            db_resource = Site.get_db_resource(site, "sthpw")
+        else:
+            db_resource = "sthpw"
+        sql = Sql(db_resource)
         sql.connect()
 
         project_code = Project.get_project_code()
