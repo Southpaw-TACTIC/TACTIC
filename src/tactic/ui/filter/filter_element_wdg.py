@@ -700,7 +700,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             # this is the hardcoded filter exact match of name 
             # or partial match with alias column 
-            filter_expr = [["begin"],["p2.name","%s"%value],["p2.alias","like","%%%s%%"%value],["or"]]
+            if op == 'child':
+                tbl = "p1"
+            else:
+                tbl = "p2"
+            filter_expr = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
             if op == 'parent':
                 stmts.append(impl.get_parent_cte(filter_expr))
                 value_idx.append(1)
