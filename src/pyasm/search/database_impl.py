@@ -379,7 +379,7 @@ class DatabaseImpl(DatabaseImplInterface):
        
         wheres = search_stmt.split('WHERE')
         where = wheres[-1]
-        where = where.replace('base_keyword','p2')
+        
         return where
 
     def get_parent_cte(my, op_filters):

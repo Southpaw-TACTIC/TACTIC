@@ -21,7 +21,7 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.4.0.a01
     #
     def upgrade_v4_4_0_b01_007(my):
-       my.run_sql(''' 
+        my.run_sql(''' 
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
 
