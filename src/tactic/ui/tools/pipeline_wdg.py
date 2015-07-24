@@ -2324,7 +2324,7 @@ class ProcessInfoCmd(Command):
             # check to see if the script already exists
             search = Search("config/custom_script")
             search.add_filter("folder", folder)
-            search.add_filter("title", "%s" % process)
+            search.add_filter("title", "%s" % title)
             script = search.get_sobject()
             if not script:
                 script = SearchType.create("config/custom_script")

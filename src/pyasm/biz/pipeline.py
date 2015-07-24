@@ -54,6 +54,8 @@ class Process(Base):
     def get_name(my):
         return Xml.get_attribute( my.node, "name" )
 
+
+    # DEPRECATED
     def get_full_name(my):
         if my.parent_pipeline_code:
             return "%s/%s" % (my.parent_pipeline_code, my.get_name())
@@ -583,30 +585,8 @@ class Pipeline(SObject):
             return process_names
         else:
             return [process.get_name() for process in processes]
-        '''
-        # FIXME: need to copy this because the names should have hierarchy,
-        # and the data structures aren't good enough for this yet
-        if recurse:
-            # add child processes
-            process_names = []
-            for process in my.processes:
-                process_names.append(process.get_name())
-
-                child_pipeline = process.get_child_pipeline()
-                if not child_pipeline:
-                    continue
-
-                child_processes = child_pipeline.get_processes(recurse=recurse)
-                child_process_names = [x.get_full_name() for x in child_processes]
-                process_names.extend(child_process_names)
-            return process_names
 
 
-        else:
-            return [process.get_name() for process in my.processes]
-                
-
-        '''
 
     def get_index(my, name):
         index = 0

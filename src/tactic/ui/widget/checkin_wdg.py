@@ -2308,7 +2308,7 @@ spt.checkin.html5_checkin = function(files) {
     server.start({title: 'HTML5 Check-in', description: file_type + ' ' + search_key});
     var transaction_ticket = server.transaction_ticket;
 
-    var upload_complete = function() {
+    var upload_complete = function(evt) {
         try {
             var has_error = false;
 

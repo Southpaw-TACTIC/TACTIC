@@ -570,6 +570,11 @@ class Search(Base):
                     table = parts[0]
                     name = parts[1]
 
+
+                if value.startswith("{") and value.endswith("}"):
+                    value = Search.eval(value, single=True)
+
+
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
@@ -4088,7 +4093,9 @@ class SObject(object):
             ]:
                 # need to to get the parent
                 parent = my.get_parent()
-                pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+                pipeline_code = None
+                if parent:
+                    pipeline_code = parent.get_value("pipeline_code", no_exception=True)
                 if pipeline_code:
                     search = Search("config/process")
                     search.add_filter("process", process)
