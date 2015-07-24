@@ -117,25 +117,18 @@ class CherryPyStartup(CherryPyStartup20):
         print "WARNING:"
         print "    status: ", status
         print "    message: ", message
-        #print "site: ", site
-        #print "project_code: ", project_code
+        print "    site: ", site
+        print "    project_code: ", project_code
 
-        from pyasm.security import TacticInit
-        TacticInit()
-
-        #import sys,traceback
-        #tb = sys.exc_info()[2]
-        #stacktrace = traceback.format_tb(tb)
-        #stacktrace_str = "".join(stacktrace)
-        #print "-"*50
-        #print stacktrace_str
-        #print "-"*50
-
-        Site.set_site(site)
 
 
         # Dump out the error
+        has_site = False
         try:
+            from pyasm.security import TacticInit
+            TacticInit()
+
+            Site.set_site(site)
             if site:
                 eval("cherrypy.root.tactic.%s.%s" % (site, project_code))
             else:
@@ -144,25 +137,32 @@ class CherryPyStartup(CherryPyStartup20):
         except (AttributeError, SyntaxError), e:
             print "WARNING: ", e
             has_project = False
+        except Exception, e:
+            print "WARNING: ", e
+            has_project = False
         else:
             has_project = True
+            has_site = True
 
 
-        if project_code in ['default']:
-            startup = cherrypy.startup
-            config = startup.config
-            startup.register_project(project_code, config, site=site)
-            return
+
+        #if project_code in ['default']:
+        #    startup = cherrypy.startup
+        #    config = startup.config
+        #    startup.register_project(project_code, config, site=site)
+        #    return
 
 
 
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
-        try:
-            project = Project.get_by_code(project_code)
-        except Exception, e:
-            print "WARNING: ", e
-            raise
+        project = None
+        if has_site:
+            try:
+                project = Project.get_by_code(project_code)
+            except Exception, e:
+                print "WARNING: ", e
+                raise
 
         if not has_project and project and project.get_value("type") != 'resource':
 
@@ -193,39 +193,38 @@ class CherryPyStartup(CherryPyStartup20):
         # check to see if this project exists in the database?
         #project = Project.get_by_code(project_code)
         #print project
+        try:
         
-        from pyasm.web import Widget, WebApp, AppServer, WebContainer, DivWdg
-        from pyasm.widget import Error404Wdg
+            from pyasm.web import WebContainer, DivWdg
+            from pyasm.widget import Error404Wdg
+            from cherrypy30_adapter import CherryPyAdapter
 
-        # clear the buffer
-        WebContainer.clear_buffer()
+            # clear the buffer
+            WebContainer.clear_buffer()
+            adapter = CherryPyAdapter()
+            WebContainer.set_web(adapter)
 
-        class xyz(AppServer):
+            top = DivWdg()
+            top.add_style("background: #444")
+            top.add_style("height: 300")
+            top.add_style("width: 500")
+            top.add_style("margin: 150px auto")
+            top.add_style("border: solid 1px black")
+            top.add_style("border-radius: 15px")
+            top.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
-            def __init__(my, status, message):
-                my.hash = None
-                my.status = status
-                my.message = message
 
-            def get_page_widget(my):
+            widget = Error404Wdg()
+            widget.status = status
+            widget.message = message
 
-                top = DivWdg()
-                top.add_style("background: #444")
-                top.add_style("height: 100%")
-                top.add_style("width: 100%")
 
-                widget = Error404Wdg()
-                widget.status = status
-                widget.message = message
-                return widget
-                top.add(widget)
+            top.add(widget)
 
-                return top
-       
-        xyz = xyz(status, message)
-        #response.body = xyz.get_display()
-        #return xyz.get_display()
-        return xyz.get_display()
+            return top.get_buffer_display()
+        except Exception, e:
+            print "ERROR: ", e
+            return "ERROR: ", e
 
 
 

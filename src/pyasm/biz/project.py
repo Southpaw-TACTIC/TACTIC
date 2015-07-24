@@ -66,7 +66,13 @@ class Project(SObject):
         # get the db resource for attached to this particular project.
         # Not the db_resource for "sthpw/project" for which
         # project.get_db_resource() does
-        key = "Project:db_resource_cache"
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site:
+            key = "Project:db_resource_cache:%s" % site
+        else:
+            key = "Project:db_resource_cache"
+
         resource_dict = Container.get(key)
         if resource_dict:
             resource = resource_dict.get( my.get_code() )
@@ -91,14 +97,15 @@ class Project(SObject):
         if not db_resource_code:
             # this could be any project, not just sthpw
             # already looked at cache, so set use_cache to False
-            db_resource = DbResource.get_default(database, use_cache=False)
-            #Container.put(key, db_resource)
+            db_resource = Site.get_db_resource(site, database)
+            if not db_resource:
+                db_resource = DbResource.get_default(database, use_cache=False)
+            #db_resource = DbResource.get_default(database, use_cache=False)
             resource_dict[key] = db_resource
             return db_resource
         #elif isinstance(db_resource_code, DbResource):
         elif DbResource.is_instance(db_resource_code):   
             db_resource = db_resource_code
-            #Container.put(key, db_resource)
             resource_dict[key] = db_resource
             return db_resource
 
@@ -602,7 +609,13 @@ class Project(SObject):
     def get_db_resource_by_search_type(cls, search_type):
         if search_type.startswith('sthpw/'):
             # get the local db_resource
-            db_resource = DbResource.get_default('sthpw')
+            from pyasm.security import Site
+            site = Site.get_site()
+            db_resource = None
+            if site:
+                db_resource = Site.get_db_resource(site, "sthpw")
+            if not db_resource:
+                db_resource = DbResource.get_default("sthpw")
             return db_resource
 
         project_code = cls.get_database_by_search_type(search_type)

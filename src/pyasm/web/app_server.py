@@ -634,15 +634,6 @@ class BaseAppServer(Base):
 
         elif ticket_key:
 
-            #print "ticket: ", ticket_key
-            #print "site: ", site_obj.get_site()
-
-            # get the site from the ticket to determine where to authenticate the user
-            # **only do this if the URL is pointing to the portal(??)
-            # FIXME: hard coded!!!!
-            #if site == "portal":
-            #    site = site_obj.get_by_ticket(ticket_key)
-
             if site:
                 site_obj.set_site(site)
 
