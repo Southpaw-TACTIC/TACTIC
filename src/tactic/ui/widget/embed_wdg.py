@@ -66,6 +66,7 @@ class EmbedWdg(BaseRefreshWdg):
         #div = DivWdg()
         #top.add(div)
         div = top
+        div.add_class("unselectable")
         div.add_style("opacity", opacity)
         div.add_style("overflow-x: hidden")
         div.add_style("overflow-y: hidden")
@@ -88,6 +89,7 @@ class EmbedWdg(BaseRefreshWdg):
         else:
             click = True
 
+        thumb_path = my.kwargs.get("thumb_path")
         preload = my.kwargs.get("preload")
         if not preload:
             preload = "none"
@@ -102,12 +104,10 @@ class EmbedWdg(BaseRefreshWdg):
             embed = DivWdg()
 
 
-            thumb_path = my.kwargs.get("thumb_path")
-            if not thumb_path:
-                thumb_path = "/context/icons/logo/tactic_sml.png"
+            #if not thumb_path:
+            #    thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
-            if not controls:
-                controls = "true"
+
 
             video_id = None
             sources = [src]
@@ -125,9 +125,12 @@ class EmbedWdg(BaseRefreshWdg):
 
         else:
             #embed = HtmlElement.embed(src)
-            from pyasm.widget import ThumbWdg
-            link = ThumbWdg.find_icon_link(src)
-            img = HtmlElement.img(link)
+            if thumb_path:
+                img = HtmlElement.img(thumb_path)
+            else:
+                from pyasm.widget import ThumbWdg
+                link = ThumbWdg.find_icon_link(src)
+                img = HtmlElement.img(link)
             img.add_style("width: 50%")
             img.add_style("margin: 20px 20px")
             embed = DivWdg(img)

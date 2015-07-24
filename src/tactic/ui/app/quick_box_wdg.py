@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = [ 'QuickBoxWdg']
+__all__ = [ 'QuickBoxWdg', 'CustomQuickBoxWdg']
 
 import types
 import os
@@ -128,21 +128,24 @@ class QuickBoxWdg(BaseRefreshWdg):
         div.set_round_corners(25)
         div.add_border()
 
-        content_wdg = DivWdg()
-        content_wdg.add_style("position: fixed")
-        top.add(content_wdg)
-        content_wdg.add_style("padding: 20px 50px 50px 50px")
-        content_wdg.add_style("z-index: 1001")
+        content_top_wdg = DivWdg()
+        content_top_wdg.add_style("position: fixed")
+        top.add(content_top_wdg)
+        content_top_wdg.add_style("padding: 20px 50px 50px 50px")
+        content_top_wdg.add_style("z-index: 1001")
+        content_top_wdg.add_style("width: 550px")
+        content_top_wdg.add_style("height: 400px")
 
 
         close_wdg = DivWdg()
-        content_wdg.add(close_wdg)
+        content_top_wdg.add(close_wdg)
         icon = IconWdg('Close Quick Links', "BS_REMOVE")
         close_wdg.add(icon)
         #close_wdg.add_style("position: fixed")
-        close_wdg.add_style("float: right")
-        close_wdg.add_style("margin-top: -5px")
-        close_wdg.add_style("margin-right: -40px")
+        #close_wdg.add_style("float: right")
+        close_wdg.add_style("position: absolute")
+        close_wdg.add_style("top: 10px")
+        close_wdg.add_style("right: 30px")
         close_wdg.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -151,7 +154,16 @@ class QuickBoxWdg(BaseRefreshWdg):
         } )
         close_wdg.add_class("hand")
 
+        content_wdg = my.get_content_wdg()
+        content_top_wdg.add(content_wdg)
 
+        return top
+
+
+
+    def get_content_wdg(my):
+
+        content_wdg = DivWdg()
 
         """
         image = "FLOW_CHART_02"
@@ -427,7 +439,27 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        return top
+        return content_wdg
    
+
+
+
+class CustomQuickBoxWdg(QuickBoxWdg):
+
+    def get_content_wdg(my):
+
+        view = my.kwargs.get("view")
+
+        from tactic.ui.panel import CustomLayoutWdg
+        layout = CustomLayoutWdg(
+                view=view
+        )
+
+        return layout
+
+
+
+
+
 
 

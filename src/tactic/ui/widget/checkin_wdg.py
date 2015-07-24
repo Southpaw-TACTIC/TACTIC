@@ -144,7 +144,7 @@ class CheckinWdg(BaseRefreshWdg):
             my.processes = ['publish']
             my.auto_process = True
         else:
-            my.processes = my.pipeline.get_process_names()
+            my.processes = my.pipeline.get_process_names(type=["node"])
             if not my.processes:
                 my.processes = ['publish']
                 my.auto_process = True
@@ -2568,6 +2568,35 @@ var server = TacticServerStub.get();
 server.start({title: 'Check-in', description: transfer_mode + ' ' + type + ' ' + search_key});
 
 var checkin_data = {}
+
+spt.checkin._get_context = function(process, context, subcontext, is_context, file_path, use_file_name) {
+    var this_context = context;
+    if (is_context)
+        return this_context;
+
+    if (subcontext) {
+
+        this_context = process + "/" + subcontext;
+    }
+    else if (use_file_name) {
+        file_path = file_path.replace(/\\\\/g, "/");
+        var this_sub_context = file_path.replace(bvr.sandbox_dir+"/", "");
+        //this_sub_context = file_path;
+        if (this_sub_context == file_path) {
+            // nothing was found so just use the filename
+            var parts = file_path.split(/[\\/\\\\]/);
+            var file_name = parts[parts.length-1];
+            this_context = process + "/" + file_name;
+        }
+        else {
+            this_context = process + "/" + this_sub_context;
+        }
+    }
+    else {
+        this_context = context;
+    }
+    return this_context
+}
 
 
 try {

@@ -222,7 +222,8 @@ class Search(Base):
         my.select.set_database(my.db_resource)
         my.select.set_id_col(my.get_id_col())
 
-        assert isinstance(my.db_resource, DbResource)
+        assert DbResource.is_instance(my.db_resource)
+
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
@@ -493,6 +494,12 @@ class Search(Base):
         '''add operator like begin, and, or. with an idx number, it will be inserted instead of appended'''
         my.select.add_op(op, idx=idx)
 
+    def is_expr(value):
+        '''return True if it is an expression based on starting chars'''
+        is_expr = re.search("^(@|\$\w|{@|{\$\w)", value)
+        return is_expr
+
+    is_expr = staticmethod(is_expr)
     def add_op_filters(my, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
@@ -518,6 +525,8 @@ class Search(Base):
 
             elif len(filter) == 2:
                 name, value = filter
+                if my.is_expr(value):
+                    value = Search.eval(value, single=True)
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
@@ -547,9 +556,13 @@ class Search(Base):
                     my.add_filters(name, value, table=table)
             elif len(filter) == 3:
                 name, op, value = filter
-
+               
                 op = op.replace("lt", "<")
                 op = op.replace("gt", ">")
+                if my.is_expr(value):
+                    value = Search.eval(value, single=True)
+
+
 
                 table = ""
                 if name.find(".") != -1:
@@ -575,7 +588,7 @@ class Search(Base):
                         op = '>='
                     elif op == 'is before':
                         op = '<='
-
+                    
                     quoted = True
                     # special case for NULL
                     if value == 'NULL':
@@ -1005,9 +1018,11 @@ class Search(Base):
 
             # see if a multi database join can be made
             can_join = DatabaseImpl.can_search_types_join(full_search_type, full_related_type)
+            
             if can_join and use_multidb != None:
                 can_join = use_multidb
-
+            if Config.get_value('database','join') == 'false':
+                can_join = False 
             if can_join:
                 my.add_op('begin')
                 if my_is_from:
@@ -3855,7 +3870,8 @@ class SObject(object):
                     'sthpw/sync_log',
                     'sthpw/sync_job',
                     'sthpw/message',
-                    'sthpw/message_log',
+            # enabled triggers from message_log so that inserts to this table can send out notifications
+            #        'sthpw/message_log',
                     'sthpw/change_timestamp',
                     'sthpw/sobject_list',
                     'sthpw/sobject_log'
@@ -4043,22 +4059,55 @@ class SObject(object):
             key = {'event': event}
             Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
-            key = {'event': event}
-            if process:
-                key['process'] = process
-                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
-
-
-            key = {'event': event}
             if parent_type:
+                key = {'event': event}
                 key['search_type'] = parent_type
                 Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
-            key = {'event': event}
+
+
+            if process:
+                key = {'event': event}
+                key['process'] = process
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+
             if process and parent_type:
+                key = {'event': event}
                 key['process'] = process
                 key['search_type'] = parent_type
                 Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+
+            # process can be either the process name or the process code
+            if process and my.get_base_search_type() in [
+                    'sthpw/task',
+                    'sthpw/note',
+                    'sthpw/snapshot',
+                    'sthpw/work_hour'
+            ]:
+                # need to to get the parent
+                parent = my.get_parent()
+                pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+                if pipeline_code:
+                    search = Search("config/process")
+                    search.add_filter("process", process)
+                    search.add_filter("pipeline_code", pipeline_code)
+                    process_sobj = search.get_sobject()
+                    if process_sobj:
+                        process_code = process_sobj.get_code()
+
+                        key = {'event': event}
+                        key['process'] = process_code
+                        Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+                        if parent_type:
+                            key = {'event': event}
+                            key['process'] = process_code
+                            key['search_type'] = parent_type
+                            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+
+
 
 
 
@@ -5131,8 +5180,9 @@ class SObject(object):
     def get_sobject_dict(my, columns=None, use_id=False, language='python'):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
-
-        if not columns:
+        if my.get_base_search_type() == "sthpw/virtual":
+            columns = my.data.keys()
+        elif not columns:
             columns = SearchType.get_columns(my.get_search_type())
 
         result = {}
@@ -5279,7 +5329,7 @@ class SearchType(SObject):
             if not num:
                 raise SqlException('setval needs a number larger than 0')
             if impl.get_database_type() == "SQLServer":
-                sql.execute( impl.get_setval_select(sequence, num))
+                sql.do_update( impl.get_setval_select(sequence, num))
                 id = sql.get_value( impl.get_currval_select(sequence))
             else:
                 id = sql.get_value( impl.get_setval_select(sequence, num))

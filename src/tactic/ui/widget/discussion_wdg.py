@@ -946,7 +946,22 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+    def get_menu_wdg(my, top):
+        '''Get the menu setup so the caller can place it outside this DiscussionWdg 
+           with the top element passed in'''
+        edit_wdg = DiscussionEditWdg()
+        my.menu = edit_wdg.get_menu()
 
+        # extra js_action on mouseover to assign the search key of the note to hidden input
+        js_action ='''
+           var sk_input = menu_top.getElement('.spt_note_action_sk');
+           var note_top = bvr.src_el;
+           sk_input.value = note_top.getAttribute('note_search_key');
+            '''
+
+        my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
+        my.menu.set_activator_out(top, 'spt_discussion_top')
+        return edit_wdg
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''
@@ -1631,6 +1646,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         td.add(title)
 
+        # Paper clip button code
         key = note.get_search_key()
         attachments = my.attachments.get(key)
         if attachments:
@@ -1712,19 +1728,38 @@ class DiscussionWdg(BaseRefreshWdg):
         attached_div = DivWdg()
         attached_div.add_style("margin-top: 10px")
         snapshots = attachments
+
+        # Snapshot thumbnail code
         if snapshots:
             attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
+            
+            attached_div.add_relay_behavior( {         
+            'type': 'click',
+            'mouse_btn': 'LMB',
+            'bvr_match_class': 'spt_open_thumbnail',
+            'cbjs_action': '''
+            
+            var src_el = bvr.src_el;
+            var thumb_href = src_el.getElement('.spt_thumb_href');
+            var thumb_path = thumb_href.getAttribute('href');
+            window.open(thumb_path);
+            '''
+            } )
 
             for snapshot in snapshots:
-                thumb_div = DivWdg()
-                attached_div.add(thumb_div)
-                thumb_div.add_style("float: left")
-
                 thumb = ThumbWdg()
                 thumb.set_option('detail','false')
-                thumb_div.add(thumb)
+                thumb.set_option('image_link_order' , 'main|web|icon')
                 thumb.set_icon_size(60)
                 thumb.set_sobject(snapshot)
+
+                thumb_div = DivWdg()
+                thumb_div.add_style("float: left")
+                thumb_div.add(thumb)
+                thumb_div.add_class("spt_open_thumbnail")
+                            
+                attached_div.add(thumb_div)
+
 
         right.add(attached_div)
 
@@ -1775,6 +1810,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
         content_div = my.top
+        content_div.add_style("min-width: 300px")
 
         my.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
@@ -1883,7 +1919,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         # this is a special case where we explicitly use processs/context for note
         #if use_parent =='true' and my.contexts:
         if my.contexts:
-            hidden =HiddenWdg("add_context")
+            hidden = HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
             content_div.add(hidden)
             if my.contexts[0] != my.process:
@@ -1895,6 +1931,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         content_div.add("<br/>Note:<br/>")
         text = TextAreaWdg("note")
+        text.add_class("form-control")
         text.add_style("width: 100%")
         text.add_style("height: 100px")
         content_div.add(text)
@@ -2027,21 +2064,27 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         table.add_color("color", "color")
         mail_div.add(table)
 
+        from tactic.ui.input import TextInputWdg
+
         # CC
         table.add_row()
         table.add_cell("Cc: ")
-        text = TextWdg("mail_cc")
+        text = TextInputWdg(name="mail_cc")
         text.add_style("width: 250px")
         table.add_cell(text)
 
-        table.add_row_cell()
+        tr, td = table.add_row_cell()
+        td.add("<br/>")
 
         # BCC 
         table.add_row()
         table.add_cell("Bcc: ")
-        text = TextWdg("mail_bcc")
+        text = TextInputWdg(name="mail_bcc")
         text.add_style("width: 250px")
         table.add_cell(text)
+
+        tr, td = table.add_row_cell()
+        td.add("<br/>")
 
         return content_div
 
@@ -2073,6 +2116,16 @@ class DiscussionAddNoteCmd(Command):
         context = my.kwargs.get("context")
         if not context:
             context = process
+        elif context.find("/"):
+            parts = context.split("/")
+            if parts:
+                try:
+                    # if the subcontext is a number, then ignore this
+                    subcontext = int(parts[1])
+                    context = parts[0]
+                except:
+                    pass
+
 
         from pyasm.biz import Note
         note = Note.create(sobject, note, context=context, process=process)

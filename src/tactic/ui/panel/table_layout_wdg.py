@@ -26,7 +26,7 @@ from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, WidgetConfigView, Swap
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
-from pyasm.biz import Project, ExpressionParser
+from pyasm.biz import Project, ExpressionParser, Subscription
 from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
@@ -98,7 +98,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional'
         },
 
-       'show_search_limit': {
+        'show_search_limit': {
             'description': 'Flag to determine whether or not to show the search limit',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -375,10 +375,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # get all the attributes
             if element_name and element_name != "None":
                 attrs = my.config.get_element_attributes(element_name)
+                widget.set_attributes(attrs)
             else:
                 attrs = {}
             
             my.attributes.append(attrs)
+
+
             # defined access for this view
             def_default_access = attrs.get('access')
             if not def_default_access:
@@ -413,6 +416,52 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # reassign the widgets that pass security back to my.widgets
         my.widgets = filtered_widgets
+
+
+
+
+    def _process_search_args(my):
+
+        # this is different name from the old table selected_search_keys
+        search_keys = my.kwargs.get("search_keys")
+      
+        # if a search key has been explicitly set without expression, use that
+        expression = my.kwargs.get('expression') 
+        matched_search_key = False
+        if my.search_key:
+            base_search_type = SearchKey.extract_base_search_type(my.search_key)
+        else:
+            base_search_type = ''
+
+        if my.search_type == base_search_type:
+            matched_search_key = True
+        if search_keys and search_keys != '[]':
+            if isinstance(search_keys, basestring):
+                if search_keys == "__NONE__":
+                    search_keys = []
+                else:
+                    search_keys = search_keys.split(",")
+
+            # keep the order for precise redrawing/ refresh_rows purpose
+            if not search_keys:
+
+                my.sobjects = []
+            else:
+                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+
+            my.items_found = len(my.sobjects)
+            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
+        elif my.search_key and matched_search_key and not expression:
+            sobject = Search.get_by_search_key(my.search_key)
+            if sobject: 
+                my.sobjects = [sobject]
+                my.items_found = len(my.sobjects)
+
+
+        elif my.kwargs.get("do_search") != "false":
+            my.handle_search()
+
+
 
 
 
@@ -452,6 +501,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         my.sobject_levels = []
+
+
+        # Make this into a function.  Former code is kept here for now.
+        my._process_search_args()
+        """
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
       
@@ -478,6 +532,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 my.sobjects = []
             else:
                 my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+
             my.items_found = len(my.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
         elif my.search_key and matched_search_key and not expression:
@@ -489,6 +544,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
+        """
+
+
 
 
         # set some grouping parameters
@@ -534,8 +592,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("has_extra_header", "true")
 
 
-        if my.config_xml:
-            inner.add_attr("spt_config_xml", my.config_xml)
+        #if my.config_xml:
+        #    inner.add_attr("spt_config_xml", my.config_xml)
 
         save_class_name = my.kwargs.get("save_class_name")
         if save_class_name:
@@ -798,7 +856,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -850,6 +908,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         table.set_id(my.table_id)
         
+        # generate dictionary of subscribed search_keys to affect context menu
+        my.subscribed_search_keys = {}
+        login = Environment.get_login().get("login")
+        subscribed = Subscription.get_by_search_type(login, my.search_type)
+        for item in subscribed:
+            item_search_key = item.get("message_code")
+            my.subscribed_search_keys[item_search_key] = True
 
         # set up the context menus
         show_context_menu = my.kwargs.get("show_context_menu")
@@ -916,9 +981,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
         
-        for i, col in enumerate(my.group_columns):
-            group_value_dict = {}
-            my.group_values[i] = group_value_dict
 
         for row, sobject in enumerate(my.sobjects):
 
@@ -1484,36 +1546,50 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         border_color = table.get_color('border', modifier=20)
         # Drag will allow the dragging of items from a table to anywhere else
-        table.add_behavior( { 'type': 'smart_drag', 'drag_el': 'drag_ghost_copy',
-                                'bvr_match_class': 'spt_table_select',
-                               'use_copy': 'true',
-                               'border_color': border_color,
-                               'use_delta': 'true', 'dx': 10, 'dy': 10,
-                               'drop_code': 'DROP_ROW',
-                               'copy_styles': 'background: #393950; color: #c2c2c2; border: solid 1px black;' \
-                                                ' text-align: left; padding: 10px;',
-                                # don't use cbjs_pre_motion_setup as it assumes the drag el
-                                'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+        table.add_behavior( {
+            'type': 'smart_drag', 'drag_el': 'drag_ghost_copy',
+            'bvr_match_class': 'spt_table_select',
+            'use_copy': 'true',
+            'border_color': border_color,
+            'use_delta': 'true', 'dx': 10, 'dy': 10,
+            'drop_code': 'DROP_ROW',
+            'copy_styles': 'background: #393950; color: #c2c2c2; border: solid 1px black; text-align: left; padding: 10px;',
+            # don't use cbjs_pre_motion_setup as it assumes the drag el
+            'cbjs_setup': '''
+                if(spt.drop) {
+                    spt.drop.sobject_drop_setup( evt, bvr );
+                }
+            ''',
+            "cbjs_motion": '''
+                spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                var target_el = spt.get_event_target(evt);
+                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                if (target_el) {
+                    var orig_border_color = target_el.getStyle('border-color');
+                    var orig_border_style = target_el.getStyle('border-style');
+                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                    if (!target_el.getAttribute('orig_border_color')) {
+                        target_el.setAttribute('orig_border_color', orig_border_color);
+                        target_el.setAttribute('orig_border_style', orig_border_style);
+                    }
+                }
+            ''',
+            "cbjs_action": '''
+                if (spt.drop) {
+                    spt.drop.sobject_drop_action(evt, bvr)
+                }
 
-                                "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
-                                                var target_el = spt.get_event_target(evt);
-                                                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
-                                                if (target_el) {
-                                                    var orig_border_color = target_el.getStyle('border-color');
-                                                    var orig_border_style = target_el.getStyle('border-style');
-                                                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
-                                                    if (!target_el.getAttribute('orig_border_color')) {
-                                                        target_el.setAttribute('orig_border_color', orig_border_color);
-                                                        target_el.setAttribute('orig_border_style', orig_border_style);
-                                                    }
-                                                }''',
+                var dst_el = spt.get_event_target(evt);
+                var src_el = spt.behavior.get_bvr_src(bvr);
 
-                                "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
-                               } )
+                var dst_row = dst_el.getParent(".spt_table_row");
+                var dst_search_key = dst_row.getAttribute("spt_search_key");
 
+                var src_row = src_el.getParent(".spt_table_row");
+                var src_search_key = src_row.getAttribute("spt_search_key");
 
-
-
+            '''
+        } )
 
 
         # selection behaviors
@@ -2230,11 +2306,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                         my.group_summary = []
                         my.group_rows.append(tr)
-                    
+
                         tr, td = table.add_row_cell()
                         td.add("&nbsp;")
                         tr.add_border(size=1)
-                    
+
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
           
@@ -2475,6 +2551,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
+
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            tr.set_attr("spt_is_subscribed","true")
+
         if sobject.is_retired():
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
@@ -2792,6 +2872,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_class( 'SPT_DTS' )
         #td.add_color("background-color", "background", -0)
         td.add_color("opacity", "0.5")
+        if my.subscribed_search_keys.get(sobject.get_search_key()):
+            td.add_border(direction="right", color="#ecbf7f", size="2px")
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
@@ -2987,7 +3069,6 @@ spt.table.drop_row = function(evt, el) {
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
     var size = thumb_el.getSize();
-    console.log(size);
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
@@ -3344,11 +3425,14 @@ spt.table.get_selected_rows = function() {
 
 
 
-spt.table.get_selected_search_keys = function() {
+spt.table.get_selected_search_keys = function(use_id) {
     var rows = spt.table.get_selected_rows();
     var search_keys = [];
+    // if use_id is false, search_key uses code
+    if (use_id == null) use_id = true;
+
     for (var i = 0; i < rows.length; i++) {
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = use_id ? rows[i].getAttribute("spt_search_key") : rows[i].getAttribute("spt_search_key_v2");
         search_keys.push(search_key);
     }
 
@@ -3437,7 +3521,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "#777";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -4496,16 +4580,18 @@ spt.table.set_changed_color = function(row, cell) {
         row.setAttribute("spt_background", "#204411");
     } 
     else {
-        row.setStyle("background-color", "#C0CC99");
-        cell.setStyle("background-color", "#909977");
-        row.setAttribute("spt_background", "#C0CC99");
-        /*
-        var el = cell;
-        el.setStyle("background", "#EFE");
-        el.setStyle("border-color", "#0F0");
-        el.setStyle("border-style", "solid");
-        el.setStyle("border-width", "2px 1px 1px 2px");
-        */
+        //color = "rgba(188, 207, 215, 1.0)";
+        //color2 = "rgba(188, 207, 215, 0.6)";
+        color = "rgba(207, 215, 188, 1.0)";
+        color2 = "rgba(207, 215, 188, 0.6)";
+
+        row.setStyle("background-color", color2);
+        cell.setStyle("background-color", color);
+        row.setAttribute("spt_background", color2);
+
+        //row.setStyle("background-color", "#C0CC99");
+        //cell.setStyle("background-color", "#909977");
+        //row.setAttribute("spt_background", "#C0CC99");
     }
 }
 
@@ -5855,6 +5941,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
 
     var commit_enabled = true;
     var row_is_retired = false;
+    var row_is_subscribed = false;
     var display_label = "not found";
 
     
@@ -5870,6 +5957,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
                             "Use 'search_key' as display_label." );
             display_label = tr.get("spt_search_key");
         }
+        row_is_subscribed = tr.getAttribute('spt_is_subscribed');
     }
    
 
@@ -5877,7 +5965,9 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
         'commit_enabled' : commit_enabled,
         'is_retired': row_is_retired,
         'is_not_retired': (! row_is_retired),
-        'display_label': display_label
+        'display_label': display_label,
+        'is_subscribed': row_is_subscribed,
+        'is_not_subscribed': (! row_is_subscribed)
     }
     return setup_info;
 }
@@ -6017,7 +6107,7 @@ spt.table.delete_selected = function()
     var selected_rows = spt.table.get_selected_rows();
     var num = selected_rows.length;
     if (num == 0) {
-        spt.alert("Nothing selected to " + action);
+        spt.alert("Nothing selected to delete.");
         return;
     }
 

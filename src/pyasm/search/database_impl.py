@@ -370,8 +370,82 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_regex_filter(my, column, regex, op='EQI'):
         return None
 
-    
-    
+    def _get_cte_where(my, op_filters):
+        '''Get the where clause for cte used in parent and child search'''
+        from search import Search
+        search = Search('workflow/base_keyword')
+        search.add_op_filters(op_filters)
+        search_stmt = search.get_statement()
+       
+        wheres = search_stmt.split('WHERE')
+        where = wheres[-1]
+        
+        return where
+
+    def get_parent_cte(my, op_filters):
+        '''Postgres parent CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH RECURSIVE res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                   SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(ARRAY[r."child_keyword_code"] AS TEXT),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                  
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        path || r."child_keyword_code",
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."child_keyword_code" = ng."parent_keyword_code" and depth < 4
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+                Select * from res;'''%where
+
+        return stmt
+
+    def get_child_cte(my, op_filters):
+        '''Postgres child CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH RECURSIVE res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(ARRAY[r."parent_keyword_code"] AS TEXT),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        path || r."parent_keyword_code",
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."parent_keyword_code" = ng."child_keyword_code" and depth < 4
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+ 
     def get_text_search_filter(cls, column, keywords, column_type, table=None):
         '''default impl works with Postgres'''
         if isinstance(keywords, basestring):
@@ -437,6 +511,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     get_text_search_filter = classmethod(get_text_search_filter)
 
+    
     def get_columns(cls, db_resource, table):
         '''get ordered column names'''
          # do a dummy select to get the ordered columns
@@ -846,12 +921,76 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     get_text_search_filter = classmethod(get_text_search_filter)
 
 
+    def get_parent_cte(my,  op_filters):
+        '''SQLServer parent CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(r."child_keyword_code" AS varchar(256)),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        CAST ((path + ' > ' + r."child_keyword_code") AS varchar(256)),
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."child_keyword_code" = ng."parent_keyword_code" and depth < 5
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+    def get_child_cte(my, op_filters):
+        '''SQLServer child CTE'''
+        where = my._get_cte_where(op_filters)
+
+        stmt = '''WITH res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(r."parent_keyword_code" AS varchar(256)),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE ( %s )
+                    
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        CAST((path + ' > ' + r."parent_keyword_code") AS varchar(256)),
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."parent_keyword_code" = ng."child_keyword_code" and depth < 10
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+
     #
     # Type process methods
     #
     def process_value(my, name, value, column_type="varchar"):
 
-        if column_type in ['timestamp','datetime']:
+        if column_type in ['timestamp','datetime','datetime2']:
             quoted = False
             lower_value = ''
             if isinstance(value, datetime.datetime):
@@ -871,6 +1010,12 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                     if value == 'NULL':
                         pass
                     else:
+                        
+                        if re.search(r"(\s\+\d{4})", value):
+                            # add : so it becomes +00:00
+                            parts = value.split(' +')
+                            parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
+                            value = '%s +%s'%(parts[0], parts[1])
                         value = "convert(datetime2, '%s', 0)" % value
                 
             return {"value": value, "quoted": quoted}
@@ -948,18 +1093,23 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             print "no returned result from database creation (sqlcmd)"
 
 
-    def drop_database(my, database):
+    def drop_database(my, db_resource):
         '''remove a database in SQL Server. Note this is a very dangerous
         operation.  Use with care.'''
         # if the database does not exist, do nothing
         #if not database_exists(database):
         #    return
+        from sql import DbResource, DbContainer
+        if DbResource.is_instance(db_resource):
+            database = db_resource.get_database()
+        else:
+            database = db_resource
 
   
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -Q "dropdatabase test1"
         # note: The database we are connecting to must be 'sthpw'
-        drop_SQL_arg = '"DROP DATABASE %s"' %database
+        drop_SQL_arg = '"DROP DATABASE %s"' % (database)
         create = 'sqlcmd -S %s,%s -U %s -P %s -Q %s' % \
                  (my.server, my.port, my.user, my.password, drop_SQL_arg)
         cmd = os.popen(create)
@@ -971,7 +1121,6 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         else:
             print result
         cmd.close()
-
 
     def get_modify_column(my, table, column, type, not_null=None):
         ''' get the statement for setting the column type '''
@@ -1016,6 +1165,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
         types = ['config', type]
+        if db_resource == 'sthpw':
+            types.insert(0, 'bootstrap')
+
         for schema_type in types:
             schema_dir = my.get_schema_dir()
             schema_path = "%s/%s_schema.sql" % (schema_dir, schema_type)
@@ -1119,7 +1271,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                     key = "%s:sthpw_column_info" % site
                 else:
                     key = "sthpw_column_info"
-                cache = CacheContainer.get()
+                cache = CacheContainer.get(key)
                 if cache:
                     dict = cache.get_value_by_key("data", table)
                     if dict != None:
@@ -3151,7 +3303,7 @@ class MySQLImpl(PostgresImpl):
         # TODO: if the database does not exist, do nothing
         # if not database_exists(database):
         #    return
-
+        
 
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.   mysql --host=localhost --port=5432 --user=root --password=south123paw --execute="create database unittest"

@@ -711,6 +711,21 @@ class TacticServerStub(object):
         return my.server.subscribe(my.ticket, key, category)
 
 
+    def unsubscribe(my, key):
+        '''API Function: unsubscribe(key)
+
+        Allow a user to unsubscribe from this message key.
+
+        @params
+        key - unique key for this message
+
+        @return
+        dictionary - the values of the subscription sobject in the
+        form name:value pairs
+        '''
+        return my.server.unsubscribe(my.ticket, key)
+
+
 
     #
     # Interaction methods
@@ -2594,8 +2609,8 @@ class TacticServerStub(object):
 
 
 
-    def query_snapshots(my, filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False):
-        '''API Function:  query_snapshots(filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False)
+    def query_snapshots(my, filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False, include_web_paths_dict=False):
+        '''API Function:  query_snapshots(filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False, include_web_paths=False)
 
         thin wrapper around query, but is specific to querying snapshots
         with some useful included flags that are specific to snapshots
@@ -2615,6 +2630,10 @@ class TacticServerStub(object):
         include_paths_dict - flag to specify whether to include a
             __paths_dict__ property containing a dict of all paths in the
             dependent snapshots
+        include_web_paths_dict - flag to specify whether to include a
+            __web_paths_dict__ property containing a dict of all web paths in
+            the returned snapshots
+
         include_full_xml - flag to return the full xml definition of a snapshot
         include_parent - includes all of the parent attributes in a __parent__ dictionary
         include_files - includes all of the file objects referenced in the
@@ -2627,7 +2646,7 @@ class TacticServerStub(object):
                                          show_retired, limit, offset, single,
                                          include_paths, include_full_xml,
                                          include_paths_dict, include_parent,
-                                         include_files)
+                                         include_files, include_web_paths_dict)
 
 
 
@@ -3030,7 +3049,7 @@ class TacticServerStub(object):
     #
     # Directory methods
     #
-    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False):
+    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None):
         '''API Function: get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False)
         Get paths from an sobject
 
@@ -3045,6 +3064,7 @@ class TacticServerStub(object):
             was checked into
         single - If set to True, the first of each path set is returned
         versionless - boolean to return the versionless snapshot, which takes a version of -1 (latest)  or 0 (current)
+        process - the process of the snapshot
 
         @return
         A dictionary of lists representing various paths.  The paths returned
@@ -3494,6 +3514,23 @@ class TacticServerStub(object):
             string - description of command
         '''
         return my.server.execute_cmd(my.ticket, class_name, args, values)
+
+
+
+    def execute_js_script(my, script_path, kwargs={}):
+        '''API Function: execute_js_script(script_path, kwargs) 
+        Execute a js script defined in Script Editor
+
+        @param:
+            script_path - script path in Script Editor, e.g. test/eval_sobj
+        @keyparam:
+            kwargs  - keyword arguments for this script
+
+        @return:
+            dictionary - returned data structure
+        '''
+        return my.server.execute_js_script(my.ticket, script_path, kwargs)
+
 
 
 

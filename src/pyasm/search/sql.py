@@ -509,7 +509,7 @@ class Sql(Base):
                                             charset=charset,
                                             use_unicode=True,
                                             passwd=my.password )
-                my.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES %s"%encoding);
+                my.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES %s"%encoding)
 
             elif my.vendor == "Oracle":
                 # if we connect as a single user (like most databases, then
@@ -534,7 +534,9 @@ class Sql(Base):
                 auth = "DRIVER=%s; SERVER=%s,%s; DATABASE=%s; UID=%s; PWD=%s" % \
                     (sqlserver_driver, my.host, my.port, my.database_name, my.user, password_str)
                 my.conn = pyodbc.connect(auth)
-
+                # set isolation level to prevent excessive read lock on tables
+                my.do_update("SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
+                
             elif my.vendor == "MongoDb":
 
                 from mongodb import MongoDbConn
