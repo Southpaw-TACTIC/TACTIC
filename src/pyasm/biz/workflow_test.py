@@ -431,6 +431,8 @@ class WorkflowCmd(Command):
 
     def _test_manual(my):
 
+        print "test manual"
+
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
         sobject.set_value("code", "test")
@@ -458,7 +460,7 @@ class WorkflowCmd(Command):
         Trigger.call(my, "process|pending", output)
 
         # nothing should have run
-        my.assertEquals( False, sobject.get_value("a"))
+        my.assertEquals( "pending", sobject.get_value("a"))
         my.assertEquals( False, sobject.get_value("b"))
 
 
@@ -677,10 +679,6 @@ class WorkflowCmd(Command):
 
     def _test_dependency(my):
 
-        print "---"
-        print "test dependency"
-        print "---"
-
         # create a dummy sobject
         city = SearchType.create("unittest/city")
 
@@ -744,14 +742,11 @@ class WorkflowCmd(Command):
         #person_task.set_value("status", "complete")
         #person_task.commit()
         for person in people:
-            print "person: ", person.get_value("name_first")
-            print "   status of x: ", person.get_value("x")
-            print "   status of y: ", person.get_value("y")
-            print "   status of z: ", person.get_value("z")
+            my.assertEquals( "complete", person.get_value("x") )
+            my.assertEquals( "complete", person.get_value("y") )
+            my.assertEquals( "complete", person.get_value("z") )
 
-        print "city: ", city.get_value("c")
-
-        fdaafdsafdsfdsfsd
+        my.assertEquals( "complete", city.get_value("c") )
 
 
 

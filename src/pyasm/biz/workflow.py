@@ -610,7 +610,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
             if complete:
-                print "sdingin complete: ", sobject.get_code(), process, num_complete
+                #print "sdingin complete: ", sobject.get_code(), process, num_complete
                 related_pipeline = Pipeline.get_by_sobject(related_sobject)
                 if not related_process:
                     # get the first one
