@@ -282,12 +282,6 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
 
 
-        #if my.is_personal in ['true', True]:
-        #    my_admin_view = DivWdg()
-        #    my_admin_view.set_id("menu_item_list")
-        #    my_admin_view.add( my.get_section_wdg("my_views"))
-        #    td.add(my_admin_view)
-        #else:
         project_view = DivWdg()
         project_view.set_id("menu_item_list")
         project_view.add( my.get_section_wdg(my.view))
@@ -353,6 +347,8 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         popup.add( my.get_section_wdg(view=project_type, default=True))
 
         return popup
+
+
 
     def get_menu_item(my, element_name, display_handler):
 
@@ -554,8 +550,10 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 "cb_set_prefix": 'spt.side_bar.pp'
             }
             if recurse:
-                behavior['cbjs_action_onnomotion'] = 'spt.side_bar.toggle_section_display_cbk(evt,bvr); ' \
-                                                     'spt.side_bar.display_element_info_cbk(evt,bvr);'
+                behavior['cbjs_action_onnomotion'] = ''''
+                    spt.side_bar.toggle_section_display_cbk(evt,bvr);
+                    spt.side_bar.display_element_info_cbk(evt,bvr);
+                '''
             else:
                 behavior['cbjs_action_onnomotion'] = 'spt.side_bar.display_element_info_cbk(evt,bvr);'
             behavior['class_name'] = my.get_detail_class_name()

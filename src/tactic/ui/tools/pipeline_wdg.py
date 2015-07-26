@@ -1459,12 +1459,21 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         node_type = my.kwargs.get("node_type")
 
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        search_type = pipeline.get("search_type")
+
+
         top = my.top
         top.add_class(".spt_process_info_top")
 
         widget = None
 
-        if node_type == 'approval':
+        if search_type == "sthpw/task":
+            widget = TaskStatusInfoWdg(**my.kwargs)
+
+        elif node_type == 'approval':
             widget = ApprovalInfoWdg(**my.kwargs)
 
         if node_type == 'action':
@@ -1475,6 +1484,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         if node_type == 'hierarchy':
             widget = HierarchyInfoWdg(**my.kwargs)
+
+        if node_type == 'dependency':
+            widget = DependencyInfoWdg(**my.kwargs)
 
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
@@ -1526,7 +1538,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
         select = SelectWdg("event")
         title_wdg.add(select)
-        select.set_option("values", ['manual','action','condition','approval', 'hierarchy'])
+        select.set_option("values", ['manual','action','condition','approval', 'hierarchy','dependency'])
         select.add_style("width: 100px")
         if node_type == "node":
             select.set_value("manual")
@@ -2177,8 +2189,6 @@ class AutoInfoWdg(BaseInfoWdg):
 
 class ApprovalInfoWdg(BaseInfoWdg):
 
-
-
     def get_display(my):
 
 
@@ -2262,6 +2272,261 @@ class HierarchyInfoWdg(BaseInfoWdg):
         return top
 
 
+class DependencyInfoWdg(BaseInfoWdg):
+
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+        top.add_class("spt_dependency_top")
+
+ 
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
+
+
+        settings_wdg = DivWdg()
+        top.add(settings_wdg)
+        settings_wdg.add_style("padding: 10px")
+
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        related_search_type = workflow.get("search_type")
+        related_process = workflow.get("process")
+        related_status = workflow.get("status")
+        related_scope = workflow.get("scope")
+
+
+        # FIXME: HARD CODED
+        search_type = "vfx/asset"
+
+        project = Project.get()
+        search_type_sobjs = project.get_search_types(include_multi_project=True)
+
+        # find out which ones have pipeline_codes
+        filtered_sobjs = []
+        for search_type_sobj in search_type_sobjs:
+            base_type = search_type_sobj.get_base_key()
+            exists = SearchType.column_exists(base_type, "pipeline_code")
+            if exists:
+                filtered_sobjs.append(search_type_sobj)
+
+        search_types = [x.get_base_key() for x in search_type_sobjs]
+        values = [x.get_base_key() for x in filtered_sobjs]
+        labels = ["%s (%s)" % (x.get_title(), x.get_base_key()) for x in filtered_sobjs]
+
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Dependent Search Type</b>")
+        select = SelectWdg("related_search_type")
+        settings_wdg.add(select)
+        if related_search_type:
+            select.set_value(related_search_type)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>This will set a dependency on the stype</span>")
+        settings_wdg.add("<br/>")
+
+
+        # notify all search types
+        from pyasm.widget import RadioWdg
+
+        scope_div = DivWdg()
+        settings_wdg.add(scope_div)
+        scope_div.add_style("margin: 15px 25px")
+
+        radio = RadioWdg("related_scope")
+        radio.set_option("value", "local")
+        scope_div.add(radio)
+        if related_scope == "local" or not related_scope:
+            radio.set_checked()
+        scope_div.add(" Only Related Items<br/>")
+
+        radio = RadioWdg("related_scope")
+        radio.set_option("value", "global")
+        if related_scope == "global":
+            radio.set_checked()
+        scope_div.add(radio)
+        scope_div.add(" All Items")
+        scope_div.add("<br/>")
+
+
+       
+
+
+
+
+
+
+        search = Search("sthpw/pipeline")
+        search.add_filter("search_type", search_type)
+        related_pipelines = search.get_sobjects()
+
+        values = set()
+        for related_pipeline in related_pipelines:
+            related_process_names = related_pipeline.get_process_names()
+            for x in related_process_names:
+                values.add(x)
+
+        values = list(values)
+        values.sort()
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>To Process</b>")
+        select = SelectWdg("related_process")
+        if related_process:
+            select.set_value(related_process)
+        settings_wdg.add(select)
+        select.set_option("values", values)
+        select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>Determines which process to connect to</span>")
+        settings_wdg.add("<br/>")
+
+
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Status</b>")
+        select = SelectWdg("related_status")
+        if related_status:
+            select.set_value(related_status)
+        settings_wdg.add(select)
+        select.set_option("values", "Pending|Action|Complete")
+        select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>Determines which status to set the process to.</span>")
+        settings_wdg.add("<br/>")
+
+
+        settings_wdg.add("<br/>")
+
+        save_button = ActionButtonWdg(title="Save", color="primary")
+        settings_wdg.add(save_button)
+        save_button.add_style("float: right")
+        save_button.add_style("padding-top: 3px")
+        save_button.add_behavior( {
+            'type': 'click_up',
+            'process': process,
+            'pipeline_code': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_dependency_top");
+            var values = spt.api.get_input_values(top, null, false);
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = values;
+            values['node_type'] = 'dependency';
+            values['process'] = bvr.process;
+            values['pipeline_code'] = bvr.pipeline_code;
+
+            var server = TacticServerStub.get();
+            server.execute_cmd( class_name, values);
+            
+            '''
+        } )
+
+
+
+        settings_wdg.add("<br clear='all'/>")
+
+
+        return top
+
+
+
+
+class TaskStatusInfoWdg(BaseInfoWdg):
+
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+
+        # NO NO NO NO
+        output_processes = pipeline.get_output_processes(process)
+        output_processes = [x.get_name() for x in output_processes]
+ 
+        input_processes = pipeline.get_input_processes(process)
+        input_processes = [x.get_name() for x in input_processes]
+        
+       
+
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+
+ 
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
+
+
+        settings_wdg = DivWdg()
+        top.add(settings_wdg)
+        settings_wdg.add_style("padding: 0px 10px")
+
+        settings_wdg.add("<h3>Node Status Action</h3>")
+
+        settings_wdg.add("When set to this status, do the following:")
+        select = SelectWdg(name="action")
+        settings_wdg.add(select)
+        values = ["output", "input", "process"]
+        labels = ["Set output %s" % output_processes, "Set input %s" % input_processes, "Set this process [%s]" % process]
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+
+        settings_wdg.add("<br/>")
+
+        settings_wdg.add("to Status:")
+        text = TextInputWdg(name="status")
+        settings_wdg.add(text)
+
+        save_button = ActionButtonWdg(title="Save", color="primary")
+        settings_wdg.add(save_button)
+        save_button.add_style("float: right")
+        save_button.add_style("padding-top: 3px")
+        save_button.add_behavior( {
+            'type': 'click_up',
+            'process': process,
+            'pipeline_code': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_dependency_top");
+            var values = spt.api.get_input_values(top, null, false);
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = values;
+            values['node_type'] = 'task';
+            values['process'] = bvr.process;
+            values['pipeline_code'] = bvr.pipeline_code;
+
+            var server = TacticServerStub.get();
+            server.execute_cmd( class_name, values);
+            
+            '''
+        } )
+
+
+
+
+        return top
+
+
+
 
 __all__.append("ProcessInfoCmd")
 class ProcessInfoCmd(Command):
@@ -2272,6 +2537,10 @@ class ProcessInfoCmd(Command):
 
         if node_type in ["action", "condition"]:
             return my.handle_action()
+
+        if node_type == 'dependency':
+            return my.handle_dependency()
+
 
 
     def handle_action(my):
@@ -2334,6 +2603,42 @@ class ProcessInfoCmd(Command):
             script.set_value("language", language)
             script.set_value("script", on_action)
             script.commit()
+
+
+    def handle_dependency(my):
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        related_search_type = my.kwargs.get("related_search_type")
+        related_process = my.kwargs.get("related_process")
+        related_status = my.kwargs.get("related_status")
+        related_scope = my.kwargs.get("related_scope")
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        if related_search_type:
+            workflow['search_type'] = related_search_type
+        if related_process:
+            workflow['process'] = related_process
+        if related_status:
+            workflow['status'] = related_status
+        if related_scope:
+            workflow['scope'] = related_scope
+
+        process_sobj.set_json_value("workflow", workflow)
+        process_sobj.commit()
+
 
 
 

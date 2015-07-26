@@ -393,8 +393,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 <element name="tasks">
                   <display class='tactic.ui.panel.ViewPanelWdg'>
                     <search_type>sthpw/task</search_type>
-                    <view>table</view>
+                    <view>detail</view>
                     <parent_key>%(search_key)s</parent_key>
+                    <order_by>bid_start_date asc</order_by>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
                   </display>

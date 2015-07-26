@@ -65,6 +65,7 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_multi_input()
             my._test_messaging()
             my._test_dependency()
             my._test_hierarchy()
@@ -364,6 +365,72 @@ class WorkflowCmd(Command):
         my.assertEquals( "a", sobject.get_value("b_input"))
         my.assertEquals( "c,d", sobject.get_value("b_output"))
 
+
+
+
+    def _test_multi_input(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        code = "test%s" % Common.generate_alphanum_key()
+        sobject.set_value("code", code)
+        #sobject.set_id(1)
+
+
+        #search = Search("sthpw/message")
+        #sobjects = search.get_sobjects()
+        #for sobject in sobjects:
+        #    sobject.delete()
+
+
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="action" name="b1"/>
+          <process type="action" name="b2"/>
+          <process type="action" name="b3"/>
+          <process type="action" name="b4"/>
+          <process type="action" name="c"/>
+          <process type="action" name="d"/>
+          <connect from="a" to="b1"/>
+          <connect from="a" to="b2"/>
+          <connect from="a" to="b3"/>
+          <connect from="a" to="b4"/>
+          <connect from="b1" to="c"/>
+          <connect from="b2" to="c"/>
+          <connect from="b3" to="c"/>
+          <connect from="b4" to="c"/>
+          <connect from="c" to="d"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+
+        process = processes.get("c")
+        process.set_json_value("workflow", {
+            'on_action': '''
+            print "c: running action"
+            '''
+        } )
+        process.commit()
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+        # make sure we have the same sobject
+        #my.assertEquals( "test", sobject.get_value("test") )
+        #my.assertEquals( "a", sobject.get_value("b_input"))
+        #my.assertEquals( "c,d", sobject.get_value("b_output"))
+
+        dfsadfsdfdasf
 
 
 

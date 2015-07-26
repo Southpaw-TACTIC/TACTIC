@@ -367,23 +367,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
 
-        # add approval node
         approval = my.get_condition_node("XXXXX")
         template_div.add(approval)
 
-        # add approval node
         action = my.get_node("XXXXX", node_type="action")
         template_div.add(action)
 
-        # add approval node
-        approval = my.get_node("XXXXX", node_type="hierarchy")
-        template_div.add(approval)
+        heirarchy = my.get_node("XXXXX", node_type="hierarchy")
+        template_div.add(heirarchy)
 
-        # add endpoint node
+        dependency = my.get_node("XXXXX", node_type="dependency")
+        template_div.add(dependency)
+
+
         endpoint = my.get_endpoint_node("XXXXX", node_type="output")
         template_div.add(endpoint)
 
-        # add endpoint node
         endpoint = my.get_endpoint_node("XXXXX", node_type="input")
         template_div.add(endpoint)
 
@@ -636,6 +635,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             border_radius =  50 
             width = width
             height = height + 50
+        elif node_type == "dependency":
+            border_radius =  100 
+            width = width
+            height = height + 25 
         else:
             border_radius = 3
 

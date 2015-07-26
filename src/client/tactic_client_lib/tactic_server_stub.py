@@ -570,6 +570,8 @@ class TacticServerStub(object):
         if not server_name:
             server_name = old_server_name
 
+        print "server: ", server_name
+
         print
         login = raw_input("Enter user name (%s): " % default_login)
         if not login:

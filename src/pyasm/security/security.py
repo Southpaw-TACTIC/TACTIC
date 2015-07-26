@@ -743,18 +743,44 @@ class Site(object):
 
     def get_site(cls):
         '''Set the global site for this "session"'''
-        site = Container.get("site")
-        if not site:
+        sites = Container.get("sites")
+        if sites == None or sites == []:
             return ""
-        return site
+        return sites[-1]
     get_site = classmethod(get_site)
+
+
+    def get_first_site(cls):
+        '''Get the initial site'''
+        sites = Container.get("sites")
+        if sites == None or sites == []:
+            return ""
+        return sites[0]
+    get_first_site = classmethod(get_first_site)
+ 
 
     def set_site(cls, site):
         '''Set the global site for this "session"'''
         if not site:
             return
-        Container.put("site", site)
+        sites = Container.get("sites")
+        if sites == None:
+            sites = []
+            Container.put("sites", sites)
+        sites.append(site)
+
     set_site = classmethod(set_site)
+
+
+    def pop_site(cls):
+        '''Set the global site for this "session"'''
+        sites = Container.get("sites")
+        if sites == None:
+            return ""
+        site = sites.pop()
+    pop_site = classmethod(pop_site)
+
+
 
 
     def get_db_resource(cls, site, database):

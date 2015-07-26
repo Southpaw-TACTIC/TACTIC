@@ -183,6 +183,7 @@ spt.html5upload.clear = function() {
 
 
 spt.html5upload.upload_failed = function(evt) {
+    console.log("Upload Failed");
     console.log(evt);
     spt.app_busy.hide();
     spt.alert("Upload failed");
@@ -259,9 +260,9 @@ spt.html5upload.upload_file = function(kwargs) {
     }
 
     xhr.addEventListener('readystatechange', function(evt) {
-        console.log(evt);
-        console.log(this.readyState);
-        console.log(this.status);
+        //console.log(evt);
+        //console.log(this.readyState);
+        //console.log(this.status);
     } )
 
 
@@ -271,7 +272,7 @@ spt.html5upload.upload_file = function(kwargs) {
     //xhr.addEventListener("abort", uploadCanceled, false);
     xhr.addEventListener("abort", function() {log.critical("abort")}, false);
     //alert("/tactic/"+site+"/default/UploadServer/");
-    if (site) {
+    if (site && site != "default") {
         xhr.open("POST", "/tactic/"+site+"/default/UploadServer/", true);
     }
     else {
