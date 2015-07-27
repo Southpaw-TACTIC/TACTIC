@@ -2498,11 +2498,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def get_data_row_smart_context_menu_details(my):
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
         if my.view_editable:
             edit_view = my.kwargs.get("edit_view")
-            security = Environment.get_security()
-            project_code = Project.get_project_code()
+            
             access_keys = my._get_access_keys("edit",  project_code)
             if security.check_access("builtin", access_keys, "allow"):
                 if not edit_view or edit_view == 'None':
@@ -2828,9 +2829,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        security = Environment.get_security()
-        project_code = Project.get_project_code()
-
+        
         access_keys = my._get_access_keys("retire_delete",  project_code)
         if security.check_access("builtin", access_keys, "allow"):
         
