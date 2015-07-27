@@ -2505,7 +2505,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             edit_view = my.kwargs.get("edit_view")
             
             access_keys = my._get_access_keys("edit",  project_code)
-            if security.check_access("builtin", access_keys, "allow"):
+            if security.check_access("builtin", access_keys, "edit"):
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
             

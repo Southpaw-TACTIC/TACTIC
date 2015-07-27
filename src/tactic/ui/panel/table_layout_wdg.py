@@ -1344,7 +1344,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
     def handle_table_behaviors(my, table):
-
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
         my.handle_load_behaviors(table)
 
         # add the search_table_<table_id> listener used by widgets 
@@ -1718,14 +1719,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "background-position": "bottom right",
         } )
 
-
+        
+        is_editable = my.kwargs.get("is_editable")
 
         # Edit behavior
-        is_editable = my.kwargs.get("is_editable")
         if is_editable in [False, 'false']:
             is_editable = False
         else:
             is_editable = True
+
+        # Check user access
+        access_keys = my._get_access_keys("edit",  project_code)
+        if security.check_access("builtin", access_keys, "edit"):
+            is_editable = True
+        else: 
+            is_editable = False
+            
 
         if is_editable:
             table.add_behavior( {
