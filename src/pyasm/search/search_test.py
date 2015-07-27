@@ -166,7 +166,6 @@ class SearchTest(unittest.TestCase):
         my.assertEquals(statement, '''SELECT %s"city".* FROM %s"city" ORDER BY "city"."name"''' % (my.prefix, my.prefix))
 
 
-        """
         search = Search('unittest/person')
         search.add_order_by('unittest/city.unittest/country.code')
         statement = search.get_statement()
