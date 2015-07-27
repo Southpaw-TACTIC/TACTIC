@@ -52,6 +52,10 @@ class SearchTest(unittest.TestCase):
         elif db_type == "Sqlite":
             my.prefix = ""
             my.sthpw_prefix = ""
+        elif db_type == "SQLServer":
+            my.prefix = '''"unittest"."dbo".'''
+            my.sthpw_prefix = '''"sthpw"."dbo".'''
+            
         else:
             my.prefix = '''"unittest".'''
             my.sthpw_prefix = '''"sthpw".'''
@@ -79,7 +83,6 @@ class SearchTest(unittest.TestCase):
             my._test_order_by()                               
             my._test_search_key()
             my._test_search()
-
             my._test_multi_db_subselect()
 
             # FIXME: this requires sample3d project
@@ -166,7 +169,7 @@ class SearchTest(unittest.TestCase):
         search = Search('unittest/person')
         search.add_order_by('unittest/city.unittest/country.code')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix))
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = %s"country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix, my.prefix))
 
 
         search = Search('unittest/person')

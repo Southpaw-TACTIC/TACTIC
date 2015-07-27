@@ -585,6 +585,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             {
                 spt.table.run_search();
             }
+            
+            spt.panel.refresh(top);
             '''
             script_found = True
         
@@ -786,10 +788,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         buttons.add_row()
 
 
-        button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
+        #button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
+        button = ActionButtonWdg(title="Metadata")
+        button.add_style("float: left")
+        button.add_style("margin-top: -3px")
         buttons.add_cell(button)
-
-
+        
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
         dialog.set_as_activator(button, offset={'x':-10,'y':10})

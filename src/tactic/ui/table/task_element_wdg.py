@@ -589,7 +589,7 @@ class TaskElementWdg(BaseTableElementWdg):
         
         if pipelines:
             for pipeline in pipelines:
-                processes = pipeline.get_processes(type=["node","approval","hierarchy"])
+                processes = pipeline.get_processes(type=["node","approval"])
 
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
@@ -1241,7 +1241,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             if my.show_assigned == 'true':
                 if my.show_task_edit == 'true':
-                    my.total_width += 150
+                    my.total_width += 250
                 else:
                     my.total_width += 120
             if my.show_labels =='true':
@@ -1987,14 +1987,26 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         button_table = Table()
         button_div.add(button_table)
         button_table.add_row()
+
+
+
         #button_table.add_style("float: right")
         if my.show_task_edit != 'false' or my.show_track == 'true':
-            div.add(button_div)
+            #div.add(button_div)
+
+            if my.layout in ['horizontal', 'vertical']:
+                td = table.add_cell(button_div)
+                td.add_style("width: 70px")
+            else:
+                div.add(button_div)
+
+
             button_div.add_style("padding: 5px 0px")
+
 
             if my.layout in ['horizontal', 'vertical']:
                 button_div.add_style("float: left")
-                button_div.add_style("width: 25px")
+                button_div.add_style("width: 50px")
 
         if my.show_task_edit != 'false':
             #edit_div.add_style('float: right')
@@ -2384,17 +2396,38 @@ class TaskElementCbk(DatabaseAction):
 
 __all__.append("TaskSummaryElementWdg")
 class TaskSummaryElementWdg(TaskElementWdg):
+    ARGS_KEYS = {
+        'mode': {
+            'type': 'SelectWdg',
+            'category': 'Display',
+            'description': 'Determines the mode to display',
+            'values': 'default|minimal'
+        },
+    }
 
     def get_width(my):
-        return 400
+
+        mode = my.get_option("mode")
+        if mode == "minimal":
+            return 100
+        else:
+            return 400
 
 
     def get_title(my):
         return "Task Summary"
 
 
-
     def get_display(my):
+
+        mode = my.get_option("mode")
+        if mode == "minimal":
+            return my._get_display_miminal()
+        else:
+            return my._get_display_default()
+
+
+    def _get_display_default(my):
 
         my.kwargs["show_filler_tasks"] = True
 
@@ -2495,6 +2528,113 @@ class TaskSummaryElementWdg(TaskElementWdg):
             div.add_style("background", bgColor)
 
             div.add_style("width: 15px")
+            div.add_style("height: 15px")
+            div.add_style("margin-left: auto")
+            div.add_style("margin-right: auto")
+
+            if status:
+                td.add_attr("title", "%s - %s" % (process, status))
+            else:
+                td.add_attr("title", "%s - N/A" % process)
+
+
+        return top
+
+
+
+    def _get_display_miminal(my):
+
+        my.kwargs["show_filler_tasks"] = True
+
+        my.tasks = my.get_tasks()
+        sobject = my.get_current_sobject()
+
+        top = my.top
+
+        table = Table()
+        top.add(table)
+        table.add_row()
+        table.add_style("width: 100%")
+        table.add_style("font-size: 0.8em")
+
+
+        table.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_task',
+            'cbjs_action': '''
+            var task_key = bvr.src_el.getAttribute("spt_task_key");
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var kwargs = {
+                search_key: task_key,
+            }
+            spt.panel.load_popup("Task Edit", class_name, kwargs);
+            '''
+        } )
+
+        import re
+
+
+        for task in my.tasks:
+            bgColor = ''
+            process = task.get_value("process").lower()
+            parts = re.split( re.compile("[ -_]"), process)
+            if len(parts) == 1:
+                #title = parts[0][:3]
+                title = parts[0]
+            else:
+                parts = [x[:1] for x in parts]
+                title = "".join(parts)
+            parts = re.split( re.compile("[ -_]"), process)
+            #if len(parts) == 1:
+            #    parts.append("")
+            #    parts.append("")
+            #else:
+            #    parts.append("")
+            title = "<br/>".join(parts)
+
+            status = task.get_value("status")
+
+            task_pipeline_code = task.get_value("pipeline_code")
+
+            status_colors = my.status_colors.get(task_pipeline_code)
+            if not status_colors:
+                status_colors = my.status_colors.get('task')
+            if status_colors:
+                bgColor = status_colors.get(status)
+
+
+
+            td = table.add_cell()
+            td.add_attr("spt_task_key", task.get_search_key())
+
+            td.add_behavior({
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "#EEE");
+                '''
+            })
+            td.add_behavior({
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "");
+                '''
+            })
+
+            td.add_style("text-align: center")
+            div = DivWdg()
+            td.add(div)
+            td.add_style("padding: 0px 1px 0px 1px")
+            div.add_border()
+            div.set_round_corners(10)
+
+            if not bgColor:
+                bgColor = '#EEE'
+                td.add_style("opacity: 0.5")
+            else:
+                td.add_class("spt_task")
+            div.add_style("background", bgColor)
+
+            div.add_style("width: 5px")
             div.add_style("height: 15px")
             div.add_style("margin-left: auto")
             div.add_style("margin-right: auto")

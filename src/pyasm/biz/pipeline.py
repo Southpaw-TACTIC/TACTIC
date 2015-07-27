@@ -525,7 +525,7 @@ class Pipeline(SObject):
                 # add child processes
                 for process in my.processes:
 
-                    if types and process.get_type() in types:
+                    if types and process.get_type() not in types:
                         continue
 
                     my.recursive_processes.append(process)
@@ -569,11 +569,11 @@ class Pipeline(SObject):
         else:
             types = type
 
-        processes = my.get_processes(recurse, type=type)
+        processes = my.get_processes(recurse, type=types)
         if recurse:
             process_names = []
             for process in processes:
-                if types and process.get_type() in types:
+                if types and process.get_type() not in types:
                     continue
 
                 if process.is_from_sub_pipeline():
