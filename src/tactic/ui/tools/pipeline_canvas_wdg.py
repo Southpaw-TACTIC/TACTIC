@@ -2547,7 +2547,8 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     var template_class = "spt_pipeline_" + node_type;
     var template = template_container.getElement("."+template_class);
     if (!template) {
-        alert("Can't find template for ["+template_class+"]");
+        if (template_class !='spt_pipeline_manual')
+            spt.alert("Can't find template for ["+template_class+"]");
         return;
     }
 
