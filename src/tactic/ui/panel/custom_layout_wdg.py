@@ -1124,13 +1124,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 '''
             } )
 
-        loading_div = DivWdg()
-        loading_div.add_style("margin: auto auto")
-        loading_div.add_style("width: 150px")
-        loading_div.add_style("text-align: center")
-        loading_div.add_style("padding: 20px")
-        div.add(loading_div)
-        loading_div.add('''<img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b>''')
+        if my.kwargs.get("show_loading") not in ["False", False, "false"]:
+            loading_div = DivWdg()
+            loading_div.add_style("margin: auto auto")
+            loading_div.add_style("width: 150px")
+            loading_div.add_style("text-align: center")
+            loading_div.add_style("padding: 20px")
+            div.add(loading_div)
+            loading_div.add('''<img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b>''')
 
         return div
 
