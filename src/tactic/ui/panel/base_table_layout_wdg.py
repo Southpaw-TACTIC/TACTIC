@@ -2501,35 +2501,38 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
         if my.view_editable:
             edit_view = my.kwargs.get("edit_view")
+            security = Environment.get_security()
+            project_code = Project.get_project_code()
+            access_keys = my._get_access_keys("edit",  project_code)
+            if security.check_access("builtin", access_keys, "allow"):
+                if not edit_view or edit_view == 'None':
+                    edit_view = "edit"
             
-            if not edit_view or edit_view == 'None':
-                edit_view = "edit"
-
-            spec_list.append( {
-                "type": "action",
-                "label": "Edit",
-                #"icon": IconWdg.EDIT,
-                "bvr_cb": {
-                    'edit_view': edit_view,
-                    'cbjs_action': '''
-                    var activator = spt.smenu.get_activator(bvr);
-                    var layout = activator.getParent(".spt_layout");
-                    if (layout.getAttribute("spt_version") == "2") {
-                        spt.table.set_layout(layout);
-                        spt.table.row_ctx_menu_edit_cbk(evt, bvr);
+                spec_list.append( {
+                    "type": "action",
+                    "label": "Edit",
+                    #"icon": IconWdg.EDIT,
+                    "bvr_cb": {
+                        'edit_view': edit_view,
+                        'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        if (layout.getAttribute("spt_version") == "2") {
+                            spt.table.set_layout(layout);
+                            spt.table.row_ctx_menu_edit_cbk(evt, bvr);
+                        }
+                        else {
+                            spt.dg_table.drow_smenu_edit_row_context_cbk(evt, bvr);
+                        }
+                        '''
+                    },
+                    "hover_bvr_cb": {
+                        'activator_add_look_suffix': 'hilite',
+                        'target_look_order': [
+                            'dg_row_retired_selected', 'dg_row_retired', my.look_row_selected, my.look_row ] 
+                        }
                     }
-                    else {
-                        spt.dg_table.drow_smenu_edit_row_context_cbk(evt, bvr);
-                    }
-                    '''
-                },
-                "hover_bvr_cb": {
-                    'activator_add_look_suffix': 'hilite',
-                    'target_look_order': [
-                        'dg_row_retired_selected', 'dg_row_retired', my.look_row_selected, my.look_row ] 
-                    }
-                }
-            )
+                )
 
             search_type = my.search_type
 
