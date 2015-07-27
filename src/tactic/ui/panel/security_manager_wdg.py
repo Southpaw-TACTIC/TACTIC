@@ -72,7 +72,8 @@ permission_list = [
     {'key':'create_projects', 'title': 'Create Projects', 'description': 'The gives the user the permission to create projects'},
     {'key':'export_all_csv', 'title': 'Export All CSV'},
     {'key':'import_csv', 'title': 'Import CSV'},
-    {'key':'retire_delete', 'title': 'Retire and Delete'}
+    {'key':'retire_delete', 'title': 'Retire and Delete'},
+    {'key':'edit', 'title': 'Edit'}
 ]
 
 
