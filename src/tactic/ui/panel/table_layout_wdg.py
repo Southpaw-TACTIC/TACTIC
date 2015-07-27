@@ -1734,6 +1734,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             is_editable = True
         else: 
             is_editable = False
+            my.view_editable = False
             
 
         if is_editable:
@@ -2664,13 +2665,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             is_editable = True
-
-            if not widget.is_editable():
-                is_editable = False
-            else:
-                security = Environment.get_security()
-                if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+            # Check if view is editable first, if not, skip checking each column
+            if my.view_editable:
+                if not widget.is_editable():
                     is_editable = False
+                else:
+                    security = Environment.get_security()
+                    if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+                        is_editable = False
 
 
             # This is only neccesary if the table is editable
