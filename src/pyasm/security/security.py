@@ -173,8 +173,7 @@ class Login(SObject):
             groups.append(default_group)
         """
 
-        (NONE, MIN, LOW, MED, HI) = range(5)
-        access_level = NONE
+        access_level = LoginGroup.NONE
         project_codes = set()
         for group in groups:
             group_access_level = group.get_value("access_level", no_exception=True)
@@ -182,19 +181,10 @@ class Login(SObject):
             if project_code:
                 project_codes.add(project_code)
 
-            if group_access_level == 'high':
-                group_access_level = HI
-            elif group_access_level == 'medium':
-                group_access_level = MED
-            elif group_access_level == 'low':
-                group_access_level = LOW
-            elif group_access_level == 'min':
-                group_access_level = MIN
-            elif group_access_level == 'none':
-                group_access_level = NONE
-            else:
-                group_access_level = LOW
-
+            group_access_level = LoginGroup.ACCESS_DICT.get(group_access_level)
+            if group_access_level == None:               
+                group_access_level = LoginGroup.LOW
+            
             if group_access_level > access_level:
                 access_level = group_access_level
         groups.append(my.get_security_level_group(access_level, project_codes))
@@ -207,60 +197,11 @@ class Login(SObject):
         return "low"
     get_default_security_level = staticmethod(get_default_security_level)
 
-
+        
     def get_security_level_group(access_level, project_codes=[]):
-        (NONE, MIN, LOW, MED, HI) = range(5)
-        assert access_level in [NONE, MIN, LOW, MED, HI]
-
-        xml = []
-        xml.append('''<rules>''')
-        if access_level == HI:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            else:
-                xml.append('''<rule group="project" code="*" access="allow"/>''')
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-            xml.append('''<rule group="link" element="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
-
-
-        elif access_level == MED:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            else:
-                xml.append('''<rule group="project" code="*" access="allow"/>''')
-
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
-
-
-        elif access_level == LOW:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
-
-        elif access_level == MIN:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-
-        else: # no security access
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-
-
-        xml.append('''</rules>''')
-        xml = "\n".join(xml)
-
+        
+        xml = LoginGroup.get_default_access_rule(access_level, project_codes, add_root=True)
+        
         default_group = SearchType.create("sthpw/login_group")
         default_group.set_value("login_group", "default")
         default_group.set_value("access_rules", xml)
@@ -269,7 +210,7 @@ class Login(SObject):
     get_security_level_group = staticmethod(get_security_level_group)
 
 
-
+   
 
     # static methods
 
@@ -416,7 +357,9 @@ class Login(SObject):
 class LoginGroup(Login):
 
     SEARCH_TYPE = "sthpw/login_group"
+    (NONE, MIN, LOW, MED, HI) = range(5)
 
+    ACCESS_DICT = {'high': HI, 'medium': MED, 'low': LOW, 'min': MIN, 'none': NONE}
     
     def get_defaults(my):
         defaults = {}
@@ -581,6 +524,77 @@ class LoginGroup(Login):
 
         return project_groups
     get_by_project = staticmethod(get_by_project)
+
+    def get_access_level(my):
+        level = my.get_value('access_level')
+        if not level:
+            level = Login.get_default_security_level()
+        level = my.ACCESS_DICT.get(level)
+        return level
+
+
+
+    def get_default_access_rule(access_level, project_codes=[], add_root=True):
+        ''' Get the default xml rule for a paricular access level'''
+        #(NONE, MIN, LOW, MED, HI) = range(5)
+        assert access_level in [LoginGroup.NONE, LoginGroup.MIN, LoginGroup.LOW, LoginGroup.MED, LoginGroup.HI]
+        xml = []
+
+        if add_root:
+            xml.append('''<rules>''')
+
+        if access_level == LoginGroup.HI:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            else:
+                xml.append('''<rule group="project" code="*" access="allow"/>''')
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+            xml.append('''<rule group="link" element="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
+            xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
+
+
+        elif access_level == LoginGroup.MED:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            else:
+                xml.append('''<rule group="project" code="*" access="allow"/>''')
+
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
+            xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
+
+
+        elif access_level == LoginGroup.LOW:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
+
+        elif access_level == LoginGroup.MIN:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+
+        else: # no security access
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+
+        if add_root:
+            xml.append('''</rules>''')
+        xml = "\n".join(xml)
+
+        return xml
+    
+    get_default_access_rule = staticmethod(get_default_access_rule)
 
 
 
