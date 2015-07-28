@@ -387,7 +387,7 @@ class Search(Base):
 
     def get_regex_filter(name, regex, op='EQI', impl=None):
         if regex:
-            regex = re.sub(r"'", r"\'", regex)
+            regex = re.sub(r"'", r"''", regex)
         else:
             regex = ''
 

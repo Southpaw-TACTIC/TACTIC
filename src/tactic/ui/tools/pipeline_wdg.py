@@ -1468,7 +1468,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
             widget = ApprovalInfoWdg(**my.kwargs)
 
         if node_type == 'action':
-            widget = AutoInfoWdg(**my.kwargs)
+            widget = ActionInfoWdg(**my.kwargs)
 
         if node_type == 'condition':
             widget = ConditionInfoWdg(**my.kwargs)
@@ -1910,7 +1910,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-class AutoInfoWdg(BaseInfoWdg):
+class ActionInfoWdg(BaseInfoWdg):
 
 
     def get_display(my):
@@ -2206,6 +2206,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 10px")
 
+        """
         input_processes = pipeline.get_input_processes(process)
         form_wdg.add("Add groups or people that need to approve the '%s' process" % [x.get_name() for x in input_processes])
 
@@ -2213,12 +2214,12 @@ class ApprovalInfoWdg(BaseInfoWdg):
         form_wdg.add("<br/>")
 
         #from tactic.ui.input import KeywordInputWdg
+
         from spt.tools.keyword import KeywordInputWdg
         entry = KeywordInputWdg()
         entry.set_option("search_type", "sthpw/login")
         entry.set_option("column", "display_name")
         form_wdg.add(entry)
-
 
         save = ActionButtonWdg(title="Save")
         save.add_style("float: right")
@@ -2235,12 +2236,13 @@ class ApprovalInfoWdg(BaseInfoWdg):
         } )
 
        
+        """
 
 
         return top
 
 
-class ConditionInfoWdg(AutoInfoWdg):
+class ConditionInfoWdg(ActionInfoWdg):
     pass
 
 
