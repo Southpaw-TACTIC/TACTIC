@@ -543,6 +543,10 @@ class LoginGroup(Login):
         if add_root:
             xml.append('''<rules>''')
 
+        xml.append('''<rule group="builtin" default="deny"/>''')
+        xml.append('''<rule category="secure_wdg" default="deny"/>''')
+        xml.append('''<rule category="public_wdg" default="edit"/>''')
+
         if access_level == LoginGroup.HI:
             if project_codes:
                 for project_code in project_codes:
