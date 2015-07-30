@@ -700,7 +700,17 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             # this is the hardcoded filter exact match of name 
             # or partial match with alias column 
-            filter_expr = [["begin"],["p2.name","%s"%value],["p2.alias","like","%%%s%%"%value],["or"]]
+            if op == 'child':
+                tbl = "p1"
+            elif op == 'both':
+                tbl = "p1"
+                filter_expr1 = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+                tbl = "p2"
+                filter_expr2 = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+            else:
+                tbl = "p2"
+            filter_expr = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+
             if op == 'parent':
                 stmts.append(impl.get_parent_cte(filter_expr))
                 value_idx.append(1)
@@ -708,9 +718,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 stmts.append(impl.get_child_cte(filter_expr))
                 value_idx.append(3)
             elif op == 'both':
-                stmts.append(impl.get_parent_cte(filter_expr))
+                stmts.append(impl.get_parent_cte(filter_expr2))
                 value_idx.append(1)
-                stmts.append(impl.get_child_cte(filter_expr))
+                stmts.append(impl.get_child_cte(filter_expr1))
                 value_idx.append(3)
             elif op == 'keyword':
                 pass
@@ -724,7 +734,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     if res[value_idx[idx]] not in keywords_list:
                         keywords_list.append(res[value_idx[idx]])
 
-          
             keywords = keywords_list
 
             for column in my.columns:
