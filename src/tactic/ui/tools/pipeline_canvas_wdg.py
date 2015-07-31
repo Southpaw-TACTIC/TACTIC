@@ -154,18 +154,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         process_menu = my.get_node_context_menu()
         menus = [process_menu.get_data()]
-        
-        approval_menu = my.get_node_context_menu("approval")
-        menus2 = [approval_menu.get_data()]   
+
+        # Simple context menu is for renaming and 
+        # deleting approval, action and condition nodes..        
+        simple_menu = my.get_simple_node_context_menu()
+        simple_menus = [simple_menu.get_data()]   
     
         menus_in = {
             'NODE_CTX': menus,
-            'NODE_APPROVAL_CTX': menus2 
+            'SIMPLE_NODE_CTX': simple_menus 
         }
+
         from tactic.ui.container.smart_menu_wdg import SmartMenu
         SmartMenu.attach_smart_context_menu( outer, menus_in, False )
-
-
 
         # inner is used to scale
         inner = DivWdg()
@@ -1423,6 +1424,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
@@ -1508,8 +1511,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'NODE_CTX2')
-        # YOOOOO
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
  
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
@@ -1719,7 +1721,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
     def get_node_behaviors(my):
         return []
 
-    def get_node_context_menu(my, node_type="default"):
+    def get_node_context_menu(my):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1763,8 +1765,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         """
 
 
-
-
         menu_item = MenuItem(type='action', label='Rename Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1774,20 +1774,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
         menu.add(menu_item)
 
-
-
-
-
-        if (node_type == "default"): 
-            menu_item = MenuItem(type='action', label='Delete Node')
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                var node = spt.smenu.get_activator(bvr);
-                spt.pipeline.init( { src_el: node } );
-                spt.pipeline.remove_node(node);
-                '''
-            } )
-            menu.add(menu_item)
+        menu_item = MenuItem(type='action', label='Delete Node')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.init( { src_el: node } );
+            spt.pipeline.remove_node(node);
+            '''
+        } )
+        menu.add(menu_item)
 
         if mode == "multiple":
             menu_item = MenuItem(type='action', label='Delete Group')
@@ -1804,6 +1799,37 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return menu
 
 
+    def get_simple_node_context_menu(my):
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Rename Node')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.set_rename_mode(node);
+            '''
+        } )
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Delete Node')
+        menu_item.add_behavior( {
+            'cbjs_action': ''' 
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.init( { src_el: node } );
+            spt.pipeline.remove_node(node);
+            '''
+        } ) 
+        menu.add(menu_item)
+
+        return menu 
+    
 
     def get_onload_js(my):
 
