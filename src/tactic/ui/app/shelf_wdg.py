@@ -444,7 +444,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
         paths = []
         scripts_dict = {}
         for script in scripts:
-            path = "//%s/%s" % (script.get_value("folder"), script.get_value("title"))
+            path = "///%s/%s" % (script.get_value("folder"), script.get_value("title"))
             paths.append(path)
             scripts_dict[path] = script
         dir_list_wdg = ScriptDirListWdg(paths=paths, base_dir="/", editor_id=my.editor_id, scripts=scripts_dict)

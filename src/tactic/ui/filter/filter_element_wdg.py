@@ -550,6 +550,13 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         my.look_ahead_columns = []
         my.relevant = my.get_option("relevant")
         my.mode = my.get_option("mode")
+        
+        my.keyword_search_type = ''
+        my.keyword_map_search_type = ''
+        if my.mode == 'keyword_tree':
+            my.keyword_search_type = my.get_option("keyword_search_type") or 'workflow/base_keyword'
+            my.keyword_map_search_type = my.get_option("keyword_map_search_type") or 'workflow/keyword_map'
+
         my.cross_db = my.get_option("cross_db") =='true'
         column = my.get_option("column")
         full_text_column = my.get_option("full_text_column")
@@ -724,6 +731,17 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 value_idx.append(3)
             elif op == 'keyword':
                 pass
+
+
+            original_search = Search(my.keyword_search_type)
+            original_search.add_op('begin')
+            original_search.add_filter('name', value)
+            original_search.add_regex_filter('alias', value, op='EQI')
+            original_search.add_op('or')
+            original = original_search.get_sobject()
+            if original:
+                value = original.get('name')
+
 
             # include the original value
             keywords_list = [value]
