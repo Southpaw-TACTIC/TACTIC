@@ -1243,9 +1243,8 @@ class WebLoginWdg(Widget):
             div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
             div.add("<br/>"*2)
 
-        if override_background:
-            div.add_class("spt_tactic_background")
-        else:
+        if not override_background:
+
             div.add_gradient("color", "color3")
             div.add_gradient("background", "background3", -10, 10)
             div.add_style("border: solid 2px %s" % div.get_color("border",-15))
