@@ -1132,7 +1132,7 @@ class TacticLogoWdg(Widget):
 
 
         div.add( "<img src='/context/icons/logo/logo.png'/>") 
- 	#div.add( "<img src='/context/icons/logo/tactic_silver.png
+    #div.add( "<img src='/context/icons/logo/tactic_silver.png
 
         div.add(HtmlElement.br(2))
         div.add("Release: %s" %Environment.get_release_version() )
@@ -1268,7 +1268,7 @@ class WebLoginWdg(Widget):
         #div.add_style("padding-top: 95px")
         sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
         if override_company_name:
-            sthpw.add_class("spt_company")
+            sthpw.add_class("spt_login_company")
         else:
             #sthpw.add_style("color: #CCCCCC")
             sthpw.add_color("color", "color")
@@ -1350,7 +1350,7 @@ class WebLoginWdg(Widget):
 
         text_wdg = TextWdg("login")
         if override_password:
-            text_wdg.add_class("spt_textbox_style")
+            text_wdg.add_class("spt_login_textbox")
 
         else:
             text_wdg.add_style("width: 130px")
@@ -1387,7 +1387,7 @@ class WebLoginWdg(Widget):
         table.add_row()
         password_wdg = PasswordWdg("password")
         if override_password:
-            password_wdg.add_class("spt_textbox_style")
+            password_wdg.add_class("spt_login_textbox")
         else:
             password_wdg.add_style("color: black")
             password_wdg.add_style("background: #EEE")
@@ -1425,7 +1425,7 @@ class WebLoginWdg(Widget):
 
         if override_login:
             up = HtmlElement.img('')
-            span.add("<div class='spt_sign_in_box'>Login</div>")
+            span.add("<div class='spt_login_button'>Login</div>")
         else:
             up = HtmlElement.img('/context/icons/logo/submit_on.png')
         up.set_id("submit_on")
