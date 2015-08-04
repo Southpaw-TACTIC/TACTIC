@@ -2229,13 +2229,20 @@ class SecurityBuilder(object):
 
 
     def add_link(my, link, access="allow", project_code=None):
-        rule = my.xml.create_element("rule")
-        my.xml.set_attribute(rule, "group", "link")
-        my.xml.set_attribute(rule, "element", link)
         if project_code:
-            my.xml.set_attribute(rule, "project", project_code)
-        my.xml.set_attribute(rule, "access", access)
-        my.xml.append_child(my.root, rule)
+            nodes = my.xml.get_nodes("rules/rule[@group='link' and @project='%s']" % project_code)
+        else:
+            nodes = my.xml.get_nodes("rules/rule[@group='link']")  
+        links = [my.xml.get_attribute(node, 'element') for node in nodes] 
+    
+        if link not in links:
+            rule = my.xml.create_element("rule")
+            my.xml.set_attribute(rule, "group", "link")
+            my.xml.set_attribute(rule, "element", link)
+            if project_code:
+                my.xml.set_attribute(rule, "project", project_code)
+            my.xml.set_attribute(rule, "access", access)
+            my.xml.append_child(my.root, rule)
 
 
     def remove_link(my, link, project_code=None):
