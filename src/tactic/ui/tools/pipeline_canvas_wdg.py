@@ -376,7 +376,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         action = my.get_node("XXXXX", node_type="action")
         template_div.add(action)
 
-        # add hierarchal node
+        # add hierarchical node
         approval = my.get_node("XXXXX", node_type="hierarchy")
         template_div.add(approval)
 
