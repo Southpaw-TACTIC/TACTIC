@@ -801,7 +801,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         
 
-        menu_item = MenuItem(type='action', label='Edit Pipeline Data')
+        menu_item = MenuItem(type='action', label='Edit Data')
         menu_item.add_behavior( {
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
@@ -818,6 +818,35 @@ class PipelineListWdg(BaseRefreshWdg):
             ''' % my.save_event
         } )
         menu.add(menu_item)
+
+
+        menu_item = MenuItem(type='action', label='Delete')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_pipeline_tool_top");
+            var code = activator.getAttribute("spt_pipeline");
+
+            var server = TacticServerStub.get();
+            var pipeline = server.get_by_code("sthpw/pipeline", code);
+            var name = pipeline.name;
+            if (!name) {
+                name = pipeline.code;
+            }
+
+            var ok = function() {
+                server.delete_sobject(pipeline);
+                spt.panel.refresh(top);
+     
+            }
+
+            spt.confirm("Confirm to delete pipeline ["+name+"]", ok);
+            '''
+        } )
+        menu.add(menu_item)
+
+
+
 
         return menu
 
@@ -944,9 +973,6 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
     def get_node_context_menu(my):
 
-        #menu = Menu(width=180)
-        #menu.set_allow_icons(False)
-        #menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
         menu = super(PipelineToolCanvasWdg, my).get_node_context_menu()
 
 
@@ -955,10 +981,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         menu_item = MenuItem(type='title', label='Details')
         menu.add(menu_item)
 
-        #menu_item = MenuItem(type='action', label='Show Properties')
-        #menu.add(menu_item)
-
-
+        """
         menu_item = MenuItem(type='action', label='Edit Properties')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -968,9 +991,10 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
             '''
         } )
+        """
 
 
-        menu_item = MenuItem(type='action', label='Edit Process Properties')
+        menu_item = MenuItem(type='action', label='Edit Process Data')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1088,6 +1112,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
         // check if there is a custom task status pipeline defined
         var node = spt.smenu.get_activator(bvr);
+        var top = node.getParent(".spt_pipeline_tool_top");
         spt.pipeline.init(node);
         var group_name = node.spt_group;
         var node_name = spt.pipeline.get_node_name(node);
@@ -1109,7 +1134,6 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         // get the color
         var pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+group_name+"'])");
         var color = pipeline.color;
-        //var color = server.eval("@GET(sthpw/pipeline['code','"+group_name+"'].color)");
 
         var data = {
             code: code,
@@ -1118,33 +1142,35 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         };
         var task_pipeline = server.get_unique_sobject(search_type, data);
 
+        var ok = function(){
+            spt.pipeline.clear_canvas();
 
-        spt.pipeline.clear_canvas();
+            var xml = task_pipeline.pipeline;
+            if (xml != '') {
+                spt.pipeline.import_pipeline(code);
+                return;
+            }
 
+            var xml = '';
+            xml += '<pipeline>\\n';
+            xml += '  <process name="Pending"/>\\n';
+            xml += '  <process name="In Progress"/>\\n';
+            xml += '  <process name="Complete"/>\\n';
+            xml += '  <connect from="Pending" to="In Progress"/>\\n';
+            xml += '  <connect from="In Progress" to="Complete"/>\\n';
+            xml += '</pipeline>\\n';
 
-        var xml = task_pipeline.pipeline;
-        if (xml != '') {
+            server.update(task_pipeline, {pipeline: xml, color: color} );
+
             spt.pipeline.import_pipeline(code);
-            return;
-        }
 
-        if (!confirm("Confirm to create a custom task status pipeline") ) {
-            return;
-        }
-
+            var list = top.getElement(".spt_pipeline_list");
+            spt.panel.refresh(list);
  
-        var xml = '';
-        xml += '<pipeline>\\n';
-        xml += '  <process name="Pending"/>\\n';
-        xml += '  <process name="In Progress"/>\\n';
-        xml += '  <process name="Complete"/>\\n';
-        xml += '  <connect from="Pending" to="In Progress"/>\\n';
-        xml += '  <connect from="In Progress" to="Complete"/>\\n';
-        xml += '</pipeline>\\n';
+        }
 
-        server.update(task_pipeline, {pipeline: xml, color: color} );
 
-        spt.pipeline.import_pipeline(code);
+        spt.confirm("Confirm to create a custom task status pipeline", ok)
 
         '''
         } )

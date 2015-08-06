@@ -344,6 +344,7 @@ class BaseProcessTrigger(Trigger):
             if not related_search_type:
                 search = Search("config/process")        
                 search.add_filter("process", my.process)
+                search.add_filter("pipeline_code", pipeline.get_code())
                 process_sobj = search.get_sobject()
 
                 workflow = process_sobj.get_json_value("workflow")
@@ -554,7 +555,12 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
         # get the node's triggers
         search = Search("config/process")        
         search.add_filter("process", my.process)
+        search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
+
+        #process_sobj = my.pipeline.get_process_sobject(my.process)
+
+
         triggers = {}
         if process_sobj:
             triggers = process_sobj.get_json_value("workflow")
@@ -683,7 +689,8 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         # get the node's triggers
         if not related_search_type:
             search = Search("config/process")        
-            search.add_filter("process", my.process)
+            search.add_filter("process", process)
+            search.add_filter("pipeline_code", pipeline.get_code())
             process_sobj = search.get_sobject()
 
             workflow = process_sobj.get_json_value("workflow")

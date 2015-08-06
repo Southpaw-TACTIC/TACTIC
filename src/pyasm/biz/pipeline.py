@@ -86,21 +86,44 @@ class Process(Base):
         return Xml.get_attribute( my.node, "label" )
 
 
+    '''DEPRECATED'''
     def set_parent_pipeline_code(my, pipeline_code):
         '''FIXME: a pipeline may have multi parents'''
         my.parent_pipeline_code = pipeline_code
 
+    '''DEPRECATED'''
     def set_parent_pipeline(my, pipeline):
         my.parent_pipeline = pipeline
 
+    '''DEPRECATED'''
     def set_sub_pipeline_process(my, is_sub_pipe):
         my.is_sub_pipeline_process = is_sub_pipe
 
+    '''DEPRECATED'''
     def is_from_sub_pipeline(my):
         return my.is_sub_pipeline_process
 
+    '''DEPRECATED'''
     def set_child_pipeline(my, pipeline):
         my.child_pipeline = pipeline
+   
+    '''DEPRECATED'''
+    def is_pipeline(my):
+        return my.child_pipeline != None
+
+    '''DEPRECATED'''
+    def get_parent_pipeline(my):
+        return my.parent_pipeline
+
+    '''DEPRECATED'''
+    def get_child_pipeline2(my):
+        return my.child_pipeline
+
+    '''DEPRECATED'''
+    def get_child_pipeline(my):
+        return my.child_pipeline
+
+
         
     def get_task_pipeline(my, default=True):
         ''' assuming the child pipeline is task related '''
@@ -114,19 +137,8 @@ class Process(Base):
         else:
             return task_pipeline_code
 
-   
-    def is_pipeline(my):
-        return my.child_pipeline != None
 
-    def get_parent_pipeline(my):
-        return my.parent_pipeline
 
-    '''DEPRECATED'''
-    def get_child_pipeline2(my):
-        return my.child_pipeline
-
-    def get_child_pipeline(my):
-        return my.child_pipeline
 
     def get_completion(my):
         return Xml.get_attribute( my.node, "completion" )
@@ -266,7 +278,9 @@ class Pipeline(SObject):
         # don't cache a potential empty xml when Pipeline.create() is call
         if xml_str:
             my.set_pipeline(xml_str, cache=False)
-       
+
+        my.process_sobjects = None
+
 
     def get_defaults(my):
         '''The default, if not specified is to set the current project'''
@@ -591,6 +605,26 @@ class Pipeline(SObject):
         else:
             return [process.get_name() for process in processes]
 
+
+    def get_process_sobject(my, process):
+        # search all processes and cache all of the sobject locally
+        print "get_process_sobject: ", process
+        if my.process_sobjects == None:
+
+            search = Search("config/process")        
+            search.add_filter("pipeline_code", my.get_code())
+            sobjects = search.get_sobjects()
+
+            my.process_sobjects = {}
+
+            for process_sobject in sobjects:
+                process = process_sobject.get("process")
+                print "process: ", process
+                my.process_sobjects[process] = process_sobject
+
+
+        process_sobject = my.process_sobjects.get(process)
+        return process_sobject
 
 
     def get_index(my, name):

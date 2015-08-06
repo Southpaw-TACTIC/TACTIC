@@ -1322,7 +1322,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 icon_div.add_style("margin: -20px auto 0px auto")
                 return top
 
-        from pyasm.biz import BaseProcessTrigger
+        from pyasm.command import BaseProcessTrigger
         class NotificationNodeHandler(BaseProcessTrigger):
             def execute(my):
                 pipeline = my.input.get("pipeline")
