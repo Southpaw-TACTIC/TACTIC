@@ -2481,24 +2481,28 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top = my.top
         top.add_style("padding: 20px 0px")
 
+        top.add_class("spt_status_top")
+
  
         title_wdg = my.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
 
 
 
-        # FIXME: hard coded
-        parent_pipeline_code = "vfx/shot"
-        parent_process = "layout"
-        parent_pipeline = Pipeline.get_by_code(parent_pipeline_code)
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
 
-        output_processes = parent_pipeline.get_output_processes(parent_process)
-        output_processes = [x.get_name() for x in output_processes]
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        direction = workflow.get("direction")
+        to_status = workflow.get("status")
+        mapping = workflow.get("mapping")
+
  
-        input_processes = parent_pipeline.get_input_processes(parent_process)
-        input_processes = [x.get_name() for x in input_processes]
-        
-       
 
 
         settings_wdg = DivWdg()
@@ -2508,10 +2512,12 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add("<h3>Node Status Action</h3>")
 
         settings_wdg.add("When set to this status, do the following:")
-        select = SelectWdg(name="action")
+        select = SelectWdg(name="direction")
         settings_wdg.add(select)
         values = ["output", "input", "process"]
-        labels = ["Set output %s" % output_processes, "Set input %s" % input_processes, "Set this process [%s]" % process]
+        labels = ["Set output", "Set input", "Set this process [%s]" % process]
+        if direction:
+            select.set_value(direction)
         select.set_option("values", values)
         select.set_option("labels", labels)
 
@@ -2519,8 +2525,25 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
         settings_wdg.add("to Status:")
         text = TextInputWdg(name="status")
+        if to_status:
+            text.set_value(to_status)
         settings_wdg.add(text)
         text.add_style("width: 100%")
+
+
+        settings_wdg.add("<br/>")
+
+        settings_wdg.add("Behave As:")
+        text = TextInputWdg(name="mapping")
+        if mapping:
+            text.set_value(mapping)
+        settings_wdg.add(text)
+        text.add_style("width: 100%")
+
+
+
+
+        settings_wdg.add("<br/>")
 
         save_button = ActionButtonWdg(title="Save", color="primary")
         settings_wdg.add(save_button)
@@ -2531,11 +2554,11 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             'process': process,
             'pipeline_code': pipeline_code,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_dependency_top");
+            var top = bvr.src_el.getParent(".spt_status_top");
             var values = spt.api.get_input_values(top, null, false);
             var class_name = 'tactic.ui.tools.ProcessInfoCmd';
             var kwargs = values;
-            values['node_type'] = 'task';
+            values['node_type'] = 'status';
             values['process'] = bvr.process;
             values['pipeline_code'] = bvr.pipeline_code;
 
@@ -2565,6 +2588,10 @@ class ProcessInfoCmd(Command):
 
         if node_type == 'dependency':
             return my.handle_dependency()
+
+        if node_type == 'status':
+            return my.handle_status()
+
 
 
 
@@ -2660,6 +2687,40 @@ class ProcessInfoCmd(Command):
             workflow['status'] = related_status
         if related_scope:
             workflow['scope'] = related_scope
+
+        process_sobj.set_json_value("workflow", workflow)
+        process_sobj.commit()
+
+
+
+
+    def handle_status(my):
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        direction = my.kwargs.get("direction")
+        status = my.kwargs.get("status")
+        mapping = my.kwargs.get("mapping")
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        if direction:
+            workflow['direction'] = direction
+        if status:
+            workflow['status'] = status
+        if mapping:
+            workflow['mapping'] = mapping
 
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
@@ -3665,6 +3726,7 @@ class TriggerListWdg(BaseRefreshWdg):
         type_select = SelectWdg("type")
         type_select.set_option("values", "output|input|expression")
         type_select.set_option("labels", "Set Outputs|Set Inputs|Expression")
+        type_select.set_empty_option("-- Select --")
         template_item_div.add(type_select)
         template_item_div.add(TextWdg("name") )
         template_item_div.add(" to ")

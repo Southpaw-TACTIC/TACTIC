@@ -160,7 +160,9 @@ class TaskStatusChangeTrigger(Trigger):
 
         process_name = task.get_value("process")
         status = task.get_value("status")
-        status = status.lower()
+
+        if status.lower() in PREDEFINED:
+            status = status.lower()
 
         # handle the approve case (which really means complete)
         if status == "approved":
@@ -173,9 +175,6 @@ class TaskStatusChangeTrigger(Trigger):
 
         node_type = process.get_type()
         process_name = process.get_name()
-
-
-        status = status.lower()
 
 
         if status in PREDEFINED:
@@ -1325,17 +1324,25 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         pipeline = my.input.get("pipeline")
 
         status = my.input.get("status")
+        if status.lower() in PREDEFINED:
+            status = status.lower()
+
+        print "---"
+        print "status: ", status
 
 
         my.log_message(sobject, process, status)
-        my.set_all_tasks(sobject, process, status)
 
-        # FIXME: not sure about this
+        # FIXME: this causes an infinite loop
+        #my.set_all_tasks(sobject, process, status)
+
+        # FIXME: not sure about this "custom"
         my.run_callback(pipeline, process, "custom")
 
 
         process_obj = pipeline.get_process(process)
         if not process_obj:
+            print "No process_obj [%s]" % process
             return
 
         status_pipeline_code = process_obj.get_task_pipeline()
@@ -1345,21 +1352,36 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
         status_obj = status_pipeline.get_process(status)
         if not status_obj:
+            print "No status [%s]" % status
             return
 
 
         direction = status_obj.get_attribute("direction")
         to_status = status_obj.get_attribute("status")
-
         mapping = status_obj.get_attribute("mapping")
+
+        if not to_status and not mapping:
+            search = Search("config/process")        
+            search.add_filter("pipeline_code", status_pipeline.get_code())
+            search.add_filter("process", status)
+            process_sobj = search.get_sobject()
+            if process_sobj:
+                workflow = process_sobj.get_json_value("workflow")
+                direction = workflow.get("direction")
+                to_status = workflow.get("status")
+                mapping = workflow.get("mapping")
+
+        if to_status and to_status.lower() in PREDEFINED:
+            to_status = to_status.lower()
+
+        #print "direction: ", direction
+        #print "to_status: ", to_status
 
 
         if mapping:
             event = "process|%s" % mapping
             Trigger.call(my.get_caller(), event, output=my.input)
         elif to_status:
-            #print "direction: ", direction
-            #print "to_status: ", to_status
 
             if direction == "current":
                 processes = [processes_obj]
