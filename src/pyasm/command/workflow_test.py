@@ -945,15 +945,6 @@ class WorkflowCmd(Command):
 
 
 
-        sdfadfsdfssd
-
-
- 
-            
-
-
-
-
 
     def assertEquals(my, a, b):
         if a == b:

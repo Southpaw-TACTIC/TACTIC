@@ -181,7 +181,7 @@ class TaskStatusChangeTrigger(Trigger):
         if status in PREDEFINED:
             event = "process|%s" % status
         else:
-            event = "process|custom" % status
+            event = "process|custom"
 
         output = {
             'sobject': sobject,
@@ -1335,14 +1335,19 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
 
         process_obj = pipeline.get_process(process)
+        if not process_obj:
+            return
+
         status_pipeline_code = process_obj.get_task_pipeline()
 
         status_pipeline = Pipeline.get_by_code(status_pipeline_code)
         status_processes = status_pipeline.get_process_names()
 
-        print "---"
-        print "Custom Status"
         status_obj = status_pipeline.get_process(status)
+        if not status_obj:
+            return
+
+
         direction = status_obj.get_attribute("direction")
         to_status = status_obj.get_attribute("status")
 
@@ -1353,8 +1358,8 @@ class ProcessCustomTrigger(BaseProcessTrigger):
             event = "process|%s" % mapping
             Trigger.call(my.get_caller(), event, output=my.input)
         elif to_status:
-            print "direction: ", direction
-            print "to_status: ", to_status
+            #print "direction: ", direction
+            #print "to_status: ", to_status
 
             if direction == "current":
                 processes = [processes_obj]
@@ -1368,7 +1373,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
                 event = "process|%s" % to_status
             else:
                 event = "process|custom"
-            print "event: ", event
+
             for process in processes:
                 process_name = process.get_name()
                 output = {
@@ -1380,7 +1385,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
                 Trigger.call(my, event, output)
 
         else:
-            print "stay here"
+            # Do nothing
             pass
 
 
