@@ -430,9 +430,6 @@ class WorkflowCmd(Command):
         #my.assertEquals( "a", sobject.get_value("b_input"))
         #my.assertEquals( "c,d", sobject.get_value("b_output"))
 
-        dfsadfsdfdasf
-
-
 
 
 

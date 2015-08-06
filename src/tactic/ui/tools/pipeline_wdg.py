@@ -1525,7 +1525,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 
-    def get_title_wdg(my, process, node_type):
+    def get_title_wdg(my, process, node_type, show_node_type_select=True):
 
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
@@ -1536,76 +1536,88 @@ class BaseInfoWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 15px 10px")
 
 
-        select = SelectWdg("event")
-        title_wdg.add(select)
-        select.set_option("values", ['manual','action','condition','approval', 'hierarchy','dependency'])
-        select.add_style("width: 100px")
-        if node_type == "node":
-            select.set_value("manual")
+        if not show_node_type_select:
+            select = HiddenWdg("node_type")
+            title_wdg.add(select)
+            if node_type == "node":
+                select.set_value("manual")
+            else:
+                select.set_value(node_type)
+    
+
         else:
-            select.set_value(node_type)
 
-        select.add_behavior( {
-            'type': 'change',
-            'process': process,
-            'cbjs_action': '''
 
-            var server = TacticServerStub.get();
+            select = SelectWdg("node_type")
+            title_wdg.add(select)
+            select.set_option("values", ['manual','action','condition','approval', 'hierarchy','dependency'])
+            select.add_style("width: 100px")
+            if node_type == "node":
+                select.set_value("manual")
+            else:
+                select.set_value(node_type)
 
-            var node_type = bvr.src_el.value;
-            var process = bvr.process;
+            select.add_behavior( {
+                'type': 'change',
+                'process': process,
+                'cbjs_action': '''
 
-            // change node_type
-            var node = spt.pipeline.get_node_by_name(process);
-            var parent = node.getParent();
+                var server = TacticServerStub.get();
 
-            node.setStyle("box-shadow", "0px 0px 15px rgba(255,0,0,0.5)"); 
+                var node_type = bvr.src_el.value;
+                var process = bvr.process;
 
-            var pos = spt.pipeline.get_position(node);
+                // change node_type
+                var node = spt.pipeline.get_node_by_name(process);
+                var parent = node.getParent();
 
-            //parent.removeChild(node);
+                node.setStyle("box-shadow", "0px 0px 15px rgba(255,0,0,0.5)"); 
 
-            var group = spt.pipeline.get_group_by_node(node);
-            for (var i = 0; i < group.nodes.length; i++) {
-                if (node == group.nodes[i]) {
-                    group.nodes.splice(i, 1);
-                    break;
+                var pos = spt.pipeline.get_position(node);
+
+                //parent.removeChild(node);
+
+                var group = spt.pipeline.get_group_by_node(node);
+                for (var i = 0; i < group.nodes.length; i++) {
+                    if (node == group.nodes[i]) {
+                        group.nodes.splice(i, 1);
+                        break;
+                    }
                 }
-            }
 
 
 
-            var new_node = spt.pipeline.add_node(process, null, null, {node_type: node_type});
-            new_node.position(pos)
+                var new_node = spt.pipeline.add_node(process, null, null, {node_type: node_type});
+                new_node.position(pos)
 
 
-            var canvas = spt.pipeline.get_canvas();
-            var connectors = canvas.connectors;
-            for (var i = 0; i < connectors.length; i++) {
-                var connector = connectors[i];
-                if (connector.from_node == node) {
-                    connector.from_node = new_node;
+                var canvas = spt.pipeline.get_canvas();
+                var connectors = canvas.connectors;
+                for (var i = 0; i < connectors.length; i++) {
+                    var connector = connectors[i];
+                    if (connector.from_node == node) {
+                        connector.from_node = new_node;
+                    }
+                    if (connector.to_node == node) {
+                        connector.to_node = new_node;
+                    }
                 }
-                if (connector.to_node == node) {
-                    connector.to_node = new_node;
-                }
-            }
 
 
-            // destroy the old node
-            spt.behavior.destroy_element(node);
+                // destroy the old node
+                spt.behavior.destroy_element(node);
 
-            spt.pipeline.redraw_canvas();
+                spt.pipeline.redraw_canvas();
 
-            // click on the new node
-            new_node.click();
+                // click on the new node
+                new_node.click();
 
-            spt.named_events.fire_event('pipeline|change', {});
+                spt.named_events.fire_event('pipeline|change', {});
 
-            '''
-        } )
-        select.add_style("float: right")
-        select.add_style("margin-top: -5px")
+                '''
+            } )
+            select.add_style("float: right")
+            select.add_style("margin-top: -5px")
 
         return title_wdg
 
@@ -2455,15 +2467,18 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         process = my.kwargs.get("process")
         pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
-        pipeline = Pipeline.get_by_code(pipeline_code)
 
+
+        parent_pipeline_code = "vfx/shot"
+        parent_process = "layout"
+        parent_pipeline = Pipeline.get_by_code(parent_pipeline_code)
 
 
         # NO NO NO NO
-        output_processes = pipeline.get_output_processes(process)
+        output_processes = parent_pipeline.get_output_processes(parent_process)
         output_processes = [x.get_name() for x in output_processes]
  
-        input_processes = pipeline.get_input_processes(process)
+        input_processes = parent_pipeline.get_input_processes(parent_process)
         input_processes = [x.get_name() for x in input_processes]
         
        
@@ -2473,7 +2488,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top.add_style("padding: 20px 0px")
 
  
-        title_wdg = my.get_title_wdg(process, node_type)
+        title_wdg = my.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
 
 
@@ -2496,6 +2511,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add("to Status:")
         text = TextInputWdg(name="status")
         settings_wdg.add(text)
+        text.add_style("width: 100%")
 
         save_button = ActionButtonWdg(title="Save", color="primary")
         settings_wdg.add(save_button)
