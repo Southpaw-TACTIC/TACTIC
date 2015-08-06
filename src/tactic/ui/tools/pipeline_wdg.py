@@ -2486,10 +2486,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top.add(title_wdg)
 
 
-        return top
-
-
-
 
         # FIXME: hard coded
         parent_pipeline_code = "vfx/shot"
