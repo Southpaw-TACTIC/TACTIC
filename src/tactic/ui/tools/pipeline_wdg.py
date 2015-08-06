@@ -1550,7 +1550,15 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             select = SelectWdg("node_type")
             title_wdg.add(select)
-            select.set_option("values", ['manual','action','condition','approval', 'hierarchy','dependency'])
+            select.set_option("values", [
+                'manual',
+                'action',
+                'condition',
+                'approval',
+                'hierarchy',
+                # Not supported yet
+                #'dependency'
+            ])
             select.add_style("width: 100px")
             if node_type == "node":
                 select.set_value("manual")
@@ -2469,20 +2477,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         node_type = my.kwargs.get("node_type")
 
 
-        parent_pipeline_code = "vfx/shot"
-        parent_process = "layout"
-        parent_pipeline = Pipeline.get_by_code(parent_pipeline_code)
-
-
-        # NO NO NO NO
-        output_processes = parent_pipeline.get_output_processes(parent_process)
-        output_processes = [x.get_name() for x in output_processes]
- 
-        input_processes = parent_pipeline.get_input_processes(parent_process)
-        input_processes = [x.get_name() for x in input_processes]
-        
-       
-
 
         top = my.top
         top.add_style("padding: 20px 0px")
@@ -2490,6 +2484,25 @@ class TaskStatusInfoWdg(BaseInfoWdg):
  
         title_wdg = my.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
+
+
+        return top
+
+
+
+
+        # FIXME: hard coded
+        parent_pipeline_code = "vfx/shot"
+        parent_process = "layout"
+        parent_pipeline = Pipeline.get_by_code(parent_pipeline_code)
+
+        output_processes = parent_pipeline.get_output_processes(parent_process)
+        output_processes = [x.get_name() for x in output_processes]
+ 
+        input_processes = parent_pipeline.get_input_processes(parent_process)
+        input_processes = [x.get_name() for x in input_processes]
+        
+       
 
 
         settings_wdg = DivWdg()
