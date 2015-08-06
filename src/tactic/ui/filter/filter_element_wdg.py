@@ -363,7 +363,9 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         elif op == 'is':
             #TODO: have this style apply to everything else and get rid of &nbsps
-            div.add("<div style='margin-top: 8px; margin-right: 15px;'>is</div>")
+            op_div = DivWdg('is')
+            op_div.add_styles('margin-top: 8px; margin-right: 15px;')
+            div.add(op_div)
             div.add(HiddenWdg("op", "="))
             div.add_style("display: flex;")
         else:
