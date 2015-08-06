@@ -33,4 +33,6 @@ from widget_settings_cmd import *
 
 from database_cmd import *
 
+from workflow import *
+
 
