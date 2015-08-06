@@ -364,10 +364,10 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         elif op == 'is':
             #TODO: have this style apply to everything else and get rid of &nbsps
             op_div = DivWdg('is')
-            op_div.add_styles('margin-top: 8px; margin-right: 15px;')
+            op_div.add_styles('margin-top: 8px; margin-right: 15px')
             div.add(op_div)
             div.add(HiddenWdg("op", "="))
-            div.add_style("display: flex;")
+            div.add_style("display: flex")
         else:
             op_select = SelectWdg("op")
             op_select.add_style("width: 100px")
