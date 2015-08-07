@@ -601,10 +601,22 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
     def handle_pending(my):
         my.log_message(my.sobject, my.process, "pending")
 
+        search = Search("config/process")        
+        search.add_filter("process", my.process)
+        search.add_filter("pipeline_code", my.pipeline.get_code())
+        process_sobj = search.get_sobject()
+
+        workflow = process_sobj.get_json_value("workflow")
+        if workflow:
+            assigned = workflow.get("assigned")
+        else:
+            assigned = None
+
+
         # check to see if the tasks exist and if they don't then create one
         tasks = Task.get_by_sobject(my.sobject, process=my.process)
         if not tasks:
-            tasks = Task.add_initial_tasks(my.sobject, processes=[my.process])
+            tasks = Task.add_initial_tasks(my.sobject, processes=[my.process], assigned=assigned)
         else:
             my.set_all_tasks(my.sobject, my.process, "pending")
 
@@ -1334,9 +1346,6 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         if status.lower() in PREDEFINED:
             status = status.lower()
 
-        print "---"
-        print "status: ", status
-
 
         my.log_message(sobject, process, status)
 
@@ -1355,6 +1364,10 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         status_pipeline_code = process_obj.get_task_pipeline()
 
         status_pipeline = Pipeline.get_by_code(status_pipeline_code)
+        if not status_pipeline:
+            print "No custom status pipeline [%s]" % process
+            return
+
         status_processes = status_pipeline.get_process_names()
 
         status_obj = status_pipeline.get_process(status)

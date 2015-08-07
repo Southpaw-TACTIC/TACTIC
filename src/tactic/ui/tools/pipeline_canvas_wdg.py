@@ -1863,15 +1863,11 @@ spt.pipeline._init = function() {
     data.paint = paint;
     data.ctx = ctx;
 
-    var size = canvas.getSize()
-    spt.pipeline.set_size(size.x, size.y);
-/*
-    var cookie = new Cookie('pipeline_canvas');
-    var state = JSON.parse( cookie.read() );
-    if (state != null) {
-        spt.pipeline.set_size(state.width, state.height);
-    }
-*/
+    // FIXME: need this delay because the table seems to resize itself somewhere
+    setTimeout( function() {
+        var size = canvas.getSize()
+        spt.pipeline.set_size(size.x, size.y);
+    }, 500);
 }
 
 
@@ -2590,14 +2586,15 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     // switch the color
     //var color = group_info.get_color();
     var color = '';
+    /*
     if (node_type == "trigger") {
         color = "#FFF";
     }
     else if (node_type == "approval") {
         color = "#FFF";
     }
-
-    else if (group_info.get_node_type() == 'process') 
+    */
+    if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
     else // for schema {
         color = spt.pipeline.get_group_color(name);
