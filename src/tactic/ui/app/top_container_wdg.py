@@ -58,10 +58,13 @@ class TopContainerWdg(BaseRefreshWdg):
                 #print "site: ", Site.get_site()
                 widget = HashPanelWdg.get_widget_from_hash(hash, return_none=True)
 
-            if hash == "/index" and not widget:
-                widget = my.get_default_wdg()
-            elif hash == '/admin' and not widget:
-                widget = my.get_default_wdg()
+            if not widget:
+                if hash == "/index":
+                    widget = my.get_default_wdg()
+                elif hash == '/admin':
+                    widget = my.get_default_wdg()
+                else:
+                    widget = HashPanelWdg.get_widget_from_hash("/index", return_none=True)
 
 
             top.add(widget)

@@ -292,6 +292,7 @@ class WebEnvironment(Environment):
        
 
 
+    # DEPRECATED
     def get_widget_url(my):
 
         url = my.get_site_url()

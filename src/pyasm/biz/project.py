@@ -476,8 +476,12 @@ class Project(SObject):
             key2 = { 'code': "*" }
             keys = [key, key2]
             if not security.check_access("project", keys, access="allow", default="deny"):
-                user = Environment.get_login().get_value("login")
-                raise SecurityException("User [%s] is not permitted to view project [%s]" % (user, project_code))
+                user = Environment.get_login()
+                if user:
+                    user = user.get_value("login")
+                    raise SecurityException("User [%s] is not permitted to view project [%s]" % (user, project_code))
+                else:
+                    raise SecurityException("Not permitted to view project [%s]" % (project_code))
 
         PROJECT_KEY = "Project:global"
         Container.put(PROJECT_KEY, project_code)
