@@ -4801,16 +4801,4 @@ spt.pipeline.export_group = function(group_name) {
 
 
 
-# Test snapshot dependency
-'''
-<dependency>
-<snapshot name='33FFF'/>
-<snapshot name='33FFF'/>
-<snapshot name='33FFF'/>
-<snapshot name='33FFF'/>
-
-
-</dependency>
-'''
-
 

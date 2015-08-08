@@ -26,12 +26,16 @@ class TimeCode(object):
         if not my.fps:
             from pyasm.prod.biz import ProdSetting
             my.fps = ProdSetting.get_value_by_key("fps")
+            my.fps = int(my.fps)
         if not my.fps:
             my.fps = 24
 
         if not my.frames:
             timecode = kwargs.get("timecode")
             my.frames = my.calculate_frames(timecode, my.fps)
+
+        # handle cases where frames has a decimal: ie: 400.4
+        my.frames = int(float(my.frames))
 
 
     def get_frames(my):

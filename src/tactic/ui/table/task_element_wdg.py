@@ -601,7 +601,7 @@ class TaskElementWdg(BaseTableElementWdg):
         
         if pipelines:
             for pipeline in pipelines:
-                processes = pipeline.get_processes(type=["node","approval","hierarchy"])
+                processes = pipeline.get_processes(type=["node","approval","hierarchy", "dependency"])
 
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
@@ -1135,7 +1135,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
         if pipeline and show_filler_tasks in ["true", True]:
 
-            processes = pipeline.get_process_names(type=["node","approval","hierarchy"])
+            processes = pipeline.get_process_names(type=["node","approval","hierarchy","dependency"])
 
             if my.filler_cache == None:
                 my.filler_cache = {}

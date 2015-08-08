@@ -1603,7 +1603,7 @@ class BaseInfoWdg(BaseRefreshWdg):
                 'approval',
                 'hierarchy',
                 # Not supported yet
-                #'dependency'
+                'dependency'
             ])
             select.add_style("width: 100px")
             if node_type == "node":

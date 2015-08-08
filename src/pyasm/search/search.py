@@ -497,6 +497,8 @@ class Search(Base):
 
     def is_expr(value):
         '''return True if it is an expression based on starting chars'''
+        if not isinstance(value, basestring):
+            value = str(value)
         is_expr = re.search("^(@|\$\w|{@|{\$\w)", value)
         return is_expr
 
@@ -796,6 +798,37 @@ class Search(Base):
             else:
                 my.add_filter("code", sobject.get_value("search_code"))
 
+
+        elif relationship in ['instance']:
+
+            instance_type = attrs.get("instance_type")
+            assert(instance_type)
+
+            my.add_join(instance_type, search_type)
+            my.add_join(related_type, instance_type)
+
+            search_type_obj = SearchType.get(search_type)
+            related_type_obj = SearchType.get(related_type)
+
+            table = search_type_obj.get_table()
+            related_table = related_type_obj.get_table()
+            my.add_column("*", table=table)
+            my.add_column("code", table=related_table, as_column="_related_code")
+
+            if my_is_from:
+                value = sobject.get_value(to_col)
+                if not value:
+                    my.null_filter = True
+                    return
+                my.add_filter(from_col, value, table=related_table )
+            else:
+                value = sobject.get_value(from_col)
+                if not value:
+                    my.null_filter = True
+                    return
+                my.add_filter(to_col, value, table=table )
+
+ 
         else:
             raise SearchException("Relationship [%s] not supported yet" % relationship)
 
@@ -865,18 +898,6 @@ class Search(Base):
 
             if my_is_from:
                 if not to_col:
-                    #if relationship == 'search_type':
-                    #    full_search_type = my.get_search_type()
-                    #    full_related_type = sobjects[0].get_search_type()
-                    #    relationship = schema.resolve_search_type_relationship(attrs, full_search_type, full_related_type)
-
-                    #if relationship == 'search_id':
-                    #    to_col = sobject.get_id_col()
-                    #    from_col = 'search_id'
-                    #else:
-                    #    to_col = 'code'
-                    #    from_col = 'search_code'
-
                     attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), sobjects[0].get_search_type())
                     to_col = attrs.get("to_col")
 
@@ -943,6 +964,25 @@ class Search(Base):
                 sobject_values = SObject.get_values(sobjects, column, unique=True)
                 sobject_values = [x for x in sobject_values if x]
                 my.add_filters(column2, sobject_values, op=op)
+
+        elif relationship in ['instance']:
+            instance_type = attrs.get("instance_type")
+            assert(instance_type)
+
+            my.add_join(instance_type, search_type)
+            my.add_join(related_type, instance_type)
+
+
+            search_type_obj = SearchType.get(search_type)
+            related_type_obj = SearchType.get(related_type)
+
+            table = search_type_obj.get_table()
+            related_table = related_type_obj.get_table()
+            my.add_column("*", table=table)
+
+            my.add_column("code", table=related_table, as_column="_related_code")
+
+            #raise SearchException("Relationship [%s] not supported yet" % relationship)
 
         else:
             raise SearchException("Relationship [%s] not supported yet" % relationship)
@@ -2097,7 +2137,9 @@ class Search(Base):
         relationship = attrs.get("relationship")
         is_from = related_type == attrs.get("from")
 
+        # go through the related sobjects and map them
         for related_sobject in related_sobjects:
+
             if relationship == 'search_type':
                 relationship = schema.resolve_search_type_relationship(attrs, search_type, related_type)
 
@@ -2107,6 +2149,14 @@ class Search(Base):
                     key = related_sobject.get_value(attrs.get("from_col"))
                 else:
                     key = related_sobject.get_value(attrs.get("to_col"))
+
+            elif relationship == "instance":
+                if is_from:
+                    key = related_sobject.get_value("_related_code")
+                else:
+                    key = related_sobject.get_value("_related_code")
+
+
             elif relationship in ['search_code']:
                 if is_from:
                     search_type = related_sobject.get_value("search_type")
@@ -2140,10 +2190,11 @@ class Search(Base):
             items.append(related_sobject)
 
 
+
         # go through all of the original sobjects and map
         data = {}
         for sobject in sobjects:
-            if relationship in ['code','id']:
+            if relationship in ['code','id','instance']:
                 if is_from:
                     key = sobject.get_value(attrs.get("to_col"))
                 else:
@@ -2165,7 +2216,7 @@ class Search(Base):
                         key = "%s&id=%s" % (sobject.get_value("search_type"), sobject.get_value("search_id"))
 
             else:
-                raise TacticException("Relationship [%s] not supported" % relationwhip)
+                raise TacticException("Relationship [%s] not supported" % relationship)
 
             search_key = sobject.get_search_key()
 
