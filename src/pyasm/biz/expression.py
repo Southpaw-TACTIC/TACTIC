@@ -1650,12 +1650,10 @@ class MethodMode(ExpressionParser):
                     # support optional arg for timecode for example
                     if args_len > 2:
                         format_option = args[2]
-                """
                 else: # this part does not seem to be used
                     format_type = args[1]
                     format = args[2]
-                """
-               
+
                 if format_type == 'format':
                     f = FormatValue()
                     # sometimes result could be a list from @GET
@@ -2176,7 +2174,7 @@ class MethodMode(ExpressionParser):
                         sub_search.add_relationship_search_filter(related_search)
                         
                     related_search = sub_search
-                    
+
                 else:
                     tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=my.show_retired)
 
