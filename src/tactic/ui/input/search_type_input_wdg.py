@@ -75,6 +75,7 @@ class SearchTypeWithPipelineInputWdg(SelectWdg):
         search_types.append(task_search_type)
 
         values = [ x.get_value("search_type") for x in search_types]
+        filtered = []
         labels = []
         for x in search_types:
             base_type = x.get_base_key()
@@ -84,7 +85,10 @@ class SearchTypeWithPipelineInputWdg(SelectWdg):
 
             label = "%s (%s)" % (x.get_value("title"), x.get_value("search_type"))
             labels.append(label)
+            filtered.append(base_type)
 
+
+        values = filtered
 
         sobject = my.get_current_sobject()
         if not sobject:
