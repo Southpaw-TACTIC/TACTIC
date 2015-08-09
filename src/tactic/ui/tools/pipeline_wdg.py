@@ -2419,6 +2419,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         related_process = workflow.get("process")
         related_status = workflow.get("status")
         related_scope = workflow.get("scope")
+        related_wait = workflow.get("wait")
 
 
         # FIXME: HARD CODED
@@ -2441,7 +2442,7 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Dependent Search Type</b>")
+        settings_wdg.add("<b>Notify Search Type</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         if related_search_type:
@@ -2510,7 +2511,7 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Status</b>")
+        settings_wdg.add("<b>With Status</b>")
         select = SelectWdg("related_status")
         if related_status:
             select.set_value(related_status)
@@ -2519,6 +2520,24 @@ class DependencyInfoWdg(BaseInfoWdg):
         select.add_empty_option("-- Select --")
         settings_wdg.add("<span style='opacity: 0.6'>Determines which status to set the process to.</span>")
         settings_wdg.add("<br/>")
+
+
+
+
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Wait</b>")
+        select = SelectWdg("related_wait")
+        if related_wait:
+            select.set_value(related_wait)
+        settings_wdg.add(select)
+        select.set_option("labels", "No|Yes")
+        select.set_option("values", "false|true")
+        #select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>Determines if this process will wait until it receives a complete signal (from another dependency) or set to complete automatically")
+        settings_wdg.add("<br/>")
+
+
 
 
         settings_wdg.add("<br/>")
@@ -2539,6 +2558,7 @@ class DependencyInfoWdg(BaseInfoWdg):
             values['node_type'] = 'dependency';
             values['process'] = bvr.process;
             values['pipeline_code'] = bvr.pipeline_code;
+            values['wait'] = bvr.wait;
 
             var server = TacticServerStub.get();
             server.execute_cmd( class_name, values);
@@ -2681,7 +2701,7 @@ class ProcessInfoCmd(Command):
             return my.handle_status()
 
         if node_type == 'approval':
-            return my.handle_status()
+            return my.handle_approval()
 
 
 
@@ -2766,6 +2786,7 @@ class ProcessInfoCmd(Command):
         related_process = my.kwargs.get("related_process")
         related_status = my.kwargs.get("related_status")
         related_scope = my.kwargs.get("related_scope")
+        related_wait = my.kwargs.get("related_wait")
 
         workflow = process_sobj.get_json_value("workflow")
         if not workflow:
@@ -2779,6 +2800,8 @@ class ProcessInfoCmd(Command):
             workflow['status'] = related_status
         if related_scope:
             workflow['scope'] = related_scope
+        if related_scope:
+            workflow['wait'] = related_wait
 
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
@@ -2786,42 +2809,7 @@ class ProcessInfoCmd(Command):
 
 
 
-    def handle_status(my):
-
-        pipeline_code = my.kwargs.get("pipeline_code")
-        process = my.kwargs.get("process")
-
-        pipeline = Pipeline.get_by_code(pipeline_code)
-
-        search = Search("config/process")
-        search.add_filter("pipeline_code", pipeline_code)
-        search.add_filter("process", process)
-        process_sobj = search.get_sobject()
-
-
-        direction = my.kwargs.get("direction")
-        status = my.kwargs.get("status")
-        mapping = my.kwargs.get("mapping")
-
-        workflow = process_sobj.get_json_value("workflow")
-        if not workflow:
-            workflow = {}
-
-        if direction:
-            workflow['direction'] = direction
-        if status:
-            workflow['status'] = status
-        if mapping:
-            workflow['mapping'] = mapping
-
-        process_sobj.set_json_value("workflow", workflow)
-        process_sobj.commit()
-
-
-
-
-
-    def handle_status(my):
+    def handle_approval(my):
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")

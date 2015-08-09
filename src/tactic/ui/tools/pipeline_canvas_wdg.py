@@ -636,9 +636,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             width = width
             height = height + 50
         elif node_type == "dependency":
-            border_radius =  100 
-            width = width
-            height = height + 25 
+            border_radius =  5
+            #width = width
+            width = 60
+            height = width
         else:
             border_radius = 3
 

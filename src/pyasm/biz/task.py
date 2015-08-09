@@ -54,6 +54,18 @@ APPROVAL_PIPELINE = '''
 '''
 
 
+DEPENDENCY_PIPELINE = '''
+<pipeline type="serial">
+  <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="20" color="#e9e386" name="In Progress"/>
+  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="100" color="#a3d991" name="Complete"/>
+</pipeline>
+
+'''
+
+
+
 default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
@@ -117,6 +129,25 @@ class Task(SObject):
 
         return xml.to_string()
     get_default_approval_xml = staticmethod(get_default_approval_xml)
+
+
+
+    def get_default_dependency_xml():
+        global DEPENDENCY_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(DEPENDENCY_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            if color:
+                Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
+    get_default_dependency_xml = staticmethod(get_default_dependency_xml)
 
 
 
