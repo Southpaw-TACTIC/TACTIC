@@ -443,6 +443,39 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         sobject = my.input.get("sobject")
 
 
+        # find related sobjects
+        related_sobjects = sobject.get_related_sobjects(related_search_type)
+
+        # get the message status from each of these
+        keys = []
+        for related_sobject in related_sobjects:
+            # ignore the caller as we know that is complete
+            if related_sobject.get_search_key() == caller_sobject.get_search_key():
+                continue
+
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            keys.append(key)
+
+        # get the statuses
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        message_sobjects = search.get_sobjects()
+
+        # find the status
+        complete = True
+        for message_sobject in message_sobjects:
+            status = message_sobject.get_value("message")
+            print "message: ", message_sobject.get_code(), status
+            if status not in ["complete"]:
+                complete = False
+                break
+
+        return complete
+
+
+
+
+        """
         key = "%s|%s|dependency" % (sobject.get_search_key(), process)
 
         # find the dependency message
@@ -461,11 +494,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     # determine if the related is already complete
                     key2 = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
                     message2_sobj = Search.get_by_code("sthpw/message", key2)
-                    if message2_sobj and message2_sobj.get("message") == "complete":
+                    if message2_sobj and message2_sobj.get("message") in ["in_progres","complete"]:
                         message[related_search_key] = True
                     else:
                         message[related_search_key] = False
-                    message[related_search_key] = False
+
 
 
             message_sobj = SearchType.create("sthpw/message")
@@ -492,6 +525,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 break
 
         return complete
+        """
 
 
 
@@ -764,10 +798,23 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
 class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
+    def handle_revise(my):
+        return my._handle_dependency("revise")
+
+
     def handle_action(my):
-        my.log_message(my.sobject, my.process, "in_prgress")
-        my.set_all_tasks(my.sobject, my.process, "in_progress")
-        my.run_callback(my.pipeline, my.process, "action")
+        return my._handle_dependency()
+
+
+    def _handle_dependency(my, status=None):
+        if status:
+            my.log_message(my.sobject, my.process, status)
+            my.set_all_tasks(my.sobject, my.process, status)
+            my.run_callback(my.pipeline, my.process, status)
+        else:
+            my.log_message(my.sobject, my.process, "in_prgress")
+            my.set_all_tasks(my.sobject, my.process, "in_progress")
+            my.run_callback(my.pipeline, my.process, "action")
 
 
         pipeline = my.input.get("pipeline")
@@ -779,6 +826,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         related_status = process_obj.get_attribute("status")
         related_process = process_obj.get_attribute("process")
         related_scope = process_obj.get_attribute("scope")
+        related_wait = process_obj.get_attribute("wait")
 
         # get the node's triggers
         if not related_search_type:
@@ -792,6 +840,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             related_process = workflow.get("process")
             related_status = workflow.get("status")
             related_scope = workflow.get("scope")
+            related_wait = workflow.get("wait")
 
 
 
@@ -804,6 +853,11 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             print "WARNING: no related process found"
             return
 
+
+
+        # override related_status with status passed in
+        if status:
+            related_status = status
 
 
         if related_search_type.startswith("@"):
@@ -821,7 +875,16 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
         for related_sobject in related_sobjects:
 
-            # TEST: do this to grab from cache
+            # if the related_sobject is already complete, don't do anything
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            message_sobj = Search.get_by_code("sthpw/message", key)
+            if message_sobj:
+                if related_status.lower() == "revise":
+                    pass
+                elif message_sobj.get_value("message") == "complete":
+                    continue
+
+
             # This is for unittests which don't necessarily commit changes
             related_sobject = Search.get_by_search_key(related_sobject.get_search_key())
 
@@ -854,9 +917,9 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             Trigger.call(my, event, input)
 
 
-
-        #event = "process|complete"
-        #Trigger.call(my, event, my.input)
+        if status != 'revise' and related_wait in [False, 'false', None]:
+            event = "process|complete"
+            Trigger.call(my, event, my.input)
 
 
 
@@ -1132,100 +1195,6 @@ class ProcessActionTrigger(BaseProcessTrigger):
 
 
 
-    """
-    def handle_condition_node(my, sobject, pipeline, process, triggers):
-
-        ret_val = my.run_callback(pipeline, process, "action")
-
-        # if a None return value was given, then probably no condition exists
-        # yet, so just let if flow through
-        if ret_val == None:
-            ret_val = True
-
-        # run the completion trigger for this node
-        Trigger.call(my, "process|complete", my.input)
-
-        if ret_val == True:
-            success_cbk = triggers.get("on_success")
-            if success_cbk:
-                cmd = PythonCmd(code=success_cbk, sobject=sobject)
-                cmd.execute()
-                return
-            else:
-                event = "process|pending"
-                attr = "success"
-                direction = "output"
-                processes = pipeline.get_output_processes(process, from_attr=attr)
-                if not processes:
-                    attr = None
-
-        elif ret_val == False:
-
-            fail_cbk = triggers.get("on_fail")
-            if fail_cbk:
-                cmd = PythonCmd(code=fail_cbk, sobject=sobject)
-                cmd.execute()
-                return
-            else:
-                event = "process|revise"
-
-                # check to see if there is an output process
-                attr = "fail"
-                processes = pipeline.get_output_processes(process, from_attr=attr)
-                if processes:
-                    direction = "output"
-                else:
-                    direction = "input"
-                    attr = None
-
-        else:
-            event = "process|pending"
-            if isinstance(ret_val, basestring): 
-                ret_val = [ret_val]
-
-            output_processes = []
-            for attr in ret_val: 
-                outputs = pipeline.get_output_processes(process, from_attr=attr)
-                if outputs:
-                    output_processes.extend(outputs)
-
-            # if there are no output attrs, then check the node names
-            if not output_processes:
-                outputs = pipeline.get_output_processes(process)
-                for output in outputs:
-                    if output.get_name() in ret_val:
-                        output_processes.append(output)
-
-            for output_process in output_processes:
-                output_process_name = output_process.get_name()
-                output = {
-                    'sobject': sobject,
-                    'pipeline': pipeline,
-                    'process': output_process_name,
-                }
-                Trigger.call(my, event, output)
-
-            return
-
-
-        # by default, go back to incoming or outcoming
-        if direction == "input":
-            processes = pipeline.get_input_processes(process, to_attr=attr)
-        else:
-            processes = pipeline.get_output_processes(process, from_attr=attr)
-
-
-        for process in processes:
-            process_name = process.get_name()
-            output = {
-                'sobject': sobject,
-                'pipeline': pipeline,
-                'process': process_name,
-            }
-            Trigger.call(my, event, output)
-    """
-
-
 
 
 class ProcessCompleteTrigger(BaseProcessTrigger):
@@ -1324,6 +1293,26 @@ class ProcessReviseTrigger(ProcessRejectTrigger):
         return "revise"
 
     def execute(my):
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+        if process.find(".") != -1:
+            parts = process.split(".")
+            process = parts[-1]
+
+        process_obj = pipeline.get_process(process)
+        node_type = process_obj.get_type()
+
+        if node_type == "dependency":
+            handler = WorkflowDependencyNodeHandler(input=my.input)
+            return handler.handle_revise()
+
+
+
+
+
+
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")

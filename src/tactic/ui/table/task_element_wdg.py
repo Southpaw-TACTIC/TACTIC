@@ -664,6 +664,7 @@ class TaskElementWdg(BaseTableElementWdg):
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
         task_pipelines.append( Pipeline.get_by_code("task") )
         task_pipelines.append( Pipeline.get_by_code("approval") )
+        task_pipelines.append( Pipeline.get_by_code("dependency") )
         if task_pipelines:
             for task_pipeline in task_pipelines:
                 processes = task_pipeline.get_processes()
