@@ -200,6 +200,8 @@ class ProcessStatusTrigger(Trigger):
         status = my.input.get("status")
         sobject = my.input.get("sobject")
 
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
         # related process
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_json_value("data")
@@ -209,31 +211,31 @@ class ProcessStatusTrigger(Trigger):
 
         related_pipeline = Pipeline.get_by_code(related_pipeline_code)
 
+        related_process_sobj = Search.get_by_code("config/process", related_process_code)
+        related_process = related_process_sobj.get("process")
+        
 
         # get the related sobject
-        related_sobjects = sobject.get_related_sobjects(related_type)
-
+        related_sobjects = Search.eval("@SOBJECT(%s)" % related_type, sobject)
 
         for related_sobject in related_sobjects:
 
+            # inputs are reversed
             kwargs = {
-                    'sobject': related_sobject,
-                    'process': related_process_code,
-                    'pipeline': related_pipeline,
-
+                'sobject': related_sobject,
+                'process': related_process,
+                'pipeline': related_pipeline,
+                'status': status,
+                'related_sobject': sobject,
+                'related_pipeline': pipeline,
+                'related_process': process,
             }
 
-            handler = WorkflowDependencyNodeHandler(input=kwargs)
-            handler.handle_complete()
 
 
-        """
-        # announce callback has been called for any listeners
-        search_type = pipeline.get_value("search_type")
-        event = "workflow|%s" % search_type
-        process_code = process_sobj.get_code()
-        Trigger.call(my, event, input, process=process_code)
-        """
+            event = "process|%s" % status
+            Trigger.call(my, event, kwargs)
+
 
 
 
@@ -413,6 +415,90 @@ class BaseProcessTrigger(Trigger):
 
 
 
+    def check_complete_inputs(my):
+
+        # Check dependencies
+        caller_sobject = my.input.get("related_sobject")
+        if not caller_sobject:
+            return True
+
+
+        related_pipeline = my.input.get("related_pipeline")
+        related_process = my.input.get("related_process")
+        related_search_type = caller_sobject.get_base_search_type()
+
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+
+        # find related sobjects
+        #related_sobjects = sobject.get_related_sobjects(related_search_type)
+        related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
+        if not related_sobjects:
+            return True
+
+        # get the message status from each of these
+        keys = []
+        for related_sobject in related_sobjects:
+            # ignore the caller as we know that is complete
+            if related_sobject.get_search_key() == caller_sobject.get_search_key():
+                continue
+
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            keys.append(key)
+
+        # get the statuses
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        message_sobjects = search.get_sobjects()
+
+
+        complete = {}
+
+        # find the status
+        for message_sobject in message_sobjects:
+            status = message_sobject.get_value("message")
+            if status in ["complete"]:
+                complete[message_sobject.get_code()] = True
+
+
+        # some backwards compatibility to figure out if the related sobject is "complete"
+        if False and len(message_sobjects) < len(keys):
+            # look at the overall status
+            for related_sobject in related_sobjects:
+                key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+                overall_status = related_sobject.get_value("status", no_exception=True)
+                if overall_status.lower() == "complete":
+                    complete[key] = True
+
+                else:
+                    related_tasks = Search.eval("@SOBJECT(sthpw/task['process','%s'])" % related_process, related_sobject)
+                    for related_task in related_tasks:
+                        related_status = related_task.get_value("status")
+                        if related_status.lower() == "complete":
+                            complete[key] = True
+
+
+        # the caller is implied to be complete
+        key = "%s|%s|status" % (caller_sobject.get_search_key(), related_process)
+        complete[key] = True
+
+        is_complete = True
+        print "complete: ", complete
+        for related_sobject in related_sobjects:
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            if not complete.get(key):
+                is_complete = False
+                break
+
+
+        print "    is complete: ", is_complete
+
+        return is_complete
+
+
+
 
 
 
@@ -480,110 +566,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
-    def check_complete_inputs(my):
-
-
-        # Check dependencies
-        caller_sobject = my.input.get("related_sobject")
-        if not caller_sobject:
-            return True
-
-
-        related_pipeline = my.input.get("related_pipeline")
-        related_process = my.input.get("related_process")
-        related_search_type = caller_sobject.get_base_search_type()
-
-        pipeline = my.input.get("pipeline")
-        process = my.input.get("process")
-        sobject = my.input.get("sobject")
-
-
-        # find related sobjects
-        related_sobjects = sobject.get_related_sobjects(related_search_type)
-
-        # get the message status from each of these
-        keys = []
-        for related_sobject in related_sobjects:
-            # ignore the caller as we know that is complete
-            if related_sobject.get_search_key() == caller_sobject.get_search_key():
-                continue
-
-            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
-            keys.append(key)
-
-        # get the statuses
-        search = Search("sthpw/message")
-        search.add_filters("code", keys)
-        message_sobjects = search.get_sobjects()
-
-        # find the status
-        complete = True
-        for message_sobject in message_sobjects:
-            status = message_sobject.get_value("message")
-            print "message: ", message_sobject.get_code(), status
-            if status not in ["complete"]:
-                complete = False
-                break
-
-        return complete
-
-
-
-
-        """
-        key = "%s|%s|dependency" % (sobject.get_search_key(), process)
-
-        # find the dependency message
-        message_sobj = Search.get_by_code("sthpw/message", key)
-        if not message_sobj:
-            # find all of the related sobjects
-            related_sobjects = sobject.get_related_sobjects(related_search_type)
-
-            # log a message storing these related sobjects
-            message = {}
-            for related_sobject in related_sobjects:
-                related_search_key = related_sobject.get_search_key()
-                if related_search_key == caller_sobject.get_search_key():
-                    message[related_search_key] = True
-                else:
-                    # determine if the related is already complete
-                    key2 = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
-                    message2_sobj = Search.get_by_code("sthpw/message", key2)
-                    if message2_sobj and message2_sobj.get("message") in ["in_progres","complete"]:
-                        message[related_search_key] = True
-                    else:
-                        message[related_search_key] = False
-
-
-
-            message_sobj = SearchType.create("sthpw/message")
-            message_sobj.set_value("code", key)
-
-        else:
-
-            message = message_sobj.get_json_value("message")
-            message[caller_sobject.get_search_key()] = True
-
-
-
-        message_sobj.set_json_value("message", message)
-        message_sobj.commit();
-
-
-        # verify if all of the assets are complete
-        print "---"
-        complete = True
-        for name, value in message.items():
-            print "name: ", name, value
-            if not value:
-                complete = False
-                break
-
-        return complete
-        """
-
-
-
 
     def handle_pending(my):
 
@@ -614,10 +596,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
         print "complete: ", my.process
-
-        if not my.check_complete_inputs():
-            return
-
  
         # run a nodes complete trigger
         status = "complete"
@@ -799,6 +777,7 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         my.log_message(my.sobject, my.process, "action")
         # does nothing
         pass
+
 
 
 
@@ -1229,7 +1208,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=my.input)
             return handler.handle_action()
-        elif node_type in ["manual", "node"]:
+        elif node_type in ["manual", "node","progress"]:
             handler = WorkflowManualNodeHandler(input=my.input)
             return handler.handle_action()
         elif node_type == "hierarchy":
@@ -1264,10 +1243,17 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
     def execute(my):
 
+
+
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+
+
+        if not my.check_complete_inputs():
+            my.log_message(sobject, process, "in_progress")
+            return
 
         if process.find(".") != -1:
             parts = process.split(".")
@@ -1293,8 +1279,6 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
             handler = WorkflowConditionNodeHandler(input=my.input)
         elif node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=my.input)
-
-
 
 
         if handler:
