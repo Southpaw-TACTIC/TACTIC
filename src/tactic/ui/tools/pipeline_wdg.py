@@ -1,4 +1,4 @@
-###########################################################
+##########################################################
 #
 # Copyright (c) 2005-2008, Southpaw Technology
 #                     All Rights Reserved
@@ -835,7 +835,6 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
         var node_name = spt.pipeline.get_node_name(node);
         var group_name = spt.pipeline.get_current_group();
-
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
         if (!info) {
@@ -1609,7 +1608,6 @@ class DefaultInfoWdg(BaseInfoWdg):
         pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
 
-
         top = my.top
 
         if not pipeline_code:
@@ -1638,8 +1636,10 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         search = Search("config/process")
         search.add_filter("process", process)
+        
         process_sobj = search.get_sobject()
 
+        process_code = process_sobj.get_value("code")
 
 
         #show error message if the node has not been registered 
@@ -1661,7 +1661,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         # triggers
         search = Search("config/trigger")
-        search.add_filter("process", process)
+        search.add_filter("process", process_code)
         trigger_count = search.get_count()
 
 
@@ -1696,7 +1696,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         td = table.add_cell("Triggers:")
         td.add_style("text-align: right")
         td.add_style("padding: 10px 10px")
-        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % trigger_count)
+        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" %trigger_count)
         td.add_style("width: 250px")
         td.add_style("text-align: right")
 
