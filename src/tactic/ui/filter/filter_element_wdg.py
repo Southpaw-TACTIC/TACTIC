@@ -361,6 +361,13 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add(HiddenWdg("op", "is on"))
         elif op == '~':
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
+        elif op == 'is':
+            #TODO: have this style apply to everything else and get rid of &nbsps
+            op_div = DivWdg('is')
+            op_div.add_styles('margin-top: 8px; margin-right: 15px')
+            div.add(op_div)
+            div.add(HiddenWdg("op", "="))
+            div.add_style("display: flex")
         else:
             op_select = SelectWdg("op")
             op_select.add_style("width: 100px")
@@ -550,6 +557,13 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         my.look_ahead_columns = []
         my.relevant = my.get_option("relevant")
         my.mode = my.get_option("mode")
+        
+        my.keyword_search_type = ''
+        my.keyword_map_search_type = ''
+        if my.mode == 'keyword_tree':
+            my.keyword_search_type = my.get_option("keyword_search_type") or 'workflow/base_keyword'
+            my.keyword_map_search_type = my.get_option("keyword_map_search_type") or 'workflow/keyword_map'
+
         my.cross_db = my.get_option("cross_db") =='true'
         column = my.get_option("column")
         full_text_column = my.get_option("full_text_column")
@@ -702,9 +716,15 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             # or partial match with alias column 
             if op == 'child':
                 tbl = "p1"
+            elif op == 'both':
+                tbl = "p1"
+                filter_expr1 = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+                tbl = "p2"
+                filter_expr2 = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
             else:
                 tbl = "p2"
             filter_expr = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+
             if op == 'parent':
                 stmts.append(impl.get_parent_cte(filter_expr))
                 value_idx.append(1)
@@ -712,12 +732,23 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 stmts.append(impl.get_child_cte(filter_expr))
                 value_idx.append(3)
             elif op == 'both':
-                stmts.append(impl.get_parent_cte(filter_expr))
+                stmts.append(impl.get_parent_cte(filter_expr2))
                 value_idx.append(1)
-                stmts.append(impl.get_child_cte(filter_expr))
+                stmts.append(impl.get_child_cte(filter_expr1))
                 value_idx.append(3)
             elif op == 'keyword':
                 pass
+
+
+            original_search = Search(my.keyword_search_type)
+            original_search.add_op('begin')
+            original_search.add_filter('name', value)
+            original_search.add_regex_filter('alias', value, op='EQI')
+            original_search.add_op('or')
+            original = original_search.get_sobject()
+            if original:
+                value = original.get('name')
+
 
             # include the original value
             keywords_list = [value]
@@ -728,7 +759,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     if res[value_idx[idx]] not in keywords_list:
                         keywords_list.append(res[value_idx[idx]])
 
-          
             keywords = keywords_list
 
             for column in my.columns:

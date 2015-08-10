@@ -183,13 +183,18 @@ class DialogWdg(BaseRefreshWdg):
             
             var dialog = $(bvr.dialog_id);
             if (dialog) {
+                var target = evt.target;
+                var in_dialog = target.getParent('.spt_dialog_top');
+                
                 var body = $(document.body); 
                 var scroll_top = body.scrollTop; 
                 var scroll_left = body.scrollLeft; 
                 offset.y = offset.y - scroll_top; 
                 offset.x = offset.x - scroll_left; 
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
-                spt.toggle_show_hide(dialog);
+                // avoid toggle when the dialog is a child of the activator
+                if (!in_dialog)
+                    spt.toggle_show_hide(dialog);
 
                 // reposition if offscreen for offset x only
                 var size = dialog.getSize();
@@ -204,12 +209,13 @@ class DialogWdg(BaseRefreshWdg):
                 }
 
                 // adjust the pointer
+                /*
                 var pointer = dialog.getElement(".spt_popup_pointer");
                 if (pointer) {
                     pointer_pos = pointer.getPosition();
-                    //pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
+                    pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
                 }
-
+                */
             }
             bvr.src_el.dialog = dialog;
             spt.body.add_focus_element(dialog);
@@ -392,8 +398,6 @@ class DialogWdg(BaseRefreshWdg):
             # if the title is empty, just don't show
         if my.kwargs.get("show_title") in [False, 'false']:
             drag_div.add_style("display: none")
-        #else:
-        #    content_div.add_style("margin-top: -1px")
 
 
         drag_handle_div.add(title_wdg)

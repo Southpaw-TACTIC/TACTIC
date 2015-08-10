@@ -676,7 +676,7 @@ class BaseAppServer(Base):
 
             
         # set up default securities
-        my.set_default_security(security)
+        #my.set_default_security(security)
 
         # for now apply the access rules after
         security.add_access_rules()
@@ -836,7 +836,7 @@ class BaseAppServer(Base):
     add_onload_script = staticmethod(add_onload_script)    
         
 
-
+"""
 class AppServerSecurityRules(object):
     ''' A set of rules applied at the start up of drawing of a page'''
     def __init__(my, security):
@@ -882,6 +882,8 @@ class AppServerSecurityRules(object):
             my.access_manager.add_xml_rules(my.xml)
 
 
+
+"""
 
 # NOTE: this function has to be declared after BaseAppServer
 def get_app_server_class():

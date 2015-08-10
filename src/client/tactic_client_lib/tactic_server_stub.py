@@ -521,8 +521,8 @@ class TacticServerStub(object):
 
 
 
-    def get_ticket(my, login, password):
-        '''API Function: get_ticket(login, password)
+    def get_ticket(my, login, password, site=None):
+        '''API Function: get_ticket(login, password, site=None)
         Get an authentication ticket based on a login and password.
         This function first authenticates the user and the issues a ticket.
         The returned ticket is used on subsequent calls to the client api
@@ -531,11 +531,13 @@ class TacticServerStub(object):
         login - the user that is used for authentications
         password - the password of that user
 
+        @keyparam:
+        site - name of the site used in a portal setup
+
         @return:
         string - ticket key  
         '''
-        return my.server.get_ticket(login, password)
-
+        return my.server.get_ticket(login, password, site)
 
 
     def get_info_from_user(my, force=False):

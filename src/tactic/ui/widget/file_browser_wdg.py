@@ -1330,6 +1330,7 @@ class DirListPathHandler(BaseRefreshWdg):
                 dirname = os.path.dirname(path)
                 # windows server needs this since os.path.dirname() is different in windows
                 dirname = dirname.rstrip("/")
+                dirname = dirname.rstrip("\\")
                 basename = os.path.basename(path)
 
                 xpath = path.replace(current_dir, "")

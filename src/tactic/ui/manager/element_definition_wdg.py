@@ -791,7 +791,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             color_wdg.add_border()
             td.add(color_wdg)
 
-            # add the widget information
+            # add the color widget information
             color_wdg.add( my.get_color_wdg() )
 
             # add definition configs
@@ -975,8 +975,8 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         try:
             search = Search(search_type)
             if search.column_exists(element_name):
-                #search.add_column(element_name, distinct=True)
-                search.add_group_aggregate_filter([element_name])
+                search.add_column(element_name, distinct=True)
+                #search.add_group_aggregate_filter([element_name])
                 if search.column_exists("project_code"):
                     search.add_project_filter()
                 search.set_limit(100)
@@ -1037,12 +1037,18 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         text.add_style("width: 55px")
         text.add_style("float: left")
+        text.add_style("padding-right: 10px")
         color_input.set_input(text)
 
+        select_div = DivWdg()
+        select_div.add_styles("float: left; width: 100px")
         select = SelectWdg("color|column")
+        select.add_style("width: 150px")
         select.set_option("values", existing_values)
+        select_div.add(select)
+        
         template.add("&nbsp;"*2)
-        template.add(select)
+        template.add(select_div)
         template.add_style("padding: 3px")
 
         # FIXME:
@@ -1063,11 +1069,16 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             text.add_style("float: left")
             color_input.set_input(text)
 
+            select_div = DivWdg()
+            select_div.add_styles("float: left; width: 100px")
+
             select = SelectWdg("color|column")
             select.add_style("width: 150px")
             select.set_option("values", existing_values)
+            select_div.add(select)
+            
             first_row.add("&nbsp;"*2)
-            first_row.add(select)
+            first_row.add(select_div)
             first_row.add_style("padding: 3px")
 
 
@@ -2546,7 +2557,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     edit_wdg.set_value(value)
                     #edit_wdg.add_style("background: #a3d991")
                 else:
-                    edit_wdg.add_style("opacity: 0.7")
+                    edit_wdg.add_style("opacity: 0.5")
 
                 labels = option.get('labels')
                 if labels:
