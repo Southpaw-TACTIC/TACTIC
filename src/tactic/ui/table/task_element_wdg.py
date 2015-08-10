@@ -1636,11 +1636,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if node_type == "progress":
 
+
             if my.show_processes_in_title != 'true':
                 title_wdg = DivWdg("<b>%s</b>" % process)
                 div.add(title_wdg)
 
             related_type = process_obj.get_attribute("search_type")
+            related_process = process_obj.get_attribute("process")
 
             if not related_type:
                 search = Search("config/process")
@@ -1650,6 +1652,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 workflow = process_sobj.get_json_value("workflow")
                 if workflow:
                     related_type = workflow.get("search_type")
+                    related_process = workflow.get("process")
+
+            if not related_process:
+                related_process = process
      
 
             if not related_type:
@@ -1665,9 +1671,34 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             sobject = my.get_current_sobject()
 
-            related = sobject.get_related_sobjects(related_type)
-            related_keys = ["%s|%s|status" % (x.get_search_key(), process) for x in related]
 
+
+            key = "%s|%s|status" % (sobject.get_search_key(), process)
+            message_sobj = Search.get_by_code("sthpw/message", key)
+            if message_sobj:
+                status = message_sobj.get("message")
+            else:
+                status = 'pending'
+
+            display_status = Common.get_display_title(status)
+            div.add("<b>%s</b>" % display_status)
+            color = Task.get_default_color(status)
+
+
+            div.add_behavior( {
+                'type': 'click_up',
+                'related_type': related_type,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.ViewPanelWdg';
+                var kwargs = {
+                    search_type: 'sthpw/task',
+                }
+                '''
+            } )
+
+
+            related = sobject.get_related_sobjects(related_type)
+            related_keys = ["%s|%s|status" % (x.get_search_key(), related_process) for x in related]
             search = Search("sthpw/message")
             search.add_filters("code", related_keys)
             message_sobjs = search.get_sobjects()
@@ -1681,7 +1712,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             progress_wdg = RadialProgressWdg(
                 total=total,
                 count=count,
-                color="#BDD7CF"
+                color=color
             )
             progress_div = DivWdg()
             div.add(progress_div)
