@@ -250,15 +250,7 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        try:
-                            Site.set_site("default")
-                            Project.set_project("portal")
-                            web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
-                        except Exception, e:
-                            print "WARNING: ", e
-                            raise
-
-
+                        web_wdg = site_obj.get_login_wdg()
                         if web_wdg:
                             web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
@@ -269,13 +261,8 @@ class BaseAppServer(Base):
                 if not web_wdg:
 
                     # get login screen from Site
-                    try:
-                        # FIXME: hard coded portal!!!!!
-                        Site.set_site("default")
-                        Project.set_project("portal")
-
-                        web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
-                    except:
+                    web_wdg = site_obj.get_login_wdg()
+                    if not web_wdg:
                         # else get the default one
                         web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
                     

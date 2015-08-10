@@ -741,6 +741,12 @@ class Site(object):
 
     def get_default_project(cls):
         return
+    get_default_project = classmethod(get_default_project)
+
+
+    def get_login_wdg(cls):
+        return None
+    get_login_wdg = classmethod(get_login_wdg)
  
 
 

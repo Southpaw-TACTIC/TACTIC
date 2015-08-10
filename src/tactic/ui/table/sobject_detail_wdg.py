@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['SObjectDetailElementWdg']
+__all__ = ['SObjectDetailElementWdg', 'SObjectTaskStatusElementWdg', 'TaskDetailPanelElementWdg']
 
 from pyasm.common import Environment
 from pyasm.search import SearchKey
@@ -148,9 +148,9 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
 
 
-__all__.append("SObjectTaskStatusElementWdg")
 class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
-    '''The element widget that displays according to type'''
+    '''The element widget that displays a button which when clicked will open up
+    a detail view of a task'''
 
     ARGS_KEYS = {
     }
@@ -220,7 +220,6 @@ class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
         return div
 
 
-__all__.append("TaskDetailPanelElementWdg")
 class TaskDetailPanelElementWdg(SObjectDetailElementWdg):
     '''The element widget that displays according to type'''
 

@@ -466,8 +466,6 @@ class Snapshot(SObject):
         if node is None:
             return ''
 
-        print "xml: ", xml.to_string()
-
         file_name = my._get_file_name(node)
         web_path = "%s/%s" % (web_dir,file_name)
         

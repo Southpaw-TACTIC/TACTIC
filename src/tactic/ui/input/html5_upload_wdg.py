@@ -183,8 +183,6 @@ spt.html5upload.clear = function() {
 
 
 spt.html5upload.upload_failed = function(evt) {
-    console.log("Upload Failed");
-    console.log(evt);
     spt.app_busy.hide();
     spt.alert("Upload failed");
 }
