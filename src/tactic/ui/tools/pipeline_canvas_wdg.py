@@ -380,6 +380,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add(dependency)
 
 
+        progress = my.get_node("XXXXX", node_type="progress")
+        template_div.add(progress)
+
+
         endpoint = my.get_endpoint_node("XXXXX", node_type="output")
         template_div.add(endpoint)
 
@@ -638,8 +642,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         elif node_type == "dependency":
             border_radius =  5
             #width = width
-            width = 60
-            height = width
+            height = 60
+            width = 80
+        elif node_type == "progress":
+            border_radius =  30
+            #width = width
+            height = 55
+            width = 55
         else:
             border_radius = 3
 

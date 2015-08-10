@@ -601,7 +601,13 @@ class TaskElementWdg(BaseTableElementWdg):
         
         if pipelines:
             for pipeline in pipelines:
-                processes = pipeline.get_processes(type=["node","approval","hierarchy", "dependency"])
+                processes = pipeline.get_processes(type=[
+                        "node",
+                        "approval",
+                        "hierarchy",
+                        #"dependency",
+                        "progress"
+                ])
 
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
@@ -1498,9 +1504,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         pipeline = None
 
-                    task = tasks[0]
 
-                    process = task.get_value("process")
+                    #task = tasks[0]
+                    #process = task.get_value("process")
+
+
                     process_obj = pipeline.get_process(process)
                     if process_obj:
                         node_type = process_obj.get_type()
@@ -1513,12 +1521,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         td.add_style("opacity: 0.5")
 
 
-                    task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
-
-                    if not is_task_displayed:
+                    if is_task_displayed or node_type in ['depndency', 'progress']:
                         
+                        task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, process, last_one)
+                    else:
                         task_wdg = DivWdg()
-                        # TODO: this should be made to be dependent on how big the task wdg is
                         task_wdg.add_style("width: 115px")
                         task_wdg.add_style("padding: 2px")
 
@@ -1589,24 +1596,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             my.permission[element_name] = {'is_viewable': is_viewable, 'is_editable': is_editable}
 
 
-    def get_task_wdg(my, tasks, parent_key, pipeline_code, last_one):
+    def get_task_wdg(my, tasks, parent_key, pipeline_code, process, last_one):
 
         if pipeline_code:
             pipeline = my.pipelines_dict.get(pipeline_code)
         else:
             pipeline = None
 
-        # if there are multiple tasks, assume all properties are the same
-        # except the assignment
-        task = tasks[0]
-
-
-        process = task.get_value("process")
         process_obj = pipeline.get_process(process)
         if process_obj:
             node_type = process_obj.get_type()
         else:
             node_type = "node"
+
 
 
         div = DivWdg()
@@ -1632,7 +1634,78 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             direction = 'right'
 
 
+        if node_type == "progress":
 
+            if my.show_processes_in_title != 'true':
+                title_wdg = DivWdg("<b>%s</b>" % process)
+                div.add(title_wdg)
+
+            related_type = process_obj.get_attribute("search_type")
+
+            if not related_type:
+                search = Search("config/process")
+                search.add_filter("pipeline_code", pipeline_code)
+                search.add_filter("process", process)
+                process_sobj = search.get_sobject()
+                workflow = process_sobj.get_json_value("workflow")
+                if workflow:
+                    related_type = workflow.get("search_type")
+     
+
+            if not related_type:
+                progress_div = DivWdg()
+                div.add(progress_div)
+                progress_div.add_style("font-size: 1.5em")
+                progress_div.add("N/A")
+                progress_div.add_style("margin: 20")
+                return div
+
+
+
+
+            sobject = my.get_current_sobject()
+
+            related = sobject.get_related_sobjects(related_type)
+            related_keys = ["%s|%s|status" % (x.get_search_key(), process) for x in related]
+
+            search = Search("sthpw/message")
+            search.add_filters("code", related_keys)
+            message_sobjs = search.get_sobjects()
+            total = len(related)
+            count = 0
+            for message_sobj in message_sobjs:
+                if message_sobj.get_value("message").lower() == "complete":
+                    count += 1
+
+            from spt.ui.widgets import RadialProgressWdg
+            progress_wdg = RadialProgressWdg(
+                total=total,
+                count=count,
+                color="#BDD7CF"
+            )
+            progress_div = DivWdg()
+            div.add(progress_div)
+            progress_div.add(progress_wdg)
+            progress_div.add_style("margin: 0px auto")
+            progress_div.add_style("width: 70px")
+
+
+            return div
+
+
+        """
+        if node_type == "dependency":
+
+            dependency_div = DivWdg()
+            div.add(dependency_div)
+            dependency_div.add_style("margin: 8px 0px 8px -8px")
+            dependency_div.add_class("spt_dependency_top")
+
+            dependency_div.add("H!H!H!")
+
+
+            return div
+        """
 
         if node_type == "hierarchy":
 
@@ -1712,6 +1785,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             elif my.show_border == 'all':
                 div.add_border(color="table_border")
 
+
+
+
+        # if there are multiple tasks, assume all properties are the same
+        # except the assignment
+        task = tasks[0]
+
+
+
         process = task.get_value("process")
         status = task.get_value("status")
 
@@ -1782,10 +1864,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             pass
 
 
-        show_process = True
-     
         process = task.get_value("process")
-        if my.show_process == 'true' and (len(my.tasks) >= 1 or process != 'publish') and show_process:
+        if my.show_process == 'true' and (len(my.tasks) >= 1 or process != 'publish'):
             process_div = DivWdg()
             if my.layout in ['horizontal', 'vertical']:
                 #process_div.add_style("float: left")

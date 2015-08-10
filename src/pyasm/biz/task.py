@@ -656,8 +656,9 @@ class Task(SObject):
 
         task.set_value("process", process )
         task.set_value("description", description )
-        task.set_value("assigned", assigned)
-        if supervisor:
+        if assigned != None:
+            task.set_value("assigned", assigned)
+        if supervisor != None:
             task.set_value("supervisor", supervisor)
 
         if not project_code:

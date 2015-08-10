@@ -1522,6 +1522,10 @@ class ProcessInfoWdg(BaseRefreshWdg):
         if node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
 
+        if node_type == 'progress':
+            widget = ProgressInfoWdg(**my.kwargs)
+
+
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
 
@@ -1591,7 +1595,8 @@ class BaseInfoWdg(BaseRefreshWdg):
                 'approval',
                 'hierarchy',
                 # Not supported yet
-                'dependency'
+                'dependency',
+                'progress'
             ])
             select.add_style("width: 100px")
             if node_type == "node":
@@ -2558,7 +2563,6 @@ class DependencyInfoWdg(BaseInfoWdg):
             values['node_type'] = 'dependency';
             values['process'] = bvr.process;
             values['pipeline_code'] = bvr.pipeline_code;
-            values['wait'] = bvr.wait;
 
             var server = TacticServerStub.get();
             server.execute_cmd( class_name, values);
@@ -2572,6 +2576,144 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         return top
+
+
+
+
+class ProgressInfoWdg(BaseInfoWdg):
+
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+        top.add_class("spt_progress_top")
+
+ 
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
+
+
+        settings_wdg = DivWdg()
+        top.add(settings_wdg)
+        settings_wdg.add_style("padding: 0px 10px")
+
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        related_search_type = workflow.get("search_type")
+        related_process = workflow.get("process")
+        related_status = workflow.get("status")
+        related_scope = workflow.get("scope")
+        related_wait = workflow.get("wait")
+
+
+        project = Project.get()
+        search_type_sobjs = project.get_search_types(include_multi_project=True)
+
+        # find out which ones have pipeline_codes
+        filtered_sobjs = []
+        for search_type_sobj in search_type_sobjs:
+            base_type = search_type_sobj.get_base_key()
+            exists = SearchType.column_exists(base_type, "pipeline_code")
+            if exists:
+                filtered_sobjs.append(search_type_sobj)
+
+        search_types = [x.get_base_key() for x in search_type_sobjs]
+        values = [x.get_base_key() for x in filtered_sobjs]
+        labels = ["%s (%s)" % (x.get_title(), x.get_base_key()) for x in filtered_sobjs]
+
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Track progress of search type:</b>")
+        select = SelectWdg("related_search_type")
+        settings_wdg.add(select)
+        if related_search_type:
+            select.set_value(related_search_type)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the related sobjects of the selected search type.</span>")
+        settings_wdg.add("<br/>")
+
+
+        search_type = "vfx/shot"
+
+
+        search = Search("sthpw/pipeline")
+        search.add_filter("search_type", search_type)
+        related_pipelines = search.get_sobjects()
+
+        values = set()
+        for related_pipeline in related_pipelines:
+            related_process_names = related_pipeline.get_process_names()
+            for x in related_process_names:
+                values.add(x)
+
+        values = list(values)
+        values.sort()
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Track Process</b>")
+        select = SelectWdg("related_process")
+        if related_process:
+            select.set_value(related_process)
+        settings_wdg.add(select)
+        select.set_option("values", values)
+        select.add_empty_option("-- %s --" % process)
+        settings_wdg.add("<span style='opacity: 0.6'>Determines which process to track.  If empty, it will use the same process name.</span>")
+        settings_wdg.add("<br/>")
+
+
+
+
+        settings_wdg.add("<br/>")
+
+        save_button = ActionButtonWdg(title="Save", color="primary")
+        settings_wdg.add(save_button)
+        save_button.add_style("float: right")
+        save_button.add_style("padding-top: 3px")
+        save_button.add_behavior( {
+            'type': 'click_up',
+            'process': process,
+            'pipeline_code': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_progress_top");
+            var values = spt.api.get_input_values(top, null, false);
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = values;
+            values['node_type'] = 'progress';
+            values['process'] = bvr.process;
+            values['pipeline_code'] = bvr.pipeline_code;
+
+            var server = TacticServerStub.get();
+            server.execute_cmd( class_name, values);
+            
+            '''
+        } )
+
+
+
+        settings_wdg.add("<br clear='all'/>")
+
+
+        return top
+
+
 
 
 
@@ -2702,6 +2844,10 @@ class ProcessInfoCmd(Command):
 
         if node_type == 'approval':
             return my.handle_approval()
+
+
+        if node_type == 'progress':
+            return my.handle_progress()
 
 
 
@@ -2836,6 +2982,77 @@ class ProcessInfoCmd(Command):
 
 
 
+    def handle_progress(my):
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        search_type = pipeline.get_value("search_type")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        related_search_type = my.kwargs.get("related_search_type")
+        related_process = my.kwargs.get("related_process")
+        if not related_process:
+            related_process = process
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        if related_search_type:
+            workflow['search_type'] = related_search_type
+        if related_process:
+            workflow['process'] = related_process
+
+
+        # find a related trigger
+        trigger_code = workflow.get('trigger_code')
+        trigger = None
+        if trigger_code:
+            search = Search("config/trigger")
+            search.add_filter("code", trigger_code)
+            trigger = search.get_sobject()
+
+        if not trigger:
+            trigger = SearchType.create("config/trigger")
+
+        event = "workflow|%s" % (related_search_type)
+        trigger.set_value("event", event)
+
+        # update the trigger information
+        trigger.set_value("class_name", "pyasm.command.ProcessStatusTrigger")
+
+        # description
+        trigger.set_value("description", "Listener for [%s] from [%s]" % (process, search_type))
+        trigger.set_value("mode", "same process,same transaction")
+        trigger.set_value("process", related_process)
+
+        data = {
+                "process_code": process_sobj.get_code(),
+                "pipeline_code": pipeline_code,
+                "search_type": search_type,
+        }
+        trigger.set_json_value("data", data)
+
+        trigger.commit()
+        trigger_code = trigger.get_code()
+
+        workflow['trigger_code'] = trigger_code
+
+
+        process_sobj.set_json_value("workflow", workflow)
+        process_sobj.commit()
+
+
+
+
+
 
 
 class PipelineEditorWdg(BaseRefreshWdg):
@@ -2965,7 +3182,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg.add_style("padding: 5px")
         shelf_wdg.add_style("margin-bottom: 5px")
         shelf_wdg.add_style("overflow-x: hidden")
-        shelf_wdg.add_style("min-width: 500px")
+        shelf_wdg.add_style("min-width: 400px")
 
         show_shelf = my.kwargs.get("show_shelf")
         show_shelf = True
