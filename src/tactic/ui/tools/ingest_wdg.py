@@ -12,7 +12,7 @@
 
 from pyasm.common import Environment, jsonloads, jsondumps, TacticException
 from pyasm.web import DivWdg, Table
-from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
+from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
 from pyasm.biz import File, Project
@@ -37,12 +37,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         'parent_key': 'Parent search key to relate create sobject to',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
-        'oncomplete_script_path': 'Script to be run on a finished ingest'
+        'oncomplete_script_path': 'Script to be run on a finished ingest',
+        'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.'
     }
 
 
     def get_display(my):
-
 
         relative_dir = my.kwargs.get("relative_dir")
         my.relative_dir = relative_dir
@@ -53,8 +53,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add_style("min-width: 500px")
         div.add_style("padding: 20px")
         div.add_color("background", "background")
-
-
+        
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
             div.add("No search type specfied")
@@ -601,6 +600,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
+        
+        var update_mode_select = top.getElement(".spt_update_mode_select");
+        var update_mode = update_mode_select.value;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -645,6 +647,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_data: update_data,
             process: process,
             convert: convert,
+            update_mode: update_mode,
         }
         on_complete = function() {
 
@@ -685,14 +688,14 @@ class IngestUploadWdg(BaseRefreshWdg):
         action_handler = my.kwargs.get("action_handler")
         if not action_handler:
             action_handler = 'tactic.ui.tools.IngestUploadCmd';
-
+ 
         button.add_behavior( {
             'type': 'click_up',
             'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
                 'relative_dir': relative_dir,
-                'script_found': script_found
+                'script_found': script_found,
             },
             'cbjs_action': '''
 
@@ -703,6 +706,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
+           
             var file_els = top.getElements(".spt_upload_file");
 
             // get the server that will be used in the callbacks
@@ -737,7 +741,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 files: files,
                 upload_start: upload_start,
                 upload_complete: upload_complete,
-                upload_progress: upload_progress 
+                upload_progress: upload_progress
             };
             if (bvr.ticket)
                upload_file_kwargs['ticket'] = bvr.ticket; 
@@ -794,6 +798,40 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin-top: -3px")
         buttons.add_cell(button)
         
+        select_label = DivWdg("Update mode");
+        select_label.add_style("float: left")
+        select_label.add_style("margin-top: -3px")
+        select_label.add_style("margin-left: 20px")
+        buttons.add_cell(select_label)
+        
+        update_mode_option = my.kwargs.get("update_mode")
+        if not update_mode_option:
+            update_mode_option = "true"
+        update_mode = SelectWdg(name="update mode")
+        update_mode.add_class("spt_update_mode_select")
+        update_mode.set_option("values", ["false", "true"])
+        update_mode.set_option("labels", ["Off", "On"])
+        update_mode.set_option("default", update_mode_option)
+        update_mode.add_style("float: left")
+        update_mode.add_style("margin-top: -3px")
+        update_mode.add_style("margin-left: 5px")
+        update_mode.add_style("margin-right: 5px")
+        buttons.add_cell(update_mode)
+
+        update_info = DivWdg()
+        update_info.add_class("glyphicon")
+        update_info.add_class("glyphicon-info-sign")
+        update_info.add_style("float: left")
+        update_info.add_style("margin-top: -3px")
+        update_info.add_style("margin-left: 10px")
+        update_info.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.");
+            '''
+        } )
+        buttons.add_cell(update_info);
+ 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
         dialog.set_as_activator(button, offset={'x':-10,'y':10})
@@ -962,13 +1000,12 @@ class IngestUploadCmd(Command):
 
     def execute(my):
 
-
         filenames = my.kwargs.get("filenames")
 
         upload_dir = Environment.get_upload_dir()
         base_dir = upload_dir
 
-
+        update_mode = my.kwargs.get("update_mode")
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
@@ -1013,15 +1050,27 @@ class IngestUploadCmd(Command):
         input_prefix = update_data.get('input_prefix')
         
         for count, filename in enumerate(filenames):
+            
+            # Check if files should be updated. 
+            # If so, attempt to find one to update.
+            # If more than one is found, do not update.
+            if update_mode in ["true", "True"]:
+                # first see if this sobjects still exists
+                search = Search(search_type)
+                search.add_filter("name", filename)
+                if relative_dir and search.column_exists("relative_dir"):
+                    search.add_filter("relative_dir", relative_dir)
+                sobjects = search.get_sobjects()
+                if len(sobjects) > 1:
+                    sobject = None
+                elif len(sobjects) == 1:
+                    sobject = sobjects[0]
+                else:
+                    sobject = None
+            else:
+                sobject = None 
 
-            # first see if this sobjects still exists
-            search = Search(search_type)
-            search.add_filter("name", filename)
-            if relative_dir and search.column_exists("relative_dir"):
-                search.add_filter("relative_dir", relative_dir)
-            sobject = search.get_sobject()
-
-            # else create a new one
+            # Create a new file
             if not sobject:
                 sobject = SearchType.create(search_type)
                 sobject.set_value("name", filename)

@@ -555,6 +555,7 @@ class LoginGroup(Login):
                 xml.append('''<rule group="project" code="*" access="allow"/>''')
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="link" element="*" access="allow"/>''')
+            xml.append('''<rule group="gear_menu" submenu="*" label="*" access="allow"/>''') 
             xml.append('''<rule group="process" process="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
             xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
@@ -741,6 +742,12 @@ class Site(object):
 
     def get_default_project(cls):
         return
+    get_default_project = classmethod(get_default_project)
+
+
+    def get_login_wdg(cls):
+        return None
+    get_login_wdg = classmethod(get_login_wdg)
  
 
 

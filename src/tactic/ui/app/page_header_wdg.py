@@ -365,9 +365,9 @@ class ProjectSelectWdg(BaseRefreshWdg):
 
         from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
 
-        display = my.kwargs.get("display")
-        if display == "chevron":
-            button = IconButtonWdg(title='Open Project', icon="BS_CHEVRON_DOWN")
+        icon = my.kwargs.get("icon")
+        if icon:
+            button = IconButtonWdg(title='Open Project', icon=icon)
         else:
             button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
 
@@ -629,7 +629,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 700px")
+        inner.add_style("width: 800px")
         inner.add_style("float: center")
         inner.add_border()
         inner.center()
