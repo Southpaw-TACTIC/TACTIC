@@ -152,15 +152,21 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add_style("width: %s" % my.width)
         outer.add_style("height: %s" % my.height)
 
-        menu = my.get_node_context_menu()
-        menus = [menu.get_data()]
+        process_menu = my.get_node_context_menu()
+        menus = [process_menu.get_data()]
+
+        # Simple context menu is for renaming and 
+        # deleting approval, action and condition nodes..        
+        simple_menu = my.get_simple_node_context_menu()
+        simple_menus = [simple_menu.get_data()]   
+    
         menus_in = {
             'NODE_CTX': menus,
+            'SIMPLE_NODE_CTX': simple_menus 
         }
+
         from tactic.ui.container.smart_menu_wdg import SmartMenu
         SmartMenu.attach_smart_context_menu( outer, menus_in, False )
-
-
 
         # inner is used to scale
         inner = DivWdg()
@@ -1426,6 +1432,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
@@ -1510,7 +1518,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+ 
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
         for node_behavior in node_behaviors:
@@ -1763,8 +1773,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         """
 
 
-
-
         menu_item = MenuItem(type='action', label='Rename Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1774,11 +1782,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
         menu.add(menu_item)
 
-
-
-
-
- 
         menu_item = MenuItem(type='action', label='Delete Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1804,6 +1807,37 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return menu
 
 
+    def get_simple_node_context_menu(my):
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Rename Node')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.set_rename_mode(node);
+            '''
+        } )
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Delete Node')
+        menu_item.add_behavior( {
+            'cbjs_action': ''' 
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.init( { src_el: node } );
+            spt.pipeline.remove_node(node);
+            '''
+        } ) 
+        menu.add(menu_item)
+
+        return menu 
+    
 
     def get_onload_js(my):
 
@@ -2551,7 +2585,8 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     var template_class = "spt_pipeline_" + node_type;
     var template = template_container.getElement("."+template_class);
     if (!template) {
-        alert("Can't find template for ["+template_class+"]");
+        if (template_class !='spt_pipeline_manual')
+            spt.alert("Can't find template for ["+template_class+"]");
         return;
     }
 
@@ -4560,7 +4595,7 @@ spt.pipeline.set_task_color = function(group_name) {
 
 // Export group
 spt.pipeline.export_group = function(group_name) {
-
+    
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
 

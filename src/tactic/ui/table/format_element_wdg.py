@@ -15,8 +15,8 @@ __all__ = ['FormatElementWdg']
 
 import re, datetime
 
-from pyasm.common import TimeCode
-from pyasm.search import Search, SearchKey, SearchType
+from pyasm.common import TimeCode, SPTDate
+from pyasm.search import SObject, Search, SearchKey, SearchType
 from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
 from pyasm.biz import Schema, Project, ProdSetting
 from pyasm.widget import HiddenWdg, IconWdg
@@ -116,6 +116,13 @@ class FormatElementWdg(SimpleTableElementWdg):
         if widget_type in ['integer', 'float', 'timecode', 'currency']:
             top.add_style("float: right")
             my.justify = "right"
+
+        elif widget_type in ['date','time']:
+            name = my.get_name()
+            if not SObject.is_day_column(name):
+                value = SPTDate.convert_to_local(value)
+                value = str(value)
+
         else:
             top.add_style("float: left")
             my.justify = "left"
@@ -133,14 +140,22 @@ class FormatElementWdg(SimpleTableElementWdg):
     def get_text_value(my):
 
         value = my.get_value()
+        widget_type = my.get_option("type")
+        
+        if widget_type in ['date','time']:
+            name = my.get_name()
+            if not SObject.is_day_column(name):
+                value = SPTDate.convert_to_local(value)
+                value = str(value)
+ 
         format = my.get_option('format')
-     
+        
         if format == 'Checkbox':
             value = str(value)
         else:
             value = my.get_format_value( value, format )
 
-
+       
         return value
 
     def get_bottom_wdg(my):
@@ -181,7 +196,15 @@ class FormatElementWdg(SimpleTableElementWdg):
             print "WARNING: ", e.message
             result = "Calculation Error"
             title = ''
-
+        """
+        widget_type = my.get_option("type")
+        
+        if widget_type in ['date','time']:
+            name = my.get_name()
+            if not SObject.is_day_column(name):
+                result = SPTDate.convert_to_local(result)
+                result= str(result)
+        """
         format = my.get_option('format')
         formatted_result = my.get_format_value( result, format )
 
@@ -220,7 +243,6 @@ class FormatElementWdg(SimpleTableElementWdg):
     def get_format_value(my, value, format):
         if format not in ['Checkbox'] and value == '':
             return ''
-
         # ------------------------------------------------
         # Integer
         if format == '-1234':
@@ -473,9 +495,10 @@ class FormatElementWdg(SimpleTableElementWdg):
                 if not timezone:
                     pass
                 elif timezone == "local":
-                    value = SPTDate.convert_to_local(value)
+                    pass # already the default
+                    #value = SPTDate.convert_to_local(value)
                 else:
-                    value = SPTDate.convert_to_timezone(value, "EDT")
+                    value = SPTDate.convert_to_timezone(value, timezone)
 
                 value = value.strftime("%I:%M:%S %p")
 
@@ -501,7 +524,9 @@ class FormatElementWdg(SimpleTableElementWdg):
                 setting = ProdSetting.get_value_by_key('DATETIME')
                 if not setting:
                     setting = "%Y-%m-%d %H:%M"
+                
                 value = value.strftime(setting)
+                
 
         elif format == 'DATE':
             if not value:

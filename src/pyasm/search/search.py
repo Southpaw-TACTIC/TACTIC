@@ -387,7 +387,7 @@ class Search(Base):
 
     def get_regex_filter(name, regex, op='EQI', impl=None):
         if regex:
-            regex = re.sub(r"'", r"\'", regex)
+            regex = re.sub(r"'", r"''", regex)
         else:
             regex = ''
 
@@ -4096,6 +4096,7 @@ class SObject(object):
                 pipeline_code = None
                 if parent:
                     pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+
                 if pipeline_code:
                     search = Search("config/process")
                     search.add_filter("process", process)
@@ -4165,18 +4166,21 @@ class SObject(object):
             if related_type == "*":
                 continue
 
-            print "Updating [%s] ... (not yet!!!)" % related_type
+            print "Preparing to update [%s]" % related_type
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
+
             if relationship == 'code':
-                # if the search type is the "from", then no change needs
-                # to be made because the relationship is not by
-                # this code
+                # attrs is a dictionary of the relationship details between the two
+                # schema tables. We need to check if the related_type is the parent or the
+                # child. Depending on which, we then check if the connected column is 
+                # != "code". If it is, we can safely continue with the database operation, 
+                # if not, there are dependencies that need changing before moving safely
                 if related_type == attrs.get("from"):
-                    if attrs.get("from_col") != "code":
+                    if attrs.get("to_col") != "code":
                         continue
                 else:
-                    if attrs.get("to_col") != "code":
+                    if attrs.get("from_col") != "code":
                         continue
                     
 
