@@ -663,7 +663,7 @@ class Task(SObject):
         if assigned:
             task.set_value("assigned", assigned)
 
-        if supervisor:
+        if supervisor != None:
             task.set_value("supervisor", supervisor)
 
         if not project_code:
@@ -1104,6 +1104,7 @@ class Milestone(SObject):
 
 
         return defaults
+
 
 
 
