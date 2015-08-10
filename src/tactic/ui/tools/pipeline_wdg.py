@@ -1661,7 +1661,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         # triggers
         search = Search("config/trigger")
-        search.add_filter("process", process_code)
+        search.add_filters("process", [process,process_code])
         trigger_count = search.get_count()
 
 
