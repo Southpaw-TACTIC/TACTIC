@@ -629,7 +629,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 700px")
+        inner.add_style("width: 800px")
         inner.add_style("float: center")
         inner.add_border()
         inner.center()
