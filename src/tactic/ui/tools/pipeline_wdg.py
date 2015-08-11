@@ -2622,6 +2622,8 @@ class ProgressInfoWdg(BaseInfoWdg):
         for search_type_sobj in search_type_sobjs:
             base_type = search_type_sobj.get_base_key()
             exists = SearchType.column_exists(base_type, "pipeline_code")
+            if not exists:
+                exists = SearchType.column_exists(base_type, "status")
             if exists:
                 filtered_sobjs.append(search_type_sobj)
 
