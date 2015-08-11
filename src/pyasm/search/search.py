@@ -4163,15 +4163,16 @@ class SObject(object):
             print "Updating [%s] ... (not yet!!!)" % related_type
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
+
             if relationship == 'code':
                 # if the search type is the "from", then no change needs
                 # to be made because the relationship is not by
                 # this code
                 if related_type == attrs.get("from"):
-                    if attrs.get("from_col") != "code":
+                    if attrs.get("to_col") != "code":
                         continue
                 else:
-                    if attrs.get("to_col") != "code":
+                    if attrs.get("from_col") != "code":
                         continue
                     
 
