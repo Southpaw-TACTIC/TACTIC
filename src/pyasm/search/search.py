@@ -525,8 +525,7 @@ class Search(Base):
 
             elif len(filter) == 2:
                 name, value = filter
-                if my.is_expr(value):
-                    value = Search.eval(value, single=True)
+               
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
@@ -544,8 +543,10 @@ class Search(Base):
                         my.add_column(filter[1], distinct=True)
 
 
-                elif type(value) in types.StringTypes:
+                elif isinstance(value, basestring):
                     # <name> = '<value>'
+                    if my.is_expr(value):
+                        value = Search.eval(value, single=True)
                     my.add_filter(name, value, table=table)
                     #print 'name: [%s],[%s]' % (name, value)
                 elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
