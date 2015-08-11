@@ -523,6 +523,7 @@ class BaseAppServer(Base):
 
         # handle the case where the project does not exist
         project = Project.get(no_exception=True)
+        assert(project)
         if not project:
             from pyasm.widget import BottomWdg, Error404Wdg
             Project.set_project("admin")
