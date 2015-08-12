@@ -4160,14 +4160,16 @@ class SObject(object):
             if related_type == "*":
                 continue
 
-            print "Updating [%s] ... (not yet!!!)" % related_type
+            print "Preparing to update [%s]" % related_type
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
 
             if relationship == 'code':
-                # if the search type is the "from", then no change needs
-                # to be made because the relationship is not by
-                # this code
+                # attrs is a dictionary of the relationship details between the two
+                # schema tables. We need to check if the related_type is the parent or the
+                # child. Depending on which, we then check if the connected column is 
+                # != "code". If it is, we can safely continue with the database operation, 
+                # if not, there are dependencies that need changing before moving safely
                 if related_type == attrs.get("from"):
                     if attrs.get("to_col") != "code":
                         continue
