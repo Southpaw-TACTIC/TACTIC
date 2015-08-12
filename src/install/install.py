@@ -501,14 +501,14 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
 
 
-		if not os.path.exists(python_site_packages_dir) and os.name =='posix':
-		    if linux_os == 'CentOS':
-			    # CentOS stores the python site packages under /usr/local/lib, not /usr/lib
-			    python_site_packages_dir = "/usr/local/lib/python%s.%s/site-packages" % \
-			        (version_info[0], version_info[1])
-		    elif linux_os == 'Debian':
-			    python_site_packages_dir = "/usr/lib/python%s.%s/dist-packages" % \
-			        (version_info[0], version_info[1])
+        if not os.path.exists(python_site_packages_dir) and os.name =='posix':
+            if linux_os == 'CentOS':
+                # CentOS stores the python site packages under /usr/local/lib, not /usr/lib
+                python_site_packages_dir = "/usr/local/lib/python%s.%s/site-packages" % \
+                    (version_info[0], version_info[1])
+            elif linux_os == 'Debian':
+                python_site_packages_dir = "/usr/lib/python%s.%s/dist-packages" % \
+                    (version_info[0], version_info[1])
 
 
         if not os.path.exists(python_site_packages_dir):
