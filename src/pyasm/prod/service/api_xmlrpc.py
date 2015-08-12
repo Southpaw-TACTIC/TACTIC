@@ -1343,7 +1343,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_column_info(my, ticket, search_type):
         search_type_obj = SearchType.get(search_type)
-        return search_type_obj.get_column_info()
+        return search_type_obj.get_column_info(search_type)
 
     @xmlrpc_decorator
     def get_related_types(my, ticket, search_type):
