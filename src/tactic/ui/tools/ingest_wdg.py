@@ -820,6 +820,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             ''' 
         } )
 
+        replace_info = DivWdg()
+        replace_info.add_class("glyphicon")
+        replace_info.add_class("glyphicon-info-sign")
+        replace_info.add_style("float: left")
+        replace_info.add_style("margin-top: -3px")
+        replace_info.add_style("margin-left: 5px")
+        replace_info.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.info("Hey here is some info.");
+            '''
+        } )
+        buttons.add_cell(replace_info);
+ 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
         dialog.set_as_activator(button, offset={'x':-10,'y':10})
