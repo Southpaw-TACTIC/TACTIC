@@ -210,11 +210,11 @@ class FormatMessageWdg(BaseRefreshWdg):
                 progress.add_attr('value', percent)
                 progress.add_attr('max', '100')
                 progress.add_styles('''
-					width: 280px; height: 5px; margin-top: 4px;\
-					border-radius: 8px;  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75) inset''')
+                    width: 280px; height: 5px; margin-top: 4px;\
+                    border-radius: 8px;  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75) inset''')
                 description.add(progress)
-            
-                
+
+
             else:
                 message = message_value.get('message')
                 if message:
