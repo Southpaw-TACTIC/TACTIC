@@ -12,7 +12,7 @@
 
 from pyasm.common import Environment, jsonloads, jsondumps, TacticException
 from pyasm.web import DivWdg, Table
-from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
+from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
 from pyasm.biz import File, Project
@@ -38,7 +38,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
-        'ingest_duplicate': 'Ingest files with same name as another file sObject.'
+        'update_mode': 'Ingest files with same name as another file sObject.'
     }
 
 
@@ -54,9 +54,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add_style("padding: 20px")
         div.add_color("background", "background")
         
-        ingest_duplicate = my.kwargs.get("ingest_duplicate")
-        div.set_attr("spt_ingest_duplicate", ingest_duplicate)
-
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
             div.add("No search type specfied")
@@ -603,7 +600,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
-        var ingest_duplicate = top.getAttribute("spt_ingest_duplicate");
+        
+        var update_mode_select = top.getElement(".spt_update_mode_select");
+        var update_mode = update_mode_select.value;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -648,7 +647,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_data: update_data,
             process: process,
             convert: convert,
-            ingest_duplicate: ingest_duplicate,
+            update_mode: update_mode,
         }
         on_complete = function() {
 
@@ -799,40 +798,39 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin-top: -3px")
         buttons.add_cell(button)
         
-        replace_button = ActionButtonWdg(title="Replacement")
-        replace_button.add_style("float: left")
-        replace_button.add_style("margin-top: -3px")
-        buttons.add_cell(replace_button)
+        select_label = DivWdg("Update mode");
+        select_label.add_style("float: left")
+        select_label.add_style("margin-top: -3px")
+        select_label.add_style("margin-left: 20px")
+        buttons.add_cell(select_label)
         
-        replace_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': ''' 
-                var top = bvr.src_el.getParent(".spt_ingest_top");
-                var bootstrap_btn = bvr.src_el.getElement(".btn-default");
-                var old_setting = top.getAttribute("spt_ingest_duplicate");
-                if (old_setting == "false" || old_setting == "False") {
-                    top.setAttribute("spt_ingest_duplicate", "true");
-                    bootstrap_btn.removeClass("disabled");
-                } else {
-                    top.setAttribute("spt_ingest_duplicate", "false"); 
-                    bootstrap_btn.addClass("disabled");
-                }
-            ''' 
-        } )
+        update_mode_option = my.kwargs.get("update_mode")
+        if not update_mode_option:
+            update_mode_option = "true"
+        update_mode = SelectWdg(name="update mode")
+        update_mode.add_class("spt_update_mode_select")
+        update_mode.set_option("values", ["false", "true"])
+        update_mode.set_option("labels", ["Off", "On"])
+        update_mode.set_option("default", update_mode_option)
+        update_mode.add_style("float: left")
+        update_mode.add_style("margin-top: -3px")
+        update_mode.add_style("margin-left: 5px")
+        update_mode.add_style("margin-right: 5px")
+        buttons.add_cell(update_mode)
 
-        replace_info = DivWdg()
-        replace_info.add_class("glyphicon")
-        replace_info.add_class("glyphicon-info-sign")
-        replace_info.add_style("float: left")
-        replace_info.add_style("margin-top: -3px")
-        replace_info.add_style("margin-left: 5px")
-        replace_info.add_behavior( {
+        update_info = DivWdg()
+        update_info.add_class("glyphicon")
+        update_info.add_class("glyphicon-info-sign")
+        update_info.add_style("float: left")
+        update_info.add_style("margin-top: -3px")
+        update_info.add_style("margin-left: 10px")
+        update_info.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.info("Hey here is some info.");
+            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.");
             '''
         } )
-        buttons.add_cell(replace_info);
+        buttons.add_cell(update_info);
  
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
@@ -1007,7 +1005,7 @@ class IngestUploadCmd(Command):
         upload_dir = Environment.get_upload_dir()
         base_dir = upload_dir
 
-        ingest_duplicate = my.kwargs.get("ingest_duplicate")
+        update_mode = my.kwargs.get("update_mode")
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
@@ -1053,15 +1051,20 @@ class IngestUploadCmd(Command):
         
         for count, filename in enumerate(filenames):
             
-            # Check if duplicate names are allowed. 
-            # If not, attempt to find sobject to replace.
-            if ingest_duplicate in ["False", "false"]:
+            # Check if files should be updated. 
+            # If so, attempt to find one to update.
+            # If more than one is found, do not update.
+            if update_mode in ["true", "True"]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 search.add_filter("name", filename)
                 if relative_dir and search.column_exists("relative_dir"):
                     search.add_filter("relative_dir", relative_dir)
-                sobject = search.get_sobject()
+                sobjects = search.get_sobjects()
+                if len(sobjects) > 1:
+                    sobject = None
+                else:
+                    sobject = sobjects[0]
             else:
                 sobject = None 
 
