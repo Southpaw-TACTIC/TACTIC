@@ -134,7 +134,8 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                              '31/Dec',
                              'December',
                              '52',
-                             'DATE'],
+                             'DATE',
+                             'DATETIME'],
 
             'time':         ['13:37',
                              '13:37:46',

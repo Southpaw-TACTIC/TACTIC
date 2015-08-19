@@ -18,7 +18,7 @@ from tactic.ui.common import BaseRefreshWdg
 from pyasm.search import Search, SearchType
 from pyasm.command import Command
 from pyasm.web import Table
-from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextAreaWdg
+from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
 from pyasm.biz import Project
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 from tactic.ui.input import TextInputWdg
@@ -74,7 +74,7 @@ class FormatMessageWdg(BaseRefreshWdg):
                 '''
                 } )
 
-
+            
 
         elif category == 'chat':
             thumb = DivWdg()
@@ -196,7 +196,25 @@ class FormatMessageWdg(BaseRefreshWdg):
                     description.add(title)
                     description.add(content)
 
+            elif category == 'progress':
+                description = DivWdg()
+                message = message_value.get('message')
+                message_div = DivWdg()
+                message_div.add(message)
+                description.add(message_div)
 
+                percent = message_value.get('progress')
+                if not percent:
+                    percent = 0.0
+                progress = HtmlElement('progress')
+                progress.add_attr('value', percent)
+                progress.add_attr('max', '100')
+                progress.add_styles('''
+					width: 280px; height: 5px; margin-top: 4px;\
+					border-radius: 8px;  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75) inset''')
+                description.add(progress)
+            
+                
             else:
                 message = message_value.get('message')
                 if message:
@@ -389,7 +407,6 @@ class ChatWdg(BaseRefreshWdg):
         } )
 
         return div
-
 
 class ChatCmd(Command):
 
@@ -753,7 +770,6 @@ class ChatSessionWdg(BaseRefreshWdg):
 
 
 
-
 class SubscriptionWdg(BaseRefreshWdg):
 
     def get_subscriptions(my, category, mode="new"):
@@ -783,35 +799,58 @@ class SubscriptionWdg(BaseRefreshWdg):
             user = Environment.get_user_name()
             search.add_op("begin")
             search.add_filter("login", user, op="!=", table="message")
-            search.add_filters("category", ["script","default","sobject"], table="message")
+            search.add_filters("category", ["script","default","sobject","progress"], table="message")
             search.add_op("or")
         else:
             search.add_order_by("message.timestamp", direction="desc")
 
         subscriptions = search.get_sobjects()
-        
         return subscriptions
 
 
-    def set_refresh(my, inner, interval, panel_cls='spt_subscription_top'):
-        
+    def set_refresh(my, inner, interval, panel_cls='spt_subscription_top', mode='timeout'):
+        ''' @param:
+			mode - timeout or interval
+		'''
         inner.add_behavior( {
             'type': 'load',
             'interval': interval,
             'panel_cls': panel_cls,
+            'mode': mode,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent("."+bvr.panel_cls);
 
-            var dialog = top.getElement(".spt_dialog_top");
-            if (dialog && dialog.getStyle("display") == "none") {
-                top.setAttribute("spt_dialog_open", "false");
+            
+            var top = bvr.src_el.getParent("."+bvr.panel_cls);
+    
+            var run = function() {
+                var dialog = bvr.panel_cls == 'spt_subscription_bar_top' ? top.getElement(".spt_dialog_top"): top.getParent(".spt_dialog_top") ;
+
+                if (dialog && dialog.getStyle("display") == "none") {
+                    top.setAttribute("spt_dialog_open", "false");
+                }
+                else {
+                    top.setAttribute("spt_dialog_open", "true");
+                }
+
+                // skip redraw of activator if dialog is shown to prevent refreshing
+                // or redraw of dialog if dialog is hidden to save resources
+                if (dialog && spt.is_shown(dialog) && bvr.panel_cls=='spt_subscription_bar_top') {
+                    
+                }
+                else if  (dialog && spt.is_hidden(dialog) && bvr.panel_cls=='spt_subscription_top') {
+                   
+                }
+
+                else {
+                    spt.panel.refresh(top, {async: true});
+                   
+                }
             }
-            else {
-                top.setAttribute("spt_dialog_open", "true");
-            }
-            timeout_id = setTimeout( function() {
-                spt.panel.refresh(top, {async: true});
-            }, bvr.interval );
+            if (bvr.mode == 'timeout') 
+                timeout_id = setTimeout(function() {run()}, bvr.interval);
+            else
+                timeout_id = setInterval(function() {run()}, bvr.interval);
+
             bvr.src_el.timeout_id = timeout_id;
             '''
         } )
@@ -821,7 +860,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             'type': 'unload',
             'cbjs_action': '''
             if (bvr.src_el.timeout_id)
-                clearTimeout(bvr.src_el.timeout_id);
+                clearInterval(bvr.src_el.timeout_id);
             '''
         } )
 
@@ -835,7 +874,12 @@ class SubscriptionWdg(BaseRefreshWdg):
         my.set_as_panel(top)
         top.add_class("spt_subscription_top")
 
-        interval = 30 * 1000
+        interval = my.kwargs.get("interval")
+        if not interval:
+            interval = 30 * 1000
+        else:
+            interval = int(interval) * 1000
+
 
         inner = DivWdg()
         top.add(inner)
@@ -848,7 +892,7 @@ class SubscriptionWdg(BaseRefreshWdg):
         #mode = "all"
         mode = "new"
 
-        categories = ['chat','sobject','script']
+        categories = ['chat','sobject','script','progress']
         categories = [None]
 
         has_entries = False
@@ -904,7 +948,11 @@ class SubscriptionWdg(BaseRefreshWdg):
 
         search_keys = [x.get_search_key() for x in subscriptions]
         button = ActionButtonWdg(title="Clear All")
-        div.add(button)
+        button.add_styles('float: right; padding: 2px')
+        button_div = DivWdg(button)
+        button_div.add_style('min-height: 26px')
+        div.add(button_div)
+
         button.add_behavior( {
             'type': 'click_up',
             'search_keys': search_keys,
@@ -921,21 +969,22 @@ class SubscriptionWdg(BaseRefreshWdg):
 
 
         # types of subscriptions
-
+        table_div = DivWdg()
+        table_div.add_styles('overflow-y: auto; max-height: 500px; width: 100%')
+        div.add(table_div)
         table = Table()
         table.add_style('width: 100%')
         table.add_border()
         table.add_color("background", "background3")
 
-
-        div.add(table)
+        
+        table_div.add(table)
         ss = []
         for subscription in subscriptions:
             table.add_row()
             td = table.add_cell()
 
             message_code = subscription.get_value("message_code")
-
             search = Search("sthpw/message")
             search.add_filter("code", message_code)
             message = search.get_sobject()
@@ -1023,6 +1072,8 @@ class SubscriptionWdg(BaseRefreshWdg):
             td.add(HtmlElement.br(2))
             td.add_style('width: 30px')
             icon = IconButtonWdg(title="Unsubscribe", icon=IconWdg.DELETE)
+            icon.add_style('bottom: 14px')
+
             subscription_key = subscription.get_search_key()
             icon.add_behavior( {
                 'type': 'click_up',
@@ -1117,7 +1168,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
         inner = DivWdg()
         top.add(inner)
 
-        my.set_refresh(inner,interval,panel_cls='spt_subscription_bar_top')
+        my.set_refresh(inner, interval, panel_cls='spt_subscription_bar_top', mode='interval')
 
         mode = my.kwargs.get("mode")
         if not mode:
@@ -1130,23 +1181,24 @@ class SubscriptionBarWdg(SubscriptionWdg):
             dialog_open = False
 
         subscription_kwargs ={}
-        subscription_kwargs_list = ['icon','show_preview','show_message_history','show_unsubscribe','show_timestamp']
+        subscription_kwargs_list = ['icon','show_preview','show_message_history','show_unsubscribe','show_timestamp','interval']
         for key in my.kwargs:
             if key in subscription_kwargs_list:
                 subscription_kwargs[key]= my.kwargs.get(key)
 
         mode = "dialog"
         if mode == "dialog":
-
             from tactic.ui.container import DialogWdg
-            dialog = DialogWdg(display=dialog_open, show_title=False)
+           
+            dialog = DialogWdg(display=dialog_open, show_title=False, show_pointer=False )
             inner.add(dialog)
             dialog.set_as_activator(inner)
             subscription_wdg = SubscriptionWdg(**subscription_kwargs)
             dialog.add(subscription_wdg)
             subscription_wdg.add_style("width: %spx"%(my.WIDTH+50))
             subscription_wdg.add_color("background", "background")
-            subscription_wdg.add_style("height: 500px")
+            subscription_wdg.add_style("max-height: 500px")
+            subscription_wdg.add_style("min-height: 300px")
 
         elif mode == "popup":
             top.add_behavior( {
@@ -1348,7 +1400,6 @@ spt.message.set_interval = function(key, callback, interval, element) {
             alert(e);
         }
         if (message.status == "complete") {
-            console.log("stopping interval: " + key);
             spt.message.stop_interval(key);
         }
     }
@@ -1466,5 +1517,6 @@ spt.message.async_polls = function(keys, callback) {
 
         '''
     get_onload_js = classmethod(get_onload_js)
+
 
 
