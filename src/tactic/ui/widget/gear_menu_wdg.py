@@ -82,13 +82,13 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
     def get_access_keys_dict(my):
 
         from tactic.ui.startup import GearMenuSecurityWdg
-        get_menu = GearMenuSecurityWdg.get_menu()
+        get_all_menu_names = GearMenuSecurityWdg.get_all_menu_names()
 
         project_code = Project.get_project_code()
         security = Environment.get_security()
 
         access_keys_dict = {}
-        for key in get_menu:
+        for key in get_all_menu_names:
             submenu = key[0]
             for label in key[1].get('label'):
                 

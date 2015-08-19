@@ -1633,7 +1633,7 @@ class SearchTypeSecurityWdg(ProjectSecurityWdg):
         return sobjects
 
 class GearMenuSecurityWdg(ProjectSecurityWdg):
-    
+    '''Control Gear Menu visibility'''
     def get_security_type(my):
         return "gear_menu"
 
@@ -1643,7 +1643,7 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
     def get_display_columns(my):
         return ['submenu', 'label']
 
-    def get_all_menu_names(my):
+    def get_all_menu_names(cls):
         all_gear_menu_names = {'Edit': {'label': ['Retire Selected Items','Delete Selected Items','Show Server Transaction Log','Undo Last Server Transaction','Redo Last Server Transaction'],'order': 1},
                                'File': {'label': ['Export All ...','Export Selected ...','Export Matched ...','Export Displayed ...','Import CSV','Ingest Files','Check-out Files'], 'order': 2},
                                'Clipboard': {'label': ['Copy Selected','Paste','Connect','Append Selected','Show Clipboard Contents'], 'order': 3},
@@ -1655,28 +1655,28 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
                                'Check-ins': {'label': ['Show Check-in History'], 'order': 9},
                                'Pipelines': {'label': ['Show Pipeline Code','Edit Pipelines'], 'order': 10}
                                }
-        all_gear_menu_names = sorted(all_gear_menu_names.iteritems(), key=lambda (x,y):y['order'])
+        all_gear_menu_names = sorted(all_gear_menu_names.items(), key=lambda (x,y):y['order'])
         return all_gear_menu_names
 
     
-    get_menu = classmethod(get_all_menu_names)
+    
     
 
     def get_sobjects(my, group_names):
 
-        all_gear_menu_names = GearMenuSecurityWdg.get_all_menu_names(my)
+        all_gear_menu_names = GearMenuSecurityWdg.get_all_menu_names()
         rules_dict = {}
 
         project = Project.get()
         project_code = project.get_code()
         
         sobjects = []
-
-
-        for key in all_gear_menu_names:
-
-            submenu = key[0]
-            for label in key[1].get('label'):
+        
+        for key,value in all_gear_menu_names:
+            
+            submenu = key
+                
+            for label in value.get('label'):
 
                 sobject = SearchType.create("sthpw/virtual")
 
@@ -1705,6 +1705,7 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
 
                 sobjects.append(sobject)
         return sobjects
+    get_all_menu_names = classmethod(get_all_menu_names)
 
 
 
@@ -2376,7 +2377,7 @@ class SecurityBuilder(object):
         submenus = [my.xml.get_attribute(node, 'submenu') for node in nodes]
         labels = [my.xml.get_attribute(node, 'label') for node in nodes]
 
-        if (submenu, label) not in (submenus, labels):
+        if label not in labels:
             rule = my.xml.create_element("rule")
             my.xml.set_attribute(rule, "group", "gear_menu")
             my.xml.set_attribute(rule, "submenu", submenu)
@@ -2385,17 +2386,7 @@ class SecurityBuilder(object):
                 my.xml.set_attribute(rule, "project", project_code)
             my.xml.set_attribute(rule, "access", access)
             my.xml.append_child(my.root, rule)
-            '''
-        if label not in labels:
-            rule = my.xml.create_element("rule")
-            my.xml.set_attribute(rule, "group", "gear_menu")
-            my.xml.set_attribute(rule, "category", category)
-            my.xml.set_attribute(rule, "label", label)
-            if project_code:
-                my.xml.set_attribute(rule, "project", project_code)
-            my.xml.set_attribute(rule, "access", access)
-            my.xml.append_child(my.root, rule)
-            '''
+            
     def remove_gear_menu(my, submenu, label, project_code=None):
         if project_code:
             nodes = my.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
