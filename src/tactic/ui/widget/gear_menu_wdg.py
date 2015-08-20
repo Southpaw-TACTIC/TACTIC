@@ -207,6 +207,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             is_admin = True
         else:
             is_admin = False
+        
+        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+            my.is_admin = True
+
         if is_admin:
         
             opt_spec_list = [
@@ -299,12 +303,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('Edit'):
             label_list = access_keys_dict['Edit']
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
+        
 
-        if is_admin:
+        if my.is_admin:
             access_keys = my._get_access_keys("retire_delete",  project_code)
             if security.check_access("builtin", access_keys, "allow"):
                 if not my.layout or my.layout.can_select():
@@ -417,11 +418,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         access_keys = my._get_access_keys("export_all_csv",  project_code)
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
-
+        
         if security.check_access("builtin", access_keys, "allow") or 'Export All ...' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Export All ...",
@@ -431,7 +428,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             )
 
         if not my.layout or my.layout.can_add_columns():
-            if is_admin or 'Export Selected ...' in label_list:
+            if my.is_admin or 'Export Selected ...' in label_list:
                 menu_items.append(
                     { "type": "action", "label": "Export Selected ...",
                         "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
@@ -439,14 +436,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 )
 
-        if is_admin or 'Export Matched ...' in label_list:
+        if my.is_admin or 'Export Matched ...' in label_list:
             menu_items.append( 
                  { "type": "action", "label": "Export Matched ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                                 'mode': 'export_matched'}
                 }
             )
-        if is_admin or 'Export Displayed ...' in label_list:
+        if my.is_admin or 'Export Displayed ...' in label_list:
             menu_items.append( 
                  { "type": "action", "label": "Export Displayed ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
@@ -523,12 +520,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             label_list = access_keys_dict['Clipboard']
 
         security = Environment.get_security()
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
-
-        if is_admin or 'Copy Selected' in label_list:
+        
+        if my.is_admin or 'Copy Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Copy Selected",
                     "bvr_cb": {
@@ -568,7 +561,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if is_admin or 'Paste' in label_list:
+        if my.is_admin or 'Paste' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Paste",
                     "bvr_cb": {
@@ -622,7 +615,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if is_admin or 'Connect' in label_list:
+        if my.is_admin or 'Connect' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Connect",
                     "bvr_cb": {
@@ -666,7 +659,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                { "type": "separator" }
             )
         
-        if is_admin or 'Append Selected' in label_list:
+        if my.is_admin or 'Append Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Append Selected",
                     "bvr_cb": {
@@ -710,7 +703,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 { "type": "separator" }
             )
 
-        if is_admin or 'Show Clipboard Contents' in label_list:
+        if my.is_admin or 'Show Clipboard Contents' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Show Clipboard Contents",
                     "bvr_cb": {
@@ -747,12 +740,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('Pipelines'):
             label_list = access_keys_dict['Pipelines']
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
 
-        if is_admin or 'Show Pipielines Code' in label_list:
+        if my.is_admin or 'Show Pipielines Code' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show Pipeline Code",
@@ -776,7 +765,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if is_admin or 'Edit Pipelines' in label_list:
+        if my.is_admin or 'Edit Pipelines' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Edit Pipelines",
@@ -802,13 +791,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         label_list = []
         if access_keys_dict.get('Tasks'):
             label_list = access_keys_dict['Tasks']
-
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
         
-        if is_admin or 'Show Tasks' in label_list:
+        if my.is_admin or 'Show Tasks' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show Tasks",
@@ -835,7 +819,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 { "type": "separator" }
             )
 
-        if is_admin or 'Add Tasks to Selected' in label_list:
+        if my.is_admin or 'Add Tasks to Selected' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Add Tasks to Selected",
@@ -845,7 +829,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if is_admin or 'Add Tasks to Matched' in label_list:
+        if my.is_admin or 'Add Tasks to Matched' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Add Tasks to Matched",
@@ -870,12 +854,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('Notes'):
             label_list = access_keys_dict['Notes']
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
-        
-        if is_admin or 'Show Notes' in label_list:
+        if my.is_admin or 'Show Notes' in label_list:
             menu_items = [
                 {
                     "type": "action", "label": "Show Notes",
@@ -915,13 +894,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         label_list = []
         if access_keys_dict.get('Check-ins'):
             label_list = access_keys_dict['Check-ins']
-
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
         
-        if is_admin or 'Show Check-in History' in label_list:
+        if my.is_admin or 'Show Check-in History' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show Check-in History",
@@ -946,7 +920,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
         
-        if is_admin or 'Show General Check-in Tool' in label_list:
+        if my.is_admin or 'Show General Check-in Tool' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show General Check-in Tool",
@@ -1031,11 +1005,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('View'):
             label_list = access_keys_dict['View']
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
-
         project_code = Project.get_project_code()
 
         search_type = my.kwargs.get("search_type")
@@ -1078,7 +1047,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             } )
 
 
-        if is_admin or 'Create New Column' in label_list:
+        if my.is_admin or 'Create New Column' in label_list:
             menu_items.append( {
                 "type": "action",
                 "label": "Create New Column",
@@ -1106,12 +1075,12 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
        
         view = my.kwargs.get("view")
-        if is_admin or 'Save Current View' in label_list:
+        if my.is_admin or 'Save Current View' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Save Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
                     "bvr_cb": {
                         'cbjs_action': "spt.dg_table.view_action_cbk('save','',bvr);",
-                        'is_admin': is_admin,
+                        'is_admin': my.is_admin,
                         'is_table_embedded_smenu_activator': True
                   }
                 }
@@ -1147,7 +1116,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 }
             ) 
-        if is_admin or 'Edit Current View' in label_list:
+        if my.is_admin or 'Edit Current View' in label_list:
 
             menu_items.append( { "type": "separator" } )
 
@@ -1159,7 +1128,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if is_admin or 'Edit Config XML' in label_list:
+        if my.is_admin or 'Edit Config XML' in label_list:
             menu_items.append( 
               { "type": "action", "label": "Edit Config XML <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
               "bvr_cb": {'cbjs_action': '''
@@ -1201,24 +1170,19 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('Print'):
             label_list = access_keys_dict['Print']
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
-
-        if is_admin or 'Print Selected' in label_list:
+        if my.is_admin or 'Print Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Print Selected",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("selected_items") }
                 }
             )
-        if is_admin or 'Print Displayed' in label_list:
+        if my.is_admin or 'Print Displayed' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Print Displayed",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("page_matched_items") }
                 }
             )
-        if is_admin or 'Print Matched' in label_list:
+        if my.is_admin or 'Print Matched' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Print Matched",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("all_matched_items") }
@@ -1242,12 +1206,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('Chart'):
             label_list = access_keys_dict['Chart']
 
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-        else:
-            is_admin = False
-
-        if is_admin or 'Chart Items' in label_list:
+        if my.is_admin or 'Chart Items' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Chart Items",
                 "bvr_cb": { 'cbjs_action': '''
@@ -1277,7 +1236,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
         
-        if is_admin or 'Chart Selected' in label_list:
+        if my.is_admin or 'Chart Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Chart Selected",
                 "bvr_cb": { 'cbjs_action': '''

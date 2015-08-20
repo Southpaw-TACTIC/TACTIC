@@ -1029,6 +1029,8 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
                 is_set = False
         elif my.security_type == 'link' and my.access_level in ['high']:
             is_set = True
+        elif my.security_type == 'gear_menu' and my.access_level in ['high']:
+            is_set = True
         elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium','high']:
             is_set = True
         elif my.security_type == 'process' and my.access_level in ['low', 'medium','high']:
@@ -1132,6 +1134,8 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
                 is_set = False
  
         elif my.security_type == 'link' and my.access_level in ['high']:
+            is_set = True
+        elif my.security_type == 'gear_menu' and my.access_level in ['high']:
             is_set = True
         elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium', 'high']:
             is_set = True
@@ -1652,21 +1656,26 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
         project_code = project.get_code()
         
         sobjects = []
-        
+
         for key,value in all_gear_menu_names:
             
             submenu = key
-                
+            
             for label in value.get('label'):
-
                 sobject = SearchType.create("sthpw/virtual")
+                
+                if submenu == "ALL MENU ITEMS":
+                    sobject.set_value("_extra_data", {"is_all": True})
+                    submenu = '*'
 
                 title_wdg = DivWdg()
                 title_wdg.add(label)
                 sobject.set_value("id", 1)
+                sobject.set_value("code", submenu)
                 sobject.set_value("submenu", submenu)
                 sobject.set_value("label", title_wdg)
                 sobject.set_value("_extra_data", {"label": label, "submenu": submenu})
+
                 for group_name in group_names:
 
                     access_rules = rules_dict.get(group_name)
@@ -1688,7 +1697,8 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
         return sobjects
 
     def get_all_menu_names(cls):
-        all_gear_menu_names = {'Edit': {'label': ['Retire Selected Items','Delete Selected Items','Show Server Transaction Log','Undo Last Server Transaction','Redo Last Server Transaction'],'order': 1},
+        all_gear_menu_names = {'ALL MENU ITEMS':{'label': ['*'],'order': 0},
+                               'Edit': {'label': ['Retire Selected Items','Delete Selected Items','Show Server Transaction Log','Undo Last Server Transaction','Redo Last Server Transaction'],'order': 1},
                                'File': {'label': ['Export All ...','Export Selected ...','Export Matched ...','Export Displayed ...','Import CSV','Ingest Files','Check-out Files'], 'order': 2},
                                'Clipboard': {'label': ['Copy Selected','Paste','Connect','Append Selected','Show Clipboard Contents'], 'order': 3},
                                'View': {'label': ['Column Manager','Create New Column','Save Current View','Save a New View','Edit Current View','Edit Config XML'], 'order': 4},
@@ -2178,6 +2188,8 @@ class GearMenuSecurityCbk(Command):
             
             label = extra.get("label")
             submenu = extra.get("submenu")
+            if submenu == "ALL MENU ITEMS":
+                submenu = '*'
 
             for group_name, is_insert in data.items():
                 group_name = group_name.lstrip("_")
