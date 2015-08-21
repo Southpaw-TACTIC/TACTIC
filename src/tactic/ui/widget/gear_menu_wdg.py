@@ -33,10 +33,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         my.view_save_dialog_id = my.view_save_dialog.get_id()
 
         my.layout = my.kwargs.get("layout")
-
         search = Search("config/widget_config")
         search.add_filter("widget_type", "layout_tool")
         my.custom_tools = search.get_sobjects()
+        my.is_admin = False
 
     def get_save_dialog(my):
         return my.view_save_dialog
@@ -79,8 +79,31 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             "embedded_table": "boolean to show if it is part of an embedded table"
         }
 
+    def get_access_keys_dict(my):
 
-    def add_custom_menus( my, menus, menu_idx_map, custom_menus ):
+        from tactic.ui.startup import GearMenuSecurityWdg
+        menu_names = GearMenuSecurityWdg.get_all_menu_names()
+
+        project_code = Project.get_project_code()
+        security = Environment.get_security()
+
+        access_keys_dict = {}
+
+        for key,value in menu_names:
+            submenu = key
+            for label in value.get('label'):
+                
+                access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+                
+                if security.check_access("gear_menu", access_keys, "allow"):
+                    if not submenu in access_keys_dict:
+                        access_keys_dict[submenu] = [label]
+                    else:
+                        access_keys_dict[submenu].append(label)
+
+        return access_keys_dict
+
+    def add_custom_menus(my, menus, menu_idx_map, custom_menus ):
 
         new_submenu_counter = 1
         for cmenu in custom_menus:
@@ -122,9 +145,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
     def get_menu_data(my):
-
+        
+        main_menu = my.get_main_menu()
         menus = [
-            my.get_main_menu(),
+            main_menu,
             my.get_edit_menu(),
             my.get_file_menu(),
             my.get_clipboard_menu(),
@@ -134,7 +158,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             my.get_pipeline_menu(),
             my.get_task_menu(),
             my.get_note_menu(),
-            my.get_checkin_menu(),
+            my.get_checkin_menu()
         ]
 
         if my.custom_tools:
@@ -155,17 +179,22 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     custom_menu_error = True
             else:
                 custom_menu_error = True
-
             if custom_menu_error:
-                menus = [ my.get_main_menu(), my.get_selected_items_menu(), my.get_edit_menu(),
-                           my.get_file_menu(), my.get_view_menu() ]
+                menus = [ main_menu, 
+                           my.get_edit_menu(),
+                           my.get_file_menu(), 
+                           my.get_clipboard_menu(),
+                            my.get_view_menu(),
+                            my.get_print_menu(),
+                            my.get_chart_menu(),
+                            my.get_pipeline_menu(),
+                            my.get_task_menu(),
+                            my.get_note_menu(),
+                            my.get_checkin_menu()]
+
                 menus[0].get("opt_spec_list").append( { "type": "title", "label": "*** <i>CUSTOM MENU CONFIG ERROR</i> ***" } )
 
-
         return menus
-
-
-
 
     def get_display(my):
         widget = Widget()
@@ -177,103 +206,218 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
     def get_main_menu(my):
-        opt_spec_list = [
-        { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
-        { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" },
-        { "type": "submenu", "label": "Clipboard", "submenu_tag_suffix": "CLIPBOARD" },
-        { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" },
-        { "type": "submenu", "label": "Print", "submenu_tag_suffix": "PRINT" },
-        { "type": "submenu", "label": "Chart", "submenu_tag_suffix": "CHART" },
-        ]
 
-
-
+        project_code = Project.get_project_code()
         security = Environment.get_security()
+        
+        access_keys_dict = my.get_access_keys_dict()
         if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
+            my.is_admin = True
         else:
-            is_admin = False
+            my.is_admin = False
+        
+        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+            my.is_admin = True
+
+        if my.is_admin:
+        
+            opt_spec_list = [
+            { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
+            { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" },
+            { "type": "submenu", "label": "Clipboard", "submenu_tag_suffix": "CLIPBOARD" },
+            { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" },
+            { "type": "submenu", "label": "Print", "submenu_tag_suffix": "PRINT" },
+            { "type": "submenu", "label": "Chart", "submenu_tag_suffix": "CHART" },
+            ]
+
+            
 
 
-        if not my.layout or my.layout.can_add_columns():
-            opt_spec_list.extend( [
-            { "type": "separator"},
-            { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" },
-            { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
-            { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
-            ] )
+            if not my.layout or my.layout.can_add_columns():
+                opt_spec_list.extend( [
+                { "type": "separator"},
+                { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" },
+                { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
+                { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
+                ] )
 
-
-            if is_admin:
                 opt_spec_list.append( { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" } )
 
 
-        if my.custom_tools:
-            opt_spec_list.append( { "type": "submenu", "label": "Custom Tools", "submenu_tag_suffix": "CUSTOM" } )
+            if my.custom_tools:
+                opt_spec_list.append( { "type": "submenu", "label": "Custom Tools", "submenu_tag_suffix": "CUSTOM" } )
 
+        else:
+            opt_spec_list = []
+            if access_keys_dict.get('Edit'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" }
+                )
 
+            if access_keys_dict.get('File'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" }
+                )
 
+            if access_keys_dict.get('Clipboard'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "Clipboard", "submenu_tag_suffix": "CLIPBOARD" }
+                )
+
+            if access_keys_dict.get('Print'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "Print", "submenu_tag_suffix": "PRINT" }
+                )
+
+            if access_keys_dict.get('Chart'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "Chart", "submenu_tag_suffix": "CHART" }
+                )
+
+            if access_keys_dict.get('View'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" }
+                )
+
+            
+            if not my.layout or my.layout.can_add_columns():
+                if access_keys_dict.get('Tasks'):
+                    opt_spec_list.append(
+                        { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" }
+                    )
+                if access_keys_dict.get('Notes'):
+                    opt_spec_list.append(
+                        { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
+                    )
+                if access_keys_dict.get('Check-ins'):    
+                    opt_spec_list.append(
+                        { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
+                    )
+
+                if access_keys_dict.get('Pipelines'):
+                    opt_spec_list.append(
+                        { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" }
+                    )
 
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
-
         return menu
 
+    
 
     def get_edit_menu(my):
+        
         opt_spec_list = []
-
-
         security = Environment.get_security()
         project_code = Project.get_project_code()
+        
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Edit'):
+            label_list = access_keys_dict['Edit']
 
-        access_keys = my._get_access_keys("retire_delete",  project_code)
-        if security.check_access("builtin", access_keys, "allow"):
-            if not my.layout or my.layout.can_select():
-                opt_spec_list.extend([
-            
+        
+
+        if my.is_admin:
+            access_keys = my._get_access_keys("retire_delete",  project_code)
+            if security.check_access("builtin", access_keys, "allow"):
+                if not my.layout or my.layout.can_select():
+                    opt_spec_list.extend([
+                
+                        { "type": "action", "label": "Retire Selected Items",
+                            "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
+                        },
+
+                        { "type": "action", "label": "Delete Selected Items",
+                                "bvr_cb": {'cbjs_action': '''
+                        spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);
+                        '''}
+                        },
+
+                        {"type": "separator"}
+
+                    ])
+
+            opt_spec_list.extend([
+
+                { "type": "action", "label": "Show Server Transaction Log",
+                    "bvr_cb": {
+                        'cbjs_action': "spt.popup.get_widget(evt, bvr)",
+                        'options': {
+                            'class_name': 'tactic.ui.popups.TransactionPopupWdg',
+                            'title': 'Transaction Log',
+                            'popup_id': 'TransactionLog_popup'
+                        }
+                    }
+                },
+
+                { "type": "separator" },
+
+                { "type": "action", "label": "Undo Last Server Transaction",
+                    "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
+                },
+
+                { "type": "action", "label": "Redo Last Server Transaction",
+                    "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
+                },
+
+            ])
+            return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
+
+        else:
+            if 'Retire Selected Items' in label_list:
+                opt_spec_list.append(
                     { "type": "action", "label": "Retire Selected Items",
                         "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
-                    },
+                    }
+                )
 
+            if 'Delete Selected Items' in label_list:
+                opt_spec_list.extend([
                     { "type": "action", "label": "Delete Selected Items",
-                            "bvr_cb": {'cbjs_action': '''
-                    spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);
-                    '''}
+                        "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);"}
+                
                     },
 
                     {"type": "separator"}
 
                 ])
+            
 
+            if 'Show Server Transaction Log' in label_list:
+                opt_spec_list.extend([
 
+                    { "type": "action", "label": "Show Server Transaction Log",
+                        "bvr_cb": {
+                            'cbjs_action': "spt.popup.get_widget(evt, bvr)",
+                            'options': {
+                                'class_name': 'tactic.ui.popups.TransactionPopupWdg',
+                                'title': 'Transaction Log',
+                                'popup_id': 'TransactionLog_popup'
+                            }
+                        }
+                    },
 
-        opt_spec_list.extend([
-
-            { "type": "action", "label": "Show Server Transaction Log",
-                "bvr_cb": {
-                    'cbjs_action': "spt.popup.get_widget(evt, bvr)",
-                    'options': {
-                        'class_name': 'tactic.ui.popups.TransactionPopupWdg',
-                        'title': 'Transaction Log',
-                        'popup_id': 'TransactionLog_popup'
+                    { "type": "separator" },
+                ])
+            if 'Undo Last Server Transaction' in label_list:
+                opt_spec_list.append(
+                    { "type": "action", "label": "Undo Last Server Transaction",
+                        "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
                     }
-                }
-            },
+                )
 
-            { "type": "separator" },
+            if 'Redo Last Server Transaction' in label_list:
+                opt_spec_list.append(
+                    { "type": "action", "label": "Redo Last Server Transaction",
+                    "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
+                    }
+                )
 
-            { "type": "action", "label": "Undo Last Server Transaction",
-                "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
-            },
+            if opt_spec_list and opt_spec_list[-1] == { "type": "separator" }:
+                opt_spec_list.pop()
 
-            { "type": "action", "label": "Redo Last Server Transaction",
-                "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
-            },
-
-        ])
-        return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
-
-
+            return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
+        
 
     def get_file_menu(my):
 
@@ -282,9 +426,15 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('File'):
+            label_list = access_keys_dict['File']
+
         access_keys = my._get_access_keys("export_all_csv",  project_code)
 
-        if security.check_access("builtin", access_keys, "allow"):
+        
+        if security.check_access("builtin", access_keys, "allow") or 'Export All ...' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Export All ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);',
@@ -293,26 +443,31 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             )
 
         if not my.layout or my.layout.can_add_columns():
-            menu_items.append(
-                { "type": "action", "label": "Export Selected ...",
+            if my.is_admin or 'Export Selected ...' in label_list:
+                menu_items.append(
+                    { "type": "action", "label": "Export Selected ...",
+                        "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
+                                    'mode': 'export_selected'}
+                    }
+                )
+
+        if my.is_admin or 'Export Matched ...' in label_list:
+            menu_items.append( 
+                 { "type": "action", "label": "Export Matched ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
-                                'mode': 'export_selected'}
+                                'mode': 'export_matched'}
+                }
+            )
+        if my.is_admin or 'Export Displayed ...' in label_list:
+            menu_items.append( 
+                 { "type": "action", "label": "Export Displayed ...",
+                    "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
+                                'mode': 'export_displayed'}
                 }
             )
 
-        menu_items.extend( [
-             { "type": "action", "label": "Export Matched ...",
-                "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
-                            'mode': 'export_matched'}
-            },
-             { "type": "action", "label": "Export Displayed ...",
-                "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
-                            'mode': 'export_displayed'}
-            }
-        ] )
-
         access_keys = my._get_access_keys("import_csv",  project_code)
-        if security.check_access("builtin", access_keys, "allow"):
+        if security.check_access("builtin", access_keys, "allow") or 'Import CSV' in label_list:
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Import CSV",
@@ -321,7 +476,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
         access_keys = my._get_access_keys("ingest",  project_code)
-        if security.check_access("builtin", access_keys, "allow"):
+        if security.check_access("builtin", access_keys, "allow") or 'Ingest Files' in label_list:
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Ingest Files",
@@ -344,7 +499,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     '''%my.ingest_data_view
                  }
                 } )
-
+        if security.check_access("builtin", access_keys, "allow") or 'Check-out Files' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Check-out Files",
                     "bvr_cb": { 'cbjs_action': '''
@@ -371,278 +526,338 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
     def get_clipboard_menu(my):
-
-        menu_items = [
-            { "type": "action", "label": "Copy Selected",
-                "bvr_cb": {
-                'cbjs_action': '''
-                var server = TacticServerStub.get();
-
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-
-                spt.app_busy.show("Copying to Clipboard");
-
-                var search_keys;
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    search_keys = spt.table.get_selected_search_keys();
-                }
-                else {
-                    search_keys = spt.dg_table.get_selected_search_keys(table);
-                }
-
-                var class_name = 'tactic.command.clipboard_cmd.ClipboardCopyCmd';
-                var kwargs = {
-                    search_keys: search_keys
-                }
-                server.execute_cmd(class_name, kwargs);
-
-                spt.app_busy.hide();
-
-                spt.notify.show_message("Copied ["+search_keys.length+"] items to the clipboard");
-
-                '''
-                }
-            },
-
-
-
-            { "type": "action", "label": "Paste",
-                "bvr_cb": {
-                'cbjs_action': '''
-                var server = TacticServerStub.get();
-
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-                var search_type = table.getAttribute("spt_search_type");
-
-                spt.app_busy.show("Pasting contents from Clipboard");
-
-                var class_name = 'tactic.command.sobject_copy_cmd.SObjectCopyCmd';
-               
-                // don't pass in context to get all current contexts automatically
-                var kwargs = {
-                    dst_search_type: search_type,
-                    source: 'clipboard',
-                }
-                try {
-                    var rtn = server.execute_cmd(class_name, kwargs);
-                    if (rtn.info.error)
-                        spt.alert(rtn.info.error);
-                }
-                catch(e){
-                    spt.alert(spt.exception.handler(e));
-                }
-
-                // refresh table
-                spt.table.run_search();
-                var event = "update|" + search_type;
-                kwargs = {
-                    firing_element: activator
-                }
-                var input = {
-                    kwargs: kwargs
-                }
-                var bvr2 = {};
-                bvr2.options = input;
-                try {
-                    spt.named_events.fire_event(event, bvr2);
-                }
-                catch(e) {
-                    spt.alert("Error firing event: " + event);
-                }
-
-                spt.app_busy.hide();
-                '''
-                }
-            },
-
-            
-            { "type": "action", "label": "Connect",
-                "bvr_cb": {
-                'cbjs_action': '''
-                var server = TacticServerStub.get();
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-                var search_type = table.getAttribute("spt_search_type");
-                spt.app_busy.show("Reference contents from Clipboard");
-
-
-                var class_name = 'tactic.command.clipboard_cmd.ClipboardConnectCmd';
-                var search_keys;
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    search_keys = spt.table.get_selected_search_keys();
-                }
-                else {
-                    search_keys = spt.dg_table.get_selected_search_keys(table);
-                }
-                var kwargs = {
-                    search_keys: search_keys
-                }
-                server.execute_cmd(class_name, kwargs);
-
-
-                // refresh table
-                spt.dg_table.search_cbk(table, bvr);
-                spt.app_busy.hide();
-
-                '''
-                }
-            },
-
-            { "type": "separator" },
-
-            { "type": "action", "label": "Append Selected",
-                "bvr_cb": {
-                'cbjs_action': '''
-                var server = TacticServerStub.get();
-
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-                var layout = activator.getParent(".spt_layout");
-
-                var search_keys;
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    search_keys = spt.table.get_selected_search_keys();
-                }
-                else {
-                    search_keys = spt.dg_table.get_selected_search_keys(table);
-                }
-
-                spt.app_busy.show("Adding to Clipboard");
-
-                var class_name = 'tactic.command.clipboard_cmd.ClipboardAddCmd';
-                var kwargs = {
-                    search_keys: search_keys
-                }
-                server.execute_cmd(class_name, kwargs);
-
-                spt.app_busy.hide();
-
-                spt.notify.show_message("Added ["+search_keys.length+"] items to the clipboard");
-
-                '''
-                }
-            },
-
-            { "type": "separator" },
-
-
-            { "type": "action", "label": "Show Clipboard Contents",
-                "bvr_cb": {
-                'cbjs_action': '''
-                var server = TacticServerStub.get();
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-
-                var expression = "@SOBJECT(sthpw/clipboard['login',$LOGIN])";
-                var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
-                var kwargs = {
-                  expression: expression,
-                  search_type: 'sthpw/clipboard',
-                  view: 'table',
-                  show_insert: false,
-                }
-                spt.panel.load_popup("Clipboard", class_name, kwargs);
-                '''
-                }
-            }
-        ]
         
+        menu_items = []
+
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Clipboard'):
+            label_list = access_keys_dict['Clipboard']
+
+        security = Environment.get_security()
+        
+        if my.is_admin or 'Copy Selected' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Copy Selected",
+                    "bvr_cb": {
+                    'cbjs_action': '''
+                    var server = TacticServerStub.get();
+
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+
+                    spt.app_busy.show("Copying to Clipboard");
+
+                    var search_keys;
+                    var layout = activator.getParent(".spt_layout");
+                    var version = layout.getAttribute("spt_version");
+                    var table = layout.getElement(".spt_table");
+                    if (version == "2") {
+                        spt.table.set_table(table);
+                        search_keys = spt.table.get_selected_search_keys();
+                    }
+                    else {
+                        search_keys = spt.dg_table.get_selected_search_keys(table);
+                    }
+
+                    var class_name = 'tactic.command.clipboard_cmd.ClipboardCopyCmd';
+                    var kwargs = {
+                        search_keys: search_keys
+                    }
+                    server.execute_cmd(class_name, kwargs);
+
+                    spt.app_busy.hide();
+
+                    spt.notify.show_message("Copied ["+search_keys.length+"] items to the clipboard");
+
+                    '''
+                    }
+                }
+            )
+
+        if my.is_admin or 'Paste' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Paste",
+                    "bvr_cb": {
+                    'cbjs_action': '''
+                    var server = TacticServerStub.get();
+
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+                    var search_type = table.getAttribute("spt_search_type");
+
+                    spt.app_busy.show("Pasting contents from Clipboard");
+
+                    var class_name = 'tactic.command.sobject_copy_cmd.SObjectCopyCmd';
+                   
+                    // don't pass in context to get all current contexts automatically
+                    var kwargs = {
+                        dst_search_type: search_type,
+                        source: 'clipboard',
+                    }
+                    try {
+                        var rtn = server.execute_cmd(class_name, kwargs);
+                        if (rtn.info.error)
+                            spt.alert(rtn.info.error);
+                    }
+                    catch(e){
+                        spt.alert(spt.exception.handler(e));
+                    }
+
+                    // refresh table
+                    spt.table.run_search();
+                    var event = "update|" + search_type;
+                    kwargs = {
+                        firing_element: activator
+                    }
+                    var input = {
+                        kwargs: kwargs
+                    }
+                    var bvr2 = {};
+                    bvr2.options = input;
+                    try {
+                        spt.named_events.fire_event(event, bvr2);
+                    }
+                    catch(e) {
+                        spt.alert("Error firing event: " + event);
+                    }
+
+                    spt.app_busy.hide();
+                    '''
+                    }
+                }
+            )
+
+        if my.is_admin or 'Connect' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Connect",
+                    "bvr_cb": {
+                    'cbjs_action': '''
+                    var server = TacticServerStub.get();
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+                    var search_type = table.getAttribute("spt_search_type");
+                    spt.app_busy.show("Reference contents from Clipboard");
+
+
+                    var class_name = 'tactic.command.clipboard_cmd.ClipboardConnectCmd';
+                    var search_keys;
+                    var layout = activator.getParent(".spt_layout");
+                    var version = layout.getAttribute("spt_version");
+                    var table = layout.getElement(".spt_table");
+                    if (version == "2") {
+                        spt.table.set_table(table);
+                        search_keys = spt.table.get_selected_search_keys();
+                    }
+                    else {
+                        search_keys = spt.dg_table.get_selected_search_keys(table);
+                    }
+                    var kwargs = {
+                        search_keys: search_keys
+                    }
+                    server.execute_cmd(class_name, kwargs);
+
+
+                    // refresh table
+                    spt.dg_table.search_cbk(table, bvr);
+                    spt.app_busy.hide();
+
+                    '''
+                    }
+                }
+            )
+
+            menu_items.append(
+               { "type": "separator" }
+            )
+        
+        if my.is_admin or 'Append Selected' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Append Selected",
+                    "bvr_cb": {
+                    'cbjs_action': '''
+                    var server = TacticServerStub.get();
+
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+                    var layout = activator.getParent(".spt_layout");
+
+                    var search_keys;
+                    var layout = activator.getParent(".spt_layout");
+                    var version = layout.getAttribute("spt_version");
+                    var table = layout.getElement(".spt_table");
+                    if (version == "2") {
+                        spt.table.set_table(table);
+                        search_keys = spt.table.get_selected_search_keys();
+                    }
+                    else {
+                        search_keys = spt.dg_table.get_selected_search_keys(table);
+                    }
+
+                    spt.app_busy.show("Adding to Clipboard");
+
+                    var class_name = 'tactic.command.clipboard_cmd.ClipboardAddCmd';
+                    var kwargs = {
+                        search_keys: search_keys
+                    }
+                    server.execute_cmd(class_name, kwargs);
+
+                    spt.app_busy.hide();
+
+                    spt.notify.show_message("Added ["+search_keys.length+"] items to the clipboard");
+
+                    '''
+                    }
+                }
+            )
+            menu_items.append(
+                { "type": "separator" }
+            )
+
+        if my.is_admin or 'Show Clipboard Contents' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Show Clipboard Contents",
+                    "bvr_cb": {
+                    'cbjs_action': '''
+                    var server = TacticServerStub.get();
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+
+                    var expression = "@SOBJECT(sthpw/clipboard['login',$LOGIN])";
+                    var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
+                    var kwargs = {
+                      expression: expression,
+                      search_type: 'sthpw/clipboard',
+                      view: 'table',
+                      show_insert: false,
+                    }
+                    spt.panel.load_popup("Clipboard", class_name, kwargs);
+                    '''
+                    }
+                }
+            )
+
+        if menu_items and menu_items[-1] == { "type": "separator" }:
+            menu_items.pop()
+
         return {'menu_tag_suffix': 'CLIPBOARD', 'width': 180, 'opt_spec_list': menu_items}
 
 
     def get_pipeline_menu(my):
+        menu_items = []
 
-        menu_items = [
-        {
-            "type": "action", "label": "Show Pipeline Code",
-            "bvr_cb": {
-                'cbjs_action': '''
-                spt.app_busy.show("Adding Pipeline column to table");
-                var activator = spt.smenu.get_activator(bvr);
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    spt.table.add_columns(["pipeline_code"]);
+        security = Environment.get_security()
+
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Pipelines'):
+            label_list = access_keys_dict['Pipelines']
+
+
+        if my.is_admin or 'Show Pipeline Code' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Show Pipeline Code",
+                    "bvr_cb": {
+                        'cbjs_action': '''
+                        spt.app_busy.show("Adding Pipeline column to table");
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
+                        var table = layout.getElement(".spt_table");
+                        if (version == "2") {
+                            spt.table.set_table(table);
+                            spt.table.add_columns(["pipeline_code"]);
+                        }
+                        else {
+                            spt.dg_table.toggle_column_cbk(table,'pipeline_code','1');
+                        }
+                        spt.app_busy.hide();
+                        '''
+                    }
                 }
-                else {
-                    spt.dg_table.toggle_column_cbk(table,'pipeline_code','1');
+            )
+
+        if my.is_admin or 'Edit Pipelines' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Edit Pipelines",
+                    "bvr_cb": {
+                        'cbjs_action': '''
+                        spt.tab.set_main_body_tab();
+                        spt.tab.add_new("Pipelines", "Pipelines", "tactic.ui.tools.PipelineToolWdg");
+                        '''
+                    }
                 }
-                spt.app_busy.hide();
-                '''
-            }
-        },
-        {
-            "type": "action", "label": "Edit Pipelines",
-            "bvr_cb": {
-                'cbjs_action': '''
-                spt.tab.set_main_body_tab();
-                spt.tab.add_new("Pipelines", "Pipelines", "tactic.ui.tools.PipelineToolWdg");
-                '''
-            }
-        }
-        ]
+            )
+
 
         return {'menu_tag_suffix': 'PIPELINE', 'width': 210, 'opt_spec_list': menu_items}
 
 
     def get_task_menu(my):
+        menu_items = []
 
-        menu_items = [
-        {
-            "type": "action", "label": "Show Tasks",
-            "bvr_cb": {
-                'cbjs_action': '''
-                spt.app_busy.show("Adding Tasks column to table");
-                var activator = spt.smenu.get_activator(bvr);
-                var layout = activator.getParent(".spt_layout");
-                var table = layout.getElement(".spt_table");
-                var version = layout.getAttribute("spt_version");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    spt.table.add_columns(["task_edit", "task_status_edit"]);
-                } 
-                else {
-                    spt.dg_table.toggle_column_cbk(table,'task_status_edit','1');
+        security = Environment.get_security()
+
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Tasks'):
+            label_list = access_keys_dict['Tasks']
+        
+        if my.is_admin or 'Show Tasks' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Show Tasks",
+                    "bvr_cb": {
+                        'cbjs_action': '''
+                        spt.app_busy.show("Adding Tasks column to table");
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var table = layout.getElement(".spt_table");
+                        var version = layout.getAttribute("spt_version");
+                        if (version == "2") {
+                            spt.table.set_table(table);
+                            spt.table.add_columns(["task_edit", "task_status_edit"]);
+                        } 
+                        else {
+                            spt.dg_table.toggle_column_cbk(table,'task_status_edit','1');
+                        }
+                        spt.app_busy.hide();
+                        '''
+                    }
                 }
-                spt.app_busy.hide();
-                '''
-            }
-        },
-        { "type": "separator" },
-        {
-            "type": "action", "label": "Add Tasks to Selected",
-            "bvr_cb": {
-                'cbjs_action': "spt.dg_table.gear_smenu_add_task_selected_cbk(evt,bvr);"
-            }
-        },
-        {
-            "type": "action", "label": "Add Tasks to Matched",
-            "bvr_cb": {
-                'cbjs_action': "spt.dg_table.gear_smenu_add_task_matched_cbk(evt,bvr);"
-            }
-        }
-        ]
+            )
+            menu_items.append(
+                { "type": "separator" }
+            )
+
+        if my.is_admin or 'Add Tasks to Selected' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Add Tasks to Selected",
+                    "bvr_cb": {
+                        'cbjs_action': "spt.dg_table.gear_smenu_add_task_selected_cbk(evt,bvr);"
+                    }
+                }
+            )
+
+        if my.is_admin or 'Add Tasks to Matched' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Add Tasks to Matched",
+                    "bvr_cb": {
+                        'cbjs_action': "spt.dg_table.gear_smenu_add_task_matched_cbk(evt,bvr);"
+                    }
+                }
+            )
+        if menu_items and menu_items[-1] == { "type": "separator" }:
+            menu_items.pop()
 
         return {'menu_tag_suffix': 'TASK', 'width': 210, 'opt_spec_list': menu_items}
 
@@ -651,29 +866,38 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
     def get_note_menu(my):
 
-        menu_items = [
-        {
-            "type": "action", "label": "Show Notes",
-            "bvr_cb": {
-                'cbjs_action': '''
-                spt.app_busy.show("Adding Notes column to table");
-                var activator = spt.smenu.get_activator(bvr);
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    spt.dg_table.toggle_column_cbk(table,'notes','1');
-                    //spt.table.add_columns(["notes"]);
+        menu_items = []
+        security = Environment.get_security()
+
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Notes'):
+            label_list = access_keys_dict['Notes']
+
+        if my.is_admin or 'Show Notes' in label_list:
+            menu_items = [
+                {
+                    "type": "action", "label": "Show Notes",
+                    "bvr_cb": {
+                        'cbjs_action': '''
+                        spt.app_busy.show("Adding Notes column to table");
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
+                        var table = layout.getElement(".spt_table");
+                        if (version == "2") {
+                            spt.table.set_table(table);
+                            spt.dg_table.toggle_column_cbk(table,'notes','1');
+                            //spt.table.add_columns(["notes"]);
+                        }
+                        else {
+                            spt.dg_table.toggle_column_cbk(table,'notes','1');
+                        }
+                        spt.app_busy.hide();
+                        '''
+                    }
                 }
-                else {
-                    spt.dg_table.toggle_column_cbk(table,'notes','1');
-                }
-                spt.app_busy.hide();
-                '''
-            }
-        },
-        ]
+            ]
 
         return {'menu_tag_suffix': 'NOTE', 'width': 210, 'opt_spec_list': menu_items}
 
@@ -682,50 +906,64 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
     def get_checkin_menu(my):
 
-        menu_items = [
-        {
-            "type": "action", "label": "Show Check-in History",
-            "bvr_cb": {
-                'cbjs_action': '''
-                spt.app_busy.show("Adding Check-in History column to table");
-                var activator = spt.smenu.get_activator(bvr);
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    //spt.table.add_columns(["history"]);
-                    spt.dg_table.toggle_column_cbk(table,'history','1');
+        menu_items = []
+
+        security = Environment.get_security()
+
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Check-ins'):
+            label_list = access_keys_dict['Check-ins']
+        
+        if my.is_admin or 'Show Check-in History' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Show Check-in History",
+                    "bvr_cb": {
+                        'cbjs_action': '''
+                        spt.app_busy.show("Adding Check-in History column to table");
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
+                        var table = layout.getElement(".spt_table");
+                        if (version == "2") {
+                            spt.table.set_table(table);
+                            //spt.table.add_columns(["history"]);
+                            spt.dg_table.toggle_column_cbk(table,'history','1');
+                        }
+                        else {
+                            spt.dg_table.toggle_column_cbk(table,'history','1');
+                        }
+                        spt.app_busy.hide();
+                        '''
+                    }
                 }
-                else {
-                    spt.dg_table.toggle_column_cbk(table,'history','1');
+            )
+        
+        if my.is_admin or 'Show General Check-in Tool' in label_list:
+            menu_items.append(
+                {
+                    "type": "action", "label": "Show General Check-in Tool",
+                    "bvr_cb": {
+                        'cbjs_action': '''
+                        spt.app_busy.show("Adding General Check-in tool to table");
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
+                        var table = layout.getElement(".spt_table");
+                        if (version == "2") {
+                            spt.table.set_table(table);
+                            //spt.table.add_columns(["general_checkin"]);
+                            spt.dg_table.toggle_column_cbk(table,'general_checkin','1');
+                        }
+                        else {
+                            spt.dg_table.toggle_column_cbk(table,'general_checkin','1');
+                        }
+                        spt.app_busy.hide();
+                        '''
+                    }
                 }
-                spt.app_busy.hide();
-                '''
-            }
-        },
-        {
-            "type": "action", "label": "Show General Check-in Tool",
-            "bvr_cb": {
-                'cbjs_action': '''
-                spt.app_busy.show("Adding General Check-in tool to table");
-                var activator = spt.smenu.get_activator(bvr);
-                var layout = activator.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
-                var table = layout.getElement(".spt_table");
-                if (version == "2") {
-                    spt.table.set_table(table);
-                    //spt.table.add_columns(["general_checkin"]);
-                    spt.dg_table.toggle_column_cbk(table,'general_checkin','1');
-                }
-                else {
-                    spt.dg_table.toggle_column_cbk(table,'general_checkin','1');
-                }
-                spt.app_busy.hide();
-                '''
-            }
-        },
-        ]
+            )
 
         return {'menu_tag_suffix': 'CHECKIN', 'width': 210, 'opt_spec_list': menu_items}
 
@@ -778,12 +1016,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
     def get_view_menu(my):
 
-        is_admin = False
-        security = Environment.get_security()
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-
         menu_items = []
+
+        security = Environment.get_security()
+
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('View'):
+            label_list = access_keys_dict['View']
 
         project_code = Project.get_project_code()
 
@@ -792,7 +1032,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         # Column Manager menu item ...
         access_keys = my._get_access_keys("view_column_manager",  project_code)
-        if security.check_access("builtin", access_keys, "allow"):
+        if security.check_access("builtin", access_keys, "allow") or 'Column Manager' in label_list:
             menu_items.append( {
                 "type": "action",
                 "label": "Column Manager",
@@ -827,7 +1067,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             } )
 
 
-        if is_admin:
+        if my.is_admin or 'Create New Column' in label_list:
             menu_items.append( {
                 "type": "action",
                 "label": "Create New Column",
@@ -854,16 +1094,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_items.append( { "type": "separator" })
 
        
-        view = my.kwargs.get("view") 
-        menu_items.append(
-            { "type": "action", "label": "Save Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
-                "bvr_cb": {
-                    'cbjs_action': "spt.dg_table.view_action_cbk('save','',bvr);",
-                    'is_admin': is_admin,
-                    'is_table_embedded_smenu_activator': True
-              }
-            }
-        )
+        view = my.kwargs.get("view")
+        if my.is_admin or 'Save Current View' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Save Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
+                    "bvr_cb": {
+                        'cbjs_action': "spt.dg_table.view_action_cbk('save','',bvr);",
+                        'is_admin': my.is_admin,
+                        'is_table_embedded_smenu_activator': True
+                  }
+                }
+            )
 
 
         # This is a lot of work, so hiding
@@ -883,7 +1124,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         access_keys = my._get_access_keys("view_save_my_view",  project_code)
 
-        if not my.embedded_table and security.check_access("builtin",  access_keys, "allow", default='allow'):
+        if not my.embedded_table and (security.check_access("builtin",  access_keys, "allow", default='allow') or 'Save a New View' in label_list):
             menu_items.insert( 4,
                 { "type": "action", "label": 'Save a New View',
                   "bvr_cb": {
@@ -895,10 +1136,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 }
             ) 
-        if is_admin:
-           
-
-            menu_items.append( { "type": "separator" } )
+        if my.is_admin or 'Edit Current View' in label_list:
+            
+            if menu_items and menu_items[-1] != { "type": "separator" }:
+                menu_items.append( { "type": "separator" } )
 
             menu_items.append( 
                     { "type": "action", "label": "Edit Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
@@ -908,6 +1149,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
+        if my.is_admin or 'Edit Config XML' in label_list:
             menu_items.append( 
               { "type": "action", "label": "Edit Config XML <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
               "bvr_cb": {'cbjs_action': '''
@@ -933,40 +1175,65 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
               }
             )
 
+        if menu_items and menu_items[-1] == { "type": "separator" }:
+            menu_items.pop()
+
+
         return {'menu_tag_suffix': 'VIEW', 'width': 210, 'opt_spec_list': menu_items}
 
 
     def get_print_menu(my):
 
         from tactic.ui.panel import TablePrintLayoutWdg
-        return {
-            'menu_tag_suffix': 'PRINT', 'width': 130, 'opt_spec_list': [
+        menu_items = []
 
-                # { "type": "title", "label": "Print" },
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
 
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Print'):
+            label_list = access_keys_dict['Print']
+
+        if my.is_admin or 'Print Selected' in label_list:
+            menu_items.append(
                 { "type": "action", "label": "Print Selected",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("selected_items") }
-                },
-
+                }
+            )
+        if my.is_admin or 'Print Displayed' in label_list:
+            menu_items.append(
                 { "type": "action", "label": "Print Displayed",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("page_matched_items") }
-                },
-
+                }
+            )
+        if my.is_admin or 'Print Matched' in label_list:
+            menu_items.append(
                 { "type": "action", "label": "Print Matched",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("all_matched_items") }
                 }
+            )
 
-        ] }
+        return {'menu_tag_suffix': 'PRINT', 'width': 180, 'opt_spec_list': menu_items}
 
 
 
     def get_chart_menu(my):
 
         from tactic.ui.panel import TablePrintLayoutWdg
-        return {
-            'menu_tag_suffix': 'CHART', 'width': 210, 'opt_spec_list': [
+        menu_items = []
 
-            { "type": "action", "label": "Chart Items",
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        
+        access_keys_dict = my.get_access_keys_dict()
+        label_list = []
+        if access_keys_dict.get('Chart'):
+            label_list = access_keys_dict['Chart']
+
+        if my.is_admin or 'Chart Items' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Chart Items",
                 "bvr_cb": { 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var top = activator.getParent(".spt_table_top");
@@ -991,8 +1258,12 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 var title = "Chart: " + search_type;
                 spt.panel.load_popup(title, 'tactic.ui.chart.ChartBuilderWdg', kwargs)
                 '''}
-            },
-            { "type": "action", "label": "Chart Selected",
+                }
+            )
+        
+        if my.is_admin or 'Chart Selected' in label_list:
+            menu_items.append(
+                { "type": "action", "label": "Chart Selected",
                 "bvr_cb": { 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
 
@@ -1026,17 +1297,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     spt.panel.load_popup(title, 'tactic.ui.chart.ChartBuilderWdg', kwargs)
                 }
                 '''}
-            },
-
-
-                #{ "type": "action", "label": "Chart This Page of Matched Items",
+                }
+            )
+            
+            #{ "type": "action", "label": "Chart This Page of Matched Items",
                 #        "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("page_matched_items") }
                 #},
                 #{ "type": "action", "label": "Chart All Items Matching Search",
                 #        "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("all_matched_items") }
                 #}
-
-        ] }
+        
+        return {'menu_tag_suffix': 'CHART', 'width': 210, 'opt_spec_list': menu_items}
 
 
     def _get_access_keys(my, key, project_code):
