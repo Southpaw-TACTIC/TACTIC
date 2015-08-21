@@ -1058,7 +1058,6 @@ class IngestUploadCmd(Command):
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 search.add_filter("name", filename)
-                search.add_project_filter()
                 if relative_dir and search.column_exists("relative_dir"):
                     search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
