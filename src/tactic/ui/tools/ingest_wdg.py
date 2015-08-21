@@ -1063,8 +1063,10 @@ class IngestUploadCmd(Command):
                 sobjects = search.get_sobjects()
                 if len(sobjects) > 1:
                     sobject = None
-                else:
+                elif len(sobjects) == 1:
                     sobject = sobjects[0]
+                else:
+                    sobject = None
             else:
                 sobject = None 
 
