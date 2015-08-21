@@ -33,10 +33,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         my.view_save_dialog_id = my.view_save_dialog.get_id()
 
         my.layout = my.kwargs.get("layout")
-
         search = Search("config/widget_config")
         search.add_filter("widget_type", "layout_tool")
         my.custom_tools = search.get_sobjects()
+        my.is_admin = False
 
     def get_save_dialog(my):
         return my.view_save_dialog
@@ -146,8 +146,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
     def get_menu_data(my):
         
+        main_menu = my.get_main_menu()
         menus = [
-            my.get_main_menu(),
+            main_menu,
             my.get_edit_menu(),
             my.get_file_menu(),
             my.get_clipboard_menu(),
@@ -157,7 +158,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             my.get_pipeline_menu(),
             my.get_task_menu(),
             my.get_note_menu(),
-            my.get_checkin_menu(),
+            my.get_checkin_menu()
         ]
 
         if my.custom_tools:
@@ -178,12 +179,20 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     custom_menu_error = True
             else:
                 custom_menu_error = True
-
             if custom_menu_error:
-                menus = [ my.get_main_menu(), my.get_selected_items_menu(), my.get_edit_menu(),
-                           my.get_file_menu(), my.get_view_menu() ]
-                menus[0].get("opt_spec_list").append( { "type": "title", "label": "*** <i>CUSTOM MENU CONFIG ERROR</i> ***" } )
+                menus = [ main_menu, 
+                           my.get_edit_menu(),
+                           my.get_file_menu(), 
+                           my.get_clipboard_menu(),
+                            my.get_view_menu(),
+                            my.get_print_menu(),
+                            my.get_chart_menu(),
+                            my.get_pipeline_menu(),
+                            my.get_task_menu(),
+                            my.get_note_menu(),
+                            my.get_checkin_menu()]
 
+                menus[0].get("opt_spec_list").append( { "type": "title", "label": "*** <i>CUSTOM MENU CONFIG ERROR</i> ***" } )
 
         return menus
 
@@ -202,7 +211,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         security = Environment.get_security()
         
         access_keys_dict = my.get_access_keys_dict()
-
         if security.check_access("builtin", "view_site_admin", "allow"):
             my.is_admin = True
         else:
@@ -265,13 +273,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 opt_spec_list.append(
                     { "type": "submenu", "label": "Chart", "submenu_tag_suffix": "CHART" }
                 )
+
+            if access_keys_dict.get('View'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" }
+                )
+
             
             if not my.layout or my.layout.can_add_columns():
                 if access_keys_dict.get('Tasks'):
                     opt_spec_list.append(
                         { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" }
                     )
-
                 if access_keys_dict.get('Notes'):
                     opt_spec_list.append(
                         { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
@@ -287,7 +300,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     )
 
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
-
         return menu
 
     
@@ -400,6 +412,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
                     }
                 )
+
+            if opt_spec_list and opt_spec_list[-1] == { "type": "separator" }:
+                opt_spec_list.pop()
 
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
         
@@ -727,6 +742,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
+        if menu_items and menu_items[-1] == { "type": "separator" }:
+            menu_items.pop()
+
         return {'menu_tag_suffix': 'CLIPBOARD', 'width': 180, 'opt_spec_list': menu_items}
 
 
@@ -741,7 +759,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             label_list = access_keys_dict['Pipelines']
 
 
-        if my.is_admin or 'Show Pipielines Code' in label_list:
+        if my.is_admin or 'Show Pipeline Code' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show Pipeline Code",
@@ -838,6 +856,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 }
             )
+        if menu_items and menu_items[-1] == { "type": "separator" }:
+            menu_items.pop()
 
         return {'menu_tag_suffix': 'TASK', 'width': 210, 'opt_spec_list': menu_items}
 
@@ -1117,8 +1137,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             ) 
         if my.is_admin or 'Edit Current View' in label_list:
-
-            menu_items.append( { "type": "separator" } )
+            
+            if menu_items and menu_items[-1] != { "type": "separator" }:
+                menu_items.append( { "type": "separator" } )
 
             menu_items.append( 
                     { "type": "action", "label": "Edit Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
@@ -1153,6 +1174,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
               }
             )
+
+        if menu_items and menu_items[-1] == { "type": "separator" }:
+            menu_items.pop()
+
 
         return {'menu_tag_suffix': 'VIEW', 'width': 210, 'opt_spec_list': menu_items}
 

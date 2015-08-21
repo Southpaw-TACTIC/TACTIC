@@ -615,6 +615,7 @@ class SecurityWdg(BaseRefreshWdg):
 
         desc_div = DivWdg()
         desc_div.add(description)
+        desc_div.add_style("text-align: center")
         desc_div.add_style("padding: 5px 10px 10px 10px")
         desc_div.add_style("font-size: 1.1em")
 
@@ -668,8 +669,8 @@ class SecurityWdg(BaseRefreshWdg):
 
 
 
-        from misc_wdg import ShelfWdg
-        shelf_wdg = ShelfWdg(top_class='spt_dashboard_top', list_class='spt_dashboard_list', height=207)
+        from misc_wdg import MainShelfWdg
+        shelf_wdg = MainShelfWdg(top_class='spt_dashboard_top', list_class='spt_dashboard_list', height=207)
         top.add(shelf_wdg)
 
         outer = DivWdg()
@@ -680,7 +681,7 @@ class SecurityWdg(BaseRefreshWdg):
         outer.add(div)
         div.add_class("spt_dashboard_list")
         div.add_style("overflow-x: auto")
-        div.add_style("width: 1000px")
+        div.add_style("width: 1200px")
         #div.add_behavior( {
         #    'type': 'load',
         #    'cbjs_action': '''
@@ -760,7 +761,7 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("padding: 3px")
         title = "Link Security"
         image = IconWdg('', IconWdg.SECURITY_32_21, width=32)
-        description = '''Link security determines which side bar links will be visible to each group.'''
+        description = '''Link security determines which side bar links are visible to each group.'''
 
         behavior = {
         'type': 'click_up',
@@ -787,7 +788,7 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("padding: 3px")
         title = "Gear Menu Security"
         image = IconWdg('', IconWdg.SECURITY_32_21, width=32) # Icon needs to be changed
-        description = '''Gear Menu security determines which gear menu options each group can see.'''
+        description = '''Gear Menu security determines which gear menu items each group can see.'''
 
         behavior = {
         'type': 'click_up',
