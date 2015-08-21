@@ -38,7 +38,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
-        'update_mode': 'Ingest files with same name as another file sObject.'
+        'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.'
     }
 
 
@@ -1058,6 +1058,7 @@ class IngestUploadCmd(Command):
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 search.add_filter("name", filename)
+                search.add_project_filter()
                 if relative_dir and search.column_exists("relative_dir"):
                     search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
