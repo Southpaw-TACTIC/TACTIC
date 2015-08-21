@@ -204,14 +204,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         access_keys_dict = my.get_access_keys_dict()
 
         if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
+            my.is_admin = True
         else:
-            is_admin = False
+            my.is_admin = False
         
         if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
             my.is_admin = True
 
-        if is_admin:
+        if my.is_admin:
         
             opt_spec_list = [
             { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
