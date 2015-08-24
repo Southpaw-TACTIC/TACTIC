@@ -188,6 +188,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
             'category' : 'internal'
+        },
+
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '14'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '15'
         }
         
 

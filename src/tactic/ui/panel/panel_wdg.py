@@ -2771,6 +2771,21 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '18'
         },    
 
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '19'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '20'
+        }, 
+
 
         "link": {
             'description': "Definition from a link",
