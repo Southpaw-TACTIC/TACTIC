@@ -444,7 +444,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
         paths = []
         scripts_dict = {}
         for script in scripts:
-            path = "//%s/%s" % (script.get_value("folder"), script.get_value("title"))
+            path = "///%s/%s" % (script.get_value("folder"), script.get_value("title"))
             paths.append(path)
             scripts_dict[path] = script
         dir_list_wdg = ScriptDirListWdg(paths=paths, base_dir="/", editor_id=my.editor_id, scripts=scripts_dict)
@@ -597,6 +597,9 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
         spt.alert("Please provide a path for this script");
         return;
     }
+    // replace leading /
+    title = title.replace(/^\/+/,"");
+    top.getElement(".spt_title").value = title;
 
     spt.ace_editor.set_editor(bvr.editor_id);
     var editor = spt.ace_editor.editor;
@@ -671,9 +674,16 @@ class ScriptDirListWdg(DirListWdg):
             path = "///%s" % (basename)
         else:
             path = "%s/%s" % (dirname, basename)
-
+        
         scripts = my.kwargs.get("scripts")
         script = scripts.get(path)
+        if not script:
+            item_div.add_style("background-color", "red")
+            item_div.add_behavior({"type": "click_up",
+                                 "cbjs_action" : '''spt.alert("Please remove leading / in this script path's Title attribute by using the Manage button.")'''})
+            item_div.add_attr("title", "Please remove special characters like / in this script path")
+            return
+           
         script_code = script.get("code")
         language = script.get("language")
         item_div.add_attr("spt_script_code", script_code)

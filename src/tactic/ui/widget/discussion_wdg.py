@@ -1919,7 +1919,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         # this is a special case where we explicitly use processs/context for note
         #if use_parent =='true' and my.contexts:
         if my.contexts:
-            hidden =HiddenWdg("add_context")
+            hidden = HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
             content_div.add(hidden)
             if my.contexts[0] != my.process:
@@ -2116,6 +2116,16 @@ class DiscussionAddNoteCmd(Command):
         context = my.kwargs.get("context")
         if not context:
             context = process
+        elif context.find("/"):
+            parts = context.split("/")
+            if parts:
+                try:
+                    # if the subcontext is a number, then ignore this
+                    subcontext = int(parts[1])
+                    context = parts[0]
+                except:
+                    pass
+
 
         from pyasm.biz import Note
         note = Note.create(sobject, note, context=context, process=process)

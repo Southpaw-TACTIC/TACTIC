@@ -272,7 +272,7 @@ class FrameRangeWdg(BaseTableElementWdg):
         duration_color = '#969353'
         div = DivWdg()
         div.add_tip('START -- END (TOTAL)')
-        wdg_width = 100
+        wdg_width = 150
         div.add_style('width', wdg_width)
         
         total = frame_range.frame_end - frame_range.frame_start + 1

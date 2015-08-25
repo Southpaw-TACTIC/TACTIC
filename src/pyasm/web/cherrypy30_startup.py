@@ -332,7 +332,8 @@ class CherryPyStartup(CherryPyStartup20):
             #print "... WARNING: SitePage not found"
             exec("cherrypy.root.tactic.%s = TacticIndex()" % site)
             exec("cherrypy.root.projects.%s = TacticIndex()" % site)
-        except SyntaxError:
+        except SyntaxError, e:
+            print e.__str__()
             print "WARNING: skipping project [%s]" % site
 
 

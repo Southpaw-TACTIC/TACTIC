@@ -113,10 +113,14 @@ TacticServerStub = function() {
     }
 
 
-    this.get_ticket = function(login, password) {
+    this.get_ticket = function(login, password, kwargs) {
         var func_name = "get_ticket";
         var client = new AjaxService( this.url, '' );
-        var ret_val = client.invoke( func_name, arguments );
+        var args = [login, password];
+        if (kwargs)
+            args.push(kwargs);
+        
+        var ret_val = client.invoke( func_name, args );
         ret_val = this._handle_ret_val(func_name, ret_val, 'string');
         ret_val = ret_val.replace(/(\r\n|\n|\r)/gm, '');
         return ret_val;
@@ -1000,6 +1004,11 @@ TacticServerStub = function() {
         
     }
 
+    this.insert_multiple = function(search_type, data, kwargs) {
+        // server.insert(search_type, data, kwargs);
+        return this._delegate("insert_multiple", arguments, kwargs);
+        
+    }
 
     this.update = function(search_type, data, kwargs) {
         return this._delegate("update", arguments, kwargs);

@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['TitleWdg', 'QuickLinksWdg', 'ShelfWdg', 'BubbleWdg']
+__all__ = ['TitleWdg', 'QuickLinksWdg', 'MainShelfWdg', 'BubbleWdg']
 
 from pyasm.common import Environment, Common
 from pyasm.search import Search
@@ -226,7 +226,7 @@ class QuickLinksWdg(BaseRefreshWdg):
 
 
 
-class ShelfWdg(BaseRefreshWdg):
+class MainShelfWdg(BaseRefreshWdg):
 
     def get_display(my):
 
@@ -238,7 +238,7 @@ class ShelfWdg(BaseRefreshWdg):
         button_div.add_border()
 
         button_div.add_style("margin-bottom: 0px")
-        button_div.add_style("width: 1000px")
+        button_div.add_style("width: 1200px")
         button_div.add_style("height: 33px")
         button_div.add_color("background", "background2")
         button_div.add_style("margin-left: auto")

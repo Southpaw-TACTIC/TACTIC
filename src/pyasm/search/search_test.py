@@ -52,6 +52,10 @@ class SearchTest(unittest.TestCase):
         elif db_type == "Sqlite":
             my.prefix = ""
             my.sthpw_prefix = ""
+        elif db_type == "SQLServer":
+            my.prefix = '''"unittest"."dbo".'''
+            my.sthpw_prefix = '''"sthpw"."dbo".'''
+            
         else:
             my.prefix = '''"unittest".'''
             my.sthpw_prefix = '''"sthpw".'''
@@ -79,11 +83,10 @@ class SearchTest(unittest.TestCase):
             my._test_order_by()                               
             my._test_search_key()
             my._test_search()
-
             my._test_multi_db_subselect()
 
             # FIXME: this requires sample3d project
-            #my._test_search_other_project()
+            my._test_search_other_project()
             my._test_search_type()
             my._test_metadata()
             my._test_search_type_existence()
@@ -166,7 +169,7 @@ class SearchTest(unittest.TestCase):
         search = Search('unittest/person')
         search.add_order_by('unittest/city.unittest/country.code')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix))
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = %s"country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix, my.prefix))
 
 
         search = Search('unittest/person')
@@ -373,12 +376,20 @@ class SearchTest(unittest.TestCase):
         search3.add_regex_filter("pipeline_code", "model|cg_asset")
         search3.add_filter("code", "chr003")
         sobject = search3.get_sobject()
-        sobject.set_value('description','some char')
-        sobject.commit()
+        if sobject:
+            sobject.set_value('description','some char')
+            sobject.commit()
 
-        updated_sobject = search3.get_sobject(redo=True)
+            updated_sobject = search3.get_sobject(redo=True)
+            my.assertEquals("some char", updated_sobject.get_value('description'))
 
-        my.assertEquals("some char", updated_sobject.get_value('description'))
+        search4 = Search("prod/asset?project=sample3d")
+        search4.add_regex_filter("pipeline_code", "cg_asset's")
+        
+        sobject = search4.get_sobject()
+        my.assertEquals(sobject, None)
+
+        
 
     def _test_search(my):
 

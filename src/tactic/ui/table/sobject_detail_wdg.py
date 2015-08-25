@@ -117,7 +117,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             detail_view: bvr.detail_view
         };
 
-        var mode = 'xxx';
+        var mode = '';
         var layout = bvr.src_el.getParent(".spt_tool_top");
         if (layout != null) {
             mode = 'tool'
@@ -203,10 +203,101 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             'options':      options,
         }
         view_link_wdg.add_behavior( behavior )
-
- 
-
         return view_link_wdg
     """
+
+
+__all__.append("SObjectTaskStatusElementWdg")
+class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
+    '''The element widget that displays according to type'''
+
+    ARGS_KEYS = {
+    }
+ 
+
+    def get_display(my):
+
+        sobject = my.get_current_sobject()
+
+        use_parent = my.get_option("use_parent")
+        use_parent = use_parent in ['true', True]
+        #if use_parent in ['true', True]:
+        #    sobject = sobject.get_parent()
+        #    if not sobject:
+        #        return DivWdg()
+
+        my.search_key = SearchKey.get_by_sobject(sobject)
+    
+        div = DivWdg()
+        div.add_class("hand")
+        #div.add_style("width: 100%")
+        #div.add_style("height: 100%")
+
+        target_id = "main_body"
+
+        title = "Show Item Details"
+        if my.widget:
+            widget = my.widget
+        else:
+            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+
+
+        code = sobject.get_code()
+        name = sobject.get_value("name", no_exception=True)
+        if not name:
+            name = code
+
+
+        tab_element_names = my.kwargs.get("tab_element_names") or ""
+        detail_view = my.kwargs.get("detail_view") or ""
+
+        widget.add_behavior( {
+        'type': 'click_up',
+        'search_key': my.search_key,
+        'use_parent': use_parent,
+        'tab_element_names': tab_element_names,
+        'detail_view': detail_view,
+        'show_task_process': my.show_task_process,
+        'code': code,
+        'name': name,
+        'cbjs_action': '''
+        spt.tab.set_main_body_tab();
+        var class_name = 'tactic.ui.tools.SObjectTaskStatusDetailWdg';
+        var kwargs = {
+            search_key: bvr.search_key,
+            use_parent: bvr.use_parent,
+            tab_element_names: bvr.tab_element_names,
+            show_task_process: bvr.show_task_process,
+            detail_view: bvr.detail_view
+        };
+
+        var mode = '';
+        var layout = bvr.src_el.getParent(".spt_tool_top");
+        if (layout != null) {
+            mode = 'tool'
+        }
+
+        if (mode == 'tool') {
+            spt.app_busy.show("Loading ...");
+            var layout = bvr.src_el.getParent(".spt_tool_top");
+            var element = layout.getElement(".spt_tool_content");
+            spt.panel.load(element, class_name, kwargs);
+            spt.app_busy.hide();
+        }
+        else {
+            var element_name = "detail_"+bvr.code;
+            var title = "Detail ["+bvr.name+"]";
+            spt.tab.add_new(element_name, title, class_name, kwargs);
+        }
+        '''
+        } )
+
+
+        #link_wdg = my.get_link_wdg(target_id, title, widget)
+        #div.add( link_wdg )
+        div.add(widget)
+
+        return div
+
 
 

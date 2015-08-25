@@ -43,6 +43,7 @@ from pyasm.biz import Project, PrefSetting
 from widget_config import WidgetConfigView
 from pyasm.search import ExceptionLog
 from pyasm.prod.biz import ProdSetting
+from pyasm.common import jsonloads
 import random, os, re
 
 
@@ -1131,15 +1132,13 @@ class TacticLogoWdg(Widget):
 
 
         div.add( "<img src='/context/icons/logo/logo.png'/>") 
- 	#div.add( "<img src='/context/icons/logo/tactic_silver.png
+    #div.add( "<img src='/context/icons/logo/tactic_silver.png
 
         div.add(HtmlElement.br(2))
         div.add("Release: %s" %Environment.get_release_version() )
         div.add(HtmlElement.br(4))
 
         return div
-
-
 
 
 class WebLoginWdg(Widget):
@@ -1156,8 +1155,19 @@ class WebLoginWdg(Widget):
     def get_display(my):
         name_label = my.kwargs.get('name_label')
         password_label = my.kwargs.get('password_label')
+        override_background = my.kwargs.get('override_background') == "true"
+        override_logo = my.kwargs.get('override_logo') == "true"
+        override_company_name = my.kwargs.get('override_company_name') == "true"
+        override_password = my.kwargs.get('override_password') == "true"
+        override_login = my.kwargs.get('override_login') == "true"
+        bottom_link = my.kwargs.get('bottom_link')
+
+
         if not name_label:
-            name_label = "Name"
+            if override_background:
+                name_label = "Username"
+            else:
+                name_label = "Name"
         if not password_label:
             password_label = "Password"
 
@@ -1165,9 +1175,12 @@ class WebLoginWdg(Widget):
         web = WebContainer.get_web()
             
         box = DivWdg()
-        box.add_style("margin: auto auto")
-        box.add_style("width: 400px")
-        box.add_style("text-align: center")
+        if override_background:
+            box.add_class("spt_tactic_background")
+        else:
+            box.add_style("margin: auto auto")
+            box.add_style("width: 400px")
+            box.add_style("text-align: center")
 
         box.add_event("onkeyup", "tactic_login(event)")
         script = HtmlElement.script('''function tactic_login(e) {
@@ -1178,7 +1191,10 @@ class WebLoginWdg(Widget):
                 ''')
         
         div = DivWdg()
-        div.add_style("margin: 0px 0px")
+        if override_background:
+            div.add_class("spt_margin_center")
+        else:    
+            div.add_style("margin: 0px 0px")
         div.add_class("centered")
 
 
@@ -1221,26 +1237,41 @@ class WebLoginWdg(Widget):
 
             sudo.exit()
 
-        div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
-        div.add("<br/>"*2)
-        div.add_gradient("color", "color3")
-        div.add_gradient("background", "background3", -10, 10)
-        div.add_style("border: solid 2px %s" % div.get_color("border",-15))
-        div.set_box_shadow("0px 5px 20px", color="rgba(0,0,0,0.6)")
-        div.set_round_corners(15)
-        if change_admin:
-            div.add_style("height: 250px")
-            div.add_style("padding-top: 20px")
+        if override_logo:
+            div.add("<div class='spt_tactic_logo'></div>")
         else:
-            div.add_style("padding-top: 25px")
+            div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
+            div.add("<br/>"*2)
+
+        if not override_background:
+
+            div.add_gradient("color", "color3")
+            div.add_gradient("background", "background3", -10, 10)
+            div.add_style("border: solid 2px %s" % div.get_color("border",-15))
+            div.set_box_shadow("0px 5px 20px", color="rgba(0,0,0,0.6)")
+            div.set_round_corners(15)
+        if change_admin:
+            if override_background:
+                div.add_class("spt_change_admin")
+            else:
+                div.add_style("height: 250px")
+                div.add_style("padding-top: 20px")
+        else:
+            if override_background:
+                div.add_class("spt_not_change_admin")
+
+            else:
+                div.add_style("padding-top: 25px")
 
 
         #div.add_style("padding-top: 95px")
-
-
         sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
-        #sthpw.add_style("color: #CCCCCC")
-        sthpw.add_color("color", "color")
+        if override_company_name:
+            sthpw.add_class("spt_login_company")
+        else:
+            #sthpw.add_style("color: #CCCCCC")
+            sthpw.add_color("color", "color")
+        
         div.add( sthpw )
         div.add( HtmlElement.br() )
 
@@ -1299,20 +1330,31 @@ class WebLoginWdg(Widget):
             # select the matching domain based on host/IP in browser URL
             if host and matched_idx > -1:
                 domain_wdg.set_value(domains[matched_idx])
-
-            domain_wdg.add_style("background-color: #EEE")
-            domain_wdg.add_style("height: 20px")
+            
+            if override_password:
+                domain_wdg.add_style("")
+            else:
+                domain_wdg.add_style("background-color: #EEE")
+                domain_wdg.add_style("height: 20px")
             table.add_cell( domain_wdg )
             table.add_row()
 
         
 
         th = table.add_header( "<b> %s: </b>"%name_label)
-        th.add_style("padding: 10px 5px")
+        if override_password:
+            th.add_style("")
+        else:
+            th.add_style("padding: 10px 5px")
+
         text_wdg = TextWdg("login")
-        text_wdg.add_style("width: 130px")
-        text_wdg.add_style("color: black")
-        text_wdg.add_style("padding: 2px")
+        if override_password:
+            text_wdg.add_class("spt_login_textbox")
+
+        else:
+            text_wdg.add_style("width: 130px")
+            text_wdg.add_style("color: black")
+            text_wdg.add_style("padding: 2px")
         if my.hidden:
             login_name = Environment.get_user_name()
             text_wdg.set_value(login_name)
@@ -1335,15 +1377,21 @@ class WebLoginWdg(Widget):
             td = table.add_cell("Please change the \"admin\" password")
             td.add_styles('height: 24px; padding-left: 6px')
         else:
-            text_wdg.add_style("background: #EEE")
+            if override_password:
+                text_wdg.add_style("")
+            else:
+                text_wdg.add_style("background: #EEE")
 
 
         table.add_row()
         password_wdg = PasswordWdg("password")
-        password_wdg.add_style("color: black")
-        password_wdg.add_style("background: #EEE")
-        password_wdg.add_style("padding: 2px")
-        password_wdg.add_style("width: 130px")
+        if override_password:
+            password_wdg.add_class("spt_login_textbox")
+        else:
+            password_wdg.add_style("color: black")
+            password_wdg.add_style("background: #EEE")
+            password_wdg.add_style("padding: 2px")
+            password_wdg.add_style("width: 130px")
         th = table.add_header( "<b> %s: </b>"%password_label )
         th.add_style("padding: 5px")
         table.add_cell( password_wdg )
@@ -1372,26 +1420,46 @@ class WebLoginWdg(Widget):
         table2.add_row()
 
         # build the button manually
-        up = HtmlElement.img('/context/icons/logo/submit_on.png')
+        span = SpanWdg()
+
+        if override_login:
+            up = HtmlElement.img('')
+            span.add("<div class='spt_login_button'>Login</div>")
+        else:
+            up = HtmlElement.img('/context/icons/logo/submit_on.png')
         up.set_id("submit_on")
-        down = HtmlElement.img('/context/icons/logo/submit_over.png')
+
+        if override_login:
+            down = HtmlElement.img('')
+            span.add("")
+        else:
+            down = HtmlElement.img('/context/icons/logo/submit_over.png')
         down.add_styles( "cursor: pointer;" )
         down.set_id("submit_over")
         down.add_style("display: none")
-        span = SpanWdg()
+
         span.add(up)
         span.add(down)
         span.add(HiddenWdg("Submit"))
+            
         span.add_event("onmouseover", "getElementById('submit_on').style.display='none';getElementById('submit_over').style.display='';")
         span.add_event("onmouseout", "getElementById('submit_over').style.display='none';getElementById('submit_on').style.display='';")
         span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
         th = table2.add_header(span)
         th.add_style("text-align: center")
 
+
         table2.add_row()
         
         msg = web.get_form_value(my.LOGIN_MSG)
         td = table2.add_cell(css='center_content')
+
+        if bottom_link:
+            bottom_dict = jsonloads(bottom_link)
+            for key, value in bottom_dict.items():
+                td.add("<div class='spt_bottom_link'><a href=%s> %s </a></div>" % (value,key))
+        else:
+            td.add_style("")
         
         if my.hidden:
             msg = 'Your session has expired. Please login again.'
@@ -1416,7 +1484,7 @@ class WebLoginWdg(Widget):
 
             authenticate_class = Config.get_value("security", "authenticate_class")
             if msg != ResetPasswordWdg.RESET_MSG and not authenticate_class:
-                access_msg = "Can't access your account?"
+                access_msg = "Forgot your password?"
                 login_value = web.get_form_value('login')
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
                 link = HtmlElement.js_href(js, data=access_msg)
@@ -1424,7 +1492,10 @@ class WebLoginWdg(Widget):
                 td.add(link)
 
         else:
-            div.add_style("height: 250px")
+            if override_background:
+                div.add_style("")
+            else:
+                div.add_style("height: 250px")
 
         div.add(HtmlElement.br())
         div.add(table)
@@ -1456,7 +1527,6 @@ class WebLoginWdg(Widget):
         widget.add(table)
         
         return widget
-
 
 
 # DEPRECATED: moved lower to pyasm/web

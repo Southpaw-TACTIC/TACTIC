@@ -835,7 +835,6 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
         var node_name = spt.pipeline.get_node_name(node);
         var group_name = spt.pipeline.get_current_group();
-
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
         if (!info) {
@@ -1468,7 +1467,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
             widget = ApprovalInfoWdg(**my.kwargs)
 
         if node_type == 'action':
-            widget = AutoInfoWdg(**my.kwargs)
+            widget = ActionInfoWdg(**my.kwargs)
 
         if node_type == 'condition':
             widget = ConditionInfoWdg(**my.kwargs)
@@ -1609,7 +1608,6 @@ class DefaultInfoWdg(BaseInfoWdg):
         pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
 
-
         top = my.top
 
         if not pipeline_code:
@@ -1638,8 +1636,10 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         search = Search("config/process")
         search.add_filter("process", process)
+        
         process_sobj = search.get_sobject()
 
+        process_code = process_sobj.get_value("code")
 
 
         #show error message if the node has not been registered 
@@ -1661,7 +1661,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         # triggers
         search = Search("config/trigger")
-        search.add_filter("process", process)
+        search.add_filters("process", [process,process_code])
         trigger_count = search.get_count()
 
 
@@ -1696,7 +1696,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         td = table.add_cell("Triggers:")
         td.add_style("text-align: right")
         td.add_style("padding: 10px 10px")
-        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % trigger_count)
+        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" %trigger_count)
         td.add_style("width: 250px")
         td.add_style("text-align: right")
 
@@ -1910,7 +1910,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-class AutoInfoWdg(BaseInfoWdg):
+class ActionInfoWdg(BaseInfoWdg):
 
 
     def get_display(my):
@@ -2206,6 +2206,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 10px")
 
+        """
         input_processes = pipeline.get_input_processes(process)
         form_wdg.add("Add groups or people that need to approve the '%s' process" % [x.get_name() for x in input_processes])
 
@@ -2213,12 +2214,12 @@ class ApprovalInfoWdg(BaseInfoWdg):
         form_wdg.add("<br/>")
 
         #from tactic.ui.input import KeywordInputWdg
+
         from spt.tools.keyword import KeywordInputWdg
         entry = KeywordInputWdg()
         entry.set_option("search_type", "sthpw/login")
         entry.set_option("column", "display_name")
         form_wdg.add(entry)
-
 
         save = ActionButtonWdg(title="Save")
         save.add_style("float: right")
@@ -2235,12 +2236,13 @@ class ApprovalInfoWdg(BaseInfoWdg):
         } )
 
        
+        """
 
 
         return top
 
 
-class ConditionInfoWdg(AutoInfoWdg):
+class ConditionInfoWdg(ActionInfoWdg):
     pass
 
 

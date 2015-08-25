@@ -41,6 +41,13 @@ class WorkflowTest(unittest.TestCase):
             my._test_complete_trigger()
         finally:
             test_env.delete()
+
+            search = Search("sthpw/pipeline")
+            search.add_filter("project_code", "unittest")
+            pipelines = search.get_sobjects()
+            for pipeline in pipelines:
+                pipeline.delete()
+            
  
  
     def _test_complete_trigger(my):
@@ -58,18 +65,16 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_js()
-            """
             my._test_hierarchy()
+            my._test_js()
             my._test_manual()
+            my._test_check()
             my._test_task()
             my._test_action_process()
-            my._test_check()
             my._test_choice()
             my._test_input()
             my._test_trigger()
             my._test_approval()
-            """
         except Exception, e:
             print "Error: ", e
             raise
@@ -107,8 +112,8 @@ class WorkflowCmd(Command):
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process_name,
-                'on_approve': '''
-                sobject.set_value('%s', "approve")
+                'on_approved': '''
+                sobject.set_value('%s', "approved")
                 ''' % process_name,
  
             } )
@@ -447,13 +452,12 @@ class WorkflowCmd(Command):
         }
         Trigger.call(my, "process|pending", output)
 
+        # nothing should have run
         my.assertEquals( False, sobject.get_value("a"))
         my.assertEquals( False, sobject.get_value("b"))
 
 
     def _test_task(my):
-
-        print "test task"
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -590,9 +594,9 @@ class WorkflowCmd(Command):
         my.assertEquals("b", task.get("process"))
 
         # approve the task
-        task.set_value("status", "approve")
+        task.set_value("status", "approved")
         task.commit()
-        my.assertEquals( "approve", sobject.get_value("b"))
+        my.assertEquals( "complete", sobject.get_value("b"))
         my.assertEquals( "complete", sobject.get_value("c"))
 
 
@@ -606,32 +610,42 @@ class WorkflowCmd(Command):
         <pipeline>
           <process type="action" name="a"/>
           <process type="hierarchy" name="b"/>
-          <process type="action" name="c"/>
+          <process type="hierarchy" name="c"/>
+          <process type="action" name="d"/>
           <connect from="a" to="b"/>
           <connect from="b" to="c"/>
+          <connect from="c" to="d"/>
         </pipeline>
         '''
         pipeline, processes = my.get_pipeline(pipeline_xml)
-        parent_process = processes.get("b")
-        print "parent: ", pipeline.get_code()
 
-        sobject.set_value("pipeline_code", pipeline.get_code())
-        sobject.commit()
 
         # create the sub pipeline
         subpipeline_xml = '''
         <pipeline>
+          <process type="input" name="start"/>
           <process type="action" name="suba"/>
           <process type="action" name="subb"/>
           <process type="action" name="subc"/>
+          <process type="output" name="end"/>
+          <connect from="start" to="suba"/>
           <connect from="suba" to="subb"/>
           <connect from="subb" to="subc"/>
+          <connect from="subc" to="end"/>
         </pipeline>
         '''
         subpipeline, subprocesses = my.get_pipeline(subpipeline_xml)
-        subpipeline.set_value("parent_process", parent_process.get_code())
+        #subpipeline.set_value("parent_process", parent_process.get_code())
         subpipeline.commit()
-        print "sub: ", subpipeline.get_code()
+        subpipeline_code = subpipeline.get_code()
+
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+
+        p = processes.get("c")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
 
 
 
@@ -647,9 +661,11 @@ class WorkflowCmd(Command):
         my.assertEquals( "complete", sobject.get_value("a"))
         my.assertEquals( "complete", sobject.get_value("b"))
         my.assertEquals( "complete", sobject.get_value("c"))
+        my.assertEquals( "complete", sobject.get_value("start"))
         my.assertEquals( "complete", sobject.get_value("suba"))
         my.assertEquals( "complete", sobject.get_value("subb"))
         my.assertEquals( "complete", sobject.get_value("subc"))
+        my.assertEquals( "complete", sobject.get_value("end"))
 
         
 

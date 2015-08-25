@@ -152,15 +152,21 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add_style("width: %s" % my.width)
         outer.add_style("height: %s" % my.height)
 
-        menu = my.get_node_context_menu()
-        menus = [menu.get_data()]
+        process_menu = my.get_node_context_menu()
+        menus = [process_menu.get_data()]
+
+        # Simple context menu is for renaming and 
+        # deleting approval, action and condition nodes..        
+        simple_menu = my.get_simple_node_context_menu()
+        simple_menus = [simple_menu.get_data()]   
+    
         menus_in = {
             'NODE_CTX': menus,
+            'SIMPLE_NODE_CTX': simple_menus 
         }
+
         from tactic.ui.container.smart_menu_wdg import SmartMenu
         SmartMenu.attach_smart_context_menu( outer, menus_in, False )
-
-
 
         # inner is used to scale
         inner = DivWdg()
@@ -362,18 +368,31 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
 
-        # add approval node
+        # add condition node
         approval = my.get_condition_node("XXXXX")
         template_div.add(approval)
 
-        # add approval node
+        # add action node
         action = my.get_node("XXXXX", node_type="action")
         template_div.add(action)
 
-        # add approval node
+        # add hierarchical node
         approval = my.get_node("XXXXX", node_type="hierarchy")
         template_div.add(approval)
 
+        # add endpoint node
+        endpoint = my.get_endpoint_node("XXXXX", node_type="output")
+        template_div.add(endpoint)
+
+        # add starter point node
+        endpoint = my.get_endpoint_node("XXXXX", node_type="input")
+        template_div.add(endpoint)
+
+
+
+        # add custom node
+        custom = my.get_custom_node("custom", "email")
+        template_div.add(custom)
 
 
         # add trigger node
@@ -841,9 +860,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
             var process = server.eval(expr, {single: true});
 
-            var process_code = process.code;
+            var subpipeline_code = process.subpipeline_code;
+            if (subpipeline_code) {
+                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
+            }
+            else {
+                var process_code = process.code;
 
-            var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+            }
+
             if (!subpipeline) {
                 // create the pipeline
                 var data = {
@@ -1168,6 +1194,212 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
+    def get_endpoint_node(my, name, node_type ):
+
+        node = DivWdg()
+        node.add_class("spt_pipeline_%s" % node_type)
+        node.add_class("spt_pipeline_node")
+        node.add_attr("spt_node_type", node_type)
+
+
+        node.add_attr("spt_element_name", name)
+        node.add_attr("title", name)
+
+
+        node.add_style("z-index", "200");
+        node.add_style("position: absolute")
+
+        node.add_style("width: auto")
+        node.add_style("height: auto")
+
+        width = 30
+        height = 20
+
+
+        my.add_nobs(node, height)
+
+
+        content = DivWdg()
+        node.add(content)
+
+
+        content.add_class("spt_content")
+
+        content.add_style("width: %spx" % width)
+        content.add_style("height: %spx" % height)
+        content.add_style("border: solid 1px black")
+
+        if node_type == "input":
+            content.add_style("border-radius: 0px 15px 15px 0px")
+        else:
+            content.add_style("border-radius: 15px 0px 0px 15px")
+
+
+        label = Table()
+        label.add_row()
+        node.add(label)
+        label.add_style("position: absolute")
+
+        label.add_style("width: %spx" % width)
+        label.add_style("height: %spx" % height)
+
+        label.add_style("top: 0px")
+        td = label.add_cell(name)
+        td.add_class("spt_label")
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
+        label.add_style("overflow: hidden")
+
+        text = TextWdg()
+        node.add(text)
+        text.add_style("position: absolute")
+        text.add_style("display: none")
+        text.add_style("top: %spx" % (height/4+5) )
+        text.add_style("left: 0px")
+        text.add_style("width: 65px")
+        text.set_value(name)
+
+        active = DivWdg()
+        node.add(active)
+        active.add_class("spt_active")
+
+        my.add_default_node_behaviors(node, text)
+
+        return node
+
+
+
+
+
+
+    def get_custom_node(my, name, node_type ):
+
+        node = DivWdg()
+        node.add_class("spt_pipeline_custom")
+        node.add_class("spt_pipeline_node")
+        node.add_attr("spt_node_type", "custom")
+
+
+        node.add_attr("spt_element_name", name)
+        node.add_attr("title", name)
+
+
+        node.add_style("z-index", "200");
+        node.add_style("position: absolute")
+
+        node.add_style("width: auto")
+        node.add_style("height: auto")
+
+
+        class NotificationNodeWdg(BaseRefreshWdg):
+            def get_width(my):
+                return 50 
+            def get_height(my):
+                return 50 
+
+            def get_node_behaviors(my):
+                return []
+
+            def get_node_type(my):
+                return "email"
+
+            def get_handler_class(my):
+                return CustomWorkflowHandler
+
+            def get_display(my):
+                top = my.top
+                #top.add_style("width: %s" % my.get_width())
+                #top.add_style("height: %s" % my.get_height())
+                top.add_style("border-radius: 50px")
+                top.add_style("text-align: center")
+
+                icon_div = DivWdg()
+                top.add(icon_div)
+                icon = IconWdg(name="notification", icon="BS_ENVELOPE")
+                icon_div.add(icon)
+                icon_div.add_style("margin: -20px auto 0px auto")
+                return top
+
+        from pyasm.biz import BaseProcessTrigger
+        class NotificationNodeHandler(BaseProcessTrigger):
+            def execute(my):
+                pipeline = my.input.get("pipeline")
+                process = my.input.get("process")
+                sobject = my.input.get("sobject")
+
+                # send email
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+
+
+
+        custom_node_wdg = NotificationNodeWdg()
+
+        width = custom_node_wdg.get_width()
+        height = custom_node_wdg.get_height()
+
+
+
+        # add custom node behaviors
+        node_behaviors = custom_node_wdg.get_node_behaviors()
+        for node_behavior in node_behaviors:
+            node.add_behavior( node_behavior )
+
+
+        my.add_nobs(node, height, 5)
+
+
+        node.add(custom_node_wdg)
+        custom_node_wdg.add_class("spt_content")
+
+        custom_node_wdg.add_style("width: %spx" % width)
+        custom_node_wdg.add_style("height: %spx" % height)
+        custom_node_wdg.add_style("border: solid 1px black")
+
+
+        label = Table()
+        label.add_row()
+        node.add(label)
+        label.add_style("position: absolute")
+
+        label.add_style("width: %spx" % width)
+        label.add_style("height: %spx" % height)
+
+        label.add_style("top: 0px")
+        td = label.add_cell(name)
+        td.add_class("spt_label")
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
+        label.add_style("overflow: hidden")
+
+        text = TextWdg()
+        node.add(text)
+        text.add_style("position: absolute")
+        text.add_style("display: none")
+        text.add_style("top: %spx" % (height/4+5) )
+        text.add_style("left: 0px")
+        text.add_style("width: 65px")
+        text.set_value(name)
+
+        active = DivWdg()
+        node.add(active)
+        active.add_class("spt_active")
+
+        my.add_default_node_behaviors(node, text)
+
+        return node
+
+
+
+
+
+
+
     def get_condition_node(my, name, process=None):
 
         node = DivWdg()
@@ -1192,6 +1424,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
@@ -1276,7 +1510,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+ 
         # add custom node behaviors
         node_behaviors = my.get_node_behaviors()
         for node_behavior in node_behaviors:
@@ -1529,8 +1765,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         """
 
 
-
-
         menu_item = MenuItem(type='action', label='Rename Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1540,11 +1774,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
         menu.add(menu_item)
 
-
-
-
-
- 
         menu_item = MenuItem(type='action', label='Delete Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1570,6 +1799,37 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return menu
 
 
+    def get_simple_node_context_menu(my):
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Rename Node')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.set_rename_mode(node);
+            '''
+        } )
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Delete Node')
+        menu_item.add_behavior( {
+            'cbjs_action': ''' 
+            var node = spt.smenu.get_activator(bvr);
+            spt.pipeline.init( { src_el: node } );
+            spt.pipeline.remove_node(node);
+            '''
+        } ) 
+        menu.add(menu_item)
+
+        return menu 
+    
 
     def get_onload_js(my):
 
@@ -2321,7 +2581,8 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     var template_class = "spt_pipeline_" + node_type;
     var template = template_container.getElement("."+template_class);
     if (!template) {
-        alert("Can't find template for ["+template_class+"]");
+        if (template_class !='spt_pipeline_manual')
+            spt.alert("Can't find template for ["+template_class+"]");
         return;
     }
 
@@ -4329,7 +4590,7 @@ spt.pipeline.set_task_color = function(group_name) {
 
 // Export group
 spt.pipeline.export_group = function(group_name) {
-
+    
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
 

@@ -1344,7 +1344,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
     def handle_table_behaviors(my, table):
-
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
         my.handle_load_behaviors(table)
 
         # add the search_table_<table_id> listener used by widgets 
@@ -1718,14 +1719,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "background-position": "bottom right",
         } )
 
-
+        
+        is_editable = my.kwargs.get("is_editable")
 
         # Edit behavior
-        is_editable = my.kwargs.get("is_editable")
         if is_editable in [False, 'false']:
             is_editable = False
         else:
             is_editable = True
+
+        # Check user access
+        access_keys = my._get_access_keys("edit",  project_code)
+        if security.check_access("builtin", access_keys, "edit"):
+            is_editable = True
+        else: 
+            is_editable = False
+            my.view_editable = False
+            
 
         if is_editable:
             table.add_behavior( {
@@ -2655,13 +2665,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             is_editable = True
-
-            if not widget.is_editable():
-                is_editable = False
-            else:
-                security = Environment.get_security()
-                if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+            # Check if view is editable first, if not, skip checking each column
+            if my.view_editable:
+                if not widget.is_editable():
                     is_editable = False
+                else:
+                    security = Environment.get_security()
+                    if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+                        is_editable = False
 
 
             # This is only neccesary if the table is editable
@@ -4580,16 +4591,18 @@ spt.table.set_changed_color = function(row, cell) {
         row.setAttribute("spt_background", "#204411");
     } 
     else {
-        row.setStyle("background-color", "#C0CC99");
-        cell.setStyle("background-color", "#909977");
-        row.setAttribute("spt_background", "#C0CC99");
-        /*
-        var el = cell;
-        el.setStyle("background", "#EFE");
-        el.setStyle("border-color", "#0F0");
-        el.setStyle("border-style", "solid");
-        el.setStyle("border-width", "2px 1px 1px 2px");
-        */
+        //color = "rgba(188, 207, 215, 1.0)";
+        //color2 = "rgba(188, 207, 215, 0.6)";
+        color = "rgba(207, 215, 188, 1.0)";
+        color2 = "rgba(207, 215, 188, 0.6)";
+
+        row.setStyle("background-color", color2);
+        cell.setStyle("background-color", color);
+        row.setAttribute("spt_background", color2);
+
+        //row.setStyle("background-color", "#C0CC99");
+        //cell.setStyle("background-color", "#909977");
+        //row.setAttribute("spt_background", "#C0CC99");
     }
 }
 

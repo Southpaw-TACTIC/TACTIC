@@ -16,7 +16,7 @@ import os, types
 from pyasm.common import Common, Environment
 from pyasm.search import SearchKey
 from pyasm.web import DivWdg, WebContainer, HtmlElement
-from pyasm.security import Login, AccessManager, AccessRuleBuilder
+from pyasm.security import Login, LoginGroup, AccessManager, AccessRuleBuilder
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, BaseTableElementWdg, IconWdg, IconButtonWdg, ProdIconButtonWdg, HiddenWdg
 
@@ -72,7 +72,8 @@ permission_list = [
     {'key':'create_projects', 'title': 'Create Projects', 'description': 'The gives the user the permission to create projects'},
     {'key':'export_all_csv', 'title': 'Export All CSV'},
     {'key':'import_csv', 'title': 'Import CSV'},
-    {'key':'retire_delete', 'title': 'Retire and Delete'}
+    {'key':'retire_delete', 'title': 'Retire and Delete'},
+    {'key':'edit', 'title': 'Edit'}
 ]
 
 
@@ -131,7 +132,14 @@ class SecurityManagerWdg(BaseRefreshWdg):
         access_manager = AccessManager()
         access_manager.add_xml_rules(access_rules)
 
-
+        access_level = group.get_access_level()
+        project_code = group.get_value('project_code')
+        if project_code:
+            project_codes = set(project_code)
+        else:
+            project_codes = set()
+        xml = LoginGroup.get_default_access_rule(access_level, project_codes)
+        access_manager.add_xml_rules(xml)
         group = "builtin"
         global_default_access = "deny"
 
@@ -154,13 +162,16 @@ class SecurityManagerWdg(BaseRefreshWdg):
 
             key = item.get('key')
             item_default = item.get('default')
+           
             if item_default:
                 default_access = item_default
             else:
                 default_access = global_default_access
 
+            
             allowed = access_manager.check_access(group, key, "allow", default=default_access)
-
+            
+            
             checkbox = CheckboxWdg("rule")
             if allowed:
                 checkbox.set_checked()
@@ -229,6 +240,7 @@ class SecurityManagerCbk(Command):
         group_default = 'deny'
         builder.add_default_rule(group, group_default)
         default_attr = builder.get_default(group)
+        
         for item in permission_list:
             key = item.get('key')
             if key in rules:

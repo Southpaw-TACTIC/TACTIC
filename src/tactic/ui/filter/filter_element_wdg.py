@@ -361,6 +361,13 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add(HiddenWdg("op", "is on"))
         elif op == '~':
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
+        elif op == 'is':
+            #TODO: have this style apply to everything else and get rid of &nbsps
+            op_div = DivWdg('is')
+            op_div.add_styles('margin-top: 8px; margin-right: 15px')
+            div.add(op_div)
+            div.add(HiddenWdg("op", "="))
+            div.add_style("display: flex")
         else:
             op_select = SelectWdg("op")
             op_select.add_style("width: 100px")
@@ -550,6 +557,13 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         my.look_ahead_columns = []
         my.relevant = my.get_option("relevant")
         my.mode = my.get_option("mode")
+        
+        my.keyword_search_type = ''
+        my.keyword_map_search_type = ''
+        if my.mode == 'keyword_tree':
+            my.keyword_search_type = my.get_option("keyword_search_type") or 'workflow/base_keyword'
+            my.keyword_map_search_type = my.get_option("keyword_map_search_type") or 'workflow/keyword_map'
+
         my.cross_db = my.get_option("cross_db") =='true'
         column = my.get_option("column")
         full_text_column = my.get_option("full_text_column")
@@ -670,6 +684,160 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             refs = search2.get_sobjects()
             overall_search.add_filters("id", [x.get_value("search_id") for x in refs])
 
+        elif my.mode == 'keyword_tree':
+            if my.cross_db:
+                sub_search_list = []
+
+            else:
+                overall_search.add_op('begin')
+            
+            # single col does not matter
+            # we should just use the AND logic for single_col or multi keywords column.
+            # Drawback is that multiple columns defined for the same sType may cause a return of 0 result
+            # if words from multi columns are used in the search. This is in line with partial_op = 'and' for 
+            # db not supporting full text search
+            partial_op = 'or'
+            # in keyword_tree mode where there could be multi column
+            # keywords is kept as a string to maintain OR full-text search
+            value = value.replace(",", " ")
+            
+            # find my parent tree value
+            project = Project.get()
+            sql = project.get_sql()
+            stmts = []
+            value_idx = []
+            impl = project.get_database_impl()
+            
+            op = my.values.get("cte_op")
+            if not op:
+                op = "keyword"
+
+            # this is the hardcoded filter exact match of name 
+            # or partial match with alias column 
+            if op == 'child':
+                tbl = "p1"
+            elif op == 'both':
+                tbl = "p1"
+                filter_expr1 = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+                tbl = "p2"
+                filter_expr2 = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+            else:
+                tbl = "p2"
+            filter_expr = [["begin"],["%s.name"%tbl,"%s"%value],["%s.alias"%tbl,"like","%%%s%%"%value],["or"]]
+
+            if op == 'parent':
+                stmts.append(impl.get_parent_cte(filter_expr))
+                value_idx.append(1)
+            elif op == 'child':
+                stmts.append(impl.get_child_cte(filter_expr))
+                value_idx.append(3)
+            elif op == 'both':
+                stmts.append(impl.get_parent_cte(filter_expr2))
+                value_idx.append(1)
+                stmts.append(impl.get_child_cte(filter_expr1))
+                value_idx.append(3)
+            elif op == 'keyword':
+                pass
+
+
+            original_search = Search(my.keyword_search_type)
+            original_search.add_op('begin')
+            original_search.add_filter('name', value)
+            original_search.add_regex_filter('alias', value, op='EQI')
+            original_search.add_op('or')
+            original = original_search.get_sobject()
+            if original:
+                value = original.get('name')
+
+
+            # include the original value
+            keywords_list = [value]
+            
+            for idx, stmt in enumerate(stmts):
+                results = sql.do_query(stmt)
+                for res in results:
+                    if res[value_idx[idx]] not in keywords_list:
+                        keywords_list.append(res[value_idx[idx]])
+
+            keywords = keywords_list
+
+            for column in my.columns:
+                if my.cross_db:
+                    search2 = None
+                    sub_search = None
+               
+                                
+                search_type_obj = overall_search.get_search_type_obj() 
+                table = search_type_obj.get_table()
+                column_type = None
+                search = Search(overall_search.get_search_type())
+                local_table = True
+                if column.find(".") != -1:
+                    parts = column.split(".")
+                    search_types = parts[:-1]
+                    column = parts[-1]
+                    local_table = False
+
+                    """
+                    if my.cross_db:
+                        search_types.reverse()
+                        top_search_type = search_types[0]
+                        search_type_str = '.'.join(search_types[1:])
+                        if search_type_str:
+                            expr = '''@SEARCH(%s)'''%(search_type_str)
+                            sub_search = Search.eval(expr)
+                        search2 = Search(top_search_type)
+                        table = SearchType.get(top_search_type).get_table()
+                        column_types = SearchType.get_column_types(top_search_type)
+                        column_type = column_types.get(column) 
+                    else:
+                    """
+                    prev_stype = search_type
+                    for next_stype in search_types:
+                        path = None
+                        # support for path
+                        if ':' in next_stype:
+                            path, next_stype = next_stype.split(':')
+                        search.add_join(next_stype, prev_stype, path=path)
+                        prev_stype = next_stype
+                    table = SearchType.get(next_stype).get_table()
+                    column_types = SearchType.get_column_types(next_stype)
+                    column_type = column_types.get(column)
+
+                if my.cross_db:
+                    search2.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                    # sub_search is not present if it only traverses thru 1 sType
+                    if sub_search:
+                        sub_search.add_relationship_search_filter(search2, op="in")
+                    else:
+                        sub_search = search2
+                else:
+                    if local_table:
+                        overall_search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                    else:
+                        search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                        overall_search.add_relationship_search_filter(search, op="in")
+            if my.cross_db:
+                sub_search_list.append(sub_search)
+
+
+            if my.cross_db:
+                rtn_history = False
+                overall_search.add_op('begin')
+                for sub_search in sub_search_list:
+                    rtn = overall_search.add_relationship_search_filter(sub_search, op="in", delay_null=True)
+                    if rtn_history == False:
+                        rtn_history = rtn
+                # if all the sub_search return false, set null filter
+                if not rtn_history:
+                    overall_search.set_null_filter()
+                overall_search.add_op('or')
+
+            else:
+                overall_search.add_op('or')
+
+                
+
 
         elif my.mode == 'keyword':
             if my.cross_db:
@@ -706,7 +874,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     search_type_obj = SearchType.get(search_type)
                     table = search_type_obj.get_table()
                     
-                    #print "column: ", column
                     search = Search(overall_search.get_search_type())
                     local_table = True
                     if column.find(".") != -1:
@@ -903,7 +1070,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
        
 
-        if not my.columns and my.mode == 'keyword':
+        if not my.columns and my.mode in ['keyword','keyword_tree']:
             name = my.get_name()
             my.columns = [name]
             # check if column exists
@@ -923,7 +1090,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
 
-        if my.mode == 'keyword':
+        if my.mode in ['keyword','keyword_tree']:
             search_type = my.filter_search_type
 
             # clean up the hint text and find the last search_type
@@ -999,6 +1166,23 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
         div.add(text)
+
+        if my.mode == 'keyword_tree':
+            text.add_style('float','left')
+            op_select = SelectWdg("cte_op")
+            op_select.add_style("width: 100px")
+            # only support in or not in for multi stypes column
+            op_select.set_option("labels", "keyword|parent|child|both")
+            op_select.set_option("values", "keyword|parent|child|both")
+
+            value = my.values.get("cte_op")
+            if value:
+                op_select.set_value(value)
+
+            div.add(op_select)
+            op_select.add_style("float: left")
+            op_select.add_style("margin-left: 10px")
+
 
         show_toggle = my.get_option("show_toggle")
         if show_toggle in ['true', True]:

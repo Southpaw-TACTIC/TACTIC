@@ -248,11 +248,8 @@ class Trigger(Command):
             for trigger_sobj in trigger_sobjs:
                 trigger_event = trigger_sobj.get_value("event")
 
-                # A bit of a hack here ... make process in the column also be able
-                # to be the process_code.
-                trigger_process = trigger_sobj.get_value("process_code", no_exception=True)
-                if not trigger_process:
-                    trigger_process = trigger_sobj.get_value("process")
+                # The value in the process column can also be the process_code.
+                trigger_process = trigger_sobj.get_value("process")
                 trigger_stype = trigger_sobj.get_value("search_type", no_exception=True)
 
                 listen_event = {}
