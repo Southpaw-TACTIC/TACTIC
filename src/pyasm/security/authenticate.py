@@ -42,9 +42,6 @@ class Authenticate(object):
         return 'default'
 
     def verify(my, login_name, password):
-
-
-
         '''Method to authenticate the user with a given login name and a
         given password
 
@@ -90,8 +87,8 @@ class TacticAuthenticate(Authenticate):
             raise SecurityException("Login/Password combination incorrect")
 
         # encrypt and check the password
-        print encrypted
-        print my.login.get_value("password")
+        #print encrypted
+        #print my.login.get_value("password")
         if encrypted != my.login.get_value("password"):
             raise SecurityException("Login/Password combination incorrect")
         return True

@@ -1350,6 +1350,7 @@ class WebLoginWdg(Widget):
         text_wdg = TextWdg("login")
         if override_password:
             text_wdg.add_class("spt_login_textbox")
+            text_wdg.add_class("form-control")
 
         else:
             text_wdg.add_style("width: 130px")
@@ -1387,6 +1388,7 @@ class WebLoginWdg(Widget):
         password_wdg = PasswordWdg("password")
         if override_password:
             password_wdg.add_class("spt_login_textbox")
+            password_wdg.add_class("form-control")
         else:
             password_wdg.add_style("color: black")
             password_wdg.add_style("background: #EEE")

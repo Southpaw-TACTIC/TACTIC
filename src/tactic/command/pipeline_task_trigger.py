@@ -37,7 +37,6 @@ class PipelineTaskStatusTrigger(Trigger):
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         data = jsonloads(data)
-        print "trigger data: ", data, type(data)
 
         data_list = data
         if isinstance(data, dict):
@@ -65,7 +64,6 @@ class PipelineTaskStatusTrigger(Trigger):
             # make sure the caller process is the same as the source process
             if src_task.get_value("process") != data.get("src_process"):
                 continue
-
 
             #conditionx = "@GET(.status) != 'Approved'"
             #result = Search.eval(conditionx, src_task)
@@ -120,7 +118,6 @@ class PipelineTaskStatusTrigger(Trigger):
                 for task in tasks:
                     if task.get_value("process") == dst_process:
                         updated_tasks.append(task)
-
 
 
             for task in updated_tasks:

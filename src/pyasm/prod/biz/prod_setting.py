@@ -64,6 +64,10 @@ class ProdSetting(SObject):
 
 
     def get_by_key(cls, key, search_type=None):
+        from pyasm.security import Site
+        site = Site.get_site()
+        Site.set_site( Site.get_first_site() )
+
         project = Project.get_project_code() 
         dict_key = '%s:%s' %(key, search_type)
        
@@ -75,6 +79,8 @@ class ProdSetting(SObject):
         if Project.get_project_name() in ['admin', 'sthpw']:
             return None
         prod_setting = ProdSetting.get_by_search(search, dict_key)
+
+        Site.pop_site()
 
         return prod_setting
 

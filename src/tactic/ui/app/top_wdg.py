@@ -376,13 +376,15 @@ class TopWdg(Widget):
                 '''
             } )
             project_code = Project.get_project_code()
+            site_root = web.get_site_root()
             div.add_behavior( {
                 'type': 'click_up',
+                'site_root': site_root,
+                'project_code': project_code,
                 'cbjs_action': '''
-                var url = "/tactic/%s/admin/link/_startup";
+                var url = "/"+bvr.site_root+"/"+bvr.project_code+"/admin/link/_startup";
                 window.open(url);
-
-                ''' % project_code
+                '''
             } )
 
 
@@ -446,10 +448,14 @@ class TopWdg(Widget):
         user_id = login.get_id()
         login_groups = Environment.get_group_names()
 
+    
+        from pyasm.security import Site
+        site = Site.get_site()
 
         # add environment information
         script = HtmlElement.script('''
         var env = spt.Environment.get();
+        env.set_site('%s');
         env.set_project('%s');
         env.set_user('%s');
         env.set_user_id('%s');
@@ -458,7 +464,7 @@ class TopWdg(Widget):
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
 
-        ''' % (Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir))
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir))
         top.add(script)
 
 

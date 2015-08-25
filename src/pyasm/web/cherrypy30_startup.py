@@ -21,7 +21,7 @@ from pyasm.common import Environment, Container, Config
 from pyasm.web import WebEnvironment
 from pyasm.biz import Project
 
-from cherrypy_startup import TacticIndex, _cp_on_http_error
+#from cherrypy_startup import TacticIndex, _cp_on_http_error
 from cherrypy_startup import CherryPyStartup as CherryPyStartup20
 
 
@@ -37,6 +37,26 @@ class Root:
         return '''<META http-equiv="refresh" content="0;URL=/tactic">'''
     index.exposed = True
 
+
+
+class TacticIndex:
+    '''Dummy Index file'''
+    def index(my):
+        # check if this project exists
+        response = cherrypy.response
+        request = cherrypy.request
+        path = request.path_info
+
+        from pyasm.security import Site
+        default_project = Site.get().get_default_project()
+        if not default_project:
+            default_project = "admin"
+
+        path = path.rstrip("/")
+        path = "%s/%s" % (path, default_project)
+
+        return '''<META http-equiv="refresh" content="0;URL=%s">''' % path
+    index.exposed = True
 
 
 
@@ -77,67 +97,93 @@ class CherryPyStartup(CherryPyStartup20):
         if len(parts) < 3:
             cherrypy.response.body = '<meta http-equiv="refresh" content="0;url=/tactic" />'
             return 
+
+        from pyasm.security import Site
+        site_obj = Site.get()
+        path_info = site_obj.break_up_request_path(path)
+
+        if path_info:
+            site = path_info['site']
+            project_code = path_info['project_code']
         else:
             project_code = parts[2]
-        from pyasm.security import TacticInit
-        TacticInit()
-        #import sys,traceback
-        #tb = sys.exc_info()[2]
-        #stacktrace = traceback.format_tb(tb)
-        #stacktrace_str = "".join(stacktrace)
-        #print "-"*50
-        #print stacktrace_str
-        #print "-"*50
+            site = ""
+
+
+        # sites is already mapped in config for cherrypy
+        if site == "plugins":
+            return
+
+        print "WARNING:"
+        print "    status: ", status
+        print "    message: ", message
+        print "    site: ", site
+        print "    project_code: ", project_code
+
+
 
         # Dump out the error
-        print "WARNING: ", path, status, message
+        has_site = False
         try:
-            eval("cherrypy.root.tactic.%s" % project_code)
+            from pyasm.security import TacticInit
+            TacticInit()
+
+            Site.set_site(site)
+            if site:
+                eval("cherrypy.root.tactic.%s.%s" % (site, project_code))
+            else:
+                eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
         except (AttributeError, SyntaxError), e:
+            print "WARNING: ", e
+            has_project = False
+        except Exception, e:
+            print "WARNING: ", e
             has_project = False
         else:
             has_project = True
+            has_site = True
 
-        # make sure the appropriate site is set (based on the ticket)
-        from pyasm.security import Site
-        cookie = cherrypy.request.cookie
-        if cookie.has_key("login_ticket"):
-            cookie = cookie["login_ticket"].value
-            site = Site.get().get_by_ticket(cookie)
-        else:
-            html_response = '''<html>
-            <head><meta http-equiv="Refresh" content="0; url=/"></head>
-            </html>'''
-            response.body = ''
-            return html_response
 
-        Site.set_site(site)
+
+        #if project_code in ['default']:
+        #    startup = cherrypy.startup
+        #    config = startup.config
+        #    startup.register_project(project_code, config, site=site)
+        #    return
+
 
 
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
-        project = Project.get_by_code(project_code)
-        if not has_project and project and project.get_value("type") != 'resource':
+        project = None
+        if has_site:
+            try:
+                project = Project.get_by_code(project_code)
+            except Exception, e:
+                print "WARNING: ", e
+                raise
 
-            print "register ..."
+        if not has_project and project and project.get_value("type") != 'resource':
 
             startup = cherrypy.startup
             config = startup.config
-            startup.register_site(project_code, config)
+            startup.register_project(project_code, config, site=site)
             #cherrypy.config.update( config )
+
             # give some time to refresh
-            import time
-            time.sleep(1)
+            #import time
+            #time.sleep(1)
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
-            html_response = '''<html>
-                <body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>
-                <script>document.location = "/tactic/%s";</script>
-                </body> 
-            </html>
-            '''% project.get_value("code")
+            html_response = []
+            html_response.append('''<html>''')
+            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>''')
+            html_response.append('''<script>document.location = "%s";</script>''' % path )
+            html_response.append('''</body>''')
+            html_response.append('''</html>''')
+            html_response = "\n".join(html_response)
 
             # this response.body is not needed, can be commented out in the future
             response.body = ''
@@ -147,39 +193,38 @@ class CherryPyStartup(CherryPyStartup20):
         # check to see if this project exists in the database?
         #project = Project.get_by_code(project_code)
         #print project
+        try:
         
-        from pyasm.web import Widget, WebApp, AppServer, WebContainer, DivWdg
-        from pyasm.widget import Error404Wdg
+            from pyasm.web import WebContainer, DivWdg
+            from pyasm.widget import Error404Wdg
+            from cherrypy30_adapter import CherryPyAdapter
 
-        # clear the buffer
-        WebContainer.clear_buffer()
+            # clear the buffer
+            WebContainer.clear_buffer()
+            adapter = CherryPyAdapter()
+            WebContainer.set_web(adapter)
 
-        class xyz(AppServer):
+            top = DivWdg()
+            top.add_style("background: #444")
+            top.add_style("height: 300")
+            top.add_style("width: 500")
+            top.add_style("margin: 150px auto")
+            top.add_style("border: solid 1px black")
+            top.add_style("border-radius: 15px")
+            top.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
-            def __init__(my, status, message):
-                my.hash = None
-                my.status = status
-                my.message = message
 
-            def get_page_widget(my):
+            widget = Error404Wdg()
+            widget.status = status
+            widget.message = message
 
-                top = DivWdg()
-                top.add_style("background: #444")
-                top.add_style("height: 100%")
-                top.add_style("width: 100%")
 
-                widget = Error404Wdg()
-                widget.status = status
-                widget.message = message
-                return widget
-                top.add(widget)
+            top.add(widget)
 
-                return top
-       
-        xyz = xyz(status, message)
-        #response.body = xyz.get_display()
-        #return xyz.get_display()
-        return xyz.get_display()
+            return top.get_buffer_display()
+        except Exception, e:
+            print "ERROR: ", e
+            return "ERROR: ", e
 
 
 
@@ -253,7 +298,21 @@ class CherryPyStartup(CherryPyStartup20):
             '/tactic/dist': {
                         'tools.staticdir.on': True,
                         'tools.staticdir.dir': dist_dir,
-                        }
+                        },
+             '/plugins': {
+                         'tools.staticdir.on': True,
+                         'tools.staticdir.dir': plugin_dir,
+                        },
+            '/builtin_plugins': {
+                         'tools.staticdir.on': True,
+                         'tools.staticdir.dir': builtin_plugin_dir,
+                        },
+            '/dist': {
+                        'tools.staticdir.on': True,
+                        'tools.staticdir.dir': dist_dir,
+                        },
+ 
+
  
 
         }
@@ -274,16 +333,6 @@ class CherryPyStartup(CherryPyStartup20):
 
         # find out if one of the projects is the root
         root_initialized = False
-        """
-        for project in projects:
-            project_code = project.get_code()
-            if False:
-                from tactic.ui.app import SitePage
-                cherrypy.root.tactic = SitePage(project_code)
-                cherrypy.root.projects = SitePage(project_code)
-                root_initialized = True
-                break
-        """
 
         if not root_initialized:
             project_code = Project.get_default_project()
@@ -303,46 +352,72 @@ class CherryPyStartup(CherryPyStartup20):
 
         for project in projects:
             project_code = project.get_code()
-            my.register_site(project_code, config)
-        my.register_site("default", config)
+            my.register_project(project_code, config)
+        my.register_project("default", config)
 
+
+        from pyasm.security import Site
+        site_obj = Site.get()
+        site_obj.register_sites(my, config)
+ 
+
+        #my.register_project("vfx", config, site="vfx_demo")
+        #my.register_project("default", config, site="vfx_demo")
         return config
 
 
 
 
 
-    def register_site(my, site, config):
+    def register_project(my, project, config, site=None):
 
-        # if there happend to be . in the site name, convert to _
-        site = site.replace(".", "_")
+        # if there happend to be . in the project name, convert to _
+        project = project.replace(".", "_")
 
-        if site == "template":
+        if project == "template":
             return
 
-        print "Registering project ... %s" % site
+        if site:
+            print "Registering project ... %s (%s)" % (project, site)
+        else:
+            print "Registering project ... %s" % project
+
 
         try:
             from tactic.ui.app import SitePage
-            exec("cherrypy.root.tactic.%s = SitePage()" % site)
-            exec("cherrypy.root.projects.%s = SitePage()" % site)
+            if site:
+                # make sure the site exists
+                try:
+                    x = eval("cherrypy.root.tactic.%s" % (site))
+                except:
+                    exec("cherrypy.root.tactic.%s = TacticIndex()" % (site))
+                    exec("cherrypy.root.projects.%s = TacticIndex()" % (site))
+
+                exec("cherrypy.root.tactic.%s.%s = SitePage()" % (site, project))
+                exec("cherrypy.root.projects.%s.%s = SitePage()" % (site, project))
+
+            else:
+                exec("cherrypy.root.tactic.%s = SitePage()" % project)
+                exec("cherrypy.root.projects.%s = SitePage()" % project)
+
 
 
         except ImportError:
             #print "... WARNING: SitePage not found"
-            exec("cherrypy.root.tactic.%s = TacticIndex()" % site)
-            exec("cherrypy.root.projects.%s = TacticIndex()" % site)
+            exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
+            exec("cherrypy.root.projects.%s = TacticIndex()" % project)
         except SyntaxError:
-            print "WARNING: skipping project [%s]" % site
+            print "WARNING: skipping project [%s]" % project
 
 
 
 
-        # The rest is only ever executed on the "default" site
+
+        # The rest is only ever executed on the "default" project
 
 
-        # This is to get admin site working
-        if site in ['admin', 'default', 'template', 'unittest']:
+        # This is to get admin project working
+        if project in ['admin', 'default', 'template', 'unittest']:
             base = "tactic_sites"
         else:
             base = "sites"
@@ -350,12 +425,12 @@ class CherryPyStartup(CherryPyStartup20):
 
 
         # get the contexts: 
-        if site in ("admin", "default", "template", "unittest"):
+        if project in ("admin", "default", "template", "unittest"):
             context_dir = Environment.get_install_dir().replace("\\", "/")
-            context_dir = "%s/src/tactic_sites/%s/context" % (context_dir, site)
+            context_dir = "%s/src/tactic_sites/%s/context" % (context_dir, project)
         else:
             context_dir = Environment.get_site_dir().replace("\\", "/")
-            context_dir = "%s/sites/%s/context" % (context_dir, site)
+            context_dir = "%s/sites/%s/context" % (context_dir, project)
 
 
 
@@ -379,17 +454,20 @@ class CherryPyStartup(CherryPyStartup20):
         for context in contexts:
             try:
 
-                exec("from %s.%s.context.%s import %s" % (base,site,context,context))
-                exec("cherrypy.root.tactic.%s.%s = %s()" % (site,context,context) )
+                exec("from %s.%s.context.%s import %s" % (base,project,context,context))
+                if site:
+                    exec("cherrypy.root.tactic.%s.%s.%s = %s()" % (site,project,context,context) )
+                else:
+                    exec("cherrypy.root.tactic.%s.%s = %s()" % (project,context,context) )
 
             except ImportError, e:
                 print str(e)
-                print "... failed to import '%s.%s.%s'" % (base, site, context)
+                print "... failed to import '%s.%s.%s'" % (base, project, context)
                 raise
                 #return
 
             
-            path = "/tactic/%s/%s" % (site, context)
+            path = "/tactic/%s/%s" % (project, context)
             settings = {}
             config[path] = settings
 

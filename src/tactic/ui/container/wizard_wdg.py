@@ -103,6 +103,7 @@ class WizardWdg(BaseRefreshWdg):
                 if i < len(my.titles):
                     title = my.titles[i]
                 else:
+                    title = widget.get_name()
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 

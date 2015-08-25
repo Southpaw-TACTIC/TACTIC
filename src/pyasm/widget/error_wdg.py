@@ -40,10 +40,6 @@ class ErrorWdg(Widget):
         div.add_class("centered")
 
         div.add( HtmlElement.br(6) )
-        sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
-        sthpw.add_style("color: #333")
-        div.add( sthpw )
-        div.add( HtmlElement.br(2) )
 
         div.add(my.get_error_wdg() )
         box.add(div)
@@ -89,8 +85,9 @@ class Error404Wdg(ErrorWdg):
         error_div = DivWdg()
         error_div.add("Error %s" % my.status)
         div.add(error_div)
-        error_div.add_style("font-size: 16px")
+        error_div.add_style("font-size: 18px")
         error_div.add_style("font-weight: bold")
+        error_div.add_style("padding: 10px")
         error_div.add_style("width: auto")
         error_div.add_gradient("background", "background")
         error_div.add_border()

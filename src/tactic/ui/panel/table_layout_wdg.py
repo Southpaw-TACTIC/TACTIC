@@ -1698,23 +1698,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # row highlighting
 
-        table.add_behavior( {
-        'type': 'load',
-        'cbjs_action': '''
-        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
-            function(event, src_el) {
-                // remember the original color
-                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
-                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
-            } )
+        if my.kwargs.get("show_row_highlight") not in [False, 'false']:
+            table.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
+                function(event, src_el) {
+                    // remember the original color
+                    src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
+                    spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
+                } )
 
-        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
-            function(event, src_el) {
-                src_el.setAttribute("spt_hover_background", "");
-                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+            bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
+                function(event, src_el) {
+                    src_el.setAttribute("spt_hover_background", "");
+                    spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+                } )
+            '''
             } )
-        '''
-        } )
 
 
         # set styles at the table level to be relayed down

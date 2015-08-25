@@ -195,7 +195,7 @@ class WebInit(Common):
 
 
         # FIXME: should this be here??
-        from pyasm.biz.workflow import Workflow
+        from pyasm.command.workflow import Workflow
         Workflow().init(startup=True)
 
 

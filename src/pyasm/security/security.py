@@ -658,9 +658,6 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
-    def get_max_users(my, site):
-        return
-
 
     # HACK: Some functions to spoof an sobject
     def get_project_code(my):
@@ -684,9 +681,37 @@ class Site(object):
             site = Site.get_site()
             return site
 
+
+    def get_request_path_info(my):
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+        path = web.get_request_path()
+        return my.break_up_request_path(path)
+
+
+
     #
     # Virtual methods
     #
+
+
+    def get_max_users(my, site):
+        return
+
+    def get_authenticate_class(my):
+        return
+
+    def get_site_root(my):
+        return ""
+
+    def break_up_request_path(my, path):
+        return {}
+
+    def register_sites(my, startup, config):
+        return
+ 
+
+
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)
@@ -717,6 +742,12 @@ class Site(object):
 
     def get_default_project(cls):
         return
+    get_default_project = classmethod(get_default_project)
+
+
+    def get_login_wdg(cls):
+        return None
+    get_login_wdg = classmethod(get_login_wdg)
  
 
 
@@ -737,18 +768,44 @@ class Site(object):
 
     def get_site(cls):
         '''Set the global site for this "session"'''
-        site = Container.get("site")
-        if not site:
+        sites = Container.get("sites")
+        if sites == None or sites == []:
             return ""
-        return site
+        return sites[-1]
     get_site = classmethod(get_site)
+
+
+    def get_first_site(cls):
+        '''Get the initial site'''
+        sites = Container.get("sites")
+        if sites == None or sites == []:
+            return ""
+        return sites[0]
+    get_first_site = classmethod(get_first_site)
+ 
 
     def set_site(cls, site):
         '''Set the global site for this "session"'''
         if not site:
             return
-        Container.put("site", site)
+        sites = Container.get("sites")
+        if sites == None:
+            sites = []
+            Container.put("sites", sites)
+        sites.append(site)
+
     set_site = classmethod(set_site)
+
+
+    def pop_site(cls):
+        '''Set the global site for this "session"'''
+        sites = Container.get("sites")
+        if sites == None:
+            return ""
+        site = sites.pop()
+    pop_site = classmethod(pop_site)
+
+
 
 
     def get_db_resource(cls, site, database):
@@ -1049,7 +1106,6 @@ class Security(Base):
         #my._group_names = my.login_cache.get_attr("%s:group_names" % login)
         my._groups = None
         if my._groups == None:
-            #print "recaching!!!!"
             my._groups = []
             my._group_names = []
             my._find_all_login_groups()
@@ -1151,9 +1207,10 @@ class Security(Base):
         if key == "":
             return None
 
+
         # set the site if the key has one
-        site = Site.get().get_by_ticket(key)
-        Site.get().set_site(site)
+        #site = Site.get().get_by_ticket(key)
+        #Site.get().set_site(site)
 
         my.add_access_rules_flag = add_access_rules
 
@@ -1188,9 +1245,6 @@ class Security(Base):
             return None
 
         my._do_login()
-
-        #print "done: ", time.time() - start
-        #print "--- end security - login_with_ticket"
 
         if my._login.get("login") == "guest":
             access_manager = my.get_access_manager()
@@ -1311,6 +1365,7 @@ class Security(Base):
 
         # admin always uses the standard authenticate class
         auth_class = None
+
         if login_name == 'admin':
             auth_class = "pyasm.security.TacticAuthenticate"
 
@@ -1320,6 +1375,12 @@ class Security(Base):
                 no_exception=True)
         if not auth_class:
             auth_class = "pyasm.security.TacticAuthenticate"
+
+        #from security import Site
+        #site_obj = Site.get()
+        #site_auth_class = site_obj.get_authenticate_class()
+        #if site_auth_class:
+        #    auth_class = site_auth_class
 
 
         # handle the windows domain, manually typed in domain overrides

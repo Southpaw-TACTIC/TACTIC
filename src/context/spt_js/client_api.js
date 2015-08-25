@@ -16,6 +16,7 @@ TacticServerStub = function() {
     this.transaction_ticket = null;
     this.login_ticket = null;
     this.server_name = null;
+    this.site = null;
     this.project = null;
 
     this.set_transaction_ticket = function(ticket) {
@@ -40,6 +41,18 @@ TacticServerStub = function() {
     this.get_url = function() {
         return this.url;
     }
+
+
+
+    this.set_site = function(site) {
+        if (site) {
+            this.site = site;
+        }
+    }
+    this.get_site = function() {
+        return this.site;
+    }
+
 
     this.set_project = function(project) {
         this.project = project;
@@ -160,6 +173,7 @@ TacticServerStub = function() {
         var args = [];
         var ticket = {
             'ticket': this.login_ticket,
+            'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
             'language': 'javascript'
@@ -1395,6 +1409,7 @@ TacticServerStub = function() {
 
         var ticket = {
             'ticket': this.transaction_ticket,
+            'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
             'language': 'javascript'
@@ -1648,10 +1663,12 @@ TacticServerStub.get = function() {
         var env = spt.Environment.get();
         var login_ticket = env.get_ticket();
         var url = env.get_api_url();
+        var site = env.get_site();
         var project_code = env.get_project();
 
         this.server.set_url(url);
         this.server.set_ticket(login_ticket);
+        this.server.set_site(site);
         this.server.set_project(project_code);
     }
     return this.server;

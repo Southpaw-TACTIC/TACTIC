@@ -250,16 +250,7 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        try:
-                            web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
-                        except Exception, e:
-                            print "WARNING: ", e
-                            raise
-                            from pyasm.widget import ExceptionMinimalWdg
-                            web_wdg = ExceptionMinimalWdg(e)
-                            web_wdg.add_style("margin: 50px auto")
-
-
+                        web_wdg = site_obj.get_login_wdg()
                         if web_wdg:
                             web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
@@ -268,7 +259,14 @@ class BaseAppServer(Base):
 
                 # display default web login
                 if not web_wdg:
-                    top.add(WebLoginWdg(allow_change_admin=allow_change_admin) )
+
+                    # get login screen from Site
+                    web_wdg = site_obj.get_login_wdg()
+                    if not web_wdg:
+                        # else get the default one
+                        web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
+                    
+                    top.add(web_wdg)
 
             finally:
                 # sudo out of scope here
@@ -307,12 +305,9 @@ class BaseAppServer(Base):
             security = my.handle_security(security)
             is_logged_in = security.is_logged_in()
         except Exception, e:
-            site_obj = Site.get()
             return my.handle_not_logged_in()
 
  
-
-
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
             guest_mode = 'restricted'
@@ -580,26 +575,40 @@ class BaseAppServer(Base):
         if not ticket_key:
             ticket_key = web.get_cookie("login_ticket")
 
+
         # We can define another place to look at ticket values and use
         # that. ie: Drupal session key
         session_key = Config.get_value("security", "session_key")
 
         login = web.get_form_value("login")
         password = web.get_form_value("password")
-        site = web.get_form_value("site")
+
+
+        site_obj = Site.get()
+        path_info = site_obj.get_request_path_info()
+        if path_info:
+            site = path_info['site']
+            if site == "default":
+                site = web.get_form_value("site")
+            if not site:
+                site = "default"
+
+        else:
+            site = web.get_form_value("site")
+
 
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
                 security.login_with_session(ticket_key, add_access_rules=False)
         elif login and password:
-            if not site:
-                # get from the login
-                site_obj = Site.get()
-                site = site_obj.get_by_login(login)
-                site_obj.set_site(site)
-            else:
-                site_obj = Site.get()
+
+            # get the site for this user
+            login_site = site_obj.get_by_login(login)
+            if login_site:
+                site = login_site
+
+            if site:
                 site_obj.set_site(site)
 
             if login == "guest":
@@ -609,16 +618,13 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-                
+
         elif ticket_key:
-            # get from the login
-            site_obj = Site.get()
-            site = site_obj.get_by_ticket(ticket_key)
+
             if site:
                 site_obj.set_site(site)
 
-            
-            security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
+            login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
 
 
         if not security.is_logged_in():
@@ -635,6 +641,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+
         # clear the password
         web.set_form_value('password','')
 
@@ -642,6 +649,17 @@ class BaseAppServer(Base):
             web.set_cookie("login_ticket", ticket_key)
         elif ticket_key:
             web.set_cookie("login_ticket", ticket_key)
+
+
+
+        # TEST TEST TEST
+        try:
+            ticket = security.get_ticket()
+            if ticket:
+                site_obj.handle_ticket(ticket)
+        except Exception, e:
+            print "ERRRRR: ", e
+
 
             
         # set up default securities
