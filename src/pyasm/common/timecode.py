@@ -20,6 +20,8 @@ class TimeCode(object):
 
     def __init__(my, **kwargs):
         my.frames = kwargs.get("frames")
+        my.frames = float(my.frames)
+
         my.fps = kwargs.get("fps")
         if not my.fps:
             from pyasm.prod.biz import ProdSetting

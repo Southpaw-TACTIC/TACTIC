@@ -1283,7 +1283,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             includes = my.kwargs.get("include")
-            element_wdg = config.get_display_widget(element_name, extra_options={"include":includes, "parent_view":parent_view})
+            extra_options = {"parent_view": parent_view}
+            if includes:
+                extra_options['include'] = includes
+
+            element_wdg = config.get_display_widget(element_name, extra_options=extra_options)
 
             element_top = element_wdg.get_top()
             for name, value in attrs.items():
