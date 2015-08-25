@@ -119,7 +119,7 @@ class FormatElementWdg(SimpleTableElementWdg):
 
         elif widget_type in ['date','time']:
             name = my.get_name()
-            if not SObject.is_day_column(name):
+            if value and not SObject.is_day_column(name):
                 value = SPTDate.convert_to_local(value)
                 value = str(value)
 
