@@ -1330,7 +1330,20 @@ TacticServerStub = function() {
 
 
     // async functions
+    this.async_ping = function(kwargs) {
+        var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
+        var on_error = function(e) {
+            callback(e);
+        };
 
+        this._delegate("ping", arguments, kwargs, null, callback, on_error);
+        return;
+    }
+    
+    
     this.async_get_widget = function(class_name, kwargs) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
