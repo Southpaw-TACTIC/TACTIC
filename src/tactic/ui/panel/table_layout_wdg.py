@@ -4493,7 +4493,8 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg.getParent(".spt_cell_edit");
     }
 
-
+    var old_value = edited_cell.getAttribute("spt_input_value");
+    
     var ignore_multi = kwargs.ignore_multi ? true : false;
 
     var header = spt.table.get_header_by_cell(edited_cell);
@@ -4503,11 +4504,17 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     
     // Multi EDIT
     var selected_rows = spt.table.get_selected_rows();
-    if (!ignore_multi && selected_rows.length > 0) {
+    var in_selected_row = edited_cell.getParent("tr.spt_table_selected");
+    
+    var changed = old_value != new_value;
+
+    if (!ignore_multi && selected_rows.length > 0 && changed && in_selected_row) {
         // get all of the cells with the same element_name
         var index = spt.table.get_column_index_by_cell(edited_cell);
+
         for (var i = 0; i < selected_rows.length; i++) {
             var cell = selected_rows[i].getElements(".spt_cell_edit")[index];
+           
             spt.table._accept_single_edit(cell, new_value);
 
             if (set_display) {
@@ -4515,6 +4522,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
                 cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
+            
         }
 
     }
