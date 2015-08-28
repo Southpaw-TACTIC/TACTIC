@@ -49,6 +49,32 @@ class TopWdg(Widget):
         my.body.add_attr("ondragleave", "return false;")
         my.body.add_attr("ondrop", "return false;")
 
+        my.body.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var el = bvr.src_el;
+
+            el.spt_window_active = true;
+
+            if (document.addEventListener) {
+                document.addEventListener("visibilitychange", function() {
+                    el.spt_window_active = ! document.hidden;
+                } );
+            }
+            else {
+                window.onfocus = function() {
+                    bvr.src_el.spt_window_active = true;
+                }
+
+                window.onblur = function() {
+                    bvr.src_el.spt_window_active = false;
+                }
+            }
+
+            '''
+        } )
+
         
         click_div = DivWdg()
         my.top.add(click_div)
@@ -56,6 +82,11 @@ class TopWdg(Widget):
         'type': 'load',
         'cbjs_action': '''
         spt.body = {};
+
+        spt.body.is_active = function() {
+            return $(document.body).spt_window_active;
+        }
+
         spt.body.focus_elements = [];
         spt.body.add_focus_element = function(el) {
             spt.body.focus_elements.push(el);
@@ -113,6 +144,7 @@ class TopWdg(Widget):
         }
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
         document.body.addEvent("mousedown", spt.body.hide_focus_elements);
+
         '''
         } )
 
@@ -542,6 +574,9 @@ class TopWdg(Widget):
         from notify_wdg import NotifyWdg
         widget.add(NotifyWdg())
 
+        from tactic.ui.app import DynamicUpdateWdg
+        widget.add( DynamicUpdateWdg() )
+
 
         return widget
 
@@ -769,7 +804,6 @@ class IndexWdg(Widget):
         top = DivWdg()
         top.set_id('top_of_application')
 
-
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
         if not splash_div:
@@ -865,6 +899,8 @@ class SitePage(AppServer):
             page = StringWdg(page)
 
         application.add(page, 'content')
+
+
         return application
 
 

@@ -1416,6 +1416,8 @@ class MethodMode(ExpressionParser):
                         ids.add(sobject_id)
                 else:
                     results = list(set(result))
+                    # provide some predictability in the result
+                    results.sort()
             else:
                 raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
 
@@ -2039,7 +2041,7 @@ class MethodMode(ExpressionParser):
                     search = Search(related_type)
                 else:
                     # Base type have to be the same
-                    assert(related_type, my.search.get_base_search_type())
+                    assert(related_type == my.search.get_base_search_type())
                     search = my.search
 
                 if my.show_retired:

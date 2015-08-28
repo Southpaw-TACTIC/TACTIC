@@ -128,6 +128,7 @@ def get_full_cmd(my, meth, ticket, args):
 
         def check(my2):
             return True
+
         def get_transaction(my2):
             if my.get_protocol() == "local":
                 transaction = super(ApiClientCmd,my2).get_transaction()
@@ -157,7 +158,17 @@ def get_full_cmd(my, meth, ticket, args):
             start = time.time()
             global REQUEST_COUNT
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
-            if my.get_protocol() != "local":
+
+            debug = True
+            if meth.func_name == "execute_cmd":
+                if len(args) > 1:
+                    _debug = args[1].get("_debug")
+                    if _debug == False:
+                        debug = False
+
+
+            if my.get_protocol() != "local" and debug:
+                print "---"
                 print "user: ", Environment.get_user_name()
                 now = datetime.datetime.now()
                 print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
@@ -177,7 +188,7 @@ def get_full_cmd(my, meth, ticket, args):
             my2.info['args'] = args
 
 
-            if my.get_protocol() != "local":
+            if my.get_protocol() != "local" and debug:
                 duration = time.time() - start
                 print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
 

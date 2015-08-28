@@ -317,7 +317,6 @@ class CherryPyStartup(CherryPyStartup20):
 
         }
 
-      
 
         # set up the root directory
         cherrypy.root = Root()

@@ -2034,7 +2034,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
 
-
+                # TODO: while convenient, this is extremely heavy
                 select.add_behavior( {
                     'type': 'change',
                     'color': status_colors,
@@ -2092,6 +2092,32 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)
 
+                if task.is_insert():
+                    update = {
+                        "parent_key": task.get_parent_search_key(),
+                        "expression": "@GET(sthpw/task['process','%s'].status)" % process,
+                    }
+                else:
+                    update = {
+                        "search_key": task.get_search_key(),
+                        "column": "status",
+                    }
+
+                update['cbjs_postaction'] = '''
+                        var element = bvr.src_el;
+                        if ("createEvent" in document) {
+                            var evt = document.createEvent("HTMLEvents");
+                            evt.initEvent("change", false, true);
+                            element.dispatchEvent(evt);
+                        }
+                        else {
+                            element.fireEvent("onchange");
+                        }
+                        var top = bvr.src_el.getParent(".spt_task_top");
+                        top.getParent().setStyle("opacity", 1.0);
+
+                        '''
+                select.add_update(update)
 
       
         assigned_div = None
@@ -2135,6 +2161,37 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         select.add_style("width", '%spx'%my.LAYOUT_WIDTH)
                     else:
                         select.add_style("width", my.width)
+
+                    if task.is_insert():
+                        update = {
+                            "parent_key": task.get_parent_search_key(),
+                            "expression": "@GET(sthpw/task['process','%s'].assigned)" % process,
+                        }
+                    else:
+                        update = {
+                            "search_key": task.get_search_key(),
+                            "column": "assigned",
+                        }
+
+                    update['cbjs_postaction'] = '''
+                            var element = bvr.src_el;
+                            if ("createEvent" in document) {
+                                var evt = document.createEvent("HTMLEvents");
+                                evt.initEvent("change", false, true);
+                                element.dispatchEvent(evt);
+                            }
+                            else {
+                                element.fireEvent("onchange");
+                            }
+                            var top = bvr.src_el.getParent(".spt_task_top");
+                            top.getParent().setStyle("opacity", 1.0);
+
+                            '''
+                    select.add_update(update)
+
+
+
+
 
                 else:
                     

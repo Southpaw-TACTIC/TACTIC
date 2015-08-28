@@ -97,6 +97,10 @@ class FormatValue(object):
             # break the value up by 3s
             if not value:
                 value = 0
+
+            elif isinstance(value, basestring):
+                value = float(value)
+
             value = my.number_format(value, places=2)
 
         # ------------------------------------------------

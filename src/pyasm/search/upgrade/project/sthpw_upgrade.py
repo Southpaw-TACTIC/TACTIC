@@ -25,6 +25,43 @@ class SthpwUpgrade(BaseUpgrade):
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
 
+    def upgrade_v4_4_0_a01_012(my):
+        my.run_sql('''
+        ALTER TABLE change_timestamp ADD COLUMN "timestamp" timestamp;
+        ''')
+
+
+    def upgrade_v4_4_0_a01_011(my):
+        my.run_sql('''
+        CREATE INDEX "sobject_log_timestamp_idx" on sobject_log(timestamp);
+        ''')
+
+    def upgrade_v4_4_0_a01_010(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN action varchar(128);
+        ''')
+
+    def upgrade_v4_4_0_a01_009(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_code varchar(128);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_008(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_type varchar(256);
+        ''')
+
+
+ 
+
+    def upgrade_v4_4_0_a01_007(my):
+        my.run_sql('''
+        CREATE INDEX "change_timestamp_timestamp_idx" on change_timestamp(timestamp);
+        ''')
+
+
+
     def upgrade_v4_4_0_a01_006(my):
         my.run_sql('''
         ALTER TABLE pipeline ADD COLUMN "parent_process" varchar(256);
