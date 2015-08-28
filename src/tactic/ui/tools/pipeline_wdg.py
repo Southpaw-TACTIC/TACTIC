@@ -1711,7 +1711,6 @@ class DefaultInfoWdg(BaseInfoWdg):
         
         process_sobj = search.get_sobject()
 
-        process_code = process_sobj.get_value("code")
 
 
         #show error message if the node has not been registered 
@@ -1730,6 +1729,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             return top
 
 
+        process_code = process_sobj.get_value("code")
 
         # triggers
         search = Search("config/trigger")

@@ -169,7 +169,7 @@ class SearchTest(unittest.TestCase):
         search = Search('unittest/person')
         search.add_order_by('unittest/city.unittest/country.code')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = %s"country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix, my.prefix))
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix))
 
 
         search = Search('unittest/person')
