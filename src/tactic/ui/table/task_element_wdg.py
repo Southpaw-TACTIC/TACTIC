@@ -1441,7 +1441,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             last = len(items) - 1
             pipeline_code = my.kwargs.get("pipeline_code")
             if not pipeline_code:
-                pipeline_code = sobject.get("pipeline_code")
+                pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
 
             pipeline_code = pipeline_code.replace("$PROJECT", project_code)
             pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','%s'])" % pipeline_code)
@@ -1598,10 +1598,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-    def num_complete(my, sobject, related_search_type, related_process, scope):
+    def get_complete(my, sobject, related_search_type, related_process, scope):
 
-        related_search_type_obj = SearchType.get(related_search_type)
-        has_pipeline = SearchType.column_exists(related_search_type_obj, "pipeline_code")
+        has_pipeline = SearchType.column_exists(related_search_type, "pipeline_code")
 
         # find related sobjects
         #related_sobjects = sobject.get_related_sobjects(related_search_type)
@@ -1655,15 +1654,26 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             complete[key] = True
 
 
-        num_complete = 0
         for related_sobject in related_sobjects:
             key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
-            if complete.get(key):
-                num_complete += 1
-            else:
+            if not complete.get(key):
                 complete[key] = False
 
-        print "complete: ", complete
+        return complete
+
+
+
+
+    def get_num_complete(my, sobject, related_search_type, related_process, scope):
+
+        complete = my.get_complete(sobject, related_search_type, related_process, scope)
+        if related_process == "asset":
+            print "complete: ", complete
+
+        num_complete = 0
+        for key, value in complete.items():
+            if complete.get(key):
+                num_complete += 1
 
         return num_complete
 
@@ -1715,6 +1725,24 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             progress_div = DivWdg()
             div.add(progress_div)
+            progress_div.add_class("hand")
+            #progress_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.5)")
+            bgcolor = progress_div.get_color("background", -5)
+            #progress_div.add_style("background", bgcolor)
+            progress_div.add_behavior( {
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "#EEE");
+                '''
+            } )
+            progress_div.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "");
+                '''
+            } )
+
+
 
 
             if my.show_processes_in_title != 'true':
@@ -1723,6 +1751,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             related_type = process_obj.get_attribute("search_type")
             related_process = process_obj.get_attribute("process")
+            related_scope = process_obj.get_attribute("scope")
 
             if not related_type:
                 search = Search("config/process")
@@ -1733,9 +1762,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if workflow:
                     related_type = workflow.get("search_type")
                     related_process = workflow.get("process")
+                    related_scope = workflow.get("scope")
 
             if not related_process:
                 related_process = process
+
+            if not related_scope:
+                reltaed_scope = "local"
      
 
             if not related_type:
@@ -1764,14 +1797,21 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             color = Task.get_default_color(status)
 
+
             div.add_behavior( {
                 'type': 'click_up',
                 'code': code,
+                'scope': related_scope,
                 'search_type': search_type,
                 'related_type': related_type,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.ViewPanelWdg';
-                var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
+                if (bvr.scope == "global") {
+                    var expression = "@SOBJECT("+ bvr.related_type + ")";
+                }
+                else {
+                    var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
+                }
                 var kwargs = {
                     search_type: bvr.related_type,
                     expression: expression,
@@ -1792,28 +1832,17 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
+            complete = my.get_complete(sobject, related_type, related_process, related_scope)
 
-            scope = "local"
-            if related_type == "vfx/script":
-                scope = "global"
-            num_complete = my.num_complete(sobject, related_type, related_process, scope)
-            progress_div.add("<div>num complete: %s</div>" % num_complete)
+            num_complete = 0
+            for key, value in complete.items():
+                if value:
+                    num_complete += 1
 
-            if scope == "global":
-                related = Search.eval("@SOBJECT(%s)" % related_type)
-            else:
-                related = sobject.get_related_sobjects(related_type)
+            count = num_complete
+            total = len(complete)
 
 
-            related_keys = ["%s|%s|status" % (x.get_search_key(), related_process) for x in related]
-            search = Search("sthpw/message")
-            search.add_filters("code", related_keys)
-            message_sobjs = search.get_sobjects()
-            total = len(related)
-            count = 0
-            for message_sobj in message_sobjs:
-                if message_sobj.get_value("message").lower() == "complete":
-                    count += 1
 
             from spt.ui.widgets import RadialProgressWdg
             progress_wdg = RadialProgressWdg(
