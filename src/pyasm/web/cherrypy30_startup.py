@@ -137,6 +137,7 @@ class CherryPyStartup(CherryPyStartup20):
         except (AttributeError, SyntaxError), e:
             print "WARNING: ", e
             has_project = False
+            has_site = True
         except Exception, e:
             print "WARNING: ", e
             has_project = False

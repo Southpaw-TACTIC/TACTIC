@@ -709,7 +709,9 @@ class Site(object):
 
     def register_sites(my, startup, config):
         return
- 
+    
+    def handle_ticket(my, ticket):
+        return
 
 
     def get_by_login(cls, login):

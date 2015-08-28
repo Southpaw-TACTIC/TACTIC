@@ -658,7 +658,7 @@ class BaseAppServer(Base):
             if ticket:
                 site_obj.handle_ticket(ticket)
         except Exception, e:
-            print "ERRRRR: ", e
+            print "ERROR in handle_ticket: ", e
 
 
             
