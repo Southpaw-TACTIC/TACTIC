@@ -1610,7 +1610,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
 
         if not related_sobjects:
-            return True
+            return {}
 
         # get the message status from each of these
         keys = []
