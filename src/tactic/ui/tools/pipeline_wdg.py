@@ -2622,6 +2622,8 @@ class ProgressInfoWdg(BaseInfoWdg):
         for search_type_sobj in search_type_sobjs:
             base_type = search_type_sobj.get_base_key()
             exists = SearchType.column_exists(base_type, "pipeline_code")
+            if not exists:
+                exists = SearchType.column_exists(base_type, "status")
             if exists:
                 filtered_sobjs.append(search_type_sobj)
 
@@ -2631,7 +2633,7 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Track progress of search type:</b>")
+        settings_wdg.add("<b>Listen to events of search type:</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         if related_search_type:
@@ -2639,8 +2641,35 @@ class ProgressInfoWdg(BaseInfoWdg):
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
-        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the related sobjects of the selected search type.</span>")
+        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the sobjects of the selected search type.</span>")
         settings_wdg.add("<br/>")
+
+
+        from pyasm.widget import RadioWdg
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Scope by which items to track:</b>")
+
+        scope_div = DivWdg()
+        settings_wdg.add(scope_div)
+        scope_div.add_style("margin: 15px 25px")
+
+        radio = RadioWdg("related_scope")
+        radio.set_option("value", "local")
+        scope_div.add(radio)
+        if related_scope == "local" or not related_scope:
+            radio.set_checked()
+        scope_div.add(" Only Related Items<br/>")
+
+        radio = RadioWdg("related_scope")
+        radio.set_option("value", "global")
+        if related_scope == "global":
+            radio.set_checked()
+        scope_div.add(radio)
+        scope_div.add(" All Items in List")
+        scope_div.add("<br/>")
+
+
 
 
         search_type = "vfx/shot"
@@ -2660,7 +2689,7 @@ class ProgressInfoWdg(BaseInfoWdg):
         values.sort()
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Track Process</b>")
+        settings_wdg.add("<b>Listen to Process</b>")
         select = SelectWdg("related_process")
         if related_process:
             select.set_value(related_process)
@@ -2992,6 +3021,9 @@ class ProcessInfoCmd(Command):
         related_process = my.kwargs.get("related_process")
         if not related_process:
             related_process = process
+        related_scope = my.kwargs.get("related_scope")
+        if not related_scope:
+            related_scope = "local"
 
         workflow = process_sobj.get_json_value("workflow")
         if not workflow:
@@ -3001,6 +3033,8 @@ class ProcessInfoCmd(Command):
             workflow['search_type'] = related_search_type
         if related_process:
             workflow['process'] = related_process
+        if related_scope:
+            workflow['scope'] = related_scope
 
 
         # find a related trigger
