@@ -2365,7 +2365,9 @@ class TacticServerStub(object):
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s"
                                     % (handoff_dir, basename))
-                    mode = 'create'
+
+            if mode in ['copy', 'move']:
+                mode = 'create'
 
         return my.server.add_file(my.ticket, snapshot_code, file_paths,
                                   file_types, use_handoff_dir, mode,
