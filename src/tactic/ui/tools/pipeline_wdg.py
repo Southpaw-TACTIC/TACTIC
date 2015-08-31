@@ -2264,9 +2264,9 @@ class ApprovalInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
-
-
-        workflow = process_sobj.get_json_value("workflow")
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
 
@@ -2579,8 +2579,10 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
 
-        workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
 
