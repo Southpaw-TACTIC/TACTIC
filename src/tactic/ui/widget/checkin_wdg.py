@@ -2299,7 +2299,6 @@ spt.checkin.html5_checkin = function(files) {
     var context = options.context;
     var description = options.description;
     var add_note = options.add_note;
-    console.log(add_note);
 
     var is_current = true;
     var file_type = 'file';
@@ -2331,8 +2330,8 @@ spt.checkin.html5_checkin = function(files) {
                 spt.CustomProject.exec_custom_script(evt, bvr);
             }
             
+            var note = [];
             if (add_note) {
-                var note = [];
                 note.push('CHECK-IN');
             } 
             for (var i = 0; i < files.length; i++) {
@@ -2363,13 +2362,10 @@ spt.checkin.html5_checkin = function(files) {
 
 
                 snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
-                console.log(snapshot)
                 // Add to check-in note 
                 if (add_note) {
                     var version = snapshot.version;
-                    //var parts = path.split("/");
-                    //var filename = parts[parts.length-1];
-                    //note.push(filename+' (v'+version+')');
+                    note.push(file_path+' (v'+version+')');
                 }
                     
             }
@@ -2386,10 +2382,10 @@ spt.checkin.html5_checkin = function(files) {
 
         if (! has_error) {
             if (add_note) {
-                note = note.join(" ");
                 note.push(': '); 
                 note.push(description);
-                server.create_note(bvr.search_key, note, {process: process});
+                note = note.join(" ");
+                server.create_note(search_key, note, {process: process});
             }
             server.finish();
             spt.panel.refresh(top);
