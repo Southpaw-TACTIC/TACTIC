@@ -13,7 +13,7 @@
 __all__ = ['TabWdg', 'TabSaveStateCmd']
 
 from pyasm.common import TacticException, Xml, Common, Environment, Container
-from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer
+from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer, WidgetSettings
 from pyasm.search import Search
 from pyasm.widget import WidgetConfigView, WidgetConfig, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -38,6 +38,11 @@ class TabWdg(BaseRefreshWdg):
              'values': 'true|false',
             'category': 'Display'
         },
+        'save_state': {
+            'description': 'key which is used to save state',
+            'category': 'Display'
+        },
+ 
     }
 
     def get_onload_js(my):
@@ -357,6 +362,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             mode: 'tab',
         }
         spt.hash.set_hash(state, title, hash);
+    }
+
+    if (top.hasClass("spt_tab_save_state") ) {
+        spt.tab.save_state();
     }
 
     return header;
@@ -700,6 +709,8 @@ spt.tab.get_last_selected_element_name = function() {
 
 spt.tab.save_state = function() {
     var top = spt.tab.top;
+    var save_state = top.getAttribute("spt_tab_save_state");
+
     var header_top = top.getElement(".spt_tab_header_top");
     var headers = header_top.getElements(".spt_tab_header");
 
@@ -737,7 +748,8 @@ spt.tab.save_state = function() {
     var kwargs = {
         class_names: class_names,
         attrs_list: attrs_list,
-        kwargs_list: kwargs_list
+        kwargs_list: kwargs_list,
+        save_state: save_state
     };
     server.execute_cmd(command, kwargs);
 
@@ -752,7 +764,7 @@ spt.tab.dragging = false;
 
 spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
-    spt.tab.header_pos = bvr.src_el.getPosition();
+    spt.tab.header_pos = bvr.src_el.getPosition(spt.tab.top);
     spt.tab.mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
     var header = bvr.src_el;
     var element_name = header.getAttribute("spt_element_name");
@@ -874,6 +886,10 @@ spt.tab.close = function(src_el) {
             var last = headers[headers.length - 1].getAttribute("spt_element_name");
             spt.tab.select(last);
         }
+
+        if (top.hasClass("spt_tab_save_state") ) {
+            spt.tab.save_state();
+        }
     }
    
     var changed_el = content.getElement(".spt_has_changes");
@@ -908,11 +924,26 @@ spt.tab.close = function(src_el) {
 
     def get_display(my):
 
+        top = my.top
+        top.add_class("spt_tab_top")
+
+
         my.search_type = None
 
         my.view = my.kwargs.get("view")
         config_xml = my.kwargs.get("config_xml")
         config = my.kwargs.get("config")
+
+        my.save_state = my.kwargs.get("save_state")
+        if my.save_state in [True, 'true']:
+            my.save_state = "main_tab_save_state"
+        if my.save_state:
+            saved_config_xml = WidgetSettings.get_value_by_key(my.save_state)
+            if saved_config_xml:
+                config_xml = saved_config_xml
+
+            top.add_class("spt_tab_save_state")
+            top.add_attr("spt_tab_save_state", my.save_state)
 
 
         my.mode = my.kwargs.get('mode')
@@ -949,7 +980,6 @@ spt.tab.close = function(src_el) {
                     config_xml = config_sobj.get_value("config")
                 config = WidgetConfig.get(view=my.view, xml=config_xml)
         else:
-            
 
             if config:
                 pass
@@ -982,8 +1012,6 @@ spt.tab.close = function(src_el) {
             element_names = []
 
 
-        top = my.top
-        top.add_class("spt_tab_top")
         #top.add_style("padding: 10px")
         my.unique_id = top.set_unique_id()
         top.set_attr("spt_tab_id", my.unique_id)
@@ -1752,9 +1780,20 @@ spt.tab.close = function(src_el) {
         palette = header.get_palette()
         hover_color = palette.color("background3")
         header.add_behavior( {
-        'type': 'hover',
-        'mod_styles': 'background: %s' % hover_color
+            'type': 'mouseenter',
+            'color': hover_color,
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.color);
+            '''
         } )
+        header.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
 
 
         header.add_attr("spt_element_name", element_name)
@@ -1901,6 +1940,7 @@ class TabSaveStateCmd(Command):
         class_names = my.kwargs.get("class_names")
         attrs_list = my.kwargs.get("attrs_list")
         kwargs_list = my.kwargs.get("kwargs_list")
+        save_state = my.kwargs.get("save_state")
 
         xml = Xml()
         xml.create_doc("config")
@@ -1927,7 +1967,6 @@ class TabSaveStateCmd(Command):
 
         xml_string = xml.to_string()
 
-        from pyasm.web import WidgetSettings
-        WidgetSettings.set_value_by_key("main_body_tab", xml_string)
+        WidgetSettings.set_value_by_key(save_state, xml_string)
 
 
