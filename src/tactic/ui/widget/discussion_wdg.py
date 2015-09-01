@@ -1635,7 +1635,8 @@ class NoteWdg(BaseRefreshWdg):
         div.add_attr("my_context", context.encode("UTF-8"))
 
 
-        content = Table(css='minimal')
+        #content = Table(css='minimal')
+        content = Table()
         content.add_style("width: 95%")
         content.add_color("color", "color")
         content.add_style("padding: 4px")
@@ -1779,6 +1780,8 @@ class NoteWdg(BaseRefreshWdg):
         context = note.get_value("context")
 
         right.add( WikiUtil().convert(note_value) )
+        right.add_style("word-wrap: break-word")
+        right.add_style("max-width: 300px")
 
 
         attached_div = DivWdg()
