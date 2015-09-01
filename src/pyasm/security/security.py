@@ -748,7 +748,9 @@ class Site(object):
 
 
     def get_login_wdg(cls):
-        return None
+        from tactic.ui.panel import HashPanelWdg
+        web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
+        return web_wdg
     get_login_wdg = classmethod(get_login_wdg)
  
 
