@@ -817,9 +817,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
             includes = includes.split("|")
 
             for include in includes:
-                tmp_path = __file__
-                dir_name = os.path.dirname(tmp_path)
-                file_path="%s/../config/%s" % (dir_name, include)
+                if include.find('/') != -1:
+                    file_path = include
+                else:
+                    tmp_path = __file__
+                    dir_name = os.path.dirname(tmp_path)
+                    file_path ="%s/../config/%s" % (dir_name, include)
                 config = WidgetConfig.get(file_path=file_path, view=my.view)
                 if config and config.has_view(my.view):
                     return config
