@@ -824,6 +824,11 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
     bvr.drag_el.setStyle("background", bvr.gradient);
 
+    var top = spt.tab.top;
+    if (top.hasClass("spt_tab_save_state") ) {
+        spt.tab.save_state();
+    }
+
 }
 
 spt.tab.close = function(src_el) {
