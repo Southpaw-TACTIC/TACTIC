@@ -359,7 +359,7 @@ class PluginCreator(PluginBase):
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
-                dumped_sobjects = my.handle_sobject(node)
+                dumped_sobjects = my.dump_sobject(node)
                 if not dumped_sobjects:
                     dumped_sobjects = []
                 sobjects.extend(dumped_sobjects)
@@ -573,7 +573,7 @@ class PluginCreator(PluginBase):
     
 
 
-    def handle_sobject(my, node):
+    def dump_sobject(my, node):
         project = Project.get()
         project_code = project.get_value("code")
         
@@ -712,7 +712,7 @@ class PluginCreator(PluginBase):
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
-                dumped_sobjects = my.handle_sobject(node)
+                dumped_sobjects = my.dump_sobject(node)
                 if not dumped_sobjects:
                     dumped_sobjects = []
                 sobjects.extend(dumped_sobjects)
@@ -1423,16 +1423,54 @@ class PluginTools(PluginBase):
     def __init__(my, **kwargs):
         my.kwargs = kwargs
         my.xml = kwargs.get("xml")
-        my.plugin_dir = "."
+
+        my.plugin_dir = kwargs.get("plugin_dir")
+        if not my.plugin_dir:
+            my.plugin_dir = "."
+
         my.verbose = True
-        my.plugin = None
+
+        my.plugin = kwargs.get("plugin")
+
+
+    #
+    # Simple wrapper methods
+    #
+
+    def dump_sobject(my, search_type, path):
+        xml = Xml()
+        xml.read_string( '''<sobject path="%s" search_type="%s"/>''' % (path, search_type))
+        my.xml = xml
+        node = Xml.get_node(xml, "sobject")
+        return my._dump_sobject(node)
+
+
+    def dump_search_type(my, search_type, path):
+        xml = Xml()
+        xml.read_string( '''<search_type path="%s" code="%s"/>''' % (path, search_type)
+        my.xml = xml
+        node = Xml.get_node(xml, "search_type")
+        return my._dump_search_type(node)
+
+
+
+
+    def remove_search_type(my, search_type):
+        xml = Xml()
+        xml.read_string( '''<search_type code="%s"/>''' % search_type)
+        my.xml = xml
+        node = Xml.get_node(xml, "search_type")
+        return my._remove_search_type(node)
+
+
+
 
 
     #
     # Node tools
     #
 
-    def dump_sobject(my, node):
+    def _dump_sobject(my, node):
 
         project = Project.get()
         project_code = project.get_value("code")
@@ -1441,7 +1479,6 @@ class PluginTools(PluginBase):
         replace_variable = my.xml.get_attribute(node, "replace_variable")
         include_id = my.xml.get_attribute(node, "include_id")
         ignore_columns = my.xml.get_attribute(node, "ignore_columns")
-
 
 
         if include_id in [True, 'true']:
@@ -1505,8 +1542,55 @@ class PluginTools(PluginBase):
 
 
 
+    def _dump_search_type(my, node):
 
-    def remove_search_type(my, node):
+        search_type = Xml.get_attribute(node, "code")
+        if not search_type:
+            raise TacticException("No code found for search type in manifest")
+
+        path = Xml.get_attribute(node, "path")
+
+        if not path:
+            path = "%s.spt" % search_type.replace("/", "_")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+        
+        if os.path.exists(path):
+            os.unlink(path)
+
+        # dump out search type registration
+        search = Search("sthpw/search_object")
+        search.add_filter("search_type", search_type)
+        sobject = search.get_sobject()
+        if not sobject:
+            raise TacticException("Search type [%s] does not exist" % search_type)
+
+        dumper = TableDataDumper()
+        dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
+        dumper.set_include_id(False)
+        dumper.set_sobjects([sobject])
+        dumper.dump_tactic_inserts(path, mode='sobject')
+
+
+        ignore_columns = Xml.get_attribute(node, "ignore_columns")
+        if ignore_columns:
+            ignore_columns = ignore_columns.split(",")
+            ignore_columns = [x.strip() for x in ignore_columns]
+        else:
+            ignore_columns = []
+
+
+        # dump out the table definition
+        dumper = TableSchemaDumper(search_type)
+        dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
+        dumper.set_ignore_columns(ignore_columns)
+        dumper.dump_to_tactic(path, mode='sobject')
+
+
+
+
+
+    def _remove_search_type(my, node):
         search_type = my.xml.get_attribute(node, 'code')
 
         # get sobject entry
@@ -1520,18 +1604,8 @@ class PluginTools(PluginBase):
             # dump the table first ???
             tmp_path = "tmp/test.spt"
 
-            tmp_manifest = '''<manifest>
-            <sobject path="%s" search_type="%s"/>
-            </manifest>
-            ''' % (tmp_path, search_type)
-
-            tmp_manifest_xml = Xml()
-            tmp_manifest_xml.read_string(tmp_manifest)
-
-            tools = PluginTools(xml=tmp_manifest_xml)
-            node = Xml.get_node(tmp_manifest_xml, "manifest/sobject")
-            tools.dump_sobject(node)
-
+            tools = PluginTools()
+            tools.dump_sobject(search_type, tmp_path)
 
             dfasfdsaadsf
 
@@ -1638,6 +1712,8 @@ class PluginTools(PluginBase):
 
         paths_read.append(path) 
         return path
+
+
 
 
     def import_data(my, path, commit=True, unique=False):
