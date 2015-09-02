@@ -293,7 +293,7 @@ class PluginBase(Command):
     def get_path_from_node(my, node):
         path = my.xml.get_attribute(node, "path")
         if not path:
-            search_type = my.xml.get_attribute(node, "search_type")
+            search_type = Xml.get_attribute(node, "search_type")
             if search_type:
                 search_type_obj = SearchType.get(search_type)
                 search_type = search_type_obj.get_base_key()
@@ -877,6 +877,9 @@ class PluginInstaller(PluginBase):
 
 
     def import_manifest(my, nodes):
+
+        tools = PluginTools(**my.kwargs)
+
         paths_read = []
 
         for node in nodes:
@@ -916,7 +919,7 @@ class PluginInstaller(PluginBase):
                     print "Reading search_type: ", path
 
                 # NOTE: priviledged knowledge of the order or return values
-                jobs = my.import_data(path, commit=True)
+                jobs = tools.import_data(path, commit=True)
 
                 paths_read.append(path)
 
@@ -958,6 +961,10 @@ class PluginInstaller(PluginBase):
                         TableUndo.log(search_type, database, table_name)
 
 
+                # dump the table first
+                backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+                tools = PluginTools(plugin_dir=my.plugin_dir)
+                tools.import_data(backup_path)
 
 
             elif node_name == 'sobject':
@@ -1046,11 +1053,6 @@ class PluginInstaller(PluginBase):
                 from tactic.command import PythonCmd
                 cmd = PythonCmd(file_path=path)
                 cmd.execute()
-
-               
-
-
-
 
 
         ''' TODO: do we store the transaction here???
@@ -1298,8 +1300,6 @@ class PluginInstaller(PluginBase):
 
 
 class PluginUninstaller(PluginBase):
-    # NOTE: this is still a work in progress.  It will remove entries added
-    # by the plugin, but it is not clear that this is what we want to do.
 
     def execute(my):
 
@@ -1314,10 +1314,13 @@ class PluginUninstaller(PluginBase):
         
     def handle_nodes(my, nodes):
 
+        tools = PluginTools(plugin_dir=my.plugin_dir)
+
         for node in nodes:
             node_name = my.xml.get_node_name(node)
             if node_name == 'search_type':
-                my.remove_search_type(node)
+                #my.remove_search_type(node)
+                tools._remove_search_type(node)
             elif node_name == 'sobject':
                 my.remove_sobjects(node)
             elif node_name == 'include':
@@ -1341,58 +1344,6 @@ class PluginUninstaller(PluginBase):
             plugin.delete()
 
 
-    def remove_search_type(my, node):
-        search_type = my.xml.get_attribute(node, 'code')
-
-        # get sobject entry
-        search = Search("sthpw/search_object")
-        search.add_filter("search_type", search_type)
-        search_type_sobj = search.get_sobject()
-
-        if not search_type_sobj:
-            print "WARNING: Search type [%s] does not exist" % search_type
-        else:
-            # dump the table first ???
-            print "dumping table" 
-
-
-            # get the table and remove it ???
-            from pyasm.search import DropTable
-            try:
-                table_drop = DropTable(search_type)
-                table_drop.commit()
-                # NOTE: do we need to log the undo for this?
-            except Exception, e:
-                print "Error: ", e.message
-
-
-        # NOTE: it is not clear that unloading a plugin should delete
-        # the search type ... this search type (at present) can be
-        # shared amongst multiple projects and this will break it
-        return
-
-        """
-        # remove entry from schema
-        schema = Schema.get()
-        xml = schema.get_xml()
-        node = xml.get_node("schema/search_type[@name='%s']" % search_type)
-        if node != None:
-            parent = xml.get_parent(node)
-            xml.remove_child(parent, node)
-            schema.set_value('schema', xml.to_string() )
-            schema.commit()
-
-        # remove search type entry
-        if search_type.startswith("config/") or search_type.startswith("sthpw/"):
-            print "WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'"
-        else:
-
-            search = Search("sthpw/search_object")
-            search.add_filter("search_type", search_type)
-            search_type_sobj = search.get_sobject()
-            if search_type_sobj:
-                search_type_sobj.delete()
-        """
 
 
     def remove_sobjects(my, node):
@@ -1455,7 +1406,6 @@ class PluginUninstaller(PluginBase):
 __all__.append('PluginTools')
 class PluginTools(PluginBase):
 
-
     def __init__(my, **kwargs):
         my.kwargs = kwargs
         my.xml = kwargs.get("xml")
@@ -1464,7 +1414,7 @@ class PluginTools(PluginBase):
         if not my.plugin_dir:
             my.plugin_dir = "."
 
-        my.verbose = True
+        my.verbose = my.kwargs.get("verbose") not in [False, 'false']
 
         my.plugin = kwargs.get("plugin")
 
@@ -1483,7 +1433,7 @@ class PluginTools(PluginBase):
 
     def dump_search_type(my, search_type, path):
         xml = Xml()
-        xml.read_string( '''<search_type path="%s" code="%s"/>''' % (path, search_type)
+        xml.read_string( '''<search_type path="%s" code="%s"/>''' % (path, search_type))
         my.xml = xml
         node = Xml.get_node(xml, "search_type")
         return my._dump_search_type(node)
@@ -1627,7 +1577,7 @@ class PluginTools(PluginBase):
 
 
     def _remove_search_type(my, node):
-        search_type = my.xml.get_attribute(node, 'code')
+        search_type = Xml.get_attribute(node, 'code')
 
         # get sobject entry
         search = Search("sthpw/search_object")
@@ -1636,24 +1586,28 @@ class PluginTools(PluginBase):
 
         if not search_type_sobj:
             print "WARNING: Search type [%s] does not exist" % search_type
-        else:
-            # dump the table first ???
-            tmp_path = "tmp/test.spt"
-
-            tools = PluginTools()
-            tools.dump_sobject(search_type, tmp_path)
-
-            dfasfdsaadsf
+            return
 
 
-            # get the table and remove it
-            from pyasm.search import DropTable
-            try:
-                table_drop = DropTable(search_type)
-                table_drop.commit()
-                # NOTE: do we need to log the undo for this?
-            except Exception, e:
-                print "Error: ", e.message
+        # dump the table first
+        backup_path = "backup/%s" % search_type.replace("/", "_")
+        full_backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+
+        if os.path.exists(full_backup_path):
+            os.unlink(full_backup_path)
+
+        tools = PluginTools(plugin_dir=my.plugin_dir)
+        tools.dump_sobject(search_type, backup_path)
+
+
+        # get the table and remove it
+        from pyasm.search import DropTable
+        try:
+            table_drop = DropTable(search_type)
+            table_drop.commit()
+            # NOTE: do we need to log the undo for this?
+        except Exception, e:
+            print "Error: ", e.message
 
 
         # NOTE: it is not clear that unloading a plugin should delete
@@ -1689,6 +1643,8 @@ class PluginTools(PluginBase):
 
     def import_sobject(my, node):
 
+        tools = PluginTools(**my.kwargs)
+
         paths_read = []
 
         path = my.xml.get_attribute(node, "path")
@@ -1719,7 +1675,7 @@ class PluginTools(PluginBase):
         if my.verbose: 
             print "Reading: ", path
         # jobs doesn't matter for sobject node
-        jobs = my.import_data(path, unique=unique)
+        jobs = tools.import_data(path, unique=unique)
 
         # reset it in case it needs to execute a PYTHON tag right after
         Schema.get(reset_cache=True)
