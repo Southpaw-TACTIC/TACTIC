@@ -290,6 +290,21 @@ class PluginBase(Command):
 
 
 
+    def get_path_from_node(my, node):
+        path = my.xml.get_attribute(node, "path")
+        if not path:
+            search_type = my.xml.get_attribute(node, "search_type")
+            if search_type:
+                search_type_obj = SearchType.get(search_type)
+                search_type = search_type_obj.get_base_key()
+                path = "%s.spt" % search_type.replace("/","_")
+
+        if path:
+            path = "%s/%s" % (my.plugin_dir, path)
+
+        return path
+
+
 
  
 
@@ -556,21 +571,6 @@ class PluginCreator(PluginBase):
 
 
     
-
-    def get_path_from_node(my, node):
-        path = my.xml.get_attribute(node, "path")
-        if not path:
-            search_type = my.xml.get_attribute(node, "search_type")
-            if search_type:
-                search_type_obj = SearchType.get(search_type)
-                search_type = search_type_obj.get_base_key()
-                path = "%s.spt" % search_type.replace("/","_")
-
-        if path:
-            path = "%s/%s" % (my.plugin_dir, path)
-
-        return path
-
 
 
     def handle_sobject(my, node):
@@ -1353,6 +1353,8 @@ class PluginUninstaller(PluginBase):
             print "WARNING: Search type [%s] does not exist" % search_type
         else:
             # dump the table first ???
+            print "dumping table" 
+
 
             # get the table and remove it ???
             from pyasm.search import DropTable
@@ -1369,6 +1371,7 @@ class PluginUninstaller(PluginBase):
         # shared amongst multiple projects and this will break it
         return
 
+        """
         # remove entry from schema
         schema = Schema.get()
         xml = schema.get_xml()
@@ -1389,8 +1392,7 @@ class PluginUninstaller(PluginBase):
             search_type_sobj = search.get_sobject()
             if search_type_sobj:
                 search_type_sobj.delete()
-
-
+        """
 
 
     def remove_sobjects(my, node):
@@ -1450,8 +1452,405 @@ class PluginUninstaller(PluginBase):
         
 
 
+__all__.append('PluginTools')
+class PluginTools(PluginBase):
 
-# How to define a plugin??
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+        my.xml = kwargs.get("xml")
+        my.plugin_dir = "."
+        my.verbose = True
+        my.plugin = None
+
+
+    #
+    # Node tools
+    #
+
+    def dump_sobject(my, node):
+
+        project = Project.get()
+        project_code = project.get_value("code")
+
+        search_type = my.xml.get_attribute(node, "search_type")
+        replace_variable = my.xml.get_attribute(node, "replace_variable")
+        include_id = my.xml.get_attribute(node, "include_id")
+        ignore_columns = my.xml.get_attribute(node, "ignore_columns")
+
+
+
+        if include_id in [True, 'true']:
+            include_id = True
+        else:
+            include_id = False
+
+
+        if ignore_columns:
+            ignore_columns = ignore_columns.split(",")
+            ignore_columns = [x.strip() for x in ignore_columns]
+        else:
+            ignore_columns = []
+
+        # FIXME:
+        # it is possible that the manifest defines sobjects on search types
+        # that don't exist.  This is because it uses the manifest of
+        # the new pipeline and not the original ... 
+        sobjects = my.get_sobjects_by_node(node)
+        if not sobjects:
+            print "Skipping as no sobjects found for [%s]" %search_type
+            return []
+
+
+
+        # If there are no sobjects, then no file is created because
+        # no path can be extracted.
+
+        path = my.get_path_from_node(node)
+        
+        #print "Writing: ", path
+        fmode = 'w'
+        if os.path.exists(path):
+            fmode = 'a'
+        if not sobjects:
+            # write out an empty file
+            #f = open(path, 'w')
+            f = codecs.open(path, fmode, 'utf-8')
+            f.close()
+            return []
+
+        dumper = TableDataDumper()
+        dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
+        if search_type == 'config/widget_config':
+            dumper.set_ignore_columns(['code'])
+        dumper.set_include_id(include_id)
+        dumper.set_ignore_columns(ignore_columns)
+        dumper.set_sobjects(sobjects)
+
+        if replace_variable =="true":
+            if search_type == "sthpw/pipeline":
+                #regex is looking for a word bfore "/" 
+                regex = r'^\w+\/'
+                dumper.set_replace_token("$PROJECT/", "code", regex)
+        
+        dumper.dump_tactic_inserts(path, mode='sobject')
+
+        print "\t....dumped [%s] entries" % (len(sobjects))
+
+        return sobjects
+
+
+
+
+    def remove_search_type(my, node):
+        search_type = my.xml.get_attribute(node, 'code')
+
+        # get sobject entry
+        search = Search("sthpw/search_object")
+        search.add_filter("search_type", search_type)
+        search_type_sobj = search.get_sobject()
+
+        if not search_type_sobj:
+            print "WARNING: Search type [%s] does not exist" % search_type
+        else:
+            # dump the table first ???
+            tmp_path = "tmp/test.spt"
+
+            tmp_manifest = '''<manifest>
+            <sobject path="%s" search_type="%s"/>
+            </manifest>
+            ''' % (tmp_path, search_type)
+
+            tmp_manifest_xml = Xml()
+            tmp_manifest_xml.read_string(tmp_manifest)
+
+            tools = PluginTools(xml=tmp_manifest_xml)
+            node = Xml.get_node(tmp_manifest_xml, "manifest/sobject")
+            tools.dump_sobject(node)
+
+
+            dfasfdsaadsf
+
+
+            # get the table and remove it
+            from pyasm.search import DropTable
+            try:
+                table_drop = DropTable(search_type)
+                table_drop.commit()
+                # NOTE: do we need to log the undo for this?
+            except Exception, e:
+                print "Error: ", e.message
+
+
+        # NOTE: it is not clear that unloading a plugin should delete
+        # the search type ... this search type (at present) can be
+        # shared amongst multiple projects and this will break it
+        return
+
+        """
+        # remove entry from schema
+        schema = Schema.get()
+        xml = schema.get_xml()
+        node = xml.get_node("schema/search_type[@name='%s']" % search_type)
+        if node != None:
+            parent = xml.get_parent(node)
+            xml.remove_child(parent, node)
+            schema.set_value('schema', xml.to_string() )
+            schema.commit()
+
+        # remove search type entry
+        if search_type.startswith("config/") or search_type.startswith("sthpw/"):
+            print "WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'"
+        else:
+
+            search = Search("sthpw/search_object")
+            search.add_filter("search_type", search_type)
+            search_type_sobj = search.get_sobject()
+            if search_type_sobj:
+                search_type_sobj.delete()
+        """
+
+
+
+
+    def import_sobject(my, node):
+
+        paths_read = []
+
+        path = my.xml.get_attribute(node, "path")
+        search_type = my.xml.get_attribute(node, "search_type")
+        seq_max = my.xml.get_attribute(node, "seq_max")
+        try:
+            if seq_max:
+                seq_max = int(seq_max)
+        except ValueError:
+            seq_max = 0
+
+        if not path:
+            if search_type:
+                path = "%s.spt" % search_type.replace("/","_")
+        if not path:
+            raise TacticException("No path specified")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+        if path in paths_read:
+            return
+
+        unique = my.xml.get_attribute(node, "unique")
+        if unique == 'true':
+            unique = True
+        else:
+            unique = False
+
+        if my.verbose: 
+            print "Reading: ", path
+        # jobs doesn't matter for sobject node
+        jobs = my.import_data(path, unique=unique)
+
+        # reset it in case it needs to execute a PYTHON tag right after
+        Schema.get(reset_cache=True)
+        # compare sequence 
+        st_obj = SearchType.get(search_type)
+        SearchType.sequence_nextval(search_type)
+        cur_seq_id = SearchType.sequence_currval(search_type)
+
+        sql = DbContainer.get("sthpw")
+        if seq_max > 0 and seq_max > cur_seq_id:
+            # TODO: SQL Server - Reseed the sequences instead of passing.
+            if sql.get_database_type() == 'SQLServer':
+                pass
+            else:
+                SearchType.sequence_setval(search_type, seq_max)
+        else:
+            cur_seq_id -= 1
+            # TODO: SQL Server - Reseed the sequences instead of passing.
+            if sql.get_database_type() == 'SQLServer':
+                pass
+            else:
+                # this is a db requirement
+                if cur_seq_id > 0:
+                    SearchType.sequence_setval(search_type, cur_seq_id)
+
+
+        paths_read.append(path) 
+        return path
+
+
+    def import_data(my, path, commit=True, unique=False):
+        if not os.path.exists(path):
+            # This is printed too often in harmless situations
+            #print "WARNING: path [%s] does not exist" % path
+            return []
+
+        #f = codecs.open(path, 'r', 'utf-8')
+        f = codecs.getreader('utf8')(open(path, 'r'))
+        statement = []
+        count = 1
+
+        insert = None
+        table = None
+        sobject = None
+
+        jobs = []
+
+        filter_line_handler = my.kwargs.get('filter_line_handler')
+        filter_sobject_handler = my.kwargs.get('filter_sobject_handler')
+
+        for line in f:
+
+            # FIXME: this SQLServer specific
+            #if line.startswith("insert.set_value('Version'"):
+            #    #line = "insert.set_value('Version', '')"
+            #    continue
+
+
+            if filter_line_handler:
+                line = filter_line_handler(path, line)
+                if line == None:
+                    continue
+
+
+            if line.startswith("#-- Start Entry --#"):
+                statement = []
+            elif line.startswith("#-- End Entry --#"):
+                if not statement:
+                    continue
+                # strip out a line feeds and add proper new lines
+                #statement_str = "\n".join([x.strip("\n") for x in statement])
+                statement_str = "\n".join([x.rstrip("\r\n") for x in statement])
+
+                try:
+                    exec(statement_str)
+                except SqlException, e:
+                    print "ERROR (SQLException): ", e
+                except Exception, e:
+                    print "ERROR: ", e
+                    print
+                    print statement_str
+                    print
+                    #raise
+                    continue
+
+
+                sobject = insert
+
+                if sobject:
+                    jobs.append(sobject)
+
+                    stype_id  = 0
+                    if sobject.get_base_search_type() =='sthpw/search_object':
+                        stype_id = Search.eval("@GET(sthpw/search_object['search_type', '%s'].id)" %sobject.get_value('search_type'), single=True)
+
+                    else:
+                        # if there is an id, then set the sobject to be insert
+                        sobject_id = sobject.get_id()
+                        if sobject_id and sobject_id != -1:
+                            sobject.set_force_insert(True)
+
+
+                    # if unique, then check to see if it already exists.
+                    # Same idea with stype_exists
+                    # if so, take the id to turn this from an insert to an
+                    # update operation writing over existing data
+                    if stype_id:
+                        sobject.set_value("id", stype_id)
+
+
+                    if filter_sobject_handler:
+                        sobject = filter_sobject_handler(sobject)
+                    
+
+                    # if the search type is in sthpw namespace, then change
+                    # the project code to the current project
+                    base_search_type = sobject.get_base_search_type()
+                    if base_search_type.startswith("sthpw/"):
+                        project = Project.get()
+                        project_code = project.get_value("code")
+                        if SearchType.column_exists(sobject.get_search_type(), "project_code"):
+                            sobject.set_value("project_code", project_code)
+
+                        if base_search_type == "sthpw/schema":
+                            # if a schema is already defined, the delete
+                            # the current one.  This is not necessary
+                            # if unique flag is on
+                            if not unique:
+                                search = Search("sthpw/schema")
+                                search.add_filter("code", project_code)
+                                old_schema = search.get_sobject()
+                                if old_schema:
+                                    old_schema.delete()
+
+
+                            sobject.set_value("code", project_code)
+
+                        if base_search_type == "sthpw/pipeline":
+                            
+                            if "$PROJECT" in sobject.get('code'):
+                                old_code = sobject.get('code')
+                                new_code = old_code.replace("$PROJECT",project_code,1)
+                                search = Search("sthpw/pipeline")
+                                search.add_filter("code", new_code)
+                                exists = search.get_sobject()
+                                if not exists:
+                                    sobject.set_value('code',new_code)
+                                    unique = True
+
+
+                    if unique:
+                        unique_sobject = my.get_unique_sobject(sobject)
+                        if unique_sobject:
+                            sobject.set_value("id", unique_sobject.get_id() )
+
+                        if sobject == None:
+                            continue
+
+
+
+
+                    try:
+                        if commit:
+                            sobject.commit(triggers=False)
+
+                            chunk = 100
+                            if my.verbose and count and count % chunk == 0:
+                                print "\t... handled entry [%s]" % count
+
+
+                            if my.plugin and my.plugin.get_value("type", no_exception=True) == "config":
+                                plugin_content = SearchType.create("config/plugin_content")
+                                plugin_content.set_value("search_type", sobject.get_search_type())
+                                plugin_content.set_value("search_code", sobject.get_code())
+                                plugin_content.set_value("plugin_code", my.plugin.get_code())
+                                plugin_content.commit()
+
+                    except UnicodeDecodeError, e:
+                        print "Skipping due to unicode decode error: [%s]" % statement_str
+                        continue
+
+
+                if table:
+                    jobs.append(table)
+                    if commit:
+                        table.commit()
+                elif sobject == None:
+                    # this is meant for saying the table is None for a search type creation
+                    jobs.append(None)
+
+                count += 1
+                table = None
+                insert = None
+                sobject = None
+            else:
+                statement.append(line)
+        f.close()
+
+        if my.verbose:
+            print "\t... added [%s] entries" % count
+        return jobs
+
+
+
+
 def main(mode):
     manifest = '''
     <manifest code='test_plugin' version='1'>
