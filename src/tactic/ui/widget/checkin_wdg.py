@@ -865,8 +865,11 @@ spt.checkin.get_checkin_data = function() {
     var sandbox_dir = top.getAttribute("spt_sandbox_dir");
     data['sandbox_dir'] = sandbox_dir;
 
-
+    
     var file_paths = spt.checkin.get_selected_paths();
+    
+    var add_note = top.getElement(".spt_checkin_add_note");
+    data['add_note'] = add_note.checked;
 
     var info = top.getElement('.spt_checkin_info')
     var is_context = info.getAttribute('context_mode') == 'true';
@@ -2256,6 +2259,7 @@ var top = bvr.src_el.getParent(".spt_checkin_top");
 var progress = top.getElement(".spt_checkin_progress");
 progress.setStyle("display", "");
 
+
 spt.checkin._get_context = function(process, context, subcontext, is_context, file_path, use_file_name) {
     var this_context = context;
     if (is_context)
@@ -2294,6 +2298,7 @@ spt.checkin.html5_checkin = function(files) {
     var process = options.process;
     var context = options.context;
     var description = options.description;
+    var add_note = options.add_note;
 
     var is_current = true;
     var file_type = 'file';
@@ -2324,6 +2329,11 @@ spt.checkin.html5_checkin = function(files) {
                 bvr['script'] = script;
                 spt.CustomProject.exec_custom_script(evt, bvr);
             }
+            
+            var note = [];
+            if (add_note) {
+                note.push('CHECK-IN');
+            } 
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
@@ -2351,10 +2361,13 @@ spt.checkin.html5_checkin = function(files) {
                 var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
 
 
-
-
-
                 snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+                // Add to check-in note 
+                if (add_note) {
+                    var version = snapshot.version;
+                    note.push(file_path+' (v'+version+')');
+                }
+                    
             }
             progress.setStyle("display", "");
         }
@@ -2368,6 +2381,12 @@ spt.checkin.html5_checkin = function(files) {
         }
 
         if (! has_error) {
+            if (add_note) {
+                note.push(': '); 
+                note.push(description);
+                note = note.join(" ");
+                server.create_note(search_key, note, {process: process});
+            }
             server.finish();
             spt.panel.refresh(top);
             spt.info("Check-in finished.");
@@ -2508,8 +2527,6 @@ context = process;
 
 
 
-var description = top.getElement(".spt_checkin_description").value;
-var add_note = top.getElement(".spt_checkin_add_note");
 
 
 var file_type = 'main';
@@ -2630,7 +2647,7 @@ try {
     }
     // Handle the default check-in functionality
     else {
-
+    
         // if the transfer mode is upload, then handle the upload mode
         //var transfer_mode = bvr.transfer_mode
         if (transfer_mode == 'upload' || transfer_mode =='web') {
@@ -2861,9 +2878,9 @@ try {
             var filename = parts[parts.length-1];
             note.push(filename+' (v'+version+')');
         }
-        note.push(': ');
+        note.push(': '); 
         note.push(description);
-
+        
         note = note.join(" ");
         server.create_note(bvr.search_key, note, {process: process});
     }
