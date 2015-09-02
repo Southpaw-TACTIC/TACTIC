@@ -293,7 +293,7 @@ class PluginBase(Command):
     def get_path_from_node(my, node):
         path = my.xml.get_attribute(node, "path")
         if not path:
-            search_type = my.xml.get_attribute(node, "search_type")
+            search_type = Xml.get_attribute(node, "search_type")
             if search_type:
                 search_type_obj = SearchType.get(search_type)
                 search_type = search_type_obj.get_base_key()
@@ -877,6 +877,9 @@ class PluginInstaller(PluginBase):
 
 
     def import_manifest(my, nodes):
+
+        tools = PluginTools(**my.kwargs)
+
         paths_read = []
 
         for node in nodes:
@@ -916,7 +919,7 @@ class PluginInstaller(PluginBase):
                     print "Reading search_type: ", path
 
                 # NOTE: priviledged knowledge of the order or return values
-                jobs = my.import_data(path, commit=True)
+                jobs = tools.import_data(path, commit=True)
 
                 paths_read.append(path)
 
@@ -958,6 +961,10 @@ class PluginInstaller(PluginBase):
                         TableUndo.log(search_type, database, table_name)
 
 
+                # dump the table first
+                backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+                tools = PluginTools(plugin_dir=my.plugin_dir)
+                tools.import_data(backup_path)
 
 
             elif node_name == 'sobject':
@@ -1047,11 +1054,6 @@ class PluginInstaller(PluginBase):
                 cmd = PythonCmd(file_path=path)
                 cmd.execute()
 
-               
-
-
-
-
 
         ''' TODO: do we store the transaction here???
         try:
@@ -1065,205 +1067,8 @@ class PluginInstaller(PluginBase):
         '''
 
 
-    def get_unique_sobject(my, sobject):
-        '''get unique sobject in the existing table when installing plugin'''
-        base_st = sobject.get_base_search_type()
-        if base_st == 'config/widget_config':
-            cols = ['view','search_type','category','widget_type','login']
-        elif base_st == 'config/naming':
-            cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
-        elif base_st == 'config/url':
-            cols = ['url']
-        else:
-            cols = ['code']
-
-        search = Search( sobject.get_base_search_type() )
-        for col in cols:
-            value = sobject.get_value(col)
-            if value:
-                search.add_filter(col, value)   
-        unique_sobject = search.get_sobject()
-        return unique_sobject
-
-
-    def import_data(my, path, commit=True, unique=False):
-        if not os.path.exists(path):
-            # This is printed too often in harmless situations
-            #print "WARNING: path [%s] does not exist" % path
-            return []
-
-        #f = codecs.open(path, 'r', 'utf-8')
-        f = codecs.getreader('utf8')(open(path, 'r'))
-        statement = []
-        count = 1
-
-        insert = None
-        table = None
-        sobject = None
-
-        jobs = []
-
-        filter_line_handler = my.kwargs.get('filter_line_handler')
-        filter_sobject_handler = my.kwargs.get('filter_sobject_handler')
-
-        for line in f:
-
-            # FIXME: this SQLServer specific
-            #if line.startswith("insert.set_value('Version'"):
-            #    #line = "insert.set_value('Version', '')"
-            #    continue
-
-
-            if filter_line_handler:
-                line = filter_line_handler(path, line)
-                if line == None:
-                    continue
-
-
-            if line.startswith("#-- Start Entry --#"):
-                statement = []
-            elif line.startswith("#-- End Entry --#"):
-                if not statement:
-                    continue
-                # strip out a line feeds and add proper new lines
-                #statement_str = "\n".join([x.strip("\n") for x in statement])
-                statement_str = "\n".join([x.rstrip("\r\n") for x in statement])
-
-                try:
-                    exec(statement_str)
-                except SqlException, e:
-                    print "ERROR (SQLException): ", e
-                except Exception, e:
-                    print "ERROR: ", e
-                    print
-                    print statement_str
-                    print
-                    #raise
-                    continue
-
-
-                sobject = insert
-
-                if sobject:
-                    jobs.append(sobject)
-
-                    stype_id  = 0
-                    if sobject.get_base_search_type() =='sthpw/search_object':
-                        stype_id = Search.eval("@GET(sthpw/search_object['search_type', '%s'].id)" %sobject.get_value('search_type'), single=True)
-
-                    else:
-                        # if there is an id, then set the sobject to be insert
-                        sobject_id = sobject.get_id()
-                        if sobject_id and sobject_id != -1:
-                            sobject.set_force_insert(True)
-
-
-                    # if unique, then check to see if it already exists.
-                    # Same idea with stype_exists
-                    # if so, take the id to turn this from an insert to an
-                    # update operation writing over existing data
-                    if stype_id:
-                        sobject.set_value("id", stype_id)
-
-
-                    if filter_sobject_handler:
-                        sobject = filter_sobject_handler(sobject)
-                    
-
-                    # if the search type is in sthpw namespace, then change
-                    # the project code to the current project
-                    base_search_type = sobject.get_base_search_type()
-                    if base_search_type.startswith("sthpw/"):
-                        project = Project.get()
-                        project_code = project.get_value("code")
-                        if SearchType.column_exists(sobject.get_search_type(), "project_code"):
-                            sobject.set_value("project_code", project_code)
-
-                        if base_search_type == "sthpw/schema":
-                            # if a schema is already defined, the delete
-                            # the current one.  This is not necessary
-                            # if unique flag is on
-                            if not unique:
-                                search = Search("sthpw/schema")
-                                search.add_filter("code", project_code)
-                                old_schema = search.get_sobject()
-                                if old_schema:
-                                    old_schema.delete()
-
-
-                            sobject.set_value("code", project_code)
-
-                        if base_search_type == "sthpw/pipeline":
-                            
-                            if "$PROJECT" in sobject.get('code'):
-                                old_code = sobject.get('code')
-                                new_code = old_code.replace("$PROJECT",project_code,1)
-                                search = Search("sthpw/pipeline")
-                                search.add_filter("code", new_code)
-                                exists = search.get_sobject()
-                                if not exists:
-                                    sobject.set_value('code',new_code)
-                                    unique = True
-
-
-                    if unique:
-                        unique_sobject = my.get_unique_sobject(sobject)
-                        if unique_sobject:
-                            sobject.set_value("id", unique_sobject.get_id() )
-
-                        if sobject == None:
-                            continue
-
-
-
-
-                    try:
-                        if commit:
-                            sobject.commit(triggers=False)
-
-                            chunk = 100
-                            if my.verbose and count and count % chunk == 0:
-                                print "\t... handled entry [%s]" % count
-
-
-                            if my.plugin and my.plugin.get_value("type", no_exception=True) == "config":
-                                plugin_content = SearchType.create("config/plugin_content")
-                                plugin_content.set_value("search_type", sobject.get_search_type())
-                                plugin_content.set_value("search_code", sobject.get_code())
-                                plugin_content.set_value("plugin_code", my.plugin.get_code())
-                                plugin_content.commit()
-
-                    except UnicodeDecodeError, e:
-                        print "Skipping due to unicode decode error: [%s]" % statement_str
-                        continue
-
-
-                if table:
-                    jobs.append(table)
-                    if commit:
-                        table.commit()
-                elif sobject == None:
-                    # this is meant for saying the table is None for a search type creation
-                    jobs.append(None)
-
-                count += 1
-                table = None
-                insert = None
-                sobject = None
-            else:
-                statement.append(line)
-        f.close()
-
-        if my.verbose:
-            print "\t... added [%s] entries" % count
-        return jobs
-
-
-
 
 class PluginUninstaller(PluginBase):
-    # NOTE: this is still a work in progress.  It will remove entries added
-    # by the plugin, but it is not clear that this is what we want to do.
 
     def execute(my):
 
@@ -1278,10 +1083,13 @@ class PluginUninstaller(PluginBase):
         
     def handle_nodes(my, nodes):
 
+        tools = PluginTools(plugin_dir=my.plugin_dir)
+
         for node in nodes:
             node_name = my.xml.get_node_name(node)
             if node_name == 'search_type':
-                my.remove_search_type(node)
+                #my.remove_search_type(node)
+                tools._remove_search_type(node)
             elif node_name == 'sobject':
                 my.remove_sobjects(node)
             elif node_name == 'include':
@@ -1305,58 +1113,6 @@ class PluginUninstaller(PluginBase):
             plugin.delete()
 
 
-    def remove_search_type(my, node):
-        search_type = my.xml.get_attribute(node, 'code')
-
-        # get sobject entry
-        search = Search("sthpw/search_object")
-        search.add_filter("search_type", search_type)
-        search_type_sobj = search.get_sobject()
-
-        if not search_type_sobj:
-            print "WARNING: Search type [%s] does not exist" % search_type
-        else:
-            # dump the table first ???
-            print "dumping table" 
-
-
-            # get the table and remove it ???
-            from pyasm.search import DropTable
-            try:
-                table_drop = DropTable(search_type)
-                table_drop.commit()
-                # NOTE: do we need to log the undo for this?
-            except Exception, e:
-                print "Error: ", e.message
-
-
-        # NOTE: it is not clear that unloading a plugin should delete
-        # the search type ... this search type (at present) can be
-        # shared amongst multiple projects and this will break it
-        return
-
-        """
-        # remove entry from schema
-        schema = Schema.get()
-        xml = schema.get_xml()
-        node = xml.get_node("schema/search_type[@name='%s']" % search_type)
-        if node != None:
-            parent = xml.get_parent(node)
-            xml.remove_child(parent, node)
-            schema.set_value('schema', xml.to_string() )
-            schema.commit()
-
-        # remove search type entry
-        if search_type.startswith("config/") or search_type.startswith("sthpw/"):
-            print "WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'"
-        else:
-
-            search = Search("sthpw/search_object")
-            search.add_filter("search_type", search_type)
-            search_type_sobj = search.get_sobject()
-            if search_type_sobj:
-                search_type_sobj.delete()
-        """
 
 
     def remove_sobjects(my, node):
@@ -1419,7 +1175,6 @@ class PluginUninstaller(PluginBase):
 __all__.append('PluginTools')
 class PluginTools(PluginBase):
 
-
     def __init__(my, **kwargs):
         my.kwargs = kwargs
         my.xml = kwargs.get("xml")
@@ -1428,7 +1183,7 @@ class PluginTools(PluginBase):
         if not my.plugin_dir:
             my.plugin_dir = "."
 
-        my.verbose = True
+        my.verbose = my.kwargs.get("verbose") not in [False, 'false']
 
         my.plugin = kwargs.get("plugin")
 
@@ -1447,7 +1202,7 @@ class PluginTools(PluginBase):
 
     def dump_search_type(my, search_type, path):
         xml = Xml()
-        xml.read_string( '''<search_type path="%s" code="%s"/>''' % (path, search_type)
+        xml.read_string( '''<search_type path="%s" code="%s"/>''' % (path, search_type))
         my.xml = xml
         node = Xml.get_node(xml, "search_type")
         return my._dump_search_type(node)
@@ -1591,7 +1346,7 @@ class PluginTools(PluginBase):
 
 
     def _remove_search_type(my, node):
-        search_type = my.xml.get_attribute(node, 'code')
+        search_type = Xml.get_attribute(node, 'code')
 
         # get sobject entry
         search = Search("sthpw/search_object")
@@ -1600,24 +1355,28 @@ class PluginTools(PluginBase):
 
         if not search_type_sobj:
             print "WARNING: Search type [%s] does not exist" % search_type
-        else:
-            # dump the table first ???
-            tmp_path = "tmp/test.spt"
-
-            tools = PluginTools()
-            tools.dump_sobject(search_type, tmp_path)
-
-            dfasfdsaadsf
+            return
 
 
-            # get the table and remove it
-            from pyasm.search import DropTable
-            try:
-                table_drop = DropTable(search_type)
-                table_drop.commit()
-                # NOTE: do we need to log the undo for this?
-            except Exception, e:
-                print "Error: ", e.message
+        # dump the table first
+        backup_path = "backup/%s" % search_type.replace("/", "_")
+        full_backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+
+        if os.path.exists(full_backup_path):
+            os.unlink(full_backup_path)
+
+        tools = PluginTools(plugin_dir=my.plugin_dir)
+        tools.dump_sobject(search_type, backup_path)
+
+
+        # get the table and remove it
+        from pyasm.search import DropTable
+        try:
+            table_drop = DropTable(search_type)
+            table_drop.commit()
+            # NOTE: do we need to log the undo for this?
+        except Exception, e:
+            print "Error: ", e.message
 
 
         # NOTE: it is not clear that unloading a plugin should delete
@@ -1653,6 +1412,8 @@ class PluginTools(PluginBase):
 
     def import_sobject(my, node):
 
+        tools = PluginTools(**my.kwargs)
+
         paths_read = []
 
         path = my.xml.get_attribute(node, "path")
@@ -1683,7 +1444,7 @@ class PluginTools(PluginBase):
         if my.verbose: 
             print "Reading: ", path
         # jobs doesn't matter for sobject node
-        jobs = my.import_data(path, unique=unique)
+        jobs = tools.import_data(path, unique=unique)
 
         # reset it in case it needs to execute a PYTHON tag right after
         Schema.get(reset_cache=True)
