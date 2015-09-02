@@ -39,7 +39,7 @@ class TabWdg(BaseRefreshWdg):
             'category': 'Display'
         },
         'save_state': {
-            'description': 'key which is used to save state',
+            'description': 'key which is used to save state [ie: "save_state|main_tab" is the default]',
             'category': 'Display'
         },
  
@@ -941,7 +941,7 @@ spt.tab.close = function(src_el) {
 
         my.save_state = my.kwargs.get("save_state")
         if my.save_state in [True, 'true']:
-            my.save_state = "main_tab_save_state"
+            my.save_state = "save_state|main_tab"
         if my.save_state:
             saved_config_xml = WidgetSettings.get_value_by_key(my.save_state)
             if saved_config_xml:

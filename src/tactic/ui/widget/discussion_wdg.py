@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg']
+__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg', 'NoteCollectionWdg']
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
@@ -1400,7 +1400,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     return;
                 }
 
-                var class_name = 'tactic.ui.widget.NotesContextWdg';
+                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
                 var kwargs = {
                     note_keys: bvr.note_keys,
                     default_num_notes: bvr.default_num_notes,
@@ -1416,7 +1416,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 '''
             } )
 
-            notes_wdg = NotesContextWdg(
+            notes_wdg = NoteCollectionWdg(
                     notes=notes_list,
                     default_num_notes=my.default_num_notes,
 
@@ -1483,9 +1483,8 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-__all__.append("NotesContextWdg")
 
-class NotesContextWdg(BaseRefreshWdg):
+class NoteCollectionWdg(BaseRefreshWdg):
 
     def get_display(my):
         notes = my.kwargs.get("notes")
@@ -1586,6 +1585,7 @@ class NotesContextWdg(BaseRefreshWdg):
 
 
 class NoteWdg(BaseRefreshWdg):
+    """Display of a single note.  Used by NoteCollectionWdg."""
 
     def get_display(my):
         note = my.kwargs.get("note")
