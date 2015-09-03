@@ -14,7 +14,7 @@ __all__ = ['Workflow', 'BaseProcessTrigger']
 
 import tacticenv
 
-from pyasm.common import Common, Config, jsondumps
+from pyasm.common import Common, Config, jsondumps, TacticException
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
@@ -222,7 +222,9 @@ class BaseProcessTrigger(Trigger):
         process_sobj = search.get_sobject()
 
         #print "callback process: ", process, pipeline.get_code()
-        assert(process_sobj)
+        if not process_sobj:
+            raise TacticException('Process item [%s] has not been created. Please save your pipeline in the Project Workflow Editor to refresh the processes.'%process)
+
 
 
         triggers = {}
@@ -1387,6 +1389,8 @@ class ProcessCustomTrigger(BaseProcessTrigger):
             process_sobj = search.get_sobject()
             if process_sobj:
                 workflow = process_sobj.get_json_value("workflow")
+                if not workflow:
+                    workflow = {}
                 direction = workflow.get("direction")
                 to_status = workflow.get("status")
                 mapping = workflow.get("mapping")
