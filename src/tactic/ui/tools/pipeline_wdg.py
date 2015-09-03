@@ -879,6 +879,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         }
 
         var node_type = spt.pipeline.get_node_type(node);
+        if (node.hasClass("spt_pipeline_unknown")) {
+            node_type = "unknown";
+        }
 
         var class_name = 'tactic.ui.tools.ProcessInfoWdg';
         var kwargs = {
@@ -1520,6 +1523,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         if node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
+
+        if node_type == 'unknown':
+            widget = UnknownInfoWdg(**my.kwargs)
 
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
@@ -2242,6 +2248,61 @@ class ActionInfoWdg(BaseInfoWdg):
         } )
 
         return form_wdg
+
+
+
+
+class UnknownInfoWdg(BaseInfoWdg):
+
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+ 
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+        top.add_class("spt_approval_info_top")
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
+
+        msg_div = DivWdg()
+        top.add(msg_div)
+        msg_div.add_style("margin: 30px auto")
+        msg_div.add_style("padding: 20px")
+        msg_div.add_style("border: solid 1px #EEE")
+        msg_div.add("This node type is not recognized")
+        msg_div.add_style("text-align: center")
+        msg_div.add_color("background", "background3")
+
+        return top
+
+
+
+
 
 
 class ApprovalInfoWdg(BaseInfoWdg):
