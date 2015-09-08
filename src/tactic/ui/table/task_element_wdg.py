@@ -2032,6 +2032,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     if not assigned:
                         assigned = HtmlElement.i("Unassigned")
                         assigned.add_style("opacity: 0.5")
+                        assigned_label = assigned
                     assigned_div.add(assigned_label)
                     assigned_div.add("<br/>")
 
