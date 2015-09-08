@@ -589,6 +589,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         bgcolor2 = top.get_color("background", 10)
         
         showing_div.add_color('background', bgcolor)
+        showing_div.add_color('color', 'color')
 
         if num_pages > 1:
             showing_div.add("Showing &nbsp; %s - %s &nbsp; of &nbsp; %s" % (start_count, end_count, total_count))
