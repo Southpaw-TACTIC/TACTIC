@@ -754,6 +754,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-top: 3px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
+        
+        border_color = div.get_color("table_border",  default="border")
+        
+        div.add_styles('border-top: solid 1px %s;' % border_color)
+
         #div.add_gradient("background", "background")
         div.add_color("background", "background",-3)
 
