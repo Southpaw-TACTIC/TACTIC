@@ -5640,7 +5640,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             my.set_as_panel(my.top)
 
 
-
         div.add( my.get_filter_wdg(my.search_type, my.search_code) )
 
         # get the sobject
@@ -5807,10 +5806,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             'show_shelf': False,
             'parent_key': parent_key,
             'mode': 'simple',
-            '__hidden__': 'true',
+            '__hidden__': True,
             'state': my.get_state(),
         }
-  
+ 
+        
         from tactic.ui.panel import FastTableLayoutWdg, TileLayoutWdg, StaticTableLayoutWdg
         if layout == 'tile':
             table = TileLayoutWdg(**kwargs)
