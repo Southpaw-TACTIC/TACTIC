@@ -624,6 +624,7 @@ class Task(SObject):
         task.set_parent(sobject)
 
         task.set_value("process", process )
+<<<<<<< HEAD
 
         if description:
             task.set_value("description", description )
@@ -631,6 +632,11 @@ class Task(SObject):
         if assigned:
             task.set_value("assigned", assigned)
 
+=======
+        task.set_value("description", description )
+        if assigned:
+            task.set_value("assigned", assigned)
+>>>>>>> 8cd360e80643383d9d3a0f69997eb01102c14450
         if supervisor:
             task.set_value("supervisor", supervisor)
 

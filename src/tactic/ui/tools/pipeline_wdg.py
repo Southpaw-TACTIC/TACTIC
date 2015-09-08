@@ -1240,18 +1240,14 @@ class PipelineInfoWdg(BaseRefreshWdg):
 class ConnectorInfoWdg(BaseRefreshWdg):
 
     def get_display(my):
-
-        pipeline_code = my.kwargs.get("pipeline_code")
-        pipeline = Pipeline.get_by_code(pipeline_code)
-
+        
         top = my.top
         top.add_class("spt_pipeline_connector_info")
 
         top.add_style("padding: 20px 0px")
         top.add_color("background", "background")
         top.add_style("min-width: 300px")
-
-
+        
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add_style("margin: -20px 0px 10px 0px")
@@ -1261,11 +1257,24 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         title_wdg.add_color("background", "background", -5)
         title_wdg.add_style("padding: 15px 10px")
 
+        top.add("<br/>")
+        
+        pipeline_code = my.kwargs.get("pipeline_code")
+        pipeline = Pipeline.get_by_code(pipeline_code)
 
         from_node = my.kwargs.get("from_node")
         to_node = my.kwargs.get("to_node")
-
-        top.add("<br/>")
+        left_process = pipeline.get_process(from_node)
+        right_process = pipeline.get_process(to_node)
+        
+        # If either the left process or right process do not exist,
+        # display empty pane.
+        if not left_process or not right_process:
+            info_wdg = DivWdg()
+            info_wdg.add_style("margin: 10px")
+            info_wdg.add("Save your pipeline to edit connector properties.") 
+            top.add(info_wdg)
+            return top
 
         info_wdg = DivWdg()
         top.add(info_wdg)
@@ -1297,9 +1306,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add("<br/>Using Attributes:")
         td.add_style("padding: 5px")
-
-        left_process = pipeline.get_process(from_node)
-        right_process = pipeline.get_process(to_node)
 
         """
         connects = pipeline.get_output_connects(from_node)
@@ -1711,7 +1717,6 @@ class DefaultInfoWdg(BaseInfoWdg):
         
         process_sobj = search.get_sobject()
 
-        process_code = process_sobj.get_value("code")
 
 
         #show error message if the node has not been registered 
@@ -1730,6 +1735,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             return top
 
 
+        process_code = process_sobj.get_value("code")
 
         # triggers
         search = Search("config/trigger")
@@ -2319,9 +2325,9 @@ class ApprovalInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
-
-
-        workflow = process_sobj.get_json_value("workflow")
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
 
@@ -2634,8 +2640,10 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
 
-        workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
 

@@ -601,7 +601,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("table_border", -10, default="border"))
+        inner.add_style("border-color", inner.get_color("border", -10))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -871,7 +871,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -1719,7 +1719,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set styles at the table level to be relayed down
-        border_color = table.get_color("#EEE", default="border")
+        border_color = table.get_color("table_border", default="border")
         table.add_smart_styles("spt_table_select", {
             "border": "solid 1px %s" % border_color,
             "width": "30px",
@@ -1900,7 +1900,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #tr.add_gradient("background", "background", -5, -10)
             #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
-            border_color = table.get_color("#E0E0E0", 0, default="border")
+            border_color = table.get_color("table_border", 0, default="border")
+       
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
@@ -2157,6 +2158,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         summary = (0,0)
 
                     group_summary, total = summary
+                    
+                    if isinstance(result, basestring) and result.startswith('$'):
+                        result = result[1:]
+                        result = float(result)
+               
                     group_summary += result
                     total += result
                     widget_summary_dict[widget] = (group_summary, total)
