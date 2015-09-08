@@ -1386,7 +1386,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
             search.add_filter("process", status)
             process_sobj = search.get_sobject()
             if process_sobj:
-                workflow = process_sobj.get_json_value("workflow")
+                workflow = process_sobj.get_json_value("workflow", {})
                 direction = workflow.get("direction")
                 to_status = workflow.get("status")
                 mapping = workflow.get("mapping")

@@ -356,6 +356,8 @@ class CherryPyStartup(CherryPyStartup20):
             my.register_project(project_code, config)
         my.register_project("default", config)
 
+        print
+
 
         from pyasm.security import Site
         site_obj = Site.get()
