@@ -607,16 +607,18 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         search.add_filter("process", my.process)
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
-
-        workflow = process_sobj.get_json_value("workflow")
-        if workflow:
-            assigned = workflow.get("assigned")
-        else:
-            assigned = None
+        
+        assigned = None
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
+            if workflow:
+                assigned = workflow.get("assigned")
+     
 
 
         # check to see if the tasks exist and if they don't then create one
         tasks = Task.get_by_sobject(my.sobject, process=my.process)
+      
         if not tasks:
             tasks = Task.add_initial_tasks(my.sobject, processes=[my.process], assigned=assigned)
         else:
