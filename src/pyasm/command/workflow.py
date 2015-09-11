@@ -610,7 +610,7 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         
         assigned = None
         if process_sobj:
-            workflow = process_sobj.get_json_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", {})
             if workflow:
                 assigned = workflow.get("assigned")
      
