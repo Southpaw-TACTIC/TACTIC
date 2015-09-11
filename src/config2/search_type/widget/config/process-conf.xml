@@ -83,7 +83,11 @@
 
 
 <checkin_setup_edit layout="EditWdg">
-    <element name='process'/>
+    <element name='process'>
+        <display class="tactic.ui.input.TextInputWdg">
+            <read_only>true</read_only>
+        </display>
+    </element>
     <element name="check_in_options">
         <display class="tactic.ui.panel.EditTitleWdg"/>
         <action class="NullAction"/>

@@ -19,10 +19,10 @@ import unittest, random
 from pyasm.common import Common
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 from pyasm.search import Search, SearchType
+from pyasm.biz import Task
 from pyasm.command import Command, Trigger
 
 from workflow import Workflow
-from task import Task
 
 from pyasm.security import Batch
 
@@ -65,6 +65,10 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_custom_status()
+            my._test_multi_input()
+            my._test_messaging()
+            my._test_dependency()
             my._test_hierarchy()
             my._test_js()
             my._test_manual()
@@ -109,13 +113,24 @@ class WorkflowCmd(Command):
             process.set_value("process", process_name)
             process.set_value("pipeline_code", pipeline.get_code())
             process.set_json_value("workflow", {
+                'on_pending': '''
+                sobject.set_value('%s', "pending")
+                ''' % process_name,
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
                 ''' % process_name,
                 'on_approved': '''
                 sobject.set_value('%s', "approved")
                 ''' % process_name,
- 
+                'on_revise': '''
+                sobject.set_value('%s', "revise")
+                ''' % process_name,
+                'on_reject': '''
+                sobject.set_value('%s', "reject")
+                ''' % process_name,
+                'on_custom': '''
+                sobject.set_value('%s', input.get("status"))
+                ''' % process_name,
             } )
             process.commit()
 
@@ -162,7 +177,8 @@ class WorkflowCmd(Command):
         output = {
             "pipeline": pipeline,
             "sobject": sobject,
-            "process": process
+            "process": process,
+            "status": "pending"
         }
 
         import time
@@ -205,7 +221,8 @@ class WorkflowCmd(Command):
         output = {
             "pipeline": pipeline,
             "sobject": sobject,
-            "process": process
+            "process": process,
+            "status": "pending"
         }
 
         import time
@@ -362,6 +379,71 @@ class WorkflowCmd(Command):
 
 
 
+    def _test_multi_input(my):
+
+        # Disabled for now
+        return
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        code = "test%s" % Common.generate_alphanum_key()
+        sobject.set_value("code", code)
+
+
+        #search = Search("sthpw/message")
+        #sobjects = search.get_sobjects()
+        #for sobject in sobjects:
+        #    sobject.delete()
+
+
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="action" name="b1"/>
+          <process type="action" name="b2"/>
+          <process type="action" name="b3"/>
+          <process type="action" name="b4"/>
+          <process type="action" name="c"/>
+          <process type="action" name="d"/>
+          <connect from="a" to="b1"/>
+          <connect from="a" to="b2"/>
+          <connect from="a" to="b3"/>
+          <connect from="a" to="b4"/>
+          <connect from="b1" to="c"/>
+          <connect from="b2" to="c"/>
+          <connect from="b3" to="c"/>
+          <connect from="b4" to="c"/>
+          <connect from="c" to="d"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+
+        process = processes.get("c")
+        process.set_json_value("workflow", {
+            'on_action': '''
+            print "c: running action"
+            '''
+        } )
+        process.commit()
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+        # make sure we have the same sobject
+        #my.assertEquals( "test", sobject.get_value("test") )
+        #my.assertEquals( "a", sobject.get_value("b_input"))
+        #my.assertEquals( "c,d", sobject.get_value("b_output"))
+
+
 
 
 
@@ -426,6 +508,8 @@ class WorkflowCmd(Command):
 
     def _test_manual(my):
 
+        print "test manual"
+
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
         sobject.set_value("code", "test")
@@ -453,7 +537,7 @@ class WorkflowCmd(Command):
         Trigger.call(my, "process|pending", output)
 
         # nothing should have run
-        my.assertEquals( False, sobject.get_value("a"))
+        my.assertEquals( "pending", sobject.get_value("a"))
         my.assertEquals( False, sobject.get_value("b"))
 
 
@@ -670,6 +754,194 @@ class WorkflowCmd(Command):
         
 
 
+    def _test_dependency(my):
+
+        # Diabled in this version
+        return
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="dependency" name="b" related="unittest/person" process="x" status="pending"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml)
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+
+
+        people = []
+
+        person_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="x"/>
+          <process type="action" name="y"/>
+          <process type="dependency" name="z" related="unittest/city" process="b" status="complete"/>
+          <connect from="x" to="y"/>
+          <connect from="y" to="z"/>
+        </pipeline>
+        '''
+        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml)
+
+        for name in ['Beth', 'Cindy', 'John','Amy','Jack','Steve','Karen']:
+            person = SearchType.create("unittest/person")
+            person.set_value("name_first", name)
+            person.set_value("pipeline_code", person_pipeline.get_code())
+            person.set_value("city_code", city.get_code())
+            person.commit()
+
+            person.set_value("x", "null")
+            person.set_value("y", "null")
+            person.set_value("z", "null")
+
+            people.append(person)
+
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+
+        #person_task = Task.create(person, process="a", description="Test Task")
+        #person_task.set_value("status", "complete")
+        #person_task.commit()
+        for person in people:
+            my.assertEquals( "complete", person.get_value("x") )
+            my.assertEquals( "complete", person.get_value("y") )
+            my.assertEquals( "complete", person.get_value("z") )
+
+        my.assertEquals( "complete", city.get_value("c") )
+
+
+
+    def _test_messaging(my):
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="action" name="b"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml)
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+        for process in city_processes:
+            key = "%s|%s|status" % (city.get_search_key(), process)
+            search = Search("sthpw/message")
+            search.add_filter("code", key)
+            sobject = search.get_sobject()
+            message = sobject.get_value("message")
+            my.assertEquals("complete", message)
+
+
+
+    def _test_custom_status(my):
+
+        task_pipeline_xml = '''
+        <pipeline>
+          <process name="Pending"/>
+          <process name="Do It"/>
+          <process name="Fix it" mapping="revise"/>
+          <process name="Push Back" mapping="reject"/>
+          <process name="Revise"/>
+          <process name="Go to Do It" direction="output" status="Do It"/>
+          <process name="Accept" mapping="complete"/>
+        </pipeline>
+        '''
+        task_pipeline, task_processes = my.get_pipeline(task_pipeline_xml)
+        task_pipeline.set_value("code", "custom_task")
+        task_pipeline.commit()
+
+
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        sobject.set_value("code", "test")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process task_pipeline="custom_task" type="manual" name="a"/>
+          <process task_pipeline="custom_task" type="action" name="b"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+
+
+        # Run the pipeline
+        process = "b"
+        status = "Push Back"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process,
+            "status": status
+        }
+        Trigger.call(my, "process|custom", output)
+
+        my.assertEquals("reject", sobject.get_value("b"))
+        my.assertEquals("revise", sobject.get_value("a"))
+
+
+
+        # Run the pipeline
+        process = "a"
+        status = "Go to Do It"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process,
+            "status": status
+        }
+        Trigger.call(my, "process|custom", output)
+
+        my.assertEquals("Do It", sobject.get_value("b"))
+
+
+
+        #search = Search("sthpw/message")
+        #sobjects = search.get_sobjects()
+        #for sobject in sobjects:
+        #    print "sss: ", sobject.get("code"), sobject.get("message")
 
 
 

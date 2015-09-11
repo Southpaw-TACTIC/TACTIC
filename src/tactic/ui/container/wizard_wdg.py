@@ -103,6 +103,7 @@ class WizardWdg(BaseRefreshWdg):
                 if i < len(my.titles):
                     title = my.titles[i]
                 else:
+                    title = widget.get_name()
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 
@@ -229,9 +230,11 @@ class WizardWdg(BaseRefreshWdg):
                 title = title.replace(".", " ")
                 title = Common.get_display_title(title)
 
-            title = "%d.%s" % (i+1, title)
+            title = "%d %s" % (i+1, title)
             name_div.add(title)
             name_div.add_style("font-weight: bold")
+            name_div.add_style("width: 80px")
+            name_div.add_style("margin-left: -17px")
 
 
 

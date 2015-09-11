@@ -356,8 +356,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node = my.get_node("XXXXX")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
-        #canvas.add(node)
         template_div.add(node)
+
+        node = my.get_node("XXXXX", node_type="manual")
+        node.add_style("left: 0px")
+        node.add_style("top: 0px")
+        template_div.add(node)
+
 
 
         # add folder group node
@@ -368,23 +373,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
 
-        # add condition node
         approval = my.get_condition_node("XXXXX")
         template_div.add(approval)
 
-        # add action node
         action = my.get_node("XXXXX", node_type="action")
         template_div.add(action)
 
-        # add hierarchical node
-        approval = my.get_node("XXXXX", node_type="hierarchy")
-        template_div.add(approval)
+        heirarchy = my.get_node("XXXXX", node_type="hierarchy")
+        template_div.add(heirarchy)
 
-        # add endpoint node
+        dependency = my.get_node("XXXXX", node_type="dependency")
+        template_div.add(dependency)
+
+
         endpoint = my.get_endpoint_node("XXXXX", node_type="output")
         template_div.add(endpoint)
 
-        # add starter point node
         endpoint = my.get_endpoint_node("XXXXX", node_type="input")
         template_div.add(endpoint)
 
@@ -637,6 +641,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             border_radius =  50 
             width = width
             height = height + 50
+        elif node_type == "dependency":
+            border_radius =  100 
+            width = width
+            height = height + 25 
         else:
             border_radius = 3
 
@@ -1320,7 +1328,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 icon_div.add_style("margin: -20px auto 0px auto")
                 return top
 
-        from pyasm.biz import BaseProcessTrigger
+        from pyasm.command import BaseProcessTrigger
         class NotificationNodeHandler(BaseProcessTrigger):
             def execute(my):
                 pipeline = my.input.get("pipeline")
@@ -1889,15 +1897,11 @@ spt.pipeline._init = function() {
     data.paint = paint;
     data.ctx = ctx;
 
-    var size = canvas.getSize()
-    spt.pipeline.set_size(size.x, size.y);
-/*
-    var cookie = new Cookie('pipeline_canvas');
-    var state = JSON.parse( cookie.read() );
-    if (state != null) {
-        spt.pipeline.set_size(state.width, state.height);
-    }
-*/
+    // FIXME: need this delay because the table seems to resize itself somewhere
+    setTimeout( function() {
+        var size = canvas.getSize()
+        spt.pipeline.set_size(size.x, size.y);
+    }, 500);
 }
 
 
@@ -2617,14 +2621,15 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     // switch the color
     //var color = group_info.get_color();
     var color = '';
+    /*
     if (node_type == "trigger") {
         color = "#FFF";
     }
     else if (node_type == "approval") {
         color = "#FFF";
     }
-
-    else if (group_info.get_node_type() == 'process') 
+    */
+    if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
     else // for schema {
         color = spt.pipeline.get_group_color(name);

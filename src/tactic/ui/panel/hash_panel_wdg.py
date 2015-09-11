@@ -295,8 +295,6 @@ class HashPanelWdg(BaseRefreshWdg):
             login = security.get_user_name()
             # guest user should never be able to see admin site
             if login == "guest" and key == 'admin':
-                #from pyasm.widget import Error403Wdg
-                #return Error403Wdg().get_buffer_display()
                 from pyasm.widget import WebLoginWdg
                 # HACK: if the guest access is full, the the outer form
                 # is not defined ... force it in here.  This is because the

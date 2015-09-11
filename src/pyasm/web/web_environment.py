@@ -182,6 +182,11 @@ class WebEnvironment(Environment):
 
 
     def get_site_root(my):
+        from pyasm.security import Site
+        site = Site.get().get_site_root()
+        if site:
+            return site
+
         return "tactic"
 
 
@@ -287,6 +292,7 @@ class WebEnvironment(Environment):
        
 
 
+    # DEPRECATED
     def get_widget_url(my):
 
         url = my.get_site_url()
@@ -426,6 +432,8 @@ class WebEnvironment(Environment):
     def get_skin(my):
         # DEPRECATED: replaced by palettes
 
+        """
+
         # TODO: prod setting shouldn't be in prod!!!
         from pyasm.prod.biz import ProdSetting
         web = WebContainer.get_web()
@@ -447,6 +455,8 @@ class WebEnvironment(Environment):
         # 'dark' skin)
         if skin == 'MMS':
             return 'MMS'
+
+        """
 
         return "dark"
 

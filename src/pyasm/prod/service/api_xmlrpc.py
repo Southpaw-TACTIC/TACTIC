@@ -586,18 +586,23 @@ class BaseApiXMLRPC(XmlrpcServer):
       
         # if the project code is in the ticket, then set the project
         if type(ticket) == types.DictType:
+            site = ticket.get("site")
             project_code = ticket.get("project")
             language = ticket.get("language")
             palette = ticket.get("palette")
             ticket = ticket.get("ticket")
 
         else:
+            # DEPRECATED
             if ticket.find(":") != -1:
                 project_code, ticket = ticket.split(":")
             else:
                 project_code = None
             language = "python"
             palette = None
+            site = None
+
+
 
         if my.get_protocol() == "local":
             if project_code:
@@ -606,22 +611,25 @@ class BaseApiXMLRPC(XmlrpcServer):
 
         # if a session container has been cached, use that
         key = ticket
-        container = None
-        if not container:
 
-            # start a new session and store the container
-            container = Container.create()
-            #my.session_containers[key] = container
+        # start a new session and store the container
+        container = Container.create()
+        #my.session_containers[key] = container
 
-            XmlRpcInit(ticket)
+        # need to set site
+        from pyasm.security import Site
+        if site:
+            Site.set_site(site)
 
-            if project_code:
-                Project.set_project(project_code)
-                Project.get()
+        XmlRpcInit(ticket)
 
-            # initialize the web environment object and register it
-            adapter = my.get_adapter()
-            WebContainer.set_web(adapter)
+        if project_code:
+            Project.set_project(project_code)
+            Project.get()
+
+        # initialize the web environment object and register it
+        adapter = my.get_adapter()
+        WebContainer.set_web(adapter)
 
 
         # now that we have a container, set up the information
@@ -952,7 +960,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             message = jsondumps(message)
 
         # go low level
-        sql = Sql("sthpw")
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site:
+            db_resource = Site.get_db_resource(site, "sthpw")
+        else:
+            db_resource = "sthpw"
+        sql = Sql(db_resource)
         sql.connect()
 
         project_code = Project.get_project_code()
@@ -1343,7 +1357,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_column_info(my, ticket, search_type):
         search_type_obj = SearchType.get(search_type)
-        return search_type_obj.get_column_info()
+        return search_type_obj.get_column_info(search_type)
 
     @xmlrpc_decorator
     def get_related_types(my, ticket, search_type):

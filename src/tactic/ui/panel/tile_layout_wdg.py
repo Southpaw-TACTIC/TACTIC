@@ -2034,8 +2034,12 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
             # FIXME: make this faster
-
             snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
+
+
+        if not snapshot:
+            snapshot = Snapshot.get_snapshot("sthpw/search_type", base_search_type, process=['icon','publish',''])
+
 
         if snapshot:
             file_type = "web"

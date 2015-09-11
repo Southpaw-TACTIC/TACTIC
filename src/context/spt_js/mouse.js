@@ -500,19 +500,6 @@ spt.mouse._CB_drag_setup = function( evt )
     mouse_411.dy = 0;
 
 
-    /*
-    if( spt.browser.is_touch_device() ) {
-        spt.touch_ui.drag.current_drag_bvr = bvr;
-        spt.touch_ui.drag.info = {
-            'mouse_411': mouse_411
-        };
-        spt.app_busy.show( "Drag action on Touch Device ...",
-                           "<br/>Please tap on the destination for this drag action",
-                           {'use_for_touch_drag': true} );
-        return;
-    }
-    */
-
     // set up tracking information for the current, in-progress drag behavior ...
     spt.mouse._current_drag.bvr = bvr;
     spt.mouse._current_drag.dragging = true;

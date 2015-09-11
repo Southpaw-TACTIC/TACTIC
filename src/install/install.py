@@ -480,7 +480,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
                 # look at an alternative location
                 if not os.path.exists(python_site_packages_dir):
-                python_site_packages_dir = "/Library/Frameworks/Python.framework/Versions/%s.%s/lib/python%s.%s/site-packages" % (version_info[0], version_info[1], version_info[0], version_info[1])
+                    python_site_packages_dir = "/Library/Frameworks/Python.framework/Versions/%s.%s/lib/python%s.%s/site-packages" % (version_info[0], version_info[1], version_info[0], version_info[1])
 
             else:
                 python_site_packages_dir = "/usr/lib/python%s.%s/site-packages" % \
@@ -492,25 +492,23 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 f = open(linux_version_path, 'r')
                 content = ' '.join(f.readlines())
                 f.close()
-                if 'CentOS' in content: 
-                linux_os = 'CentOS'
+                if 'CentOS' in content:
+                    linux_os = 'CentOS'
                 elif 'Fedora' in content:
-                linux_os = 'Fedora'
+                    linux_os = 'Fedora'
                 elif 'Debian' in content:
-                linux_os = 'Debian'
+                    linux_os = 'Debian'
 
-		
 
-		
 
-		if not os.path.exists(python_site_packages_dir) and os.name =='posix':
-		    if linux_os == 'CentOS':
-			# CentOS stores the python site packages under /usr/local/lib, not /usr/lib
-			python_site_packages_dir = "/usr/local/lib/python%s.%s/site-packages" % \
-			    (version_info[0], version_info[1])
-		    elif linux_os == 'Debian':
-			python_site_packages_dir = "/usr/lib/python%s.%s/dist-packages" % \
-			    (version_info[0], version_info[1])
+        if not os.path.exists(python_site_packages_dir) and os.name =='posix':
+            if linux_os == 'CentOS':
+                # CentOS stores the python site packages under /usr/local/lib, not /usr/lib
+                python_site_packages_dir = "/usr/local/lib/python%s.%s/site-packages" % \
+                    (version_info[0], version_info[1])
+            elif linux_os == 'Debian':
+                python_site_packages_dir = "/usr/lib/python%s.%s/dist-packages" % \
+                    (version_info[0], version_info[1])
 
 
         if not os.path.exists(python_site_packages_dir):

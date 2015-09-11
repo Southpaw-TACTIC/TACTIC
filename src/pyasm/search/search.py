@@ -525,8 +525,7 @@ class Search(Base):
 
             elif len(filter) == 2:
                 name, value = filter
-                if my.is_expr(value):
-                    value = Search.eval(value, single=True)
+               
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
@@ -544,8 +543,10 @@ class Search(Base):
                         my.add_column(filter[1], distinct=True)
 
 
-                elif type(value) in types.StringTypes:
+                elif isinstance(value, basestring):
                     # <name> = '<value>'
+                    if my.is_expr(value):
+                        value = Search.eval(value, single=True)
                     my.add_filter(name, value, table=table)
                     #print 'name: [%s],[%s]' % (name, value)
                 elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
@@ -569,6 +570,11 @@ class Search(Base):
                     parts = name.split(".")
                     table = parts[0]
                     name = parts[1]
+
+
+                if value.startswith("{") and value.endswith("}"):
+                    value = Search.eval(value, single=True)
+
 
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
@@ -4088,9 +4094,10 @@ class SObject(object):
             ]:
                 # need to to get the parent
                 parent = my.get_parent()
-                if not parent:
-                    continue
-                pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+                pipeline_code = None
+                if parent:
+                    pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+
                 if pipeline_code:
                     search = Search("config/process")
                     search.add_filter("process", process)
@@ -4160,18 +4167,21 @@ class SObject(object):
             if related_type == "*":
                 continue
 
-            print "Updating [%s] ... (not yet!!!)" % related_type
+            print "Preparing to update [%s]" % related_type
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
+
             if relationship == 'code':
-                # if the search type is the "from", then no change needs
-                # to be made because the relationship is not by
-                # this code
+                # attrs is a dictionary of the relationship details between the two
+                # schema tables. We need to check if the related_type is the parent or the
+                # child. Depending on which, we then check if the connected column is 
+                # != "code". If it is, we can safely continue with the database operation, 
+                # if not, there are dependencies that need changing before moving safely
                 if related_type == attrs.get("from"):
-                    if attrs.get("from_col") != "code":
+                    if attrs.get("to_col") != "code":
                         continue
                 else:
-                    if attrs.get("to_col") != "code":
+                    if attrs.get("from_col") != "code":
                         continue
                     
 

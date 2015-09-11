@@ -625,7 +625,8 @@ class Task(SObject):
 
         task.set_value("process", process )
         task.set_value("description", description )
-        task.set_value("assigned", assigned)
+        if assigned:
+            task.set_value("assigned", assigned)
         if supervisor:
             task.set_value("supervisor", supervisor)
 
@@ -745,7 +746,7 @@ class Task(SObject):
     sort_shot_tasks = staticmethod(sort_shot_tasks)
 
 
-    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0):
+    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0,assigned=None):
         '''add initial tasks based on the pipeline of the sobject'''
         from pipeline import Pipeline
 
@@ -890,8 +891,7 @@ class Task(SObject):
                 end_date_str = end_date.get_db_date()
 
                 # Create the task
-
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration)
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
                 
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -954,7 +954,7 @@ class Task(SObject):
                 if contexts and context not in contexts:
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration)
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration,assigned=assigned)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )

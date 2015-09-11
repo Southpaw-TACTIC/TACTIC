@@ -1519,7 +1519,7 @@ class Snapshot(SObject):
 
 
 
-    def get_versionless(cls, search_type, search_id, context, mode='current', create=True, snapshot_type='versionless', commit=True):
+    def get_versionless(cls, search_type, search_id, context, mode='current', create=True, snapshot_type='versionless', process=None, commit=True):
         '''the versionless is assumed to exist if asked for, unless create = False. it is then just querying'''
 
         assert mode in ['current','latest']
@@ -1541,6 +1541,9 @@ class Snapshot(SObject):
             else:
                 search.add_filter("search_code", search_id)
 
+            if process:
+                search.add_filter("process", process)
+
             search.add_filter("context", context)
             # we can't search by this since the versionless snapshot 
             # inherits the snapshot_type of the originating snapshot
@@ -1556,6 +1559,9 @@ class Snapshot(SObject):
             search.add_filter("search_id", search_id)
         else:
             search.add_filter("search_code", search_id)
+        
+        if process:
+            search.add_filter("process", process)
         search.add_filter("context", context)
 
 
@@ -1570,7 +1576,7 @@ class Snapshot(SObject):
 
             # should be passed in
             #snapshot_type = 'versionless'
-            snapshot = Snapshot.create(sobject, snapshot_type, context, column="snapshot", description="Versionless", is_current=False, is_latest=False, commit=False)
+            snapshot = Snapshot.create(sobject, snapshot_type, context, column="snapshot", description="Versionless", is_current=False, is_latest=False, commit=False, process=process)
             snapshot.set_value("version", version)
 
             if commit:

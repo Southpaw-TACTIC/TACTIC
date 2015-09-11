@@ -521,7 +521,9 @@ class TaskElementWdg(BaseTableElementWdg):
             process = my.kwargs.get("process")
             if process:
                 processes = process.split("|")
+
                 search.add_filters("process", processes)
+
 
 
             # go thru children of main search
@@ -534,6 +536,16 @@ class TaskElementWdg(BaseTableElementWdg):
             # process the tasks
             for task in tasks:
                 search_type = task.get_value("search_type")
+
+
+                supprocess = my.kwargs.get("parent_process")
+                if supprocess:
+                    process = task.get_value("process")
+                    if not process.startswith("%s." % supprocess):
+                        continue
+
+
+
 
                 attrs = schema.get_relationship_attrs("sthpw/task", search_type)
                 attrs = schema.resolve_relationship_attrs(attrs, "sthpw/task", search_type)
@@ -589,7 +601,7 @@ class TaskElementWdg(BaseTableElementWdg):
         
         if pipelines:
             for pipeline in pipelines:
-                processes = pipeline.get_processes(type=["node","approval"])
+                processes = pipeline.get_processes(type=["node","approval","hierarchy"])
 
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
@@ -597,6 +609,7 @@ class TaskElementWdg(BaseTableElementWdg):
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
+
                     # put the processes found into a set to avoid duplicates.
                     my.all_processes_set.add(process.get_name())
                     process_dict = my.label_dict.get(pipeline_code)
@@ -1006,14 +1019,22 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         return ",".join(values)
             
 
+    def get_tasks(my, sobject=None, pipeline_code=None):
+        tasks = my._get_tasks(sobject=None, pipeline_code=None)
+        #tasks = my._get_tasks(sobject=None, pipeline_code="PIPELINE00110")
+        return tasks
 
-    def get_tasks(my, sobject=None):
+    def _get_tasks(my, sobject=None, pipeline_code=None):
         #my.preprocess()
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
         if not sobject:
             sobject = my.get_current_sobject()
+
+        # If this is the insert table, then there will be no tasks
+        if sobject.is_insert():
+            return []
 
         # use parent?
         #sobject = sobject.get_parent()
@@ -1035,7 +1056,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # get the pipeline
-        pipeline_code = my.get_pipeline_code()
+        if not pipeline_code:
+            pipeline_code = my.get_pipeline_code()
+
         if pipeline_code:
             pipeline = Pipeline.get_by_code(pipeline_code)
         else:
@@ -1043,6 +1066,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if pipeline:
             processes = pipeline.get_process_names()
+
+            supprocess = my.kwargs.get("parent_process")
+            if supprocess:
+                processes = ["%s.%s" % (supprocess, x) for x in processes]
 
             processes_remove = []
             for process in processes:
@@ -1095,40 +1122,68 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
+
+
         # fill in any missing tasks
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
-
-
         if show_filler_tasks in ["true", True]:
 
+            pipeline_code = my.get_pipeline_code()
             pipeline = Pipeline.get_by_code(pipeline_code)
-            if not pipeline:
-                #pipeline = Pipeline.get_by_code("task")
-                processes = []
-            else:
-                processes = pipeline.get_process_names()
+            assert(pipeline)
 
+            processes = pipeline.get_process_names(type=["node","approval","hierarchy"])
 
             if my.filler_cache == None:
                 my.filler_cache = {}
 
+            # get all of the current tasks processes
+            existing_processes = [x.get_value("process") for x in tasks]
+
+
+            supprocess = my.kwargs.get("parent_process")
+
             for process in processes:
-                process_sobj = pipeline.get_process(process)
-                task_pipeline = process_sobj.get_task_pipeline()
+
+                if supprocess:
+                    full_process = "%s.%s" % (supprocess, process)
+                else:
+                    full_process = process
+
+                # skip processes that already have tasks
+                if full_process in existing_processes:
+                    continue
+
+                process_pipeline = pipeline
+                process_obj = process_pipeline.get_process(process)
+
+                if not process_obj:
+                    #print("WARNING: process[%s] not in pipeline [%s]" % (process, pipeline.get_code()))
+                    continue
+
+
+                task_pipeline = process_obj.get_task_pipeline()
+
+
 
                 task = SearchType.create("sthpw/task")
-                task.set_value("process", process)
-                task.set_value("context", process)
+                task.set_value("process", full_process)
+                task.set_value("context", full_process)
                 if task_pipeline:
                     task.set_value("pipeline_code", task_pipeline)
 
-                my.filler_cache[process] = task
+                my.filler_cache[full_process] = task
 
             missing = []
             task_processes = [x.get_value("process") for x in tasks]
             for process in processes:
-                if process not in task_processes:
-                    missing.append(process)
+                if supprocess:
+                    full_process = "%s.%s" % (supprocess, process)
+                else:
+                    full_process = process
+
+                if full_process not in task_processes:
+                    missing.append(full_process)
 
             search_type = sobject.get_search_type()
             search_code = sobject.get_value("code")
@@ -1139,10 +1194,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     task.set_value("search_type", search_type)
                     task.set_value("search_code", search_code)
                     tasks.append(task)
-         
+        
+
             tasks = sorted(tasks,get_compare(processes))
 
         return tasks
+
+
 
     def _get_display_options(my):
        
@@ -1260,7 +1318,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_display(my):
-        
 
         sobject = my.get_current_sobject()
         my.tasks = my.get_tasks(sobject)
@@ -1401,9 +1458,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 td.add(error_div)
 
             else:
+                supprocess = my.kwargs.get("parent_process")
 
                 # go through each sorted process
                 for idx, process in enumerate(my.sorted_processes):
+
+                    if supprocess:
+                        process = "%s.%s" % (supprocess, process)
 
                     if my.layout in ['vertical']:
                         table.add_row()
@@ -1429,9 +1490,29 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         # none of the tasks lists are in the process
                         tasks = items[0]
 
-                    task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
-                    if tasks[0].get_id() == -1:
+
+
+                    if pipeline_code:
+                        pipeline = my.pipelines_dict.get(pipeline_code)
+                    else:
+                        pipeline = None
+
+                    task = tasks[0]
+
+                    process = task.get_value("process")
+                    process_obj = pipeline.get_process(process)
+                    if process_obj:
+                        node_type = process_obj.get_type()
+                    else:
+                        node_type = "node"
+
+
+                    # make the task slightly opaque
+                    if node_type in ['manual', 'node','approval'] and tasks[0].get_id() == -1:
                         td.add_style("opacity: 0.5")
+
+
+                    task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
 
                     if not is_task_displayed:
                         
@@ -1514,7 +1595,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         else:
             pipeline = None
 
-
         # if there are multiple tasks, assume all properties are the same
         # except the assignment
         task = tasks[0]
@@ -1554,36 +1634,65 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         if node_type == "hierarchy":
-            div.add_style("margin: 5px 5px 0px 5px")
-            div.add("<h3>3 Processes</h3>")
-            #div.add(process)
-            #div.add("<br/>")
-            icon = IconWdg(name="SubPipeline", icon="BS_ARROW_DOWN")
-            div.add(icon)
-            icon.add_class("spt_icon")
-            div.add_border()
-            div.add_behavior( {
-                'type': 'click_up',
-                'pipeline_code': pipeline_code,
+
+            hierarchy_div = DivWdg()
+            div.add(hierarchy_div)
+            hierarchy_div.add_style("margin: 8px 0px 8px -8px")
+            hierarchy_div.add_class("spt_hierarchy_top")
+
+            search = Search("config/process")
+            search.add_filter("pipeline_code", pipeline_code)
+            search.add_filter("process", process)
+            process_sobj = search.get_sobject()
+            subpipeline_code = process_sobj.get("subpipeline_code")
+            #subpipeline = Pipeline.get_by_code(subpipeline_code)
+            #processes = subpipeline.get_process_names()
+            #num_processes = len(processes)
+
+            from tactic.ui.widget import SwapDisplayWdg
+            SwapDisplayWdg.handle_top(hierarchy_div)
+
+            #title = "<b>%s (%s)</b>" % (process, num_processes)
+            title = "<b>%s</b>" % (process)
+            swap = SwapDisplayWdg(title=title)
+            hierarchy_div.add(swap)
+
+
+
+            pipeline_div = DivWdg()
+            hierarchy_div.add(pipeline_div)
+            pipeline_div.add_class("spt_subpipeline_content")
+            pipeline_div.add_style("margin: 10px 10px")
+            pipeline_div.add_style("display: none")
+
+
+            unique_id = pipeline_div.set_unique_id("content")
+            swap.set_content_id(unique_id)
+
+
+            hierarchy_div.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_swap_top',
+                'pipeline_code': subpipeline_code,
                 'process': process,
                 'cbjs_action': '''
                 var row = bvr.src_el.getParent(".spt_table_row");
-                var search_key = row.getAttribute("spt_search_key");
+                var search_key = row.getAttribute("spt_search_key_v2");
                 //var class_name = 'tactic.ui.panel.TableLayoutWdg';
                 var class_name = 'tactic.ui.table.SubPipelineTaskWdg';
                 var kwargs = {
-                    src_el: bvr.src_el.getElement(".spt_icon"),
-                    search_type: 'vfx/asset',
                     search_key: search_key,
-                    show_shelf: false,
-                    element_names: ['task_status_edit'],
-                    sticky_header: false,
-                    show_search_limit: false,
-                    show_select: false,
+                    process: bvr.process,
+                    pipeline_code: bvr.pipeline_code,
                 }
-                spt.table.add_hidden_row(row, class_name, kwargs);
+                //spt.table.add_hidden_row(row, class_name, kwargs);
+                var top = bvr.src_el.getParent(".spt_hierarchy_top");
+                var el = top.getElement(".spt_subpipeline_content");
+                spt.panel.load(el, class_name, kwargs)
                 '''
             } )
+
+
             return div
 
 
@@ -1927,36 +2036,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     assigned_div.add("<br/>")
 
 
-        """
-        if process == "design":
-            approval_div = DivWdg()
-            if my.layout in ['horizontal', 'vertical']:
-                table.add_cell(approval_div)
-            else:
-                div.add(approval_div)
-
-            approval_div.add_style("width: 98px")
-            approval_div.add_style("height: auto")
-            approval_div.add_style("padding: 6px 0px")
-            approval_div.add_style("margin: 0px 5px")
-            approval_div.add_style("border: solid 1px #BBB")
-            approval_div.add_style("border-radius: 3px")
-            approval_div.add_color("background","background")
-
-            for i in range(0, 2):
-                if i == 0:
-                    icon = IconWdg(name="Approved by XYZ", icon="BS_REMOVE", size=12)
-                    icon.add_style("border: solid 1px red")
-                else:
-                    icon = IconWdg(name="Approved by XYZ", icon="BS_OK", size=12)
-                    icon.add_style("border: solid 1px green")
-                approval_div.add(icon)
-                icon.add_style("padding: 0px 3px 6px 3px")
-                icon.add_style("margin: 3px")
-                icon.add_style("border-radius: 20px")
-
-
-        """
 
         div.add_behavior( {
             'type': 'mouseenter',
@@ -2008,6 +2087,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 button_div.add_style("float: left")
                 button_div.add_style("width: 50px")
 
+
         if my.show_task_edit != 'false':
             #edit_div.add_style('float: right')
             icon = IconButtonWdg(tip='Edit Task', icon="BS_EDIT")
@@ -2057,6 +2137,29 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 spt.panel.load_popup("Add Note ["+bvr.process+"]", class_name, kwargs);
                 '''
             } )
+
+
+            # view schedule
+            """
+            icon = IconButtonWdg(tip='User Schedule', icon="BS_USER")
+            icon_div.add(icon)
+            icon.add_style("display: inline-block")
+            icon.add_class('hand')
+            icon.add_behavior({
+                'type': 'click_up',
+                'parent_key': parent_key,
+                'process': process,
+                'cbjs_action': '''
+                var login = "beth";
+
+                var class_name = "tactic.ui.widget.TaskCalendarWdg";
+                var kwargs = {
+                    assigned: login
+                }
+                spt.tab.add_new("test", "test", class_name, kwargs);
+                '''
+            } )
+            """
 
 
 
@@ -2177,50 +2280,25 @@ class SubPipelineTaskWdg(BaseRefreshWdg):
 
         def get_display(my):
 
-            search_type = my.kwargs.get("search_type")
             search_key = my.kwargs.get("search_key")
+
+            sobject = Search.get_by_search_key(search_key)
+            search_type = sobject.get_base_search_type()
 
             top = my.top
 
-
-            kwargs = {
-                "search_type": search_type,
-                "search_key": search_key,
-                "view": "XYZ",
-                "show_shelf": False,
-                "element_names": ['task_status_edit'],
-                "sticky_header": False,
-                "show_search_limit": False,
-                "show_select": False,
-            }
-
-            config_xml = '''
-            <config>
-            <XYZ>
-            <element name='task_status_edit'>
-              <display class="tactic.ui.table.TaskElementWdg">
-                <pipeline_code>PIPELINE00083</pipeline_code>
-                <show_filler_tasks>true</show_filler_tasks>
-                <edit_status>true</edit_status>
-                <edit_assigned>true</edit_assigned>
-              </display>
-              <action class='tactic.ui.table.TaskElementCbk'/>
-            </element>
-            </XYZ>
-            </config>
-            '''
-
-            kwargs['config_xml'] = config_xml
-
-            from tactic.ui.panel import TableLayoutWdg
-            table = TableLayoutWdg(**kwargs)
-            top.add(table)
-
-            #element = TaskElementWdg()
-            #element.set_sobjects( [Search.get_by_search_key(search_key)] )
-            #element.set_current_index(0)
-            #element.preprocess()
-            #top.add(element)
+            element = TaskElementWdg()
+            element.set_option("layout", "vertical")
+            element.set_option("parent_process", my.kwargs.get("process"))
+            element.set_option("edit_status", "true")
+            element.set_option("edit_assigned", "true")
+            element.set_option("status_color", "status")
+            element.set_option("show_filler_tasks", "true")
+            element.set_option("pipeline_code", my.kwargs.get("pipeline_code"))
+            element.set_sobjects( [sobject] )
+            element.set_current_index(0)
+            element.preprocess()
+            top.add(element)
 
 
             return top
@@ -2636,8 +2714,8 @@ class TaskSummaryElementWdg(TaskElementWdg):
 
             div.add_style("width: 5px")
             div.add_style("height: 15px")
-            div.add_style("margin-left: auto")
-            div.add_style("margin-right: auto")
+            #div.add_style("margin-left: auto")
+            #div.add_style("margin-right: auto")
 
             if status:
                 td.add_attr("title", "%s - %s" % (process, status))

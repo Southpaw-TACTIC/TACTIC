@@ -188,6 +188,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
             'category' : 'internal'
+        },
+
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '14'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '15'
         }
         
 
@@ -1683,23 +1698,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # row highlighting
 
-        table.add_behavior( {
-        'type': 'load',
-        'cbjs_action': '''
-        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
-            function(event, src_el) {
-                // remember the original color
-                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
-                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
-            } )
+        if my.kwargs.get("show_row_highlight") not in [False, 'false']:
+            table.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
+                function(event, src_el) {
+                    // remember the original color
+                    src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
+                    spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
+                } )
 
-        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
-            function(event, src_el) {
-                src_el.setAttribute("spt_hover_background", "");
-                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+            bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
+                function(event, src_el) {
+                    src_el.setAttribute("spt_hover_background", "");
+                    spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+                } )
+            '''
             } )
-        '''
-        } )
 
 
         # set styles at the table level to be relayed down
@@ -4477,7 +4493,8 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg.getParent(".spt_cell_edit");
     }
 
-
+    var old_value = edited_cell.getAttribute("spt_input_value");
+    
     var ignore_multi = kwargs.ignore_multi ? true : false;
 
     var header = spt.table.get_header_by_cell(edited_cell);
@@ -4487,11 +4504,17 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     
     // Multi EDIT
     var selected_rows = spt.table.get_selected_rows();
-    if (!ignore_multi && selected_rows.length > 0) {
+    var in_selected_row = edited_cell.getParent("tr.spt_table_selected");
+    
+    var changed = old_value != new_value;
+
+    if (!ignore_multi && selected_rows.length > 0 && changed && in_selected_row) {
         // get all of the cells with the same element_name
         var index = spt.table.get_column_index_by_cell(edited_cell);
+
         for (var i = 0; i < selected_rows.length; i++) {
             var cell = selected_rows[i].getElements(".spt_cell_edit")[index];
+           
             spt.table._accept_single_edit(cell, new_value);
 
             if (set_display) {
@@ -4499,6 +4522,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
                 cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
+            
         }
 
     }

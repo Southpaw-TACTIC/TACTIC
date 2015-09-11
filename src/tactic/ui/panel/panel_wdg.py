@@ -935,12 +935,6 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
         var w = clonable.clientWidth;
         var h = clonable.clientHeight;
 
-        /*
-        // Use this if you want the initial ghost div position right over top of the source element ...
-        var pos = spt.get_absolute_offset( bvr.src_el );
-        ghost_el.setStyle( "left", pos.x );
-        ghost_el.setStyle( "top", pos.y );
-        */
 
         // Use this if you want the initial ghost div position to be offset from mouse same as on mouse momve ...
         ghost_el.setStyle( "left", (mouse_411.curr_x + 10) );
@@ -955,7 +949,8 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
 
         ghost_el.setStyle( "display", "block" );
         ghost_el.setStyle( "text-align", "left" );
-        ghost_el.setStyle( "background", "#4F4FC4");
+        //ghost_el.setStyle( "background", "#4F4FC4");
+        ghost_el.setStyle( "box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
     }
     else {
         spt.js_log.debug("WARNING: NO ghost el found in spt.side_bar.pp_setup() callback!");
@@ -2770,6 +2765,21 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'order': '18'
         },    
+
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '19'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '20'
+        }, 
 
 
         "link": {
