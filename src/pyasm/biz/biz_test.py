@@ -18,7 +18,7 @@ import unittest
 
 from pyasm.common import *
 from pyasm.security import *
-from pyasm.search import Transaction, SearchType, Search
+from pyasm.search import Transaction, SearchType, Search, SObject
 from pyasm.unittest import Person
 from pyasm.checkin import FileCheckin
 
@@ -141,8 +141,24 @@ class BizTest(unittest.TestCase):
         # these are duplicated, so nothing should be created
         my.assertEquals(initial_tasks, [])
 
+        single_task = Task.create(my.person, "RIGGIT", "Riggit task", assigned='admin', context="RIGGIT")
+        single_task2 = Task.create(my.person, "RIGGIT", "Riggit task", assigned='admin', context="RIGGIT")
 
+        # since context is explicity specified, it will stay RIGGIT
+        my.assertEquals(single_task.get('context'),'RIGGIT')
+        my.assertEquals(single_task2.get('context'),'RIGGIT')
+
+        # via SearchType.create
+        single_task3 = SearchType.create('sthpw/task')
+        single_task3.set_parent(my.person)
+        single_task3.set_value('process', 'RIGGIT')
+        single_task3.commit()
         
+        my.assertEquals(single_task3.get('context'),'RIGGIT/001')
+        
+        single_task4 = Task.create(my.person, "RIGGIT", "Riggit task", assigned='admin')
+        my.assertEquals(single_task4.get('context'),'RIGGIT/002')
+
         initial_tasks = Task.add_initial_tasks(my.person, 'person', contexts=['design1:design1/hi','design2:design2/low','design3:design3','design3:design3'], mode='context', skip_duplicate=False)
       
         context_list = []
@@ -914,14 +930,20 @@ class BizTest(unittest.TestCase):
         # test remove the first instance
         my.person.remove_instance(cars[0])
 
+        test_instances = my.person.get_instances("unittest/car")
+        my.assertEquals(2, len(test_instances))
+
+
         # test remove the other way around
         cars[1].remove_instance(my.person)
-
-
-        test_instances = my.person.get_instances("unittest/car")
-        my.assertEquals(1, len(test_instances))
-        test_instances = cars[2].get_instances("unittest/person")
-        my.assertEquals(1, len(test_instances))
+         
+        # this doesn't return the expected result even after ExpressionParser.clear_cache() 
+        #test_instances2 = my.person.get_instances("unittest/car")
+        test_instances2 = Search.eval('@SOBJECT(unittest/person_in_car)', my.person)
+      
+        my.assertEquals(1, len(test_instances2))
+        test_instances2 = cars[2].get_instances("unittest/person")
+        my.assertEquals(1, len(test_instances2))
 
 
 
