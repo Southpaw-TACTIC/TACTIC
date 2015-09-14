@@ -451,7 +451,10 @@ class TopWdg(Widget):
     
         from pyasm.security import Site
         site = Site.get_site()
-
+       
+        kiosk_mode = Config.get_value("look", "kiosk_mode")
+        if not kiosk_mode:
+            kiosk_mode = 'false';
         # add environment information
         script = HtmlElement.script('''
         var env = spt.Environment.get();
@@ -463,8 +466,9 @@ class TopWdg(Widget):
         env.set_login_groups(login_groups);
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
+        env.set_kiosk_mode('%s');
 
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir))
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode))
         top.add(script)
 
 
