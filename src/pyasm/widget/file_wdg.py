@@ -612,7 +612,7 @@ class ThumbWdg(BaseTableElementWdg):
         if detail != 'false':
             my.add_icon_behavior(div, sobject)
 
-        if type(icon_size) == types.StringType and icon_size.endswith("%"):
+        if isinstance(icon_size, basestring) and icon_size.endswith("%"):
             img.add_style("%s: 100%%" % my.aspect )
         else:
             img.add_style("%s: %spx" % (my.aspect, my.get_icon_size()) )
@@ -847,11 +847,11 @@ class ThumbWdg(BaseTableElementWdg):
 
         if my.icon_type == 'default':
             # Fix Template icon_size=100% icon_type always load web versions
-            if type(icon_size) == types.StringType and icon_size.endswith("%"):
+            if isinstance(icon_size, basestring) and icon_size.endswith("%"):
                 icon_size_check = int(icon_size[0:-1])
             else:
                 icon_size_check = icon_size
-	
+    
             if icon_size_check > 120:
                 icon_type = 'web'
             else:
@@ -915,10 +915,10 @@ class ThumbWdg(BaseTableElementWdg):
         # TODO: make this a preference
         img.add_style("background: #ccc")
 
-        if type(icon_size) == types.StringType and icon_size.endswith("%"):
-	    img.add_style("%s: 100%%" % my.aspect)
+        if isinstance(icon_size, basestring) and icon_size.endswith("%"):
+            img.add_style("%s: 100%%" % my.aspect)
         else:
-	    img.add_style("%s: %spx" % (my.aspect, icon_size) )
+            img.add_style("%s: %spx" % (my.aspect, icon_size) )
 
 
         detail = my.get_option("detail")
@@ -1151,11 +1151,15 @@ class ThumbWdg(BaseTableElementWdg):
 
             # HACK for pdf icons
             if image_link.endswith(".pdf"):
-                #check if icon_size is a string endswith %
-                if isinstance(icon_size, str):
-                    icon_size = float(icon_size.strip('%'))/100
-                    icon_size = int( 80.0 / 120.0 * float(icon_size) )
-                    icon_size = '%s%%' %icon_size
+                #check if icon_size is a string: integer num endswith unit
+                if isinstance(icon_size, basestring):
+                    m = re.match('(\d+)(pt|%|em|px)+', icon_size)
+                    if m:
+                        num,unit = m.groups()
+                        icon_size = num
+                        icon_size = int( 80.0 / 120.0 * float(icon_size) )
+                        icon_size = str(icon_size) + unit
+
                 else:
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
             
@@ -1465,4 +1469,3 @@ class FileInfoWdg(BaseTableElementWdg):
             html.writeln("%0.10d : %s<br/>" % (int(file_codes[i]), images[i]) )
 
         return html.getvalue()
-
