@@ -1151,8 +1151,9 @@ class ThumbWdg(BaseTableElementWdg):
 
             # HACK for pdf icons
             if image_link.endswith(".pdf"):
-                if icon_size.endswith("%"):
-                    icon_size = float(icon_size[0:-1])
+                #check if icon_size is a string endswith %
+                if isinstance(icon_size, str):
+                    icon_size = float(icon_size.strip('%'))/100
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
                     icon_size = '%s%%' %icon_size
                 else:
