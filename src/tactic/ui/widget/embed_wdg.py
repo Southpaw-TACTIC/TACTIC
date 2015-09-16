@@ -66,6 +66,9 @@ class EmbedWdg(BaseRefreshWdg):
         #div = DivWdg()
         #top.add(div)
         div = top
+        if not my.kwargs.get("selectable") or \
+                my.kwargs.get("selectable") == "false":
+            div.add_class("unselectable")
         div.add_style("opacity", opacity)
         div.add_style("overflow-x: hidden")
         div.add_style("overflow-y: hidden")
@@ -87,7 +90,8 @@ class EmbedWdg(BaseRefreshWdg):
             click = False
         else:
             click = True
-
+      
+        thumb_path = my.kwargs.get("thumb_path")
         preload = my.kwargs.get("preload")
         if not preload:
             preload = "none"
@@ -98,17 +102,19 @@ class EmbedWdg(BaseRefreshWdg):
             embed.add_style("width: 100%")
             embed.add_style("height: auto")
         elif ext in File.VIDEO_EXT:
-            from tactic.ui.widget import VideoWdg
+            from tactic.ui.widget import VideoWdg, VideoJsWdg
             embed = DivWdg()
 
-
+            '''
             thumb_path = my.kwargs.get("thumb_path")
             if not thumb_path:
                 thumb_path = "/context/icons/logo/tactic_sml.png"
+            '''
             controls = my.kwargs.get("controls")
+            '''
             if not controls:
                 controls = "true"
-
+            '''
             video_id = None
             sources = [src]
             source_types = ["video/mp4"]
@@ -117,7 +123,23 @@ class EmbedWdg(BaseRefreshWdg):
             height = '100%'
             #width = "640"
             #height = "480"
-            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
+            '''
+            video_data = {video_id: video_id, 
+                    sources: sources, 
+                    source_types: source_types, 
+                    poster: poster, 
+                    preload: preload, 
+                    controls: controls, 
+                    width: width, 
+                    height: height, 
+                    index: index
+            }
+            '''
+                    
+            if my.kwargs.get("video_class") == "videojswdg":
+                video = VideoJsWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
+            else:
+                video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 
@@ -125,9 +147,17 @@ class EmbedWdg(BaseRefreshWdg):
 
         else:
             #embed = HtmlElement.embed(src)
+            if thumb_path:
+                img = HtmlElement.img(thumb_path)
+            else:
+                from pyasm.widget import ThumbWdg
+                link  = ThumbWdg.find_icon_link(src)
+                img = HtmlElement.img(link)
+            '''
             from pyasm.widget import ThumbWdg
             link = ThumbWdg.find_icon_link(src)
             img = HtmlElement.img(link)
+            '''
             img.add_style("width: 50%")
             img.add_style("margin: 20px 20px")
             embed = DivWdg(img)
