@@ -1158,7 +1158,7 @@ class ThumbWdg(BaseTableElementWdg):
                         num,unit = m.groups()
                         icon_size = num
                         icon_size = int( 80.0 / 120.0 * float(icon_size) )
-                        icon_size = str(icon_size) + unit
+                        icon_size = '%s%s' %(icon_size, unit)
 
                 else:
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
