@@ -507,10 +507,14 @@ class ThumbWdg(BaseTableElementWdg):
         if not my.icon_size:
             my.icon_size = 120
 
-        if type(my.icon_size) in types.StringTypes and my.icon_size.endswith("%"):
-            return my.icon_size
+        unit = None
+        if isinstance(my.icon_size, basestring):
+            m = re.match('(\d+)(pt|%|em|px)+', my.icon_size)
+            if m:
+                num, unit = m.groups()
+                icon_size = int(num)
 
-        icon_size = int(my.icon_size)
+
 
         icon_mult = PrefSetting.get_value_by_key("thumb_multiplier")
         if not icon_mult:
@@ -526,8 +530,11 @@ class ThumbWdg(BaseTableElementWdg):
         # cap the size to 15
         if size < 15:
             size = 15
-
+            
+        if unit:
+            size = '%s%s' %(icon_size, unit)
         return size
+
 
     def set_aspect(my, aspect):
         my.aspect = aspect
@@ -615,8 +622,8 @@ class ThumbWdg(BaseTableElementWdg):
         if isinstance(icon_size, basestring) and icon_size.endswith("%"):
             img.add_style("%s: 100%%" % my.aspect )
         else:
-            img.add_style("%s: %spx" % (my.aspect, my.get_icon_size()) )
-        img.add_style("min-%s: 15px" % my.aspect)
+            img.add_style("%s: %s" % (my.aspect, my.get_icon_size()) )
+            img.add_style("min-%s: 15px" % my.aspect)
 
         return div
 
@@ -629,7 +636,6 @@ class ThumbWdg(BaseTableElementWdg):
 
 
     def get_display(my):
-
         my.aspect = my.get_option('aspect')
         if not my.aspect:
             my.aspect = "width"
@@ -887,7 +893,6 @@ class ThumbWdg(BaseTableElementWdg):
                 icon_link = icon_link.replace("indicator_snake.gif", "generic_image.png")
 
 
- 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         div.add_style( "display: block" )
         div.add_style("margin: 5px")
@@ -918,7 +923,7 @@ class ThumbWdg(BaseTableElementWdg):
         if isinstance(icon_size, basestring) and icon_size.endswith("%"):
             img.add_style("%s: 100%%" % my.aspect)
         else:
-            img.add_style("%s: %spx" % (my.aspect, icon_size) )
+            img.add_style("%s: %s" % (my.aspect, icon_size) )
 
 
         detail = my.get_option("detail")
@@ -1152,6 +1157,7 @@ class ThumbWdg(BaseTableElementWdg):
             # HACK for pdf icons
             if image_link.endswith(".pdf"):
                 #check if icon_size is a string: integer num endswith unit
+
                 if isinstance(icon_size, basestring):
                     m = re.match('(\d+)(pt|%|em|px)+', icon_size)
                     if m:
@@ -1159,7 +1165,7 @@ class ThumbWdg(BaseTableElementWdg):
                         icon_size = num
                         icon_size = int( 80.0 / 120.0 * float(icon_size) )
                         icon_size = '%s%s' %(icon_size, unit)
-
+                        
                 else:
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
             
