@@ -50,6 +50,8 @@ class VideoWdg(BaseRefreshWdg):
         source_types = my.kwargs.get("source_types")
         if not source_types:
             source_types = []
+        if isinstance(source_types, basestring):
+            source_types = source_types.split("|")
 
 
         poster = my.kwargs.get("poster")
@@ -190,6 +192,8 @@ class VideoJsWdg(BaseRefreshWdg):
         source_types = my.kwargs.get("source_types")
         if not source_types:
             source_types = []
+        if isinstance(source_types, basestring):
+            source_types = source_types.split("|")
 
 
         poster = my.kwargs.get("poster")

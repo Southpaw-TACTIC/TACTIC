@@ -109,30 +109,29 @@ class EmbedWdg(BaseRefreshWdg):
             
             
             video_id = None
-            sources = [src]
-            source_types = ["video/mp4"]
+            sources = src
+            source_types = "video/mp4"
             poster = thumb_path
             width = '100%'
             height = '100%'
             #width = "640"
             #height = "480"
-            '''
-            video_data = {video_id: video_id, 
-                    sources: sources, 
-                    source_types: source_types, 
-                    poster: poster, 
-                    preload: preload, 
-                    controls: controls, 
-                    width: width, 
-                    height: height, 
-                    index: index
+            
+            video_kwargs = {"video_id": video_id, 
+                    "sources": sources, 
+                    "source_types": source_types, 
+                    "poster": poster, 
+                    "preload": preload, 
+                    "controls": controls, 
+                    "width": width, 
+                    "height": height, 
+                    "index": index
             }
-            '''
                     
             if my.kwargs.get("video_class") == "videojswdg":
-                video = VideoJsWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
+                video = VideoJsWdg(**video_kwargs)
             else:
-                video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
+                video = VideoWdg(**video_kwargs)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 
