@@ -355,6 +355,8 @@ class CherryPyStartup(CherryPyStartup20):
             my.register_project(project_code, config)
         my.register_project("default", config)
 
+        print
+
 
         from pyasm.security import Site
         site_obj = Site.get()
@@ -406,7 +408,8 @@ class CherryPyStartup(CherryPyStartup20):
             #print "... WARNING: SitePage not found"
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
-        except SyntaxError:
+        except SyntaxError, e:
+            print e.__str__()
             print "WARNING: skipping project [%s]" % project
 
 

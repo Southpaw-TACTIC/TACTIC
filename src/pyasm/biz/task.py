@@ -655,7 +655,8 @@ class Task(SObject):
         task.set_parent(sobject)
 
         task.set_value("process", process )
-        task.set_value("description", description )
+        if description:
+            task.set_value("description", description )
         if assigned != None:
             task.set_value("assigned", assigned)
         if supervisor != None:

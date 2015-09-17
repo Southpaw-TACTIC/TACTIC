@@ -817,9 +817,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
             includes = includes.split("|")
 
             for include in includes:
-                tmp_path = __file__
-                dir_name = os.path.dirname(tmp_path)
-                file_path="%s/../config/%s" % (dir_name, include)
+                if include.find('/') != -1:
+                    file_path = include
+                else:
+                    tmp_path = __file__
+                    dir_name = os.path.dirname(tmp_path)
+                    file_path ="%s/../config/%s" % (dir_name, include)
                 config = WidgetConfig.get(file_path=file_path, view=my.view)
                 if config and config.has_view(my.view):
                     return config
@@ -1283,7 +1286,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             includes = my.kwargs.get("include")
-            element_wdg = config.get_display_widget(element_name, extra_options={"include":includes, "parent_view":parent_view})
+            extra_options = {"parent_view": parent_view}
+            if includes:
+                extra_options['include'] = includes
+
+            element_wdg = config.get_display_widget(element_name, extra_options=extra_options)
 
             element_top = element_wdg.get_top()
             for name, value in attrs.items():

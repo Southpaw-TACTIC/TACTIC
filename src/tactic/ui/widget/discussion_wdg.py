@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg']
+__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg', 'NoteCollectionWdg']
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
@@ -1093,6 +1093,7 @@ class DiscussionWdg(BaseRefreshWdg):
             my.set_as_panel(top)
             top.add_style("min-width: 300px")
 
+            context_str = ",".join(contexts)
 
             max_height = my.kwargs.get("max_height")
             if max_height:
@@ -1407,7 +1408,12 @@ class DiscussionWdg(BaseRefreshWdg):
                 'note_expandable': my.note_expandable,
                 'note_format': my.note_format,
                 'cbjs_action': '''
-                var class_name = 'tactic.ui.widget.NotesContextWdg';
+                var top = bvr.src_el.getParent(".spt_discussion_context_top");
+                if (top.getAttribute("spt_is_loaded") == "true") {
+                    return;
+                }
+
+                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
                 var kwargs = {
                     note_keys: bvr.note_keys,
                     default_num_notes: bvr.default_num_notes,
@@ -1415,14 +1421,15 @@ class DiscussionWdg(BaseRefreshWdg):
                     note_format: bvr.note_format,
                 }
 
-                var top = bvr.src_el.getParent(".spt_discussion_context_top");
                 var el = top.getElement(".spt_discussion_content");
                 spt.panel.load(el, class_name, kwargs);
+
+                top.setAttribute("spt_is_loaded", "true");
 
                 '''
             } )
 
-            notes_wdg = NotesContextWdg(
+            notes_wdg = NoteCollectionWdg(
                     notes=notes_list,
                     default_num_notes=my.default_num_notes,
 
@@ -1494,9 +1501,8 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-__all__.append("NotesContextWdg")
 
-class NotesContextWdg(BaseRefreshWdg):
+class NoteCollectionWdg(BaseRefreshWdg):
 
     def get_display(my):
         notes = my.kwargs.get("notes")
@@ -1597,6 +1603,7 @@ class NotesContextWdg(BaseRefreshWdg):
 
 
 class NoteWdg(BaseRefreshWdg):
+    """Display of a single note.  Used by NoteCollectionWdg."""
 
     def get_display(my):
         note = my.kwargs.get("note")
@@ -1623,7 +1630,6 @@ class NoteWdg(BaseRefreshWdg):
 
         my.note_format = my.kwargs.get("note_format")
 
-
         return my.get_note_wdg(note, note_hidden)
 
 
@@ -1646,7 +1652,8 @@ class NoteWdg(BaseRefreshWdg):
         div.add_attr("my_context", context.encode("UTF-8"))
 
 
-        content = Table(css='minimal')
+        #content = Table(css='minimal')
+        content = Table()
         content.add_style("width: 95%")
         content.add_color("color", "color")
         content.add_style("padding: 4px")
@@ -1790,6 +1797,8 @@ class NoteWdg(BaseRefreshWdg):
         context = note.get_value("context")
 
         right.add( WikiUtil().convert(note_value) )
+        right.add_style("word-wrap: break-word")
+        right.add_style("max-width: 300px")
 
 
         attached_div = DivWdg()

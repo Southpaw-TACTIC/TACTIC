@@ -1175,7 +1175,7 @@ class IngestUploadCmd(Command):
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (process, filename)
+                context = "%s/%s" % (process, filename.lower())
             
 
             server.simple_checkin(search_key, context, filename, mode='uploaded')

@@ -2141,7 +2141,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 status_div.add_style("font-size: %spx" % (my.font_size))
                 status_div.add_style("font-weight: bold")
-                status_div.add_style("background-color: %s" %bgColor)
+                
+                if bgColor:
+                    status_div.add_style("background-color: %s" %bgColor)
                 status_div.add(status)
              
             elif my.permission['status']['is_editable']:
@@ -2209,7 +2211,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 select.add_class("spt_task_status_select")
-                select.add_style("background: %s" %bgColor)
+                if bgColor:
+                    select.add_style("background: %s" %bgColor)
 
 
                 if my.layout in ['horizontal', 'vertical']:
@@ -2341,6 +2344,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     if not assigned:
                         assigned = HtmlElement.i("Unassigned")
                         assigned.add_style("opacity: 0.5")
+                        assigned_label = assigned
                     assigned_div.add(assigned_label)
                     assigned_div.add("<br/>")
 

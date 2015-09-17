@@ -309,7 +309,7 @@ class Login(SObject):
 
 
 
-    def create(user_name, password, first_name, last_name, groups=None, namespace=None):
+    def create(cls, user_name, password, first_name=None, last_name=None, groups=None, namespace=None, display_name=None):
 
         login = SearchType.create("sthpw/login")
         login.set_value("login", user_name)
@@ -318,19 +318,34 @@ class Login(SObject):
         encrypted = hashlib.md5(password).hexdigest()
         login.set_value("password", encrypted)
 
-        login.set_value("first_name", first_name)
-        login.set_value("last_name", last_name)
+        if first_name:
+            login.set_value("first_name", first_name)
+        if last_name:
+            login.set_value("last_name", last_name)
 
-        if groups != None:
-            login.set_value("groups", groups)
+        if display_name:
+            login.set_value("display_name", display_name)
+
+        # DEPRECATED: this is no longed supported
+        #if groups != None:
+        #    login.set_value("groups", groups)
+
         if namespace != None:
             login.set_value("namespace", namespace)
 
         login.commit()
 
+        if groups:
+            for group in groups:
+                login.add_to_group(group)
+        else:
+            default_group = LoginGroup.get_project_default()
+            if default_group:
+                login.add_to_group(default_group)
+
         return login
 
-    create = staticmethod(create)
+    create = classmethod(create)
 
 
     def get_default_encrypted_password():
@@ -484,7 +499,7 @@ class LoginGroup(Login):
 
 
 
-    def get_by_project(project_code=None):
+    def get_by_project(cls, project_code=None):
 
         if not project_code:
             from pyasm.biz import Project
@@ -523,7 +538,19 @@ class LoginGroup(Login):
 
 
         return project_groups
-    get_by_project = staticmethod(get_by_project)
+    get_by_project = classmethod(get_by_project)
+
+
+    def get_project_default(cls, project_code=None):
+        groups = cls.get_by_project(project_code)
+        for group in groups:
+            if group.get_value("is_default", no_exception=True):
+                return group
+        return None
+    get_project_default = classmethod(get_project_default)
+
+
+
 
     def get_access_level(my):
         level = my.get_value('access_level')
@@ -709,7 +736,9 @@ class Site(object):
 
     def register_sites(my, startup, config):
         return
- 
+    
+    def handle_ticket(my, ticket):
+        return
 
 
     def get_by_login(cls, login):
@@ -746,7 +775,9 @@ class Site(object):
 
 
     def get_login_wdg(cls):
-        return None
+        from tactic.ui.panel import HashPanelWdg
+        web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
+        return web_wdg
     get_login_wdg = classmethod(get_login_wdg)
  
 
@@ -805,6 +836,11 @@ class Site(object):
         site = sites.pop()
     pop_site = classmethod(pop_site)
 
+
+    def clear_sites(cls):
+        '''Clear all of the sites'''
+        Container.put("sites", [])
+    clear_sites = classmethod(clear_sites)
 
 
 
@@ -990,6 +1026,7 @@ class Security(Base):
         my._groups = []
         my._group_names = []
         my._ticket = None
+        my._admin_login = None
 
         my.add_access_rules_flag = True
 
@@ -1049,9 +1086,22 @@ class Security(Base):
 
 
     def get_login(my):
-        return my._login
+        if my.is_admin():
+            if not my._admin_login:
+                login = SearchType.create("sthpw/login")
+                login.set_value("login", "admin")
+                login.set_value("code", "admin")
+                login.set_value("first_name", "Adminstrator")
+                login.set_value("last_name", "")
+                login.set_value("display_name", "Administrator")
+                my._admin_login = login
+            return my._admin_login
+        else:
+            return my._login
 
     def get_user_name(my):
+        if not my._login:
+            return None
         return my._login.get_login()
 
     def get_ticket(my):
@@ -1413,7 +1463,6 @@ class Security(Base):
         # on first entry.  Future verifies will use the login in stored in the
         # database.
         if mode == 'autocreate':
-            # get the login from the authentication class
             my._login = Login.get_by_login(login_name)
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
@@ -1425,7 +1474,6 @@ class Security(Base):
         # when mode is cache, it does autocreate and update user_info every time
         # this is called
         elif mode == 'cache':
-            # get the login from the authentication class
             my._login = Login.get_by_login(login_name)
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
@@ -1447,7 +1495,9 @@ class Security(Base):
 
         else:
             # get the login from database and don't bother updating
-            my._login = Login.get_by_login(login_name)
+            my._login = authenticate.get_login()
+            if not my._login:
+                my._login = Login.get_by_login(login_name)
 
 
 
@@ -1473,7 +1523,7 @@ class Security(Base):
         my._ticket = my._generate_ticket(login_name, expiry, category="gui")
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        
+
         my._do_login()
         
 

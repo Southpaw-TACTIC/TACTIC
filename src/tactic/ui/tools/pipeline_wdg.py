@@ -879,6 +879,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         }
 
         var node_type = spt.pipeline.get_node_type(node);
+        if (node.hasClass("spt_pipeline_unknown")) {
+            node_type = "unknown";
+        }
 
         var class_name = 'tactic.ui.tools.ProcessInfoWdg';
         var kwargs = {
@@ -1237,18 +1240,14 @@ class PipelineInfoWdg(BaseRefreshWdg):
 class ConnectorInfoWdg(BaseRefreshWdg):
 
     def get_display(my):
-
-        pipeline_code = my.kwargs.get("pipeline_code")
-        pipeline = Pipeline.get_by_code(pipeline_code)
-
+        
         top = my.top
         top.add_class("spt_pipeline_connector_info")
 
         top.add_style("padding: 20px 0px")
         top.add_color("background", "background")
         top.add_style("min-width: 300px")
-
-
+        
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add_style("margin: -20px 0px 10px 0px")
@@ -1258,11 +1257,24 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         title_wdg.add_color("background", "background", -5)
         title_wdg.add_style("padding: 15px 10px")
 
+        top.add("<br/>")
+        
+        pipeline_code = my.kwargs.get("pipeline_code")
+        pipeline = Pipeline.get_by_code(pipeline_code)
 
         from_node = my.kwargs.get("from_node")
         to_node = my.kwargs.get("to_node")
-
-        top.add("<br/>")
+        left_process = pipeline.get_process(from_node)
+        right_process = pipeline.get_process(to_node)
+        
+        # If either the left process or right process do not exist,
+        # display empty pane.
+        if not left_process or not right_process:
+            info_wdg = DivWdg()
+            info_wdg.add_style("margin: 10px")
+            info_wdg.add("Save your pipeline to edit connector properties.") 
+            top.add(info_wdg)
+            return top
 
         info_wdg = DivWdg()
         top.add(info_wdg)
@@ -1294,9 +1306,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add("<br/>Using Attributes:")
         td.add_style("padding: 5px")
-
-        left_process = pipeline.get_process(from_node)
-        right_process = pipeline.get_process(to_node)
 
         """
         connects = pipeline.get_output_connects(from_node)
@@ -1521,9 +1530,14 @@ class ProcessInfoWdg(BaseRefreshWdg):
         if node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
 
+<<<<<<< HEAD
         if node_type == 'progress':
             widget = ProgressInfoWdg(**my.kwargs)
 
+=======
+        if node_type == 'unknown':
+            widget = UnknownInfoWdg(**my.kwargs)
+>>>>>>> remkonoteboom/4.4
 
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
@@ -1710,7 +1724,6 @@ class DefaultInfoWdg(BaseInfoWdg):
         
         process_sobj = search.get_sobject()
 
-        process_code = process_sobj.get_value("code")
 
 
         #show error message if the node has not been registered 
@@ -1729,6 +1742,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             return top
 
 
+        process_code = process_sobj.get_value("code")
 
         # triggers
         search = Search("config/trigger")
@@ -2249,7 +2263,9 @@ class ActionInfoWdg(BaseInfoWdg):
         return form_wdg
 
 
-class ApprovalInfoWdg(BaseInfoWdg):
+
+
+class UnknownInfoWdg(BaseInfoWdg):
 
     def get_display(my):
 
@@ -2266,6 +2282,59 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
 
         workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+        top.add_class("spt_approval_info_top")
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+        title_wdg = my.get_title_wdg(process, node_type)
+        top.add(title_wdg)
+
+        msg_div = DivWdg()
+        top.add(msg_div)
+        msg_div.add_style("margin: 30px auto")
+        msg_div.add_style("padding: 20px")
+        msg_div.add_style("border: solid 1px #EEE")
+        msg_div.add("This node type is not recognized")
+        msg_div.add_style("text-align: center")
+        msg_div.add_color("background", "background3")
+
+        return top
+
+
+
+
+
+
+class ApprovalInfoWdg(BaseInfoWdg):
+
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+ 
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
 
@@ -2764,8 +2833,10 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
 
-        workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
 

@@ -188,6 +188,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
             'category' : 'internal'
+        },
+
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '14'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '15'
         }
         
 
@@ -586,7 +601,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("table_border", -10, default="border"))
+        inner.add_style("border-color", inner.get_color("border", -10))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -856,7 +871,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -1705,7 +1720,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set styles at the table level to be relayed down
-        border_color = table.get_color("#EEE", default="border")
+        border_color = table.get_color("table_border", default="border")
         table.add_smart_styles("spt_table_select", {
             "border": "solid 1px %s" % border_color,
             "width": "30px",
@@ -1886,7 +1901,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #tr.add_gradient("background", "background", -5, -10)
             #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
-            border_color = table.get_color("#E0E0E0", 0, default="border")
+            border_color = table.get_color("table_border", 0, default="border")
+       
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
@@ -2143,6 +2159,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         summary = (0,0)
 
                     group_summary, total = summary
+                    
+                    if isinstance(result, basestring) and result.startswith('$'):
+                        result = result[1:]
+                        result = float(result)
+               
                     group_summary += result
                     total += result
                     widget_summary_dict[widget] = (group_summary, total)
@@ -2435,13 +2456,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return
      
 
-        table.add_attr("ondragenter", "return false")
-        table.add_attr("ondragover", "return false")
-        table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+        #table.add_attr("ondragenter", "return false")
+        #table.add_attr("ondragover", "return false")
+        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
+
+        table.add_style("width: 100%")
 
 
         tr, td = table.add_row_cell()
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+
         tr.add_class("spt_table_no_items")
         td.add_style("border-style: solid")
         td.add_style("border-width: 1px")
@@ -2476,7 +2506,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
 
             no_results_msg = my.kwargs.get("no_results_msg")
-
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             #msg.set_box_shadow("0px 0px 5px")
@@ -3081,15 +3110,24 @@ spt.table.drop_row = function(evt, el) {
 
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
-    var size = thumb_el.getSize();
+    if (thumb_el) {
+        var size = thumb_el.getSize();
+    }
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file = files[i];
 
+        var filename = file.name;
 
         var search_key = top.getAttribute("spt_search_key");
-        var filename = file.name;
+        if (!search_key) {
+            var layout = spt.table.get_layout();
+            var search_type = layout.getAttribute("spt_search_type");
+            var server = TacticServerStub.get();
+            var sobject = server.insert(search_type, {name: filename})
+            search_key = sobject.__search_key__;
+        }
         var context = "publish" + "/" + filename;
 
         var upload_file_kwargs =  {
@@ -4479,7 +4517,8 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg.getParent(".spt_cell_edit");
     }
 
-
+    var old_value = edited_cell.getAttribute("spt_input_value");
+    
     var ignore_multi = kwargs.ignore_multi ? true : false;
 
     var header = spt.table.get_header_by_cell(edited_cell);
@@ -4489,11 +4528,17 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     
     // Multi EDIT
     var selected_rows = spt.table.get_selected_rows();
-    if (!ignore_multi && selected_rows.length > 0) {
+    var in_selected_row = edited_cell.getParent("tr.spt_table_selected");
+    
+    var changed = old_value != new_value;
+
+    if (!ignore_multi && selected_rows.length > 0 && changed && in_selected_row) {
         // get all of the cells with the same element_name
         var index = spt.table.get_column_index_by_cell(edited_cell);
+
         for (var i = 0; i < selected_rows.length; i++) {
             var cell = selected_rows[i].getElements(".spt_cell_edit")[index];
+           
             spt.table._accept_single_edit(cell, new_value);
 
             if (set_display) {
@@ -4501,6 +4546,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
                 cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
+            
         }
 
     }
