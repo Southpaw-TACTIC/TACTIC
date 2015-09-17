@@ -141,7 +141,7 @@ spt.Environment = function() {
     }
    
     this.set_kiosk_mode = function(mode) {
-        if (mode == 'true') 
+        if (mode == 'true' || mode == true) 
             this.kiosk_mode = true;
     }
     this.get_kiosk_mode = function() {

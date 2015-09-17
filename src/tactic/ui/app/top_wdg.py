@@ -454,7 +454,7 @@ class TopWdg(Widget):
        
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
-            kiosk_mode = 'false';
+            kiosk_mode = 'false'
         # add environment information
         script = HtmlElement.script('''
         var env = spt.Environment.get();

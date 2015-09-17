@@ -1363,7 +1363,7 @@ spt.alert = function(msg, options){
     var env = spt.Environment.get();
     if (env) {
         if (env.get_kiosk_mode() == true) {
-            console.log("in kiosk mode - alert suppressed: " + msg);
+            log.critical("In kiosk mode - alert suppressed: " + msg);
             return;
         } 
     }
