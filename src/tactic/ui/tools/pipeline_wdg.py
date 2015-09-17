@@ -1530,14 +1530,11 @@ class ProcessInfoWdg(BaseRefreshWdg):
         if node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
 
-<<<<<<< HEAD
         if node_type == 'progress':
             widget = ProgressInfoWdg(**my.kwargs)
 
-=======
         if node_type == 'unknown':
             widget = UnknownInfoWdg(**my.kwargs)
->>>>>>> remkonoteboom/4.4
 
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
