@@ -882,7 +882,7 @@ class IconCreator(object):
                         offset = 0
                     else:
                         # then paste to white image
-                        im2 = Image.new( "RGBA", thumb_size, (255,255,255,0) )
+                        im2 = Image.new( "RGB", thumb_size, (255,255,255,0) )
                         offset = (thumb_size[0]/2) - (im.size[0]/2)
                         
                     im2.paste(im, (offset,0) )
