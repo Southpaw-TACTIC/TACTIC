@@ -439,8 +439,7 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         top.add(title_wdg)
         title_wdg.add(IconWdg(icon=IconWdg.WARNING))
         title_wdg.add("Delete %s sType: %s" % (label,search_type))
-        title_wdg.add_gradient("background", "background", -10, -10)
-        title_wdg.add_style("padding: 5px")
+        title_wdg.add_color("background", "background", -10)
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("font-size: 14px")
 
@@ -711,6 +710,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         project_code = my.kwargs.get("project_code")
         if project_code:
             project = Project.get_by_code(project_code)
+            search_key = project.get_search_key()
         else:
             search_key = my.kwargs.get("search_key")
             project = Search.get_by_search_key(search_key)
@@ -743,7 +743,9 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
         warning_msg = "Deleting a project will delete the database associated with this project.  All data will be lost.  Please consider carefully before proceeding."
         if warning_msg:
-            content.add(DivWdg(warning_msg, css='warning'))
+            warning_wdg = DivWdg(warning_msg, css='warning')
+            content.add(warning_wdg)
+            warning_wdg.add_style("margin: 20 10px")
             content.add("<br/>")
 
         
@@ -760,7 +762,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
         content.add("<br/>")
 
-        content.add("<b>WARNING: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
+        content.add("<b>NOTE: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
 
 
       
@@ -841,8 +843,10 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         radio = RadioWdg("mode")
         radio.add_class("spt_mode_radio")
         radio.set_value("delete")
+        radio.add_style("margin-left: 15")
+        radio.add_style("margin-top: 5")
         content.add(radio)
-        content.add("<br/>"*2)
+        content.add("<br/>"*3)
 
         #content.add("<b>Or do you just wish to retire the project? </b>")
         #radio = RadioWdg("mode")
@@ -866,7 +870,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         buttons.add_style("width: 250px")
 
 
-        button = ActionButtonWdg(title="Delete")
+        button = ActionButtonWdg(title="Delete", color="danger")
         buttons.add_cell(button)
 
         button.add_behavior( {

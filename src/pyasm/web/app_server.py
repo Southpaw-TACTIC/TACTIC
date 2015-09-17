@@ -244,13 +244,21 @@ class BaseAppServer(Base):
                     web_wdg = None
                 else:
 
-                    # custom login widget
+                    # custom global site login widget
                     if not current_project or current_project == "default":
                         current_project = Project.get_default_project()
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        web_wdg = site_obj.get_login_wdg()
+                        if len(my.hash) >= 1 and my.hash[0] in ["register","accept"]:
+                            link = "/%s" % "/".join(my.hash)
+                            web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
+                        else:
+                            web_wdg = None
+
+                        if not web_wdg:
+                            web_wdg = site_obj.get_login_wdg()
+
                         if web_wdg:
                             web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
@@ -259,7 +267,6 @@ class BaseAppServer(Base):
 
                 # display default web login
                 if not web_wdg:
-
                     # get login screen from Site
                     web_wdg = site_obj.get_login_wdg()
                     if not web_wdg:

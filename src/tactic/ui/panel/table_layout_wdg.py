@@ -2455,13 +2455,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return
      
 
-        table.add_attr("ondragenter", "return false")
-        table.add_attr("ondragover", "return false")
-        table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+        #table.add_attr("ondragenter", "return false")
+        #table.add_attr("ondragover", "return false")
+        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
+
+        table.add_style("width: 100%")
 
 
         tr, td = table.add_row_cell()
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+
         tr.add_class("spt_table_no_items")
         td.add_style("border-style: solid")
         td.add_style("border-width: 1px")
@@ -2496,7 +2505,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
 
             no_results_msg = my.kwargs.get("no_results_msg")
-
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             #msg.set_box_shadow("0px 0px 5px")
@@ -3101,15 +3109,24 @@ spt.table.drop_row = function(evt, el) {
 
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
-    var size = thumb_el.getSize();
+    if (thumb_el) {
+        var size = thumb_el.getSize();
+    }
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file = files[i];
 
+        var filename = file.name;
 
         var search_key = top.getAttribute("spt_search_key");
-        var filename = file.name;
+        if (!search_key) {
+            var layout = spt.table.get_layout();
+            var search_type = layout.getAttribute("spt_search_type");
+            var server = TacticServerStub.get();
+            var sobject = server.insert(search_type, {name: filename})
+            search_key = sobject.__search_key__;
+        }
         var context = "publish" + "/" + filename;
 
         var upload_file_kwargs =  {

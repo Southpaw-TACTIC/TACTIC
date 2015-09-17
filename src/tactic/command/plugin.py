@@ -1138,7 +1138,7 @@ class PluginInstaller(PluginBase):
                     print
                     print statement_str
                     print
-                    #raise
+                    raise
                     continue
 
 
@@ -1169,15 +1169,19 @@ class PluginInstaller(PluginBase):
                     if filter_sobject_handler:
                         sobject = filter_sobject_handler(sobject)
                     
+                    project = Project.get()
 
                     # if the search type is in sthpw namespace, then change
                     # the project code to the current project
                     base_search_type = sobject.get_base_search_type()
                     if base_search_type.startswith("sthpw/"):
-                        project = Project.get()
                         project_code = project.get_value("code")
-                        if SearchType.column_exists(sobject.get_search_type(), "project_code"):
+
+                        if SearchType.column_exists(sobject, "project_code"):
+                            old_project_code = sobject.get_value("project_code")
                             sobject.set_value("project_code", project_code)
+                        else:
+                            old_project_code = None
 
                         if base_search_type == "sthpw/schema":
                             # if a schema is already defined, the delete
@@ -1204,6 +1208,36 @@ class PluginInstaller(PluginBase):
                                 if not exists:
                                     sobject.set_value('code',new_code)
                                     unique = True
+
+
+                        if base_search_type == "sthpw/login_group":
+                            if old_project_code:
+                                login_group = sobject.get_value("login_group")
+                                print "login_code: ", login_group
+                                delimiter = None
+                                if login_group.startswith("%s_" % old_project_code):
+                                    delimiter = "_"
+                                elif login_group.startswith("%s/" % old_project_code):
+                                    delimiter = "/"
+                                if delimiter:
+                                    parts = login_group.split(delimiter)
+                                    parts[0] = project_code
+                                    login_group = delimiter.join(parts)
+
+                                sobject.set_value("code", login_group)
+                                sobject.set_value("login_group", login_group)
+
+                            # convert all of xml to this project
+                            xml = sobject.get_xml_value("access_rules")
+                            nodes = Xml.get_nodes(xml, "rules/rule")
+                            for node in nodes:
+                                test = xml.get_attribute(node, "project")
+                                if test:
+                                    xml.set_attribute(node, "project", project_code)
+
+                            sobject.set_value("access_rules", xml.to_string())
+
+
 
 
                     if unique:

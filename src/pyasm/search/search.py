@@ -623,7 +623,7 @@ class Search(Base):
         '''convenience function to add a filter for the given sobject'''
         my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
 
-        if sobject.column_exists("code") and my.column_exists("%ssearch_code" % prefix):
+        if SearchType.column_exists(sobject, "code") and SearchType.column_exists(sobject, "%ssearch_code" % prefix):
             search_code = sobject.get_value("code")
             if not op:
                 op = '='
@@ -3492,6 +3492,22 @@ class SObject(object):
         '''validate entries into this sobject'''
         return True
 
+
+    def handle_commit_security(my):
+
+        return True
+
+        search_type = my.get_base_search_type()
+
+        login = Environment.get_user_name()
+
+        if search_type == "sthpw/login":
+            if login != "admin":
+                return False
+
+        return True
+
+
     def commit(my, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
         is_insert = False 
@@ -3501,6 +3517,11 @@ class SObject(object):
         if id in ['-1', '']:
             my.set_id(-1)
             is_insert = True
+
+
+        if not my.handle_commit_security():
+            raise SecurityException("Security: Action not permitted")
+
 
         impl = my.get_database_impl()
         # before we make the final statement, we allow the sobject to set
@@ -6035,6 +6056,9 @@ class SearchType(SObject):
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
+            from pyasm.security import Site
+            print "Site: ", Site.get_site()
+            print "sql: ", select.get_statement()
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )
