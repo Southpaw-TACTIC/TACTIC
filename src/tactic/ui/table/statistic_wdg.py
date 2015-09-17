@@ -482,6 +482,9 @@ class MilestoneCompletionWdg(TaskCompletionWdg):
 
 class TaskDaysDueElementWdg(BaseTableElementWdg):
 
+    DAY = 86400
+    HOUR = 3600
+
     
     ARGS_KEYS = {
 
@@ -492,6 +495,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             'category': 'Optional'
         }
     }
+
 
     def is_editable(my):
         return False
@@ -514,6 +518,8 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             my.mode = ""
             return
 
+        DAY = my.DAY
+        HOUR = my.HOUR
         status = sobject.get_value("status")
 
         due_date = parser.parse(value)
@@ -524,18 +530,17 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         # convert the due date from UTC to local time
         timestamp = calendar.timegm(due_date.timetuple())
         local_dt = datetime.fromtimestamp(timestamp)
-        assert due_date.resolution >= timedelta(microseconds=1)
         due_date = local_dt.replace(microsecond=due_date.microsecond)
 
         # get today's date
         from pyasm.common import SPTDate
         import datetime
         import time
-        today = datetime.datetime.now()
+        now = datetime.datetime.now()
 
         # get the difference
-        delta = due_date - today
-        diff = (delta.days * 86400) + delta.seconds
+        delta = due_date - now
+        diff = (delta.days * DAY) + delta.seconds
 
 
         if diff < 0:
@@ -543,11 +548,11 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
                 mode = "done"
             else:
                 mode = "critical"
-        elif diff > 7200 and diff <= 86400:
+        elif diff > (HOUR*2) and diff <= DAY:
             mode = "today"
-        elif diff > 3600 and diff <= 7200:
+        elif diff > HOUR and diff <= (HOUR*2):
             mode = "warning_1"
-        elif diff > 0 and diff <= 3600:
+        elif diff > 0 and diff <= HOUR:
             mode = "warning_2"
         else:
             mode = "due"
@@ -598,13 +603,15 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         mode = my.mode
         diff = my.diff
+        DAY = my.DAY
+        HOUR = my.HOUR
 
         if mode == "critical":
             div.add_style("color: #FFF")
-            days = diff/86400
-            msg = "%s Day(s) Overdue" % (-days)
+            days = diff/DAY
+            msg = "%s Days Overdue" % (-days)
             div.add_attr("title", msg)
-            if diff < 0 and diff >= -86400:
+            if diff < 0 and diff >= -DAY:
                 div.add("Today")
             else:
                 div.add(msg)
@@ -624,9 +631,9 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             pass
         else:
             div.add_style("color: #000")
-            days = diff/86400
+            days = diff/DAY
             div.add_attr("title", "Due in %s Day(s)" % days)
-            if diff > 86400 and diff <= 172800:
+            if diff > DAY and diff <= (DAY*2):
                 div.add("1 Day")
             else:
                 div.add("%s Days" % days)
