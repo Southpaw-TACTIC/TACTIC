@@ -508,11 +508,13 @@ class ThumbWdg(BaseTableElementWdg):
             my.icon_size = 120
 
         unit = None
+        icon_size = my.icon_size
         if isinstance(my.icon_size, basestring):
-            m = re.match('(\d+)(pt|%|em|px)+', my.icon_size)
+            m = re.match('(\d+\.?\d*)(pt|em|%|px)*', my.icon_size)
             if m:
                 num, unit = m.groups()
-                icon_size = int(num)
+                icon_size = num
+
 
 
 
@@ -523,9 +525,9 @@ class ThumbWdg(BaseTableElementWdg):
             icon_mult = float(icon_mult)
 
         if not icon_size:
-            size = int(ICON_SIZE * icon_mult)
+            size = ICON_SIZE * icon_mult
         else:
-            size = int(icon_size * icon_mult)
+            size = icon_size * icon_mult
 
         # cap the size to 15
         if size < 15:
@@ -854,7 +856,7 @@ class ThumbWdg(BaseTableElementWdg):
         if my.icon_type == 'default':
             # Fix Template icon_size=100% icon_type always load web versions
             if isinstance(icon_size, basestring) and icon_size.endswith("%"):
-                icon_size_check = int(icon_size[0:-1])
+                icon_size_check = icon_size[0:-1]
             else:
                 icon_size_check = icon_size
     
