@@ -4458,6 +4458,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text_name = "spt_property_task_pipeline"
         select = SelectWdg(text_name)
         #select.append_option('<< sthpw/task pipelines >>', '')
+
         
         for pipeline in task_pipelines:
             select.append_option(pipeline.get_value('code'), pipeline.get_value('code'))
