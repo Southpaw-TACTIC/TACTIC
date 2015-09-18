@@ -618,9 +618,8 @@ class Pipeline(SObject):
             my.process_sobjects = {}
 
             for process_sobject in sobjects:
-                process = process_sobject.get("process")
-                print "process: ", process
-                my.process_sobjects[process] = process_sobject
+                pcs = process_sobject.get("process")
+                my.process_sobjects[pcs] = process_sobject
 
 
         process_sobject = my.process_sobjects.get(process)
