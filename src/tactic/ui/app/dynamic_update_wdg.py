@@ -269,9 +269,10 @@ class DynamicUpdateCmd(Command):
 
         start = time.time()
 
-
         from pyasm.common import SPTDate
         timestamp = SPTDate.now()
+        timestamp = SPTDate.add_gmt_timezone(timestamp)
+        timestamp = SPTDate.convert_to_local(timestamp)
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
 
@@ -290,7 +291,7 @@ class DynamicUpdateCmd(Command):
             return
 
         last_timestamp = parser.parse(last_timestamp)
-        last_timestamp = last_timestamp - timedelta(seconds=5)
+        last_timestamp = SPTDate.add_gmt_timezone(last_timestamp)
         #last_timestamp = last_timestamp - timedelta(hours=24)
 
         #print "last: ", last_timestamp

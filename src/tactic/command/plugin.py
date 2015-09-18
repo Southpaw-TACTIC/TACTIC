@@ -1213,19 +1213,19 @@ class PluginInstaller(PluginBase):
                         if base_search_type == "sthpw/login_group":
                             if old_project_code:
                                 login_group = sobject.get_value("login_group")
-                                print "login_code: ", login_group
                                 delimiter = None
                                 if login_group.startswith("%s_" % old_project_code):
                                     delimiter = "_"
                                 elif login_group.startswith("%s/" % old_project_code):
                                     delimiter = "/"
-                                if delimiter:
-                                    parts = login_group.split(delimiter)
-                                    parts[0] = project_code
-                                    login_group = delimiter.join(parts)
 
-                                sobject.set_value("code", login_group)
-                                sobject.set_value("login_group", login_group)
+                                if delimiter:
+                                    login_group = login_group[len(old_project_code)+1:]
+                                    login_group = "%s%s%s" % (project_code, delimiter, login_group)
+
+                                    sobject.set_value("code", login_group)
+                                    sobject.set_value("login_group", login_group)
+
 
                             # convert all of xml to this project
                             xml = sobject.get_xml_value("access_rules")

@@ -250,7 +250,8 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        if len(my.hash) >= 1 and my.hash[0] in ["register","accept"]:
+                        open_hashes = ['register', 'accept']
+                        if len(my.hash) >= 1 and my.hash[0] in open_hashes:
                             link = "/%s" % "/".join(my.hash)
                             web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
                         else:
@@ -260,7 +261,8 @@ class BaseAppServer(Base):
                             web_wdg = site_obj.get_login_wdg()
 
                         if web_wdg:
-                            web_wdg = web_wdg.get_buffer_display()
+                            if not isinstance(web_wdg, basestring):
+                                web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
                     else:
                         web_wdg = None
@@ -298,6 +300,8 @@ class BaseAppServer(Base):
         from pyasm.biz import Project
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
+
+
         
         # guest mode
         #
@@ -319,6 +323,8 @@ class BaseAppServer(Base):
         if not guest_mode:
             guest_mode = 'restricted'
 
+
+        # Test
         #allow_guest = True
         #guest_mode = "full"
 
@@ -362,7 +368,6 @@ class BaseAppServer(Base):
             access = True
 
 
-        access = True
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
