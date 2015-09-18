@@ -558,6 +558,44 @@ class PipelineListWdg(BaseRefreshWdg):
         search.add_filter("project_code", project_code)
         search.add_op("begin")
         search.add_filter("search_type", "sthpw/task")
+        #search.add_filter("search_type", "NULL", op='is', quoted=False)
+        search.add_op("or")
+        search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+        pipelines = search.get_sobjects()
+
+        colors = {}
+        for pipeline in pipelines:
+            pipeline_div = my.get_pipeline_wdg(pipeline)
+            content_div.add(pipeline_div)
+            colors[pipeline.get_code()] = pipeline.get_value("color")
+
+        if not pipelines:
+            no_items = DivWdg()
+            no_items.add_style("padding: 3px 0px 3px 20px")
+            content_div.add(no_items)
+            no_items.add("<i>-- No Items --</i>")
+
+
+
+        inner.add("<br clear='all'/>")
+
+        # misc status pipelines
+        swap = SwapDisplayWdg()
+        inner.add(swap)
+        swap.add_style("float: left")
+
+        title = DivWdg("<b>Misc Pipelines</b>")
+        title.add_style("padding-bottom: 2px")
+        title.add_style("padding-top: 3px")
+        inner.add(title)
+        content_div = DivWdg()
+        content_div.add_styles('padding-left: 8px; padding-top: 6px') 
+        SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
+        inner.add(content_div)
+
+        search = Search("sthpw/pipeline")
+        search.add_filter("project_code", project_code)
+        search.add_op("begin")
         search.add_filter("search_type", "NULL", op='is', quoted=False)
         search.add_op("or")
         search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
@@ -4320,7 +4358,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         normal_pipelines = normal_pipeline_search.get_sobjects()
        
 
-        # task_pipeline  (visibilitty depends on sType)
+        # task_pipeline  (visibility depends on sType)
         table.add_row(css='spt_property_task_status_pipeline')
         td = table.add_cell('Task Status Pipeline')
         td.add_attr("title", "The task status pipeline determines all of the statuses that occur within this process")

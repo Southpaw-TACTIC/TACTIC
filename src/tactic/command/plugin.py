@@ -290,6 +290,21 @@ class PluginBase(Command):
 
 
 
+    def get_path_from_node(my, node):
+        path = my.xml.get_attribute(node, "path")
+        if not path:
+            search_type = Xml.get_attribute(node, "search_type")
+            if search_type:
+                search_type_obj = SearchType.get(search_type)
+                search_type = search_type_obj.get_base_key()
+                path = "%s.spt" % search_type.replace("/","_")
+
+        if path:
+            path = "%s/%s" % (my.plugin_dir, path)
+
+        return path
+
+
 
  
 
@@ -344,7 +359,7 @@ class PluginCreator(PluginBase):
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
-                dumped_sobjects = my.handle_sobject(node)
+                dumped_sobjects = my.dump_sobject(node)
                 if not dumped_sobjects:
                     dumped_sobjects = []
                 sobjects.extend(dumped_sobjects)
@@ -557,23 +572,8 @@ class PluginCreator(PluginBase):
 
     
 
-    def get_path_from_node(my, node):
-        path = my.xml.get_attribute(node, "path")
-        if not path:
-            search_type = my.xml.get_attribute(node, "search_type")
-            if search_type:
-                search_type_obj = SearchType.get(search_type)
-                search_type = search_type_obj.get_base_key()
-                path = "%s.spt" % search_type.replace("/","_")
 
-        if path:
-            path = "%s/%s" % (my.plugin_dir, path)
-
-        return path
-
-
-
-    def handle_sobject(my, node):
+    def dump_sobject(my, node):
         project = Project.get()
         project_code = project.get_value("code")
         
@@ -712,7 +712,7 @@ class PluginCreator(PluginBase):
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
-                dumped_sobjects = my.handle_sobject(node)
+                dumped_sobjects = my.dump_sobject(node)
                 if not dumped_sobjects:
                     dumped_sobjects = []
                 sobjects.extend(dumped_sobjects)
@@ -877,6 +877,9 @@ class PluginInstaller(PluginBase):
 
 
     def import_manifest(my, nodes):
+
+        tools = PluginTools(**my.kwargs)
+
         paths_read = []
 
         for node in nodes:
@@ -916,7 +919,7 @@ class PluginInstaller(PluginBase):
                     print "Reading search_type: ", path
 
                 # NOTE: priviledged knowledge of the order or return values
-                jobs = my.import_data(path, commit=True)
+                jobs = tools.import_data(path, commit=True)
 
                 paths_read.append(path)
 
@@ -958,6 +961,10 @@ class PluginInstaller(PluginBase):
                         TableUndo.log(search_type, database, table_name)
 
 
+                # dump the table first
+                backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+                tools = PluginTools(plugin_dir=my.plugin_dir)
+                tools.import_data(backup_path)
 
 
             elif node_name == 'sobject':
@@ -1047,11 +1054,6 @@ class PluginInstaller(PluginBase):
                 cmd = PythonCmd(file_path=path)
                 cmd.execute()
 
-               
-
-
-
-
 
         ''' TODO: do we store the transaction here???
         try:
@@ -1065,25 +1067,414 @@ class PluginInstaller(PluginBase):
         '''
 
 
-    def get_unique_sobject(my, sobject):
-        '''get unique sobject in the existing table when installing plugin'''
-        base_st = sobject.get_base_search_type()
-        if base_st == 'config/widget_config':
-            cols = ['view','search_type','category','widget_type','login']
-        elif base_st == 'config/naming':
-            cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
-        elif base_st == 'config/url':
-            cols = ['url']
-        else:
-            cols = ['code']
 
-        search = Search( sobject.get_base_search_type() )
-        for col in cols:
-            value = sobject.get_value(col)
-            if value:
-                search.add_filter(col, value)   
-        unique_sobject = search.get_sobject()
-        return unique_sobject
+class PluginUninstaller(PluginBase):
+
+    def execute(my):
+
+        # uninstall the plugin
+        nodes = my.xml.get_nodes("manifest/*")
+
+        nodes.reverse()
+
+        my.handle_nodes(nodes)
+        
+        my.add_description('Remove plugin [%s]' %my.code)
+        
+    def handle_nodes(my, nodes):
+
+        tools = PluginTools(plugin_dir=my.plugin_dir)
+
+        for node in nodes:
+            node_name = my.xml.get_node_name(node)
+            if node_name == 'search_type':
+                #my.remove_search_type(node)
+                tools._remove_search_type(node)
+            elif node_name == 'sobject':
+                my.remove_sobjects(node)
+            elif node_name == 'include':
+                my.handle_include(node)
+            elif node_name == 'python':
+                my.handle_python(node)
+
+
+        # remove plugin contents
+        search = Search("config/plugin_content")
+        search.add_filter("plugin_code", my.code)
+        plugin_contents = search.get_sobjects()
+        for plugin_content in plugin_contents:
+            plugin_content.delete()
+
+
+
+        # deregister the plugin
+        plugin = Search.eval("@SOBJECT(config/plugin['code','%s'])" % my.code, single=True)
+        if plugin:
+            plugin.delete()
+
+
+
+
+    def remove_sobjects(my, node):
+
+        sobjects = my.get_sobjects_by_node(node)
+        if not sobjects:
+            print "Skipping as no sobjects found for: ", node
+            return
+
+        # delete all the sobjects present in the plugin
+        for sobject in sobjects:
+            sobject.delete()
+
+
+    def handle_include(my, node):
+        path = my.xml.get_attribute(node, "path")
+        if not path:
+            raise TacticException("No path found for search type in manifest")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+
+        if path.endswith(".py"):
+            from tactic.command import PythonCmd
+            cmd = PythonCmd(file_path=path)
+            manifest = cmd.execute()
+
+        if not manifest:
+            return
+
+        xml = Xml()
+        xml.read_string(manifest)
+        nodes = xml.get_nodes("manifest/*")
+        nodes.reverse()
+
+        my.handle_nodes(nodes)
+
+
+    def handle_python(my, node):
+        '''during uninstall, handle the python undo_path'''
+        path = my.xml.get_attribute(node, "undo_path")
+        
+        # if no path, then nothing to undo
+        if not path:
+            print "No undo_path defined for this python node"
+            return
+
+        if not path.endswith('.py'):
+            raise TacticException("Path should have the .py extension for python in manifest")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+        if not os.path.exists(path):
+            raise TacticException("Undo Path [%s] does not exist python in manifest" %path)
+        if path.endswith(".py"):
+            from tactic.command import PythonCmd
+            cmd = PythonCmd(file_path=path)
+            cmd.execute()
+        
+
+
+__all__.append('PluginTools')
+class PluginTools(PluginBase):
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+        my.xml = kwargs.get("xml")
+
+        my.plugin_dir = kwargs.get("plugin_dir")
+        if not my.plugin_dir:
+            my.plugin_dir = "."
+
+        my.verbose = my.kwargs.get("verbose") not in [False, 'false']
+
+        my.plugin = kwargs.get("plugin")
+
+
+    #
+    # Simple wrapper methods
+    #
+
+    def dump_sobject(my, search_type, path):
+        xml = Xml()
+        xml.read_string( '''<sobject path="%s" search_type="%s"/>''' % (path, search_type))
+        my.xml = xml
+        node = Xml.get_node(xml, "sobject")
+        return my._dump_sobject(node)
+
+
+    def dump_search_type(my, search_type, path):
+        xml = Xml()
+        xml.read_string( '''<search_type path="%s" code="%s"/>''' % (path, search_type))
+        my.xml = xml
+        node = Xml.get_node(xml, "search_type")
+        return my._dump_search_type(node)
+
+
+
+
+    def remove_search_type(my, search_type):
+        xml = Xml()
+        xml.read_string( '''<search_type code="%s"/>''' % search_type)
+        my.xml = xml
+        node = Xml.get_node(xml, "search_type")
+        return my._remove_search_type(node)
+
+
+
+
+
+    #
+    # Node tools
+    #
+
+    def _dump_sobject(my, node):
+
+        project = Project.get()
+        project_code = project.get_value("code")
+
+        search_type = my.xml.get_attribute(node, "search_type")
+        replace_variable = my.xml.get_attribute(node, "replace_variable")
+        include_id = my.xml.get_attribute(node, "include_id")
+        ignore_columns = my.xml.get_attribute(node, "ignore_columns")
+
+
+        if include_id in [True, 'true']:
+            include_id = True
+        else:
+            include_id = False
+
+
+        if ignore_columns:
+            ignore_columns = ignore_columns.split(",")
+            ignore_columns = [x.strip() for x in ignore_columns]
+        else:
+            ignore_columns = []
+
+        # FIXME:
+        # it is possible that the manifest defines sobjects on search types
+        # that don't exist.  This is because it uses the manifest of
+        # the new pipeline and not the original ... 
+        sobjects = my.get_sobjects_by_node(node)
+        if not sobjects:
+            print "Skipping as no sobjects found for [%s]" %search_type
+            return []
+
+
+
+        # If there are no sobjects, then no file is created because
+        # no path can be extracted.
+
+        path = my.get_path_from_node(node)
+        
+        #print "Writing: ", path
+        fmode = 'w'
+        if os.path.exists(path):
+            fmode = 'a'
+        if not sobjects:
+            # write out an empty file
+            #f = open(path, 'w')
+            f = codecs.open(path, fmode, 'utf-8')
+            f.close()
+            return []
+
+        dumper = TableDataDumper()
+        dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
+        if search_type == 'config/widget_config':
+            dumper.set_ignore_columns(['code'])
+        dumper.set_include_id(include_id)
+        dumper.set_ignore_columns(ignore_columns)
+        dumper.set_sobjects(sobjects)
+
+        if replace_variable =="true":
+            if search_type == "sthpw/pipeline":
+                #regex is looking for a word bfore "/" 
+                regex = r'^\w+\/'
+                dumper.set_replace_token("$PROJECT/", "code", regex)
+        
+        dumper.dump_tactic_inserts(path, mode='sobject')
+
+        print "\t....dumped [%s] entries" % (len(sobjects))
+
+        return sobjects
+
+
+
+    def _dump_search_type(my, node):
+
+        search_type = Xml.get_attribute(node, "code")
+        if not search_type:
+            raise TacticException("No code found for search type in manifest")
+
+        path = Xml.get_attribute(node, "path")
+
+        if not path:
+            path = "%s.spt" % search_type.replace("/", "_")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+        
+        if os.path.exists(path):
+            os.unlink(path)
+
+        # dump out search type registration
+        search = Search("sthpw/search_object")
+        search.add_filter("search_type", search_type)
+        sobject = search.get_sobject()
+        if not sobject:
+            raise TacticException("Search type [%s] does not exist" % search_type)
+
+        dumper = TableDataDumper()
+        dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
+        dumper.set_include_id(False)
+        dumper.set_sobjects([sobject])
+        dumper.dump_tactic_inserts(path, mode='sobject')
+
+
+        ignore_columns = Xml.get_attribute(node, "ignore_columns")
+        if ignore_columns:
+            ignore_columns = ignore_columns.split(",")
+            ignore_columns = [x.strip() for x in ignore_columns]
+        else:
+            ignore_columns = []
+
+
+        # dump out the table definition
+        dumper = TableSchemaDumper(search_type)
+        dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
+        dumper.set_ignore_columns(ignore_columns)
+        dumper.dump_to_tactic(path, mode='sobject')
+
+
+
+
+
+    def _remove_search_type(my, node):
+        search_type = Xml.get_attribute(node, 'code')
+
+        # get sobject entry
+        search = Search("sthpw/search_object")
+        search.add_filter("search_type", search_type)
+        search_type_sobj = search.get_sobject()
+
+        if not search_type_sobj:
+            print "WARNING: Search type [%s] does not exist" % search_type
+            return
+
+
+        # dump the table first
+        backup_path = "backup/%s" % search_type.replace("/", "_")
+        full_backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+
+        if os.path.exists(full_backup_path):
+            os.unlink(full_backup_path)
+
+        tools = PluginTools(plugin_dir=my.plugin_dir)
+        tools.dump_sobject(search_type, backup_path)
+
+
+        # get the table and remove it
+        from pyasm.search import DropTable
+        try:
+            table_drop = DropTable(search_type)
+            table_drop.commit()
+            # NOTE: do we need to log the undo for this?
+        except Exception, e:
+            print "Error: ", e.message
+
+
+        # NOTE: it is not clear that unloading a plugin should delete
+        # the search type ... this search type (at present) can be
+        # shared amongst multiple projects and this will break it
+        return
+
+        """
+        # remove entry from schema
+        schema = Schema.get()
+        xml = schema.get_xml()
+        node = xml.get_node("schema/search_type[@name='%s']" % search_type)
+        if node != None:
+            parent = xml.get_parent(node)
+            xml.remove_child(parent, node)
+            schema.set_value('schema', xml.to_string() )
+            schema.commit()
+
+        # remove search type entry
+        if search_type.startswith("config/") or search_type.startswith("sthpw/"):
+            print "WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'"
+        else:
+
+            search = Search("sthpw/search_object")
+            search.add_filter("search_type", search_type)
+            search_type_sobj = search.get_sobject()
+            if search_type_sobj:
+                search_type_sobj.delete()
+        """
+
+
+
+
+    def import_sobject(my, node):
+
+        tools = PluginTools(**my.kwargs)
+
+        paths_read = []
+
+        path = my.xml.get_attribute(node, "path")
+        search_type = my.xml.get_attribute(node, "search_type")
+        seq_max = my.xml.get_attribute(node, "seq_max")
+        try:
+            if seq_max:
+                seq_max = int(seq_max)
+        except ValueError:
+            seq_max = 0
+
+        if not path:
+            if search_type:
+                path = "%s.spt" % search_type.replace("/","_")
+        if not path:
+            raise TacticException("No path specified")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+        if path in paths_read:
+            return
+
+        unique = my.xml.get_attribute(node, "unique")
+        if unique == 'true':
+            unique = True
+        else:
+            unique = False
+
+        if my.verbose: 
+            print "Reading: ", path
+        # jobs doesn't matter for sobject node
+        jobs = tools.import_data(path, unique=unique)
+
+        # reset it in case it needs to execute a PYTHON tag right after
+        Schema.get(reset_cache=True)
+        # compare sequence 
+        st_obj = SearchType.get(search_type)
+        SearchType.sequence_nextval(search_type)
+        cur_seq_id = SearchType.sequence_currval(search_type)
+
+        sql = DbContainer.get("sthpw")
+        if seq_max > 0 and seq_max > cur_seq_id:
+            # TODO: SQL Server - Reseed the sequences instead of passing.
+            if sql.get_database_type() == 'SQLServer':
+                pass
+            else:
+                SearchType.sequence_setval(search_type, seq_max)
+        else:
+            cur_seq_id -= 1
+            # TODO: SQL Server - Reseed the sequences instead of passing.
+            if sql.get_database_type() == 'SQLServer':
+                pass
+            else:
+                # this is a db requirement
+                if cur_seq_id > 0:
+                    SearchType.sequence_setval(search_type, cur_seq_id)
+
+
+        paths_read.append(path) 
+        return path
+
+
 
 
     def import_data(my, path, commit=True, unique=False):
@@ -1295,161 +1686,6 @@ class PluginInstaller(PluginBase):
 
 
 
-class PluginUninstaller(PluginBase):
-    # NOTE: this is still a work in progress.  It will remove entries added
-    # by the plugin, but it is not clear that this is what we want to do.
-
-    def execute(my):
-
-        # uninstall the plugin
-        nodes = my.xml.get_nodes("manifest/*")
-
-        nodes.reverse()
-
-        my.handle_nodes(nodes)
-        
-        my.add_description('Remove plugin [%s]' %my.code)
-        
-    def handle_nodes(my, nodes):
-
-        for node in nodes:
-            node_name = my.xml.get_node_name(node)
-            if node_name == 'search_type':
-                my.remove_search_type(node)
-            elif node_name == 'sobject':
-                my.remove_sobjects(node)
-            elif node_name == 'include':
-                my.handle_include(node)
-            elif node_name == 'python':
-                my.handle_python(node)
-
-
-        # remove plugin contents
-        search = Search("config/plugin_content")
-        search.add_filter("plugin_code", my.code)
-        plugin_contents = search.get_sobjects()
-        for plugin_content in plugin_contents:
-            plugin_content.delete()
-
-
-
-        # deregister the plugin
-        plugin = Search.eval("@SOBJECT(config/plugin['code','%s'])" % my.code, single=True)
-        if plugin:
-            plugin.delete()
-
-
-    def remove_search_type(my, node):
-        search_type = my.xml.get_attribute(node, 'code')
-
-        # get sobject entry
-        search = Search("sthpw/search_object")
-        search.add_filter("search_type", search_type)
-        search_type_sobj = search.get_sobject()
-
-        if not search_type_sobj:
-            print "WARNING: Search type [%s] does not exist" % search_type
-        else:
-            # dump the table first ???
-
-            # get the table and remove it ???
-            from pyasm.search import DropTable
-            try:
-                table_drop = DropTable(search_type)
-                table_drop.commit()
-                # NOTE: do we need to log the undo for this?
-            except Exception, e:
-                print "Error: ", e.message
-
-
-        # NOTE: it is not clear that unloading a plugin should delete
-        # the search type ... this search type (at present) can be
-        # shared amongst multiple projects and this will break it
-        return
-
-        # remove entry from schema
-        schema = Schema.get()
-        xml = schema.get_xml()
-        node = xml.get_node("schema/search_type[@name='%s']" % search_type)
-        if node != None:
-            parent = xml.get_parent(node)
-            xml.remove_child(parent, node)
-            schema.set_value('schema', xml.to_string() )
-            schema.commit()
-
-        # remove search type entry
-        if search_type.startswith("config/") or search_type.startswith("sthpw/"):
-            print "WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'"
-        else:
-
-            search = Search("sthpw/search_object")
-            search.add_filter("search_type", search_type)
-            search_type_sobj = search.get_sobject()
-            if search_type_sobj:
-                search_type_sobj.delete()
-
-
-
-
-    def remove_sobjects(my, node):
-
-        sobjects = my.get_sobjects_by_node(node)
-        if not sobjects:
-            print "Skipping as no sobjects found for: ", node
-            return
-
-        # delete all the sobjects present in the plugin
-        for sobject in sobjects:
-            sobject.delete()
-
-
-    def handle_include(my, node):
-        path = my.xml.get_attribute(node, "path")
-        if not path:
-            raise TacticException("No path found for search type in manifest")
-
-        path = "%s/%s" % (my.plugin_dir, path)
-
-        if path.endswith(".py"):
-            from tactic.command import PythonCmd
-            cmd = PythonCmd(file_path=path)
-            manifest = cmd.execute()
-
-        if not manifest:
-            return
-
-        xml = Xml()
-        xml.read_string(manifest)
-        nodes = xml.get_nodes("manifest/*")
-        nodes.reverse()
-
-        my.handle_nodes(nodes)
-
-
-    def handle_python(my, node):
-        '''during uninstall, handle the python undo_path'''
-        path = my.xml.get_attribute(node, "undo_path")
-        
-        # if no path, then nothing to undo
-        if not path:
-            print "No undo_path defined for this python node"
-            return
-
-        if not path.endswith('.py'):
-            raise TacticException("Path should have the .py extension for python in manifest")
-
-        path = "%s/%s" % (my.plugin_dir, path)
-        if not os.path.exists(path):
-            raise TacticException("Undo Path [%s] does not exist python in manifest" %path)
-        if path.endswith(".py"):
-            from tactic.command import PythonCmd
-            cmd = PythonCmd(file_path=path)
-            cmd.execute()
-        
-
-
-
-# How to define a plugin??
 def main(mode):
     manifest = '''
     <manifest code='test_plugin' version='1'>
