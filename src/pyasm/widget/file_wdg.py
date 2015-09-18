@@ -508,13 +508,9 @@ class ThumbWdg(BaseTableElementWdg):
             my.icon_size = 120
 
         unit = None
+        icon_size = my.icon_size
         if isinstance(my.icon_size, basestring):
-            m = re.match('(\d+)(pt|%|em|px)+', my.icon_size)
-            if m:
-                num, unit = m.groups()
-                icon_size = int(num)
-
-
+            icon_size, unit = my.split_icon_size(my.icon_size)
 
         icon_mult = PrefSetting.get_value_by_key("thumb_multiplier")
         if not icon_mult:
@@ -523,9 +519,9 @@ class ThumbWdg(BaseTableElementWdg):
             icon_mult = float(icon_mult)
 
         if not icon_size:
-            size = int(ICON_SIZE * icon_mult)
+            size = float(ICON_SIZE * icon_mult)
         else:
-            size = int(icon_size * icon_mult)
+            size = float(icon_size * icon_mult)
 
         # cap the size to 15
         if size < 15:
@@ -619,7 +615,10 @@ class ThumbWdg(BaseTableElementWdg):
         if detail != 'false':
             my.add_icon_behavior(div, sobject)
 
-        if isinstance(icon_size, basestring) and icon_size.endswith("%"):
+        unit = None
+        if isinstance(icon_size, basestring):
+            icon_size, unit = my.split_icon_size(icon_size)
+
             img.add_style("%s: 100%%" % my.aspect )
         else:
             img.add_style("%s: %s" % (my.aspect, my.get_icon_size()) )
@@ -853,10 +852,12 @@ class ThumbWdg(BaseTableElementWdg):
 
         if my.icon_type == 'default':
             # Fix Template icon_size=100% icon_type always load web versions
-            if isinstance(icon_size, basestring) and icon_size.endswith("%"):
-                icon_size_check = int(icon_size[0:-1])
-            else:
-                icon_size_check = icon_size
+            
+            if isinstance(icon_size, basestring):
+                icon_size, unit = my.split_icon_size(icon_size)
+
+            icon_size_check = float(icon_size)
+ 
     
             if icon_size_check > 120:
                 icon_type = 'web'
@@ -920,7 +921,8 @@ class ThumbWdg(BaseTableElementWdg):
         # TODO: make this a preference
         img.add_style("background: #ccc")
 
-        if isinstance(icon_size, basestring) and icon_size.endswith("%"):
+        if isinstance(icon_size, basestring):
+            icon_size, unit = my.split_icon_size(icon_size)
             img.add_style("%s: 100%%" % my.aspect)
         else:
             img.add_style("%s: %s" % (my.aspect, icon_size) )
@@ -1159,12 +1161,9 @@ class ThumbWdg(BaseTableElementWdg):
                 #check if icon_size is a string: integer num endswith unit
 
                 if isinstance(icon_size, basestring):
-                    m = re.match('(\d+)(pt|%|em|px)+', icon_size)
-                    if m:
-                        num,unit = m.groups()
-                        icon_size = num
-                        icon_size = int( 80.0 / 120.0 * float(icon_size) )
-                        icon_size = '%s%s' %(icon_size, unit)
+                    icon_size, unit = my.split_icon_size(icon_size)
+                    icon_size = int( 80.0 / 120.0 * float(icon_size) )
+                    icon_size = '%s%s' %(icon_size, unit)
                         
                 else:
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
@@ -1338,6 +1337,17 @@ class ThumbWdg(BaseTableElementWdg):
         return info
 
     get_file_info_list = staticmethod(get_file_info_list)
+
+
+
+    def split_icon_size(my, icon_size):
+        m = re.match('(\d+\.?\d*)(pt|em|%|px)*', icon_size)
+        num = 0
+        unit = ''
+        if m:
+            num, unit = m.groups()
+            icon_size = float(num)
+        return icon_size, unit
 
 
 
