@@ -513,7 +513,7 @@ class ThumbWdg(BaseTableElementWdg):
             m = re.match('(\d+\.?\d*)(pt|em|%|px)*', my.icon_size)
             if m:
                 num, unit = m.groups()
-                icon_size = num
+                icon_size = float(num)
 
 
 
@@ -525,9 +525,9 @@ class ThumbWdg(BaseTableElementWdg):
             icon_mult = float(icon_mult)
 
         if not icon_size:
-            size = ICON_SIZE * icon_mult
+            size = float(ICON_SIZE * icon_mult)
         else:
-            size = icon_size * icon_mult
+            size = float(icon_size * icon_mult)
 
         # cap the size to 15
         if size < 15:
@@ -621,7 +621,14 @@ class ThumbWdg(BaseTableElementWdg):
         if detail != 'false':
             my.add_icon_behavior(div, sobject)
 
-        if isinstance(icon_size, basestring) and icon_size.endswith("%"):
+        unit = None
+        if isinstance(icon_size, basestring):
+            m = re.match('(\d+\.?\d*)(pt|em|%|px)*', icon_size)
+            if m:
+                num, unit = m.groups()
+                icon_size = float(num)
+
+
             img.add_style("%s: 100%%" % my.aspect )
         else:
             img.add_style("%s: %s" % (my.aspect, my.get_icon_size()) )
@@ -855,10 +862,15 @@ class ThumbWdg(BaseTableElementWdg):
 
         if my.icon_type == 'default':
             # Fix Template icon_size=100% icon_type always load web versions
-            if isinstance(icon_size, basestring) and icon_size.endswith("%"):
-                icon_size_check = icon_size[0:-1]
-            else:
-                icon_size_check = icon_size
+            
+            if isinstance(icon_size, basestring):
+                m = re.match('(\d+\.?\d*)(pt|em|%|px)*', my.icon_size)
+                if m:
+                    num, unit = m.groups()
+                    icon_size = float(num)
+
+            icon_size_check = float(icon_size)
+ 
     
             if icon_size_check > 120:
                 icon_type = 'web'
@@ -922,7 +934,11 @@ class ThumbWdg(BaseTableElementWdg):
         # TODO: make this a preference
         img.add_style("background: #ccc")
 
-        if isinstance(icon_size, basestring) and icon_size.endswith("%"):
+        if isinstance(icon_size, basestring):
+            m = re.match('(\d+\.?\d*)(pt|em|%|px)*', my.icon_size)
+            if m:
+                num, unit = m.groups()
+                icon_size = float(num)
             img.add_style("%s: 100%%" % my.aspect)
         else:
             img.add_style("%s: %s" % (my.aspect, icon_size) )
