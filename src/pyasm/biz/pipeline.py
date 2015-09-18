@@ -608,7 +608,6 @@ class Pipeline(SObject):
 
     def get_process_sobject(my, process):
         # search all processes and cache all of the sobject locally
-        print "get_process_sobject: ", process
         if my.process_sobjects == None:
 
             search = Search("config/process")        
