@@ -46,6 +46,8 @@ class FormatValue(object):
 
     def number_format(my, num, places=0):
         """Format a number according to locality and given places"""
+        if not isinstance(num, float):
+            num = float(num)
         return locale.format("%.*f", (places, num), True)
 
     def currency_format(my, num, grouping=False, monetary=False):

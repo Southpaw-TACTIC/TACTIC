@@ -73,6 +73,9 @@ def get_simple_cmd(my, meth, ticket, args):
                 now = datetime.datetime.now()
                 
                 def print_info(my2, args):
+                    from pyasm.security import Site
+                    if Site.get_site():
+                        print "site: ", Site.get_site()
                     print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
                     print "user: ", Environment.get_user_name()
                     print "simple method: ", meth

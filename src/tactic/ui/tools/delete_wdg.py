@@ -707,9 +707,36 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         top.add_border()
         top.add_class("spt_delete_project_tool_top")
 
+
         project_code = my.kwargs.get("project_code")
+
+        # check if delete permissions exist for this site and project
+        security = Environment.get_security()
+        if False and not security.check_access("project", project_code, "delete"):
+            top.add(IconWdg(icon=IconWdg.WARNING))
+            top.add("Not permitted to delete this project")
+            top.add_style("padding: 30px")
+            top.add_style("text-align: center")
+            top.add_style("margin: 50px 30px")
+            top.add_border()
+            top.add_color("background", "background3")
+            return top
+
+
+        
+
+
         if project_code:
             project = Project.get_by_code(project_code)
+            if not project:
+                top.add(IconWdg(icon=IconWdg.WARNING))
+                top.add("No project [%s] exists in this database" % project_code)
+                top.add_style("padding: 30px")
+                top.add_style("text-align: center")
+                top.add_style("margin: 50px 30px")
+                top.add_border()
+                top.add_color("background", "background3")
+                return top
             search_key = project.get_search_key()
         else:
             search_key = my.kwargs.get("search_key")

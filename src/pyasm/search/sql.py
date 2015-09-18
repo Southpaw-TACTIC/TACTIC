@@ -3209,7 +3209,9 @@ class CreateTable(Base):
             search_type_sobj = SearchType.get(search_type)
 
 
+            print "search_type: ", search_type
             project = Project.get_by_search_type(search_type)
+            print "project: ", project
             my.db_resource = project.get_project_db_resource()
 
             my.table = search_type_sobj.get_table()
