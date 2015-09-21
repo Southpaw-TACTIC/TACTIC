@@ -293,8 +293,8 @@ class ADAuthenticate(Authenticate):
             domain = None
         """
         python = Config.get_value('services', 'python')
-	if not python:
-	    python = 'python'
+        if not python:
+            python = 'python'
 
         try:
             # get the info from a separate process
@@ -375,7 +375,7 @@ class ADAuthenticate(Authenticate):
 
         for line in lines:
             line = "".join(line)
-            #print "line: ", line
+            #print "info line: ", line
             name, value = line.split(": ", 1)
 
             if name == 'memberOf':
@@ -408,7 +408,7 @@ class ADAuthenticate(Authenticate):
 
 
     def handle_group(my, value):
-
+		
         # some values have commas in them.
         value = value.replace("\\,", "|||")
         parts = value.split(",")
@@ -421,6 +421,8 @@ class ADAuthenticate(Authenticate):
         # provide the column which stores the ad group.
         columns = Search("sthpw/login_group").get_columns()
         group_dict = {}
+
+        # optional ad_login_group can record the actual group name in AD
         if "ad_login_group" in columns:
             mapping_col = "ad_login_group"
             for x in my.tactic_groups:

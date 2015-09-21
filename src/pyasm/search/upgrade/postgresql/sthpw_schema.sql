@@ -698,6 +698,7 @@ INSERT INTO search_object (code, search_type, "namespace", "description", "datab
 
 INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES('sthpw/milestone','sthpw/milestone','sthpw','Project Milestones','sthpw','milestone','pyasm.biz.Milestone','Project Milestones','public');
 
+INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
 INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/plugin', 'config/plugin', 'config', 'Plugin', '{project}', 'spt_plugin', 'pyasm.search.SObject', 'Plugin', 'public'); 
 
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/pipeline', 'config/pipeline', 'config', 'Pipelines', '{project}', 'spt_pipeline', 'pyasm.search.SObject', 'Pipelines', 'public');

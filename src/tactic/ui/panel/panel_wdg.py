@@ -47,7 +47,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
             my_view = "my_view_%s" % Environment.get_user_name()
             my_view = my_view.replace("\\", "_")
             views.append(my_view)
-        
+                
 
         
 
@@ -152,17 +152,18 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_bookmark_menu_wdg(my, title, config, view):
+    def get_bookmark_menu_wdg(my, title, config, views):
 
         kwargs = {
             'title': title,
-            'view': view,
+            'view': views,
             'config': config,
             'auto_size': my.kwargs.get('auto_size')
         }
         section_div = DivWdg()
         section_div.add_style("display: block")
 
+        
         section_wdg = SideBarBookmarkMenuWdg(**kwargs)
         section_div.add(section_wdg)
         return section_div
@@ -1827,7 +1828,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 if os.path.exists(file_path):
                     for view in views:
                         config = WidgetConfig.get(file_path=file_path, view=view)
-                        if config.get_view_node() is not None:
+                    
+                        view_node = config.get_view_node()
+                        if view_node is not None:
                             configs.append(config)
 
             # finally, just look at the DEFAULT config
@@ -1838,12 +1841,16 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if os.path.exists(file_path):
                 for view in views:
                     config = WidgetConfig.get(file_path=file_path, view=view)
-                    if config.get_view_node() is not None:
+                 
+                    view_node = config.get_view_node()
+
+                    if view_node is not None:
                         configs.append(config)
 
         except XmlException, e:
             msg = "Error with view [%s]"% ' '.join(views)
             print "Error: ", str(e)
+            
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
@@ -1913,6 +1920,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if config:
                 configs.append(config)
             # then look for a file
+           
             SideBarBookmarkMenuWdg.add_internal_config(configs, [defined_view])
             
             logins = []
@@ -3531,6 +3539,20 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         var top = bvr.src_el.getParent(".spt_new_view_top");
         var code_el = top.getElement(".spt_new_view_name");
         code_el.value = code;
+        var radios = top.getElements("input[name='save_mode']");
+        
+        var is_checked = false;
+        for (var k = 0 ; k < radios.length; k++) {
+            if (radios[k].checked) {
+                is_checked = true;
+                break
+            }
+        }
+        if (!is_checked) {
+            
+            radios[0].checked = true;
+
+        }
         '''
         } )
 
