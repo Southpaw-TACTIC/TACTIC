@@ -29,7 +29,7 @@ class TacticServerStub(object):
         Constructor: TacticServerStub
     '''
     def __init__(my, login=None, setup=True, protocol=None, server=None,
-                 project=None, ticket=None, user=None, password=""):
+                 project=None, ticket=None, user=None, password="", site=None):
         '''Function: __init__(login=None, setup=True, protocol=None, server=None, project=None, ticket=None, user=None, password="")
         Initialize the TacticServerStub
 
@@ -41,7 +41,8 @@ class TacticServerStub(object):
             project - targeted project
             ticket - login ticket key
             user - tactic login_code that overrides the login
-            password - password for login'''
+            password - password for login
+            site - site for portal set-up'''
             
 
         # initialize some variables
@@ -57,7 +58,7 @@ class TacticServerStub(object):
         my.login_ticket = None
         my.transaction_ticket = None
 
-
+        my.site = None
 
         # autodetect protocol
         if not protocol:
@@ -83,7 +84,7 @@ class TacticServerStub(object):
                 my.set_ticket(ticket)
             elif login:
                 # else try with no password (api_require_password)
-                ticket = my.get_ticket(login, password)
+                ticket = my.get_ticket(login, password, site)
                 my.set_ticket(ticket)
 
 
@@ -150,7 +151,8 @@ class TacticServerStub(object):
         my.ticket = {
             'ticket': ticket,
             'project': my.project_code,
-            'language': 'python'
+            'language': 'python',
+            'site': my.site
         }
 
         """
@@ -240,6 +242,11 @@ class TacticServerStub(object):
     def get_project(my):
         return my.project_code
 
+    def set_site(my, site=None):
+        my.site = site
+
+    def get_site(my):
+        return my.site
 
     def set_palette(my, palette):
         my.server.set_palette(palette)
@@ -537,6 +544,8 @@ class TacticServerStub(object):
         @return:
         string - ticket key  
         '''
+        my.set_site(site)
+
         return my.server.get_ticket(login, password, site)
 
 
@@ -558,6 +567,7 @@ class TacticServerStub(object):
         old_project_code = my.project_code
         old_ticket = my.login_ticket
         old_login = my.login
+        old_site = my.site
 
         default_login = getpass.getuser()
         if not force and old_server_name and old_project_code:
@@ -571,6 +581,13 @@ class TacticServerStub(object):
                                 % old_server_name)
         if not server_name:
             server_name = old_server_name
+        
+        
+        print
+        site = raw_input("If you are accessing a portal project, please enter the 
+                site name. Otherwise, hit enter: site = %s" % old_site)
+        if not site:
+            site = old_site
 
         login = raw_input("Enter user name (%s): " % default_login)
         if not login:
@@ -593,7 +610,7 @@ class TacticServerStub(object):
 
         # do the actual work
         if login != old_login or password:
-            ticket = my.get_ticket(login, password)
+            ticket = my.get_ticket(login, password, site)
             print "Got ticket [%s] for [%s]" % (ticket, login)
         else:
             ticket = old_ticket
