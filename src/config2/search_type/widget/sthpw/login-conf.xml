@@ -392,6 +392,11 @@
             <default_col>login</default_col>
         </action>
     </element>
+   <element name="authentication">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
+        <action class="NullAction"/>
+    </element>
+
 
     <element name="password">
         <display class="PasswordWdg"/>
@@ -400,6 +405,11 @@
 
     <element name="password re-enter">
         <display class="PasswordWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="information">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
         <action class="NullAction"/>
     </element>
 
