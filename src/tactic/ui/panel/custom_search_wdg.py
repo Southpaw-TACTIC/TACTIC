@@ -77,7 +77,6 @@ class CustomSearchWdg(BaseRefreshWdg):
         #start_wday, end_wday = my.get_week_range(date_string)
         start_wday, end_wday = MMSUtility.get_week_range(date)
 
-
         one_day = datetime.timedelta(days=1)
 
         column = "work_performed_date"

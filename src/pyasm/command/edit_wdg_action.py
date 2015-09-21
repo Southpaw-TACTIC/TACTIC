@@ -92,6 +92,15 @@ class DatabaseAction(Command):
                 name = my._get_name()
                 raise UserException("The input for [%s] contains invalid characters [%s]" \
                         % (name.capitalize(), regexs)) 
+
+        
+        if not value:
+            default = my.get_option('default_col')
+            if default:
+                column_value = my.get_value(default)
+                if column_value:
+                    my.value = column_value
+
         return True
 
 

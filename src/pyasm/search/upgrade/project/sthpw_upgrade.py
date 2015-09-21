@@ -17,9 +17,32 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-    #
-    # 4.4.0.a01
-    #
+    def upgrade_v4_4_0_v01_003(my):
+        my.run_sql(''' 
+
+        INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
+
+        ''')
+
+
+    def upgrade_v4_4_0_v01_002(my):
+        my.run_sql(''' 
+        CREATE TABLE department (
+        id serial PRIMARY KEY,
+        code varchar(256),
+        name varchar(256),
+        login varchar(256),
+        ou text,
+        CONSTRAINT "department_code_idx" UNIQUE (code),
+        CONSTRAINT "department_name_idx" UNIQUE (name)
+        );
+        ''') 
+
+    def upgrade_v4_4_0_v01_001(my):
+        my.run_sql(''' 
+        ALTER TABLE "login" ADD "upn" varchar(256) NULL; 
+        ''') 
+        
     def upgrade_v4_4_0_b01_007(my):
         my.run_sql(''' 
         ALTER TABLE "login" ADD "location" text NULL; 
