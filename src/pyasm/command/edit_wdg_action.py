@@ -460,9 +460,10 @@ class LoginAction(DatabaseAction):
         if active_users > max_users and my.web.get_form_value('license_type') not in ['disabled','float']:
             raise UserException("Max active users [%s] reached for your license"%max_users) 
 
+        super(LoginAction, my).check()
         return True
             
-   
+        
 
 class GroupNameAction(DatabaseAction):
     

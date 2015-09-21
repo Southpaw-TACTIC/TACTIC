@@ -827,7 +827,7 @@ class UserPanelWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.panel.EditWdg';
             var kwargs = {
                 search_type: "sthpw/login",
-                view: "edit",
+                view: "insert",
                 show_header: false,
             }
             var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
