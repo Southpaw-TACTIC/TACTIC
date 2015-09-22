@@ -829,7 +829,7 @@ class TacticServerStub(object):
         if not my.has_server:
             raise TacticApiException("No server connected.  If running a command line script, please execute get_ticket.py")
 
-        ticket = my.server.start(my.login_ticket, my.project_code, \
+        ticket = my.server.start(my.ticket, my.project_code, \
             title, description, transaction_ticket)
         my.set_transaction_ticket(ticket)
 
@@ -3710,12 +3710,17 @@ class TacticServerStub(object):
             from pyasm.common import Environment
             from pyasm.prod.service import ApiXMLRPC
             from pyasm.web import WebContainer
+            from pyasm.security import Site
 
             # set the ticket
             security = Environment.get_security()
             if not security:
                 raise TacticApiException("Security not initialized.  This may be because you are running the client API in 'local' mode without run initializing Batch")
 
+            # set the site
+            site = Site.get_site()
+            if site:
+                my.set_site(site)
 
             # set the project
             project_code = Project.get_project_code()
