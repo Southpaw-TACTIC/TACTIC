@@ -486,6 +486,7 @@ class TacticServerStub(object):
         server=localhost
         ticket=30818057bf561429f97af59243e6ef21
         project=unittest
+        site=taufilms
         [/code]
 
         The contents in the resource file represent the defaults to use
@@ -497,6 +498,8 @@ class TacticServerStub(object):
         is used automatically by the API server stub. It attempts to get from 
         home dir first and then from temp_dir is it fails. 
         
+        The site key is optional and used for a portal setup.
+
         @param:
         login (optional) - login code. If not provided, it gets the current system user
 
