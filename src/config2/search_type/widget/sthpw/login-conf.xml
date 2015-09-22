@@ -382,7 +382,9 @@
     <element name="picture"/>
 
     <element name="login">
-        <action class="LoginAction"/>
+        <action class="LoginAction">
+           <empty>false</empty>
+        </action>
     </element>
     <element name="upn" title="User Principal Name">
         <display class="tactic.ui.input.TextInputWdg">
