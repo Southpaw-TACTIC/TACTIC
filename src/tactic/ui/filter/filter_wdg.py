@@ -1638,6 +1638,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             enabled = values.get("%s_enabled" % prefix)
             column = values.get("%s_column" % prefix)
             relation = values.get("%s_relation" % prefix)
+
             if enabled and column:
                 num_enabled += 1
 
@@ -2000,25 +2001,28 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
     def alter_search(my, search):
         ''' customize the search here '''
         #search.add_where("begin")
+        
         my.stype_columns = search.get_columns()
         
         values = FilterData.get().get_values_by_index(my.prefix, 0)
         # check if this filter is enabled
         enabled = values.get("%s_enabled" % my.prefix)
-        value = values.get("%s_value" % my.prefix)
+        value = my.get_value()
+
         if enabled == None:
             # by default, the filter is enabled
             is_enabled = True
         else:
             is_enabled = (str(enabled) in ['on', 'true'])
+
         if not is_enabled:
             return
-        if enabled and value:
+
+        if is_enabled and value:
             my.num_filters_enabled += 1
 
 
 
-        value = my.get_value()
         if not value:
             return
         my.text_value = value
