@@ -584,7 +584,7 @@ class TacticServerStub(object):
         
         
         print
-        site = raw_input("If you are accessing a portal project, please enter the site name. Otherwise, hit enter: site = %s" % old_site)
+        site = raw_input("If you are accessing a portal project, please enter the site name. Otherwise, hit enter: (site = %s) " % old_site)
         if not site:
             site = old_site
         if not site:
