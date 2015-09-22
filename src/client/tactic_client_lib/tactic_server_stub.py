@@ -58,7 +58,7 @@ class TacticServerStub(object):
         my.login_ticket = None
         my.transaction_ticket = None
 
-        my.site = None
+        my.site = site
 
         # autodetect protocol
         if not protocol:
@@ -3697,7 +3697,7 @@ class TacticServerStub(object):
                                             auto_unique_name, auto_unique_view)
 
     def _setup(my, protocol="xmlrpc"):
-
+        
         # if this is being run in the tactic server, have the option
         # to use TACTIC code directly
         if protocol == 'local':
@@ -3775,6 +3775,7 @@ class TacticServerStub(object):
                 rc_ticket = None
                 rc_project = None
                 rc_login = None
+                rc_site = None
 
                 for line in lines:
                     line = line.strip()
@@ -3793,7 +3794,8 @@ class TacticServerStub(object):
                     elif name == "login":
                         #my.set_project(value)
                         rc_login = value
-
+                    elif name == "site":
+                        rc_site = value
 
                 # these have to be issued in the correct order
                 if rc_server:
@@ -3809,7 +3811,8 @@ class TacticServerStub(object):
                     my.set_ticket(rc_ticket)
                 if rc_login:
                     my.login = rc_login
-
+                if rc_site:
+                    my.site = rc_site
 
             # override with any environment variables that are set
             if env_server:
@@ -3818,7 +3821,7 @@ class TacticServerStub(object):
                 my.set_project(env_project)
             if env_user:
                 # try to get a ticket with a set password
-                ticket = my.get_ticket(env_user, env_password)
+                ticket = my.get_ticket(env_user, env_password, my.site)
                 my.set_ticket(ticket)
             if env_ticket:
                 my.set_ticket(env_ticket)
