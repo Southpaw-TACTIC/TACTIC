@@ -584,10 +584,11 @@ class TacticServerStub(object):
         
         
         print
-        site = raw_input("If you are accessing a portal project, please enter the 
-                site name. Otherwise, hit enter: site = %s" % old_site)
+        site = raw_input("If you are accessing a portal project, please enter the site name. Otherwise, hit enter: site = %s" % old_site)
         if not site:
             site = old_site
+        if not site:
+            site = ''
 
         login = raw_input("Enter user name (%s): " % default_login)
         if not login:
@@ -625,6 +626,8 @@ class TacticServerStub(object):
             file.write("login=%s\n" % login)
             file.write("server=%s\n" % server_name)
             file.write("ticket=%s\n" % ticket)
+            if site:
+                file.write("site=%s\n" % site)
             if project_code:
                 file.write("project=%s\n" % project_code)
 
