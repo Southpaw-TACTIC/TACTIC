@@ -3848,7 +3848,6 @@ class TacticServerStub(object):
     def get_release_version(my):
         # DEPRECATED
         print "WARNING: Deprecated function 'get_release_version'"
-                    irint "********"
         return my.server.get_release_version(my.ticket)
 
     def get_server_version(my):
