@@ -486,7 +486,7 @@ class TacticServerStub(object):
         server=localhost
         ticket=30818057bf561429f97af59243e6ef21
         project=unittest
-        site=taufilms
+        site=vfx_site
         [/code]
 
         The contents in the resource file represent the defaults to use
