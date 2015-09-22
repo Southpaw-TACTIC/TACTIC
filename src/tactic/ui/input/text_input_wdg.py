@@ -270,7 +270,7 @@ class TextInputWdg(BaseInputWdg):
              my.text.set_value(value)
              return
 
-      
+        # fill in the values
         search_key = my.kwargs.get("search_key")
         
         if search_key and search_key != "None" or my.sobjects:
@@ -280,6 +280,7 @@ class TextInputWdg(BaseInputWdg):
                 sobject = Search.get_by_search_key(search_key)
 
             if sobject:
+            # look at the current sobject for the data
                 if not sobject.is_insert():
                     column = my.kwargs.get("column")
                     if not column:
