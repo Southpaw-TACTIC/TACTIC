@@ -281,13 +281,13 @@ class TextInputWdg(BaseInputWdg):
 
             if sobject:
             # look at the current sobject for the data
+                display = ""
                 if not sobject.is_insert():
                     column = my.kwargs.get("column")
                     if not column:
                         column = my.name
                     
                     display = sobject.get_value(column, no_exception=True)
-                display = ""
                 if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
                     display = SPTDate.convert_to_local(display)
                     
