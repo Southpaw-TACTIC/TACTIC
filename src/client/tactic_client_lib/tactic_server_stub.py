@@ -244,6 +244,7 @@ class TacticServerStub(object):
 
     def set_site(my, site=None):
         my.site = site
+        my.set_transaction_ticket(my.transaction_ticket)
 
     def get_site(my):
         return my.site
@@ -3812,8 +3813,8 @@ class TacticServerStub(object):
                 if rc_login:
                     my.login = rc_login
                 if rc_site:
-                    my.site = rc_site
-
+                    my.set_site(rc_site)
+                   
             # override with any environment variables that are set
             if env_server:
                 my.set_server(env_server)
@@ -3844,6 +3845,7 @@ class TacticServerStub(object):
     def get_release_version(my):
         # DEPRECATED
         print "WARNING: Deprecated function 'get_release_version'"
+                    irint "********"
         return my.server.get_release_version(my.ticket)
 
     def get_server_version(my):
