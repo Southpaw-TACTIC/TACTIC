@@ -1153,7 +1153,6 @@ class ThumbWdg(BaseTableElementWdg):
         icon_link = None
         if my.info.has_key(icon_type):
             icon_link = my.info[icon_type]
-            print "************ ICON LINK: ", icon_link
             if not os.path.exists(repo_path):
                 icon_link = ThumbWdg.get_no_image()
                 icon_info['icon_missing'] = True
@@ -1173,7 +1172,6 @@ class ThumbWdg(BaseTableElementWdg):
         else:
             icon_link = ThumbWdg.find_icon_link(image_link, repo_path)
             #icon_size = int( 60.0 / 120.0 * float(icon_size) )
-            print "************ ICON LINK2: ", icon_link
         icon_info['icon_size'] = icon_size
         icon_info['icon_link'] = icon_link
 
