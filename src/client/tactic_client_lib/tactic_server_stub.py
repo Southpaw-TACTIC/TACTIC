@@ -1739,11 +1739,18 @@ class TacticServerStub(object):
         from common import UploadMultipart
         upload = UploadMultipart()
         upload.set_ticket(my.transaction_ticket)
-        if my.server_name.startswith("http://") or my.server_name.startswith("https://"):
-            upload_server_url = "%s/tactic/default/UploadServer/" % my.server_name
+       
+        # If a portal set up is used, alter server name for upload
+        if my.site:
+            upload_server_name = "%s/tactic/%s" % (my.server_name, my.site)
         else:
-            upload_server_url = "http://%s/tactic/default/UploadServer/" % my.server_name
-
+            upload_server_name = "%s/tactic" % my.server_name
+        
+        # Add http to server name if necessary
+        if upload_server_name.startswith("http://") or upload_server_name.startswith("https://"):
+            upload_server_url = "%s/default/UploadServer/" % upload_server_name
+        else:
+            upload_server_url = "http://%s/default/UploadServer/" % upload_server_name
 
         if base_dir:
             basename = os.path.basename(path)
