@@ -14,6 +14,7 @@
 __all__ = ["ThumbWdg", "ThumbCmd", "FileInfoWdg"]
 
 import re, time, types, string, os
+import urllib
 
 from pyasm.common import Xml, Container, Environment, Config
 from pyasm.search import Search, SearchException, SearchKey, SqlException, DbContainer
@@ -785,8 +786,13 @@ class ThumbWdg(BaseTableElementWdg):
         else:
             file_objects = my.file_objects
 
+        protocol = my.get_option("protocol")
+        if not protocol:
+            from pyasm.prod.biz import ProdSetting
+            protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
+
         # go through the nodes and try to find appropriate paths
-        my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless) 
+        my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless, protocol=protocol) 
         # find the link that will be used when clicking on the icon
         link_path = ThumbWdg.get_link_path(my.info, image_link_order=my.image_link_order)
 
@@ -804,9 +810,9 @@ class ThumbWdg(BaseTableElementWdg):
                 
             for file_object in snapshot_file_objects:
                 file_objects[file_object.get_code()] = file_object
-            my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless) 
+            my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless, protocol=protocol) 
             link_path = ThumbWdg.get_link_path(my.info, image_link_order=my.image_link_order)
-          
+            
         # define a div
         div = my.top
         div.add_class("spt_thumb_top")
@@ -929,10 +935,6 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         detail = my.get_option("detail")
-        protocol = my.get_option("protocol")
-        if not protocol:
-            from pyasm.prod.biz import ProdSetting
-            protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
 
         #deals with the icon attributes
         if detail == "false":
@@ -1151,7 +1153,6 @@ class ThumbWdg(BaseTableElementWdg):
         icon_link = None
         if my.info.has_key(icon_type):
             icon_link = my.info[icon_type]
-
             if not os.path.exists(repo_path):
                 icon_link = ThumbWdg.get_no_image()
                 icon_info['icon_missing'] = True
@@ -1171,7 +1172,6 @@ class ThumbWdg(BaseTableElementWdg):
         else:
             icon_link = ThumbWdg.find_icon_link(image_link, repo_path)
             #icon_size = int( 60.0 / 120.0 * float(icon_size) )
-
         icon_info['icon_size'] = icon_size
         icon_info['icon_link'] = icon_link
 
@@ -1265,7 +1265,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
 
-    def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False):
+    def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False, protocol='http'):
         info = {}
         #TODO: {'file_type': [file_type]: [path], 'base_type': [base_type]: [file|directory|sequence]}
 
@@ -1303,6 +1303,9 @@ class ThumbWdg(BaseTableElementWdg):
                 if file_names:
                     file_name = file_names[0]
             path = "%s/%s" % (web_dir, file_name)
+
+            if protocol != "file":
+                path = urllib.pathname2url(path)
 
             if isinstance(info, dict):
                 info[type] = path
