@@ -342,8 +342,10 @@ class HtmlElement(Widget):
             else:
                 gradient = "-webkit-gradient(linear, 0%% 0%%, 0%% 100%%, from(%s), to(%s))" % (color1, color2)
             """
-
-            gradient = "linear-gradient(%sdeg, %s, %s)" % (angle, color1, color2)
+            if web.get_browser() == 'Qt':
+                gradient = "-webkit-gradient(linear, 0%% 0%%, 0%% 100%%, from(%s), to(%s))" % (color1, color2)
+            else:
+                gradient = "linear-gradient(%sdeg, %s, %s)" % (angle, color1, color2)
             return gradient
 
 
