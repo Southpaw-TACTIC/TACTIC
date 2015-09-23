@@ -13,6 +13,8 @@
 
 __all__ = ['GalleryWdg']
 
+import urllib
+
 from pyasm.biz import Snapshot, File
 from pyasm.search import Search
 from pyasm.web import HtmlElement, DivWdg, Table
@@ -559,6 +561,10 @@ class GalleryWdg(BaseRefreshWdg):
                 '/assets/test/store/Another%20one_v001.jpg',
                 '/assets/test/store/Whatever_v001.jpg'
             ]
+
+        for index,path in enumerate(paths):
+            path = urllib.pathname2url(path)
+            paths[index] = path
 
         return paths
 
