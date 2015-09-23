@@ -1550,8 +1550,8 @@ class GeneralFilterWdg(BaseFilterWdg):
                 if is_enabled: 
                     valid_values_list.append(values)
 
-	    if valid_values_list:
-                values_list = valid_values_list
+        if valid_values_list:
+            values_list = valid_values_list
         
         level_0_count = 0
         if use_ops and search_ops and values_list_enabled:
@@ -1638,7 +1638,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             enabled = values.get("%s_enabled" % prefix)
             column = values.get("%s_column" % prefix)
             relation = values.get("%s_relation" % prefix)
-
             if enabled and column:
                 num_enabled += 1
 
