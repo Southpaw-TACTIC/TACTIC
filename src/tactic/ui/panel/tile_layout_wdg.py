@@ -1964,7 +1964,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if path:
-	    path = urllib.pathname2url(path)
+            path = urllib.pathname2url(path)
             img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
