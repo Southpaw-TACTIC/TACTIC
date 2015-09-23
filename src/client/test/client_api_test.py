@@ -141,6 +141,7 @@ class ClientApiTest(unittest.TestCase):
         #my.server.undo()
         my._test_local_protocol()
         my.server.abort()
+        my.server.set_ticket(test_ticket)
 
 
         # test database only abort
@@ -160,6 +161,7 @@ class ClientApiTest(unittest.TestCase):
                     os.unlink(path)
 
  
+        my.server.set_ticket(test_ticket)
         # test with an error
         my.server.start("Client Api Error Test")
         try:
@@ -168,6 +170,7 @@ class ClientApiTest(unittest.TestCase):
         except:
             my.server.abort()
  
+        my.server.set_ticket(test_ticket)
         # person or city table must be empty now after abort
         my.server.start("Client API Unittest query after abort")
         try:
