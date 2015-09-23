@@ -270,9 +270,9 @@ class TextInputWdg(BaseInputWdg):
              my.text.set_value(value)
              return
 
-      
         # fill in the values
         search_key = my.kwargs.get("search_key")
+        
         if search_key and search_key != "None" or my.sobjects:
             if my.sobjects:
                 sobject = my.sobjects[0]
@@ -280,16 +280,17 @@ class TextInputWdg(BaseInputWdg):
                 sobject = Search.get_by_search_key(search_key)
 
             if sobject:
-
-                # look at the current sobject for the data
-                column = my.kwargs.get("column")
-                if not column:
-                    column = my.name
-
-                display = sobject.get_value(column, no_exception=True)
+            # look at the current sobject for the data
+                display = ""
+                if not sobject.is_insert():
+                    column = my.kwargs.get("column")
+                    if not column:
+                        column = my.name
+                    
+                    display = sobject.get_value(column, no_exception=True)
                 if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
                     display = SPTDate.convert_to_local(display)
-
+                    
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
                     display = unicode(display, errors='ignore').encode('utf-8')

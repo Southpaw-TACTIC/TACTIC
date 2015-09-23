@@ -177,6 +177,12 @@ class SnapshotDirListWdg(DirListWdg):
             var url = "/assets/" + path.replace(asset_dir, "");
             //window.open(url);
 
+            var url_parts = url.split("/");
+            var file = url_parts.pop();
+            file = encodeURIComponent(file);
+            url_parts.push(file);
+            url = url_parts.join("/");
+
             var class_name = 'tactic.ui.widget.EmbedWdg';
             var kwargs = {
                 src: url
@@ -201,6 +207,13 @@ class SnapshotDirListWdg(DirListWdg):
             else {
             var asset_dir = '%s';
             var url = "/assets/" + path.replace(asset_dir, "");
+
+            var url_parts = url.split("/");
+            var filename = url_parts.pop();
+            filename = encodeURIComponent(filename);
+            url_parts.push(filename);
+            url = url_parts.join("/");
+
             window.open(url);
             }
             ''' % asset_dir

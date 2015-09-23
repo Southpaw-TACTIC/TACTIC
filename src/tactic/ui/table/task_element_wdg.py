@@ -1889,7 +1889,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 status_div.add_style("font-size: %spx" % (my.font_size))
                 status_div.add_style("font-weight: bold")
-                status_div.add_style("background-color: %s" %bgColor)
+                
+                if bgColor:
+                    status_div.add_style("background-color: %s" %bgColor)
                 status_div.add(status)
              
             elif my.permission['status']['is_editable']:
@@ -1957,7 +1959,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 select.add_class("spt_task_status_select")
-                select.add_style("background: %s" %bgColor)
+                if bgColor:
+                    select.add_style("background: %s" %bgColor)
 
 
                 if my.layout in ['horizontal', 'vertical']:
@@ -2032,6 +2035,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     if not assigned:
                         assigned = HtmlElement.i("Unassigned")
                         assigned.add_style("opacity: 0.5")
+                        assigned_label = assigned
                     assigned_div.add(assigned_label)
                     assigned_div.add("<br/>")
 
@@ -2321,17 +2325,29 @@ class TaskElementCbk(DatabaseAction):
 
 
     def execute(my):
-
+        web = WebContainer.get_web()
         if my.data != None:
             xx = my.data
         else:
-            web = WebContainer.get_web()
             xx = web.get_form_data()
             xx = xx.get('data').get('data')
+        
+        
+        web_data = web.get_form_value('web_data')
+        
+        processes = []
+        if web_data:
+            process_data= web_data.get('process_data')
+            if process_data:
+                try:
+                    process_data = jsonloads(process_data)
+                    processes = process_data.get('processes')
+                except:
+                    processes = []
+            
+
         xx = jsonloads(xx)
         my.xx = xx
-
-
 
         #if my.xx.get("add_initial_tasks"):
         #    return
@@ -2345,7 +2361,7 @@ class TaskElementCbk(DatabaseAction):
         # create all of the new tasks first
         import re
         p = re.compile("(\w+)\|(\w+)\|(.*)")
-        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)\|(\w+)")
+        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)_(\w+)")
         for key, value in xx.items():
             if key.find("|COPY") != -1:
                 m = re.match(copy_p, key)
@@ -2361,7 +2377,6 @@ class TaskElementCbk(DatabaseAction):
                 column = "bid_duration"
 
             action = groups[1]
-
             if action == "NEW":
                 process = groups[2]
                 task = new_tasks_by_process.get(process)
@@ -2402,7 +2417,14 @@ class TaskElementCbk(DatabaseAction):
 
         # commit all of the new tasks
         tasks = {}
-        for process, task in new_tasks_by_process.items():
+
+        processes.reverse()
+        # reverse the order of the task in this dict as a list
+        sorted_tasks = map(new_tasks_by_process.get, processes)
+        # remove the None after mapping
+        sorted_tasks = [x for x in sorted_tasks if x]
+        for task in sorted_tasks:
+           
             tasks[task.get_id()] = task
             task.commit()
 

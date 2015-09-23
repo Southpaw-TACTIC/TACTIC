@@ -12,6 +12,7 @@
 __all__ = ["TileLayoutWdg"]
 
 import re, os
+import urllib
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
@@ -652,12 +653,24 @@ class TileLayoutWdg(ToolLayoutWdg):
                 else {
                     var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
-                        window.open(snapshot.__web_paths_dict__.main);
+                        var snapshot_path = snapshot.__web_paths_dict__.main;
+                        var path_list = snapshot_path[0].split("/");
+                        var filename = path_list.pop();
+                        filename = encodeURIComponent(filename);
+                        path_list.push(filename);
+                        snapshot_path = path_list.join("/");
+                        window.open(snapshot_path);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
                         if (snapshot.__search_key__) {
-                            window.open(snapshot.__web_paths_dict__.main);
+                            var snapshot_path = snapshot.__web_paths_dict__.main;
+                            var path_list = snapshot_path[0].split("/");
+                            var filename = path_list.pop();
+                            filename = encodeURIComponent(filename);
+                            path_list.push(filename);
+                            snapshot_path = path_list.join("/");
+                            window.open(snapshot_path);
                         }
                         else {
                             alert("WARNING: No file for this asset");
@@ -1950,14 +1963,16 @@ class ThumbWdg2(BaseRefreshWdg):
                 div.set_attr("spt_image_size", image_size)
 
 
-
         if path:
+	    path = urllib.pathname2url(path)
             img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
 
             if path:
+                path = urllib.pathname2url(path)
+
                 img = DivWdg()
                 img.add_style("opacity: 0.2")
 

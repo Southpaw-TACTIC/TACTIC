@@ -133,7 +133,7 @@ class Task(SObject):
             color = OTHER_COLORS.get(process.title())
 
         from pyasm.web import Palette
-        theme = Palette.get()
+        theme = Palette.get().get_theme()
         if theme == 'dark':
             color = Common.modify_color(color, -50)
 
@@ -226,7 +226,7 @@ class Task(SObject):
 
         # in case it's a subpipeline
         context = task_process
-        context=my._add_context_suffix(context,task_process,parent)
+        context = my._add_context_suffix(context, task_process, parent)
 
         # then use the project as a parent
         project = Project.get()
@@ -279,7 +279,9 @@ class Task(SObject):
 
                 subcontext = parts[1]
             try:
-                if subcontext == None:
+                if not tasks:
+                    num = 0
+                elif subcontext == None:
                     num = 1
                 else:
                     num = int(subcontext)
@@ -563,6 +565,7 @@ class Task(SObject):
             # FIXME: why doesn't the ops work here?
             filters = []
             search.add_relationship_filters(sobjects)
+    
             """
             for sobject in sobjects:
                 search_type = sobject.get_search_type()
@@ -653,9 +656,11 @@ class Task(SObject):
         if end_date:
             task.set_value("bid_end_date", end_date)
         # auto map context as process as the default
-        if not context:
-            context = process
-        task.set_value("context", context)
+        #if not context:
+        #    context = process
+        # let get_defaults() set the context properly instead of auto-map
+        if context:
+            task.set_value("context", context)
         # DEPRECATED
         if depend_id:
             task.set_value("depend_id", depend_id)
@@ -781,7 +786,7 @@ class Task(SObject):
          
                 if existed:
                     context = "%s/%0.3d" % (context, max_num+1)
-            
+                
 
             return context
         # get pipeline
@@ -954,6 +959,7 @@ class Task(SObject):
                 if contexts and context not in contexts:
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
+             
                 last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration,assigned=assigned)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
