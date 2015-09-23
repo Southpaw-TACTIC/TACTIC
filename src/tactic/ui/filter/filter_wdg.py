@@ -1638,7 +1638,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             enabled = values.get("%s_enabled" % prefix)
             column = values.get("%s_column" % prefix)
             relation = values.get("%s_relation" % prefix)
-            print "ENABLED ", enabled, column
             if enabled and column:
                 num_enabled += 1
 
