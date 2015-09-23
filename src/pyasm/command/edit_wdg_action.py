@@ -92,6 +92,15 @@ class DatabaseAction(Command):
                 name = my._get_name()
                 raise UserException("The input for [%s] contains invalid characters [%s]" \
                         % (name.capitalize(), regexs)) 
+
+        
+        if not value:
+            default = my.get_option('default_col')
+            if default:
+                column_value = my.get_value(default)
+                if column_value:
+                    my.value = column_value
+
         return True
 
 
@@ -451,9 +460,10 @@ class LoginAction(DatabaseAction):
         if active_users > max_users and my.web.get_form_value('license_type') not in ['disabled','float']:
             raise UserException("Max active users [%s] reached for your license"%max_users) 
 
+        super(LoginAction, my).check()
         return True
             
-   
+        
 
 class GroupNameAction(DatabaseAction):
     

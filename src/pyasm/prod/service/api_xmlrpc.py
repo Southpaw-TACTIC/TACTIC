@@ -5613,7 +5613,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     
     @xmlrpc_decorator
-    def add_config_element(my, ticket, search_type, view, name, class_name=None, display_options={}, action_class_name=None, action_options={}, element_attrs={}, login=None, unique=True, auto_unique_name=False, auto_unique_view=False):
+    def add_config_element(my, ticket, search_type, view, name, class_name=None, 
+           display_options={}, action_class_name=None, action_options={}, element_attrs={},
+           login=None, unique=True, auto_unique_name=False, auto_unique_view=False, view_as_attr=False):
         '''Add an element into a config
         
         @params:
@@ -5629,6 +5631,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         auto_unique_name - auto generate a unique element and display view name
         auto_unique_view - auto generate a unique display view name
         unique - a unique display view name is expected
+        view_as_attr - view should be read or created as a name attribute
         '''
         
         assert view
@@ -5659,8 +5662,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if pat.search(name):
             raise UserException('The name [%s] should not start with a number.'%name)
         
+        if not view_as_attr and view.find('@') != -1:
+            view_as_attr = True
+        
         # error out on all special chars from name except .
-        pat = re.compile('[\$\s,@#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
+        pat = re.compile('[\$\s,#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
         if pat.search(name):
             raise UserException('The name [%s] contains special characters or spaces.'%name)
         
@@ -5723,7 +5729,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
     
    
             # build a new config
-            view_node = xml.create_element(view)
+            if view_as_attr:
+                # personal view uses the new view attr-based xml syntax
+                view_node = xml.create_element("view", attrs= {'name': view})
+            else:
+                view_node = xml.create_element(view)
             #root.appendChild(view_node)
             xml.append_child(root, view_node)
 
@@ -5734,8 +5744,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         view_node = xml.get_node("config/%s" % view )
         '''
 
-        config.append_display_element(name, cls_name=class_name, options=display_options, \
-            element_attrs=element_attrs, action_options=action_options, action_cls_name=action_class_name)
+        config.append_display_element(name, cls_name=class_name, options=display_options,
+            element_attrs=element_attrs, action_options=action_options, action_cls_name=action_class_name,
+            view_as_attr=view_as_attr)
+
         config.commit_config()
         # this name could be regenerated. so we return it to client
         dict = {'element_name': name}
