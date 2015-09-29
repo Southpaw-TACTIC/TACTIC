@@ -22,10 +22,16 @@ import os
 
 class EmbedWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
-        return {
-            }
-
+    ARGS_KEYS = {
+        "video_class": {
+            'description': "Allows users to select video class path. Default is VideoWdg",
+            'type': 'SelectWdg',
+            'values': 'VideoWdg|VideoJsWdg',
+            'order': 00,
+            'category': 'Optional'
+        }
+    }
+     
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
 
@@ -109,8 +115,8 @@ class EmbedWdg(BaseRefreshWdg):
             
             
             video_id = None
-            sources = src
-            source_types = "video/mp4"
+            sources = [src]
+            source_types = ["video/mp4"]
             poster = thumb_path
             width = '100%'
             height = '100%'
@@ -128,7 +134,7 @@ class EmbedWdg(BaseRefreshWdg):
                     "index": index
             }
                     
-            if my.kwargs.get("video_class") == "videojswdg":
+            if my.kwargs.get("video_class") == "VideoJsWdg":
                 video = VideoJsWdg(**video_kwargs)
             else:
                 video = VideoWdg(**video_kwargs)

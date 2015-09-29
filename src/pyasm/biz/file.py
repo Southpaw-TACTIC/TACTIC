@@ -640,10 +640,10 @@ class IconCreator(object):
 
             
     def get_free_size(my):
-        '''When free_size project setting is true, an thumb is created
-        proportional to original size, but with transparent border.
+        '''When free_size project setting is true, a thumb is created with size
+        according to free_size value (x,y).
         Conversion is RGBA instead of default RBG for icon creation.'''
-        from pyasm.prod.biz import ProdSetting
+        from pyasm.biz import ProdSetting
         free_size = ProdSetting.get_value_by_key('free_size') == 'true' or False
         return free_size
     
@@ -887,7 +887,7 @@ class IconCreator(object):
                         offset = 0
                     else:
                         # then paste to white image
-                        im2 = Image.new( "RGB", thumb_size, (255,255,255,0) )
+                        im2 = Image.new( "RGB", thumb_size, (255,255,255) )
                         offset = (thumb_size[0]/2) - (im.size[0]/2)
                         
                     im2.paste(im, (offset,0) )

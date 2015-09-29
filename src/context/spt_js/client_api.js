@@ -1342,16 +1342,13 @@ TacticServerStub = function() {
         return this._delegate("get_all_paths_from_snapshot", arguments, kwargs);
     }
 
-
     // async functions
     this.async_ping = function(kwargs) {
         var callback = kwargs['cbjs_action'];
         if (!callback) {
             callback = kwargs['callback'];
         }
-        var on_error = function(e) {
-            callback(e);
-        };
+        var on_error = kwargs['on_error'];
 
         this._delegate("ping", arguments, kwargs, null, callback, on_error);
         return;
