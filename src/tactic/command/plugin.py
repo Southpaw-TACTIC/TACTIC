@@ -996,7 +996,7 @@ class PluginInstaller(PluginBase):
                 if my.verbose: 
                     print "Reading: ", path
                 # jobs doesn't matter for sobject node
-                jobs = my.import_data(path, unique=unique)
+                jobs = tools.import_data(path, unique=unique)
 
                 # reset it in case it needs to execute a PYTHON tag right after
                 Schema.get(reset_cache=True)
@@ -1704,6 +1704,28 @@ class PluginTools(PluginBase):
 
         paths_read.append(path) 
         return path
+
+
+
+    def get_unique_sobject(my, sobject):
+        '''get unique sobject in the existing table when installing plugin'''
+        base_st = sobject.get_base_search_type()
+        if base_st == 'config/widget_config':
+            cols = ['view','search_type','category','widget_type','login']
+        elif base_st == 'config/naming':
+            cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
+        elif base_st == 'config/url':
+            cols = ['url']
+        else:
+            cols = ['code']
+
+        search = Search( sobject.get_base_search_type() )
+        for col in cols:
+            value = sobject.get_value(col)
+            if value:
+                search.add_filter(col, value)
+        unique_sobject = search.get_sobject()
+        return unique_sobject
 
 
 

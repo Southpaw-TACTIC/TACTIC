@@ -833,6 +833,13 @@ class Site(object):
             Container.put("sites", sites)
         sites.append(site)
 
+        try:
+            sql = DbContainer.get("sthpw")
+        except:
+            raise Exception("WARNING: site [%s] does not exist" % site)
+            
+
+
     set_site = classmethod(set_site)
 
 
@@ -1500,7 +1507,7 @@ class Security(Base):
                 authenticate.add_user_info( my._login, password)
             except Exception, e:
                 raise SecurityException("Error updating user info: %s" % e.__str__())
-                
+
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
             if my._login.has_user_license():
@@ -1541,6 +1548,10 @@ class Security(Base):
         LoginInGroup.clear_cache()
 
         my._do_login()
+
+
+        # allow for some postprocessing
+        authenticate.postprocess(my._login, my._ticket)
         
 
 

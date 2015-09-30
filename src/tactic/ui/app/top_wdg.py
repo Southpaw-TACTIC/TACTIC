@@ -35,6 +35,8 @@ class TopWdg(Widget):
         my.kwargs = kwargs
         super(TopWdg, my).__init__()
 
+
+
     def init(my):
         my.body = HtmlElement("body")
         Container.put("TopWdg::body", my.body)
@@ -74,6 +76,10 @@ class TopWdg(Widget):
 
             '''
         } )
+
+        my.add_top_behaviors()
+
+
 
         
         click_div = DivWdg()
@@ -167,6 +173,120 @@ class TopWdg(Widget):
         # 'force_default_context_menu' flag reset for the next right click that occurs ...
         #
         my.body.add_event( "oncontextmenu", "spt.force_default_context_menu = false;" )
+
+
+
+
+    def add_top_behaviors(my):
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_popup',
+            'cbjs_action': '''
+            var view = bvr.src_el.getAttribute("view");
+            if (!view) {
+                spt.alert("No view found");
+            }
+
+            var target = bvr.src_el.getAttribute("target");
+
+            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+            var kwargs = {
+                view: view,  
+            }
+            spt.panel.load_popup(target, class_name, kwargs);
+            '''
+        } )
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_load',
+            'cbjs_action': '''
+            var view = bvr.src_el.getAttribute("view");
+            if (!view) {
+                        spt.alert("No view found");
+                          }
+
+            var target_class = bvr.src_el.getAttribute("target");
+            if (target_class.indexOf(".") != "-1") {
+                var parts = target_class.split(".");
+                var top = bvr.src_el.getParent("."+parts[0]);
+                var target = top.getElement("."+parts[1]);  
+            }
+            else {
+                var target = $(document.body).getElement("."+target_class);
+            }
+
+            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+            var kwargs = {
+                view: view,  
+            }
+            spt.panel.load(target, class_name, kwargs);
+            '''
+        } )
+
+
+
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_refresh',
+            'cbjs_action': '''
+            var target_class = bvr.src_el.getAttribute("target");
+            if (target_class.indexOf(".") != "-1") {
+                var parts = target_class.split(".");
+                var top = bvr.src_el.getParent("."+parts[0]);
+                var target = top.getElement("."+parts[1]);  
+            }
+            else {
+                var target = $(document.body).getElement("."+target_class);
+            }
+
+            spt.panel.refresh(target);
+            '''
+            } )
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_submit',
+            'cbjs_action': '''
+            var command = bvr.src_el.getAttribute("command");
+            var kwargs = {
+            }
+            var server = TacticServerStub.get();
+            try {
+                server.execute_cmd(command, kwargs);
+            } catch(e) {
+                spt.alert(e);
+            }
+            '''
+            } )
+
+
+        my.body.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'tactic_hover',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "#BBB");
+            '''
+            } )
+
+        my.body.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'tactic_hover',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+            } )
+
+        my.body.set_unique_id()
+        my.body.add_smart_style( "tactic_load", "cursor", "pointer" )
+
+
+
+
 
 
 

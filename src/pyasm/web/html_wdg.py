@@ -798,8 +798,8 @@ class HtmlElement(Widget):
         } )
 
 
-
-
+    # TODO: still needs work
+    """
     def add_update_text(my, update, value=None):
         if my.updates == None:
             my.updates = [] 
@@ -839,6 +839,18 @@ class HtmlElement(Widget):
 
         # evaluate
         my.add_attr(attr, my.eval_update(update) )
+    """
+
+
+
+    def add_update_expression(my, expr):
+        value = Search.eval(expr)
+        my.add(value)
+        my.add_update( {
+            'expression': expr
+        } )
+
+
 
 
 
