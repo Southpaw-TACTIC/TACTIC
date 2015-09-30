@@ -2597,13 +2597,37 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top.add(settings_wdg)
         settings_wdg.add_style("padding: 0px 10px")
 
-        settings_wdg.add("<h3>Node Status Action</h3>")
+        settings_wdg.add("<h3>Task Status Action</h3>")
+        title = DivWdg("When set to this status, do the following:")
+        title.add_style('padding-bottom: 12px')
 
-        settings_wdg.add("When set to this status, do the following:")
+        settings_wdg.add(title)
+
+        div = DivWdg("Behave as:")
+        div.add_style('padding-bottom: 2px')
+
+        settings_wdg.add(div)
+        select = SelectWdg(name="mapping")
+        select.add_class('spt_task_direction')
+        select.add_empty_option()
+        select.set_option('values', 'Assignment|Pending|In Progress|Waiting|Need Assistance|Revise|Reject|Complete|Approved')
+        if mapping:
+            select.set_value(mapping)
+        settings_wdg.add(select)
+
+
+        settings_wdg.add(HtmlElement.br())
+        sep = DivWdg("OR")
+        sep.add_style('text-align: center')
+        sep.add_style('margin: auto')
+        settings_wdg.add(sep)
+        settings_wdg.add(HtmlElement.br())
+
         select = SelectWdg(name="direction")
         settings_wdg.add(select)
         values = ["output", "input", "process"]
-        labels = ["Set output", "Set input", "Set this process [%s]" % process]
+        # we don't know the parent process this could be used in
+        labels = ["Set output process", "Set input process", "Set this process"]
         if direction:
             select.set_value(direction)
         select.set_option("values", values)
@@ -2611,26 +2635,27 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
         settings_wdg.add("<br/>")
 
-        settings_wdg.add("to Status:")
+        div = DivWdg("to Status:")
+        div.add_style('padding-bottom: 2px')
+        settings_wdg.add(div)
         text = TextInputWdg(name="status")
         if to_status:
             text.set_value(to_status)
+        text.add_behavior({'type': 'blur',
+            'cbjs_action': 
+            
+            '''var top = bvr.src_el.getParent('.spt_status_top');
+            var map = top.getElement('.spt_task_direction');
+            if (map.value && bvr.src_el.value) {
+                bvr.src_el.value = '';
+                spt.info('"Behave as" should be cleared if you want to set a custom status.');
+            }'''})
+                
         settings_wdg.add(text)
         text.add_style("width: 100%")
 
 
-        settings_wdg.add("<br/>")
-
-        settings_wdg.add("Behave As:")
-        text = TextInputWdg(name="mapping")
-        if mapping:
-            text.set_value(mapping)
-        settings_wdg.add(text)
-        text.add_style("width: 100%")
-
-
-
-
+       
         settings_wdg.add("<br/>")
 
         save_button = ActionButtonWdg(title="Save", color="primary")
@@ -2821,32 +2846,7 @@ class ProcessInfoCmd(Command):
 
 
 
-    def handle_status(my):
-
-        pipeline_code = my.kwargs.get("pipeline_code")
-        process = my.kwargs.get("process")
-
-        pipeline = Pipeline.get_by_code(pipeline_code)
-
-        search = Search("config/process")
-        search.add_filter("pipeline_code", pipeline_code)
-        search.add_filter("process", process)
-        process_sobj = search.get_sobject()
-
-
-        assigned = my.kwargs.get("assigned")
-
-        workflow = process_sobj.get_json_value("workflow")
-        if not workflow:
-            workflow = {}
-
-        if assigned:
-            workflow['assigned'] = assigned
-
-        process_sobj.set_json_value("workflow", workflow)
-        process_sobj.commit()
-
-
+  
 
 
 
