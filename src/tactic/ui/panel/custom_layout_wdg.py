@@ -389,6 +389,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_custom_top")
+        top.add_class("spt_panel")
 
         ignore_events = my.kwargs.get("ignore_events") in ['true', True]
 

@@ -44,14 +44,16 @@ class SignOutCmd(Command):
         if not my.login_name:
             my.login_name = my.kwargs.get('login');
 
-        print "Signing out %s" % my.login_name
-
         # invalidate the ticket
         security = Environment.get_security()
         ticket = security.get_ticket()
 
         if ticket == None:
             return
+
+
+        login_name = ticket.get_value("login")
+        print "Signing out: ", login_name
 
         # expire the ticket
         from pyasm.search import Sql, DbContainer

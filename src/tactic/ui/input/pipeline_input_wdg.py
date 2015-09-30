@@ -67,7 +67,7 @@ class PipelineInputWdg(BaseInputWdg):
         select.set_option("values", codes)
         select.set_option("labels", names)
         if sobj:
-            value = sobj.get_value(my.get_name())
+            value = sobj.get_value(my.get_name(), no_exception=True)
             if value:
                 select.set_value(value)
 
