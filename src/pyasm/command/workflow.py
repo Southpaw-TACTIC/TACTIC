@@ -160,7 +160,6 @@ class TaskStatusChangeTrigger(Trigger):
 
         process_name = task.get_value("process")
         status = task.get_value("status")
-
         if status.lower() in PREDEFINED:
             status = status.lower()
 
@@ -1366,7 +1365,6 @@ class ProcessCustomTrigger(BaseProcessTrigger):
             return
 
         status_pipeline_code = process_obj.get_task_pipeline()
-
         status_pipeline = Pipeline.get_by_code(status_pipeline_code)
         if not status_pipeline:
             print "No custom status pipeline [%s]" % process
@@ -1383,7 +1381,6 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         direction = status_obj.get_attribute("direction")
         to_status = status_obj.get_attribute("status")
         mapping = status_obj.get_attribute("mapping")
-
         if not to_status and not mapping:
             search = Search("config/process")        
             search.add_filter("pipeline_code", status_pipeline.get_code())
@@ -1405,6 +1402,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
 
         if mapping:
+            mapping = mapping.lower()
             event = "process|%s" % mapping
             Trigger.call(my.get_caller(), event, output=my.input)
         elif to_status:

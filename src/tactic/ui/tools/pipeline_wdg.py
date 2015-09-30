@@ -2624,6 +2624,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add(HtmlElement.br())
 
         select = SelectWdg(name="direction")
+        select.add_empty_option()
         settings_wdg.add(select)
         values = ["output", "input", "process"]
         # we don't know the parent process this could be used in
