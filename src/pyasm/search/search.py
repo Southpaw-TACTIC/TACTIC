@@ -5453,6 +5453,13 @@ class SearchType(SObject):
             if database == "{project}":
                 from pyasm.biz import Project
                 my.database = Project.get().get_database_name()
+            elif database.startswith("{") and database.endswith("}"):
+                # TEST
+                var = database[1:-1]
+                settings = {
+                    'database': "portal"
+                }
+                my.database = settings.get("database")
             else:
                 my.database = database
 
