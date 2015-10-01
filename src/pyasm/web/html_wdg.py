@@ -876,6 +876,9 @@ class HtmlElement(Widget):
         else:
             sobject = None
 
+        if not sobject:
+            return
+
 
         if column:
             value = sobject.get_value(column)

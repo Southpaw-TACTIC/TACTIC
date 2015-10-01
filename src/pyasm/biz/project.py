@@ -518,12 +518,18 @@ class Project(SObject):
             return full_key
 
 
+
         if project_code:
             code = project_code
         elif project:
             code = project.get_code()
         else:
-            code = Project.get_global_project_code()
+            # get the current project
+            #code = Project.get_global_project_code()
+            search_type_obj = SearchType.get(base_key)
+            code = search_type_obj.get_database()
+
+
 
         # NOTE: if someone expliclity set the Project.set('sthpw') before this, 
         # it will affect the full key of this sobject
