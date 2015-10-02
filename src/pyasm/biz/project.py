@@ -483,7 +483,9 @@ class Project(SObject):
                 else:
                     raise SecurityException("Not permitted to view project [%s]" % (project_code))
 
-        PROJECT_KEY = "Project:global"
+        from pyasm.security import Site
+        site = Site.get_site()
+        PROJECT_KEY = "Project:global:%s:" % site
         Container.put(PROJECT_KEY, project_code)
     set_project = classmethod(set_project)
  
@@ -494,7 +496,9 @@ class Project(SObject):
     set_global_project_code = classmethod(set_global_project_code)
         
     def get_global_project_code(cls):
-        PROJECT_KEY = "Project:global"
+        from pyasm.security import Site
+        site = Site.get_site()
+        PROJECT_KEY = "Project:global:%s:" % site
         project_code = Container.get(PROJECT_KEY)
         if not project_code:
             project_code = "admin"

@@ -18,6 +18,7 @@ import sys, traceback
 from pyasm.common import *
 #from pyasm.biz import TriggerInCommand
 from pyasm.search import ExceptionLog, SearchKey
+from pyasm.security import Site
 
 from command import Command, HandlerCmd
 
@@ -345,9 +346,11 @@ class Trigger(Command):
     def clear_db_cache(cls):
         Container.put(cls.KEY, None)
 
+        site = Site.get_site()
+
         from pyasm.biz import Project
         project_code = Project.get_project_code()
-        key = "%s:%s" % (cls.KEY, project_code)
+        key = "%s:%s:%s" % (cls.KEY, project_code, site)
         Container.put(key, None)
     clear_db_cache = classmethod(clear_db_cache)
 
@@ -363,8 +366,9 @@ class Trigger(Command):
 
         # find all of the project triggers
         from pyasm.biz import Project
+        site = Site.get_site()
         project_code = Project.get_project_code()
-        key = "%s:%s" % (cls.KEY, project_code)
+        key = "%s:%s:%s" % (cls.KEY, project_code, site)
         project_triggers = Container.get(key)
         if project_triggers == None:
             if project_code not in ['admin','sthpw']:

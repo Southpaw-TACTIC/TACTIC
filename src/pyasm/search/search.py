@@ -71,7 +71,6 @@ class Search(Base):
         my.is_search_done = False
         my.sobjects = []
 
-
         # retired asset flag - retired assets are never shown by default
         my.show_retired_flag = False
 
@@ -84,12 +83,14 @@ class Search(Base):
         protocol = 'local'
         if type(search_type) in types.StringTypes:
             # project is *always* local.  This prevents an infinite loop
+            from pyasm.biz import Project
             if search_type != "sthpw/project":
                 try:
-                    key = "Search:resource:%s" % search_type
+                    from pyasm.security import Site
+                    site = Site.get_site()
+                    key = "Search:resource:%s:%s" % (site, search_type)
                     parts = Container.get(key)
                     if not parts:
-                        from pyasm.biz import Project
                         if not project_code:
                             project_code = Project.extract_project_code(search_type)
                         project = Project.get_by_code(project_code)

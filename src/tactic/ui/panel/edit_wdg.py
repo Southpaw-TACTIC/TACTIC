@@ -134,6 +134,8 @@ class EditWdg(BaseRefreshWdg):
         sobject = None
         if my.search_key:
             sobject = Search.get_by_search_key(my.search_key)
+            if not sobject:
+                raise Exception("No sobject found for search_key [%s]" % my.search_key)
             my.search_id = sobject.get_id()
             my.search_type = sobject.get_base_search_type()
             if sobject.is_insert():
