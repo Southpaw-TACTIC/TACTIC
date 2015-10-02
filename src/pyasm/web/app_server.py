@@ -250,7 +250,7 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        open_hashes = ['register', 'accept']
+                        open_hashes = ['register', 'accept', 'thank_you']
                         if len(my.hash) >= 1 and my.hash[0] in open_hashes:
                             link = "/%s" % "/".join(my.hash)
                             web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)

@@ -758,7 +758,13 @@ class Site(object):
     def get_connect_data(cls, site):
         return {}
     get_connect_data = classmethod(get_connect_data)
+  
+    def get_site_dir(cls, site):
+        return
+    get_site_dir = classmethod(get_site_dir)
  
+ 
+
     def get_asset_dir(cls, file_object=None, alias=None):
         return
     get_asset_dir = classmethod(get_asset_dir)
