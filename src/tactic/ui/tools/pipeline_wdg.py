@@ -1708,7 +1708,8 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         search = Search("config/process")
         search.add_filter("process", process)
-        
+        search.add_filter("pipeline_code", pipeline_code)
+
         process_sobj = search.get_sobject()
 
 
