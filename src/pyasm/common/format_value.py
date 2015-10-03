@@ -476,7 +476,7 @@ class FormatValue(object):
                 ext = "KB"
             else:
                 value = int(value)
-                return "%s &nbsp;&nbsp;B" % value
+                return "%s B" % value
 
             value = my.currency_format(value, grouping=True)
             # HACK: remove $ and last decimal

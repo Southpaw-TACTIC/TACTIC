@@ -3856,6 +3856,9 @@ class SObject(object):
 
         # now that we have all the changed data, store which changes
         # were made
+        from pyasm.security import Site
+        # Note: if this site is not explicitly the first one, then logging the change
+        # timestamp is not supported (at the moment)
         search_type = my.get_search_type()
         if search_type not in [
                 "sthpw/change_timestamp",
@@ -3867,7 +3870,8 @@ class SObject(object):
                 'sthpw/queue',
 
         ] \
-                and sobject and sobject.has_value("code"):
+                and sobject and sobject.has_value("code") \
+                and Site.get_site() == Site.get_first_site():
 
 
             # get the current transaction and get the change log
@@ -6128,9 +6132,9 @@ class SearchType(SObject):
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
-            from pyasm.security import Site
-            print "Site: ", Site.get_site()
-            print "sql: ", select.get_statement()
+            #from pyasm.security import Site
+            #print "Site: ", Site.get_site()
+            #print "sql: ", select.get_statement()
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )
