@@ -750,7 +750,15 @@ class TopWdg(Widget):
         for css_file in css_files:
             widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % css_file )
 
-       
+        # custom js files to include
+        includes = Config.get_value("install", "include_css")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                print "include: ", include
+                widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
+
         return widget
 
 
