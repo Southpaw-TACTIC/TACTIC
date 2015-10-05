@@ -645,31 +645,33 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var search_key = top.getAttribute("spt_search_key");
                 var server = TacticServerStub.get();
                 var tmps = server.split_search_key(search_key);
+
+                var encode = function(path){
+                    var path_list = path.split("/");
+                    var filename = path_list.pop();
+                    filename = encodeURIComponent(filename);
+                    path_list.push(filename);
+                    snapshot_path = path_list.join("/");
+
+                    return snapshot_path;
+                }
+
                 if (/sthpw\/snapshot/.test(search_key)) {
                     snapshots = server.query_snapshots({filters: [['id', tmps[1]]], include_web_paths_dict: true});
                     
-                    window.open(snapshots[0].__web_paths_dict__.main);
+                    var snapshot_path = encode(snapshots[0].__web_paths_dict__.main[0]);
+                    window.open(snapshot_path);
                 }
                 else {
                     var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
-                        var snapshot_path = snapshot.__web_paths_dict__.main;
-                        var path_list = snapshot_path[0].split("/");
-                        var filename = path_list.pop();
-                        filename = encodeURIComponent(filename);
-                        path_list.push(filename);
-                        snapshot_path = path_list.join("/");
+                        var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
                         window.open(snapshot_path);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
                         if (snapshot.__search_key__) {
-                            var snapshot_path = snapshot.__web_paths_dict__.main;
-                            var path_list = snapshot_path[0].split("/");
-                            var filename = path_list.pop();
-                            filename = encodeURIComponent(filename);
-                            path_list.push(filename);
-                            snapshot_path = path_list.join("/");
+                            var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
                             window.open(snapshot_path);
                         }
                         else {
