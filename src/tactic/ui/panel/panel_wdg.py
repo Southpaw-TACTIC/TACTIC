@@ -3285,6 +3285,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'tool':
             from tool_layout_wdg import ToolLayoutWdg
+            kwargs['tool_icon'] = my.kwargs.get('tool_icon')
+            kwargs['tool_msg'] = my.kwargs.get('tool_msg')
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
