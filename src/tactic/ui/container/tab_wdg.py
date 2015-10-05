@@ -1179,8 +1179,10 @@ spt.tab.close = function(src_el) {
         if my.mode == 'default':
             content_top.add("<div style='height:5px'></div>")
             content_top.set_round_corners(5, corners=['TR','BR','BL'])
-            palette = content_top.get_palette()
-            border = palette.color("border")
+            border = my.kwargs.get("border_color")
+            if not border:
+                palette = content_top.get_palette()
+                border = palette.color("border")
             content_top.add_style("border: 1px solid %s" % border)
 
         inner.add(content_top)
