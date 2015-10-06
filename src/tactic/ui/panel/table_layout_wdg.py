@@ -349,7 +349,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             from tactic.ui.filter import FilterData
             filter = my.kwargs.get("filter")
             values = {}
-            if filter:
+            if filter and filter != 'None':
+                
                 filter_data = FilterData(filter)
                 values_list = filter_data.get_values_by_prefix("group")
                 if values_list:
