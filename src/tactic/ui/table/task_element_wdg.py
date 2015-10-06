@@ -1481,7 +1481,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     for task_list in items:
 
                         # check if this process in any of the tasks lists
-                        if task_list and (process in task_list[0].get_value("process")):
+                        if task_list and (process == task_list[0].get_value("process")):
                             tasks = task_list
                             is_task_displayed = True
                             break
