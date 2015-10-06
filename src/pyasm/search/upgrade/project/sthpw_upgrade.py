@@ -17,7 +17,7 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-    def upgrade_v4_4_0_v01_004(my):
+    def upgrade_v4_4_0_v01_005(my):
         my.run_sql(''' 
 
         INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
@@ -25,7 +25,7 @@ class SthpwUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_v4_4_0_v01_003(my):
+    def upgrade_v4_4_0_v01_004(my):
         my.run_sql(''' 
         CREATE TABLE department (
         id serial PRIMARY KEY,
@@ -38,10 +38,15 @@ class SthpwUpgrade(BaseUpgrade):
         );
         ''') 
 
-    def upgrade_v4_4_0_v01_002(my):
+    def upgrade_v4_4_0_v01_003(my):
         my.run_sql(''' 
+
         ALTER TABLE login add constraint "login_upn_idx" UNIQUE (upn);
         ''') 
+    def upgrade_v4_4_0_v01_002(my):
+        my.run_sql(''' 
+        UPDATE login set upn = login where upn is NULL;
+        ''')
 
     def upgrade_v4_4_0_v01_001(my):
         my.run_sql(''' 
