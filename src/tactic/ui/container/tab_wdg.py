@@ -1087,6 +1087,9 @@ spt.tab.close = function(src_el) {
             if not title:
                 title = Common.get_display_title(element_name)
 
+            if attrs.get("display") == "false":
+                continue
+
             load_now = attrs.get('load')
             is_loaded = load_now =='true'
             loaded_dict[element_name] = is_loaded

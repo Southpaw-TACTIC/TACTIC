@@ -466,21 +466,22 @@ class BaseAppServer(Base):
                     search = Search("config/url")
                     urls = search.get_sobjects()
                     open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
-                    print "xxxx: ", open_hashes
+                    print "open_hashes: ", open_hashes
+                    link = "/%s" % "/".join(my.hash)
 
 
                     # guest views
                     open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
                     if len(my.hash) >= 1 and my.hash[0] in open_hashes:
-                        link = "/%s" % "/".join(my.hash)
                         web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
                     else:
                         web_wdg = None
 
                     if not web_wdg:
-                        web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
+                        web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True, kwargs={"hash": link})
                     if web_wdg:
-                        web_wdg = web_wdg.get_buffer_display()
+                        if not isinstance(web_wdg, basestring):
+                            web_wdg = web_wdg.get_buffer_display()
                         top.add(web_wdg)
                 else:
                     web_wdg = None
