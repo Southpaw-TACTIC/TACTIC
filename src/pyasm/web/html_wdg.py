@@ -936,7 +936,8 @@ class HtmlElement(Widget):
 
 
         finally:
-            Site.pop_site()
+            if site:
+                Site.pop_site()
 
         return value
     eval_update = classmethod(eval_update)
