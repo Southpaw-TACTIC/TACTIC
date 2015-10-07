@@ -14,7 +14,7 @@
 __all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
 
 
-from pyasm.common import jsonloads
+from pyasm.common import jsonloads, Common
 from pyasm.search import Search
 from pyasm.command import Command
 
@@ -59,6 +59,36 @@ class DynamicUpdateWdg(BaseRefreshWdg):
         return r'''
 
 spt.update = {};
+
+
+spt.update.add = function(el, update) {
+    if (!update) {
+        var expression = el.getAttribute("expression");
+        var handler = el.getAttribute("handler");
+
+        var update = {}
+        if (expression) {
+            update["expression"] = expression;
+        }
+        if (handler) {
+            update['handler'] = handler;
+        }
+    }
+
+    var el_id = bvr.src_el.getAttribute("id");
+    if (!el_id) {
+        el_id = "SPT__" + Math.random(1000000);
+        el.setAttribute("id", el_id);
+
+    }
+
+    updates = {};
+    updates[el_id] = update;
+    el.spt_update = updates;
+    el.addClass("spt_update");
+}
+
+
 
 spt.update.display = function(el) {
     var div = $(document.createElement("div"));
@@ -205,6 +235,11 @@ top.spt_update_interval_id = setInterval( function() {
                     }
                     action_cbk(cbk_bvr);
                 }
+
+                else if (value == "__REFRESH__") {
+                    spt.panel.refresh(el)
+                    spt.update.display(el);
+                }
                 else if ( node_name == "SELECT" || node_name == "INPUT") {
                     var old_value = el.value;
                     if (old_value != value) {
@@ -238,7 +273,6 @@ top.spt_update_interval_id = setInterval( function() {
 
         var kwargs = {
             updates: JSON.stringify(update),
-            //last_timestamp: top.spt_update_timestamp,
             last_timestamp: oldest_timestamp,
             _debug: false,
         };
@@ -246,17 +280,12 @@ top.spt_update_interval_id = setInterval( function() {
 
         server.execute_cmd(cmd, kwargs, {}, {on_complete: on_complete} );
 
-
-
-
     }
 
 
 }, bvr.interval);
 
         '''
-
-
 
 
 
@@ -303,7 +332,13 @@ class DynamicUpdateCmd(Command):
                 values_list = [values_list]
 
             for values in values_list:
-                search_key = values.get("search_key")
+                handler = values.get("handler")
+                if handler:
+                    handler = Common.create_from_class_path(handler)
+                    search_key = handler.get_search_key()
+                else:
+                    search_key = values.get("search_key")
+
                 client_keys.add(search_key)
 
         # find all of the search that have changed
@@ -345,10 +380,15 @@ class DynamicUpdateCmd(Command):
 
             for values in values_list:
 
-                search_key = values.get("search_key")
+                handler = values.get("handler")
+                if handler:
+                    handler = Common.create_from_class_path(handler)
+                    search_key = handler.get_search_key()
+                else:
+                    search_key = values.get("search_key")
+
                 if search_key and search_key not in intersect_keys:
                     continue
-
 
                 # evaluate any compare expressions
                 compare = values.get("compare")

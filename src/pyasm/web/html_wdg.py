@@ -855,55 +855,88 @@ class HtmlElement(Widget):
 
 
     def eval_update(cls, update):
-        # search key is used to determine whether a change has occured.
-        # when it is None, the expression is always evaluated ... however,
-        # sometimes a search key is needed for the expression. In this case,
-        # use "parent_key".
-        search_key = update.get("search_key")
-        parent_key = update.get("parent_key")
+        handler = update.get("handler")
+        if handler:
+            handler = Common.create_from_class_path(handler)
 
-        column = update.get("column")
-        expression = update.get("expression")
-        compare = update.get("compare")
+            value = handler.get_value()
+            if value != None:
+                return value
+
+            column = handler.get_column()
+            expression = handler.get_expression()
+            compare = handler.get_compare()
+            search_key = handler.get_search_key()
+            parent_key = handler.get_parent_key()
+            site = handler.get_site()
 
 
-        value = update.get("value")
-        if value != None:
-            return value
-
-        if search_key:
-            sobject = Search.get_by_search_key(search_key)
-        elif parent_key:
-            sobject = Search.get_by_search_key(parent_key)
         else:
-            sobject = None
 
-        if not sobject:
-            return
+            column = update.get("column")
+            expression = update.get("expression")
+            compare = update.get("compare")
+
+            # search key is used to determine whether a change has occured.
+            # when it is None, the expression is always evaluated ... however,
+            # sometimes a search key is needed for the expression. In this case,
+            # use "parent_key".
+            search_key = update.get("search_key")
+            parent_key = update.get("parent_key")
+
+            # NOTE: this is explicitly not supported.  This would allow a client
+            # to set the site which is forbidden
+            #site = update.get("site")
+            site = None
 
 
-        if column:
-            value = sobject.get_value(column)
-            #print "column: ", column
-            #print "value: ", value
-            #print
+        from pyasm.security import Site
+        try:
+            if site:
+                Site.set_site(site)
 
-        elif compare:
-            value = Search.eval(compare, sobject, single=True)
-            print "compare: ", compare
-            print "value: ", value
 
-        elif expression:
-            value = Search.eval(expression, sobject, single=True)
-            #print "sobject: ", sobject.get_search_key()
-            #print "expression: ", expression
-            #print "value: ", value
-            #print
+            value = update.get("value")
+            if value != None:
+                return value
 
-        format_str = update.get("format")
-        if format_str:
-            format = FormatValue()
-            value = format.get_format_value( value, format_str )
+            if search_key:
+                sobject = Search.get_by_search_key(search_key)
+            elif parent_key:
+                sobject = Search.get_by_search_key(parent_key)
+            else:
+                sobject = None
+
+            if not sobject and not expression:
+                return
+
+
+            if column:
+                value = sobject.get_value(column)
+                #print "column: ", column
+                #print "value: ", value
+                #print
+
+            elif compare:
+                value = Search.eval(compare, sobject, single=True)
+                print "compare: ", compare
+                print "value: ", value
+
+            elif expression:
+                value = Search.eval(expression, sobject, single=True)
+                #print "sobject: ", sobject.get_search_key()
+                #print "expression: ", expression
+                #print "value: ", value
+                #print
+
+            format_str = update.get("format")
+            if format_str:
+                format = FormatValue()
+                value = format.get_format_value( value, format_str )
+
+
+        finally:
+            Site.pop_site()
 
         return value
     eval_update = classmethod(eval_update)
