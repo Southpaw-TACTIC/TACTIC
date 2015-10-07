@@ -202,10 +202,11 @@ class TopWdg(Widget):
             'type': 'click',
             'bvr_match_class': 'tactic_load',
             'cbjs_action': '''
+
             var view = bvr.src_el.getAttribute("view");
             if (!view) {
-                        spt.alert("No view found");
-                          }
+                spt.alert("No view found");
+            }
 
             var target_class = bvr.src_el.getAttribute("target");
             if (target_class.indexOf(".") != "-1") {
@@ -269,7 +270,7 @@ class TopWdg(Widget):
             'type': 'mouseenter',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
-            bvr.src_el.setStyle("background", "#BBB");
+            bvr.src_el.setStyle("background", "#EEE");
             '''
             } )
 
