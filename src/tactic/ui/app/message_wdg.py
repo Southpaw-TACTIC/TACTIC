@@ -132,14 +132,18 @@ class FormatMessageWdg(BaseRefreshWdg):
 
     def get_display(my):
         
-        message = my.sobjects[0]
+        search_key = my.kwargs.get('search_key')
+        if not my.sobjects and search_key:
+            message = Search.get_by_search_key(search_key)
+        elif my.sobjects:
+            message = my.sobjects[0]
+        
         if message.get_search_type() == 'sthpw/message':
             message_code = message.get_value("code")
         else:
             message_code = message.get_value("message_code")
 
         category = message.get_value("category")
-        
         table = Table()
         table.add_row()
         td = table.add_cell()
@@ -161,7 +165,11 @@ class FormatMessageWdg(BaseRefreshWdg):
         if message_value.startswith('{') and message_value.endswith('}'):
 
             #message_value = message_value.replace(r"\\", "\\");
-            message_value = jsonloads(message_value)
+            try:
+                message_value = jsonloads(message_value)
+            except:
+                pass
+
             # that doesn't support delete
             
             if category == "sobject":
@@ -197,8 +205,8 @@ class FormatMessageWdg(BaseRefreshWdg):
                     description.add(content)
 
             elif category == 'progress':
+                message = message_value.get("message")
                 description = DivWdg()
-                message = message_value.get('message')
                 message_div = DivWdg()
                 message_div.add(message)
                 description.add(message_div)
