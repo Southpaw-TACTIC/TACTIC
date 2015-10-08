@@ -160,7 +160,7 @@ class Xml(Base):
 
         if attrs:
             for name, value in attrs.items():
-                xml.set_attribute(element, name, value)
+                Xml.set_attribute(element, name, value)
 
         return element
 

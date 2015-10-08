@@ -160,7 +160,6 @@ class TaskStatusChangeTrigger(Trigger):
 
         process_name = task.get_value("process")
         status = task.get_value("status")
-
         if status.lower() in PREDEFINED:
             status = status.lower()
 
@@ -607,16 +606,18 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         search.add_filter("process", my.process)
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
-
-        workflow = process_sobj.get_json_value("workflow")
-        if workflow:
-            assigned = workflow.get("assigned")
-        else:
-            assigned = None
+        
+        assigned = None
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow", {})
+            if workflow:
+                assigned = workflow.get("assigned")
+     
 
 
         # check to see if the tasks exist and if they don't then create one
         tasks = Task.get_by_sobject(my.sobject, process=my.process)
+      
         if not tasks:
             tasks = Task.add_initial_tasks(my.sobject, processes=[my.process], assigned=assigned)
         else:
@@ -1364,7 +1365,6 @@ class ProcessCustomTrigger(BaseProcessTrigger):
             return
 
         status_pipeline_code = process_obj.get_task_pipeline()
-
         status_pipeline = Pipeline.get_by_code(status_pipeline_code)
         if not status_pipeline:
             print "No custom status pipeline [%s]" % process
@@ -1381,7 +1381,6 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         direction = status_obj.get_attribute("direction")
         to_status = status_obj.get_attribute("status")
         mapping = status_obj.get_attribute("mapping")
-
         if not to_status and not mapping:
             search = Search("config/process")        
             search.add_filter("pipeline_code", status_pipeline.get_code())
@@ -1403,6 +1402,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
 
         if mapping:
+            mapping = mapping.lower()
             event = "process|%s" % mapping
             Trigger.call(my.get_caller(), event, output=my.input)
         elif to_status:

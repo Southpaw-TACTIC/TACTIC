@@ -36,6 +36,7 @@ spt.Environment = function() {
     this.client_repo_dir = null;
     this.colors = {};
     this.libraries = {};
+    this.kiosk_mode = false;
 
     // by default, look at the browser
     if (typeof(document) != 'undefined') {
@@ -138,7 +139,14 @@ spt.Environment = function() {
             return true;
         }
     }
-
+   
+    this.set_kiosk_mode = function(mode) {
+        if (mode == 'true' || mode == true) 
+            this.kiosk_mode = true;
+    }
+    this.get_kiosk_mode = function() {
+        return this.kiosk_mode;
+    }
 
 
 

@@ -175,17 +175,24 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
 
         value = my.get_value()
         color = Task.get_default_color(value)
-
+        
+        # If task status  pipeline is chosen, 
+        # use color attribute from status (process)
         if pipeline_code:
             td.set_attr("spt_pipeline_code", pipeline_code)
 
             pipeline = Pipeline.get_by_code(pipeline_code)
+            
             if pipeline:
                 #attributes = pipeline.get_process_attrs(value)
                 #color = attributes.get("color")
                 process = pipeline.get_process(value)
                 if process:
                     color = process.get_color()
+                    if not color: 
+                        process_sobject = pipeline.get_process_sobject(value)
+                        if process_sobject:
+                            color = process_sobject.get_value("color") 
 
         if color:
            td.add_style("background-color: %s" % color)
