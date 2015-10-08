@@ -859,7 +859,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         show_search = my.kwargs.get("show_search") != 'false'
 
-        if show_search and show_keyword_search:
+        if show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
 
