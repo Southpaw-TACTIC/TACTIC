@@ -129,10 +129,12 @@ TacticServerStub = function() {
     this.get_ticket = function(login, password, kwargs) {
         var func_name = "get_ticket";
         var client = new AjaxService( this.url, '' );
+
         var args = [login, password];
-        if (kwargs)
-            args.push(kwargs);
-        
+        if (kwargs && kwargs.site)
+            args.push(kwargs.site);
+
+     
         var ret_val = client.invoke( func_name, args );
         ret_val = this._handle_ret_val(func_name, ret_val, 'string');
         ret_val = ret_val.replace(/(\r\n|\n|\r)/gm, '');
@@ -183,7 +185,6 @@ TacticServerStub = function() {
         args.push(this.project);
         args.push(kwargs);
         var ret_val = client.invoke( "start", args );
-
         this.transaction_ticket = this._parse_result(ret_val, "start");
 
         // put this transaction on the undo queue
@@ -856,7 +857,7 @@ TacticServerStub = function() {
         try {
         for (var i = 0; i < paths.length; i++ ) {
             var path = paths[i];
-	    var dst = sand_paths[i];
+            var dst = sand_paths[i];
             var basename;
             if (filename_mode == 'repo') {
                 basename = spt.path.get_basename(dst);
@@ -1593,7 +1594,8 @@ TacticServerStub = function() {
             // in IE a fault response has a non-null result, but also has no string nodes, and so goes into this
             // block of code ... so handle it here the same as fault response above
             ret_val = ret_val.responseText;
-            if( ret_val.contains("faultCode") ) {
+            var patt = /faultCode/g;
+            if (patt.test(ret_val)) {
                 spt.exception.handle_fault_response( ret_val );
             }
             return "";
@@ -1628,7 +1630,8 @@ TacticServerStub = function() {
             if (func_name != 'start') {
 
                 ret_val = ret_val.responseText;
-                if( ret_val.contains("faultCode") ) {
+                var patt = /faultCode/g;
+                if(patt.test(ret_val)) {
                     spt.exception.handle_fault_response( ret_val );
                 }
                 else{
