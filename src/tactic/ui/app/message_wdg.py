@@ -165,11 +165,7 @@ class FormatMessageWdg(BaseRefreshWdg):
         if message_value.startswith('{') and message_value.endswith('}'):
 
             #message_value = message_value.replace(r"\\", "\\");
-            try:
-                message_value = jsonloads(message_value)
-            except:
-                pass
-
+            message_value = jsonloads(message_value)
             # that doesn't support delete
             
             if category == "sobject":
