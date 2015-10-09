@@ -132,6 +132,8 @@ class FormatMessageWdg(BaseRefreshWdg):
 
     def get_display(my):
         
+        # my.sobjects is preferred, otherwise use
+        # search_key.
         search_key = my.kwargs.get('search_key')
         if not my.sobjects and search_key:
             message = Search.get_by_search_key(search_key)
