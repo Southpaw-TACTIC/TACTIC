@@ -201,8 +201,8 @@ class FormatMessageWdg(BaseRefreshWdg):
                     description.add(content)
 
             elif category == 'progress':
-                message = message_value.get("message")
                 description = DivWdg()
+                message = message_value.get("message")
                 message_div = DivWdg()
                 message_div.add(message)
                 description.add(message_div)
