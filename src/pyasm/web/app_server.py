@@ -28,6 +28,8 @@ from web_tools import *
 from html_wdg import *
 from url_security import *
 
+from web_login_cmd import WebLoginCmd
+
 import os, cStringIO
 
 try:
@@ -250,7 +252,14 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        open_hashes = ['register', 'accept']
+                        # FIXME: this doesn't work!!!  It resets the home page
+                        """
+                        search = Search("config/url")
+                        urls = search.get_sobjects()
+                        open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
+                        print "xxxx: ", open_hashes
+                        """
+                        open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
                         if len(my.hash) >= 1 and my.hash[0] in open_hashes:
                             link = "/%s" % "/".join(my.hash)
                             web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
@@ -270,7 +279,8 @@ class BaseAppServer(Base):
                 # display default web login
                 if not web_wdg:
                     # get login screen from Site
-                    web_wdg = site_obj.get_login_wdg()
+                    link = "/%s" % "/".join(my.hash)
+                    web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
                         web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
@@ -438,7 +448,8 @@ class BaseAppServer(Base):
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
-                    default_project = Project.get_default_project()
+                    current_project = Project.get_default_project()
+
                 if current_project and current_project != "default":
                     try:
                         Project.set_project(current_project)
@@ -448,7 +459,26 @@ class BaseAppServer(Base):
                             pass
                         else:
                             raise
-                    web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
+
+
+                    # find the guest views
+                    # FIXME: this doesn't work!!!  It resets the home page
+                    search = Search("config/url")
+                    urls = search.get_sobjects()
+                    open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
+                    print "xxxx: ", open_hashes
+
+
+                    # guest views
+                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
+                    if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                        link = "/%s" % "/".join(my.hash)
+                        web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
+                    else:
+                        web_wdg = None
+
+                    if not web_wdg:
+                        web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
                     if web_wdg:
                         web_wdg = web_wdg.get_buffer_display()
                         top.add(web_wdg)
@@ -626,7 +656,6 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
-                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
@@ -649,7 +678,6 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
             else:
-                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()

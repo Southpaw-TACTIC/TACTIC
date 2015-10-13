@@ -758,7 +758,13 @@ class Site(object):
     def get_connect_data(cls, site):
         return {}
     get_connect_data = classmethod(get_connect_data)
+  
+    def get_site_dir(cls, site):
+        return
+    get_site_dir = classmethod(get_site_dir)
  
+ 
+
     def get_asset_dir(cls, file_object=None, alias=None):
         return
     get_asset_dir = classmethod(get_asset_dir)
@@ -774,7 +780,7 @@ class Site(object):
     get_default_project = classmethod(get_default_project)
 
 
-    def get_login_wdg(cls):
+    def get_login_wdg(cls, hash=None):
         from tactic.ui.panel import HashPanelWdg
         web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
         return web_wdg
@@ -813,7 +819,15 @@ class Site(object):
             return ""
         return sites[0]
     get_first_site = classmethod(get_first_site)
+
+
+    def get_sites(cls):
+        '''Get the initial site'''
+        sites = Container.get("sites")
+        return sites
+    get_sites = classmethod(get_sites)
  
+
 
     def set_site(cls, site):
         '''Set the global site for this "session"'''

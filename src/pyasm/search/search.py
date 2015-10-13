@@ -70,7 +70,6 @@ class Search(Base):
         my.is_search_done = False
         my.sobjects = []
 
-
         # retired asset flag - retired assets are never shown by default
         my.show_retired_flag = False
 
@@ -83,12 +82,14 @@ class Search(Base):
         protocol = 'local'
         if type(search_type) in types.StringTypes:
             # project is *always* local.  This prevents an infinite loop
+            from pyasm.biz import Project
             if search_type != "sthpw/project":
                 try:
-                    key = "Search:resource:%s" % search_type
+                    from pyasm.security import Site
+                    site = Site.get_site()
+                    key = "Search:resource:%s:%s" % (site, search_type)
                     parts = Container.get(key)
                     if not parts:
-                        from pyasm.biz import Project
                         if not project_code:
                             project_code = Project.extract_project_code(search_type)
                         project = Project.get_by_code(project_code)
@@ -3846,6 +3847,9 @@ class SObject(object):
 
         # now that we have all the changed data, store which changes
         # were made
+        from pyasm.security import Site
+        # Note: if this site is not explicitly the first one, then logging the change
+        # timestamp is not supported (at the moment)
         search_type = my.get_search_type()
         if search_type not in [
                 "sthpw/change_timestamp",
@@ -3857,7 +3861,8 @@ class SObject(object):
                 'sthpw/queue',
 
         ] \
-                and sobject and sobject.has_value("code"):
+                and sobject and sobject.has_value("code") \
+                and Site.get_site() == Site.get_first_site():
 
 
             # get the current transaction and get the change log
@@ -6117,9 +6122,9 @@ class SearchType(SObject):
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
-            from pyasm.security import Site
-            print "Site: ", Site.get_site()
-            print "sql: ", select.get_statement()
+            #from pyasm.security import Site
+            #print "Site: ", Site.get_site()
+            #print "sql: ", select.get_statement()
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )

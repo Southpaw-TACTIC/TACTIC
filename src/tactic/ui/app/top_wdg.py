@@ -895,9 +895,10 @@ class TitleTopWdg(TopWdg):
 
         body.add("</form>\n")
 
-        from tactic_branding_wdg import TacticCopyrightNoticeWdg
-        copyright = TacticCopyrightNoticeWdg()
-        body.add(copyright)
+        if web.is_admin_page():
+            from tactic_branding_wdg import TacticCopyrightNoticeWdg
+            copyright = TacticCopyrightNoticeWdg()
+            body.add(copyright)
 
         return widget
 
