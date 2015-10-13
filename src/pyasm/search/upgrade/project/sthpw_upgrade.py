@@ -74,7 +74,7 @@ class SthpwUpgrade(BaseUpgrade):
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
 
-    def upgrade_v4_4_0_a01_006(my):
+    def critical_v4_4_0_a01_012(my):
         my.run_sql('''
         ALTER TABLE pipeline ADD COLUMN "parent_process" varchar(256);
         ''')
