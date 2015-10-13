@@ -1452,7 +1452,12 @@ class Security(Base):
      
 
         authenticate = Common.create_from_class_path(auth_class)
-        is_authenticated = authenticate.verify(auth_login_name, password)
+        try:
+            is_authenticated = authenticate.verify(auth_login_name, password)
+        except Exception, e:
+            print "WARNING: ", e
+            raise
+
         if is_authenticated != True:
             raise SecurityException("Login/Password combination incorrect")
 
@@ -1462,6 +1467,7 @@ class Security(Base):
         
         if not mode:
             mode = 'default'
+
         
         # lowercase name if case-insensitive is set to true
         if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':

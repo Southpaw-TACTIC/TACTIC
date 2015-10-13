@@ -25,7 +25,7 @@ class SthpwUpgrade(BaseUpgrade):
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
 
-    def upgrade_v4_4_0_a01_012(my):
+    def critical_v4_4_0_a01_012(my):
         my.run_sql('''
         ALTER TABLE change_timestamp ADD COLUMN "timestamp" timestamp;
         ''')
