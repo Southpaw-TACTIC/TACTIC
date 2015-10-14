@@ -2051,7 +2051,7 @@ class TacticServerStub(object):
         @return:
         dictionary - snapshot
         '''
-        mode_options = ['upload', 'copy', 'move', 'inplace']
+        mode_options = ['upload', 'copy', 'move', 'inplace', 'uploaded']
         if mode:
             if mode not in mode_options:
                 raise TacticApiException('Mode must be in %s' % mode_options)
@@ -2079,6 +2079,12 @@ class TacticServerStub(object):
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     my.upload_file(path)
+                use_handoff_dir = False
+            elif mode == 'uploaded':
+                # remap file path: this mode is only used locally.
+                from pyasm.common import Environment
+                upload_dir = Environment.get_upload_dir()
+                file_path = "%s/%s" % (upload_dir, file_path)
                 use_handoff_dir = False
             elif mode == 'inplace':
                 use_handoff_dir = False
