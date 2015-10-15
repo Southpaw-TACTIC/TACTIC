@@ -828,7 +828,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         update_info.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.");
+            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.<br> If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.", {type: 'html'});
             '''
         } )
         buttons.add_cell(update_info);
