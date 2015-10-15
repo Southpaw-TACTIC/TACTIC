@@ -2583,8 +2583,8 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         direction = workflow.get("direction")
         to_status = workflow.get("status")
         mapping = workflow.get("mapping")
-
- 
+        #color = process_sobg.get_color()
+        
 
 
         settings_wdg = DivWdg()
@@ -2648,6 +2648,13 @@ class TaskStatusInfoWdg(BaseInfoWdg):
                 
         settings_wdg.add(text)
         text.add_style("width: 100%")
+ 
+        # ADD COLOR OPTION HERE
+        color_div = DivWdg("Color")
+        settings_wdg.add(color_div)
+        
+        color_input = ColorInputWdg
+
 
 
        
