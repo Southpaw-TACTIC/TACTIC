@@ -192,7 +192,7 @@ MooDialog.Error = new Class({
 			this.overlay = new Overlay(this.options.inject, {
 				duration: this.options.duration
 			});
-			if (this.options.closeOnOverlayClick) this.overlay.addEvent('click', this.close.                    bind(this));
+			if (this.options.closeOnOverlayClick) this.overlay.addEvent('click', this.close.bind(this));
 	},
 	onBeforeOpen: function(){
 			this.overlay.open();
@@ -255,8 +255,13 @@ MooDialog.implement('options', {
                 this.fx.start(0).chain(function(){
 			this.fireEvent('hide');
 		}.bind(this));
-		this.overlay.close();
+        /* tactic */
+        var num = this.options.inject.getElements('.MooDialog');
+        if (num.length <= 1)
+		    this.overlay.close();
+
 	}
+
 
 });
 
