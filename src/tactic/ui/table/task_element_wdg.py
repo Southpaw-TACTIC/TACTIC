@@ -867,6 +867,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_title(my):
         
+        # If for all sObjects in table, no processes
+        # exists, display null title "Tasks".
+        if not my.sorted_processes:
+            return "Tasks"
+
         if my.show_processes_in_title == 'true':
             table = Table()
             table.add_style("margin-top: 4px")
@@ -1125,12 +1130,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # fill in any missing tasks
+        pipeline_code = my.get_pipeline_code()
+        pipeline = Pipeline.get_by_code(pipeline_code)
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
-        if show_filler_tasks in ["true", True]:
-
-            pipeline_code = my.get_pipeline_code()
-            pipeline = Pipeline.get_by_code(pipeline_code)
-            assert(pipeline)
+        if pipeline and show_filler_tasks in ["true", True]:
 
             processes = pipeline.get_process_names(type=["node","approval","hierarchy"])
 
@@ -1318,7 +1321,21 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_display(my):
-
+       
+        # Check if pipeline exists
+        pipeline_code = my.get_pipeline_code()
+        pipeline = None
+        if pipeline_code:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+        if not pipeline:
+            no_pipeline_div = DivWdg()
+            icon = IconWdg("WARNING", IconWdg.WARNING)
+            no_pipeline_div.add(icon)
+            no_pipeline_div.add("<b>You must select a pipeline to manage tasks.</b>")
+            no_pipeline_div.add("<br/>"*2)
+            return no_pipeline_div 
+        
+ 
         sobject = my.get_current_sobject()
         my.tasks = my.get_tasks(sobject)
 
