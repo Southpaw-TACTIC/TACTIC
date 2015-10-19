@@ -15,6 +15,7 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 import string, types, re, sys
 import decimal
+import uuid
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -3301,6 +3302,13 @@ class SObject(object):
         my.new_id = int(value)
 
 
+    def set_auto_code(my):
+        '''set a unique code automatically for certain internal sTypes'''
+        unique_id = uuid.uuid1()
+        unique_code = '%s_%s'%(my.get_code_key(), unique_id)
+        my.set_value('code', unique_code)
+
+
     def set_user(my, user=None):
         if user == None:
             user = Environment.get_user_name()
@@ -3796,6 +3804,7 @@ class SObject(object):
                 if log == None:
                     # create a virtual log
                     log = SearchType.create("sthpw/change_timestamp")
+                    log.set_auto_code()
                     log.set_value("search_type", search_type)
                     log.set_value("search_code", search_code)
                     transaction.change_timestamps[key] = log
