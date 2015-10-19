@@ -6209,7 +6209,7 @@ class SObjectUndo:
                 "sthpw/queue",
 
                 'sthpw/message',
-                'sthpw/message_log',
+                'sthpw/message_log'
         ]:
             return
         if sobject.get_search_type() == "sthpw/transaction_log":
@@ -6325,6 +6325,12 @@ class SObjectUndo:
                 "sthpw/sync_server",
                 "sthpw/transaction_log",
                 "sthpw/ticket",
+                "sthpw/cache",
+                "sthpw/queue",
+
+                'sthpw/message',
+                'sthpw/message_log'
+
         ]:
             return
 
@@ -6350,12 +6356,16 @@ class SObjectUndo:
 
 
         Xml.set_attribute(sobject_node,"action","delete")
-
+        tmp_col_name = sobject.get_database_impl().get_temp_column_name()
+        if tmp_col_name and data.get(tmp_col_name):
+            del data[tmp_col_name]
+            
         for key,value in data.items():
             node = xml.create_element("column")
             Xml.set_attribute(node,"name",key)
             if value == None:
                 value = ""
+            
             Xml.set_attribute(node,"from",value)
             xml.append_child(sobject_node, node)
 
@@ -6411,12 +6421,15 @@ class SObjectUndo:
             sobject = SearchType.create(search_type)
 
             columns = Xml.xpath(node,"column")
+           
+            tmp_col_name = sobject.get_database_impl().get_temp_column_name()
+          
             for column in columns:
                 name = Xml.get_attribute(column,"name")
                 # id and code are set outside of the columns.  They
                 # recorded only for information purposes.  Should they
                 # even be recorded at all?
-                if name in ['code', 'id']:
+                if name in ['code', 'id', tmp_col_name]:
                     continue
 
                 value = Xml.get_attribute(column,"from")

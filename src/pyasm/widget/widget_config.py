@@ -77,11 +77,13 @@ class WidgetConfig(Base):
             config_cache = {}
             Container.put("WidgetConfig:config_cache", config_cache)
 
+
         key = "%s:%s" % (view, file_path)
         config = config_cache.get(key)
         if config:
             return config
 
+        
         config = WidgetConfig(view, file_path, xml, __get__=True, use_cache=use_cache)
         config_cache[key] = config
 
@@ -113,6 +115,13 @@ class WidgetConfig(Base):
 
     def set_view(my, view):
         my.view = view
+        if view and view.find('@') != -1:
+            my.view_as_attr = True
+            my.view_xpath = "view[@name='%s']"%view
+        else:
+            my.view_as_attr = False
+            my.view_xpath = view
+
 
     def get_view(my):
         return my.view
