@@ -64,7 +64,6 @@ class PipelineInputWdg(BaseInputWdg):
         
         # Only on insert, a default pipeline will
         # be assigned.
-        empty_option = None
         if sobj and sobj.is_insert():
             select.add_empty_option("-- Default --")
         else:
