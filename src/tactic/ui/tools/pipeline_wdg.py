@@ -2298,12 +2298,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 15px")
 
-
-        input_processes = pipeline.get_input_processes(process)
-        process_list = [x.get_name() for x in input_processes]
-        process_list_str = ",".join(process_list)
-
-        form_wdg.add("Set a default person that need to approve the '%s' process" % process_list_str)
+        form_wdg.add("Set a default person that will be assigned to the %s task." % process)
 
         form_wdg.add("<br/>")
         form_wdg.add("<br/>")
