@@ -1977,7 +1977,7 @@ class ThumbWdg2(BaseRefreshWdg):
                 path = urllib.pathname2url(path)
 
                 img = DivWdg()
-                img.add_style("opacity: 0.2")
+                img.add_style("opacity: 0.3")
 
                 img_inner = HtmlElement.img(src=path)
                 img.add(img_inner)
