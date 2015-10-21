@@ -602,7 +602,7 @@ class Common(Base):
 
 
 
-    def get_dir_info(dir, skip_dir_details=False):
+    def get_dir_info(dir, skip_dir_details=False, file_range=None):
         '''Finds the disk size of a path'''
 
         info = {}
@@ -613,6 +613,12 @@ class Common(Base):
         if dir.find("###") != -1:
             dir_size = 0
             file_type = 'sequence'
+            if file_range:
+                from pyasm.biz import FileGroup
+                file_paths = FileGroup.expand_paths(dir, file_range)
+                for file_path in file_paths:
+                    # gets total size of sequence
+                    dir_size += os.path.getsize(file_path)
         elif not os.path.exists(dir):
             dir_size = 0
             file_type = 'missing'
