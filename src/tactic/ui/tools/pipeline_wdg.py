@@ -2298,12 +2298,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 15px")
 
-
-        input_processes = pipeline.get_input_processes(process)
-        process_list = [x.get_name() for x in input_processes]
-        process_list_str = ",".join(process_list)
-
-        form_wdg.add("Set a default person that need to approve the '%s' process" % process_list_str)
+        form_wdg.add("Set a default person that will be assigned to the %s task." % process)
 
         form_wdg.add("<br/>")
         form_wdg.add("<br/>")
@@ -2335,7 +2330,6 @@ class ApprovalInfoWdg(BaseInfoWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_approval_info_top");
             var input = spt.api.get_input_values(top, null, false);
-            console.log(input);
 
             var server = TacticServerStub.get();
             var class_name = 'tactic.ui.tools.ProcessInfoCmd';
@@ -2345,7 +2339,6 @@ class ApprovalInfoWdg(BaseInfoWdg):
                 process: bvr.process,
                 assigned: input.assigned,
             }
-
             server.execute_cmd(class_name, kwargs);
 
 
@@ -2708,7 +2701,7 @@ class ProcessInfoCmd(Command):
             return my.handle_status()
 
         if node_type == 'approval':
-            return my.handle_status()
+            return my.handle_approval()
 
 
 
@@ -2811,7 +2804,25 @@ class ProcessInfoCmd(Command):
         process_sobj.commit()
 
 
+    def handle_approval(my):
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+        assigned = my.kwargs.get("assigned")
 
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+        if assigned:
+            workflow['assigned'] = assigned
+        process_sobj.set_json_value("workflow", workflow)
+        process_sobj.commit()
 
     def handle_status(my):
 
