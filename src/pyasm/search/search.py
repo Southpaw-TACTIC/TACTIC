@@ -623,8 +623,8 @@ class Search(Base):
         '''convenience function to add a filter for the given sobject'''
         my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
 
-        if sobject.column_exists("code") and my.column_exists("%ssearch_code" % prefix):
-            search_code = sobject.get_value("code")
+        if SearchType.column_exists(sobject.get_search_type(), "code") and \
+            SearchType.column_exists(my.get_search_type(), "%ssearch_code" % prefix):
             if not op:
                 op = '='
             my.add_filter("%ssearch_code" % prefix, search_code, op=op )
@@ -5419,7 +5419,7 @@ class SearchType(SObject):
         #        columns.remove("s_status")
 
         for column in columns:
-            if column.startswith("_"):
+            if column.startswith("_tmp"):
                 columns.remove(column)
 
         return columns
