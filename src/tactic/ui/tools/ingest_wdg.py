@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project
+from pyasm.biz import File, Project, FileGroup
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -26,6 +26,7 @@ from tactic.ui.widget import ActionButtonWdg
 from tactic_client_lib import TacticServerStub
 
 import os
+import os.path
 import re
 __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 
@@ -1080,7 +1081,7 @@ class IngestUploadCmd(Command):
                     sobject = None
 
             elif update_mode == "sequence":
-                if "###" not in filename:
+                if not FileGroup.is_sequence(filename):
                     raise TacticException('Please modify sequence naming to have at least three digits.')
                 search = Search(search_type)
                 search.add_filter("name", filename)
@@ -1241,25 +1242,23 @@ class IngestUploadCmd(Command):
         return non_seq_filenames
 
     def natural_sort(my,l):
-        """
+        '''
         natural sort will makesure a list of names passed in is 
         sorted in an order of 1000 to be after 999 instead of right after 101
-        """
+        '''
         convert = lambda text: int(text) if text.isdigit() else text.lower() 
         alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
         return sorted(l, key = alphanum_key)
 
-    import os.path
-
-    def find_sequences(my,filenames):
-        """
+    def find_sequences(my, filenames):
+        '''
         Parse a list of filenames into a dictionary of sequences.  Filenames not
         part of a sequence are returned in the None key
 
         :param      filenames | [<str>, ..]
 
         :return     {<str> sequence: [<str> filename, ..], ..}
-        """
+        '''
         local_filenames   = filenames[:]
         sequence_patterns = {}
         sequences         = {None: []}
@@ -1286,7 +1285,7 @@ class IngestUploadCmd(Command):
 
             for key, pattern in sequence_patterns.items():
                 match = pattern.match(filename)
-                if ( not match ):
+                if not match:
                     continue
 
                 sequences[key].append(filename)
@@ -1294,13 +1293,13 @@ class IngestUploadCmd(Command):
                 break
 
             # if we've already been matched, then continue on
-            if ( found ):
+            if found:
                 continue
 
             # next, see if this filename should start a new sequence
             basename      = os.path.basename(filename)
             pattern_match = pattern_expr.match(basename)
-            if ( pattern_match ):
+            if pattern_match:
                 opts = (pattern_match.group(1), pattern_match.group(3))
                 key  = '%s%s%s' % (opts[0], pounds, opts[1])
 
