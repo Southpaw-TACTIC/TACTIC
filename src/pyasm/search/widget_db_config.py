@@ -104,7 +104,6 @@ class WidgetDbConfig(SObject):
        
         if xml.to_string().strip() != '<config/>':
             if view and not view.startswith('link_search'):
-                print "VIEW Namew ", view
                 if view.find('@') != -1:
                     view_node = xml.get_node("config/view[@name='%s']" %view)
                     

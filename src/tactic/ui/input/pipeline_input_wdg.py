@@ -60,12 +60,17 @@ class PipelineInputWdg(BaseInputWdg):
                     name = x.get_value("code")
                 names.append(name)
 
-
-
         select = SelectWdg(my.get_input_name())
-        select.add_empty_option("-- Default --")
+        
+        # Only on insert, a default pipeline will
+        # be assigned.
+        if sobj and sobj.is_insert():
+            select.add_empty_option("-- Default --")
+        else:
+            select.add_empty_option()
         select.set_option("values", codes)
         select.set_option("labels", names)
+        
         if sobj:
             value = sobj.get_value(my.get_name())
             if value:
