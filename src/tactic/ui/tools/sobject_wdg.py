@@ -210,7 +210,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         td = thumb_table.add_cell(thumb)
         td.add_style("vertical-align: top")
         td.add_style("width: 250px")
-        td.add_style("height: 250px")
         td.add_style("padding: 15px")
 
         sobject_info_wdg = my.get_sobject_info_wdg()
