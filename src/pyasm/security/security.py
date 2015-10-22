@@ -900,6 +900,7 @@ class Ticket(SObject):
             expiry = impl.get_timestamp_now(offset=offset, type=type)
 
         ticket = SearchType.create("sthpw/ticket")
+        ticket.set_auto_code()
         ticket.set_value("ticket", key)
         ticket.set_value("login", login)
         ticket.set_value("timestamp", now, quoted=0)
