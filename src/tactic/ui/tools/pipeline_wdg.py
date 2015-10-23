@@ -2562,7 +2562,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top.add_style("padding: 20px 0px")
 
         top.add_class("spt_status_top")
-
  
         title_wdg = my.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
@@ -2695,9 +2694,13 @@ class TaskStatusInfoWdg(BaseInfoWdg):
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);
                 try {
+                    // Refresh the canvas to display new color.
                     spt.pipeline.remove_group(group_name);
                     results = server.insert_update(search_key, {'pipeline': xml}); 
                     spt.pipeline.import_pipeline(group_name);
+
+                    // Refresh the status panel to handle refreshed DOM elements
+                    spt.panel.refresh(bvr.src_el); 
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
