@@ -2701,10 +2701,10 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             for (group_name in groups) {
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);
-                var color = "#999";
                 try {
-                    var args = {search_key: search_key, pipeline:xml, color:color};
-                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+                    spt.pipeline.remove_group(group_name);
+                    results = server.insert_update(search_key, {'pipeline': xml}); 
+                    spt.pipeline.import_pipeline(group_name);
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
