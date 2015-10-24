@@ -321,6 +321,13 @@ class BaseAppServer(Base):
         else:
             allow_guest = False
 
+        site_obj = Site.get()
+        site_allow_guest = site_obj.allow_guest()
+        if site_allow_guest != None:
+            allow_guest = site_allow_guest
+
+
+
         security = Security()
         try:
             security = my.handle_security(security)
@@ -389,7 +396,7 @@ class BaseAppServer(Base):
                 return my.handle_not_logged_in(allow_change_admin=False)
 
             else:
-                from pyasm.widget import WebLicenseWdg, BottomWdg, Error403Wdg
+                from pyasm.widget import BottomWdg, Error403Wdg
                 widget = Widget()
                 top = my.get_top_wdg()
                 widget.add( top )
@@ -590,7 +597,7 @@ class BaseAppServer(Base):
             widget.add( BottomWdg() )
             widget.get_display()
 
-        # put an annoying alert if there is a problem with the licensed
+        # put an annoying alert if there is a problem with the license
         if not is_licensed:
             # to be sure, reread license.  This gets around the problem
             # of the extra error message when uploading a new license

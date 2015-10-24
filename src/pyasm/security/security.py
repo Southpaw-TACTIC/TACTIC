@@ -317,7 +317,7 @@ class Login(SObject):
 
 
 
-    def create(cls, user_name, password, first_name=None, last_name=None, groups=None, namespace=None, display_name=None):
+    def create(cls, user_name, password, first_name=None, last_name=None, groups=None, namespace=None, display_name=None, project_code=None):
 
         login = SearchType.create("sthpw/login")
         login.set_value("login", user_name)
@@ -341,13 +341,14 @@ class Login(SObject):
         if namespace != None:
             login.set_value("namespace", namespace)
 
+
         login.commit()
 
         if groups:
             for group in groups:
                 login.add_to_group(group)
         else:
-            default_group = LoginGroup.get_project_default()
+            default_group = LoginGroup.get_project_default(project_code=project_code)
             if default_group:
                 login.add_to_group(default_group)
 
@@ -793,6 +794,10 @@ class Site(object):
         web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
         return web_wdg
     get_login_wdg = classmethod(get_login_wdg)
+
+
+    def allow_guest(cls, url=None):
+        return True
  
 
 
@@ -1232,6 +1237,7 @@ class Security(Base):
 
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
+        search.set_show_retired(True)
         my._login = search.get_sobject()
         if not my._login:
             # login must exist in the database
@@ -1905,6 +1911,25 @@ class License(object):
         return my.licensed
 
 
+    def is_licensed_for(my, product, version=None):
+        my.licensed = False
+        my.message = "No valid license for %s found." % product
+
+        products = my.xml.get_value("license/data/products")
+        if not products:
+            return
+
+
+        products = products.split(",")
+        if product in products:
+            my.message = ""
+            my.licensed = True
+
+        return my.licensed
+
+
+
+
     def get_message(my):
         return my.message
 
@@ -2097,24 +2122,29 @@ class License(object):
             license_version = my.xml.get_value("license/data/tactic_version")
             release_version = Environment.get_release_version()
             if not license_version:
-                raise LicenseException("License file not locked to a specific version of TACTIC")
-            try:
-                if license_version in ["EPL", "ALL"]:
-                    # really big
-                    license_version = 10**6
-                else:
-                    parts = license_version.split(".")
-                    license_version = float("%s.%s" % (parts[0],parts[1])) 
-
-                parts = release_version.split(".")
-                release_version = float("%s.%s" % (parts[0],parts[1])) 
-
-            except:
-                raise LicenseException("Incorrect format for version in license file")
+                # This is no longer an issue.  License should be time based, not
+                # version based
+                #raise LicenseException("License file not locked to a specific version of TACTIC")
+                pass
 
             else:
-                if release_version > license_version:
-                    raise LicenseException("License not valid for this version of TACTIC. License is for v%s" % license_version)
+                try:
+                    if license_version in ["EPL", "ALL"]:
+                        # really big
+                        license_version = 10**6
+                    else:
+                        parts = license_version.split(".")
+                        license_version = float("%s.%s" % (parts[0],parts[1])) 
+
+                    parts = release_version.split(".")
+                    release_version = float("%s.%s" % (parts[0],parts[1])) 
+
+                except:
+                    raise LicenseException("Incorrect format for version in license file")
+
+                else:
+                    if release_version > license_version:
+                        raise LicenseException("License not valid for this version of TACTIC. License is for v%s" % license_version)
 
 
 
@@ -2132,9 +2162,10 @@ class License(object):
                     # it doesn't really matter because nobody can use the
                     # software anways
                     current = 0
-                    
+                   
+                print "current: ", current, license_users, current > license_users
                 if current > license_users:
-                    raise LicenseException("Too many users for license [%s]" % my.license_path)
+                    raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
         #print "License verified ... "
 
 

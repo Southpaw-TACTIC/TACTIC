@@ -700,12 +700,11 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         search.add_filter("process", my.process)
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
-
-        workflow = process_sobj.get_json_value("workflow")
-        if workflow.get("autocreate_task") in ['true', True]:
-            autocreate_task = True
-        else:
-            autocreate_task = False
+        autocreate_task = False
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
+            if workflow.get("autocreate_task") in ['true', True]:
+                autocreate_task = True
 
 
         # check to see if the tasks exist and if they don't then create one

@@ -735,14 +735,14 @@ class TopWdg(Widget):
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
 
 
-        # first load context css
-        Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
-
 
         # add the color wheel css
         Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
+
+        # first load context css
+        Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
 
 

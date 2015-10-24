@@ -17,6 +17,41 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    #
+    # 4.5.0.a01
+    #
+    def upgrade_v4_5_0_a01_004(my):
+        my.run_sql(''' 
+        ALTER TABLE "login_group" ADD "name" text; 
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_003(my):
+        my.run_sql(''' 
+        ALTER TABLE "login_group" ADD "is_default" boolean; 
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_002(my):
+        my.run_sql(''' 
+        CREATE INDEX "sobject_log_stype_idx" ON sobject_log (search_type);
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_001(my):
+        my.run_sql(''' 
+        CREATE INDEX "change_timestamp_stype_idx" ON change_timestamp (search_type);
+        ''') 
+
+
+
+
     def upgrade_v4_4_0_v01_006(my):
 
         if my.get_database_type() == 'MySQL':
@@ -69,11 +104,18 @@ class SthpwUpgrade(BaseUpgrade):
         ALTER TABLE "login" ADD "upn" varchar(256) NULL; 
         ''') 
         
+
+    #
+    # 4.4.0.b01
+    #
     def upgrade_v4_4_0_b01_007(my):
         my.run_sql(''' 
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
 
+    #
+    # 4.4.0.a01
+    #
     def critical_v4_4_0_a01_012(my):
         my.run_sql('''
         ALTER TABLE pipeline ADD COLUMN "parent_process" varchar(256);

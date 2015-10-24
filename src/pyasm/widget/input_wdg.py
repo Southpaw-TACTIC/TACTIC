@@ -1342,7 +1342,10 @@ class SelectWdg(BaseInputWdg):
         # add empty option
         if my.empty_option_flag or my.get_option("empty") not in ['','false']:
             my.values.insert(0, my.empty_option_value)
-            my.labels.insert(0, my.empty_option_label)
+            if my.get_option("empty"):
+                my.labels.insert(0, my.get_option("empty"))
+            else:
+                my.labels.insert(0, my.empty_option_label)
 
         # append any custom ones
         if my.append_list:
