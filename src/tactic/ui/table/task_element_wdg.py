@@ -1758,11 +1758,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 search.add_filter("pipeline_code", pipeline_code)
                 search.add_filter("process", process)
                 process_sobj = search.get_sobject()
-                workflow = process_sobj.get_json_value("workflow")
-                if workflow:
-                    related_type = workflow.get("search_type")
-                    related_process = workflow.get("process")
-                    related_scope = workflow.get("scope")
+                if process_sobj:
+                    workflow = process_sobj.get_json_value("workflow", {})
+                    if workflow:
+                        related_type = workflow.get("search_type")
+                        related_process = workflow.get("process")
+                        related_scope = workflow.get("scope")
 
             if not related_process:
                 related_process = process

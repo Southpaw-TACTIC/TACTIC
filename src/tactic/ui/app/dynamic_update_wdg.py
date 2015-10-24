@@ -167,10 +167,12 @@ top.spt_update_interval_id = setInterval( function() {
             continue;
         }
 
+
         sub_update = update_el.spt_update;
         if (!sub_update) {
             continue;
         }
+
         visible_els.push(update_el);
 
         var last_check = update_el.spt_last_check;
@@ -180,9 +182,29 @@ top.spt_update_interval_id = setInterval( function() {
 
         // merge with update
         for (var key in sub_update) {
+
+            // on elements that have intervals, set the counter
+            var update_interval = sub_update[key].interval;
+            if (update_interval) {
+                var counter = update_el.spt_update_count;
+                if (!counter) {
+                    counter = 0;
+                }
+                counter += 1;
+                if (counter < update_interval) {
+                    update_el.spt_update_count = counter;
+                    continue;
+                }
+
+                update_el.spt_update_count = 0;
+            }
+
+
+
             update[key] = sub_update[key];
         }
     }
+
 
     if (Object.keys(update).length > 0) {
 
@@ -323,6 +345,7 @@ class DynamicUpdateCmd(Command):
         last_timestamp = SPTDate.add_gmt_timezone(last_timestamp)
         #last_timestamp = last_timestamp - timedelta(hours=24)
 
+
         #print "last: ", last_timestamp
 
         # get out all of the search_keys
@@ -339,7 +362,8 @@ class DynamicUpdateCmd(Command):
                 else:
                     search_key = values.get("search_key")
 
-                client_keys.add(search_key)
+                if search_key:
+                    client_keys.add(search_key)
 
         # find all of the search that have changed
         changed_keys = set()
@@ -360,7 +384,6 @@ class DynamicUpdateCmd(Command):
 
         intersect_keys = client_keys.intersection(changed_keys)
 
-        #print "client_keys: ", client_keys
         #for x in client_keys:
         #    print x
         #print "---"
