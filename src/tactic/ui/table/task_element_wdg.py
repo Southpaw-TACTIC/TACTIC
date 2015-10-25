@@ -1896,6 +1896,99 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             return div
         """
 
+
+            key = "%s|%s|status" % (sobject.get_search_key(), process)
+            message_sobj = Search.get_by_code("sthpw/message", key)
+            if message_sobj:
+                status = message_sobj.get("message")
+            else:
+                status = 'pending'
+
+            display_status = Common.get_display_title(status)
+
+            color = Task.get_default_color(status)
+
+
+            div.add_behavior( {
+                'type': 'click_up',
+                'code': code,
+                'scope': related_scope,
+                'search_type': search_type,
+                'related_type': related_type,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.ViewPanelWdg';
+                if (bvr.scope == "global") {
+                    var expression = "@SOBJECT("+ bvr.related_type + ")";
+                }
+                else {
+                    var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
+                }
+                var kwargs = {
+                    search_type: bvr.related_type,
+                    expression: expression,
+                    element_names: 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
+                }
+                var server = TacticServerStub.get();
+                var sobject = server.get_by_code(bvr.search_type, bvr.code);
+                spt.tab.set_main_body_tab();
+                var name = sobject.name;
+                if (!name) {
+                    name = sobject.code;
+                }
+                name = "Related: " + name
+                var title = name;
+                spt.tab.add_new(name, title, class_name, kwargs);
+                '''
+            } )
+
+
+
+            complete = my.get_complete(sobject, related_type, related_process, related_scope)
+
+            num_complete = 0
+            for key, value in complete.items():
+                if value:
+                    num_complete += 1
+
+            count = num_complete
+            total = len(complete)
+
+
+
+            from spt.ui.widgets import RadialProgressWdg
+            progress_wdg = RadialProgressWdg(
+                total=total,
+                count=count,
+                color=color
+            )
+
+
+            #if my.layout in ['horizontal',  'vertical']:
+            progress_div.add("<b>%s</b>" % display_status)
+
+            progress_div.add(progress_wdg)
+            progress_div.add_style("margin: 0px auto")
+            progress_div.add_style("width: 70px")
+            progress_div.add_style("text-align: center")
+
+
+            return div
+
+
+        """
+        if node_type == "dependency":
+
+            dependency_div = DivWdg()
+            div.add(dependency_div)
+            dependency_div.add_style("margin: 8px 0px 8px -8px")
+            dependency_div.add_class("spt_dependency_top")
+
+            dependency_div.add("H!H!H!")
+
+
+            return div
+        """
+
         if node_type == "hierarchy":
 
             hierarchy_div = DivWdg()

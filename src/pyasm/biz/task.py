@@ -150,8 +150,6 @@ class Task(SObject):
 
 
 
-
-
     def get_default_color(process):
         global default_xml
         global OTHER_COLORS
@@ -656,11 +654,9 @@ class Task(SObject):
         task.set_parent(sobject)
 
         task.set_value("process", process )
-
         if description:
             task.set_value("description", description )
-
-        if assigned:
+        if assigned != None:
             task.set_value("assigned", assigned)
 
         if supervisor != None:

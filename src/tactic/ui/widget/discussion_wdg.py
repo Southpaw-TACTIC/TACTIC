@@ -1630,7 +1630,6 @@ class NoteWdg(BaseRefreshWdg):
 
         my.note_format = my.kwargs.get("note_format")
 
-
         return my.get_note_wdg(note, note_hidden)
 
 

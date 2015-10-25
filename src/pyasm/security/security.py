@@ -771,8 +771,6 @@ class Site(object):
     def get_site_dir(cls, site):
         return
     get_site_dir = classmethod(get_site_dir)
- 
- 
 
     def get_asset_dir(cls, file_object=None, alias=None):
         return

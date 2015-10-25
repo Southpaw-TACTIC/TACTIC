@@ -1599,6 +1599,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 var dst_el = spt.get_event_target(evt);
                 var src_el = spt.behavior.get_bvr_src(bvr);
 
+                /* Keeping this around for later use */
                 var dst_row = dst_el.getParent(".spt_table_row");
                 var dst_search_key = dst_row.getAttribute("spt_search_key");
 

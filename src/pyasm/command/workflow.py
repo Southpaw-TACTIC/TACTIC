@@ -503,6 +503,90 @@ class BaseProcessTrigger(Trigger):
 
 
 
+    def check_complete_inputs(my):
+
+        # Check dependencies
+        caller_sobject = my.input.get("related_sobject")
+        if not caller_sobject:
+            return True
+
+
+        related_pipeline = my.input.get("related_pipeline")
+        related_process = my.input.get("related_process")
+        related_search_type = caller_sobject.get_base_search_type()
+
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+
+        # find related sobjects
+        #related_sobjects = sobject.get_related_sobjects(related_search_type)
+        related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
+        if not related_sobjects:
+            return True
+
+        # get the message status from each of these
+        keys = []
+        for related_sobject in related_sobjects:
+            # ignore the caller as we know that is complete
+            if related_sobject.get_search_key() == caller_sobject.get_search_key():
+                continue
+
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            keys.append(key)
+
+        # get the statuses
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        message_sobjects = search.get_sobjects()
+
+
+        complete = {}
+
+        # find the status
+        for message_sobject in message_sobjects:
+            status = message_sobject.get_value("message")
+            if status in ["complete"]:
+                complete[message_sobject.get_code()] = True
+
+
+        # some backwards compatibility to figure out if the related sobject is "complete"
+        if False and len(message_sobjects) < len(keys):
+            # look at the overall status
+            for related_sobject in related_sobjects:
+                key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+                overall_status = related_sobject.get_value("status", no_exception=True)
+                if overall_status.lower() == "complete":
+                    complete[key] = True
+
+                else:
+                    related_tasks = Search.eval("@SOBJECT(sthpw/task['process','%s'])" % related_process, related_sobject)
+                    for related_task in related_tasks:
+                        related_status = related_task.get_value("status")
+                        if related_status.lower() == "complete":
+                            complete[key] = True
+
+
+        # the caller is implied to be complete
+        key = "%s|%s|status" % (caller_sobject.get_search_key(), related_process)
+        complete[key] = True
+
+        is_complete = True
+        #print "complete: ", complete
+        for related_sobject in related_sobjects:
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            if not complete.get(key):
+                is_complete = False
+                break
+
+
+        #print "    is complete: ", is_complete
+
+        return is_complete
+
+
+
 
 
 
