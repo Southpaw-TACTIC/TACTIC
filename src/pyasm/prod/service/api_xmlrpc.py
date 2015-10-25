@@ -3307,7 +3307,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def simple_checkin(my, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None):
+    def simple_checkin(my, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None, process=None):
 
         '''simple methods that checks in a previously uploaded file
        
@@ -3426,7 +3426,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'mode': mode, 'is_revision': is_revision,
             'keep_file_name': keep_file_name,
             'context_index_padding': context_index_padding,
-            'checkin_type': checkin_type, 'version': version
+            'checkin_type': checkin_type, 'version': version,
+            'process': process
         }
       
 
@@ -3467,7 +3468,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             local_paths = snapshot.get_all_local_repo_paths()
             snapshot_dict['__paths__'] = local_paths
 
-        print "SQL Commit Count: ", Container.get('Search:sql_commit')
+        #print "SQL Commit Count: ", Container.get('Search:sql_commit')
         return snapshot_dict
 
 
@@ -4774,6 +4775,25 @@ class ApiXMLRPC(BaseApiXMLRPC):
             data['processes'] = process_names
 
         return data
+
+
+
+    #
+    # triger methods
+    #
+    def call_trigger(my, ticket, event, input):
+        '''Calls a trigger with input package
+        
+        
+        @params
+        ticket - authentication ticket
+        '''
+        return Trigger.call(my, event, input)
+
+
+
+
+
 
     #
     # session methods

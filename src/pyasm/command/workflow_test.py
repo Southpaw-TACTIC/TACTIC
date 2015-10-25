@@ -14,7 +14,7 @@ __all__ = ["WorkflowTest"]
 
 import tacticenv
 
-import unittest, random
+import unittest, random, os
 
 from pyasm.common import Common
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
@@ -72,8 +72,7 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_dependency()
-            """
+            my._test_data_flow()
             my._test_multi_input()
             my._test_custom_status()
             my._test_messaging()
@@ -87,7 +86,7 @@ class WorkflowCmd(Command):
             my._test_input()
             my._test_trigger()
             my._test_approval()
-            """
+            my._test_dependency()
         except Exception, e:
             print "Error: ", e
             raise
@@ -946,6 +945,123 @@ class WorkflowCmd(Command):
         #sobjects = search.get_sobjects()
         #for sobject in sobjects:
         #    print "sss: ", sobject.get("code"), sobject.get("message")
+
+
+
+
+    def _test_data_flow(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/city")
+        sobject.commit()
+
+        # check in a file to the city
+        file_path = "./ttteeesssttt.txt"
+        file = open(file_path, 'w')
+        file.write("test test test")
+        file.close()
+
+        file_paths = [file_path]
+        file_types = ['main']
+        context = "publish"
+        from pyasm.checkin import FileCheckin
+        checkin = FileCheckin(
+                    sobject,
+                    file_paths=file_paths,
+                    file_types=file_types,
+                    context="fla",
+                    mode="move"
+            )
+        checkin.execute()
+
+
+        # create a pipeline
+        pipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="a"/>
+          <process type="auto" name="b"/>
+          <process type="approval" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+
+        process = processes.get("a")
+        process.set_json_value("workflow", {
+            'output': {
+                'sobject': 'sobject',
+                'process': 'fla',
+                'version': 'latest',
+            }
+            'checkin': ['fla'],
+        } )
+        process.commit()
+
+
+        process = processes.get("b")
+        process.set_json_value("workflow", {
+            'output': {
+                'sobject': 'sobject',
+                'process': 'mp4',
+                'version': 'latest',
+            },
+            'checkin': ['mp4'],
+            'on_action': '''
+            data = input.get("data")
+            snapshot = data.get("snapshot")
+            path = data.get("path")
+            print "path: ", path
+            '''
+        } )
+        process.commit()
+
+
+        process = processes.get("c")
+        process.set_json_value("workflow", {
+            'output': {
+                'sobject': 'sobject',
+                'process': 'fla',
+                'version': 'latest',
+            }
+        } )
+        process.commit()
+
+
+
+
+
+
+        # inital data to the input
+        data = {
+            'file': '/path/to/file.jpg'
+        }
+        data = {
+            'snapshot': 'sthpw/snapshot?project=xyz&code=SNAPSHOT0044'
+        }
+        data = {
+            'snapshot': 'sthpw/snapshot?project=xyz&code=SNAPSHOT0044'
+        }
+
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process,
+            "data": data
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+        dafsfadsfd
+
 
 
 

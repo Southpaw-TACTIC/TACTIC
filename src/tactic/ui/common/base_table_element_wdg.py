@@ -514,7 +514,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
 
-        if sobject:
+        if sobject and sobject.column_exists(name):
             value_wdg = DivWdg()
             value_wdg.add_update( {
                 'search_key': sobject.get_search_key(),
