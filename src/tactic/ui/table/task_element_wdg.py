@@ -867,6 +867,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_title(my):
         
+        # If for all sObjects in table, no processes
+        # exists, display null title "Tasks".
+        if not my.sorted_processes:
+            return "Tasks"
+
         if my.show_processes_in_title == 'true':
             table = Table()
             table.add_style("margin-top: 4px")
@@ -1125,12 +1130,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # fill in any missing tasks
+        pipeline_code = my.get_pipeline_code()
+        pipeline = Pipeline.get_by_code(pipeline_code)
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
-        if show_filler_tasks in ["true", True]:
-
-            pipeline_code = my.get_pipeline_code()
-            pipeline = Pipeline.get_by_code(pipeline_code)
-            assert(pipeline)
+        if pipeline and show_filler_tasks in ["true", True]:
 
             processes = pipeline.get_process_names(type=["node","approval","hierarchy"])
 
@@ -1318,7 +1321,21 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_display(my):
-
+       
+        # Check if pipeline exists
+        pipeline_code = my.get_pipeline_code()
+        pipeline = None
+        if pipeline_code:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+        if not pipeline:
+            no_pipeline_div = DivWdg()
+            icon = IconWdg("WARNING", IconWdg.WARNING)
+            no_pipeline_div.add(icon)
+            no_pipeline_div.add("<b>You must select a pipeline to manage tasks.</b>")
+            no_pipeline_div.add("<br/>"*2)
+            return no_pipeline_div 
+        
+ 
         sobject = my.get_current_sobject()
         my.tasks = my.get_tasks(sobject)
 
@@ -1481,7 +1498,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     for task_list in items:
 
                         # check if this process in any of the tasks lists
-                        if task_list and (process in task_list[0].get_value("process")):
+                        if task_list and (process == task_list[0].get_value("process")):
                             tasks = task_list
                             is_task_displayed = True
                             break
@@ -2325,17 +2342,29 @@ class TaskElementCbk(DatabaseAction):
 
 
     def execute(my):
-
+        web = WebContainer.get_web()
         if my.data != None:
             xx = my.data
         else:
-            web = WebContainer.get_web()
             xx = web.get_form_data()
             xx = xx.get('data').get('data')
+        
+        
+        web_data = web.get_form_value('web_data')
+        
+        processes = []
+        if web_data:
+            process_data= web_data.get('process_data')
+            if process_data:
+                try:
+                    process_data = jsonloads(process_data)
+                    processes = process_data.get('processes')
+                except:
+                    processes = []
+            
+
         xx = jsonloads(xx)
         my.xx = xx
-
-
 
         #if my.xx.get("add_initial_tasks"):
         #    return
@@ -2349,7 +2378,7 @@ class TaskElementCbk(DatabaseAction):
         # create all of the new tasks first
         import re
         p = re.compile("(\w+)\|(\w+)\|(.*)")
-        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)\|(\w+)")
+        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)_(\w+)")
         for key, value in xx.items():
             if key.find("|COPY") != -1:
                 m = re.match(copy_p, key)
@@ -2365,7 +2394,6 @@ class TaskElementCbk(DatabaseAction):
                 column = "bid_duration"
 
             action = groups[1]
-
             if action == "NEW":
                 process = groups[2]
                 task = new_tasks_by_process.get(process)
@@ -2406,7 +2434,14 @@ class TaskElementCbk(DatabaseAction):
 
         # commit all of the new tasks
         tasks = {}
-        for process, task in new_tasks_by_process.items():
+
+        processes.reverse()
+        # reverse the order of the task in this dict as a list
+        sorted_tasks = map(new_tasks_by_process.get, processes)
+        # remove the None after mapping
+        sorted_tasks = [x for x in sorted_tasks if x]
+        for task in sorted_tasks:
+           
             tasks[task.get_id()] = task
             task.commit()
 

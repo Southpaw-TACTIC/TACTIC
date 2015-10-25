@@ -596,6 +596,20 @@ CREATE TABLE change_timestamp (
 );
 
 
+-- interaction
+CREATE TABLE interaction (
+    id integer IDENTITY PRIMARY KEY,
+    code nvarchar(256),
+    project_code nvarchar(256),
+    login nvarchar(256),
+    key nvarchar(1024),
+    data nvarchar(max),
+    "timestamp" datetime2(6) DEFAULT (getdate())
+);
+CREATE INDEX "interaction_key_idx" on interaction (key);
+
+
+
 
 
 
@@ -683,11 +697,17 @@ INSERT INTO search_object (code, search_type, "namespace", "description", "datab
 
 INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/sobject_list', 'sthpw/sobject_list', 'sthpw', 'SObject List', 'sthpw', 'sobject_list', 'pyasm.search.SObject', 'SObjectList', 'public');
 
-INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES('sthpw/milestone','sthpw/milestone','sthpw','Project Milestones','sthpw','milestone','pyasm.biz.Milestone','Project Milestones','public');
+INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/milestone','sthpw/milestone','sthpw','Project Milestones','sthpw','milestone','pyasm.biz.Milestone','Project Milestones','public');
+
+INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
+
+INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/interaction', 'sthpw/interaction', 'sthpw', 'User Interaction', 'sthpw', 'interaction', 'pyasm.search.SObject', 'User Interaction', 'public');
 
 INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/plugin', 'config/plugin', 'config', 'Plugin', '{project}', 'spt_plugin', 'pyasm.search.SObject', 'Plugin', 'public'); 
 
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/pipeline', 'config/pipeline', 'config', 'Pipelines', '{project}', 'spt_pipeline', 'pyasm.search.SObject', 'Pipelines', 'public');
+
+
 
 
 -- This is still needed for VFX template.

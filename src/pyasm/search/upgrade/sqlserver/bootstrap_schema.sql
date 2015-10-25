@@ -68,6 +68,7 @@ CREATE TABLE "login" (
     code nvarchar(512),
     "login" nvarchar(100) NOT NULL,
     "password" nvarchar(255),
+    "upn" nvarchar(100) NOT NULL,
     login_groups nvarchar(max),
     first_name nvarchar(100),
     last_name nvarchar(100),
@@ -81,7 +82,9 @@ CREATE TABLE "login" (
     project_code nvarchar(max),
     license_type nvarchar(256),
     hourly_wage float,
-    CONSTRAINT "login_code_idx" UNIQUE (code)
+    CONSTRAINT "login_code_idx" UNIQUE (code),
+    CONSTRAINT "login_upn_idx" UNIQUE (upn)
+
 );
 
 

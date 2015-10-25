@@ -761,6 +761,16 @@ class DirListWdg(BaseRefreshWdg):
         return div
 
 
+    def get_info(my, dirname, basename):
+        location = my.kwargs.get("location")
+        # get some info about the file
+        path = "%s/%s" % (dirname, basename)
+        if location == 'server':
+            my.info = Common.get_dir_info(path)
+        else:
+            my.info = {}
+        return my.info
+
 
     def _get_file_item(my, dirname, basename):
 
@@ -796,13 +806,8 @@ class DirListWdg(BaseRefreshWdg):
 
      
         # my.info is used in SnapshotDirLIstWdg also
+        my.info = my.get_info(dirname, basename)
         location = my.kwargs.get("location")
-        # get some info about the file
-        path = "%s/%s" % (dirname, basename)
-        if location == 'server':
-            my.info = Common.get_dir_info(path)
-        else:
-            my.info = {}
 
         if location == 'xxxserver':
             # DEPRECATED

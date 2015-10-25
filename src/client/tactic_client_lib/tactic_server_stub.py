@@ -29,7 +29,7 @@ class TacticServerStub(object):
         Constructor: TacticServerStub
     '''
     def __init__(my, login=None, setup=True, protocol=None, server=None,
-                 project=None, ticket=None, user=None, password=""):
+                 project=None, ticket=None, user=None, password="", site=None):
         '''Function: __init__(login=None, setup=True, protocol=None, server=None, project=None, ticket=None, user=None, password="")
         Initialize the TacticServerStub
 
@@ -41,7 +41,8 @@ class TacticServerStub(object):
             project - targeted project
             ticket - login ticket key
             user - tactic login_code that overrides the login
-            password - password for login'''
+            password - password for login
+            site - site for portal set-up'''
             
 
         # initialize some variables
@@ -57,7 +58,7 @@ class TacticServerStub(object):
         my.login_ticket = None
         my.transaction_ticket = None
 
-
+        my.site = site
 
         # autodetect protocol
         if not protocol:
@@ -83,7 +84,7 @@ class TacticServerStub(object):
                 my.set_ticket(ticket)
             elif login:
                 # else try with no password (api_require_password)
-                ticket = my.get_ticket(login, password)
+                ticket = my.get_ticket(login, password, site)
                 my.set_ticket(ticket)
 
 
@@ -150,7 +151,8 @@ class TacticServerStub(object):
         my.ticket = {
             'ticket': ticket,
             'project': my.project_code,
-            'language': 'python'
+            'language': 'python',
+            'site': my.site
         }
 
         """
@@ -240,6 +242,12 @@ class TacticServerStub(object):
     def get_project(my):
         return my.project_code
 
+    def set_site(my, site=None):
+        my.site = site
+        my.set_transaction_ticket(my.transaction_ticket)
+
+    def get_site(my):
+        return my.site
 
     def set_palette(my, palette):
         my.server.set_palette(palette)
@@ -478,6 +486,7 @@ class TacticServerStub(object):
         server=localhost
         ticket=30818057bf561429f97af59243e6ef21
         project=unittest
+        site=vfx_site
         [/code]
 
         The contents in the resource file represent the defaults to use
@@ -489,6 +498,8 @@ class TacticServerStub(object):
         is used automatically by the API server stub. It attempts to get from 
         home dir first and then from temp_dir is it fails. 
         
+        The site key is optional and used for a portal setup.
+
         @param:
         login (optional) - login code. If not provided, it gets the current system user
 
@@ -537,6 +548,8 @@ class TacticServerStub(object):
         @return:
         string - ticket key  
         '''
+        my.set_site(site)
+
         return my.server.get_ticket(login, password, site)
 
 
@@ -558,6 +571,7 @@ class TacticServerStub(object):
         old_project_code = my.project_code
         old_ticket = my.login_ticket
         old_login = my.login
+        old_site = my.site
 
         default_login = getpass.getuser()
         if not force and old_server_name and old_project_code:
@@ -571,6 +585,14 @@ class TacticServerStub(object):
                                 % old_server_name)
         if not server_name:
             server_name = old_server_name
+        
+        
+        print
+        site = raw_input("If you are accessing a portal project, please enter the site name. Otherwise, hit enter: (site = %s) " % old_site)
+        if not site:
+            site = old_site
+        if not site:
+            site = ''
 
         login = raw_input("Enter user name (%s): " % default_login)
         if not login:
@@ -593,7 +615,7 @@ class TacticServerStub(object):
 
         # do the actual work
         if login != old_login or password:
-            ticket = my.get_ticket(login, password)
+            ticket = my.get_ticket(login, password, site)
             print "Got ticket [%s] for [%s]" % (ticket, login)
         else:
             ticket = old_ticket
@@ -608,6 +630,8 @@ class TacticServerStub(object):
             file.write("login=%s\n" % login)
             file.write("server=%s\n" % server_name)
             file.write("ticket=%s\n" % ticket)
+            if site:
+                file.write("site=%s\n" % site)
             if project_code:
                 file.write("project=%s\n" % project_code)
 
@@ -805,7 +829,7 @@ class TacticServerStub(object):
         if not my.has_server:
             raise TacticApiException("No server connected.  If running a command line script, please execute get_ticket.py")
 
-        ticket = my.server.start(my.login_ticket, my.project_code, \
+        ticket = my.server.start(my.ticket, my.project_code, \
             title, description, transaction_ticket)
         my.set_transaction_ticket(ticket)
 
@@ -1715,11 +1739,18 @@ class TacticServerStub(object):
         from common import UploadMultipart
         upload = UploadMultipart()
         upload.set_ticket(my.transaction_ticket)
-        if my.server_name.startswith("http://") or my.server_name.startswith("https://"):
-            upload_server_url = "%s/tactic/default/UploadServer/" % my.server_name
+       
+        # If a portal set up is used, alter server name for upload
+        if my.site:
+            upload_server_name = "%s/tactic/%s" % (my.server_name, my.site)
         else:
-            upload_server_url = "http://%s/tactic/default/UploadServer/" % my.server_name
-
+            upload_server_name = "%s/tactic" % my.server_name
+        
+        # Add http to server name if necessary
+        if upload_server_name.startswith("http://") or upload_server_name.startswith("https://"):
+            upload_server_url = "%s/default/UploadServer/" % upload_server_name
+        else:
+            upload_server_url = "http://%s/default/UploadServer/" % upload_server_name
 
         if base_dir:
             basename = os.path.basename(path)
@@ -2020,7 +2051,7 @@ class TacticServerStub(object):
         @return:
         dictionary - snapshot
         '''
-        mode_options = ['upload', 'copy', 'move', 'inplace']
+        mode_options = ['upload', 'copy', 'move', 'inplace', 'uploaded']
         if mode:
             if mode not in mode_options:
                 raise TacticApiException('Mode must be in %s' % mode_options)
@@ -2048,6 +2079,12 @@ class TacticServerStub(object):
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     my.upload_file(path)
+                use_handoff_dir = False
+            elif mode == 'uploaded':
+                # remap file path: this mode is only used locally.
+                from pyasm.common import Environment
+                upload_dir = Environment.get_upload_dir()
+                file_path = "%s/%s" % (upload_dir, file_path)
                 use_handoff_dir = False
             elif mode == 'inplace':
                 use_handoff_dir = False
@@ -3677,7 +3714,7 @@ class TacticServerStub(object):
                                             auto_unique_name, auto_unique_view)
 
     def _setup(my, protocol="xmlrpc"):
-
+        
         # if this is being run in the tactic server, have the option
         # to use TACTIC code directly
         if protocol == 'local':
@@ -3686,12 +3723,17 @@ class TacticServerStub(object):
             from pyasm.common import Environment
             from pyasm.prod.service import ApiXMLRPC
             from pyasm.web import WebContainer
+            from pyasm.security import Site
 
             # set the ticket
             security = Environment.get_security()
             if not security:
                 raise TacticApiException("Security not initialized.  This may be because you are running the client API in 'local' mode without run initializing Batch")
 
+            # set the site
+            site = Site.get_site()
+            if site:
+                my.set_site(site)
 
             # set the project
             project_code = Project.get_project_code()
@@ -3755,6 +3797,7 @@ class TacticServerStub(object):
                 rc_ticket = None
                 rc_project = None
                 rc_login = None
+                rc_site = None
 
                 for line in lines:
                     line = line.strip()
@@ -3773,7 +3816,8 @@ class TacticServerStub(object):
                     elif name == "login":
                         #my.set_project(value)
                         rc_login = value
-
+                    elif name == "site":
+                        rc_site = value
 
                 # these have to be issued in the correct order
                 if rc_server:
@@ -3789,8 +3833,9 @@ class TacticServerStub(object):
                     my.set_ticket(rc_ticket)
                 if rc_login:
                     my.login = rc_login
-
-
+                if rc_site:
+                    my.set_site(rc_site)
+                   
             # override with any environment variables that are set
             if env_server:
                 my.set_server(env_server)
@@ -3798,7 +3843,7 @@ class TacticServerStub(object):
                 my.set_project(env_project)
             if env_user:
                 # try to get a ticket with a set password
-                ticket = my.get_ticket(env_user, env_password)
+                ticket = my.get_ticket(env_user, env_password, my.site)
                 my.set_ticket(ticket)
             if env_ticket:
                 my.set_ticket(env_ticket)

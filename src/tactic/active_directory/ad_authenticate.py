@@ -293,8 +293,8 @@ class ADAuthenticate(Authenticate):
             domain = None
         """
         python = Config.get_value('services', 'python')
-	if not python:
-	    python = 'python'
+        if not python:
+            python = 'python'
 
         try:
             # get the info from a separate process
@@ -375,7 +375,7 @@ class ADAuthenticate(Authenticate):
 
         for line in lines:
             line = "".join(line)
-            #print "line: ", line
+            #print "info line: ", line
             name, value = line.split(": ", 1)
 
             if name == 'memberOf':
@@ -408,7 +408,7 @@ class ADAuthenticate(Authenticate):
 
 
     def handle_group(my, value):
-
+		
         # some values have commas in them.
         value = value.replace("\\,", "|||")
         parts = value.split(",")
@@ -421,6 +421,8 @@ class ADAuthenticate(Authenticate):
         # provide the column which stores the ad group.
         columns = Search("sthpw/login_group").get_columns()
         group_dict = {}
+
+        # optional ad_login_group can record the actual group name in AD
         if "ad_login_group" in columns:
             mapping_col = "ad_login_group"
             for x in my.tactic_groups:
@@ -449,16 +451,18 @@ class ADAuthenticate(Authenticate):
 
 
         # add a group
-        remaining = user.remove_all_groups(except_list=my.groups)
-        if not remaining:
-            for group in my.groups:
-                print "user: ", user.get_value("login")
-                if not isinstance(group, basestring): 
-                    group_name = group.get_value('login_group')
-                else:
-                    group_name = group
-                print "adding to: ", group_name
-                user.add_to_group(group)
+        skipped_connects = user.remove_all_groups(except_list=my.groups)
+        skipped_group_names = [ x.get_value('login_group') for x in skipped_connects ]
+        for group in my.groups:
+            #print "user: ", user.get_value("login")
+            if not isinstance(group, basestring): 
+                group_name = group.get_value('login_group')
+            else:
+                group_name = group
+            #print "adding to: ", group_name
+            if group_name in skipped_group_names:
+                continue
+            user.add_to_group(group)
 
     def add_default_group(my, user):
         '''add the user to the default group only if he is groupless'''

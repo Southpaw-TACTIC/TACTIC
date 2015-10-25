@@ -17,13 +17,11 @@ import types
 import locale
 from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
-from pyasm.common import SPTDate
-from pyasm.common import Date, Common, TacticException
+from pyasm.common import Date, SPTDate, Common, TacticException
 from pyasm.search import Search, SearchType, SObject
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
 from base_refresh_wdg import BaseRefreshWdg
-
 from dateutil import parser
 
 class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
@@ -161,7 +159,22 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         else:
             return False
 
-   
+    def get_timezone_value(my, value):
+        '''given a datetime value, try to convert to timezone specified in the widget.
+           If not specified, use the My Preferences time zone'''
+        """
+        timezone = my.get_option('timezone')
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+        """
+        value = SPTDate.convert_to_local(value)
+        return value
+ 
     def get_text_value(my):
         return my.get_value()
 
@@ -469,20 +482,19 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value = ''
 
         elif data_type == "timestamp" or name == "timestamp":
-	    if value == 'now':
+            if value == 'now':
                 value = ''
             elif value:
                 # This date is assumed to be GMT
                 date = parser.parse(value)
-                # convert to local
+                # convert to user timezone
                 if not SObject.is_day_column(name):
                     date = SPTDate.convert_to_local(date)
-		try:
-		   encoding = locale.getlocale()[1]		
-		   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
-		except:
-		   value = date.strftime("%b %d, %Y - %H:%M")
-
+                try:
+                   encoding = locale.getlocale()[1]		
+                   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                except:
+                   value = date.strftime("%b %d, %Y - %H:%M")
             else:
                 value = ''
         else:

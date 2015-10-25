@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project
+from pyasm.biz import File, Project, FileGroup
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -26,7 +26,8 @@ from tactic.ui.widget import ActionButtonWdg
 from tactic_client_lib import TacticServerStub
 
 import os
-
+import os.path
+import re
 __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 
 
@@ -547,6 +548,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
             server = TacticServerStub.get()
             oncomplete_script_ret = server.eval(oncomplete_script_expr, single=True)
+            
             if oncomplete_script_ret:
                 oncomplete_script = '''var top = bvr.src_el.getParent(".spt_ingest_top");
                 var file_els = top.getElements(".spt_upload_file");
@@ -649,7 +651,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             convert: convert,
             update_mode: update_mode,
         }
-        on_complete = function() {
+        on_complete = function(rtn_data) {
 
         ''' + oncomplete_script + '''
 
@@ -809,8 +811,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode_option = "true"
         update_mode = SelectWdg(name="update mode")
         update_mode.add_class("spt_update_mode_select")
-        update_mode.set_option("values", ["false", "true"])
-        update_mode.set_option("labels", ["Off", "On"])
+        update_mode.set_option("values", ["false", "true", "sequence"])
+        update_mode.set_option("labels", ["Off", "On", "Sequence"])
         update_mode.set_option("default", update_mode_option)
         update_mode.add_style("float: left")
         update_mode.add_style("margin-top: -3px")
@@ -827,7 +829,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         update_info.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.");
+            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.<br> If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.", {type: 'html'});
             '''
         } )
         buttons.add_cell(update_info);
@@ -1015,8 +1017,6 @@ class IngestUploadCmd(Command):
             table = search_type_obj.get_table()
             relative_dir = "%s/%s" % (project_code, table)
 
-
-
         server = TacticServerStub.get()
 
         parent_key = my.kwargs.get("parent_key")
@@ -1040,20 +1040,32 @@ class IngestUploadCmd(Command):
             date = tags.get("EXIF DateTimeOriginal")
             return date.split(" ")[0]
         """
- 
-    
 
-    
         if not SearchType.column_exists(search_type, "name"):
             raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
 
         input_prefix = update_data.get('input_prefix')
-        
-        for count, filename in enumerate(filenames):
+        non_seq_filenames = []
+
+        # For sequence mode, take all filenames, and regenerate the filenames based on the function "find_sequences"
+        if update_mode == "sequence":
+            results = my.find_sequences(filenames)
+
+            # non_seq_filenames is a list of filenames that are stored in the None key,
+            # which are the filenames that are not part of a sequence, or does not contain
+            # a sequence patter.
+            non_seq_filenames = results[None]
             
-            # Check if files should be updated. 
-            # If so, attempt to find one to update.
-            # If more than one is found, do not update.
+            # delete the None key from list so filenames can be used in the latter for loop
+            del results[None]
+            filenames = results.keys()
+            if filenames == []:
+                raise TacticException('No sequences are found in files.')
+
+        for count, filename in enumerate(filenames):
+        # Check if files should be updated. 
+        # If so, attempt to find one to update.
+        # If more than one is found, do not update.
             if update_mode in ["true", "True"]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
@@ -1067,6 +1079,21 @@ class IngestUploadCmd(Command):
                     sobject = sobjects[0]
                 else:
                     sobject = None
+
+            elif update_mode == "sequence":
+                if not FileGroup.is_sequence(filename):
+                    raise TacticException('Please modify sequence naming to have at least three digits.')
+                search = Search(search_type)
+                search.add_filter("name", filename)
+
+                if relative_dir and search.column_exists("relative_dir"):
+                    search.add_filter("relative_dir", relative_dir)
+                sobjects = search.get_sobjects()
+                if sobjects:
+                    sobject = sobjects[0]
+                else:
+                    sobject = None
+
             else:
                 sobject = None 
 
@@ -1081,7 +1108,12 @@ class IngestUploadCmd(Command):
 
             # extract metadata
             #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
-            file_path = "%s/%s" % (base_dir, filename)
+            if update_mode == "sequence":
+                first_filename = results.get(filename)[0]
+                last_filename = results.get(filename)[-1]
+                file_path = "%s/%s" % (base_dir, first_filename)
+            else:
+                file_path = "%s/%s" % (base_dir, filename)
 
             # TEST: convert on upload
             try:
@@ -1160,9 +1192,6 @@ class IngestUploadCmd(Command):
                     sobject.set_value("relative_dir", category)
             """
 
-
-
-
             sobject.commit()
             search_key = sobject.get_search_key()
 
@@ -1177,8 +1206,22 @@ class IngestUploadCmd(Command):
             else:
                 context = "%s/%s" % (process, filename.lower())
             
+            if update_mode == "sequence":
+                expr = re.compile('^([^0]*)(\d+)([^\d]*)$')
+                # using matches.groups() to find the first and last filename's pattern,
+                # to find the file range
+                m_first = re.match(expr, first_filename)
+                range_start = int(m_first.groups()[1])
 
-            server.simple_checkin(search_key, context, filename, mode='uploaded')
+                m_last = re.match(expr, last_filename)
+                range_end = int(m_last.groups()[1])
+
+                file_range = '%s-%s' % (range_start, range_end)
+
+                file_path = "%s/%s" % (base_dir, filename)
+                server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
+            else: 
+                server.simple_checkin(search_key, context, filename, mode='uploaded')
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 
@@ -1195,5 +1238,89 @@ class IngestUploadCmd(Command):
         }
         server.log_message(key, msg, status="complete")
 
+        my.info = non_seq_filenames
+        return non_seq_filenames
 
+    def natural_sort(my,l):
+        '''
+        natural sort will makesure a list of names passed in is 
+        sorted in an order of 1000 to be after 999 instead of right after 101
+        '''
+        convert = lambda text: int(text) if text.isdigit() else text.lower() 
+        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+        return sorted(l, key = alphanum_key)
 
+    def find_sequences(my, filenames):
+        '''
+        Parse a list of filenames into a dictionary of sequences.  Filenames not
+        part of a sequence are returned in the None key
+
+        :param      filenames | [<str>, ..]
+
+        :return     {<str> sequence: [<str> filename, ..], ..}
+        '''
+        local_filenames   = filenames[:]
+        sequence_patterns = {}
+        sequences         = {None: []}
+
+        # sort the files (by natural order) so we always generate a pattern
+        # based on the first potential file in a sequence
+
+        local_filenames = my.natural_sort(local_filenames)
+
+        for filename in local_filenames:
+            count = re.findall('\d+', filename)
+            try:
+                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(max(count, key=len)))
+            except:
+                sequences[None].append(filename)
+                continue
+            
+
+            pound_length =  len(max(count, key=len))
+            pounds = "#" * pound_length
+
+            # first, check to see if this filename matches a sequence
+            found = False
+
+            for key, pattern in sequence_patterns.items():
+                match = pattern.match(filename)
+                if not match:
+                    continue
+
+                sequences[key].append(filename)
+                found = True
+                break
+
+            # if we've already been matched, then continue on
+            if found:
+                continue
+
+            # next, see if this filename should start a new sequence
+            basename      = os.path.basename(filename)
+            pattern_match = pattern_expr.match(basename)
+            if pattern_match:
+                opts = (pattern_match.group(1), pattern_match.group(3))
+                key  = '%s%s%s' % (opts[0], pounds, opts[1])
+
+                # create a new pattern based on the filename
+                sequence_pattern = re.compile('^%s\d+%s$' % opts)
+
+                sequence_patterns[key] = sequence_pattern
+                sequences[key] = [filename]
+                continue
+
+            # otherwise, add it to the list of non-sequences
+            sequences[None].append(filename)
+
+        # now that we have grouped everything, we'll merge back filenames
+        # that were potential sequences, but only contain a single file to the
+        # non-sequential list
+        for key, filenames in sequences.items():
+            if ( key is None or len(filenames) > 1 ):
+                continue
+
+            sequences.pop(key)
+            sequences[None] += filenames
+
+        return sequences

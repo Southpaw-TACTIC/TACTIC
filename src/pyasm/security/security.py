@@ -117,7 +117,7 @@ class Login(SObject):
 
 
     def remove_all_groups(my, except_list=[]):
-        '''removes the user from a specfied group'''
+        '''Remove the user from a specfied group. Return a list of skipped login_in_group'''
         connectors = LoginInGroup.get_by_login_name(my.get_value("login")) 
         remaining = []
         for login_in_group in connectors:
@@ -223,7 +223,7 @@ class Login(SObject):
         return  Login.get_by_login(code)
     get_by_code = staticmethod(get_by_code)
     
-    def get_by_login(login_name, namespace=None):
+    def get_by_login(login_name, namespace=None, use_upn=False):
         if not login_name:
             return None
         
@@ -284,11 +284,19 @@ class Login(SObject):
         else:
             search = Search("sthpw/login")
             # make sure it's case insensitive
+            if use_upn:
+                search.add_op("begin")
             if case_insensitive:
+                search.add_op("begin")
                 search.add_regex_filter("login", '^%s'%login_name, op='EQI')
                 search.add_regex_filter("login", '%s$'%login_name, op='EQI')
+                search.add_op("and")
             else:
                 search.add_filter("login", login_name)
+                if use_upn:
+                    search.add_filter("upn", login_name)
+            if use_upn:
+                search.add_op("or")
             
             if namespace:
                 search.add_filter("namespace", namespace)
@@ -924,6 +932,7 @@ class Ticket(SObject):
             expiry = impl.get_timestamp_now(offset=offset, type=type)
 
         ticket = SearchType.create("sthpw/ticket")
+        ticket.set_auto_code()
         ticket.set_value("ticket", key)
         ticket.set_value("login", login)
         ticket.set_value("timestamp", now, quoted=0)
@@ -1183,7 +1192,7 @@ class Security(Base):
             login_name = "admin"
 
         # login must exist in the database
-        my._login = Login.get_by_login(login_name)
+        my._login = Login.get_by_login(login_name, use_upn=True)
         if not my._login:
             raise SecurityException("Security failed: Unrecognized user: '%s'" % login_name)
 
@@ -1276,14 +1285,15 @@ class Security(Base):
 
         # try getting from global cache
         from pyasm.biz import CacheContainer
-        login_code = ticket.get_value("login")
+        login_word = ticket.get_value("login")
+        
         cache = CacheContainer.get("sthpw/login")
         if cache:
-            my._login = cache.get_sobject_by_key("login", login_code)
+            my._login = cache.get_sobject_by_key("login", login_word)
 
         # if it doesn't exist, try the old method
         if not my._login:
-            my._login = Login.get_by_login( ticket.get_value("login") )
+            my._login = Login.get_by_login( login_word, use_upn=True )
 
         if my._login is None:
             return None
@@ -1432,7 +1442,7 @@ class Security(Base):
         #if site_auth_class:
         #    auth_class = site_auth_class
 
-
+        
         # handle the windows domain, manually typed in domain overrides
         if login_name.find('\\') != -1:
             domain, login_name = login_name.split('\\', 1)
@@ -1445,6 +1455,7 @@ class Security(Base):
      
 
         authenticate = Common.create_from_class_path(auth_class)
+        
         is_authenticated = authenticate.verify(auth_login_name, password)
         if is_authenticated != True:
             raise SecurityException("Login/Password combination incorrect")
@@ -1463,9 +1474,12 @@ class Security(Base):
         # on first entry.  Future verifies will use the login in stored in the
         # database.
         if mode == 'autocreate':
-            my._login = Login.get_by_login(login_name)
+            # get the login from the authentication class
+            my._login = Login.get_by_login(login_name, use_upn=True)
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
+                if SearchType.column_exists('sthpw/login','upn'):
+                    my._login.set_value('upn', login_name)
                 my._login.set_value('login', login_name)
                 authenticate.add_user_info( my._login, password)
  
@@ -1474,9 +1488,12 @@ class Security(Base):
         # when mode is cache, it does autocreate and update user_info every time
         # this is called
         elif mode == 'cache':
-            my._login = Login.get_by_login(login_name)
+            # get the login from the authentication class
+            my._login = Login.get_by_login(login_name, use_upn=True)
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
+                if SearchType.column_exists('sthpw/login','upn'):
+                    my._login.set_value('upn', login_name)
                 my._login.set_value('login', login_name)
 
             try:
@@ -1497,8 +1514,7 @@ class Security(Base):
             # get the login from database and don't bother updating
             my._login = authenticate.get_login()
             if not my._login:
-                my._login = Login.get_by_login(login_name)
-
+                my._login = Login.get_by_login(login_name, use_upn=True)
 
 
         # if it doesn't exist, then the login fails
@@ -1543,7 +1559,7 @@ class Security(Base):
         '''
 
         # check to see if this user exists
-        test_login = Login.get_by_login(login_name)
+        test_login = Login.get_by_login(login_name, use_upn=True)
         if test_login:
             autocreate = False
         else:
@@ -1560,7 +1576,7 @@ class Security(Base):
             auth_class = "pyasm.security.TacticAuthenticate"
 
         # get once again (why??)
-        my._login = Login.get_by_login(login_name)
+        my._login = Login.get_by_login(login_name, use_upn=True)
 
         if not my._login:
             if autocreate:

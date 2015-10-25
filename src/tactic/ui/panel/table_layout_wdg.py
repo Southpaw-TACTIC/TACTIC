@@ -349,7 +349,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             from tactic.ui.filter import FilterData
             filter = my.kwargs.get("filter")
             values = {}
-            if filter:
+            if filter and filter != 'None':
+                
                 filter_data = FilterData(filter)
                 values_list = filter_data.get_values_by_prefix("group")
                 if values_list:
@@ -1914,6 +1915,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # boolean to determine if there is any width set for any columns
         width_set = False
 
+
         for i, widget in enumerate(my.widgets):
             name = widget.get_name()
 
@@ -2730,12 +2732,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = my.value
 
+                # add timezone conversion
+                if not SObject.is_day_column(element_name):
+                    element_type = SearchType.get_tactic_type(my.search_type, element_name)
+                    
+                    if element_type in ['time', 'datetime']:
+                        value = widget.get_timezone_value(value)
+                     
+
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
 
                 if isinstance(value, bool):
                     value = str(value).lower()
+            
+
+
                 td.add_attr("spt_input_value", value)
                 #td.add_attr("spt_input_column", column)
             else:

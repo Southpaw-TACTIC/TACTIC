@@ -12,7 +12,7 @@
 __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
-from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
+from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser, Project
@@ -859,7 +859,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         show_search = my.kwargs.get("show_search") != 'false'
 
-        if show_search and show_keyword_search:
+        if show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
 
@@ -971,10 +971,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
             # -- SEARCH LIMIT DISPLAY
             if my.items_found == 0:
-                if my.search:
-                    my.items_found = my.search.get_count()
-                elif my.sobjects:
-                    my.items_found = len(my.sobjects)
+                try:
+                    if my.search:
+                        
+                        my.items_found = my.search.get_count()
+                    elif my.sobjects:
+                        my.items_found = len(my.sobjects)
+                except SqlException:
+                    DbContainer.abort_thread_sql()
+
+                    my.items_found = 0
 
            
             if my.items_found == 1:
