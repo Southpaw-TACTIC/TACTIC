@@ -1569,6 +1569,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
         if node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
 
+        if node_type == 'progress':
+            widget = ProgressInfoWdg(**my.kwargs)
+
         if node_type == 'unknown':
             widget = UnknownInfoWdg(**my.kwargs)
 
@@ -3159,7 +3162,7 @@ class ProcessInfoCmd(Command):
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
-    def handle_status(my):
+    def handle_approval(my):
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")
@@ -3178,6 +3181,7 @@ class ProcessInfoCmd(Command):
         status = my.kwargs.get("status")
         mapping = my.kwargs.get("mapping")
         color = my.kwargs.get("color")
+        assigned = my.kwargs.get("assigned")
 
         workflow = process_sobj.get_json_value("workflow")
         if not workflow:
@@ -3192,6 +3196,10 @@ class ProcessInfoCmd(Command):
    
         if color:
             process_sobj.set_value("color", color)
+
+        if assigned:
+            workflow['assigned'] = assigned
+
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
@@ -3271,11 +3279,6 @@ class ProcessInfoCmd(Command):
 
 
 
-
-
-
-
-  
 
 
 
