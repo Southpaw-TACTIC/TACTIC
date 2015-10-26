@@ -26,7 +26,7 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, Hidde
 
 from tactic.ui.container import DialogWdg, TabWdg, SmartMenu, Menu, MenuItem, ResizableTableWdg
 from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
-from tactic.ui.input import TextInputWdg
+from tactic.ui.input import TextInputWdg, ColorInputWdg
 from pipeline_canvas_wdg import PipelineCanvasWdg
 from client.tactic_client_lib import TacticServerStub
 
@@ -172,6 +172,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         info = table.add_cell()
         #info.add_style("display: none")
         info.add_class("spt_pipeline_tool_info")
+        info.add_class("spt_panel") 
         info.add_style("width: 400px")
         info.add_style("min-width: 400px")
         info.add_border()
@@ -1002,7 +1003,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
         menu_item = MenuItem(type='action', label='Edit Process Data')
-        menu.add(menu_item)
+        #menu.add(menu_item)
         menu_item.add_behavior( {
             'cbjs_action': '''
             var node = spt.smenu.get_activator(bvr);
@@ -1506,7 +1507,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_class(".spt_process_info_top")
-
+        
         widget = None
 
         if search_type == "sthpw/task":
@@ -1692,7 +1693,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
         top.add_class("spt_pipeline_info_top")
-
 
         search_type = pipeline.get_value("search_type")
 
@@ -2562,7 +2562,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top.add_style("padding: 20px 0px")
 
         top.add_class("spt_status_top")
-
  
         title_wdg = my.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
@@ -2574,24 +2573,29 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
         workflow = {}
+        color = None
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow")
+            color = process_sobj.get_value("color")
 
         if not workflow:
             workflow = {}
-
+        if not color:
+            from pyasm.biz import Task
+            color = Task.get_default_color(process)
+           
         direction = workflow.get("direction")
         to_status = workflow.get("status")
         mapping = workflow.get("mapping")
-
- 
-
 
         settings_wdg = DivWdg()
         top.add(settings_wdg)
         settings_wdg.add_style("padding: 0px 10px")
 
-        settings_wdg.add("<h3>Task Status Action</h3>")
+        settings_wdg.add("<b>Task Status Action</b>")
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<br/>")
+        
         title = DivWdg("When set to this status, do the following:")
         title.add_style('padding-bottom: 12px')
 
@@ -2649,7 +2653,17 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add(text)
         text.add_style("width: 100%")
 
-
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<hr/>")
+        settings_wdg.add("<br/>")
+        
+        # Color
+        color_div = DivWdg("<b>Color</b>:")
+        color_div.add_style('padding-bottom: 2px')
+        settings_wdg.add(color_div)
+        color_input = ColorInputWdg("color")
+        color_input.set_value(color)
+        settings_wdg.add(color_input)
        
         settings_wdg.add("<br/>")
 
@@ -2669,10 +2683,35 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             values['node_type'] = 'status';
             values['process'] = bvr.process;
             values['pipeline_code'] = bvr.pipeline_code;
-
+            
+            // Update process sObject
             var server = TacticServerStub.get();
             server.execute_cmd( class_name, values);
             
+            // Update pipeline sObject xml
+            color = values['color'];
+            var node = spt.pipeline.get_selected_node();
+            if (!node) {
+                node = spt.pipeline.get_node_by_name(bvr.process);
+            }
+            node.properties['color'] = color;
+            
+            var groups = spt.pipeline.get_groups();
+            for (group_name in groups) {
+                var xml = spt.pipeline.export_group(group_name);
+                var search_key = server.build_search_key("sthpw/pipeline", group_name);
+                try {
+                    // Refresh the canvas to display new color.
+                    spt.pipeline.remove_group(group_name);
+                    spt.pipeline.unselect_all_nodes();
+                    results = server.insert_update(search_key, {'pipeline': xml}); 
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
+                spt.pipeline.import_pipeline(group_name);
+            }
+            
+
             '''
         } )
 
@@ -2830,16 +2869,19 @@ class ProcessInfoCmd(Command):
         process = my.kwargs.get("process")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
-
+        
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
 
+        if not process_sobj:
+            return
 
         direction = my.kwargs.get("direction")
         status = my.kwargs.get("status")
         mapping = my.kwargs.get("mapping")
+        color = my.kwargs.get("color")
 
         workflow = process_sobj.get_json_value("workflow")
         if not workflow:
@@ -2851,7 +2893,9 @@ class ProcessInfoCmd(Command):
             workflow['status'] = status
         if mapping:
             workflow['mapping'] = mapping
-
+   
+        if color:
+            process_sobj.set_value("color", color)
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
@@ -4115,13 +4159,12 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         th.add_style("height: 40px")
         th.add(" hours")
         
-        # color
+        # Color
         table.add_row()
         td = table.add_cell('Color:')
         td.add_attr("title", "Used by various parts of the interface to show the color of this process.")
 
         text_name = "spt_property_color"
-        from tactic.ui.input import ColorInputWdg
         text = TextWdg(text_name)
         color = ColorInputWdg(text_name)
         color.set_input(text)
