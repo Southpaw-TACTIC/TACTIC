@@ -835,7 +835,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
           
           
             var filename = file.name;
-            filename = spt.path.get_filesystem_name(filename);
+            
+            // allow any name for now
+            //filename = spt.path.get_filesystem_name(filename);
             var kwargs = {
                 ticket: ticket,
                 filename: filename
