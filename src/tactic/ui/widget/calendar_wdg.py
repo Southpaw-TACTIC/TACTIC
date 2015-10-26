@@ -799,7 +799,7 @@ class CalendarInputWdg(BaseInputWdg):
         my.cbjs_validation = validation
         my.validation_warning = validation_warning
    
-  
+     
 
     def get_display(my):
         # should not have float by default
@@ -1012,8 +1012,10 @@ class CalendarInputWdg(BaseInputWdg):
                 #    value = SPTDate.convert_to_local(value)
 
         current = my.get_current_sobject()
+        
         if current and not current.is_insert():
             db_date = current.get_value(my.get_name(), no_exception=True)
+            
             if db_date:
                 # This date is assumed to be GMT
                 try:
@@ -1021,17 +1023,18 @@ class CalendarInputWdg(BaseInputWdg):
                 except:
                     value = datetime.now()
                 
+
                 #from pyasm.common import SPTDate
                 #from pyasm.search import SObject
                 if not SObject.is_day_column(my.get_name()):
-                    date = SPTDate.convert_to_local(value)
+                    date = my.get_timezone_value(value)
+                    
                 try:
-                   encoding = locale.getlocale()[1]		
-                   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                    encoding = locale.getlocale()[1]		
+                    value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
                 except:
-                   value = date.strftime("%b %d, %Y - %H:%M")
-
-
+                    value = date.strftime("%b %d, %Y - %H:%M")
+               
 
         if show_time:
             key = 'DATETIME'

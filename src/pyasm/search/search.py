@@ -15,7 +15,6 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 import string, types, re, sys
 import decimal
-import uuid
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -624,8 +623,8 @@ class Search(Base):
         '''convenience function to add a filter for the given sobject'''
         my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
 
-        if SearchType.column_exists(sobject.get_search_type(), "code") and \
-            SearchType.column_exists(my.get_search_type(), "%ssearch_code" % prefix):
+        if sobject.column_exists("code") and my.column_exists("%ssearch_code" % prefix):
+            search_code = sobject.get_value("code")
             if not op:
                 op = '='
             my.add_filter("%ssearch_code" % prefix, search_code, op=op )
@@ -3302,13 +3301,6 @@ class SObject(object):
         my.new_id = int(value)
 
 
-    def set_auto_code(my):
-        '''set a unique code automatically for certain internal sTypes'''
-        unique_id = uuid.uuid1()
-        unique_code = '%s_%s'%(my.get_code_key(), unique_id)
-        my.set_value('code', unique_code)
-
-
     def set_user(my, user=None):
         if user == None:
             user = Environment.get_user_name()
@@ -3614,18 +3606,20 @@ class SObject(object):
 
             # if this is a timestamp, then add the a time zone.
             # For SQLite, this should always be set to GMT
-            # For Postgres, if there is no timestamp, then the value
+            # For Postgres, if there is no time zone, then the value
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 if value and not SObject.is_day_column(key):
                     info = column_info.get(key)
                     if is_postgres and not info.get("time_zone"):
+                        # if it has no timezone, it assumes it is GMT
                         value = SPTDate.convert_to_local(value)
                     else:
                         value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S %z')
+           
                 changed = True
 
             if changed:
@@ -3804,7 +3798,6 @@ class SObject(object):
                 if log == None:
                     # create a virtual log
                     log = SearchType.create("sthpw/change_timestamp")
-                    log.set_auto_code()
                     log.set_value("search_type", search_type)
                     log.set_value("search_code", search_code)
                     transaction.change_timestamps[key] = log
@@ -5428,7 +5421,7 @@ class SearchType(SObject):
         #        columns.remove("s_status")
 
         for column in columns:
-            if column.startswith("_tmp"):
+            if column.startswith("_"):
                 columns.remove(column)
 
         return columns
