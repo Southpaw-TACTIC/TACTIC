@@ -172,6 +172,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         info = table.add_cell()
         #info.add_style("display: none")
         info.add_class("spt_pipeline_tool_info")
+        info.add_class("spt_panel") 
         info.add_style("width: 400px")
         info.add_style("min-width: 400px")
         info.add_border()
@@ -1506,7 +1507,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_class(".spt_process_info_top")
-
+        
         widget = None
 
         if search_type == "sthpw/task":
@@ -1692,7 +1693,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
         top.add_class("spt_pipeline_info_top")
-
 
         search_type = pipeline.get_value("search_type")
 
@@ -2687,6 +2687,9 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             // Update pipeline sObject xml
             color = values['color'];
             var node = spt.pipeline.get_selected_node();
+            if (!node) {
+                node = spt.pipeline.get_node_by_name(bvr.process);
+            }
             node.properties['color'] = color;
             
             var groups = spt.pipeline.get_groups();
@@ -2696,15 +2699,14 @@ class TaskStatusInfoWdg(BaseInfoWdg):
                 try {
                     // Refresh the canvas to display new color.
                     spt.pipeline.remove_group(group_name);
+                    spt.pipeline.unselect_all_nodes();
                     results = server.insert_update(search_key, {'pipeline': xml}); 
                     spt.pipeline.import_pipeline(group_name);
-
-                    // Refresh the status panel to handle refreshed DOM elements
-                    spt.panel.refresh(bvr.src_el); 
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
             }
+            
 
             '''
         } )
