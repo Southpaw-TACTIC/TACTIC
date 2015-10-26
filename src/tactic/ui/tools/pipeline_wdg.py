@@ -2858,7 +2858,6 @@ class ProcessInfoCmd(Command):
         process = my.kwargs.get("process")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
-        process_obj = pipeline.get_process(process)
         
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
@@ -2886,8 +2885,6 @@ class ProcessInfoCmd(Command):
    
         if color:
             process_sobj.set_value("color", color)
-            if process_obj:
-                process_obj.set_attribute("color", color)
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
