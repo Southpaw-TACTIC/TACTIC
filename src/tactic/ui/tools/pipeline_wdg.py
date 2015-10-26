@@ -2599,7 +2599,10 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         top.add(settings_wdg)
         settings_wdg.add_style("padding: 0px 10px")
 
-        settings_wdg.add("<h3>Task Status Action</h3>")
+        settings_wdg.add("<b>Task Status Action</b>")
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<br/>")
+        
         title = DivWdg("When set to this status, do the following:")
         title.add_style('padding-bottom: 12px')
 
@@ -2662,7 +2665,8 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         
         # Color
-        color_div = DivWdg("Color")
+        color_div = DivWdg("<b>Color</b>:")
+        color_div.add_style('padding-bottom: 2px')
         settings_wdg.add(color_div)
         color_input = ColorInputWdg("color")
         color_input.set_value(color)
@@ -2708,10 +2712,10 @@ class TaskStatusInfoWdg(BaseInfoWdg):
                     spt.pipeline.remove_group(group_name);
                     spt.pipeline.unselect_all_nodes();
                     results = server.insert_update(search_key, {'pipeline': xml}); 
-                    spt.pipeline.import_pipeline(group_name);
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
+                spt.pipeline.import_pipeline(group_name);
             }
             
 
@@ -2861,6 +2865,8 @@ class ProcessInfoCmd(Command):
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
 
+        if not process_sobj:
+            return
 
         direction = my.kwargs.get("direction")
         status = my.kwargs.get("status")
@@ -2880,7 +2886,8 @@ class ProcessInfoCmd(Command):
    
         if color:
             process_sobj.set_value("color", color)
-            process_obj.set_attribute("color", color)
+            if process_obj:
+                process_obj.set_attribute("color", color)
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
