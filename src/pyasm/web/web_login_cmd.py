@@ -28,6 +28,7 @@ class WebLoginCmd(Command):
     is_undoable = classmethod(is_undoable)
 
     def reenable_user(my, login_sobject, delay):
+        from tactic.command import SchedulerTask, Scheduler
         class EnableUserTask(SchedulerTask):
             def execute(my):
                 Batch()
@@ -82,16 +83,16 @@ class WebLoginCmd(Command):
                     "Passwords do not match.") 
                 return False
 
-            search = Search("sthpw/login")
-         
-            search.add_filter('upn',my.login)
-            login_sobject = search.get_sobject()
-            if not login_sobject:
-                search2 = Search("sthpw/login")              
-                search2.add_filter('login',my.login)
-                login_sobject = search2.get_sobject()
-            if login_sobject.get_value("login") == "admin":
-                login_sobject.set_password(verify_password)
+        search = Search("sthpw/login")
+        search.add_filter('upn',my.login)
+        login_sobject = search.get_sobject()
+        if not login_sobject:
+            search2 = Search("sthpw/login")              
+            search2.add_filter('login',my.login)
+            login_sobject = search2.get_sobject()
+
+        if login_sobject and login_sobject.get_value("login") == "admin":
+            login_sobject.set_password(verify_password)
 
           
 

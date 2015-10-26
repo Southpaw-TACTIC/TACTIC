@@ -33,10 +33,9 @@ class NotifyWdg(BaseRefreshWdg):
         #top.add_style("left: 0")
         #top.add_style("right: 0")
         top.add_style("top: 20px")
-        top.add_style("margin: 0px auto")
         top.add_style("z-index: 10000")
         top.add_style("width: 200px")
-        top.add_style("opacity: 0")
+        #top.add_style("opacity: 0")
         top.add_style("text-align: center")
         top.add_style("margin-top: -50px")
 
@@ -58,6 +57,8 @@ class NotifyWdg(BaseRefreshWdg):
             'cbjs_action': '''
 spt.notify = {};
 
+spt.notify.last_settings = {};
+
 spt.notify.show = function() {
     new Fx.Tween('spt_notify_top').start('opacity', 1);
     new Fx.Tween('spt_notify_top').start('marginTop', 0);
@@ -69,20 +70,27 @@ spt.notify.hide = function() {
 }
 
 
-spt.notify.set_message = function(message) {
+spt.notify.set_message = function(message, kwargs) {
     var el = $('spt_notify_top').getElement(".spt_notify_message");
     spt.behavior.replace_inner_html(el, message);
+
+    spt.notify.last_settings = {};
+
+    for (var key in kwargs) {
+        spt.notify.last_settings[key] = $('spt_notify_top').getStyle(key);
+        $('spt_notify_top').setStyle(key, kwargs[key]);
+    }
 }
 
 
 
-spt.notify.show_message = function(message, duration) {
-    if (typeof(duration) == 'undefined') {
+spt.notify.show_message = function(message, duration, kwargs) {
+    if (!duration) {
         duration = 3000;
     }
 
     spt.notify.show();
-    spt.notify.set_message(message);
+    spt.notify.set_message(message, kwargs);
     setTimeout( function() {
         spt.notify.hide();
     }, duration );
