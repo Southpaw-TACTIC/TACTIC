@@ -186,15 +186,8 @@ class PopupWdg(BaseRefreshWdg):
 
 
         width = my.kwargs.get("width")
-        print "******* %s" % width
         if not width:
-            width = "50%"
-
-        #widget.add_behavior( {
-        #    'type': 'load',
-        #    'cbjs_action': 'bvr.src_el.makeResizable({handle:bvr.src_el.getElement(".spt_popup_resize")})'
-        #} )
-
+            width = 10
 
         web = WebContainer.get_web()
 
@@ -221,6 +214,7 @@ class PopupWdg(BaseRefreshWdg):
         'type': 'load',
         'width': width,
         'cbjs_action': '''
+        bvr.src_el.setStyle("width", bvr.width)
 
         var popup = bvr.src_el.getParent(".spt_popup");
         var window_size = $(window).getSize();
@@ -228,12 +222,12 @@ class PopupWdg(BaseRefreshWdg):
         var left = window_size.x/2 - size.x/2;
         var top = window_size.y/2 - size.y/2;
         popup.setStyle("left", left);
-        popup.setStyle("width", bvr.width);
         //popup.setStyle("top", top);
 
         var content = popup.getElement(".spt_popup_content");
         content.setStyle("max-height", window_size.y - 100);
         content.setStyle("overflow-y", "auto");
+
         '''
         } )
 
@@ -458,7 +452,7 @@ class PopupWdg(BaseRefreshWdg):
         icon.add_style("z-index: 1000")
         icon.add_class("spt_popup_resize")
         icon.add_style("float: right")
-        icon.add_style("margin-top: -15px")
+        #icon.add_style("margin-top: -15px")
         icon.add_behavior( {
         'type': 'drag',
         "drag_el": '@',
@@ -917,6 +911,7 @@ spt.popup.get_widget = function( evt, bvr )
     // get the title
     var width = options["width"];
     var height = options["height"];
+    var resize = options["resize"];
     var on_close = options["on_close"];
     var allow_close = options["allow_close"];
 
@@ -997,13 +992,20 @@ spt.popup.get_widget = function( evt, bvr )
     var width_wdg = popup.getElement(".spt_popup_width");
     width_wdg.setStyle("min-width", "200px");
     if (width != null) {
-        width_wdg.setStyle("width", width);
+        //width_wdg.setStyle("width", width);
+        var content = popup.getElement(".spt_popup_content");
+        content.setStyle("width", width);
     }
     if (height != null) {
         width_wdg.setStyle("height", height);
         width_wdg.setStyle("overflow", "auto");
     }
-
+   
+    // If specified, turn off ability to resize
+    var resize_icon = popup.getElement(".spt_popup_resize");
+    if (resize == "false" || resize == false) {
+        resize_icon.setStyle("display", "none");
+    }
 
     // replace the title
     if (title != null) {
