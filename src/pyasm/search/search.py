@@ -626,6 +626,7 @@ class Search(Base):
 
         if SearchType.column_exists(sobject.get_search_type(), "code") and \
             SearchType.column_exists(my.get_search_type(), "%ssearch_code" % prefix):
+            search_code = sobject.get_value("code")
             if not op:
                 op = '='
             my.add_filter("%ssearch_code" % prefix, search_code, op=op )
