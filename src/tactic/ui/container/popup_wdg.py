@@ -186,8 +186,9 @@ class PopupWdg(BaseRefreshWdg):
 
 
         width = my.kwargs.get("width")
+        print "******* %s" % width
         if not width:
-            width = 10
+            width = "50%"
 
         #widget.add_behavior( {
         #    'type': 'load',
@@ -220,7 +221,6 @@ class PopupWdg(BaseRefreshWdg):
         'type': 'load',
         'width': width,
         'cbjs_action': '''
-        bvr.src_el.setStyle("width", bvr.width)
 
         var popup = bvr.src_el.getParent(".spt_popup");
         var window_size = $(window).getSize();
@@ -228,12 +228,12 @@ class PopupWdg(BaseRefreshWdg):
         var left = window_size.x/2 - size.x/2;
         var top = window_size.y/2 - size.y/2;
         popup.setStyle("left", left);
+        popup.setStyle("width", bvr.width);
         //popup.setStyle("top", top);
 
         var content = popup.getElement(".spt_popup_content");
         content.setStyle("max-height", window_size.y - 100);
         content.setStyle("overflow-y", "auto");
-
         '''
         } )
 
