@@ -251,11 +251,7 @@ class DatabaseAction(Command):
         elif col_type in ["time", "timestamp"]:
             from pyasm.common import SPTDate
             if not SPTDate.has_timezone(value):
-                timezone = PrefSetting.get_value_by_key('timezone')
-                if timezone:
-                    value = SPTDate.add_timezone(value, timezone)
-                else:
-                    value = SPTDate.add_local_timezone(value)
+                value = SPTDate.add_local_timezone(value)
         elif col_type in ["float", "integer"]:
             if isinstance(value, basestring):
                 value = value.replace(",", "")

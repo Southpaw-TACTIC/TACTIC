@@ -1027,7 +1027,7 @@ class CalendarInputWdg(BaseInputWdg):
                 #from pyasm.common import SPTDate
                 #from pyasm.search import SObject
                 if not SObject.is_day_column(my.get_name()):
-                    date = my.get_timezone_value(value)
+                    date = SPTDate.convert_to_local(value)
                     
                 try:
                     encoding = locale.getlocale()[1]		

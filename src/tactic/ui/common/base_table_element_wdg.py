@@ -163,15 +163,17 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
     def get_timezone_value(my, value):
         '''given a datetime value, try to convert to timezone specified in the widget.
            If not specified, use the My Preferences time zone'''
+        """
         timezone = my.get_option('timezone')
         if not timezone:
             timezone = PrefSetting.get_value_by_key('timezone')
         
         if timezone in ["local", '']:
-            value = SPTDate.convert_to_local(value, timezone)
+            value = SPTDate.convert_to_local(value)
         else:
             value = SPTDate.convert_to_timezone(value, timezone)
-        
+        """
+        value = SPTDate.convert_to_local(value)
         return value
  
     def get_text_value(my):
@@ -481,20 +483,20 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value = ''
 
         elif data_type == "timestamp" or name == "timestamp":
-	    if value == 'now':
+            if value == 'now':
                 value = ''
             elif value:
                 # This date is assumed to be GMT
                 date = parser.parse(value)
                 # convert to user timezone
                 if not SObject.is_day_column(name):
-                    date = my.get_timezone_value(date)
-		try:
-		   encoding = locale.getlocale()[1]		
-		   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
-		except:
-		   value = date.strftime("%b %d, %Y - %H:%M")
-
+                    date = SPTDate.convert_to_local(date)
+                    print "DATE local ", date
+                try:
+                   encoding = locale.getlocale()[1]		
+                   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                except:
+                   value = date.strftime("%b %d, %Y - %H:%M")
             else:
                 value = ''
         else:
