@@ -17,6 +17,39 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    def upgrade_v4_4_0_v01_007(my):
+
+        def get_timezone_names():
+            import os
+            import tarfile
+            import dateutil.zoneinfo
+
+            zi_path = os.path.abspath(os.path.dirname(dateutil.zoneinfo.__file__))
+            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, 'zoneinfo-2008e.tar.gz'))
+            zonenames = zonesfile.getnames()
+            return zonenames
+
+        # add time zone names to timezone prefernce if it does not exist
+        from dateutil.tz import *
+        from pyasm.search import Search
+        pref_list_id = Search.eval("@GET(sthpw/pref_list['key','timezone'].id)")
+        if not pref_list_id:
+            names = get_timezone_names()
+            timezones = []
+            for name in names:
+                try:
+                    gettz(name)
+                    timezones.append(name)
+                except:
+                    continue
+            timezones = sorted(timezones)
+            timezone_str = '|'.join(timezones)
+            timezone_str = '|%s'%timezone_str
+            my.run_sql('''
+                INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('timezone','Your local time zone.', '%s','sequence','general','Time Zone');
+            '''%timezone_str)
+
+
     def upgrade_v4_4_0_v01_006(my):
 
         if my.get_database_type() == 'MySQL':
@@ -31,7 +64,6 @@ class SthpwUpgrade(BaseUpgrade):
             my.run_sql('''
             ALTER TABLE "file" alter COLUMN "code" DROP not NULL;
             ''')
-    
 
     def upgrade_v4_4_0_v01_005(my):
         my.run_sql(''' 
