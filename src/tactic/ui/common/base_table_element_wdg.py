@@ -491,7 +491,6 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 # convert to user timezone
                 if not SObject.is_day_column(name):
                     date = SPTDate.convert_to_local(date)
-                    print "DATE local ", date
                 try:
                    encoding = locale.getlocale()[1]		
                    value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)

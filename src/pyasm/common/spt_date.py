@@ -169,22 +169,7 @@ class SPTDate(object):
         return date
     add_local_timezone = classmethod(add_local_timezone)
 
-    def add_timezone(cls, date, timezone):
-        '''add an arbitrary timezone without affecting the value'''
-        if isinstance(date, basestring):
-            try:
-                # do not use cls.parse ... it does a convert.
-                date = parser.parse(date)
-            except:
-                # This could be "now()", for example
-                return date
-        new_tz = gettz(timezone)
-
-        date = date.replace(tzinfo=new_tz)
-        return date
-    add_timezone = classmethod(add_timezone)
-
-
+  
     def has_timezone(cls, date):
         err = False
         
