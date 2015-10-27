@@ -46,7 +46,7 @@ class SthpwUpgrade(BaseUpgrade):
             timezone_str = '|'.join(timezones)
             timezone_str = '|%s'%timezone_str
             my.run_sql('''
-                INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('timezone','Your local time zone.', '%s','sequence','general','Time Zone');
+                INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('timezone','Your local time zone', '%s','sequence','general','Time Zone');
             '''%timezone_str)
 
 
