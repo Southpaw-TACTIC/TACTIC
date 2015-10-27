@@ -22,7 +22,6 @@ from pyasm.search import Search, SearchType, SObject
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
 from base_refresh_wdg import BaseRefreshWdg
-from pyasm.biz import PrefSetting
 from dateutil import parser
 
 class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
