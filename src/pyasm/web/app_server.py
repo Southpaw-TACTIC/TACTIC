@@ -259,7 +259,7 @@ class BaseAppServer(Base):
                         open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
                         print "xxxx: ", open_hashes
                         """
-                        open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
+                        open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
                         if len(my.hash) >= 1 and my.hash[0] in open_hashes:
                             link = "/%s" % "/".join(my.hash)
                             web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
@@ -478,7 +478,7 @@ class BaseAppServer(Base):
 
 
                     # guest views
-                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
+                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
                     if len(my.hash) >= 1 and my.hash[0] in open_hashes:
                         web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
                     else:
