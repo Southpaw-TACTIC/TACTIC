@@ -17,7 +17,7 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-    def upgrade_v4_4_0_v01_007(my):
+    def upgrade_v4_4_0_v01_008(my):
 
         def get_timezone_names():
             import os
@@ -48,6 +48,12 @@ class SthpwUpgrade(BaseUpgrade):
             my.run_sql('''
                 INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('timezone','Your local time zone.', '%s','sequence','general','Time Zone');
             '''%timezone_str)
+
+    def upgrade_v4_4_0_v01_007(my):
+        my.run_sql('''
+        ALTER TABLE "pref_list" alter COLUMN "options" text;
+        ''')
+
 
 
     def upgrade_v4_4_0_v01_006(my):
