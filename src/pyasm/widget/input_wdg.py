@@ -245,7 +245,7 @@ class BaseInputWdg(HtmlElement):
 
     def is_editable(my):
         return True
-    
+
     def check_persistent_values(my, cgi_values):
         web = WebContainer.get_web()
         if my.is_form_submitted() and web.has_form_key(my.get_input_name()):

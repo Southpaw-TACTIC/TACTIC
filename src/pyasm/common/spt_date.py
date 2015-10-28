@@ -103,6 +103,7 @@ class SPTDate(object):
             date = date.replace(tzinfo=TZGMT)
 
         TZ = gettz(timezone)
+        
         date = date.astimezone(TZ)
         return date
     convert_to_timezone = classmethod(convert_to_timezone)
@@ -168,7 +169,7 @@ class SPTDate(object):
         return date
     add_local_timezone = classmethod(add_local_timezone)
 
-
+  
     def has_timezone(cls, date):
         err = False
         
