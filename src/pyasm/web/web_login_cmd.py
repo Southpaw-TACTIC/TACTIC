@@ -43,6 +43,11 @@ class WebLoginCmd(Command):
         scheduler.add_single_task(task, delay)
         scheduler.start_thread()
 
+
+    def is_logged_in(my):
+        security = WebContainer.get_security()
+        return security.is_logged_in()
+
               
     def execute(my):
 
@@ -63,7 +68,7 @@ class WebLoginCmd(Command):
         if my.login == "" and my.password == "":
             return False
 
-        
+
         if my.login == "" or  my.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Empty username or password") 

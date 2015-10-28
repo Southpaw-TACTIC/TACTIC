@@ -160,19 +160,7 @@ class Login(SObject):
         groups = search.get_sobjects()
 
 
-        # check to see if the default is there
-        """
-        has_default = False
-        for group in groups:
-            if group.get_login_group() == 'default':
-                has_default = True
-
-        if not has_default:
-            default_group = SearchType.create("sthpw/login_group")
-            default_group.set_value("login_group", "default")
-            groups.append(default_group)
-        """
-
+        # look access level rules for this user
         access_level = LoginGroup.NONE
         project_codes = set()
         for group in groups:
@@ -1181,12 +1169,6 @@ class Security(Base):
         #my.login_cache = LoginCache.get("logins")
 
         # find all of the groups for this login
-        
-        #login = my._login.get_login()
-        #my._groups = my.login_cache.get_attr("%s:groups" % login)
-        #my._groups = my.login_cache.get_attr("%s:groups" % login)
-        #my._groups = my.login_cache.get_attr("%s:groups" % login)
-        #my._group_names = my.login_cache.get_attr("%s:group_names" % login)
         my._groups = None
         if my._groups == None:
             my._groups = []
@@ -1264,7 +1246,7 @@ class Security(Base):
 
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        my._find_all_login_groups()
+        #my._find_all_login_groups()
 
         # create a new ticket for the user
         my._ticket = my._generate_ticket(login_name)
@@ -1340,6 +1322,9 @@ class Security(Base):
             </rules>
             ''')
             access_manager.add_xml_rules(xml)
+        elif my._login.get("login") == "admin":
+            access_manager = my.get_access_manager()
+            access_manager.set_admin(True)
 
         return my._login
 
@@ -1715,6 +1700,7 @@ class Security(Base):
 
     def _find_all_login_groups(my, group=None):
 
+
         if not group:
             groups = my._login.get_sub_groups()
             for group in groups:
@@ -1725,6 +1711,7 @@ class Security(Base):
 
                 my._groups.append(group)
                 my._group_names.append(group.get_login_group())
+
                 my._find_all_login_groups(group)
 
         else:
@@ -1764,8 +1751,6 @@ class Security(Base):
 
         # go through all of the groups and add access rules
         for group in my._groups:
-            #access_rules_xml = group.get_xml_value("access_rules")
-            #my._access_manager.add_xml_rules(access_rules_xml)
             my._access_manager.add_xml_rules(group)
 
 

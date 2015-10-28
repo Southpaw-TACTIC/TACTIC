@@ -36,19 +36,26 @@ class Sudo(object):
             #my.security.login_as_guest()
             pass
 
+        login = Environment.get_user_name()
+        if login == "admin" or my.security.is_in_group('admin'):
+            my.was_admin = True
+        else:
+            my.was_admin = False
+
+
         my.access_manager = my.security.get_access_manager()
         my.access_manager.set_admin(True)
 
     def __del__(my):
         #print "Removing admin"
         # remove if I m not in admin group
-        if not my.security.is_in_group('admin'):
+        if not my.security.is_in_group('admin') and my.was_admin == False:
             my.access_manager.set_admin(False)
 
     def exit(my):
         #print "Removing admin"
         # remove if I m not in admin group
-        if not my.security.is_in_group('admin'):
+        if not my.security.is_in_group('admin') and my.was_admin == False:
             my.access_manager.set_admin(False)
 
 
@@ -136,7 +143,6 @@ class AccessManager(Base):
             xmlx = Xml()
             xmlx.read_string(xml)
             xml = xmlx
-
 
         my.xml = xml
 
@@ -451,10 +457,6 @@ class AccessManager(Base):
 
         my.alter_search_type_search(search)
 
-        # qualify the key with a project_code
-        #project_code = "*"
-        #key = "%s?project=%s" % (key, project_code)
-
         rules = my.groups.get(group)
         if not rules:
             return
@@ -497,8 +499,6 @@ class AccessManager(Base):
             # If a relationship is set, then use that
             # FIXME: this is not very clear how to procede.
             related = rule.get('related')
-            #if search_type == 'MMS/job':
-            #    related = "@SOBJECT(MMS/request)"
 
             sudo = Sudo()
             if related:
