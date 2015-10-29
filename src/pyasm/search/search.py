@@ -3596,7 +3596,7 @@ class SObject(object):
 
         # fill in the updated values
         is_postgres = impl.get_database_type() == 'PostgreSQL'
-        #is_sqlite = impl.get_database_type() == 'Sqlite'
+        is_sqlite = impl.get_database_type() == 'Sqlite'
         #is_mysql = impl.get_database_type() == 'MySQL'
         for key, value in my.update_data.items():
             quoted = my.quoted_flag.get(key)
@@ -3618,7 +3618,7 @@ class SObject(object):
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 if value and not SObject.is_day_column(key):
                     info = column_info.get(key)
-                    if is_postgres and not info.get("time_zone"):
+                    if not is_sqlite and not info.get("time_zone"):
                         # if it has no timezone, it assumes it is GMT
                         value = SPTDate.convert_to_local(value)
                     else:
