@@ -24,6 +24,14 @@ from pyasm.command import Command, DatabaseAction
 import os, codecs, shutil, datetime
 
 class PluginBase(Command):
+    
+    UNIQUE_DICT = {
+                'config/widget_config': ['view','search_type','category','widget_type','login'],
+                'config/naming':  ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version'],
+                'config/custom_script':  ['folder','title'],
+                'config/url': ['url']
+        }
+                     
 
     def __init__(my, **kwargs):
         super(PluginBase,my).__init__(**kwargs)
@@ -574,6 +582,7 @@ class PluginCreator(PluginBase):
 
 
     def handle_sobject(my, node):
+        '''handle sobject entries in plugin creation'''
         project = Project.get()
         project_code = project.get_value("code")
         
@@ -592,6 +601,9 @@ class PluginCreator(PluginBase):
             ignore_columns = [x.strip() for x in ignore_columns]
         else:
             ignore_columns = []
+
+        my._validate_ignore_columns(node, search_type, ignore_columns)
+    
 
         # FIXME:
         # it is possible that the manifest defines sobjects on search types
@@ -640,6 +652,17 @@ class PluginCreator(PluginBase):
 
         return sobjects
 
+
+    def _validate_ignore_columns(my, node, search_type, ignore_columns):
+        '''validate only if unique is set to true'''
+        is_unique = my.xml.get_attribute(node, "unique") == 'true'
+        if not is_unique:
+            return True
+        # defaults to ['code']
+        restricted_cols = my.UNIQUE_DICT.get(search_type, ['code'])
+        for col in restricted_cols:
+            if col in ignore_columns:
+                raise TacticException("You have '%s' set in ignore_columns and unique='true' set for [%s]. You need to remove this from ignore_columns to enable the unique feature." %(col, search_type))
 
 
     def handle_search_type(my, node):
@@ -1068,23 +1091,21 @@ class PluginInstaller(PluginBase):
     def get_unique_sobject(my, sobject):
         '''get unique sobject in the existing table when installing plugin'''
         base_st = sobject.get_base_search_type()
-        if base_st == 'config/widget_config':
-            cols = ['view','search_type','category','widget_type','login']
-        elif base_st == 'config/naming':
-            cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
-        elif base_st == 'config/custom_script':
-            cols = ['folder','title']
-        elif base_st == 'config/url':
-            cols = ['url']
-        else:
-            cols = ['code']
+        cols = my.UNIQUE_DICT.get(base_st, ['code'])
 
         search = Search( sobject.get_base_search_type() )
+        has_filter = False
         for col in cols:
             value = sobject.get_value(col)
             if value:
-                search.add_filter(col, value)   
-        unique_sobject = search.get_sobject()
+                search.add_filter(col, value)  
+                has_filter = True
+
+        # ensure there is some filtering before getting sobject
+        if has_filter:
+            unique_sobject = search.get_sobject()
+        else:
+            unique_sobject = None
         return unique_sobject
 
 

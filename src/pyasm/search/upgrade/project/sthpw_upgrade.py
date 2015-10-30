@@ -51,7 +51,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_4_0_v01_007(my):
         my.run_sql('''
-        ALTER TABLE "pref_list" alter COLUMN "options" text;
+        ALTER TABLE "pref_list" alter COLUMN "options" TYPE text;
         ''')
 
 
