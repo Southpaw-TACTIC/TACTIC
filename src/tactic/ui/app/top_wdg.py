@@ -160,7 +160,8 @@ class TopWdg(Widget):
         if web.is_title_page():
             my.body.add_gradient("background", "background", 0, -20)
         else:
-            my.body.add_gradient("background", "background", 0, -15)
+            #my.body.add_gradient("background", "background", 0, -15)
+            my.body.add_color("background", "background")
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")
