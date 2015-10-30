@@ -1010,12 +1010,17 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                     if value == 'NULL':
                         pass
                     else:
-                        
+                        # TODO:  condensed to process + or - 
                         if re.search(r"(\s\+\d{4})", value):
                             # add : so it becomes +00:00
                             parts = value.split(' +')
                             parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
                             value = '%s +%s'%(parts[0], parts[1])
+                        elif re.search(r"(\s-\d{4})", value):
+                            # add : so it becomes -00:00
+                            parts = value.split(' -')
+                            parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
+                            value = '%s -%s'%(parts[0], parts[1])
                         value = "convert(datetime2, '%s', 0)" % value
                 
             return {"value": value, "quoted": quoted}
