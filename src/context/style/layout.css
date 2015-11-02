@@ -27,6 +27,11 @@ body {
 }
 
 
+label {
+    font-family: sans-serif, times;
+    font-size: 12px;
+}
+
 /*
  * We have to define a font size for tables because the body setting does not
  * pass through

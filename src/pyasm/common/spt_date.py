@@ -193,15 +193,40 @@ class SPTDate(object):
         pass
 
 
+
+    def get_time_ago(cls, date):
+
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        now = cls.now()
+
+        diff = now - date
+
+        # less than a minue
+        if diff.seconds < 60:
+            value = "%s seconds ago" % diff.seconds
+
+        # less than an hour
+        elif diff.seconds < 60 * 60:
+            value = "%s minutes ago" % (diff.seconds/60)
+
+        else:
+            value = date.strftime("%b %d at %I:%m %p")
+
+        return value
+
+    get_time_ago = classmethod(get_time_ago)
+
+
 if __name__ == '__main__':
 
-    one_day = SPTDate.timedelta(days=1)
-    now = SPTDate.now()
-    print "now: ", now
-    print now + one_day
-    expression = "2011-04-03 12:30"
-    print "expression: ", expression
-    print "expression: ", SPTDate.parse(expression)
+
+    date = SPTDate.now() - timedelta(minutes=500.23)
+
+    print SPTDate.get_time_ago(date)
+
+
 
 
 

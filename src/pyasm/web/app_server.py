@@ -28,6 +28,8 @@ from web_tools import *
 from html_wdg import *
 from url_security import *
 
+from web_login_cmd import WebLoginCmd
+
 import os, cStringIO
 
 try:
@@ -244,24 +246,41 @@ class BaseAppServer(Base):
                     web_wdg = None
                 else:
 
-                    # custom login widget
+                    # custom global site login widget
                     if not current_project or current_project == "default":
                         current_project = Project.get_default_project()
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        web_wdg = site_obj.get_login_wdg()
+                        # FIXME: this doesn't work!!!  It resets the home page
+                        """
+                        search = Search("config/url")
+                        urls = search.get_sobjects()
+                        open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
+                        print "xxxx: ", open_hashes
+                        """
+                        open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
+                        if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                            link = "/%s" % "/".join(my.hash)
+                            web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
+                        else:
+                            web_wdg = None
+
+                        if not web_wdg:
+                            web_wdg = site_obj.get_login_wdg()
+
                         if web_wdg:
-                            web_wdg = web_wdg.get_buffer_display()
+                            if not isinstance(web_wdg, basestring):
+                                web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
                     else:
                         web_wdg = None
 
                 # display default web login
                 if not web_wdg:
-
                     # get login screen from Site
-                    web_wdg = site_obj.get_login_wdg()
+                    link = "/%s" % "/".join(my.hash)
+                    web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
                         web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
@@ -291,6 +310,8 @@ class BaseAppServer(Base):
         from pyasm.biz import Project
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
+
+
         
         # guest mode
         #
@@ -299,6 +320,13 @@ class BaseAppServer(Base):
             allow_guest = True
         else:
             allow_guest = False
+
+        site_obj = Site.get()
+        site_allow_guest = site_obj.allow_guest()
+        if site_allow_guest != None:
+            allow_guest = site_allow_guest
+
+
 
         security = Security()
         try:
@@ -312,6 +340,8 @@ class BaseAppServer(Base):
         if not guest_mode:
             guest_mode = 'restricted'
 
+
+        # Test
         #allow_guest = True
         #guest_mode = "full"
 
@@ -355,7 +385,6 @@ class BaseAppServer(Base):
             access = True
 
 
-        access = True
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
@@ -367,7 +396,7 @@ class BaseAppServer(Base):
                 return my.handle_not_logged_in(allow_change_admin=False)
 
             else:
-                from pyasm.widget import WebLicenseWdg, BottomWdg, Error403Wdg
+                from pyasm.widget import BottomWdg, Error403Wdg
                 widget = Widget()
                 top = my.get_top_wdg()
                 widget.add( top )
@@ -426,7 +455,8 @@ class BaseAppServer(Base):
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
-                    default_project = Project.get_default_project()
+                    current_project = Project.get_default_project()
+
                 if current_project and current_project != "default":
                     try:
                         Project.set_project(current_project)
@@ -436,9 +466,29 @@ class BaseAppServer(Base):
                             pass
                         else:
                             raise
-                    web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
+
+
+                    # find the guest views
+                    # FIXME: this doesn't work!!!  It resets the home page
+                    search = Search("config/url")
+                    urls = search.get_sobjects()
+                    open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
+                    print "open_hashes: ", open_hashes
+                    link = "/%s" % "/".join(my.hash)
+
+
+                    # guest views
+                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing']
+                    if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                        web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
+                    else:
+                        web_wdg = None
+
+                    if not web_wdg:
+                        web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True, kwargs={"hash": link})
                     if web_wdg:
-                        web_wdg = web_wdg.get_buffer_display()
+                        if not isinstance(web_wdg, basestring):
+                            web_wdg = web_wdg.get_buffer_display()
                         top.add(web_wdg)
                 else:
                     web_wdg = None
@@ -547,7 +597,7 @@ class BaseAppServer(Base):
             widget.add( BottomWdg() )
             widget.get_display()
 
-        # put an annoying alert if there is a problem with the licensed
+        # put an annoying alert if there is a problem with the license
         if not is_licensed:
             # to be sure, reread license.  This gets around the problem
             # of the extra error message when uploading a new license
@@ -614,7 +664,6 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
-                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
@@ -637,7 +686,6 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
             else:
-                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()

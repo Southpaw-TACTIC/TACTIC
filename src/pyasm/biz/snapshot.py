@@ -1884,7 +1884,8 @@ class Snapshot(SObject):
             description="No description", \
             snapshot_data=None, is_current=None, is_revision=False, \
             level_type=None, level_id=None, commit=True, is_latest=True,
-            is_synced=True, process=None, version=None, triggers=True, set_booleans=True):
+            is_synced=True, process=None, version=None, triggers=True,
+            set_booleans=True):
 
         # Provide a default empty snapshot definition
         if snapshot_data == None:

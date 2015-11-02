@@ -439,8 +439,7 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         top.add(title_wdg)
         title_wdg.add(IconWdg(icon=IconWdg.WARNING))
         title_wdg.add("Delete %s sType: %s" % (label,search_type))
-        title_wdg.add_gradient("background", "background", -10, -10)
-        title_wdg.add_style("padding: 5px")
+        title_wdg.add_color("background", "background", -10)
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("font-size: 14px")
 
@@ -708,9 +707,37 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         top.add_border()
         top.add_class("spt_delete_project_tool_top")
 
+
         project_code = my.kwargs.get("project_code")
+
+        # check if delete permissions exist for this site and project
+        security = Environment.get_security()
+        if False and not security.check_access("project", project_code, "delete"):
+            top.add(IconWdg(icon=IconWdg.WARNING))
+            top.add("Not permitted to delete this project")
+            top.add_style("padding: 30px")
+            top.add_style("text-align: center")
+            top.add_style("margin: 50px 30px")
+            top.add_border()
+            top.add_color("background", "background3")
+            return top
+
+
+        
+
+
         if project_code:
             project = Project.get_by_code(project_code)
+            if not project:
+                top.add(IconWdg(icon=IconWdg.WARNING))
+                top.add("No project [%s] exists in this database" % project_code)
+                top.add_style("padding: 30px")
+                top.add_style("text-align: center")
+                top.add_style("margin: 50px 30px")
+                top.add_border()
+                top.add_color("background", "background3")
+                return top
+            search_key = project.get_search_key()
         else:
             search_key = my.kwargs.get("search_key")
             project = Search.get_by_search_key(search_key)
@@ -743,7 +770,9 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
         warning_msg = "Deleting a project will delete the database associated with this project.  All data will be lost.  Please consider carefully before proceeding."
         if warning_msg:
-            content.add(DivWdg(warning_msg, css='warning'))
+            warning_wdg = DivWdg(warning_msg, css='warning')
+            content.add(warning_wdg)
+            warning_wdg.add_style("margin: 20 10px")
             content.add("<br/>")
 
         
@@ -760,7 +789,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
         content.add("<br/>")
 
-        content.add("<b>WARNING: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
+        content.add("<b>NOTE: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
 
 
       
@@ -841,8 +870,10 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         radio = RadioWdg("mode")
         radio.add_class("spt_mode_radio")
         radio.set_value("delete")
+        radio.add_style("margin-left: 15")
+        radio.add_style("margin-top: 5")
         content.add(radio)
-        content.add("<br/>"*2)
+        content.add("<br/>"*3)
 
         #content.add("<b>Or do you just wish to retire the project? </b>")
         #radio = RadioWdg("mode")
@@ -866,7 +897,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         buttons.add_style("width: 250px")
 
 
-        button = ActionButtonWdg(title="Delete")
+        button = ActionButtonWdg(title="Delete", color="danger")
         buttons.add_cell(button)
 
         button.add_behavior( {

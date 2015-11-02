@@ -254,7 +254,7 @@ class TransactionLog(SObject):
 
 
                 if sobject:
-                    SObjectLog.create(sobject, log)
+                    SObjectLog.create(sobject, log, action)
                 else:
                     # record has been deleted
                     if search_code:
@@ -270,7 +270,7 @@ class TransactionLog(SObject):
                         # don't worry if this parent can't be found.
                         pass
                     if sobject:
-                        SObjectLog.create(sobject, log)
+                        SObjectLog.create(sobject, log, "child_%s" % action)
 
     create_sobject_log = classmethod(create_sobject_log)
 

@@ -120,6 +120,9 @@ class ExpressionTest(unittest.TestCase):
                 
                 my.persons.append(person)
 
+            my._test_instance()
+
+            """
             my._test_utf8()
             my._test_palette()
             my._test_related_sobject()
@@ -151,6 +154,7 @@ class ExpressionTest(unittest.TestCase):
             my._test_connection()
             my._test_cache()
             my._test_cross_proj_count()
+            """
 
         finally:
             my.transaction.rollback()
@@ -338,8 +342,7 @@ class ExpressionTest(unittest.TestCase):
         #expected = "years old: (%s) !!" % format % avg
         #my.assertEquals(expected, result)
 
-        '''
-
+        """
         Project.set_project('sample3d')        
         my.submission = SearchType.create("prod/submission")
         my.submission.set_value('artist','admin')
@@ -359,10 +362,10 @@ class ExpressionTest(unittest.TestCase):
         result = my.parser.eval(expression, sobjects= my.submission)
         expected = 'Test Bin'
         my.assertEquals(expected, result)
+        """
 
 
         Project.set_project('unittest')        
-        '''
 
         # The parrser operates on sobjects at a certain level.  The sobject
         # argument is the base level of these expression.  All elements in the
@@ -2732,7 +2735,38 @@ class ExpressionTest(unittest.TestCase):
         expr = "@GET(connect['@CONTEXT','main_task']['@CONTEXT','EQ','main'].id)"
         result = parser.eval(expr, sobjects=[my.country], single=True)
         my.assertEquals(result, my.city_task2.get_id())
+
+
+    def _test_instance(my):
+        expr = "@SOBJECT(unittest/city.unittest/person)"
+        people = Search.eval(expr, [my.country])
+        num = len(people)
+
+        # test instance relationship
+        expr = "@SEARCH(unittest/person)"
+        search = Search.eval(expr, [my.country])
+        people = search.get_sobjects()
+        my.assertEquals(num, len(people))
         
+
+        expr = "@SOBJECT(unittest/person)"
+        people = Search.eval(expr, [my.country])
+        my.assertEquals(num, len(people))
+        
+ 
+
+        expr = "@SOBJECT(unittest/country)"
+        country = Search.eval(expr, my.persons[0], single=True)
+        my.assertEquals( country.get_code(), my.country.get_code())
+       
+
+        Project.set_project('sample3d')
+        shots = Search.eval("@SOBJECT(prod/shot)")
+        print "shots: ", len(shots)
+        assets = Search.eval("@SOBJECT(prod/asset)")
+        print "assets: ", len(assets)
+
+        Project.set_project("unittest")
 
 
 

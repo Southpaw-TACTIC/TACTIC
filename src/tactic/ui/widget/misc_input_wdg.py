@@ -12,7 +12,8 @@
 
 
 __all__ = ['NotificationSelectWdg', 'SearchTypeSelectWdg', 'PipelineSelectWdg',
-        'TaskStatusElementWdg', 'TaskStatusSelectWdg','SelectCalendarInputWdg']
+        'TaskStatusElementWdg', 'TaskStatusSelectWdg','SObjectStatusElementWdg',
+        'SelectCalendarInputWdg']
 
 from pyasm.web import Widget, DivWdg, HtmlElement
 from pyasm.widget import SelectWdg, TextWdg
@@ -155,7 +156,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
     def handle_td(my, td):
         sobject = my.get_current_sobject()
         # find the pipeline code of the task
-        pipeline_code = sobject.get_value('pipeline_code')
+        pipeline_code = sobject.get_value('pipeline_code', no_exception=True)
         parent_pipeline_code = ''
         if my.parent:
             parent_pipeline_code = my.parent.get_value('pipeline_code', no_exception=True)
@@ -351,6 +352,20 @@ class TaskStatusSelectWdg(SelectWdg):
         
         return widget
 
+
+
+class SObjectStatusElementWdg(SimpleTableElementWdg):
+
+    def handle_td(my, td):
+        sobject = my.get_current_sobject()
+
+        value = my.get_value()
+        color = Task.get_default_color(value)
+
+        if color:
+           td.add_style("background-color: %s" % color)
+
+        super(SObjectStatusElementWdg, my).handle_td(td)
 
 
 

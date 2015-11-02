@@ -419,6 +419,7 @@ class Transaction(Base):
             change_timestamp.set_json_value("changed_on", changed_on)
             change_timestamp.set_value("transaction_code", code)
             change_timestamp.set_value("project_code", project_code)
+            change_timestamp.set_now("timestamp")
 
             # it is possible that this commit will fail under heavy load
             # because per chance, the same search_type/search_type combo

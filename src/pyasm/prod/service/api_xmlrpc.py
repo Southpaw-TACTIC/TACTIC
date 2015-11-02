@@ -73,6 +73,9 @@ def get_simple_cmd(my, meth, ticket, args):
                 now = datetime.datetime.now()
                 
                 def print_info(my2, args):
+                    from pyasm.security import Site
+                    if Site.get_site():
+                        print "site: ", Site.get_site()
                     print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
                     print "user: ", Environment.get_user_name()
                     print "simple method: ", meth
@@ -128,6 +131,7 @@ def get_full_cmd(my, meth, ticket, args):
 
         def check(my2):
             return True
+
         def get_transaction(my2):
             if my.get_protocol() == "local":
                 transaction = super(ApiClientCmd,my2).get_transaction()
@@ -157,7 +161,17 @@ def get_full_cmd(my, meth, ticket, args):
             start = time.time()
             global REQUEST_COUNT
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
-            if my.get_protocol() != "local":
+
+            debug = True
+            if meth.func_name == "execute_cmd":
+                if len(args) > 1:
+                    _debug = args[1].get("_debug")
+                    if _debug == False:
+                        debug = False
+
+
+            if my.get_protocol() != "local" and debug:
+                print "---"
                 print "user: ", Environment.get_user_name()
                 now = datetime.datetime.now()
                 print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
@@ -177,7 +191,7 @@ def get_full_cmd(my, meth, ticket, args):
             my2.info['args'] = args
 
 
-            if my.get_protocol() != "local":
+            if my.get_protocol() != "local" and debug:
                 duration = time.time() - start
                 print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
 
@@ -3293,7 +3307,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def simple_checkin(my, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None):
+    def simple_checkin(my, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None, process=None):
 
         '''simple methods that checks in a previously uploaded file
        
@@ -3412,7 +3426,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'mode': mode, 'is_revision': is_revision,
             'keep_file_name': keep_file_name,
             'context_index_padding': context_index_padding,
-            'checkin_type': checkin_type, 'version': version
+            'checkin_type': checkin_type, 'version': version,
+            'process': process
         }
       
 
@@ -3453,7 +3468,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             local_paths = snapshot.get_all_local_repo_paths()
             snapshot_dict['__paths__'] = local_paths
 
-        print "SQL Commit Count: ", Container.get('Search:sql_commit')
+        #print "SQL Commit Count: ", Container.get('Search:sql_commit')
         return snapshot_dict
 
 
@@ -4760,6 +4775,25 @@ class ApiXMLRPC(BaseApiXMLRPC):
             data['processes'] = process_names
 
         return data
+
+
+
+    #
+    # triger methods
+    #
+    def call_trigger(my, ticket, event, input):
+        '''Calls a trigger with input package
+        
+        
+        @params
+        ticket - authentication ticket
+        '''
+        return Trigger.call(my, event, input)
+
+
+
+
+
 
     #
     # session methods

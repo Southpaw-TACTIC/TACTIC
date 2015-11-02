@@ -69,6 +69,10 @@ class Authenticate(object):
         raise SecurityException("Must override authenticate method")
 
 
+    def postprocess(my, login, ticket):
+        pass
+
+
 
 #
 # The default authentication class
@@ -96,7 +100,6 @@ class TacticAuthenticate(Authenticate):
         encrypted = hashlib.md5(password).hexdigest()
         login.set_value("password", encrypted)
         
-
 
     # DEPRECATED
     def authenticate(my, login, password):

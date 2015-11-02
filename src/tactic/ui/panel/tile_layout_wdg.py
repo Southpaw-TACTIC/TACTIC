@@ -1972,7 +1972,6 @@ class ThumbWdg2(BaseRefreshWdg):
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
-
             if path:
                 path = urllib.pathname2url(path)
 
@@ -2056,7 +2055,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if not snapshot:
-            snapshot = Snapshot.get_snapshot("sthpw/search_type", base_search_type, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=['icon','publish',''])
 
 
         if snapshot:

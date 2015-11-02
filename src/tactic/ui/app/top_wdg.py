@@ -35,6 +35,8 @@ class TopWdg(Widget):
         my.kwargs = kwargs
         super(TopWdg, my).__init__()
 
+
+
     def init(my):
         my.body = HtmlElement("body")
         Container.put("TopWdg::body", my.body)
@@ -49,6 +51,36 @@ class TopWdg(Widget):
         my.body.add_attr("ondragleave", "return false;")
         my.body.add_attr("ondrop", "return false;")
 
+        my.body.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var el = bvr.src_el;
+
+            el.spt_window_active = true;
+
+            if (document.addEventListener) {
+                document.addEventListener("visibilitychange", function() {
+                    el.spt_window_active = ! document.hidden;
+                } );
+            }
+            else {
+                window.onfocus = function() {
+                    bvr.src_el.spt_window_active = true;
+                }
+
+                window.onblur = function() {
+                    bvr.src_el.spt_window_active = false;
+                }
+            }
+
+            '''
+        } )
+
+        my.add_top_behaviors()
+
+
+
         
         click_div = DivWdg()
         my.top.add(click_div)
@@ -56,6 +88,11 @@ class TopWdg(Widget):
         'type': 'load',
         'cbjs_action': '''
         spt.body = {};
+
+        spt.body.is_active = function() {
+            return $(document.body).spt_window_active;
+        }
+
         spt.body.focus_elements = [];
         spt.body.add_focus_element = function(el) {
             spt.body.focus_elements.push(el);
@@ -113,6 +150,7 @@ class TopWdg(Widget):
         }
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
         document.body.addEvent("mousedown", spt.body.hide_focus_elements);
+
         '''
         } )
 
@@ -135,6 +173,121 @@ class TopWdg(Widget):
         # 'force_default_context_menu' flag reset for the next right click that occurs ...
         #
         my.body.add_event( "oncontextmenu", "spt.force_default_context_menu = false;" )
+
+
+
+
+    def add_top_behaviors(my):
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_popup',
+            'cbjs_action': '''
+            var view = bvr.src_el.getAttribute("view");
+            if (!view) {
+                spt.alert("No view found");
+            }
+
+            var target = bvr.src_el.getAttribute("target");
+
+            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+            var kwargs = {
+                view: view,  
+            }
+            spt.panel.load_popup(target, class_name, kwargs);
+            '''
+        } )
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_load',
+            'cbjs_action': '''
+
+            var view = bvr.src_el.getAttribute("view");
+            if (!view) {
+                spt.alert("No view found");
+            }
+
+            var target_class = bvr.src_el.getAttribute("target");
+            if (target_class.indexOf(".") != "-1") {
+                var parts = target_class.split(".");
+                var top = bvr.src_el.getParent("."+parts[0]);
+                var target = top.getElement("."+parts[1]);  
+            }
+            else {
+                var target = $(document.body).getElement("."+target_class);
+            }
+
+            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+            var kwargs = {
+                view: view,  
+            }
+            spt.panel.load(target, class_name, kwargs);
+            '''
+        } )
+
+
+
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_refresh',
+            'cbjs_action': '''
+            var target_class = bvr.src_el.getAttribute("target");
+            if (target_class.indexOf(".") != "-1") {
+                var parts = target_class.split(".");
+                var top = bvr.src_el.getParent("."+parts[0]);
+                var target = top.getElement("."+parts[1]);  
+            }
+            else {
+                var target = $(document.body).getElement("."+target_class);
+            }
+
+            spt.panel.refresh(target);
+            '''
+            } )
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_submit',
+            'cbjs_action': '''
+            var command = bvr.src_el.getAttribute("command");
+            var kwargs = {
+            }
+            var server = TacticServerStub.get();
+            try {
+                server.execute_cmd(command, kwargs);
+            } catch(e) {
+                spt.alert(e);
+            }
+            '''
+            } )
+
+
+        my.body.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'tactic_hover',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "#EEE");
+            '''
+            } )
+
+        my.body.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'tactic_hover',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+            } )
+
+        my.body.set_unique_id()
+        my.body.add_smart_style( "tactic_load", "cursor", "pointer" )
+
+
+
+
 
 
 
@@ -546,6 +699,9 @@ class TopWdg(Widget):
         from notify_wdg import NotifyWdg
         widget.add(NotifyWdg())
 
+        from tactic.ui.app import DynamicUpdateWdg
+        widget.add( DynamicUpdateWdg() )
+
 
         return widget
 
@@ -579,14 +735,14 @@ class TopWdg(Widget):
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
 
 
-        # first load context css
-        Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
-
 
         # add the color wheel css
         Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
+
+        # first load context css
+        Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
 
 
@@ -599,7 +755,15 @@ class TopWdg(Widget):
         for css_file in css_files:
             widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % css_file )
 
-       
+        # custom js files to include
+        includes = Config.get_value("install", "include_css")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                print "include: ", include
+                widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
+
         return widget
 
 
@@ -744,9 +908,10 @@ class TitleTopWdg(TopWdg):
 
         body.add("</form>\n")
 
-        from tactic_branding_wdg import TacticCopyrightNoticeWdg
-        copyright = TacticCopyrightNoticeWdg()
-        body.add(copyright)
+        if web.is_admin_page():
+            from tactic_branding_wdg import TacticCopyrightNoticeWdg
+            copyright = TacticCopyrightNoticeWdg()
+            body.add(copyright)
 
         return widget
 
@@ -772,7 +937,6 @@ class IndexWdg(Widget):
 
         top = DivWdg()
         top.set_id('top_of_application')
-
 
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
@@ -869,6 +1033,8 @@ class SitePage(AppServer):
             page = StringWdg(page)
 
         application.add(page, 'content')
+
+
         return application
 
 

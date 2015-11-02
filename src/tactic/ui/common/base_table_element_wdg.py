@@ -467,8 +467,11 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             name = column
         else:
             name = my.get_name()
-        
+
+
         value = my.get_value(name=name)
+
+        value_wdg = DivWdg()
 
         if sobject:
             data_type = SearchType.get_column_type(sobject.get_search_type(), name)
@@ -506,11 +509,19 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 except TypeError:
                     value = str(value)
                 else:
-                    value_wdg = DivWdg()
                     value_wdg.add_style("float: right")
                     value_wdg.add_style("padding-right: 3px")
-                    value_wdg.add( str(value) )
-                    return value_wdg
+
+
+
+        if sobject and sobject.column_exists(name):
+            value_wdg = DivWdg()
+            value_wdg.add_update( {
+                'search_key': sobject.get_search_key(),
+                'column': name
+            } )
+            value_wdg.add(str(value))
+            return value_wdg
 
         return value
 

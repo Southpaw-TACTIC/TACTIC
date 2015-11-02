@@ -71,7 +71,6 @@ class Search(Base):
         my.is_search_done = False
         my.sobjects = []
 
-
         # retired asset flag - retired assets are never shown by default
         my.show_retired_flag = False
 
@@ -84,12 +83,14 @@ class Search(Base):
         protocol = 'local'
         if type(search_type) in types.StringTypes:
             # project is *always* local.  This prevents an infinite loop
+            from pyasm.biz import Project
             if search_type != "sthpw/project":
                 try:
-                    key = "Search:resource:%s" % search_type
+                    from pyasm.security import Site
+                    site = Site.get_site()
+                    key = "Search:resource:%s:%s" % (site, search_type)
                     parts = Container.get(key)
                     if not parts:
-                        from pyasm.biz import Project
                         if not project_code:
                             project_code = Project.extract_project_code(search_type)
                         project = Project.get_by_code(project_code)
@@ -497,6 +498,8 @@ class Search(Base):
 
     def is_expr(value):
         '''return True if it is an expression based on starting chars'''
+        if not isinstance(value, basestring):
+            value = str(value)
         is_expr = re.search("^(@|\$\w|{@|{\$\w)", value)
         return is_expr
 
@@ -796,6 +799,37 @@ class Search(Base):
             else:
                 my.add_filter("code", sobject.get_value("search_code"))
 
+
+        elif relationship in ['instance']:
+
+            instance_type = attrs.get("instance_type")
+            assert(instance_type)
+
+            my.add_join(instance_type, search_type)
+            my.add_join(related_type, instance_type)
+
+            search_type_obj = SearchType.get(search_type)
+            related_type_obj = SearchType.get(related_type)
+
+            table = search_type_obj.get_table()
+            related_table = related_type_obj.get_table()
+            my.add_column("*", table=table)
+            my.add_column("code", table=related_table, as_column="_related_code")
+
+            if my_is_from:
+                value = sobject.get_value(to_col)
+                if not value:
+                    my.null_filter = True
+                    return
+                my.add_filter(from_col, value, table=related_table )
+            else:
+                value = sobject.get_value(from_col)
+                if not value:
+                    my.null_filter = True
+                    return
+                my.add_filter(to_col, value, table=table )
+
+ 
         else:
             raise SearchException("Relationship [%s] not supported yet" % relationship)
 
@@ -865,18 +899,6 @@ class Search(Base):
 
             if my_is_from:
                 if not to_col:
-                    #if relationship == 'search_type':
-                    #    full_search_type = my.get_search_type()
-                    #    full_related_type = sobjects[0].get_search_type()
-                    #    relationship = schema.resolve_search_type_relationship(attrs, full_search_type, full_related_type)
-
-                    #if relationship == 'search_id':
-                    #    to_col = sobject.get_id_col()
-                    #    from_col = 'search_id'
-                    #else:
-                    #    to_col = 'code'
-                    #    from_col = 'search_code'
-
                     attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), sobjects[0].get_search_type())
                     to_col = attrs.get("to_col")
 
@@ -943,6 +965,25 @@ class Search(Base):
                 sobject_values = SObject.get_values(sobjects, column, unique=True)
                 sobject_values = [x for x in sobject_values if x]
                 my.add_filters(column2, sobject_values, op=op)
+
+        elif relationship in ['instance']:
+            instance_type = attrs.get("instance_type")
+            assert(instance_type)
+
+            my.add_join(instance_type, search_type)
+            my.add_join(related_type, instance_type)
+
+
+            search_type_obj = SearchType.get(search_type)
+            related_type_obj = SearchType.get(related_type)
+
+            table = search_type_obj.get_table()
+            related_table = related_type_obj.get_table()
+            my.add_column("*", table=table)
+
+            my.add_column("code", table=related_table, as_column="_related_code")
+
+            #raise SearchException("Relationship [%s] not supported yet" % relationship)
 
         else:
             raise SearchException("Relationship [%s] not supported yet" % relationship)
@@ -1726,7 +1767,8 @@ class Search(Base):
             if not statement:
                 statement = my.select.get_statement()
             #print "statement: ", statement
-            
+           
+            from pyasm.security import Site
             results = sql.do_query(statement)
 
             # this gets the actual order of columns in this SQL
@@ -2097,7 +2139,9 @@ class Search(Base):
         relationship = attrs.get("relationship")
         is_from = related_type == attrs.get("from")
 
+        # go through the related sobjects and map them
         for related_sobject in related_sobjects:
+
             if relationship == 'search_type':
                 relationship = schema.resolve_search_type_relationship(attrs, search_type, related_type)
 
@@ -2107,6 +2151,14 @@ class Search(Base):
                     key = related_sobject.get_value(attrs.get("from_col"))
                 else:
                     key = related_sobject.get_value(attrs.get("to_col"))
+
+            elif relationship == "instance":
+                if is_from:
+                    key = related_sobject.get_value("_related_code")
+                else:
+                    key = related_sobject.get_value("_related_code")
+
+
             elif relationship in ['search_code']:
                 if is_from:
                     search_type = related_sobject.get_value("search_type")
@@ -2140,10 +2192,11 @@ class Search(Base):
             items.append(related_sobject)
 
 
+
         # go through all of the original sobjects and map
         data = {}
         for sobject in sobjects:
-            if relationship in ['code','id']:
+            if relationship in ['code','id','instance']:
                 if is_from:
                     key = sobject.get_value(attrs.get("to_col"))
                 else:
@@ -2165,7 +2218,7 @@ class Search(Base):
                         key = "%s&id=%s" % (sobject.get_value("search_type"), sobject.get_value("search_id"))
 
             else:
-                raise TacticException("Relationship [%s] not supported" % relationwhip)
+                raise TacticException("Relationship [%s] not supported" % relationship)
 
             search_key = sobject.get_search_key()
 
@@ -3499,6 +3552,22 @@ class SObject(object):
         '''validate entries into this sobject'''
         return True
 
+
+    def handle_commit_security(my):
+
+        return True
+
+        search_type = my.get_base_search_type()
+
+        login = Environment.get_user_name()
+
+        if search_type == "sthpw/login":
+            if login != "admin":
+                return False
+
+        return True
+
+
     def commit(my, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
         is_insert = False 
@@ -3508,6 +3577,11 @@ class SObject(object):
         if id in ['-1', '']:
             my.set_id(-1)
             is_insert = True
+
+
+        if not my.handle_commit_security():
+            raise SecurityException("Security: Action not permitted")
+
 
         impl = my.get_database_impl()
         # before we make the final statement, we allow the sobject to set
@@ -3782,6 +3856,9 @@ class SObject(object):
 
         # now that we have all the changed data, store which changes
         # were made
+        from pyasm.security import Site
+        # Note: if this site is not explicitly the first one, then logging the change
+        # timestamp is not supported (at the moment)
         search_type = my.get_search_type()
         if search_type not in [
                 "sthpw/change_timestamp",
@@ -3793,13 +3870,15 @@ class SObject(object):
                 'sthpw/queue',
 
         ] \
-                and sobject and sobject.has_value("code"):
+                and sobject and sobject.has_value("code") \
+                and Site.get_site() == Site.get_first_site():
 
 
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if not is_insert and search_code and transaction:
+            #if not is_insert and search_code and transaction:
+            if search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
@@ -3815,12 +3894,13 @@ class SObject(object):
                     changed_on = log.get_json_value("changed_on", {})
                     changed_by = log.get_json_value("changed_by", {})
 
-                login = Environment.get_user_name()
-                for name, value in my.update_data.items():
-                    changed_on[name] = "CHANGED"
-                    changed_by[name] = login
-                log.set_json_value("changed_on", changed_on)
-                log.set_json_value("changed_by", changed_by)
+                if not is_insert:
+                    login = Environment.get_user_name()
+                    for name, value in my.update_data.items():
+                        changed_on[name] = "CHANGED"
+                        changed_by[name] = login
+                    log.set_json_value("changed_on", changed_on)
+                    log.set_json_value("changed_by", changed_by)
 
 
         # store the undo information.  The transaction_log needs to
@@ -5378,6 +5458,13 @@ class SearchType(SObject):
             if database == "{project}":
                 from pyasm.biz import Project
                 my.database = Project.get().get_database_name()
+            elif database.startswith("{") and database.endswith("}"):
+                # TEST
+                var = database[1:-1]
+                settings = {
+                    'database': "portal"
+                }
+                my.database = settings.get("database")
             else:
                 my.database = database
 
@@ -6045,6 +6132,9 @@ class SearchType(SObject):
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
+            #from pyasm.security import Site
+            #print "Site: ", Site.get_site()
+            #print "sql: ", select.get_statement()
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )

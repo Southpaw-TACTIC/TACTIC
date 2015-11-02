@@ -910,6 +910,14 @@ class ThumbWdg(BaseTableElementWdg):
 
         div.add_style("text-align: left" )
 
+
+        if my.kwargs.get("shape") in ['circle']:
+            div.add_style("border-radius: %s" % icon_size)
+            div.add_style("overflow: hidden")
+
+
+
+
         if icon_missing:
             missing_div = DivWdg()
             div.add(missing_div)

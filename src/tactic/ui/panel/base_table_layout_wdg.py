@@ -856,7 +856,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else:
             show_keyword_search = True
 
-
         show_search = my.kwargs.get("show_search") != 'false'
 
         if show_keyword_search:
