@@ -214,7 +214,9 @@ class Entity(object):
         if parts is None:
             parts = []
         self.parts = parts
-        
+       
+        self.fd = None
+
         # Content-Type
         self.content_type = headers.elements(u'Content-Type')
         if self.content_type:
@@ -296,6 +298,7 @@ class Entity(object):
             return tempfile.TemporaryFile()
         else:
             fd, path = tempfile.mkstemp()
+            self.fd = fd
             self.path = path
             fp_out = os.fdopen(fd, 'w')
             return fp_out

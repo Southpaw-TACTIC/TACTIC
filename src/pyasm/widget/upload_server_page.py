@@ -150,7 +150,11 @@ class UploadServerWdg(Widget):
                 else:
                     shutil.move(path, to_path)
                 f.close()
-                    
+                try:
+                    os.close(field_storage.fd)
+                except:
+                    print "Could not close file descriptor."
+
             # Because _cpreqbody makes use of mkstemp, the file permissions
             # are set to 600.  This switches to the permissions as defined
             # by the TACTIC users umask
