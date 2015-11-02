@@ -54,6 +54,16 @@ APPROVAL_PIPELINE = '''
 '''
 
 
+DEPENDENCY_PIPELINE = '''
+<pipeline type="serial">
+  <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="20" color="#e9e386" name="In Progress"/>
+  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="100" color="#a3d991" name="Complete"/>
+</pipeline>
+'''
+
+
 default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
@@ -120,6 +130,24 @@ class Task(SObject):
 
 
 
+    def get_default_dependency_xml():
+        global DEPENDENCY_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(DEPENDENCY_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            if color:
+                Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
+    get_default_dependency_xml = staticmethod(get_default_dependency_xml)
+
+
 
 
     def get_default_color(process):
@@ -133,7 +161,7 @@ class Task(SObject):
             color = OTHER_COLORS.get(process.title())
 
         from pyasm.web import Palette
-        theme = Palette.get()
+        theme = Palette.get().get_theme()
         if theme == 'dark':
             color = Common.modify_color(color, -50)
 
@@ -226,7 +254,7 @@ class Task(SObject):
 
         # in case it's a subpipeline
         context = task_process
-        context=my._add_context_suffix(context,task_process,parent)
+        context = my._add_context_suffix(context, task_process, parent)
 
         # then use the project as a parent
         project = Project.get()
@@ -279,7 +307,9 @@ class Task(SObject):
 
                 subcontext = parts[1]
             try:
-                if subcontext == None:
+                if not tasks:
+                    num = 0
+                elif subcontext == None:
                     num = 1
                 else:
                     num = int(subcontext)
@@ -624,10 +654,12 @@ class Task(SObject):
         task.set_parent(sobject)
 
         task.set_value("process", process )
-        task.set_value("description", description )
-        if assigned:
+        if description:
+            task.set_value("description", description )
+        if assigned != None:
             task.set_value("assigned", assigned)
-        if supervisor:
+
+        if supervisor != None:
             task.set_value("supervisor", supervisor)
 
         if not project_code:
@@ -653,9 +685,12 @@ class Task(SObject):
         if end_date:
             task.set_value("bid_end_date", end_date)
         # auto map context as process as the default
-        if not context:
-            context = process
-        task.set_value("context", context)
+        #if not context:
+        #    context = process
+        # let get_defaults() set the context properly instead of auto-map
+        if context:
+            task.set_value("context", context)
+
         # DEPRECATED
         if depend_id:
             task.set_value("depend_id", depend_id)
@@ -1065,6 +1100,9 @@ class Milestone(SObject):
 
 
         return defaults
+
+
+
 
 
 

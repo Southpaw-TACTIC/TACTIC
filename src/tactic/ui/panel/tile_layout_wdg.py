@@ -12,6 +12,7 @@
 __all__ = ["TileLayoutWdg"]
 
 import re, os
+import urllib
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
@@ -644,20 +645,34 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var search_key = top.getAttribute("spt_search_key");
                 var server = TacticServerStub.get();
                 var tmps = server.split_search_key(search_key);
+
+                var encode = function(path){
+                    var path_list = path.split("/");
+                    var filename = path_list.pop();
+                    filename = encodeURIComponent(filename);
+                    path_list.push(filename);
+                    snapshot_path = path_list.join("/");
+
+                    return snapshot_path;
+                }
+
                 if (/sthpw\/snapshot/.test(search_key)) {
                     snapshots = server.query_snapshots({filters: [['id', tmps[1]]], include_web_paths_dict: true});
                     
-                    window.open(snapshots[0].__web_paths_dict__.main);
+                    var snapshot_path = encode(snapshots[0].__web_paths_dict__.main[0]);
+                    window.open(snapshot_path);
                 }
                 else {
                     var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
-                        window.open(snapshot.__web_paths_dict__.main);
+                        var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
+                        window.open(snapshot_path);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
                         if (snapshot.__search_key__) {
-                            window.open(snapshot.__web_paths_dict__.main);
+                            var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
+                            window.open(snapshot_path);
                         }
                         else {
                             alert("WARNING: No file for this asset");
@@ -1932,9 +1947,10 @@ class ThumbWdg2(BaseRefreshWdg):
 
         path = my.path
 
-
         search_type = sobject.get_base_search_type()
-        if path and path.endswith("indicator_snake.gif"):
+        from pyasm.biz import FileGroup
+        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(my.lib_path):   
+
             image_size = os.path.getsize(my.lib_path)
             if image_size != 0:
                 # generate icon dynamically
@@ -1950,16 +1966,17 @@ class ThumbWdg2(BaseRefreshWdg):
                 div.set_attr("spt_image_size", image_size)
 
 
-
         if path:
+            path = urllib.pathname2url(path)
             img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
-
             if path:
+                path = urllib.pathname2url(path)
+
                 img = DivWdg()
-                img.add_style("opacity: 0.2")
+                img.add_style("opacity: 0.3")
 
                 img_inner = HtmlElement.img(src=path)
                 img.add(img_inner)
@@ -2038,7 +2055,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if not snapshot:
-            snapshot = Snapshot.get_snapshot("sthpw/search_type", base_search_type, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=['icon','publish',''])
 
 
         if snapshot:

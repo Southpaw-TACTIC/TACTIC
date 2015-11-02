@@ -339,7 +339,12 @@ SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
             relationship="code" type="hierarchy"/>
      <connect from="unittest/person_in_car" to="unittest/car"
             relationship="code"/>
+
      <connect from="unittest/person" to="unittest/car" relationship="instance" instance_type="unittest/person_in_car"/>
+
+
+     <connect from="unittest/person" to="unittest/country" relationship="instance" instance_type="unittest/city"/>
+
 
  </schema>
 '''
@@ -648,39 +653,6 @@ class Schema(SObject):
             search_type2 = parts[0]
 
 
-        """
-        # TODO: fix this hard coding!!!!
-        xx = ['sthpw/sobject_log', 'sthpw/queue']
-        if search_type == 'sthpw/sobject_log' and search_type2 == 'sthpw/transaction_log':
-            pass
-        elif search_type2 == 'sthpw/sobject_log' and search_type == 'sthpw/transaction_log':
-            pass
-        elif search_type2 == 'sthpw/snapshot' and search_type == 'sthpw/file':
-            pass
-
-        elif search_type in xx:
-            # these are defined backwards from the current definition
-            attrs = {
-                'from': search_type,
-                'to': search_type2,
-                'relationship': 'search_type',
-                'from_col': '',
-                'to_col': '',
-            }
-            return attrs
-        elif search_type2 in xx:
-            attrs = {
-                'from': search_type2,
-                'to': search_type,
-                'relationship': 'search_type',
-                'from_col': '',
-                'to_col': '',
-            }
-            return attrs
-        """
-
-
-
         direction = 'forward'
 
 
@@ -807,14 +779,33 @@ class Schema(SObject):
                 attrs['disabled'] = True
 
 
-
-        elif relationship == 'code':
+        elif relationship in ['code']:
             a_search_type_obj = SearchType.get(a_search_type)
             b_search_type_obj = SearchType.get(b_search_type)
             if not from_col:
                 table = b_search_type_obj.get_table()
                 from_col = '%s_code' % table
                 attrs['from_col'] = from_col
+            if not to_col:
+                attrs['to_col'] = 'code'
+                to_col = 'code'
+
+            if not SearchType.column_exists(b_search_type, to_col):
+                attrs['disabled'] = True
+            if not SearchType.column_exists(a_search_type, from_col):
+                attrs['disabled'] = True
+
+
+        elif relationship in ['instance']:
+            #i_search_type = my.xml.get_attribute(conn, "instance")
+            #i_search_type_obj = SearchType.get(i_search_type)
+
+            a_search_type_obj = SearchType.get(a_search_type)
+            b_search_type_obj = SearchType.get(b_search_type)
+
+            if not from_col:
+                attrs['from_col'] = 'code'
+                from_col = 'code'
             if not to_col:
                 attrs['to_col'] = 'code'
                 to_col = 'code'

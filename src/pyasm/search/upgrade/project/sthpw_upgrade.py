@@ -18,16 +18,182 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
     #
-    # 4.4.0.a01
+    # 4.5.0.a01
+    #
+    def upgrade_v4_5_0_a01_004(my):
+        my.run_sql(''' 
+        ALTER TABLE "login_group" ADD "name" text; 
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_003(my):
+        my.run_sql(''' 
+        ALTER TABLE "login_group" ADD "is_default" boolean; 
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_002(my):
+        my.run_sql(''' 
+        CREATE INDEX "sobject_log_stype_idx" ON sobject_log (search_type);
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_001(my):
+        my.run_sql(''' 
+        CREATE INDEX "change_timestamp_stype_idx" ON change_timestamp (search_type);
+        ''') 
+
+
+    #
+    # 4.4.0.v01
+    #
+
+    def upgrade_v4_4_0_v01_006(my):
+
+        if my.get_database_type() == 'MySQL':
+            my.run_sql('''
+            ALTER table "file" MODIFY "code" varchar(256) NULL;
+            ''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''
+            ALTER TABLE "file" alter COLUMN "code" varchar(256) NULL;
+            ''')
+        else:
+            my.run_sql('''
+            ALTER TABLE "file" alter COLUMN "code" DROP not NULL;
+            ''')
+    
+
+    def upgrade_v4_4_0_v01_005(my):
+        my.run_sql(''' 
+
+        INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
+
+        ''')
+
+
+    def upgrade_v4_4_0_v01_004(my):
+        my.run_sql(''' 
+        CREATE TABLE department (
+        id serial PRIMARY KEY,
+        code varchar(256),
+        name varchar(256),
+        login varchar(256),
+        ou text,
+        CONSTRAINT "department_code_idx" UNIQUE (code),
+        CONSTRAINT "department_name_idx" UNIQUE (name)
+        );
+        ''') 
+
+    def upgrade_v4_4_0_v01_003(my):
+        my.run_sql(''' 
+
+        ALTER TABLE login add constraint "login_upn_idx" UNIQUE (upn);
+        ''') 
+    def upgrade_v4_4_0_v01_002(my):
+        my.run_sql(''' 
+        UPDATE login set upn = login where upn is NULL;
+        ''')
+
+    def upgrade_v4_4_0_v01_001(my):
+        my.run_sql(''' 
+        ALTER TABLE "login" ADD "upn" varchar(256) NULL; 
+        ''') 
+        
+
+    #
+    # 4.4.0.b01
     #
     def upgrade_v4_4_0_b01_007(my):
         my.run_sql(''' 
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
 
+    #
+    # 4.4.0.a01
+    #
+    def critical_v4_4_0_a01_012(my):
+        my.run_sql('''
+        ALTER TABLE change_timestamp ADD COLUMN "timestamp" timestamp;
+        ''')
+
+
+    def upgrade_v4_4_0_a01_011(my):
+        my.run_sql('''
+        CREATE INDEX "sobject_log_timestamp_idx" on sobject_log(timestamp);
+        ''')
+
+    def upgrade_v4_4_0_a01_010(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN action varchar(128);
+        ''')
+
+    def upgrade_v4_4_0_a01_009(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_code varchar(128);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_008(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_type varchar(256);
+        ''')
+
+
+ 
+
+    def upgrade_v4_4_0_a01_007(my):
+        my.run_sql('''
+        CREATE INDEX "change_timestamp_timestamp_idx" on change_timestamp(timestamp);
+        ''')
+
+
+
     def upgrade_v4_4_0_a01_006(my):
         my.run_sql('''
         ALTER TABLE pipeline ADD COLUMN "parent_process" varchar(256);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_011(my):
+        my.run_sql('''
+        CREATE INDEX "sobject_log_timestamp_idx" on sobject_log(timestamp);
+        ''')
+
+    def upgrade_v4_4_0_a01_010(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN action varchar(128);
+        ''')
+
+    def upgrade_v4_4_0_a01_009(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_code varchar(128);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_008(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_type varchar(256);
+        ''')
+
+
+ 
+
+    def upgrade_v4_4_0_a01_007(my):
+        my.run_sql('''
+        CREATE INDEX "change_timestamp_timestamp_idx" on change_timestamp(timestamp);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_006(my):
+        my.run_sql('''
+        ALTER TABLE change_timestamp ADD COLUMN "timestamp" timestamp;
         ''')
 
 

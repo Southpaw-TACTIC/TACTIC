@@ -366,8 +366,8 @@ class TableDataDumper(object):
                             regex = replace_args[1]
                             
                             if regex:
-                                if not re.match(regex,value):
-                                    raise TacticException("%s does not conform to standard format. Expected format must match %s"%(column,regex))
+                                #if not re.match(regex,value):
+                                #    raise TacticException("%s does not conform to standard format. Expected format must match %s"%(column,regex))
                                 value = re.sub(regex,replace_str,value)
                             else:
                                 value = replace_str

@@ -73,6 +73,9 @@ def get_simple_cmd(my, meth, ticket, args):
                 now = datetime.datetime.now()
                 
                 def print_info(my2, args):
+                    from pyasm.security import Site
+                    if Site.get_site():
+                        print "site: ", Site.get_site()
                     print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
                     print "user: ", Environment.get_user_name()
                     print "simple method: ", meth
@@ -128,6 +131,7 @@ def get_full_cmd(my, meth, ticket, args):
 
         def check(my2):
             return True
+
         def get_transaction(my2):
             if my.get_protocol() == "local":
                 transaction = super(ApiClientCmd,my2).get_transaction()
@@ -157,7 +161,17 @@ def get_full_cmd(my, meth, ticket, args):
             start = time.time()
             global REQUEST_COUNT
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
-            if my.get_protocol() != "local":
+
+            debug = True
+            if meth.func_name == "execute_cmd":
+                if len(args) > 1:
+                    _debug = args[1].get("_debug")
+                    if _debug == False:
+                        debug = False
+
+
+            if my.get_protocol() != "local" and debug:
+                print "---"
                 print "user: ", Environment.get_user_name()
                 now = datetime.datetime.now()
                 print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
@@ -177,7 +191,7 @@ def get_full_cmd(my, meth, ticket, args):
             my2.info['args'] = args
 
 
-            if my.get_protocol() != "local":
+            if my.get_protocol() != "local" and debug:
                 duration = time.time() - start
                 print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
 
@@ -3293,7 +3307,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def simple_checkin(my, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None):
+    def simple_checkin(my, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None, process=None):
 
         '''simple methods that checks in a previously uploaded file
        
@@ -3412,7 +3426,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'mode': mode, 'is_revision': is_revision,
             'keep_file_name': keep_file_name,
             'context_index_padding': context_index_padding,
-            'checkin_type': checkin_type, 'version': version
+            'checkin_type': checkin_type, 'version': version,
+            'process': process
         }
       
 
@@ -3453,7 +3468,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             local_paths = snapshot.get_all_local_repo_paths()
             snapshot_dict['__paths__'] = local_paths
 
-        print "SQL Commit Count: ", Container.get('Search:sql_commit')
+        #print "SQL Commit Count: ", Container.get('Search:sql_commit')
         return snapshot_dict
 
 
@@ -4761,6 +4776,25 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return data
 
+
+
+    #
+    # triger methods
+    #
+    def call_trigger(my, ticket, event, input):
+        '''Calls a trigger with input package
+        
+        
+        @params
+        ticket - authentication ticket
+        '''
+        return Trigger.call(my, event, input)
+
+
+
+
+
+
     #
     # session methods
     #
@@ -5613,7 +5647,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     
     @xmlrpc_decorator
-    def add_config_element(my, ticket, search_type, view, name, class_name=None, display_options={}, action_class_name=None, action_options={}, element_attrs={}, login=None, unique=True, auto_unique_name=False, auto_unique_view=False):
+    def add_config_element(my, ticket, search_type, view, name, class_name=None, 
+           display_options={}, action_class_name=None, action_options={}, element_attrs={},
+           login=None, unique=True, auto_unique_name=False, auto_unique_view=False, view_as_attr=False):
         '''Add an element into a config
         
         @params:
@@ -5629,6 +5665,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         auto_unique_name - auto generate a unique element and display view name
         auto_unique_view - auto generate a unique display view name
         unique - a unique display view name is expected
+        view_as_attr - view should be read or created as a name attribute
         '''
         
         assert view
@@ -5659,8 +5696,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if pat.search(name):
             raise UserException('The name [%s] should not start with a number.'%name)
         
+        if not view_as_attr and view.find('@') != -1:
+            view_as_attr = True
+        
         # error out on all special chars from name except .
-        pat = re.compile('[\$\s,@#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
+        pat = re.compile('[\$\s,#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
         if pat.search(name):
             raise UserException('The name [%s] contains special characters or spaces.'%name)
         
@@ -5723,7 +5763,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
     
    
             # build a new config
-            view_node = xml.create_element(view)
+            if view_as_attr:
+                # personal view uses the new view attr-based xml syntax
+                view_node = xml.create_element("view", attrs= {'name': view})
+            else:
+                view_node = xml.create_element(view)
             #root.appendChild(view_node)
             xml.append_child(root, view_node)
 
@@ -5734,8 +5778,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         view_node = xml.get_node("config/%s" % view )
         '''
 
-        config.append_display_element(name, cls_name=class_name, options=display_options, \
-            element_attrs=element_attrs, action_options=action_options, action_cls_name=action_class_name)
+        config.append_display_element(name, cls_name=class_name, options=display_options,
+            element_attrs=element_attrs, action_options=action_options, action_cls_name=action_class_name,
+            view_as_attr=view_as_attr)
+
         config.commit_config()
         # this name could be regenerated. so we return it to client
         dict = {'element_name': name}

@@ -154,8 +154,9 @@ class TriggerToolWdg(BaseRefreshWdg):
         search = Search("config/trigger")
         if my.mode == 'pipeline':
             search.add_filter("process", my.process)
-            search.add_filter("process", my.process_sobj.get_code())
-            search.add_op("or")
+            if my.process_sobj:
+                search.add_filter("process", my.process_sobj.get_code())
+                search.add_op("or")
         else:
             search.add_op('begin')
             search.add_filter("event", "%%|%s" % my.search_type, op='like')
@@ -1797,10 +1798,13 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
         """
         body_text = TextAreaWdg("body")
         body_text.add_class("spt_notification_body")
-        body_text.set_value(message)
+        
+        if message:
+            body_text.set_value(message)
         body_text.add_behavior({'type':'load',
             'message': message,
-            'cbjs_action': 'bvr.src_el.value = bvr.message'})
+            'cbjs_action': '''if (bvr.message)
+                                bvr.src_el.value = bvr.message'''})
 
         body_text.add_style("width: 500px")
         body_text.add_style("height: 250px")
@@ -1818,7 +1822,7 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
         notification_div.add(to_text)
 
         notification_div.add("<br/>")
-        notification_div.add("Mail CC: <br/>")
+        notification_div.add("Mail Cc: <br/>")
         cc_text = TextAreaWdg("mail_cc")
         cc_text.add_class("form-control")
         cc_text.set_value(mail_cc)

@@ -129,7 +129,7 @@
     <element name="name"/>
     <element name="description"/>
     <element name="search_type">
-        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+        <display class="tactic.ui.input.SearchTypeWithPipelineInputWdg"/>
     </element>
     <element name="color">
         <display class="tactic.ui.input.ColorInputWdg"/>
@@ -150,10 +150,10 @@
     </element>
     <element name="description"/>
     <element name="search_type">
-        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+        <display class="tactic.ui.input.SearchTypeWithPipelineInputWdg"/>
     </element>
     <element name="stype">
-        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+        <display class="tactic.ui.input.SearchTypeWithPipelineInputWdg"/>
         <action class="DatabaseAction">
             <column>search_type</column>
         </action>
@@ -206,7 +206,7 @@
     </element>
     <element name="description"/>
     <element name="search_type">
-        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+        <display class="tactic.ui.input.SearchTypeWithPipelineInputWdg"/>
     </element>
 
     <element name="color">

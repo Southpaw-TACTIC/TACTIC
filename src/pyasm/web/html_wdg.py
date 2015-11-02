@@ -21,7 +21,7 @@ import types
 
 from event_container import *
 
-from pyasm.common import Container, jsondumps, jsonloads, Common
+from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
 from pyasm.search import Search
 from widget import Widget
 from web_container import WebContainer
@@ -79,6 +79,7 @@ class HtmlElement(Widget):
         my.styles = None
         my.relay_styles = None
         my.behaviors = None
+        my.updates = None
 
         if css:
             my.set_class(css)    
@@ -146,6 +147,7 @@ class HtmlElement(Widget):
         my.classes = None
         my.styles = None
         my.behaviors = None
+        my.updates = None
 
         my._widgets = None
         my.named_widgets = None
@@ -211,11 +213,16 @@ class HtmlElement(Widget):
         '''Sets the id attribute of the html element'''
         my.attrs['id'] = id
 
-    def set_unique_id(my,prefix=None):
-        unique_id = my.generate_unique_id(is_random=True)
-        if prefix:
-            unique_id = prefix + '_' + unique_id
-        my.set_id(unique_id)
+    def set_unique_id(my,prefix=None, force=False):
+        if force:
+            unique_id = 0
+        else:
+            unique_id = my.get_id()
+        if not unique_id:
+            unique_id = my.generate_unique_id(is_random=True)
+            if prefix:
+                unique_id = prefix + '_' + unique_id
+            my.set_id(unique_id)
         return unique_id
 
     def get_id(my):
@@ -342,8 +349,10 @@ class HtmlElement(Widget):
             else:
                 gradient = "-webkit-gradient(linear, 0%% 0%%, 0%% 100%%, from(%s), to(%s))" % (color1, color2)
             """
-
-            gradient = "linear-gradient(%sdeg, %s, %s)" % (angle, color1, color2)
+            if web.get_browser() == 'Qt':
+                gradient = "-webkit-gradient(linear, 0%% 0%%, 0%% 100%%, from(%s), to(%s))" % (color1, color2)
+            else:
+                gradient = "linear-gradient(%sdeg, %s, %s)" % (angle, color1, color2)
             return gradient
 
 
@@ -762,6 +771,183 @@ class HtmlElement(Widget):
             buffer.write("</%s>" % my.type)
 
         my.clear()
+
+
+
+    ###################
+    # Dynamic Updates
+    ###################
+
+    def add_update(my, update):
+        if my.updates == None:
+            my.updates = [] 
+
+        my.set_unique_id("SPT")
+        my.updates.append(update)
+
+        my.add_class("spt_update")
+        my.add_behavior( {
+            'type': 'load',
+            'update': update,
+            'cbjs_action': '''
+            var id = bvr.src_el.getAttribute("id");
+            var update = {};
+            update[id] = bvr.update;
+            bvr.src_el.spt_update = update;
+            '''
+        } )
+
+
+    # TODO: still needs work
+    """
+    def add_update_text(my, update, value=None):
+        if my.updates == None:
+            my.updates = [] 
+
+        my.set_unique_id("SPT")
+        my.updates.append(update)
+
+
+        if value:
+            my.add(value)
+        else:
+            my.add( my.eval_update(update) )
+
+        my.add_class("spt_update")
+        my.add_behavior( {
+            'type': 'load',
+            'update': update,
+            'cbjs_action': '''
+            var id = bvr.src_el.getAttribute("id");
+            var update = {};
+            update[id] = bvr.update;
+            bvr.src_el.spt_update = update;
+            '''
+        } )
+
+
+
+
+    def add_update_attr(my, attr, update):
+        if my.updates == None:
+            my.updates = []
+
+        update['attr'] = attr
+
+        my.set_unique_id("SPT")
+        my.updates.append(update)
+
+        # evaluate
+        my.add_attr(attr, my.eval_update(update) )
+    """
+
+
+
+    def add_update_expression(my, expr):
+        value = Search.eval(expr)
+        my.add(value)
+        my.add_update( {
+            'expression': expr
+        } )
+
+
+
+
+
+    def eval_update(cls, update):
+        handler = update.get("handler")
+        if handler:
+            handler = Common.create_from_class_path(handler)
+
+            value = handler.get_value()
+            if value != None:
+                return value
+
+            column = handler.get_column()
+            expression = handler.get_expression()
+            compare = handler.get_compare()
+            search_key = handler.get_search_key()
+            parent_key = handler.get_parent_key()
+            site = handler.get_site()
+
+
+        else:
+
+            column = update.get("column")
+            expression = update.get("expression")
+            compare = update.get("compare")
+
+            # search key is used to determine whether a change has occured.
+            # when it is None, the expression is always evaluated ... however,
+            # sometimes a search key is needed for the expression. In this case,
+            # use "parent_key".
+            search_key = update.get("search_key")
+            parent_key = update.get("parent_key")
+
+            # NOTE: this is explicitly not supported.  This would allow a client
+            # to set the site which is forbidden
+            #site = update.get("site")
+            site = None
+
+
+        from pyasm.security import Site
+        try:
+            if site:
+                Site.set_site(site)
+
+
+            value = update.get("value")
+            if value != None:
+                return value
+
+            if search_key:
+                sobject = Search.get_by_search_key(search_key)
+            elif parent_key:
+                sobject = Search.get_by_search_key(parent_key)
+            else:
+                sobject = None
+
+            if not sobject and not expression:
+                return
+
+
+            if column:
+                value = sobject.get_value(column)
+                #print "column: ", column
+                #print "value: ", value
+                #print
+
+            elif compare:
+                value = Search.eval(compare, sobject, single=True)
+                print "compare: ", compare
+                print "value: ", value
+
+            elif expression:
+                value = Search.eval(expression, sobject, single=True)
+                #print "sobject: ", sobject.get_search_key()
+                #print "expression: ", expression
+                #print "value: ", value
+                #print
+
+            format_str = update.get("format")
+            if format_str:
+                format = FormatValue()
+                value = format.get_format_value( value, format_str )
+
+
+        finally:
+            if site:
+                Site.pop_site()
+
+        return value
+    eval_update = classmethod(eval_update)
+
+
+    def get_updates(my):
+        return {my.get_id(): my.updates}
+
+
+
 
 
 

@@ -2033,15 +2033,17 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.panel.refresh(top);
             var server = TacticServerStub.get();
 
-            var style_el = top.getElement(".spt_style");
-            var behavior_el = top.getElement(".spt_behavior");
-            style_el.value = bvr.style;
-            behavior_el.value = bvr.behavior;
-
             setTimeout( function() {
-                spt.ace_editor.set_editor_top(top);
-                spt.ace_editor.set_value(bvr.html);
-                spt.app_busy.hide();
+                var style_el = top.getElement(".spt_style");
+                var behavior_el = top.getElement(".spt_behavior");
+                style_el.value = bvr.style;
+                behavior_el.value = bvr.behavior;
+
+                setTimeout( function() {
+                    spt.ace_editor.set_editor_top(top);
+                    spt.ace_editor.set_value(bvr.html);
+                    spt.app_busy.hide();
+                }, 500);
             }, 500);
             '''
         } )
@@ -2064,17 +2066,20 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var top = activator.getParent(".spt_custom_layout_top");
             top.setAttribute("spt_view", "__new__");
             spt.panel.refresh(top);
-            var server = TacticServerStub.get();
-
-            var style_el = top.getElement(".spt_style");
-            var behavior_el = top.getElement(".spt_behavior");
-            style_el.value = bvr.style;
-            behavior_el.value = bvr.behavior;
 
             setTimeout( function() {
-                spt.ace_editor.set_editor_top(top);
-                spt.ace_editor.set_value(bvr.html);
-                spt.app_busy.hide();
+                var server = TacticServerStub.get();
+
+                var style_el = top.getElement(".spt_style");
+                var behavior_el = top.getElement(".spt_behavior");
+                style_el.value = bvr.style;
+                behavior_el.value = bvr.behavior;
+
+                setTimeout( function() {
+                    spt.ace_editor.set_editor_top(top);
+                    spt.ace_editor.set_value(bvr.html);
+                    spt.app_busy.hide();
+                }, 500);
             }, 500);
             '''
         } )
@@ -2098,17 +2103,21 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var top = activator.getParent(".spt_custom_layout_top");
             top.setAttribute("spt_view", "__new__");
             spt.panel.refresh(top);
-            var server = TacticServerStub.get();
-
-            var style_el = top.getElement(".spt_style");
-            var behavior_el = top.getElement(".spt_behavior");
-            style_el.value = bvr.style;
-            behavior_el.value = bvr.behavior;
 
             setTimeout( function() {
-                spt.ace_editor.set_editor_top(top);
-                spt.ace_editor.set_value(bvr.html);
-                spt.app_busy.hide();
+                var server = TacticServerStub.get();
+
+                var style_el = top.getElement(".spt_style");
+                var behavior_el = top.getElement(".spt_behavior");
+                style_el.value = bvr.style;
+                behavior_el.value = bvr.behavior;
+
+                setTimeout( function() {
+                    spt.ace_editor.set_editor_top(top);
+                    spt.ace_editor.set_value(bvr.html);
+                    spt.app_busy.hide();
+                }, 500);
+
             }, 500);
             '''
         } )
@@ -2134,17 +2143,19 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.panel.refresh(top);
             var server = TacticServerStub.get();
 
-            var style_el = top.getElement(".spt_style");
-            var behavior_el = top.getElement(".spt_behavior");
-            var python_el = top.getElement(".spt_python");
-            style_el.value = bvr.style;
-            behavior_el.value = bvr.behavior;
-            python_el.value = bvr.python;
-
             setTimeout( function() {
-                spt.ace_editor.set_editor_top(top);
-                spt.ace_editor.set_value(bvr.html);
-                spt.app_busy.hide();
+                var style_el = top.getElement(".spt_style");
+                var behavior_el = top.getElement(".spt_behavior");
+                var python_el = top.getElement(".spt_python");
+                style_el.value = bvr.style;
+                behavior_el.value = bvr.behavior;
+                python_el.value = bvr.python;
+
+                setTimeout( function() {
+                    spt.ace_editor.set_editor_top(top);
+                    spt.ace_editor.set_value(bvr.html);
+                    spt.app_busy.hide();
+                }, 500);
             }, 500);
             '''
         } )

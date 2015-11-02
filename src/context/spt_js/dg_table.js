@@ -1796,8 +1796,17 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
     if (view_attrs && view_attrs.layout == null)
         view_attrs['layout'] = 'TableLayoutWdg';
     var config = '<config>\n';
-    config += '  <' + view ;
+    
+    if (view.test(/@/)) {
+        config += '  <view name="' + view  + '" ';
+        
+    }
+    else
+        config += '  <' + view ;
+        
     for (attr in view_attrs) {
+        if (attr == 'name') continue;
+
         if (view_attrs.hasOwnProperty(attr))
             config += ' ' + attr +'="'+view_attrs[attr] + '" ';
     }
@@ -1816,7 +1825,12 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
         config += '    <element name="'+ name +'" width="'+ width +'"/>\n';
     }
 
-    config += '  </' + view + '>\n';
+    if (view.test(/@/)) 
+        config += '  </view>\n';
+    else
+        config += '  </' + view + '>\n';
+
+
     config += '</config>\n';
 
 
@@ -2308,7 +2322,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         if (new_title)
             kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
 
-        
+         
         // add the definiton to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
@@ -2319,12 +2333,12 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             first_idx = 0;
 
         // create the view for this table
-        this.get_size_info(table, unique_el_name, login, first_idx);
+        this.get_size_info(table, unique_el_name, kwargs.login, first_idx);
          
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
             var kwargs2 = save_as_personal ? {'login': login } : {};
-            
+           
             server.add_config_element(search_type, side_bar_view, unique_el_name, kwargs2);
         }
         server.finish();
@@ -3031,7 +3045,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     var pat = /TileLayoutWdg/;
     if (pat.test(class_name)) {
-        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align'];
+        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names'];
         for (var k=0; k < attr_list.length; k++) {
             var attr_val = target.getAttribute('spt_'+ attr_list[k]);
             if (attr_val)

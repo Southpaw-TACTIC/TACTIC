@@ -12,7 +12,7 @@
 __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
-from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
+from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser, Project
@@ -754,6 +754,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-top: 3px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
+        
+        border_color = div.get_color("table_border",  default="border")
+        
+        div.add_styles('border-top: solid 1px %s;' % border_color)
+
         #div.add_gradient("background", "background")
         div.add_color("background", "background",-3)
 
@@ -851,10 +856,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else:
             show_keyword_search = True
 
-
         show_search = my.kwargs.get("show_search") != 'false'
 
-        if show_search and show_keyword_search:
+        if show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
 
@@ -966,10 +970,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
             # -- SEARCH LIMIT DISPLAY
             if my.items_found == 0:
-                if my.search:
-                    my.items_found = my.search.get_count()
-                elif my.sobjects:
-                    my.items_found = len(my.sobjects)
+                try:
+                    if my.search:
+                        
+                        my.items_found = my.search.get_count()
+                    elif my.sobjects:
+                        my.items_found = len(my.sobjects)
+                except SqlException:
+                    DbContainer.abort_thread_sql()
+
+                    my.items_found = 0
 
            
             if my.items_found == 1:

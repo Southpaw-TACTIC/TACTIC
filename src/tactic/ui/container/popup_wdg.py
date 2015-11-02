@@ -189,12 +189,6 @@ class PopupWdg(BaseRefreshWdg):
         if not width:
             width = 10
 
-        #widget.add_behavior( {
-        #    'type': 'load',
-        #    'cbjs_action': 'bvr.src_el.makeResizable({handle:bvr.src_el.getElement(".spt_popup_resize")})'
-        #} )
-
-
         web = WebContainer.get_web()
 
 
@@ -241,51 +235,8 @@ class PopupWdg(BaseRefreshWdg):
 
         table.add_row()
 
-        """
-        # Qt doesn't support shadows very well
-        if web.get_browser() == 'Qtx':
-            # dynamically add css files
-
-            table.add_class("css_shadow_table")
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_top_left SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_top SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_top_right SPT_POPUP_SHADOW")
-
-
-            # Middle (Content) Row of Shadow table ...
-            table.add_row()
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_left SPT_POPUP_SHADOW")
-        """
-
         content_td = table.add_cell()
         content_td.add_class("css_shadow_td")
-
-        """
-        if web.get_browser() == 'Qtx':
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_right SPT_POPUP_SHADOW")
-
-
-            # Bottom Row of Shadow table ...
-            table.add_row()
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_bottom_left SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_bottom SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_bottom_right SPT_POPUP_SHADOW")
-        """
-
 
         drag_div = DivWdg()
 
@@ -434,6 +385,7 @@ class PopupWdg(BaseRefreshWdg):
         #content_div.add_style("padding: 10px")
         if not my.content_wdg:
             my.content_wdg = "No Content"
+        content_div.add_color("background", "background")
 
         content_div.add(my.content_wdg)
 
@@ -458,7 +410,7 @@ class PopupWdg(BaseRefreshWdg):
         icon.add_style("z-index: 1000")
         icon.add_class("spt_popup_resize")
         icon.add_style("float: right")
-        icon.add_style("margin-top: -15px")
+        #icon.add_style("margin-top: -15px")
         icon.add_behavior( {
         'type': 'drag',
         "drag_el": '@',
@@ -917,6 +869,7 @@ spt.popup.get_widget = function( evt, bvr )
     // get the title
     var width = options["width"];
     var height = options["height"];
+    var resize = options["resize"];
     var on_close = options["on_close"];
     var allow_close = options["allow_close"];
 
@@ -997,13 +950,20 @@ spt.popup.get_widget = function( evt, bvr )
     var width_wdg = popup.getElement(".spt_popup_width");
     width_wdg.setStyle("min-width", "200px");
     if (width != null) {
-        width_wdg.setStyle("width", width);
+        //width_wdg.setStyle("width", width);
+        var content = popup.getElement(".spt_popup_content");
+        content.setStyle("width", width);
     }
     if (height != null) {
         width_wdg.setStyle("height", height);
         width_wdg.setStyle("overflow", "auto");
     }
-
+   
+    // If specified, turn off ability to resize
+    var resize_icon = popup.getElement(".spt_popup_resize");
+    if (resize == "false" || resize == false) {
+        resize_icon.setStyle("display", "none");
+    }
 
     // replace the title
     if (title != null) {

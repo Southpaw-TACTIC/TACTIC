@@ -228,6 +228,8 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         bvr2.options.width = kwargs.width;
     if (kwargs.height) 
         bvr2.options.height = kwargs.height;
+    if (kwargs.resize)
+        bvr2.options.resize = kwargs.resize;
     if (kwargs.on_close)
         bvr2.options.on_close = kwargs.on_close;
     if (kwargs.allow_close != null) 

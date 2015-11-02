@@ -15,10 +15,10 @@ __all__ = ['FormatElementWdg']
 
 import re, datetime
 
-from pyasm.common import TimeCode, SPTDate
+from pyasm.common import TimeCode
 from pyasm.search import SObject, Search, SearchKey, SearchType
 from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
-from pyasm.biz import Schema, Project, ProdSetting
+from pyasm.biz import Schema, Project, ProdSetting, PrefSetting
 from pyasm.widget import HiddenWdg, IconWdg
 
 from tactic.ui.common import SimpleTableElementWdg
@@ -113,14 +113,17 @@ class FormatElementWdg(SimpleTableElementWdg):
 
         value = my.get_value()
         widget_type = my.get_option("type")
+        
         if widget_type in ['integer', 'float', 'timecode', 'currency']:
             top.add_style("float: right")
             my.justify = "right"
 
         elif widget_type in ['date','time']:
             name = my.get_name()
-            if value and not SObject.is_day_column(name):
-                value = SPTDate.convert_to_local(value)
+            if value and not SObject.is_day_column(name):               
+                value = my.get_timezone_value(value)
+         
+
                 value = str(value)
 
         else:
@@ -132,8 +135,24 @@ class FormatElementWdg(SimpleTableElementWdg):
 
         format = my.get_option('format')
         value = my.get_format_value( value, format )
-
         top.add(value)
+
+
+        sobject = my.get_current_sobject()
+        if sobject:
+
+            column =  my.kwargs.get('column')
+            if column:
+                name = column
+            else:
+                name = my.get_name()
+
+            top.add_update( {
+                'search_key': sobject.get_search_key(),
+                'column': name,
+                'format': format
+
+            } )
 
         return top
 
@@ -145,7 +164,7 @@ class FormatElementWdg(SimpleTableElementWdg):
         if widget_type in ['date','time']:
             name = my.get_name()
             if not SObject.is_day_column(name):
-                value = SPTDate.convert_to_local(value)
+                value = my.get_timezone_value(value)
                 value = str(value)
  
         format = my.get_option('format')
@@ -240,6 +259,7 @@ class FormatElementWdg(SimpleTableElementWdg):
             num = 0
         return locale.currency(num, True, grouping, monetary)
 
+   
     def get_format_value(my, value, format):
         if format not in ['Checkbox'] and value == '':
             return ''
@@ -490,7 +510,11 @@ class FormatElementWdg(SimpleTableElementWdg):
                 value = ''
             else:
                 value = parser.parse(value)
+                """
+                # TO BE REMOVED: outdated as it is processed in get_display()
                 from pyasm.common import SPTDate
+
+                # this is a special column based timezone override
                 timezone = my.get_option('timezone')
                 if not timezone:
                     pass
@@ -499,7 +523,7 @@ class FormatElementWdg(SimpleTableElementWdg):
                     #value = SPTDate.convert_to_local(value)
                 else:
                     value = SPTDate.convert_to_timezone(value, timezone)
-
+                """
                 value = value.strftime("%I:%M:%S %p")
 
         elif format == '31/12/99 13:37':
@@ -526,6 +550,7 @@ class FormatElementWdg(SimpleTableElementWdg):
                     setting = "%Y-%m-%d %H:%M"
                 
                 value = value.strftime(setting)
+                
                 
 
         elif format == 'DATE':

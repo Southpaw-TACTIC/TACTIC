@@ -131,6 +131,8 @@ class Process(Base):
         node_type = Xml.get_attribute(my.node, "type")
         if node_type == "approval":
             return "approval"
+        if node_type == "dependency":
+            return "dependency"
 
         if not task_pipeline_code and default:
             return "task"
@@ -608,7 +610,6 @@ class Pipeline(SObject):
 
     def get_process_sobject(my, process):
         # search all processes and cache all of the sobject locally
-        print "get_process_sobject: ", process
         if my.process_sobjects == None:
 
             search = Search("config/process")        
@@ -619,7 +620,6 @@ class Pipeline(SObject):
 
             for process_sobject in sobjects:
                 process = process_sobject.get("process")
-                print "process: ", process
                 my.process_sobjects[process] = process_sobject
 
 
@@ -911,6 +911,19 @@ class Pipeline(SObject):
             pipeline.set_pipeline(xml)
             pipeline.set_value("search_type", "sthpw/task")
             #pipeline.commit()
+
+
+        if not pipeline and code == 'dependency':
+            # Create a default task pipeline
+            pipeline = SearchType.create("sthpw/pipeline")
+            pipeline.set_value("code", "dependency")
+            from pyasm.biz import Task
+            xml = Task.get_default_dependency_xml()
+            pipeline.set_value("pipeline", xml)
+            pipeline.set_pipeline(xml)
+            pipeline.set_value("search_type", "sthpw/task")
+            #pipeline.commit()
+
 
 
 

@@ -229,6 +229,7 @@ class Command(Base):
 
 
         full_class_name = Common.get_full_class_name(cmd)
+        ret_val = None
 
         # execute the commmand
         try:
@@ -237,7 +238,7 @@ class Command(Base):
             # go through the command pipeline
             cmd.preprocess()
             cmd.get_data()
-            cmd.execute()
+            ret_val = cmd.execute()
             cmd.postprocess()
 
         except CommandExitException, e:
@@ -384,6 +385,9 @@ class Command(Base):
 
                 # call all registered triggers 
                 Trigger.call_all_triggers()
+
+
+        return ret_val
 
 
     execute_cmd = classmethod(execute_cmd)

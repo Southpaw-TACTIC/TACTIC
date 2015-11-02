@@ -1079,7 +1079,12 @@ class FileGroup(File):
 
     extract_template_and_range = classmethod(extract_template_and_range)
 
-
+    def is_sequence(path):
+        if path.find("###") != -1:
+            return True
+        else:
+            return False
+    is_sequence = staticmethod(is_sequence)
 
 
 

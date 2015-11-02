@@ -349,7 +349,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             from tactic.ui.filter import FilterData
             filter = my.kwargs.get("filter")
             values = {}
-            if filter:
+            if filter and filter != 'None':
+                
                 filter_data = FilterData(filter)
                 values_list = filter_data.get_values_by_prefix("group")
                 if values_list:
@@ -601,7 +602,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("table_border", -10, default="border"))
+        inner.add_style("border-color", inner.get_color("border", -10))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -871,7 +872,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -1598,6 +1599,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 var dst_el = spt.get_event_target(evt);
                 var src_el = spt.behavior.get_bvr_src(bvr);
 
+                /* Keeping this around for later use */
                 var dst_row = dst_el.getParent(".spt_table_row");
                 var dst_search_key = dst_row.getAttribute("spt_search_key");
 
@@ -1606,6 +1608,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
         } )
+
 
 
         # selection behaviors
@@ -1719,7 +1722,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set styles at the table level to be relayed down
-        border_color = table.get_color("#EEE", default="border")
+        border_color = table.get_color("table_border", default="border")
         table.add_smart_styles("spt_table_select", {
             "border": "solid 1px %s" % border_color,
             "width": "30px",
@@ -1900,7 +1903,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #tr.add_gradient("background", "background", -5, -10)
             #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
-            border_color = table.get_color("#E0E0E0", 0, default="border")
+            border_color = table.get_color("table_border", 0, default="border")
+       
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
@@ -1912,6 +1916,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # boolean to determine if there is any width set for any columns
         width_set = False
+
 
         for i, widget in enumerate(my.widgets):
             name = widget.get_name()
@@ -2157,6 +2162,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         summary = (0,0)
 
                     group_summary, total = summary
+                    
+                    if isinstance(result, basestring) and result.startswith('$'):
+                        result = result[1:]
+                        result = float(result)
+               
                     group_summary += result
                     total += result
                     widget_summary_dict[widget] = (group_summary, total)
@@ -2449,13 +2459,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return
      
 
-        table.add_attr("ondragenter", "return false")
-        table.add_attr("ondragover", "return false")
-        table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+        #table.add_attr("ondragenter", "return false")
+        #table.add_attr("ondragover", "return false")
+        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
+
+        table.add_style("width: 100%")
 
 
         tr, td = table.add_row_cell()
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+
         tr.add_class("spt_table_no_items")
         td.add_style("border-style: solid")
         td.add_style("border-width: 1px")
@@ -2490,7 +2509,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
 
             no_results_msg = my.kwargs.get("no_results_msg")
-
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             #msg.set_box_shadow("0px 0px 5px")
@@ -2716,12 +2734,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = my.value
 
+                # add timezone conversion
+                if not SObject.is_day_column(element_name):
+                    element_type = SearchType.get_tactic_type(my.search_type, element_name)
+                    
+                    if element_type in ['time', 'datetime']:
+                        value = widget.get_timezone_value(value)
+                     
+
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
 
                 if isinstance(value, bool):
                     value = str(value).lower()
+            
+
+
                 td.add_attr("spt_input_value", value)
                 #td.add_attr("spt_input_column", column)
             else:
@@ -3095,15 +3124,24 @@ spt.table.drop_row = function(evt, el) {
 
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
-    var size = thumb_el.getSize();
+    if (thumb_el) {
+        var size = thumb_el.getSize();
+    }
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file = files[i];
 
+        var filename = file.name;
 
         var search_key = top.getAttribute("spt_search_key");
-        var filename = file.name;
+        if (!search_key) {
+            var layout = spt.table.get_layout();
+            var search_type = layout.getAttribute("spt_search_type");
+            var server = TacticServerStub.get();
+            var sobject = server.insert(search_type, {name: filename})
+            search_key = sobject.__search_key__;
+        }
         var context = "publish" + "/" + filename;
 
         var upload_file_kwargs =  {

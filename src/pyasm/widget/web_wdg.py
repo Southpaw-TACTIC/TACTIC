@@ -1402,10 +1402,14 @@ class WebLoginWdg(Widget):
         if change_admin:
             table.add_row()
             password_wdg2 = PasswordWdg("verify_password")
-            password_wdg2.add_style("color: black")
-            password_wdg2.add_style("background: #EEE")
-            password_wdg2.add_style("padding: 2px")
-            password_wdg2.add_style("width: 130px")
+            if override_password:
+                password_wdg2.add_class("spt_login_textbox")
+                password_wdg2.add_class("form-control")
+            else:
+                password_wdg2.add_style("color: black")
+                password_wdg2.add_style("background: #EEE")
+                password_wdg2.add_style("padding: 2px")
+                password_wdg2.add_style("width: 130px")
             th = table.add_header( "<b>Verify Password: </b>" )
             th.add_style("padding: 5px")
             table.add_cell( password_wdg2 )
@@ -1425,7 +1429,7 @@ class WebLoginWdg(Widget):
         span = SpanWdg()
 
         if override_login:
-            up = HtmlElement.img('')
+            up = SpanWdg()
             span.add("<div class='spt_login_button'>Login</div>")
         else:
             up = HtmlElement.img('/context/icons/logo/submit_on.png')
