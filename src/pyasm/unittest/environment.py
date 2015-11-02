@@ -82,6 +82,7 @@ class Sample3dEnvironment(UnittestEnvironment):
         # install the unittest plugin
         installer = PluginInstaller(relative_dir="TACTIC/internal/sample3d", verbose=False)
         installer.execute()
+        #Project.set_project(my.project_code)
 
         # add 30 shots
         for x in xrange(30):

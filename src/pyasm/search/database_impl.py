@@ -16,7 +16,8 @@ import os, sys, types, re
 import subprocess
 import datetime
 
-from pyasm.common import Environment, SetupException, Config, Container, TacticException
+from pyasm.common import Environment, SetupException, Config, Container, TacticException, SPTDate
+
 
 class DatabaseImplException(TacticException):
     pass
@@ -119,6 +120,10 @@ class DatabaseImpl(DatabaseImplInterface):
                 quoted: True|False - determines whether the value is quoted or not
         '''
         return None
+    
+    def process_date(my, value):
+        '''process date str to work with db before commit. SQLServer needs it'''
+        return value
 
 
 
@@ -984,14 +989,45 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         return stmt
 
-
+    def process_date(my, value):
+        '''SQL Server process date str to work with db before commit'''
+        lower_value = ''
+        if isinstance(value, datetime.datetime):
+            value = str(value)
+            print "process date to str", value
+        if not value:
+            pass
+        else:
+            lower_value = value.lower()
+        
+            if value == "NOW":
+                value = "getdate()"
+            # this is now called in commit() but as a precaution 
+            elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
+                if value == 'NULL':
+                    pass
+                else:
+                    # TODO:  condensed to process + or - 
+                    if re.search(r"(\s\+\d{4})", value):
+                        # add : so it becomes +00:00
+                        parts = value.split(' +')
+                        parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
+                        value = '%s +%s'%(parts[0], parts[1])
+                    elif re.search(r"(\s-\d{4})", value):
+                        # add : so it becomes -00:00
+                        parts = value.split(' -')
+                        parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
+                        value = '%s -%s'%(parts[0], parts[1])
+                    value = "convert(datetime2, '%s', 0)" % value 
+        return value
     #
     # Type process methods
     #
     def process_value(my, name, value, column_type="varchar"):
-
+        ''' the majority of the value mod is done in process_date()'''
         if column_type in ['timestamp','datetime','datetime2']:
             quoted = False
+            """
             lower_value = ''
             if isinstance(value, datetime.datetime):
                 pass
@@ -1022,7 +1058,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                             parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
                             value = '%s -%s'%(parts[0], parts[1])
                         value = "convert(datetime2, '%s', 0)" % value
-                
+            """    
             return {"value": value, "quoted": quoted}
 
           

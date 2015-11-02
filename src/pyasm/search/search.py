@@ -3597,7 +3597,9 @@ class SObject(object):
         # fill in the updated values
         is_postgres = impl.get_database_type() == 'PostgreSQL'
         is_sqlite = impl.get_database_type() == 'Sqlite'
+        
         #is_mysql = impl.get_database_type() == 'MySQL'
+        
         for key, value in my.update_data.items():
             quoted = my.quoted_flag.get(key)
             escape_quoted = False
@@ -3623,6 +3625,9 @@ class SObject(object):
                         value = SPTDate.convert_to_local(value)
                     else:
                         value = SPTDate.add_gmt_timezone(value)
+                    
+                    value = impl.process_date(value)
+                    
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S %z')
