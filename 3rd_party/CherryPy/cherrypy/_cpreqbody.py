@@ -297,15 +297,24 @@ class Entity(object):
         else:
             fd, path = tempfile.mkstemp()
             self.path = path
+            self.fd = fd
             fp_out = os.fdopen(fd, 'w')
             return fp_out
 
     def get_path(self):
+        '''Return temporary file path returned from mkstemp'''
         try:
             return self.path
         except:
             return None
     
+    def get_fd(self):
+        '''Return file descriptor returned from mkstmep'''
+        try:
+            return self.fd
+        except:
+            return None
+
     def fullvalue(self):
         """Return this entity as a string, whether stored in a file or not."""
         if self.file:

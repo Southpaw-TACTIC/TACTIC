@@ -122,34 +122,42 @@ class UploadServerWdg(Widget):
         if not action:
             action = "create"
 
-        # With some recent change done in cherrypy._cpreqbody line 294
-        # we can use the field storage directly and just move the file
-        # without using FileUpload
+        '''
+        With some recent change done in cherrypy._cpreqbody line 294, 
+        we can use the field storage directly on linux.
+        In Windows, the path variable from the get_path() will be None
+        and files are uploaded using FileUpload.
+        '''
         path = field_storage.get_path()
         if path and file_name and action != "append":
-
+          
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
             
-            if os.name == 'nt':
-                # windows does not do anything.. and it shouldn't even get to 
-                # this point for windows.
-                pass
-            else:
-                f = open(path, 'rb')
-                header = f.read(22)
-                if header.startswith("data:image/png;base64,"):
-                    data = f.read()
-                    import base64
-                    decode = base64.b64decode(data)
-                    f2 = open(to_path, 'wb')
+            f = open(path, 'rb')
+            
+            header = f.read(22)
+            if header.startswith("data:image/png;base64,"):
+                f2 = open(to_path, 'wb')
+                import base64
+                while 1:
+                    buffer = f.read(1024*64)
+                    if not buffer:
+                        break
+                    decode = base64.b64decode(buffer)
                     f2.write(decode)
-                    f2.close()
-                else:
-                    shutil.move(path, to_path)
-                f.close()
+                f2.close()
+            else:
+                shutil.move(path, to_path)
+            
+            f.close()
+            
+            # Close the file descriptor 
+            fd = field_storage.get_fd()
+            if fd: 
+                os.close( fd )
                     
             # Because _cpreqbody makes use of mkstemp, the file permissions
             # are set to 600.  This switches to the permissions as defined
