@@ -994,12 +994,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         lower_value = ''
         if isinstance(value, datetime.datetime):
             value = str(value)
-            print "process date to str", value
         if not value:
             pass
         else:
             lower_value = value.lower()
-        
             if value == "NOW":
                 value = "getdate()"
             # this is now called in commit() but as a precaution 
@@ -1026,6 +1024,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def process_value(my, name, value, column_type="varchar"):
         ''' the majority of the value mod is done in process_date()'''
         if column_type in ['timestamp','datetime','datetime2']:
+            # for straight sql statement conversion skipping commit
+            if value == "NOW":
+                value = "getdate()"
             quoted = False
             """
             lower_value = ''
