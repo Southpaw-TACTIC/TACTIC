@@ -1050,7 +1050,7 @@ class IngestUploadCmd(Command):
         # For sequence mode, take all filenames, and regenerate the filenames based on the function "find_sequences"
         if update_mode == "sequence":
             results = my.find_sequences(filenames)
-
+            
             # non_seq_filenames is a list of filenames that are stored in the None key,
             # which are the filenames that are not part of a sequence, or does not contain
             # a sequence patter.
@@ -1210,11 +1210,17 @@ class IngestUploadCmd(Command):
                 expr = re.compile('^([^0]*)(\d+)([^\d]*)$')
                 # using matches.groups() to find the first and last filename's pattern,
                 # to find the file range
-                m_first = re.match(expr, first_filename)
-                range_start = int(m_first.groups()[1])
 
-                m_last = re.match(expr, last_filename)
-                range_end = int(m_last.groups()[1])
+                count_digits = re.findall('\d+', first_filename)
+                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(count_digits[-1]))
+                
+                m_first = re.match(pattern_expr, first_filename)
+                m_last = re.match(pattern_expr, last_filename)
+                
+                # using second last index , to grab the set right before file type
+                range_start = int(m_first.groups()[-2])
+                
+                range_end = int(m_last.groups()[-2])
 
                 file_range = '%s-%s' % (range_start, range_end)
 
@@ -1270,14 +1276,15 @@ class IngestUploadCmd(Command):
 
         for filename in local_filenames:
             count = re.findall('\d+', filename)
-            try:
-                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(max(count, key=len)))
+
+            try: 
+                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(count[-1]))
+                
             except:
                 sequences[None].append(filename)
                 continue
             
-
-            pound_length =  len(max(count, key=len))
+            pound_length = len(count[-1])
             pounds = "#" * pound_length
 
             # first, check to see if this filename matches a sequence
@@ -1298,7 +1305,9 @@ class IngestUploadCmd(Command):
 
             # next, see if this filename should start a new sequence
             basename      = os.path.basename(filename)
+
             pattern_match = pattern_expr.match(basename)
+
             if pattern_match:
                 opts = (pattern_match.group(1), pattern_match.group(3))
                 key  = '%s%s%s' % (opts[0], pounds, opts[1])
