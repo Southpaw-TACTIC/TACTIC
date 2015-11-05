@@ -111,7 +111,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
-	    var onchange = function (evt) {
+        var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
                 for (var i = 0; i < files.length; i++) {
@@ -129,7 +129,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
-	    }
+        }
 
             spt.html5upload.clear();
             spt.html5upload.set_form( top );
@@ -1053,7 +1053,7 @@ class IngestUploadCmd(Command):
 
             # non_seq_filenames is a list of filenames that are stored in the None key,
             # which are the filenames that are not part of a sequence, or does not contain
-            # a sequence patter.
+            # a sequence pattern.
             non_seq_filenames = results[None]
             
             # delete the None key from list so filenames can be used in the latter for loop
@@ -1207,14 +1207,32 @@ class IngestUploadCmd(Command):
                 context = "%s/%s" % (process, filename.lower())
             
             if update_mode == "sequence":
+                count_digits = re.findall('\d+', first_filename)
+                # if count_digits[-1] is only one digit, meaning filetypes: mp3, mp4 ...etc
+                if len(count_digits[-1]) < 2:
+                    seq_digit_length = len(count_digits[-2])
+                else:
+                    seq_digit_length = len(count_digits[-1])
+
                 expr = re.compile('^([^0]*)(\d+)([^\d]*)$')
                 # using matches.groups() to find the first and last filename's pattern,
                 # to find the file range
-                m_first = re.match(expr, first_filename)
-                range_start = int(m_first.groups()[1])
 
-                m_last = re.match(expr, last_filename)
-                range_end = int(m_last.groups()[1])
+                
+                pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
+                
+                m_first = re.match(pattern_expr, first_filename)
+                m_last = re.match(pattern_expr, last_filename)
+                # for files without extension
+                if not m_first: 
+                    pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%seq_digit_length)
+                    m_first = re.match(pattern_expr, first_filename)
+                    m_last = re.match(pattern_expr, last_filename)
+
+                # using second last index , to grab the set right before file type
+                range_start = int(m_first.groups()[-2])
+                
+                range_end = int(m_last.groups()[-2])
 
                 file_range = '%s-%s' % (range_start, range_end)
 
@@ -1270,14 +1288,26 @@ class IngestUploadCmd(Command):
 
         for filename in local_filenames:
             count = re.findall('\d+', filename)
-            try:
-                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(max(count, key=len)))
+            if len(count) <= 1:
+                raise TacticException('Please modify sequence naming to have at least three digits.')
+            if not count:
+                raise TacticException("Please ingest sequences only.")
+            # if count[-1] is only one digit, meaning filetypes: mp3, mp4 ...etc
+            if len(count[-1]) <= 2:
+                seq_digit_length = len(count[-2])
+            else:
+                seq_digit_length = len(count[-1])
+
+            try: 
+                #pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(count[-1]))
+                pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
             except:
+        
                 sequences[None].append(filename)
                 continue
-            
 
-            pound_length =  len(max(count, key=len))
+            
+            pound_length = seq_digit_length
             pounds = "#" * pound_length
 
             # first, check to see if this filename matches a sequence
@@ -1298,7 +1328,12 @@ class IngestUploadCmd(Command):
 
             # next, see if this filename should start a new sequence
             basename      = os.path.basename(filename)
+
             pattern_match = pattern_expr.match(basename)
+            if not pattern_match:
+                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%seq_digit_length)
+                pattern_match = pattern_expr.match(basename)
+
             if pattern_match:
                 opts = (pattern_match.group(1), pattern_match.group(3))
                 key  = '%s%s%s' % (opts[0], pounds, opts[1])
