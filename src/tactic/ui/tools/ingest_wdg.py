@@ -1054,11 +1054,12 @@ class IngestUploadCmd(Command):
             # non_seq_filenames is a list of filenames that are stored in the None key,
             # which are the filenames that are not part of a sequence, or does not contain
             # a sequence pattern.
-            non_seq_filenames = results[None]
+            non_seq_filenames = results[0][None]
+            seq_digit_length = results[1]
             
             # delete the None key from list so filenames can be used in the latter for loop
-            del results[None]
-            filenames = results.keys()
+            del results[0][None]
+            filenames = results[0].keys()
             if filenames == []:
                 raise TacticException('No sequences are found in files.')
 
@@ -1109,8 +1110,8 @@ class IngestUploadCmd(Command):
             # extract metadata
             #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
             if update_mode == "sequence":
-                first_filename = results.get(filename)[0]
-                last_filename = results.get(filename)[-1]
+                first_filename = results[0].get(filename)[0]
+                last_filename = results[0].get(filename)[-1]
                 file_path = "%s/%s" % (base_dir, first_filename)
             else:
                 file_path = "%s/%s" % (base_dir, filename)
@@ -1207,32 +1208,25 @@ class IngestUploadCmd(Command):
                 context = "%s/%s" % (process, filename.lower())
             
             if update_mode == "sequence":
-                count_digits = re.findall('\d+', first_filename)
-                # if count_digits[-1] is only one digit, meaning filetypes: mp3, mp4 ...etc
-                if len(count_digits[-1]) < 2:
-                    seq_digit_length = len(count_digits[-2])
-                else:
-                    seq_digit_length = len(count_digits[-1])
 
-                expr = re.compile('^([^0]*)(\d+)([^\d]*)$')
-                # using matches.groups() to find the first and last filename's pattern,
-                # to find the file range
-
-                
-                pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
+                pattern_expr = re.compile('^.*(\d{%d})\..*$'%seq_digit_length)
                 
                 m_first = re.match(pattern_expr, first_filename)
                 m_last = re.match(pattern_expr, last_filename)
                 # for files without extension
                 if not m_first: 
-                    pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%seq_digit_length)
-                    m_first = re.match(pattern_expr, first_filename)
-                    m_last = re.match(pattern_expr, last_filename)
+                    no_ext_expr = re.compile('^.*(\d{%d})[^\d]*$'%seq_digit_length)
+                    m_first = re.match(no_ext_expr, first_filename)
+                    m_last = re.match(no_ext_expr, last_filename)
 
                 # using second last index , to grab the set right before file type
-                range_start = int(m_first.groups()[-2])
-                
-                range_end = int(m_last.groups()[-2])
+                groups_first = m_first.groups()
+                if groups_first:
+                    range_start = int(m_first.groups()[0])
+                    
+                groups_last = m_last.groups()
+                if groups_last:
+                    range_end = int(m_last.groups()[0])
 
                 file_range = '%s-%s' % (range_start, range_end)
 
@@ -1288,23 +1282,50 @@ class IngestUploadCmd(Command):
 
         for filename in local_filenames:
             count = re.findall('\d+', filename)
-            if len(count) <= 1:
-                raise TacticException('Please modify sequence naming to have at least three digits.')
+
             if not count:
                 raise TacticException("Please ingest sequences only.")
-            # if count[-1] is only one digit, meaning filetypes: mp3, mp4 ...etc
-            if len(count[-1]) <= 2:
+            
+            base, file_ext = os.path.splitext(filename)
+
+            if file_ext:
+                file_ext = file_ext[1:]
+
+            # if last set of digits is not a file extension, and is less than 3 digits
+            # because common.get_dir_info only works with 3 of more digits
+            if len(count[-1]) <= 1 and file_ext.isalpha():
+                raise TacticException('Please modify sequence naming to have at least three digits.')
+            
+            
+            # if file extension found, and contains a number in the extension (but also not completely numbers)
+            # grab the second last set of digits
+            # ie. .mp3, .mp4, .23p
+
+            if file_ext and not file_ext.isalpha() and not file_ext.isdigit():
                 seq_digit_length = len(count[-2])
             else:
                 seq_digit_length = len(count[-1])
 
-            try: 
-                #pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%len(count[-1]))
-                pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
-            except:
-        
-                sequences[None].append(filename)
-                continue
+
+
+            # if file_ext is empty, or if file_ext[1] is all numbers, use expression below
+            # abc0001, abc.0001 ...etc
+            if not file_ext or file_ext.isdigit():
+                try:
+                    pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%seq_digit_length)
+                except:
+                    sequences[None].append(filename)
+                    continue
+            
+            # then for regular filenames, try grabbing filenames by looking at the digits before the last dot
+            # for files with extensions:
+            # abc.0001.png, abc.0001.mp3, abc0001.mp3, 
+            else:
+                try:
+                    pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
+                except:
+                    sequences[None].append(filename)
+                    continue
 
             
             pound_length = seq_digit_length
@@ -1327,12 +1348,9 @@ class IngestUploadCmd(Command):
                 continue
 
             # next, see if this filename should start a new sequence
-            basename      = os.path.basename(filename)
+            basename = os.path.basename(filename)
 
             pattern_match = pattern_expr.match(basename)
-            if not pattern_match:
-                pattern_expr = re.compile('^(.*)(\d{%d})([^\d]*)$'%seq_digit_length)
-                pattern_match = pattern_expr.match(basename)
 
             if pattern_match:
                 opts = (pattern_match.group(1), pattern_match.group(3))
@@ -1358,4 +1376,4 @@ class IngestUploadCmd(Command):
             sequences.pop(key)
             sequences[None] += filenames
 
-        return sequences
+        return sequences, seq_digit_length
