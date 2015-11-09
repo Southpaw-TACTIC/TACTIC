@@ -181,8 +181,23 @@ class BaseCheckin(Command):
         Trigger.call(my, prefix, output)
         Trigger.call(my, "%s|%s" % (prefix, base_search_type), output)
         Trigger.call(my, "%s|%s|%s" % (prefix, base_search_type, my.context), output)
-        # get the process (assumption here)
-        Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=my.process)
+        
+        # get the process (assumption here) and call both on process and process code
+        process = my.process
+        if process:
+            Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=my.process)
+        
+            pipeline_code = my.sobject.get_value("pipeline_code")
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if pipeline and process:
+                search = Search("config/process")
+                search.add_filter("pipeline_code", pipeline_code)
+                search.add_filter("process", process)
+                process_sobj = search.get_sobject()
+                if process_sobj:
+                    process_code = process_sobj.get_code()
+                    Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=process_code)
+
 
     def update_metadata(my, snapshot, files, file_objects):
 
