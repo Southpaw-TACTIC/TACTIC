@@ -1049,19 +1049,18 @@ class IngestUploadCmd(Command):
 
         # For sequence mode, take all filenames, and regenerate the filenames based on the function "find_sequences"
         if update_mode == "sequence":
-            results = my.find_sequences(filenames)
-
+            
+            non_seq_filenames_dict, seq_digit_length = my.find_sequences(filenames)
             # non_seq_filenames is a list of filenames that are stored in the None key,
             # which are the filenames that are not part of a sequence, or does not contain
             # a sequence pattern.
-            non_seq_filenames = results[0][None]
-            seq_digit_length = results[1]
+            non_seq_filenames = non_seq_filenames_dict[None]
             
             # delete the None key from list so filenames can be used in the latter for loop
-            del results[0][None]
-            filenames = results[0].keys()
+            del non_seq_filenames_dict[None]
+            filenames = non_seq_filenames_dict.keys()
             if filenames == []:
-                raise TacticException('No sequences are found in files.')
+                raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
@@ -1110,8 +1109,8 @@ class IngestUploadCmd(Command):
             # extract metadata
             #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
             if update_mode == "sequence":
-                first_filename = results[0].get(filename)[0]
-                last_filename = results[0].get(filename)[-1]
+                first_filename = non_seq_filenames_dict.get(filename)[0]
+                last_filename = non_seq_filenames_dict.get(filename)[-1]
                 file_path = "%s/%s" % (base_dir, first_filename)
             else:
                 file_path = "%s/%s" % (base_dir, filename)
@@ -1214,8 +1213,9 @@ class IngestUploadCmd(Command):
                 m_first = re.match(pattern_expr, first_filename)
                 m_last = re.match(pattern_expr, last_filename)
                 # for files without extension
+                # abc_1001, abc.1123_1001
                 if not m_first: 
-                    no_ext_expr = re.compile('^.*(\d{%d})[^\d]*$'%seq_digit_length)
+                    no_ext_expr = re.compile('^.*(\d{%d})$'%seq_digit_length)
                     m_first = re.match(no_ext_expr, first_filename)
                     m_last = re.match(no_ext_expr, last_filename)
 
