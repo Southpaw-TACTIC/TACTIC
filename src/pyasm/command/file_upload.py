@@ -197,9 +197,8 @@ class FileUpload(Base):
             # Use base 64 decode if necessary.
             import base64
             header = data.read(22)
-            decode = False
             if header.startswith("data:image/png;base64,"):
-                decode = True
+                base_decode = True
             else:
                 data.seek(0)
 
@@ -211,7 +210,7 @@ class FileUpload(Base):
             if not buffer:
                 break
             
-            if decode: 
+            if base_decode: 
                 buffer = base64.b64decode(buffer)
             
             f.write( buffer )
