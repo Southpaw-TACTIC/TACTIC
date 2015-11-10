@@ -16,7 +16,7 @@ class UploadMultipart(object):
 
     def __init__(my):
         my.count = 0
-        my.chunk_size = 10*1024*1024
+        my.chunk_size = 1024
         my.ticket = None
 
         my.server_url = None

@@ -117,48 +117,52 @@ class UploadServerWdg(Widget):
                 file_dir = custom_upload_dir
 
 
-        # set a default for now
+        # Action is either 'empty', 'create' or 'append'.
         action = web.get_form_value("action")
+        html5_mode = False
         if not action:
+            html5_mode = True
             action = "create"
 
+        path = field_storage.get_path()
+       
+        # Base 64 encoded files are uploaded and decoded in FileUpload
+        base_decode = None
+        if path:
+            f = open(path, 'rb')
+            header = f.read(22)
+            if header.startswith("data:image/png;base64,"):
+                base_decode = True
+            else:
+                f.seek(0)
+                base_decode = False
+            f.close()
+        
         '''
         With some recent change done in cherrypy._cpreqbody line 294, 
-        we can use the field storage directly on linux.
-        In Windows, the path variable from the get_path() will be None
-        and files are uploaded using FileUpload.
+        we can use the field storage directly on Linux when the file
+        is uploaded in html5 mode.
+        TODO: This shortcut cannot be used with upload_multipart.py 
         '''
-        path = field_storage.get_path()
-        if path and file_name and action != "append":
-          
+        
+        print "********************************************************"
+        print path, file_name, action, base_decode, html5_mode
+        print "********************************************************"
+
+        if path and file_name and action != "append" and not base_decode and html5_mode:
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
+            shutil.move(path, to_path)
             
-            f = open(path, 'rb')
-            
-            header = f.read(22)
-            if header.startswith("data:image/png;base64,"):
-                f2 = open(to_path, 'wb')
-                import base64
-                while 1:
-                    buffer = f.read(1024*64)
-                    if not buffer:
-                        break
-                    decode = base64.b64decode(buffer)
-                    f2.write(decode)
-                f2.close()
-            else:
-                shutil.move(path, to_path)
-            
-            f.close()
-            
-            # Close the file descriptor 
+            '''
+            # Close the mkstemp file descriptor 
             fd = field_storage.get_fd()
             if fd: 
                 os.close( fd )
-                    
+            '''
+     
             # Because _cpreqbody makes use of mkstemp, the file permissions
             # are set to 600.  This switches to the permissions as defined
             # by the TACTIC users umask
@@ -172,13 +176,6 @@ class UploadServerWdg(Widget):
             return [to_path]
 
 
-
-        # This may be DEPRECATED
-        #raise Exception("Upload method is DEPRECATED")
-
-
-
-        #file_name = ''
         if field_storage == "":
             # for swfupload
             field_storage = web.get_form_value("Filedata")
@@ -187,10 +184,7 @@ class UploadServerWdg(Widget):
                 file_name = web.get_form_value("Filename")
 
 
-
-
-
-        # process and get the uploaded files
+        # Process and get the uploaded files
         upload = FileUpload()
         if action == "append":
             upload.set_append_mode(True)
@@ -207,6 +201,10 @@ class UploadServerWdg(Widget):
         # set the field storage
         if field_storage:
             upload.set_field_storage(field_storage, file_name)
+ 
+        # Set base 64 decode
+        if base_decode:
+            upload.set_base_decode(base_decode)
 
         upload.set_file_dir(file_dir)
 
