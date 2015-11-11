@@ -144,12 +144,11 @@ class UploadServerWdg(Widget):
         is uploaded in html5 mode.
         TODO: This shortcut cannot be used with upload_multipart.py 
         '''
-        
-        print "********************************************************"
-        print path, file_name, action, base_decode, html5_mode
-        print "********************************************************"
+        print "****************************"
+        print base_decode
+        print "****************************"
 
-        if path and file_name and action != "append" and not base_decode and html5_mode:
+        if path and file_name and action != "append" and (not base_decode) and html5_mode:
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
