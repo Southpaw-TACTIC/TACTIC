@@ -117,18 +117,30 @@ class UploadServerWdg(Widget):
                 file_dir = custom_upload_dir
 
 
-        # Action is either 'empty', 'create' or 'append'.
+        '''
+        If upload method is html5, the action is an empty
+        string. Otherwise, action is either 'create' or 'append'.
+        '''
         action = web.get_form_value("action")
         html5_mode = False
         if not action:
             html5_mode = True
             action = "create"
 
+        
+        '''
+        With some recent change done in cherrypy._cpreqbody line 294, 
+        we can use the field storage directly on Linux when the file
+        is uploaded in html5 mode.
+        TODO: This shortcut cannot be used with upload_multipart.py 
+        '''
         path = field_storage.get_path()
-       
-        # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
-        if path:
+        print html5_mode
+        print file_name 
+        print path
+        if html5_mode and file_name and path:
+            # Base 64 encoded files are uploaded and decoded in FileUpload
             f = open(path, 'rb')
             header = f.read(22)
             if header.startswith("data:image/png;base64,"):
@@ -137,42 +149,32 @@ class UploadServerWdg(Widget):
                 f.seek(0)
                 base_decode = False
             f.close()
-        
-        '''
-        With some recent change done in cherrypy._cpreqbody line 294, 
-        we can use the field storage directly on Linux when the file
-        is uploaded in html5 mode.
-        TODO: This shortcut cannot be used with upload_multipart.py 
-        '''
-        print "****************************"
-        print base_decode
-        print "****************************"
-
-        if path and file_name and action != "append" and (not base_decode) and html5_mode:
-            if not os.path.exists(file_dir):
-                os.makedirs(file_dir)
-            basename = os.path.basename(path)
-            to_path = "%s/%s" % (file_dir, file_name)
-            shutil.move(path, to_path)
             
-            '''
-            # Close the mkstemp file descriptor 
-            fd = field_storage.get_fd()
-            if fd: 
-                os.close( fd )
-            '''
-     
-            # Because _cpreqbody makes use of mkstemp, the file permissions
-            # are set to 600.  This switches to the permissions as defined
-            # by the TACTIC users umask
-            try:
-                current_umask = os.umask(0)
-                os.umask(current_umask)
-                os.chmod(to_path, 0o666 - current_umask)
-            except Exception, e:
-                print "WARNING: ", e
+            if not base_decode:
+                if not os.path.exists(file_dir):
+                    os.makedirs(file_dir)
+                basename = os.path.basename(path)
+                to_path = "%s/%s" % (file_dir, file_name)
+                shutil.move(path, to_path)
+                
+                '''
+                # Close the mkstemp file descriptor 
+                fd = field_storage.get_fd()
+                if fd: 
+                    os.close( fd )
+                '''
+         
+                # Because _cpreqbody makes use of mkstemp, the file permissions
+                # are set to 600.  This switches to the permissions as defined
+                # by the TACTIC users umask
+                try:
+                    current_umask = os.umask(0)
+                    os.umask(current_umask)
+                    os.chmod(to_path, 0o666 - current_umask)
+                except Exception, e:
+                    print "WARNING: ", e
 
-            return [to_path]
+                return [to_path]
 
 
         if field_storage == "":
@@ -201,10 +203,6 @@ class UploadServerWdg(Widget):
         if field_storage:
             upload.set_field_storage(field_storage, file_name)
  
-        # Set base 64 decode
-        if base_decode:
-            upload.set_base_decode(base_decode)
-
         upload.set_file_dir(file_dir)
 
         upload.execute()

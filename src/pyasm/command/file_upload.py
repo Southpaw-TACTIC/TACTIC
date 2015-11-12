@@ -41,9 +41,6 @@ class FileUpload(Base):
         my.create_icon = True
         my.default_type = 'main'
    
-        # For base 64 decode
-        my.base_decode = None
-
     def set_append_mode(my, flag):
         if flag:
             my.write_mode = "ab"
@@ -73,9 +70,6 @@ class FileUpload(Base):
     def set_default_type(my, type):
         my.default_type = type
 
-    def set_base_decode(my, decode):
-        my.base_decode = decode
-   
     def get_file_path(my):
         if my.file_path:
             return File.process_file_path(my.file_path)
@@ -193,21 +187,14 @@ class FileUpload(Base):
         # Write file to tmp directory
         f = open("%s" % tmp_file_path, my.write_mode)
        
-        '''
-        If check for base 64 decode occurs in upload_server_page, 
-        then base_decode is True or False.
-        If base_decode is None, do a check here.
-        '''
+        # Use base 64 decode if necessary.
         import base64
-        base_decode = my.base_decode
-        #if base_decode is None:
-        if True:
-            # Use base 64 decode if necessary.
-            header = data.read(22)
-            if header.startswith("data:image/png;base64,"):
-                base_decode = True
-            else:
-                data.seek(0)
+        base_decode = False
+        header = data.read(22)
+        if header.startswith("data:image/png;base64,"):
+            base_decode = True
+        else:
+            data.seek(0)
 
         f_progress = None
         file_progress_path = "%s_progress" % tmp_file_path
@@ -230,8 +217,6 @@ class FileUpload(Base):
             data.close()
         except Exception, e:
             print str(e)
-            
-
 
         # when upload is running in append mode f_progress could be None
         if f_progress:
