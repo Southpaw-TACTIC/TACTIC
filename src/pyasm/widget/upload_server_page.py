@@ -136,9 +136,6 @@ class UploadServerWdg(Widget):
         '''
         path = field_storage.get_path()
         base_decode = None
-        print html5_mode
-        print file_name 
-        print path
         if html5_mode and file_name and path:
             # Base 64 encoded files are uploaded and decoded in FileUpload
             f = open(path, 'rb')
