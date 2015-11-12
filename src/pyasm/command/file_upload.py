@@ -40,7 +40,7 @@ class FileUpload(Base):
         my.write_mode = "wb"
         my.create_icon = True
         my.default_type = 'main'
-    
+   
     def set_append_mode(my, flag):
         if flag:
             my.write_mode = "ab"
@@ -165,7 +165,7 @@ class FileUpload(Base):
 
     def _dump_file_to_temp(my):
 
-        # create the temporary file name
+        # Create the temporary file name
         tmp_file_path = my.get_file_path()
         if not tmp_file_path:
             return
@@ -175,11 +175,26 @@ class FileUpload(Base):
             return
 
         System().makedirs(dirname)
+   
+        # Get temporary file path to read from
+        # Linux uses mkstemp, while Windows uses TemporaryFile
+        if os.name == 'nt':
+            data = my.field_storage.file
+        else:
+            path = my.field_storage.get_path()
+            data = open(path, 'rb')
 
-        data = my.field_storage.file
-
-        # write file to tmp directory
+        # Write file to tmp directory
         f = open("%s" % tmp_file_path, my.write_mode)
+       
+        # Use base 64 decode if necessary.
+        import base64
+        base_decode = False
+        header = data.read(22)
+        if header.startswith("data:image/png;base64,"):
+            base_decode = True
+        else:
+            data.seek(0)
 
         f_progress = None
         file_progress_path = "%s_progress" % tmp_file_path
@@ -188,12 +203,20 @@ class FileUpload(Base):
             buffer = data.read(1024*64)
             if not buffer:
                 break
+            
+            if base_decode: 
+                buffer = base64.b64decode(buffer)
+            
             f.write( buffer )
             f_progress = open(file_progress_path, 'w')
             f_progress.write(str(f.tell()))
             f_progress.flush()
         f.close()
 
+        try:
+            data.close()
+        except Exception, e:
+            print str(e)
 
         # when upload is running in append mode f_progress could be None
         if f_progress:
