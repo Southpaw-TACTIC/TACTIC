@@ -137,13 +137,12 @@ class UploadServerWdg(Widget):
         # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
         if action ==  "create": 
-            print action
             if os.name == 'nt':
-                f = my.field_storage.file
+                f = field_storage.file
             else:
                 f = open(path, 'rb')
             header = f.read(22)
-            print header
+            
             if header.startswith("data:image/png;base64,"):
                 base_decode = True
             else:
@@ -154,9 +153,8 @@ class UploadServerWdg(Widget):
             except:
                 pass
         
-        print action, base_decode
         if html5_mode and file_name and path and (not base_decode):
-            print "***********************" 
+            
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)

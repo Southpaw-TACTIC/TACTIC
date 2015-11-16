@@ -188,16 +188,12 @@ class FileUpload(Base):
             # Check for base_decode indicator file
             if (os.path.exists("%s.action" % tmp_file_path)):
                 base_decode = True
-                print "action file found"
         elif base_decode:
-            print "action file not found..."
             # Create indicator file if base_decode is necessary
             decode_action_path = "%s.action" % tmp_file_path
             f_action = open(decode_action_path, 'w')
             f_action.write("base64decode")
             f_action.close()
-
-        print base_decode
 
         # Get temporary file path to read from
         # Linux uses mkstemp, while Windows uses TemporaryFile
