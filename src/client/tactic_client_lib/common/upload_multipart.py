@@ -20,7 +20,7 @@ class UploadMultipart(object):
 
     def __init__(my):
         my.count = 0
-        my.chunk_size = 500
+        my.chunk_size = 10*1024*1024
         my.ticket = None
         my.subdir = None
 
@@ -44,7 +44,6 @@ class UploadMultipart(object):
 
 
     def execute(my, path):
-        print "**** ^^^^^^  ***"
         assert my.server_url
         #f = open(path, 'rb')
         import codecs
@@ -60,8 +59,6 @@ class UploadMultipart(object):
                 action = "create"
             else:
                 action = "append"
-            
-            print count
 
             fields = [
                 ("ajax", "true"),
