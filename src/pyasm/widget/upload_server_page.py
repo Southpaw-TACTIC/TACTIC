@@ -142,17 +142,17 @@ class UploadServerWdg(Widget):
             else:
                 f = open(path, 'rb')
             header = f.read(22)
-            
+            f.seek(0)
+
             if header.startswith("data:image/png;base64,"):
                 base_decode = True
             else:
                 base_decode = False
         
-            try:
+            if os.name != 'nt':
                 f.close()
-            except:
-                pass
-        
+            
+          
         if html5_mode and file_name and path and (not base_decode):
             
             if not os.path.exists(file_dir):
