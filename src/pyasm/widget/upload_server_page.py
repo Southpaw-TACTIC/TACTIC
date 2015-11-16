@@ -116,7 +116,6 @@ class UploadServerWdg(Widget):
             else:
                 file_dir = custom_upload_dir
 
-
         '''
         If upload method is html5, the action is an empty
         string. Otherwise, action is either 'create' or 'append'.
@@ -127,7 +126,6 @@ class UploadServerWdg(Widget):
             html5_mode = True
             action = "create"
 
-        
         '''
         With some recent change done in cherrypy._cpreqbody line 294, 
         we can use the field storage directly on Linux when the file
@@ -135,41 +133,49 @@ class UploadServerWdg(Widget):
         TODO: This shortcut cannot be used with upload_multipart.py 
         '''
         path = field_storage.get_path()
+        
+        # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
-        if html5_mode and file_name and path:
-            # Base 64 encoded files are uploaded and decoded in FileUpload
-            f = open(path, 'rb')
+        if html5_mode or action is "create": 
+            if os.name == 'nt':
+                f = my.field_storage.file
+            else:
+                f = open(path, 'rb')
             header = f.read(22)
             if header.startswith("data:image/png;base64,"):
                 base_decode = True
             else:
-                f.seek(0)
                 base_decode = False
-            f.close()
+        
+            try:
+                f.close()
+            except:
+                pass
+        
+        if html5_mode and file_name and path and (not base_decode):
+            print "***********************" 
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir)
+            basename = os.path.basename(path)
+            to_path = "%s/%s" % (file_dir, file_name)
+            shutil.move(path, to_path)
             
-            if not base_decode:
-                if not os.path.exists(file_dir):
-                    os.makedirs(file_dir)
-                basename = os.path.basename(path)
-                to_path = "%s/%s" % (file_dir, file_name)
-                shutil.move(path, to_path)
-                
-                '''
-                # Close the mkstemp file descriptor 
-                fd = field_storage.get_fd()
-                if fd: 
-                    os.close( fd )
-                '''
-         
-                # Because _cpreqbody makes use of mkstemp, the file permissions
-                # are set to 600.  This switches to the permissions as defined
-                # by the TACTIC users umask
-                try:
-                    current_umask = os.umask(0)
-                    os.umask(current_umask)
-                    os.chmod(to_path, 0o666 - current_umask)
-                except Exception, e:
-                    print "WARNING: ", e
+            '''
+            # Close the mkstemp file descriptor 
+            fd = field_storage.get_fd()
+            if fd: 
+                os.close( fd )
+            '''
+     
+            # Because _cpreqbody makes use of mkstemp, the file permissions
+            # are set to 600.  This switches to the permissions as defined
+            # by the TACTIC users umask
+            try:
+                current_umask = os.umask(0)
+                os.umask(current_umask)
+                os.chmod(to_path, 0o666 - current_umask)
+            except Exception, e:
+                print "WARNING: ", e
 
                 return [to_path]
 
@@ -201,6 +207,9 @@ class UploadServerWdg(Widget):
             upload.set_field_storage(field_storage, file_name)
  
         upload.set_file_dir(file_dir)
+
+        # set base64 decode
+        upload.set_decode(base_decode)
 
         upload.execute()
         files = upload.get_files()

@@ -40,7 +40,9 @@ class FileUpload(Base):
         my.write_mode = "wb"
         my.create_icon = True
         my.default_type = 'main'
-   
+  
+        my.base_decode = None
+
     def set_append_mode(my, flag):
         if flag:
             my.write_mode = "ab"
@@ -70,6 +72,9 @@ class FileUpload(Base):
     def set_default_type(my, type):
         my.default_type = type
 
+    def set_decode(my, decode):
+        my.base_decode = decode
+    
     def get_file_path(my):
         if my.file_path:
             return File.process_file_path(my.file_path)
@@ -176,6 +181,20 @@ class FileUpload(Base):
 
         System().makedirs(dirname)
    
+        
+        # Determine if base_decode is necessary
+        base_decode = my.base_decode
+        if my.write_mode == "ab":
+            # Check for base_decode indicator file
+            if (os.path_exists("%s.action" % tmp_file_path)):
+                base_decode = True
+        elif base_decode:
+            # Create indicator file if base_decode is necessary
+            decode_action_path = "%s.action" % tmp_file_path
+            f_action = open(decode_action_path, 'w')
+            f_action.write("base64decode")
+            f_action.flush()
+
         # Get temporary file path to read from
         # Linux uses mkstemp, while Windows uses TemporaryFile
         if os.name == 'nt':
@@ -188,14 +207,11 @@ class FileUpload(Base):
         f = open("%s" % tmp_file_path, my.write_mode)
        
         # Use base 64 decode if necessary.
-        import base64
-        base_decode = False
-        header = data.read(22)
-        if header.startswith("data:image/png;base64,"):
-            base_decode = True
-        else:
-            data.seek(0)
+        if base_decode:
+            import base64
+            data.read(22)
 
+        # Write progress file
         f_progress = None
         file_progress_path = "%s_progress" % tmp_file_path
 
