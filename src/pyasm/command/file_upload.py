@@ -182,12 +182,19 @@ class FileUpload(Base):
         System().makedirs(dirname)
    
         '''
-        Determine if base_decode is necessary
+        Determine if base_decode is necessary. Either base_decode
+        is set my upload_server_page on create mode, or 
+        an action file has been created to indicate decode is necessary.
         example decode_action_path
             /home/tactic/tactic_temp/upload/
-            XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg
+            XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg.action
         '''
         decode_action_path = "%s.action" % tmp_file_path
+        
+        # Clear action file from previous any previous base64 upload
+        if my.write_mode == "wb" and os.path.exists(decode_action_path):
+            os.remove(decode_action_path)
+        
         base_decode = my.base_decode
         if my.write_mode == "ab":
             # Check for base_decode indicator file

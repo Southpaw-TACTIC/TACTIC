@@ -126,15 +126,6 @@ class UploadServerWdg(Widget):
             html5_mode = True
             action = "create"
 
-        # Clear action files from previous base64 upload
-        if action == "create":
-            files = glob.glob('%s/*.action' % file_dir)
-            for action_file in files:
-                try:
-                    os.remove(action_file)
-                except:
-                    pass
-
         '''
         With some recent change done in cherrypy._cpreqbody line 294, 
         we can use the field storage directly on Linux when the file
