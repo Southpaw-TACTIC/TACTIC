@@ -21,7 +21,7 @@ from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
 
-import shutil
+import shutil, glob
 
 
 class UploadServerWdg(Widget):
@@ -126,6 +126,15 @@ class UploadServerWdg(Widget):
             html5_mode = True
             action = "create"
 
+        # Clear action files from previous base64 upload
+        if action == "create":
+            files = glob.glob('%s/*.action' % file_dir)
+            for action_file in files:
+                try:
+                    os.remove(action_file)
+                except:
+                    pass
+
         '''
         With some recent change done in cherrypy._cpreqbody line 294, 
         we can use the field storage directly on Linux when the file
@@ -153,7 +162,7 @@ class UploadServerWdg(Widget):
                 f.close()
             
           
-        if html5_mode and file_name and path and (not base_decode):
+        if html5_mode and file_name and path and not base_decode:
             
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)

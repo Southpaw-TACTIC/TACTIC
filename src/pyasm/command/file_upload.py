@@ -181,16 +181,15 @@ class FileUpload(Base):
 
         System().makedirs(dirname)
    
-        
         # Determine if base_decode is necessary
+        decode_action_path = "%s.action" % tmp_file_path
         base_decode = my.base_decode
         if my.write_mode == "ab":
             # Check for base_decode indicator file
-            if (os.path.exists("%s.action" % tmp_file_path)):
+            if os.path.exists(decode_action_path):
                 base_decode = True
         elif base_decode:
             # Create indicator file if base_decode is necessary
-            decode_action_path = "%s.action" % tmp_file_path
             f_action = open(decode_action_path, 'w')
             f_action.write("base64decode")
             f_action.close()
@@ -207,8 +206,8 @@ class FileUpload(Base):
         f = open("%s" % tmp_file_path, my.write_mode)
        
         # Use base 64 decode if necessary.
-        if base_decode:
-            import base64
+        import base64
+        if base_decode and my.write_mode == "wb":
             data.read(22)
 
         # Write progress file
