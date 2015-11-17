@@ -181,7 +181,12 @@ class FileUpload(Base):
 
         System().makedirs(dirname)
    
-        # Determine if base_decode is necessary
+        '''
+        Determine if base_decode is necessary
+        example decode_action_path
+            /home/tactic/tactic_temp/upload/
+            XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg
+        '''
         decode_action_path = "%s.action" % tmp_file_path
         base_decode = my.base_decode
         if my.write_mode == "ab":

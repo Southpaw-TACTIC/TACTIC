@@ -164,6 +164,14 @@ class UploadServerWdg(Widget):
           
         if html5_mode and file_name and path and not base_decode:
             
+            '''
+            example of path:
+                /home/tactic/tactic_temp/temp/tmpTxXIjM 
+            example of to_path: 
+                /home/tactic/tactic_temp/upload/
+                XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg
+            '''
+
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
