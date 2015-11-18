@@ -22,7 +22,6 @@ from pyasm.web import *
 from pyasm.command import FileUpload
 
 import shutil
-import glob
 
 
 class UploadServerWdg(Widget):
