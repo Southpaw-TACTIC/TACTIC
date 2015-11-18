@@ -21,7 +21,8 @@ from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
 
-import shutil, glob
+import shutil
+import glob
 
 
 class UploadServerWdg(Widget):
