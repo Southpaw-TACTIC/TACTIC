@@ -1658,6 +1658,11 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 }
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
+    
+    // To make the Tiles draggable again, refresh before each destroy action 
+
+    tile_top = bvr.src_el.getParent(".spt_tile_top"); 
+    spt.table.refresh_rows([tile_top], null, null);
 
     var dst_el = spt.get_event_target(evt);
     var dst_top = dst_el.getParent(".spt_tile_top");
