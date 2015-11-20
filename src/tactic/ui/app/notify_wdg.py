@@ -29,14 +29,18 @@ class NotifyWdg(BaseRefreshWdg):
         top.set_id("spt_notify_top")
 
         top.add_style("position: fixed")
-        top.add_style("bottom: -32")
-        top.add_style("left: 0")
-        top.add_style("right: 0")
-        top.add_style("z-index: 1000")
+        #top.add_style("bottom: -32")
+        #top.add_style("left: 0")
+        #top.add_style("right: 0")
+        top.add_style("top: 20px")
+        top.add_style("z-index: 10000")
+        top.add_style("width: 200px")
+        #top.add_style("opacity: 0")
+        top.add_style("text-align: center")
+        top.add_style("margin-top: -50px")
 
-        top.add_color("background", "background2", 10)
+        top.add_color("background", "background", -3)
         top.add_style("height: 20px")
-        top.add_style("width: 100%")
         top.add_style("padding: 5px")
         top.add_border()
 
@@ -53,32 +57,51 @@ class NotifyWdg(BaseRefreshWdg):
             'cbjs_action': '''
 spt.notify = {};
 
+spt.notify.last_settings = {};
+
 spt.notify.show = function() {
-    new Fx.Tween('spt_notify_top').start('bottom', 0);
+    new Fx.Tween('spt_notify_top').start('opacity', 1);
+    new Fx.Tween('spt_notify_top').start('marginTop', 0);
 }
 
 spt.notify.hide = function() {
-    new Fx.Tween('spt_notify_top').start('bottom', -32);
+    new Fx.Tween('spt_notify_top').start('opacity', 0);
+    new Fx.Tween('spt_notify_top').start('marginTop', -50);
 }
 
 
-spt.notify.set_message = function(message) {
+spt.notify.set_message = function(message, kwargs) {
     var el = $('spt_notify_top').getElement(".spt_notify_message");
     spt.behavior.replace_inner_html(el, message);
+
+    spt.notify.last_settings = {};
+
+    for (var key in kwargs) {
+        spt.notify.last_settings[key] = $('spt_notify_top').getStyle(key);
+        $('spt_notify_top').setStyle(key, kwargs[key]);
+    }
 }
 
 
 
-spt.notify.show_message = function(message, duration) {
-    if (typeof(duration) == 'undefined') {
+spt.notify.show_message = function(message, duration, kwargs) {
+    if (!duration) {
         duration = 3000;
     }
 
     spt.notify.show();
-    spt.notify.set_message(message);
+    spt.notify.set_message(message, kwargs);
     setTimeout( function() {
         spt.notify.hide();
     }, duration );
+
+
+    var el = $('spt_notify_top');
+    var size = el.getSize();
+
+    var window_size = $(window).getSize();
+    el.setStyle("left", (window_size.x-size.x)/2);
+
 
 }
             '''
@@ -141,7 +164,6 @@ class NotifyPollCmd(BaseRefreshWdg):
         print "NotifyPollCmd"
 
         user = Environment.get_user_name()
-        print "user: ", user
 
         # find out if there is anything interesting to post
         #search = Search("sthpw/message")

@@ -1882,19 +1882,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             return div
 
 
-        """
-        if node_type == "dependency":
+            """
+            if node_type == "dependency":
 
-            dependency_div = DivWdg()
-            div.add(dependency_div)
-            dependency_div.add_style("margin: 8px 0px 8px -8px")
-            dependency_div.add_class("spt_dependency_top")
+                dependency_div = DivWdg()
+                div.add(dependency_div)
+                dependency_div.add_style("margin: 8px 0px 8px -8px")
+                dependency_div.add_class("spt_dependency_top")
 
-            dependency_div.add("H!H!H!")
+                dependency_div.add("H!H!H!")
 
 
-            return div
-        """
+                return div
+            """
 
 
             key = "%s|%s|status" % (sobject.get_search_key(), process)
