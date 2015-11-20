@@ -122,7 +122,7 @@ class TacticServerStub(object):
 
 
     def set_protocol(my, protocol):
-        '''Function: get_protocol() 
+        '''Function: set_protocol() 
        
         @params
            string - local or xmlrpc'''
@@ -243,6 +243,8 @@ class TacticServerStub(object):
         return my.project_code
 
     def set_site(my, site=None):
+        '''Function: set_site(site=None)
+           Set the site applicable in a portal setup'''
         my.site = site
         my.set_transaction_ticket(my.transaction_ticket)
 
