@@ -134,6 +134,7 @@ class ClientApiTest(unittest.TestCase):
             my._test_eval()
             my._test_execute()
             my._test_create_task()
+            my._test_upload()
         except Exception:
             my.server.abort()
             raise
@@ -1966,6 +1967,90 @@ class ClientApiTest(unittest.TestCase):
         person_sk = result.get('__search_key__')
         task = my.server.create_task(person_sk, process='start', assigned='ben')
         my.assertEquals(task.get('assigned'), 'ben')
+
+    def _test_upload(my):
+        file_path = "%s/test/miso_ramen.jpg" % my.client_lib_dir
+
+        my.server.upload_file(file_path)
+
+        upload_dir = Environment.get_upload_dir()
+        path = "%s/%s" % (upload_dir, file_path)
+
+        exists = os.path.exists(path)
+        my.assertEquals(True, exists)
+         
+    def _test_multipart_upload(my):
+        ''' upload a file '''
+        file_path = "%s/test/large_file.jpg" % my.client_lib_dir
+        if os.path.exists(file_path):
+            pass
+        else
+            return
+
+        my.server.upload_file(file_path)
+
+        upload_dir = Environment.get_upload_dir()
+        path = "%s/%s" % (upload_dir, file_path)
+
+        exists = os.path.exists(path)
+        my.assertEquals(True, exists)
+
+    def _test_base64_upload(my):
+        file_path = "%s/test/base64.png" % my.client_lib_dir
+        
+        my.server.upload_file(file_path)
+        upload_dir = Environment.get_upload_dir()
+        
+        # On upload, an action file should be created in the same
+        # upload directory.
+        path = "%s/%s" % (upload_dir, file_path)
+        action_path = "%s.action" % path
+        file_exists = os.path.exists(path)
+        action_exists = os.path.exists(action_path)
+        my.assertEquals(True, exists)
+        my.assetEquals(True, action_exists)
+        
+        decoded_data = open(path, "rb")
+        header = decoded_data.read(22)
+        my.assertNotEqual(header, "data:image/png;base64,")
+        decoded_data.close()
+
+        # On upload a file of the same name, the original action 
+        # file should be deleted.
+        unencoded_file = "%s/test/regular.png" % my.client_lib_dir
+        temporary_name = "%s/test/base64_original.png" % my.client_lib_dir
+        os.rename(file_path, temporary_name) 
+        os.rename(unencoded_file, file_path)
+
+        my.server_upload_file(file_path)
+
+        path = "%s/%s" % (upload_dir, file_path)
+        action_path = "%s.action" % path
+        file_exists = os.path.exists(path)
+        action_exists = os.path.exists(action_path)
+        my.assertEquals(True, exists)
+        my.assetEquals(False, action_exists)
+        
+        # Revert names
+        os.rename(file_path, unencoded_file)
+        os.rename(temporary_name, file_path) 
+        
+        '''
+        import base64
+        f = open(file_path, 'rb')
+        f2 = open("%s_base64", "wb")
+        while 1:
+            buffer = f.read(1024*64)
+            if not buffer
+                break
+            encoded_buffer = base64.b64encode(buffer)
+            f2.write(encoded_buffer)
+        f.close()
+        f2.close()
+        '''
+
+    def _test_multipart_base64_upload(my):
+        pass
 
     def _test_pipeline(my):
         search_type = "unittest/person"
