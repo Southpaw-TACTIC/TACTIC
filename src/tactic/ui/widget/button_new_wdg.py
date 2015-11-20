@@ -854,7 +854,7 @@ class ActionButtonWdgOld(DivWdg):
 
     def add_top_behaviors(my, top):
         top.add_relay_behavior( {
-        'type': 'mouseover',
+        'type': 'mouseenter',
         'bvr_match_class': 'spt_action_button_hit',
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_button_top");
@@ -864,7 +864,7 @@ class ActionButtonWdgOld(DivWdg):
         } ) 
 
         top.add_relay_behavior( {
-        'type': 'mouseout',
+        'type': 'mouseleave',
         'bvr_match_class': 'spt_action_button_hit',
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_button_top");

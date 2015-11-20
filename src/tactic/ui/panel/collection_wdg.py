@@ -12,7 +12,7 @@
 
 import tacticenv
 
-__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg"]
+__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
 
 
 
@@ -22,7 +22,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import ButtonNewWdg
+from tactic.ui.widget import ButtonNewWdg, IconButtonWdg, ActionButtonWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.input import LookAheadTextInputWdg
 
@@ -45,7 +45,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
         top = my.top
 
-        button = ButtonNewWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
+        button = IconButtonWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
         top.add(button)
 
         detail_wdg = DivWdg()
@@ -68,10 +68,9 @@ class CollectionAddWdg(BaseRefreshWdg):
             name="name",
             icon="BS_SEARCH",
             icon_pos="right",
+            width="100%"
         ) 
-
         content_div.add(text)
-        text.add_style("width: 100%")
 
 
         content_div.add_style("max-height: 300px")
@@ -284,18 +283,33 @@ class CollectionLayoutWdg(ToolLayoutWdg):
     def get_content_wdg(my):
 
         my.search_type = my.kwargs.get("search_type")
+        my.collection_key = my.kwargs.get("collection_key")
 
         top = DivWdg()
         top.add_class("spt_collection_top")
+
+        if not SearchType.column_exists(my.search_type, "_is_collection"):
+            msg_div = DivWdg()
+            top.add(msg_div)
+            msg_div.add("Search Type [%s] does not support collections" % my.search_type)
+            msg_div.add_style("padding: 40px")
+            msg_div.add_style("width: 300px")
+            msg_div.add_style("margin: 100px auto")
+            msg_div.add_border()
+
+            return top
+
+
         top.add_style("margin: 5px 20px")
+
 
         table = Table()
         top.add(table)
         table.add_row()
         table.add_style("width: 100%")
 
-        tr, header = table.add_row_cell()
-        header.add_style("height: 40px")
+        #tr, header = table.add_row_cell()
+        #header.add_style("height: 40px")
 
         table.add_row()
         left = table.add_cell()
@@ -309,36 +323,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         right.add_style("width: auto")
         right.add_style("height: auto")
 
-        shelf_wdg = my.get_header_wdg()
-        #shelf_wdg.add_style("float: right")
-        header.add(shelf_wdg)
-
         left.add(my.get_collection_wdg())
         right.add(my.get_right_content_wdg())
 
         return top
 
-
-
-    def get_header_wdg(my):
-
-        div = DivWdg()
-
-        button = ButtonNewWdg(title='Remove Selected Items', icon="BS_TRASH")
-        div.add(button)
-
-        button = ButtonNewWdg(title='Download Selected Items', icon="BS_DOWNLOAD")
-        div.add(button)
-
-        text = LookAheadTextInputWdg(
-            name="name",
-            icon="BS_SEARCH",
-            icon_pos="right",
-        ) 
-        div.add(text)
-
-
-        return div
 
 
 
@@ -357,22 +346,53 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         # Shelf
         shelf_div = DivWdg()
         div.add(shelf_div)
+        shelf_div.add_style("float: right")
+        shelf_div.add_style("margin-bottom: 15px")
 
-        button = ButtonNewWdg(title='Delete Selected Collection', icon="BS_TRASH")
-        shelf_div.add(button)
-        button.add_style("float: right")
-        button = ButtonNewWdg(title='Add New Collection', icon="BS_PLUS")
-        shelf_div.add(button)
-        button.add_style("float: right")
 
+        #button = IconButtonWdg(title='Delete Selected Collection', icon="BS_TRASH")
+        #shelf_div.add(button)
+        #button.add_style("display: inline-block")
+        #button.add_style("width: auto")
+
+        button = IconButtonWdg(title='Add New Collection', icon="BS_PLUS")
+        shelf_div.add(button)
+        button.add_style("display: inline-block")
+        button.add_style("vertical-align: top")
+
+        insert_view = "insert"
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'insert_view': insert_view,
+            'search_type': my.search_type,
+            'cbjs_action': '''
+                kwargs = {
+                  search_type: bvr.search_type,
+                  mode: 'insert',
+                  view: bvr.insert_view,
+                  save_event: bvr.event_name,
+                  show_header: false,
+                  default: {
+                    _is_collection: true,
+                  }
+                };
+                var popup = spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
+            '''
+        } )
+        text_div = DivWdg()
+        shelf_div.add(text_div)
         text = LookAheadTextInputWdg(
             name="name",
             icon="BS_SEARCH",
             icon_pos="right",
+            width="100%"
         ) 
-        shelf_div.add(text)
+        text_div.add(text)
+        text_div.add_style("width: 200px")
+        text_div.add_style("display: inline-block")
 
-        div.add("<br/>")
+        div.add("<br clear='all'/>")
 
         # collection
         search = Search(my.search_type)
@@ -381,9 +401,13 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         collections_div = DivWdg()
         div.add(collections_div)
-        collections_div.add_style("margin: 5px 10px")
+        collections_div.add_style("margin: 5px 0px 5px -5px")
 
         from tactic.ui.panel import ThumbWdg2
+
+
+        parts = my.search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
 
         collections_div.add_relay_behavior( {
@@ -396,14 +420,24 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var content = top.getElement(".spt_collection_content");
 
             var collection_key = bvr.src_el.getAttribute("spt_collection_key");
+            var collection_code = bvr.src_el.getAttribute("spt_collection_code");
+            var collection_path = bvr.src_el.getAttribute("spt_collection_path");
 
-            var cls = "tactic.ui.panel.TileLayoutWdg";
+            var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+
+
+            var cls = "tactic.ui.panel.CollectionContentWdg";
             var kwargs = {
+                collection_key: collection_key,
+                path: collection_path,
                 search_type: bvr.search_type,
                 show_shelf: false,
                 show_search_limit: false,
+                expression: expr,
             }
             spt.panel.load(content, cls, kwargs);
+
+            bvr.src_el.setStyle("background", "#F00");
 
             '''
         } )
@@ -417,13 +451,29 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var item = bvr.src_el.getParent(".spt_collection_item");
             var next = item.getNext();
 
-            var collection_key = bvr.src_el.getAttribute("spt_collection_key");
-
-            var cls = "tactic.ui.panel.CollectionListWdg";
-            var kwargs = {
-                parent_key: collection_key,
+            if (bvr.src_el.hasClass("spt_open")) {
+                next.innerHTML = "";
+                bvr.src_el.setStyle("opacity", 1.0);
+                bvr.src_el.removeClass("spt_open");
             }
-            spt.panel.load(next, cls, kwargs);
+            else {
+                var collection_key = bvr.src_el.getAttribute("spt_collection_key");
+                var collection_path = bvr.src_el.getAttribute("spt_collection_path");
+
+                var cls = "tactic.ui.panel.CollectionListWdg";
+                var kwargs = {
+                    parent_key: collection_key,
+                    path: collection_path,
+                }
+                spt.panel.load(next, cls, kwargs, null, {show_loading: false});
+
+                bvr.src_el.setStyle("opacity", 0.3);
+                bvr.src_el.addClass("spt_open");
+
+                evt.stopPropagation();
+            }
+
+
 
             '''
         } )
@@ -432,8 +482,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         for collection in collections:
 
-            collection_wdg = CollectionItemWdg(collection=collection)
+            collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"))
             collections_div.add(collection_wdg)
+
 
             subcollection_wdg = DivWdg()
             collections_div.add(subcollection_wdg)
@@ -452,8 +503,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         div.add_style("width: 100%")
         div.add_class("spt_collection_content")
 
-        from tile_layout_wdg import TileLayoutWdg
-        tile = TileLayoutWdg(
+        #shelf_wdg = my.get_header_wdg()
+        #shelf_wdg.add_style("float: right")
+        #div.add(shelf_wdg)
+
+        tile = CollectionContentWdg(
                 search_type=my.search_type,
                 show_shelf=False,
                 show_search_limit=False,
@@ -464,6 +518,201 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         return div
 
 
+class CollectionContentWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        my.collection_key = my.kwargs.get("collection_key")
+
+        collection = Search.get_by_search_key(my.collection_key)
+
+
+        top = my.top
+
+        my.kwargs["scale"] = 75;
+        my.kwargs["show_scale"] = False;
+
+
+        from tile_layout_wdg import TileLayoutWdg
+        tile = TileLayoutWdg(
+            **my.kwargs
+        )
+
+        path = my.kwargs.get("path")
+        if collection and path:
+            title_div = DivWdg()
+            top.add(title_div)
+            title_div.add_style("float: left")
+            title_div.add_style("margin: 15px 0px")
+
+            path = path.strip("/")
+            parts = path.split("/")
+
+            for part in parts:
+                title_div.add(" / ")
+                title_div.add(" <a class='spt_colleciton_link'><b>%s</b></a> " % part)
+                title_div.add_style("margin-top: 10px")
+                title_div.add_style("margin-left: 20px")
+            #title_div.add("/ %s" % collection.get_value("name") )
+
+        #scale_wdg = tile.get_scale_wdg()
+        #top.add(scale_wdg)
+        #scale_wdg.add_style("float: right")
+
+        top.add(my.get_header_wdg())
+
+        top.add(tile)
+
+        return top
+
+ 
+
+    def get_header_wdg(my):
+
+        div = DivWdg()
+
+        if my.collection_key:
+
+            button = IconButtonWdg(title='Remove Selected Items from Collection', icon="BS_MINUS")
+            div.add(button)
+            button.add_style("display: inline-block")
+            button.add_style("vertical-align: top")
+
+            button.add_behavior( {
+                'type': 'click_up',
+                'collection_key': my.collection_key,
+                'cbjs_action': '''
+                var search_keys = spt.table.get_selected_search_keys(false);
+
+                if (search_keys.length == 0) {
+                    spt.notify.show_message("Nothing selected to remove");
+                    return;
+                }
+
+                var cls = 'tactic.ui.panel.CollectionRemoveCmd';
+                var kwargs = {
+                    collection_key: bvr.collection_key,
+                    search_keys: search_keys,
+                }
+                var server = TacticServerStub.get();
+                server.execute_cmd(cls, kwargs);
+
+                spt.table.remove_selected();
+
+                '''
+            } )
+
+
+
+            button = IconButtonWdg(title='Delete Collection', icon="BS_TRASH")
+            #button = ActionButtonWdg(title='Delete Collection', icon="BS_TRASH")
+            div.add(button)
+            button.add_style("display: inline-block")
+            button.add_style("vertical-align: top")
+
+            button.add_behavior( {
+                'type': 'click_up',
+                'collection_key': my.collection_key,
+                'cbjs_action': '''
+
+                var cls = 'tactic.ui.panel.CollectionDeleteCmd';
+                var kwargs = {
+                    collection_key: bvr.collection_key,
+                }
+                var server = TacticServerStub.get();
+                server.execute_cmd(cls, kwargs);
+
+                var top = bvr.src_el.getParent(".spt_collection_top");
+                if (top) {
+                    var layout = top.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                }
+
+                spt.table.run_search();
+
+                '''
+            } )
+
+
+
+        """
+        button = IconButtonWdg(title='Download Selected Items', icon="BS_DOWNLOAD")
+        div.add(button)
+        button.add_style("display: inline-block")
+        button.add_style("vertical-align: top")
+
+        text_div = DivWdg()
+        div.add(text_div)
+        text_div.add_style("width: 200px")
+        text = LookAheadTextInputWdg(
+            name="name",
+            icon="BS_SEARCH",
+            icon_pos="right",
+            width="100%"
+        ) 
+        text_div.add(text)
+        text_div.add_style("display: inline-block")
+        """
+
+        div.add_style("width: auto")
+        div.add_style("float: right")
+
+        div.add("<br clear='all'/>")
+
+
+        return div
+
+
+
+class CollectionRemoveCmd(Command):
+
+    def execute(my):
+
+        my.collection_key = my.kwargs.get("collection_key")
+        my.search_keys = my.kwargs.get("search_keys")
+
+        collection = Search.get_by_search_key(my.collection_key)
+        sobjects = Search.get_by_search_keys(my.search_keys)
+        search_codes = [x.get_code() for x in sobjects]
+
+
+        search_type = collection.get_base_search_type()
+        parts = search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+        search = Search(collection_type)
+        search.add_filter("parent_code", collection.get_code())
+        search.add_filters("search_code", search_codes)
+
+        items = search.get_sobjects()
+
+        for item in items:
+            item.delete()
+
+
+class CollectionDeleteCmd(Command):
+
+    def execute(my):
+
+        my.collection_key = my.kwargs.get("collection_key")
+
+        collection = Search.get_by_search_key(my.collection_key)
+
+        search_type = collection.get_base_search_type()
+        parts = search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+        search = Search(collection_type)
+        search.add_filter("parent_code", collection.get_code())
+        items = search.get_sobjects()
+
+        for item in items:
+            item.delete()
+
+        collection.delete()
+
+
+
 
 
 class CollectionListWdg(BaseRefreshWdg):
@@ -472,6 +721,8 @@ class CollectionListWdg(BaseRefreshWdg):
 
         parent_key = my.kwargs.get("parent_key")
         collection = Search.get_by_search_key(parent_key)
+
+        collection_path = my.kwargs.get("path")
 
         search_type = collection.get_base_search_type()
         parts = search_type.split("/")
@@ -491,7 +742,8 @@ class CollectionListWdg(BaseRefreshWdg):
 
         for item in collections:
 
-            collection_wdg = CollectionItemWdg(collection=item)
+            path = "%s/%s" % (collection_path, item.get_value("name") )
+            collection_wdg = CollectionItemWdg(collection=item, path=path)
             top.add(collection_wdg)
 
             subcollection_wdg = DivWdg()
@@ -507,6 +759,7 @@ class CollectionItemWdg(BaseRefreshWdg):
     def get_display(my):
 
         collection = my.kwargs.get("collection")
+        path = my.kwargs.get("path")
 
         search_type = collection.get_base_search_type()
         parts = search_type.split("/")
@@ -514,7 +767,16 @@ class CollectionItemWdg(BaseRefreshWdg):
 
         search = Search(collection_type)
         search.add_filter("parent_code", collection.get_value("code"))
+        search.add_column("search_code")
+        items = search.get_sobjects()
+        codes = [x.get_value("search_code") for x in items]
+
         count = search.get_count()
+
+        search = Search(search_type)
+        search.add_filter("_is_collection", True)
+        search.add_filters("code", codes)
+        has_child_collections = search.get_count() > 0
 
 
         top = my.top
@@ -524,16 +786,24 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_class("hand")
         collection_div.add_class("spt_collection_item")
         collection_div.add_attr("spt_collection_key", collection.get_search_key())
+        collection_div.add_attr("spt_collection_code", collection.get_code())
+        collection_div.add_attr("spt_collection_path", path)
+
+        # This is for Drag and Drop from a tile widget
+        collection_div.add_class("spt_tile_top")
+        collection_div.add_attr("spt_search_key", collection.get_search_key())
+        collection_div.add_attr("spt_search_code", collection.get_code())
 
         collection_div.add_style("height: 20px")
         collection_div.add_style("padding-top: 10px")
 
-        if count:
+        if has_child_collections:
             icon = IconWdg(name="View Collection", icon="BS_CHEVRON_DOWN")
             icon.add_style("float: right")
             collection_div.add(icon)
             icon.add_class("spt_collection_open")
             icon.add_attr("spt_collection_key", collection.get_search_key())
+            icon.add_attr("spt_collection_path", path)
 
 
         from tactic.ui.panel import ThumbWdg2
@@ -559,8 +829,13 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("text-align: center")
             count_div.add_style("margin-left: 23px")
             count_div.add_style("margin-top: -8px")
+            count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
 
             count_div.add(count)
+            #count_div.add_update( {
+            #    'parent_key': collection.get_search_key(),
+            #    'expression': "@COUNT(%s)" % collection_type,
+            #} )
 
 
         name = collection.get_value("name")
