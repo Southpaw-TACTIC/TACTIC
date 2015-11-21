@@ -157,10 +157,11 @@ class TopWdg(Widget):
         web = WebContainer.get_web()
         my.body.add_color("color", "color")
 
-        if web.is_title_page():
-            my.body.add_gradient("background", "background", 0, -20)
-        else:
-            my.body.add_gradient("background", "background", 0, -15)
+        #if web.is_title_page():
+        #    my.body.add_gradient("background", "background", 0, -20)
+        #else:
+        #    my.body.add_gradient("background", "background", 0, -15)
+        my.body.add_color("background", "background")
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")
@@ -209,6 +210,10 @@ class TopWdg(Widget):
             }
 
             var target_class = bvr.src_el.getAttribute("target");
+            if (! target_class ) {
+                target_class = "spt_content";
+            }
+
             if (target_class.indexOf(".") != "-1") {
                 var parts = target_class.split(".");
                 var top = bvr.src_el.getParent("."+parts[0]);
@@ -247,6 +252,45 @@ class TopWdg(Widget):
             spt.panel.refresh(target);
             '''
             } )
+
+
+
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_new_tab',
+            'cbjs_action': '''
+            var view = bvr.src_el.getAttribute("view")
+
+            var name = bvr.src_el.getAttribute("name");
+            var title = bvr.src_el.getAttribute("title");
+
+            if (!name) {
+                name = title;
+            }
+
+            if (!title) {
+                title = name;
+            }
+
+            if (!title && !name) {
+                title = name = "Untitled";
+            }
+
+
+            spt.tab.set_main_body_tab()
+
+            var cls = "tactic.ui.panel.CustomLayoutWdg";
+            var kwargs = {
+                view: view
+            }
+            try {
+                spt.tab.add_new(name, title, cls, kwargs);
+            } catch(e) {
+                spt.alert(e);
+            }
+            '''
+            } )
+
 
 
         my.body.add_relay_behavior( {

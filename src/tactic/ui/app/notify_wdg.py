@@ -37,7 +37,7 @@ class NotifyWdg(BaseRefreshWdg):
         top.add_style("width: 200px")
         #top.add_style("opacity: 0")
         top.add_style("text-align: center")
-        top.add_style("margin-top: -50px")
+        top.add_style("margin-top: -60px")
 
         top.add_color("background", "background", -3)
         top.add_style("height: 20px")

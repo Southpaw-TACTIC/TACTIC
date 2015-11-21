@@ -589,6 +589,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if expr_search:
             search.add_relationship_search_filter(expr_search)
 
+        keywords = my.kwargs.get('keywords')
+        if keywords:
+            keywords_column = 'keywords'
+            search.add_text_search_filter(keywords_column, keywords)
 
         if my.connect_key == "__NONE__":
             search.set_null_filter()

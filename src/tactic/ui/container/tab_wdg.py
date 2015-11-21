@@ -483,10 +483,14 @@ spt.tab.select = function(element_name) {
         headers[i].setStyle("opacity", "0.4");
         headers[i].setStyle("font-weight", "normal");
         headers[i].removeClass("spt_is_selected");
+        headers[i].removeClass("spt_tab_selected");
+        headers[i].addClass("spt_tab_unselected");
     }
 
     header.setStyle("opacity", "1.0");
     header.addClass("spt_is_selected");
+    header.addClass("spt_tab_selected");
+    header.removeClass("spt_tab_unselected");
     header.setStyle("font-weight", "bold");
     header.setStyle("z-index", "200");
 
@@ -586,12 +590,17 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
             headers[i].setStyle("opacity", "0.4");
             headers[i].setStyle("font-weight", "normal");
             headers[i].removeClass("spt_is_selected");
+            headers[i].removeClass("spt_tab_selected");
+            headers[i].addClass("spt_tab_unselected");
         }
 
 
         header.setStyle("opacity", "1.0");
         header.addClass("spt_is_selected");
-        header.setStyle("font-weight", "bold");
+        header.addClass("spt_tab_selected");
+        header.removeClass("spt_tab_unselected");
+
+        //header.setStyle("font-weight", "bold");
         header.setStyle("z-index", "200");
 
         var content_top = top.getElement(".spt_tab_content_top");
@@ -925,7 +934,63 @@ spt.tab.close = function(src_el) {
         '''
 
 
+    def add_styles(my):
 
+        my.use_default_style = my.kwargs.get("use_default_style")
+        if my.use_default_style not in [False, 'false']:
+            my.use_default_style = True
+        else:
+            my.use_default_style = False
+
+        if my.use_default_style:
+
+            palette = my.top.get_palette()
+            border = palette.color("border")
+            color = palette.color("color")
+            background = palette.color("background")
+
+            data = {
+                'border': border,
+                'color': color,
+                'background': background,
+                'header_id': my.header_id,
+            }
+
+            print "data: ", data
+
+
+
+            from pyasm.web import HtmlElement
+
+            style = HtmlElement.style()
+            my.top.add(style)
+            style.add('''
+            #%(header_id)s .spt_tab_header {
+                border-style: solid;
+                border-color: %(border)s;
+                border-width: 1px 1px 0px 1px;
+                padding: 7px 5px;
+                color: %(color)s;
+                background: %(background)s;
+            }
+
+            #%(header_id)s .spt_tab_selected {
+                opacity: 1.0;
+            }
+
+            #%(header_id)s .spt_tab_unselected {
+                opacity: 0.4 ;
+            }
+
+            #%(header_id)s .spt_tab_hover {
+            }
+
+
+            .spt_tab_content_body {
+            }
+            ''' % data)
+
+ 
 
     def get_display(my):
 
@@ -1027,6 +1092,9 @@ spt.tab.close = function(src_el) {
 
         inner = DivWdg();
         top.add(inner);
+        inner.add_style("position: relative")
+        inner.add_style("width: auto")
+
 
         if not Container.get_dict("JSLibraries", "spt_tab"):
             inner.add_behavior( {
@@ -1035,22 +1103,23 @@ spt.tab.close = function(src_el) {
             'cbjs_action': my.get_onload_js()
             } )
 
-        #outer_header = DivWdg()
-        #inner.add(outer_header)
-        #outer_header.add_style("overflow-x: hidden")
-        #outer_header.add_style("height: 30px")
-        #outer_header.add_style("float: left")
 
         header_div = DivWdg()
-        inner.add(header_div)
-        #outer_header.add(header_div)
-        header_div.add_style("height: 30px")
         header_div.add_class("spt_tab_header_top")
+        my.header_id = header_div.set_unique_id()
+        inner.add(header_div)
+        header_div.add_style("height: auto")
         header_div.add_style("overflow-y: hidden")
-        #header_div.add_style("width: 5000")
+        header_div.add_style("overflow-x: hidden")
         header_div.add_style("float: left")
+        header_div.add_style("position: relative")
+        header_div.add_style("z-index: 2")
 
-        #state = WebState.get().get_current()
+
+
+        my.add_styles()
+
+
         # if a search_key has been passed in, add it to the state.
         state = my.kwargs.get("state")
         if not state:
@@ -1177,6 +1246,9 @@ spt.tab.close = function(src_el) {
 
 
         content_top = DivWdg()
+        content_top.add_class("spt_tab_content_top")
+        content_top.add_style("z-index: 1")
+        content_top.add_style("margin-top: -1px")
 
         # add a div so that it breaks correctly
         if my.mode == 'default':
@@ -1189,7 +1261,6 @@ spt.tab.close = function(src_el) {
             content_top.add_style("border: 1px solid %s" % border)
 
         inner.add(content_top)
-        content_top.add_class("spt_tab_content_top")
         content_top.add_style("min-height: 500px")
 
         height = my.kwargs.get("height")
@@ -1754,41 +1825,45 @@ spt.tab.close = function(src_el) {
 
 
         web = WebContainer.get_web()
-        is_IE = web.is_IE()
 
         header = DivWdg()
-        header.set_round_corners(5, corners=['TL','TR'])
-        #header = SpanWdg()
         header.add_class("spt_tab_header")
         header.add_attr("spt_tab_id", my.unique_id)
-        palette = header.get_palette()
-        border = palette.color("border")
-        header.add_style("border-style: solid")
-        header.add_style("border-color: %s" % border)
-        header.add_style("border-width: 1px 1px 0px 1px")
-        header.add_style("overflow: hidden")
-
-        header.add_style("float: left")
-        header.add_style("padding: 7px 5px")
-        header.add_style("margin-right: 1px")
-        #header.add_style("margin-left: 1px")
-        if is_IE:
-            header.add_style("width: 150px")
         header.add_class("hand")
 
+        header.add_style("overflow: hidden")
+
+        if my.use_default_style:
+            header.set_round_corners(5, corners=['TL','TR'])
+
+
+        #header.add_style("border-style: solid")
+        #header.add_style("border-color: %s" % border)
+        #header.add_style("border-width: 1px 1px 0px 1px")
+        #header.add_style("padding: 7px 5px")
+        #header.add_color("color", "color")
+
+        header.add_style("float: left")
+        header.add_style("margin-right: 1px")
+
+
         if is_selected:
-            header.add_color("color", "color")
-            header.add_gradient("background", "background", -5, 5)
-            header.add_style("opacity", "1.0");
+            header.add_class("spt_tab_selected")
+            #header.add_style("opacity", "1.0");
             header.add_class("spt_is_selected")
+            #header.add_gradient("background", "background", -5, 5)
+            #header.add_color("background", "background", -3)
         else:
-            header.add_color("color", "color")
-            header.add_style("opacity", "0.4");
-            header.add_gradient("background", "background", -5, 5)
+            header.add_class("spt_tab_unselected")
+            #header.add_style("opacity", "0.4");
+            #header.add_color("color", "color")
+            #header.add_gradient("background", "background", -5, 5)
+            #header.add_color("background", "background")
 
 
         palette = header.get_palette()
         hover_color = palette.color("background3")
+
         header.add_behavior( {
             'type': 'mouseenter',
             'color': hover_color,
@@ -1837,16 +1912,18 @@ spt.tab.close = function(src_el) {
 
 
  
-        #header.add_behavior( {
-        #'type': 'click_up',
-        #'mouse_btn': 'RMB',
-        #'modkeys': '',
-        #'cbjs_action': '''
-        #alert("RMB");
-        #'''
-        #} )
-
         title_div = DivWdg()
+
+        icon = None
+        badge = None
+        if icon:
+            icon = IconWdg(name="whatever", icon=icon)
+            title_div.add(icon)
+        if badge:
+            badge = "<span class='badge'>12</span> "
+            title_div.add(badge)
+
+
         title_div.add_style("min-width: 100px")
         title_div.add_style("text-align: left")
         title_div.add_style("overflow: hidden")
