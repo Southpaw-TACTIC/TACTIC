@@ -72,8 +72,10 @@ task status is changed to review:</p><p><span class="inlinemediaobject"><img src
 of input:</p><p><span class="strong"><strong>Email</strong></span> - Capability to add regular emails allows to send personal email
 addresses e.g. <a class="ulink" href="mailto:joe@my_email.com" target="_top">joe@my_email.com</a></p><p><span class="strong"><strong>Group</strong></span> - Capabilty to send to a group of users in TACTIC e.g.
 Supervisor</p><p><span class="strong"><strong>Expression</strong></span> - Capabilty to insert expressions that specifies a user in
-TACTIC. All expressions are identified by curly brackets "{}". e.g.
-{@SOBJECT(sthpw/login)}</p><p><span class="strong"><strong>Send a Notification</strong></span> - This action will send a notification. The action
+TACTIC. It could be pointing to an sobject - @SOBJECT with an email attribute or pointing to just the login name of the user - @GET. e.g.
+@SOBJECT(sthpw/login)
+@GET(sobject.assigned)
+@GET(sobject.supervisor)</p><p><span class="strong"><strong>Send a Notification</strong></span> - This action will send a notification. The action
 box will open additional options to insert a subject and message.</p><p><span class="strong"><strong>Example 2</strong></span></p><p>Below is an example which uses more expressions for a notification being
 sent whenever a task is assigned.</p><p><span class="inlinemediaobject"><img src="media/9b_project_automation_notifications_task_is_assigned.png" alt="image" /></span></p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triggers"></a>3.8. Triggers</h3></div></div></div><p><span class="strong"><strong>Triggers</strong></span></p><p><span class="inlinemediaobject"><img src="media/1_configuration_triggers_overview.png" alt="image" /></span></p><p><span class="strong"><strong>How to Add a Trigger for a Search Type</strong></span></p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>These workflow triggers are the same as the regular triggers but are
 scoped/filtered for the particular process.</p></blockquote></div><p>1) In the <span class="strong"><strong>Project Startup → Configuration View</strong></span> (assuming a

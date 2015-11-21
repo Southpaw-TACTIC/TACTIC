@@ -1324,7 +1324,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_save_button(my):
         show_save = True
 
-        if my.edit_permission == False:
+        if my.edit_permission == False or not my.view_editable:
             show_save = False
 
         if not my.can_save():

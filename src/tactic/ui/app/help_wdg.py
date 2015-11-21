@@ -23,6 +23,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
 
 import types, os
+import re
 
 __all__.append("HelpButtonWdg")
 class HelpButtonWdg(BaseRefreshWdg):
@@ -284,7 +285,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
 
 
     def filter_line(my, line, count):
-
+        '''replace certain tags with a replacement for proper display''' 
         line = line.strip()
         if line.startswith("<meta"):
             line = line.replace(">", "/>")
@@ -300,7 +301,6 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         line = line.replace("&nbsp;", " ")
         line = line.replace("<hr>", "<hr/>")
         line = line.replace("<br>", "<br/>")
-
         return line
 
 
@@ -449,6 +449,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'rel_path': link_rel_path,
                 'cbjs_action': '''
+                console.log("click link")
                 spt.help.set_top();
                 spt.help.load_rel_path( bvr.rel_path );
                 '''
@@ -462,7 +463,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         pre_nodes = xml.get_nodes("//pre")
         for node in pre_nodes:
             html = xml.to_string(node)
-            html = html.replace('''<pre class="screen">''','')
+            html = re.sub(r'''<pre class=".*">''','', html)
             html = html.replace('''</pre>''','')
             if not html:
                 continue
@@ -472,6 +473,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             styles.append("margin: 10px")
             styles.append("border: solid 1px %s" % div.get_color("border"))
             styles.append("background: %s" % div.get_color("background", -3))
+            styles.append("color: %s" % div.get_color("color"))
             style = ";".join(styles)
             xml.set_attribute(node, "style", style)
             node.text = html
@@ -966,16 +968,16 @@ spt.help.load_rel_path = function(rel_path, history) {
     }
 
     var saved_path = rel_path;
-
     if (rel_path.indexOf("#") != -1) {
         var parts = rel_path.split("#");
-        rel_path = parts[0];
+        //rel_path can support anchor
+        //rel_path = parts[0];
         tag = parts[1];
     }
     else {
         tag = null;
     }
-
+    
     var class_name = 'tactic.ui.app.HelpContentWdg'; 
     var kwargs = {
         rel_path: rel_path
@@ -999,15 +1001,19 @@ spt.help.load_rel_path = function(rel_path, history) {
         var tag_el = null;
         for ( var i = 0; i < tag_els.length; i++) {
             var id = tag_els[i].getAttribute("id");
+            
             if (id == tag) {
                 tag_el = tag_els[i];
                 break;
             }
         }
-        var pos = tag_el.getPosition(help_top);
-        setTimeout( function() {
-            help_top.scrollTo(0, pos.y-30);
-        }, 0 );
+        if (tag_el) {
+            var pos = tag_el.getPosition(help_top);
+            
+            setTimeout( function() {
+                help_top.scrollTo(0, pos.y-30);
+            }, 0 );
+        }
     }
 
 
@@ -1175,7 +1181,7 @@ class HelpContentWdg(BaseRefreshWdg):
 
 
         rel_path = my.kwargs.get("rel_path")
-
+        
         # attempt to get if from the widget config
         search = Search("config/widget_config")
         search.add_filter("category", "HelpWdg")
