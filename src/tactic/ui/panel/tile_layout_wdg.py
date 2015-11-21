@@ -608,7 +608,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             var parent_code = top.getAttribute("spt_search_code");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
-            //spt.table.run_search( { expression: expr } );
             var class_name = "tactic.ui.panel.ViewPanelWdg";
             var kwargs = {
                 search_type: bvr.search_type,
@@ -1633,7 +1632,13 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
     var dst_el = spt.get_event_target(evt);
-    var dst_top = dst_el.getParent(".spt_tile_top");
+    if (dst_el.hasClass("spt_tile_top")) {
+        var dst_top = dst_el;
+    }
+    else {
+        var dst_top = dst_el.getParent(".spt_tile_top");
+    }
+
     if (dst_top) {
         if( bvr._drag_copy_el ) {
             spt.behavior.destroy_element(bvr._drag_copy_el);
@@ -1650,6 +1655,11 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             var src_top = bvr.src_el.getParent(".spt_tile_top");
             var src_code = src_top.getAttribute("spt_search_code");
             var parent_code = dst_top.getAttribute("spt_search_code");
+            if (parent_code == src_code) {
+                spt.notify.show_message("Cannot add a collection to itself");
+                return;
+            }
+
             var data = {
                 parent_code: parent_code,
                 search_code: src_code

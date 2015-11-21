@@ -9,6 +9,9 @@
 #
 #
 #
+
+import tacticenv
+
 __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
@@ -1180,6 +1183,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
+        from collection_wdg import CollectionAddWdg
+        collection_div = CollectionAddWdg(search_type=my.search_type)
+        wdg_list.append( {'wdg': collection_div} )
+        
+
+
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
             wdg_list.append( { 'wdg': spacing_divs[0] } )
@@ -1266,11 +1275,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             xx.add_style("float: left")
             xx.add_style("margin-left: -25")
             xx.add_style("margin-top: -5")
-            div.add_style("opacity: 0.6")
+            #div.add_style("opacity: 0.6")
             height = "32px"
         else:
             height = "41px"
-            div.add_style("opacity: 0.6")
+            #div.add_style("opacity: 0.6")
 
 
         outer.add(div)
@@ -1280,17 +1289,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             outer.add(my.view_save_dialog)
 
         outer.add_style("min-width: 750px")
-        #outer.add_style("width: 300px")
-        #outer.add_style("overflow: hidden")
-        #outer.add_class("spt_resizable")
-
-        #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
         div.add_style("margin: 0px -1px 0px -1px")
 
         
         
-
+        """
         div.add_behavior( {
             'type': 'mouseenter',
             'cbjs_action': '''
@@ -1303,6 +1307,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             bvr.src_el.setStyle("opacity", 0.6);
             '''
         } )
+        """
 
 
 
@@ -1570,8 +1575,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
             # collection
-            #if SearchType.column_exists(my.search_type, "is_collection"):
-            if True:
+            if SearchType.column_exists(my.search_type, "is_collection"):
                 menu_item = MenuItem(type='action', label='Add New Collection')
                 menu_item.add_behavior( {
                     'cbjs_action': '''
@@ -3054,5 +3058,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         }
         access_keys = [access_key1, access_key2]
         return access_keys
+
+
+
 
 
