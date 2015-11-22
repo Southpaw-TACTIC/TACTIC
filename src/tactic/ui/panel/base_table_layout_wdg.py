@@ -10,7 +10,6 @@
 #
 #
 
-import tacticenv
 
 __all__ = ["BaseTableLayoutWdg"]
 
@@ -1293,7 +1292,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("margin: 0px -1px 0px -1px")
 
         
-        
+        # This was included when our icons had color and we heavily used hidden row.
+        # The shelf lit everything up ... with the new glyph icons, I think this isn't
+        # necessary anymore. 
         """
         div.add_behavior( {
             'type': 'mouseenter',
@@ -1575,7 +1576,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
             # collection
-            if SearchType.column_exists(my.search_type, "is_collection"):
+            if SearchType.column_exists(my.search_type, "_is_collection"):
                 menu_item = MenuItem(type='action', label='Add New Collection')
                 menu_item.add_behavior( {
                     'cbjs_action': '''

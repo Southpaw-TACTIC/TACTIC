@@ -1678,12 +1678,7 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
     var dst_el = spt.get_event_target(evt);
-    if (dst_el.hasClass("spt_tile_top")) {
-        var dst_top = dst_el;
-    }
-    else {
-        var dst_top = dst_el.getParent(".spt_tile_top");
-    }
+    var dst_top = dst_el.hasClass("spt_tile_top") ? dst_el : dst_el.getParent(".spt_tile_top");
 
     if (dst_top) {
         if( bvr._drag_copy_el ) {
