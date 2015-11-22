@@ -794,10 +794,12 @@ class CollectionItemWdg(BaseRefreshWdg):
 
         count = search.get_count()
 
+
+        # find the children that are actually collections
         search = Search(search_type)
         search.add_filter("_is_collection", True)
         search.add_filters("code", codes)
-        has_child_collections = count > 0
+        has_child_collections = search.get_count() > 0
 
 
         top = my.top
