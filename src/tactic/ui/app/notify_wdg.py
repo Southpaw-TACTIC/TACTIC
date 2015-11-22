@@ -29,15 +29,11 @@ class NotifyWdg(BaseRefreshWdg):
         top.set_id("spt_notify_top")
 
         top.add_style("position: fixed")
-        #top.add_style("bottom: -32")
-        #top.add_style("left: 0")
-        #top.add_style("right: 0")
-        top.add_style("top: 20px")
+        top.add_style("top: 60px")
         top.add_style("z-index: 10000")
         top.add_style("width: 200px")
-        #top.add_style("opacity: 0")
         top.add_style("text-align: center")
-        top.add_style("margin-top: -60px")
+        top.add_style("margin-top: -100px")
 
         top.add_color("background", "background", -3)
         top.add_style("height: 20px")
@@ -86,7 +82,7 @@ spt.notify.set_message = function(message, kwargs) {
 
 spt.notify.show_message = function(message, duration, kwargs) {
     if (!duration) {
-        duration = 3000;
+        duration = 5000;
     }
 
     spt.notify.show();
