@@ -399,6 +399,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         collections = search.get_sobjects()
 
         collections_div = DivWdg()
+        collections_div.add_class("spt_collection_list")
         div.add(collections_div)
         collections_div.add_style("margin: 5px 0px 5px -5px")
 
@@ -418,6 +419,15 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_collection_top");
             var content = top.getElement(".spt_collection_content");
 
+            bvr.src_el.setStyle("border", "solid 3x blue");
+            var list = bvr.src_el.getParent(".spt_collection_list");
+            var items = list.getElements(".spt_collection_item");
+            for (var i = 0; i < items.length; i++) {
+                items[i].setStyle("box-shadow", "");
+            }
+
+
+
             var collection_key = bvr.src_el.getAttribute("spt_collection_key");
             var collection_code = bvr.src_el.getAttribute("spt_collection_code");
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
@@ -436,7 +446,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             }
             spt.panel.load(content, cls, kwargs);
 
-            bvr.src_el.setStyle("background", "#F00");
+            bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
+
+
 
             '''
         } )
@@ -747,6 +759,7 @@ class CollectionListWdg(BaseRefreshWdg):
         collections = search.get_sobjects()
 
         top = my.top
+        top.add_class("spt_collection_list")
 
         for item in collections:
 
