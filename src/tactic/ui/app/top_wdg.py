@@ -221,10 +221,24 @@ class TopWdg(Widget):
                 var target = $(document.body).getElement("."+target_class);
             }
 
+
+
             var class_name = 'tactic.ui.panel.CustomLayoutWdg';
             var kwargs = {
                 view: view,  
             }
+
+
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var name = attributes[i].name;
+                if (name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[name] = value;
+            }
+ 
             spt.panel.load(target, class_name, kwargs);
             '''
         } )

@@ -1920,8 +1920,13 @@ spt.tab.close = function(src_el) {
             icon = IconWdg(name="whatever", icon=icon)
             title_div.add(icon)
         if badge:
-            badge = "<span class='badge'>12</span> "
-            title_div.add(badge)
+            badge_wdg = SpanWdg("12")
+            badge_wdg.add_class("badge")
+            #title_div.add(badge_wdg)
+            #badge_wdg.add_update( {
+            #    'expression': "@COUNT(workflow/employee)"
+            #} )
+
 
 
         title_div.add_style("min-width: 100px")
