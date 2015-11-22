@@ -10,7 +10,6 @@
 #
 #
 
-import tacticenv
 
 __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
 
@@ -100,12 +99,12 @@ class CollectionAddWdg(BaseRefreshWdg):
 
             icon = IconWdg(name="View Collection", icon="BS_CHEVRON_RIGHT")
             go_wdg.add(icon)
-            go_wdg.add_behavior( {
-                'type': 'click_upX',
-                'cbjs_action': '''
-                alert("go to !!!");
-                '''
-            } )
+            #go_wdg.add_behavior( {
+            #    'type': 'click_upX',
+            #    'cbjs_action': '''
+            #    alert("Not Implemented");
+            #    '''
+            #} )
 
 
             name = collection.get_value("name")
@@ -595,9 +594,13 @@ class CollectionContentWdg(BaseRefreshWdg):
                     search_keys: search_keys,
                 }
                 var server = TacticServerStub.get();
-                server.execute_cmd(cls, kwargs);
+                try {
+                    server.execute_cmd(cls, kwargs);
+                    spt.table.remove_selected();
+                } catch(e) {
+                    spt.alert(e);
+                }
 
-                spt.table.remove_selected();
 
                 '''
             } )
@@ -620,7 +623,12 @@ class CollectionContentWdg(BaseRefreshWdg):
                     collection_key: bvr.collection_key,
                 }
                 var server = TacticServerStub.get();
-                server.execute_cmd(cls, kwargs);
+                try {
+                    server.execute_cmd(cls, kwargs);
+                } catch(e) {
+                    spt.alert(e);
+                    return;
+                }
 
                 var top = bvr.src_el.getParent(".spt_collection_top");
                 if (top) {
@@ -776,7 +784,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         search = Search(search_type)
         search.add_filter("_is_collection", True)
         search.add_filters("code", codes)
-        has_child_collections = search.get_count() > 0
+        has_child_collections = count > 0
 
 
         top = my.top
@@ -812,7 +820,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add(thumb_wdg)
         thumb_wdg.add_style("width: 45px")
         thumb_wdg.add_style("float: left")
-        thumb_wdg.add_style("margin-top: -15px")
+        thumb_wdg.add_style("margin-top: -10px")
 
         if count:
             count_div = DivWdg()

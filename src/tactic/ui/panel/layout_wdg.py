@@ -4476,7 +4476,7 @@ class SwitchLayoutMenu(object):
             'tool',
             'browser',
             'card',
-            'collections',
+            'collection',
             'default',
         ]
 
