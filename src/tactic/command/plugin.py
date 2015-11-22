@@ -1502,6 +1502,9 @@ class PluginTools(PluginBase):
 
 
     def import_data(my, path, commit=True, unique=False):
+
+        raise Exception("import_data deprecated")
+
         if not os.path.exists(path):
             # This is printed too often in harmless situations
             #print "WARNING: path [%s] does not exist" % path
@@ -1626,6 +1629,7 @@ class PluginTools(PluginBase):
 
 
                         if base_search_type == "sthpw/login_group":
+
                             if old_project_code:
                                 login_group = sobject.get_value("login_group")
                                 delimiter = None
@@ -2231,6 +2235,15 @@ class PluginTools(PluginBase):
                     if base_search_type.startswith("sthpw/"):
                         project = Project.get()
                         project_code = project.get_value("code")
+
+                        if SearchType.column_exists(sobject, "project_code"):
+                            old_project_code = sobject.get_value("project_code")
+                            sobject.set_value("project_code", project_code)
+                        else:
+                            old_project_code = None
+
+
+
                         if SearchType.column_exists(sobject.get_search_type(), "project_code"):
                             sobject.set_value("project_code", project_code)
 
@@ -2259,6 +2272,36 @@ class PluginTools(PluginBase):
                                 if not exists:
                                     sobject.set_value('code',new_code)
                                     unique = True
+
+
+                        if base_search_type == "sthpw/login_group":
+
+                            if old_project_code:
+                                login_group = sobject.get_value("login_group")
+                                delimiter = None
+                                if login_group.startswith("%s_" % old_project_code):
+                                    delimiter = "_"
+                                elif login_group.startswith("%s/" % old_project_code):
+                                    delimiter = "/"
+
+                                if delimiter:
+                                    login_group = login_group[len(old_project_code)+1:]
+                                    login_group = "%s%s%s" % (project_code, delimiter, login_group)
+
+                                    sobject.set_value("code", login_group)
+                                    sobject.set_value("login_group", login_group)
+
+
+                            # convert all of xml to this project
+                            xml = sobject.get_xml_value("access_rules")
+                            nodes = Xml.get_nodes(xml, "rules/rule")
+                            for node in nodes:
+                                test = xml.get_attribute(node, "project")
+                                if test:
+                                    xml.set_attribute(node, "project", project_code)
+
+                            sobject.set_value("access_rules", xml.to_string())
+
 
 
                     if unique:

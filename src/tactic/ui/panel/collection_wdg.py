@@ -556,6 +556,10 @@ class CollectionContentWdg(BaseRefreshWdg):
             title_div.add_style("float: left")
             title_div.add_style("margin: 15px 0px")
 
+            icon = IconWdg(name="View Collection", icon="BS_FOLDER_OPEN")
+            title_div.add(icon)
+            icon.add_style("margin-right: 10px")
+
             path = path.strip("/")
             parts = path.split("/")
 
