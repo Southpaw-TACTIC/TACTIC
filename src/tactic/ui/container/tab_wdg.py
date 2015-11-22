@@ -956,8 +956,6 @@ spt.tab.close = function(src_el) {
                 'header_id': my.header_id,
             }
 
-            print "data: ", data
-
 
 
             from pyasm.web import HtmlElement

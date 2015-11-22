@@ -283,16 +283,26 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 group_wdg = DivWdg()
                 inner.add(group_wdg)
-
-                group_wdg.add_style("width: auto")
-                group_wdg.add_border()
-                group_wdg.add(title)
-                group_wdg.add_style("height: 16px")
-                group_wdg.add_style("margin: 20px 0px")
+                group_wdg.add_style("margin: 20px 0px 5px 0px")
                 group_wdg.add_style("padding: 10px 10px")
-                group_wdg.add_color("background", "background3")
-                group_wdg.add_style("font-size: 1.2em")
-                group_wdg.add_style("font-weight: bold")
+                group_wdg.add_style("width: auto")
+
+                icon = IconWdg(name=title, icon="BS_FOLDER_OPEN")
+                group_wdg.add(icon)
+                icon.add_style("display: inline-block")
+                icon.add_style("margin-right: 10px")
+                icon.add_style("vertical-align: top")
+
+
+                title_wdg = DivWdg()
+                group_wdg.add(title_wdg)
+                title_wdg.add(title)
+                title_wdg.add_style("font-size: 1.2em")
+                title_wdg.add_style("font-weight: bold")
+                title_wdg.add_style("display: inline-block")
+
+                title_wdg.add("<div style='margin-top: 5px; opacity: 0.5; font-size: 0.8em; font-weight: normal'>This is a description</div>")
+
 
 
                 group_values[group_column] = group_value
@@ -474,7 +484,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = None
 
         my.bottom_expr = my.kwargs.get("bottom_expr")
-        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") not in ['false', False]
+        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") in ['true', True]
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
@@ -497,7 +507,10 @@ class TileLayoutWdg(ToolLayoutWdg):
             parts = re.split('[\Wx]+', my.aspect_ratio)
             my.aspect_ratio = (int(parts[0]), int(parts[1]))
         else:
+
             my.aspect_ratio = (240, 160)
+
+            my.aspect_ratio = (240, 135)
 
         my.show_name_hover = my.kwargs.get('show_name_hover')
 
@@ -1289,13 +1302,33 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
 
+ 
         if my.kwargs.get("show_title") not in ['false', False]:
+
+            bg_wdg = DivWdg()
+            div.add(bg_wdg)
+            bg_wdg.add_style("position: absolute")
+            bg_wdg.add_style("top: 0")
+            bg_wdg.add_style("left: 0")
+            bg_wdg.add_style("height: 25px")
+            bg_wdg.add_style("width: 100%")
+            bg_wdg.add_style("background: rgba(0,0,0,0.3)")
+            bg_wdg.add(" ")
+
             if my.title_wdg:
                 my.title_wdg.set_sobject(sobject)
                 div.add(my.title_wdg.get_buffer_display())
             else:
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
+
+
+            title_wdg.add_style("position: absolute")
+            title_wdg.add_style("top: 0")
+            title_wdg.add_style("left: 0")
+            title_wdg.add_style("width: 100%")
+            #title_wdg.add_style("opacity: 0.5")
+
 
         div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
@@ -1310,7 +1343,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         if my.show_drop_shadow:
             div.set_box_shadow()
-        div.add_color("background", "background", -3)
+
+        #div.add_color("background", "background", -3)
         
         div.add_style("overflow: hidden")
 
@@ -1338,8 +1372,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
 
-
-        
+        thumb_div.add_style("overflow: hidden")
         thumb_div.add_style("width: %s" % my.aspect_ratio[0])
 
         thumb_div.add_style("height: %s" % my.aspect_ratio[1])
@@ -1369,6 +1402,19 @@ class TileLayoutWdg(ToolLayoutWdg):
             bottom.add_style("overflow-y: auto")
             div.add(bottom)
             #bottom.add_style("width: %s" % (my.aspect_ratio[0]-20))
+        else:
+            table = Table()
+            div.add(table)
+
+            table.add_style("width: 100%")
+            table.add_style("margin: 5px 10px")
+            table.add_row()
+            table.add_cell("Name:")
+            table.add_cell("Whatever")
+            table.add_row()
+            table.add_cell("File Type:")
+            table.add_cell("Image.jpg")
+ 
         
 
         div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
@@ -1834,7 +1880,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
         div.add_class("spt_tile_title")
 
-        div.add_color("background", "background3")
+        #div.add_color("background", "background3")
         div.add_style("padding: 5px")
         div.add_style("height: 20px")
 
