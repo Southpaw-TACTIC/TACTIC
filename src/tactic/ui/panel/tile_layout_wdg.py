@@ -1039,8 +1039,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'border': border,
-            'bvr_match_class': 'spt_tile_select',
+            'bvr_match_class': 'spt_tile_title',
             'cbjs_action': '''
+
+            var checkbox = bvr.src_el.getElement('.spt_tile_checkbox');
+
             spt.table.set_table(bvr.src_el);
             if (evt.shift == true) {
                 var row = bvr.src_el.getParent(".spt_table_row");
@@ -1087,7 +1090,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                             checkbox.checked = true;
                             row.removeClass("spt_table_selected");
                             spt.table.select_row(row);
-                            //row.setStyle("box-shadow", "0px 0px 15px #FF0");
                             bg.setStyle("opacity", "0.7");
 
 
@@ -1097,7 +1099,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                             row.addClass("spt_table_selected");
                             spt.table.unselect_row(row);
 
-                            //row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
                             bg.setStyle("opacity", "0.3");
 
                         }
@@ -1115,16 +1116,14 @@ class TileLayoutWdg(ToolLayoutWdg):
                     checkbox.checked = false;
                    
                     spt.table.unselect_row(row);
-                    //row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-                    bg.setStyle("opacity", "0.7");
+                    bg.setStyle("opacity", "0.3");
 
                 }
                 else {
                     checkbox.checked = true;
                     
                     spt.table.select_row(row);
-                    //row.setStyle("box-shadow", "0px 0px 15px #FF0");
-                    bg.setStyle("opacity", "0.3");
+                    bg.setStyle("opacity", "0.7");
 
                 }
 
@@ -1139,10 +1138,12 @@ class TileLayoutWdg(ToolLayoutWdg):
             'type': 'click',
             'bvr_match_class': 'spt_tile_checkbox',
             'cbjs_action': '''
-             var row = bvr.src_el.getParent(".spt_table_row");
+
+            var row = bvr.src_el.getParent(".spt_table_row");
 
             spt.table.set_table(row);
-             if (evt.shift == true) {
+            if (evt.shift == true) {
+
               
 
                 var rows = spt.table.get_all_rows(true);
@@ -1181,12 +1182,14 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (row) {
 
                     var checkbox = bvr.src_el;
+                    var bg = row.getElement(".spt_tile_bg");
 
                     if (select) {
                         checkbox.checked = true;
                         row.removeClass("spt_table_selected");
                         spt.table.select_row(row);
-                        //row.setStyle("box-shadow", "0px 0px 15px #FF0");
+
+                        bg.setStyle("opacity", "0.7");
 
 
                     }
@@ -1195,22 +1198,24 @@ class TileLayoutWdg(ToolLayoutWdg):
                         row.addClass("spt_table_selected");
                         spt.table.unselect_row(row);
 
-                        //row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                        bg.setStyle("opacity", "0.3");
 
                     }
                 }
             }
             else {
+                var bg = row.getElement(".spt_tile_bg");
                 if (bvr.src_el.checked) {
                     spt.table.select_row(row);
-                    //row.setStyle("box-shadow", "0px 0px 15px #FF0");
+                    bg.setStyle("opacity", "0.7");
                 }
                 else {
                     spt.table.unselect_row(row);
-                    //row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    bg.setStyle("opacity", "0.3");
                 }
             }
             evt.stopPropagation();
+
             '''
         } )
 
