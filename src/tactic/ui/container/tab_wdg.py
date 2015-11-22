@@ -1941,17 +1941,6 @@ spt.tab.close = function(src_el) {
         header.add(title_div)
 
 
-        """
-        count = 12
-        if count:
-            count_wdg = SpanWdg()
-            title_div.add(count_wdg)
-            count_wdg.add_class("badge")
-            count_wdg.add(count)
-            count_wdg.add_style("margin: 0px 5px 0px 10px")
-            count_wdg.add_style("font-size: 0.8em")
-        """
-
 
         title_div.add_attr("title", "%s (%s)" % (title, element_name))
 

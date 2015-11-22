@@ -820,7 +820,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add(thumb_wdg)
         thumb_wdg.add_style("width: 45px")
         thumb_wdg.add_style("float: left")
-        thumb_wdg.add_style("margin-top: -15px")
+        thumb_wdg.add_style("margin-top: -10px")
 
         if count:
             count_div = DivWdg()
