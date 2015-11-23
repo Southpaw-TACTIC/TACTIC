@@ -672,6 +672,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                         var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
                         window.open(snapshot_path);
                     }
+                    // The relay behavior for spt_tile_collection does not work, therefore adding the code here.
                     else if (is_collection == true) {
                         var layout = bvr.src_el.getParent(".spt_layout");
                         var top = bvr.src_el.getParent(".spt_tile_top");
@@ -682,8 +683,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                         var parent_code = top.getAttribute("spt_search_code");
 
                         var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
-                        //spt.table.run_search( { expression: expr } );
                         var class_name = "tactic.ui.panel.ViewPanelWdg";
+
                         var kwargs = {
                             search_type: bvr.search_type,
                             layout: 'tile',
@@ -1659,9 +1660,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     
     // To make the Tiles draggable again, refresh before each destroy action 
 
-    var tile_top = bvr.src_el.getParent(".spt_tile_top"); 
-    spt.table.refresh_rows([tile_top], null, null);
-
     var dst_el = spt.get_event_target(evt);
     var dst_top = dst_el.getParent(".spt_tile_top");
     if (dst_top) {
@@ -1690,17 +1688,21 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 spt.table.refresh_rows([dst_top], null, null);
             }        
         }
-        return;
-    }
-
-    if (spt.drop) {
-        spt.drop.sobject_drop_action(evt, bvr);
     }
     else {
-        if( bvr._drag_copy_el ) {
-            spt.behavior.destroy_element(bvr._drag_copy_el);
+        if (spt.drop) {
+            spt.drop.sobject_drop_action(evt, bvr);
+        }
+        else {
+            if( bvr._drag_copy_el ) {
+                spt.behavior.destroy_element(bvr._drag_copy_el);
+            }
         }
     }
+
+    var tile_top = bvr.src_el.getParent(".spt_tile_top"); 
+    spt.table.refresh_rows([tile_top], null, null);
+
 }
 
         ''' } )
