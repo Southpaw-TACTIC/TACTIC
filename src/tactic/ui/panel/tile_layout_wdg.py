@@ -602,7 +602,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_tile_top");
 
             var name = top.getAttribute("spt_name");
-            var search_code = top.getAttribute("spt_search_code");
 
             var search_key = top.getAttribute("spt_search_key");
             var parent_code = top.getAttribute("spt_search_code");
@@ -617,7 +616,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 keywords: "__NONE__",
                 use_last_search: false,
             }
-            spt.tab.add_new(search_code, name, class_name, kwargs);
+            spt.tab.add_new(parent_code, name, class_name, kwargs);
             '''
         } )
 
@@ -638,6 +637,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         if mode == "plain":
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'collection_type': collection_type,
+                'search_type': my.search_type,
                 'process': process,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
@@ -663,10 +664,35 @@ class TileLayoutWdg(ToolLayoutWdg):
                     window.open(snapshot_path);
                 }
                 else {
+                    var asset_sobject = server.get_by_search_key(search_key);
+                    var is_collection = asset_sobject._is_collection;
+
                     var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
                         var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
                         window.open(snapshot_path);
+                    }
+                    // The relay behavior for spt_tile_collection does not work, therefore adding the code here.
+                    else if (is_collection == true) {
+                        var layout = bvr.src_el.getParent(".spt_layout");
+                        var top = bvr.src_el.getParent(".spt_tile_top");
+
+                        var name = top.getAttribute("spt_name");
+
+                        var search_key = top.getAttribute("spt_search_key");
+                        var parent_code = top.getAttribute("spt_search_code");
+
+                        var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
+                        var class_name = "tactic.ui.panel.ViewPanelWdg";
+
+                        var kwargs = {
+                            search_type: bvr.search_type,
+                            layout: 'tile',
+                            expression: expr,
+                            keywords: "__NONE__",
+                            use_last_search: false,
+                        }
+                        spt.tab.add_new(parent_code, name, class_name, kwargs);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
@@ -1631,6 +1657,8 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 }
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
+    
+    // To make the Tiles draggable again, refresh before each destroy action 
 
     var dst_el = spt.get_event_target(evt);
     var dst_top = dst_el.getParent(".spt_tile_top");
@@ -1650,25 +1678,31 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             var src_top = bvr.src_el.getParent(".spt_tile_top");
             var src_code = src_top.getAttribute("spt_search_code");
             var parent_code = dst_top.getAttribute("spt_search_code");
-            var data = {
-                parent_code: parent_code,
-                search_code: src_code
-            };
-            var sobject = server.get_unique_sobject(collection_type, data);
-            //server.insert(collection_type, data);
-            spt.table.refresh_rows([dst_top], null, null);
+            if (parent_code != src_code){
+                var data = {
+                    parent_code: parent_code,
+                    search_code: src_code
+                };
+                var sobject = server.get_unique_sobject(collection_type, data);
+                //server.insert(collection_type, data);
+                spt.table.refresh_rows([dst_top], null, null);
+            }        
         }
-        return;
-    }
-
-    if (spt.drop) {
-        spt.drop.sobject_drop_action(evt, bvr);
     }
     else {
-        if( bvr._drag_copy_el ) {
-            spt.behavior.destroy_element(bvr._drag_copy_el);
+        if (spt.drop) {
+            spt.drop.sobject_drop_action(evt, bvr);
+        }
+        else {
+            if( bvr._drag_copy_el ) {
+                spt.behavior.destroy_element(bvr._drag_copy_el);
+            }
         }
     }
+
+    var tile_top = bvr.src_el.getParent(".spt_tile_top"); 
+    spt.table.refresh_rows([tile_top], null, null);
+
 }
 
         ''' } )
