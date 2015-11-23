@@ -665,15 +665,15 @@ class TileLayoutWdg(ToolLayoutWdg):
                     window.open(snapshot_path);
                 }
                 else {
-                    asset_sobject = server.get_by_search_key(search_key);
-                    _is_collection = asset_sobject._is_collection;
+                    var asset_sobject = server.get_by_search_key(search_key);
+                    var is_collection = asset_sobject._is_collection;
 
                     var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
                         var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
                         window.open(snapshot_path);
                     }
-                    else if (_is_collection == true) {
+                    else if (is_collection == true) {
                         var layout = bvr.src_el.getParent(".spt_layout");
                         var top = bvr.src_el.getParent(".spt_tile_top");
 
@@ -1661,7 +1661,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     
     // To make the Tiles draggable again, refresh before each destroy action 
 
-    tile_top = bvr.src_el.getParent(".spt_tile_top"); 
+    var tile_top = bvr.src_el.getParent(".spt_tile_top"); 
     spt.table.refresh_rows([tile_top], null, null);
 
     var dst_el = spt.get_event_target(evt);
