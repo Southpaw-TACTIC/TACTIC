@@ -30,6 +30,9 @@ from pyasm.biz import Project
 from pyasm.prod.service import ApiException
 from pyasm.unittest import UnittestEnvironment
 
+sys.path.append("../../bin")
+import get_md5
+
 
 
 class ClientApiTest(unittest.TestCase):
@@ -70,6 +73,8 @@ class ClientApiTest(unittest.TestCase):
         my.server = TacticServerStub()
         project_code = "unittest"
         my.server.set_project(project_code)
+        my.server.set_site("dev")
+        '''
         # test getting a ticket
         test_ticket = ''
         try:
@@ -82,7 +87,8 @@ class ClientApiTest(unittest.TestCase):
             except Exception, e:
                 x = e.__str__().find("Login/Password combination incorrect") == -1
                 my.assertEquals(False, x, e.__str__() )
-
+        '''
+        test_ticket = my.server.get_ticket("admin", "admin", "dev")
        
         my.server.set_ticket(test_ticket)
         description = "run 10 or more tests"
@@ -1970,7 +1976,9 @@ class ClientApiTest(unittest.TestCase):
 
     def _test_upload(my):
         file_path = "%s/test/miso_ramen.jpg" % my.client_lib_dir
-
+        size  = os.path.getsize(file_path)
+        checksum = get_md5.get_md5(file_path)
+       
         my.server.upload_file(file_path)
 
         upload_dir = Environment.get_upload_dir()
@@ -1978,26 +1986,41 @@ class ClientApiTest(unittest.TestCase):
 
         exists = os.path.exists(path)
         my.assertEquals(True, exists)
-         
-    def _test_multipart_upload(my):
-        ''' upload a file '''
+    
+        upload_size = os.path.getsize(path)
+        my.assertEquals(size, upload_size)
+
+        upload_checksum = get_md5.get_md5(path)
+        my.assetEquals(checksum, upload_checksum)
+
+        # Do further upload tests if test files exist
         file_path = "%s/test/large_file.jpg" % my.client_lib_dir
         if os.path.exists(file_path):
-            pass
-        else
-            return
+            my._test_multipart_upload(file_path)
+            my._test_multipart_base64_upload(file_path)
 
+        file_path = "%s/test/base64_file.png" % my.client_lib_dir
+        if os.path.exists(file_path):
+            my._test_base64_upload(file_path)
+    
+    def _test_multipart_upload(my, file_path):
         my.server.upload_file(file_path)
 
         upload_dir = Environment.get_upload_dir()
         path = "%s/%s" % (upload_dir, file_path)
+        size = os.path.getsize(path)
+        checksum = get_md5.get_md5(path) 
 
         exists = os.path.exists(path)
         my.assertEquals(True, exists)
 
-    def _test_base64_upload(my):
-        file_path = "%s/test/base64.png" % my.client_lib_dir
-        
+        upload_size = os.path.getsize(path)
+        my.assertEquals(size, upload_size)
+
+        upload_checksum = get_md5.get_md5(path)
+        my.assetEquals(checksum, upload_checksum)
+
+    def _test_base64_upload(my, file_path):
         my.server.upload_file(file_path)
         upload_dir = Environment.get_upload_dir()
         
@@ -2034,11 +2057,15 @@ class ClientApiTest(unittest.TestCase):
         # Revert names
         os.rename(file_path, unencoded_file)
         os.rename(temporary_name, file_path) 
-        
-        '''
+
+    def _test_multipart_base64_upload(my, file_path):
+        ''' 
+        # Encode large file
+        encoded_file = "%s.base64" % file_path
         import base64
         f = open(file_path, 'rb')
-        f2 = open("%s_base64", "wb")
+        f2 = open(encoded_file, "wb")
+        f2.write("data:image/png;base64,")
         while 1:
             buffer = f.read(1024*64)
             if not buffer
@@ -2048,9 +2075,8 @@ class ClientApiTest(unittest.TestCase):
         f.close()
         f2.close()
         '''
-
-    def _test_multipart_base64_upload(my):
         pass
+        
 
     def _test_pipeline(my):
         search_type = "unittest/person"
