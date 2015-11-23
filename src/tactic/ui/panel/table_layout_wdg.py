@@ -5621,8 +5621,9 @@ spt.table.set_column_width = function(element_name, width) {
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
-    insert_cell.setStyle("width", width);
-  
+    if (insert_cell)
+        insert_cell.setStyle("width", width);
+   
 }
 
 
