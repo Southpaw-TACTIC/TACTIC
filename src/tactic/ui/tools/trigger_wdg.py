@@ -2141,9 +2141,6 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         script_path = my.kwargs.get("script_path")
         script = my.kwargs.get("script")
        
-        print script_path
-        print script
-
         if not script_path:
             script_path = trigger.get_value("script_path", no_exception=True)
         if not script_path:
