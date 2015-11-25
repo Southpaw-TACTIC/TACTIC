@@ -323,7 +323,16 @@ class TriggerToolWdg(BaseRefreshWdg):
         } )
         return trigger_div
 
-
+    def get_trigger_data(my, trigger):
+        '''returns a the python dictionary representing
+           data attribute of trigger sObject.'''
+        raw_data = trigger.get_value("data", no_exception=True)
+        try:
+            data = jsonloads(raw_data)
+        except:
+            data = {}
+        return data
+    get_trigger_data = classmethod(get_trigger_data)
 
 class TriggerDetailWdg(BaseRefreshWdg):
 
@@ -464,15 +473,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
             or python_script trigger.
             python_script triggers have the script_path defined either as the 
             attribute python_script in with the data dictionary.'''
-            script_path = trigger.get_value("script_path", no_exception=True)
+            script_path = trigger.get_value("script_path")
             if not script_path:
-                raw_data = trigger.get_value("data", no_exception=True)
-                try:
-                    data = jsonloads(raw_data)
-                except:
-                    data = {}
-                if data:
-                    script_path = data.get("script_path")
+                data = TriggerToolWdg.get_trigger_data(trigger)
+                script_path = data.get("script_path")
              
             if my.process:
                 div.add("<b>Edit existing trigger for process [%s]</b><hr/>" % my.process)
@@ -2005,15 +2009,10 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
                 event = trigger.get_value("event")
             script_path = my.kwargs.get("script_path")
             if not script_path:
-                script_path = trigger.get_value("script_path", no_exception=True)
+                script_path = trigger.get_value("script_path")
             if not script_path:
-                raw_data = trigger.get_value("data", no_exception=True)
-                try:
-                    data = jsonloads(raw_data)
-                except:
-                    data = {}
-                if data:
-                    script_path = data.get("script_path")
+                data = TriggerToolWdg.get_trigger_data(trigger)
+                script_path = data.get("script_path")
             script_sobj = None
             if script_path:
                 script_sobj = CustomScript.get_by_path(script_path)
@@ -2029,12 +2028,8 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
         
         div.add("Run Script Path: <br/>")
-        script_path_text = LookAheadTextInputWdg(
-                name="script_path",
-                search_type="config/custom_script",
-                column="path",
-
-        )
+        script_path_text = TextInputWdg(name="script_path")
+        
         script_path_text.add_class("spt_python_script_path")
         div.add(script_path_text)
         script_path_text.add_style("width: 100%")
@@ -2142,15 +2137,10 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         script = my.kwargs.get("script")
        
         if not script_path:
-            script_path = trigger.get_value("script_path", no_exception=True)
+            script_path = trigger.get_value("script_path")
         if not script_path:
-            raw_data = trigger.get_value("data", no_exception=True)
-            try:
-                data = jsonloads(raw_data)
-            except:
-                data = {}
-            if data:
-                script_path = data.get("script_path")
+            data = TriggerToolWdg.get_trigger_data(trigger)
+            script_path = data.get("script_path")
         
         # If script path is defined, then save script to script path.
         # Otherwise, create a new script path entry.

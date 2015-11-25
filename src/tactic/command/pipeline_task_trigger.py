@@ -22,7 +22,7 @@ from pyasm.security import Sudo
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
 
-from tactic.command import PythonCmd
+from tactic.command import PythonTrigger
 
 class PipelineTaskStatusTrigger(Trigger):
     # if the "ingest" task is set to "Approved",
@@ -85,7 +85,8 @@ class PipelineTaskStatusTrigger(Trigger):
             # Execute script if necessary 
             script_path = data.get("script_path")
             if script_path:
-                cmd = PythonCmd(script_path=script_path)
+                cmd = PythonTrigger(script_path=script_path)
+                cmd.set_input(my.input)
                 cmd.execute()
                 continue
 
