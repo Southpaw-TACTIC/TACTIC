@@ -473,7 +473,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             or python_script trigger.
             python_script triggers have the script_path defined either as the 
             attribute python_script in with the data dictionary.'''
-            script_path = trigger.get_value("script_path")
+            script_path = trigger.get_value("script_path", no_exception=True)
             if not script_path:
                 data = TriggerToolWdg.get_trigger_data(trigger)
                 script_path = data.get("script_path")
@@ -2009,7 +2009,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
                 event = trigger.get_value("event")
             script_path = my.kwargs.get("script_path")
             if not script_path:
-                script_path = trigger.get_value("script_path")
+                script_path = trigger.get_value("script_path", no_exception=True)
             if not script_path:
                 data = TriggerToolWdg.get_trigger_data(trigger)
                 script_path = data.get("script_path")
@@ -2055,7 +2055,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             edit_label = "Edit"
         else:
             edit_mode = False
-            edit_label = "Create new"
+            edit_label = "Create New"
         
         create_new_button = ActionButtonWdg(title=edit_label, tip="Create a new script")
         create_new_button.add_style("float: left")
@@ -2131,11 +2131,12 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
                 trigger_code = trigger.get_value("code")
 
         search_type = my.kwargs.get("search_type")
-        
+        print search_type
+
         # Get the script path or script
         script_path = my.kwargs.get("script_path")
         script = my.kwargs.get("script")
-       
+      
         if not script_path:
             script_path = trigger.get_value("script_path")
         if not script_path:
