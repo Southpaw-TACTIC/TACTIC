@@ -289,6 +289,12 @@ class CreateProjectCmd(Command):
 
 
     def import_default_side_bar(my):
+        code = Search.eval("@GET(config/widget_config['code','WIDGET_CONFIG000000'].code)", single=True)
+        if code:
+            print "Default side bar already exists!"
+            return
+
+        
         project_code = my.kwargs.get('project_code')
         # It looks like project=XXX on SearchType.create does not work
         Project.set_project(project_code)

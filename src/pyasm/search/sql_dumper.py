@@ -174,6 +174,7 @@ class TableDataDumper(object):
         my.search_type = None
         my.ignore_columns = []
         my.replace_dict={}
+        my.skip_invalid_column = False
 
 
     def set_include_id(my, flag=True):
@@ -182,6 +183,8 @@ class TableDataDumper(object):
     def set_ignore_columns(my, columns=[]):
         my.ignore_columns = columns
     
+    def set_skip_invalid_column(my):
+        my.skip_invalid_column = True
     
     def set_replace_token(my, replace, column, regex=None):
         key = column
@@ -352,6 +355,8 @@ class TableDataDumper(object):
             if mode == 'sobject':
                 search_type = sobject.get_base_search_type()
                 f.write("insert = SearchType.create('%s')\n" % search_type)
+                if my.skip_invalid_column:
+                    f.write("insert.skip_invalid_column()")
             else:
                 f.write("insert.set_table('%s')\n" % my.table)
 
