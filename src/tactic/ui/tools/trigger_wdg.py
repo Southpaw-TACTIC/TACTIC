@@ -2175,6 +2175,8 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
             trigger.set_value("data", data)
             trigger.set_value("class_name", "tactic.command.PipelineTaskStatusTrigger")
         else:
+            trigger.set_value("class_name", "")
+            trigger.set_value("data", "")
             trigger.set_value("script_path", script_path)
 
         trigger.commit()
