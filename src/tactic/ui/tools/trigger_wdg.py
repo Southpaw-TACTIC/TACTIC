@@ -460,7 +460,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
             search_key = SearchKey.get_by_sobject(trigger)
             title = trigger.get_value("title", no_exception=True)
             
-            # Script path determines trigger type
+            ''' If a script path exists, then the trigger is either a notification
+            or python_script trigger.
+            python_script triggers have the script_path defined either as the 
+            attribute python_script in with the data dictionary.'''
             script_path = trigger.get_value("script_path", no_exception=True)
             if not script_path:
                 raw_data = trigger.get_value("data", no_exception=True)
@@ -898,8 +901,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_cbk = "tactic.ui.tools.TriggerDateCbk"
 
         elif trigger_type == "python_script":
-            if script_path:
-                kwargs['script_path'] = script_path
             trigger_wdg = PythonScriptTriggerEditWdg(**kwargs)
             trigger_cbk = "tactic.ui.tools.PythonScriptTriggerEditCbk"
 
@@ -2003,7 +2004,19 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             if not event:
                 event = trigger.get_value("event")
             script_path = my.kwargs.get("script_path")
-            script_sobj = CustomScript.get_by_path(script_path)
+            if not script_path:
+                script_path = trigger.get_value("script_path", no_exception=True)
+            if not script_path:
+                raw_data = trigger.get_value("data", no_exception=True)
+                try:
+                    data = jsonloads(raw_data)
+                except:
+                    data = {}
+                if data:
+                    script_path = data.get("script_path")
+            script_sobj = None
+            if script_path:
+                script_sobj = CustomScript.get_by_path(script_path)
             if not script_sobj:
                 script = ''
             else:
@@ -2061,7 +2074,9 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             // Display the script editor
             script_editor = trigger_top.getElement(".spt_python_script_text");
             script_editor.setStyle("display", "");
-
+            // In edit mode, need to remove read only attribute and grey backround
+            script_editor.removeProperty("readonly")
+            script_editor.setStyle("background", "#FFFFFF")
             '''
         } )
 
@@ -2082,8 +2097,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
         
         script_text = TextAreaWdg("script")
         if edit_mode:
-            #script_text.add_style("background", "background", -10)
-            script_text.add_attr("readonly", "true")
+            script_text.set_option("read_only", "true")
         else:    
             script_text.add_style("display", "none")
         script_text.add_class("form-control")
@@ -2124,10 +2138,25 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         search_type = my.kwargs.get("search_type")
         
         # Get the script path or script
-        # If script path is defined, then save script to script path.
-        # Otherwise, create a new script path entry.
         script_path = my.kwargs.get("script_path")
         script = my.kwargs.get("script")
+       
+        print script_path
+        print script
+
+        if not script_path:
+            script_path = trigger.get_value("script_path", no_exception=True)
+        if not script_path:
+            raw_data = trigger.get_value("data", no_exception=True)
+            try:
+                data = jsonloads(raw_data)
+            except:
+                data = {}
+            if data:
+                script_path = data.get("script_path")
+        
+        # If script path is defined, then save script to script path.
+        # Otherwise, create a new script path entry.
         if not script_path:
             script_path = "triggers/%s" % trigger.get_code()
 
