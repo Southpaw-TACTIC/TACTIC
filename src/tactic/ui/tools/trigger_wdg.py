@@ -323,16 +323,6 @@ class TriggerToolWdg(BaseRefreshWdg):
         } )
         return trigger_div
 
-    def get_trigger_data(my, trigger):
-        '''returns a the python dictionary representing
-           data attribute of trigger sObject.'''
-        raw_data = trigger.get_value("data", no_exception=True)
-        try:
-            data = jsonloads(raw_data)
-        except:
-            data = {}
-        return data
-    get_trigger_data = classmethod(get_trigger_data)
 
 class TriggerDetailWdg(BaseRefreshWdg):
 
@@ -468,15 +458,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
             description = trigger.get_value("description")
             search_key = SearchKey.get_by_sobject(trigger)
             title = trigger.get_value("title", no_exception=True)
-            
-            ''' If a script path exists, then the trigger is either a notification
-            or python_script trigger.
-            python_script triggers have the script_path defined either as the 
-            attribute python_script in with the data dictionary.'''
-            script_path = trigger.get_value("script_path", no_exception=True)
-            if not script_path:
-                data = TriggerToolWdg.get_trigger_data(trigger)
-                script_path = data.get("script_path")
              
             if my.process:
                 div.add("<b>Edit existing trigger for process [%s]</b><hr/>" % my.process)
@@ -505,18 +486,21 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_type = 'notification'
         else:
             class_name = trigger.get_value("class_name")
-
+            script_path = trigger.get_value("script_path")
+            
             # TODO: should use trigger_type in database
-            if script_path:
-                trigger_type = 'python_script'
-            elif class_name == 'tactic.command.PipelineTaskStatusTrigger':
+            if class_name == 'tactic.command.PipelineTaskStatusTrigger' and not script_path:
                 trigger_type = 'task_status'
+            elif class_name == 'tactic.command.PipelineTaskStatusTrigger' and script_path:
+                trigger_type = 'python_script'
             elif class_name == 'tactic.command.PipelineTaskCreateTrigger':
                 trigger_type = 'task_create'
             elif class_name == 'tactic.command.PipelineTaskDateTrigger':
                 trigger_type = 'task_date'
             elif class_name:
                 trigger_type = 'python_class'
+            elif script_path:
+                trigger_type = 'python_script'
             else:
                 trigger_type = 'task_status'
 
@@ -2010,9 +1994,6 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script_path = my.kwargs.get("script_path")
             if not script_path:
                 script_path = trigger.get_value("script_path", no_exception=True)
-            if not script_path:
-                data = TriggerToolWdg.get_trigger_data(trigger)
-                script_path = data.get("script_path")
             script_sobj = None
             if script_path:
                 script_sobj = CustomScript.get_by_path(script_path)
@@ -2029,7 +2010,6 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
         
         div.add("Run Script Path: <br/>")
         script_path_text = TextInputWdg(name="script_path")
-        
         script_path_text.add_class("spt_python_script_path")
         div.add(script_path_text)
         script_path_text.add_style("width: 100%")
@@ -2131,17 +2111,12 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
                 trigger_code = trigger.get_value("code")
 
         search_type = my.kwargs.get("search_type")
-        print search_type
 
         # Get the script path or script
         script_path = my.kwargs.get("script_path")
         script = my.kwargs.get("script")
-      
         if not script_path:
             script_path = trigger.get_value("script_path")
-        if not script_path:
-            data = TriggerToolWdg.get_trigger_data(trigger)
-            script_path = data.get("script_path")
         
         # If script path is defined, then save script to script path.
         # Otherwise, create a new script path entry.
@@ -2168,10 +2143,10 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         if src_status:
             data = {
                 'src_status': src_status,
-                'src_process': src_process,
-                'script_path': script_path
+                'src_process': src_process
             }
             data = jsondumps(data)
+            trigger.set_value("script_path", script_path)
             trigger.set_value("data", data)
             trigger.set_value("class_name", "tactic.command.PipelineTaskStatusTrigger")
         else:

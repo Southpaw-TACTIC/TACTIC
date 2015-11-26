@@ -83,10 +83,11 @@ class PipelineTaskStatusTrigger(Trigger):
                 continue
 
             # Execute script if necessary 
-            script_path = data.get("script_path")
+            script_path = trigger_sobj.get_value("script_path")
             if script_path:
                 cmd = PythonTrigger(script_path=script_path)
                 cmd.set_input(my.input)
+                cmd.set_output(my.input)
                 cmd.execute()
                 continue
 
