@@ -26,9 +26,7 @@
   <element name="file_name"/>
   <element name="relative_dir"/>
 
-  <element name="timestamp">
-      <display class="DateTimeWdg"/>
-  </element>
+  <element name="timestamp"/>
   <element name="md5"/>
   <element name="st_size"/>
 

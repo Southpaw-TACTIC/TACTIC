@@ -11,7 +11,7 @@
 # 
 
 
-__all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', 'PluginUninstaller', 'PluginSObjectAdderCmd']
+__all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', 'PluginUninstaller', 'PluginSObjectAdderCmd', 'PluginTools']
 
 import tacticenv
 
@@ -24,6 +24,13 @@ from pyasm.command import Command, DatabaseAction
 import os, codecs, shutil, datetime
 
 class PluginBase(Command):
+
+    UNIQUE_DICT = {
+                'config/widget_config': ['view','search_type','category','widget_type','login'],
+                'config/naming':  ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version'],
+                'config/custom_script':  ['folder','title'],
+                'config/url': ['url']
+        }
 
     def __init__(my, **kwargs):
         super(PluginBase,my).__init__(**kwargs)
@@ -574,6 +581,7 @@ class PluginCreator(PluginBase):
 
 
     def dump_sobject(my, node):
+        '''dump sobject entries in plugin creation'''
         project = Project.get()
         project_code = project.get_value("code")
         
@@ -592,6 +600,8 @@ class PluginCreator(PluginBase):
             ignore_columns = [x.strip() for x in ignore_columns]
         else:
             ignore_columns = []
+        
+        my._validate_ignore_columns(node, search_type, ignore_columns)
 
         # FIXME:
         # it is possible that the manifest defines sobjects on search types
@@ -641,6 +651,16 @@ class PluginCreator(PluginBase):
         return sobjects
 
 
+    def _validate_ignore_columns(my, node, search_type, ignore_columns):
+        '''validate only if unique is set to true'''
+        is_unique = my.xml.get_attribute(node, "unique") == 'true'
+        if not is_unique:
+            return True
+        # defaults to ['code']
+        restricted_cols = my.UNIQUE_DICT.get(search_type, ['code'])
+        for col in restricted_cols:
+            if col in ignore_columns:
+                raise TacticException("You have '%s' set in ignore_columns and unique='true' set for [%s]. You need to remove this from ignore_columns to enable the unique feature." %(col, search_type))
 
     def handle_search_type(my, node):
 
@@ -961,8 +981,8 @@ class PluginInstaller(PluginBase):
                         TableUndo.log(search_type, database, table_name)
 
 
-                # dump the table first
-                backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+                # import the backup data back
+                backup_path = "%s/backup/%s.spt" % (my.plugin_dir, search_type.replace("/", "_"))
                 tools = PluginTools(plugin_dir=my.plugin_dir)
                 tools.import_data(backup_path)
 
@@ -1071,7 +1091,6 @@ class PluginInstaller(PluginBase):
 class PluginUninstaller(PluginBase):
 
     def execute(my):
-
         # uninstall the plugin
         nodes = my.xml.get_nodes("manifest/*")
 
@@ -1082,7 +1101,6 @@ class PluginUninstaller(PluginBase):
         my.add_description('Remove plugin [%s]' %my.code)
         
     def handle_nodes(my, nodes):
-
         tools = PluginTools(plugin_dir=my.plugin_dir)
 
         for node in nodes:
@@ -1172,7 +1190,12 @@ class PluginUninstaller(PluginBase):
         
 
 
-__all__.append('PluginTools')
+
+
+
+        
+
+
 class PluginTools(PluginBase):
 
     def __init__(my, **kwargs):
@@ -1281,6 +1304,7 @@ class PluginTools(PluginBase):
             dumper.set_ignore_columns(['code'])
         dumper.set_include_id(include_id)
         dumper.set_ignore_columns(ignore_columns)
+        dumper.set_skip_invalid_column()
         dumper.set_sobjects(sobjects)
 
         if replace_variable =="true":
@@ -1358,9 +1382,9 @@ class PluginTools(PluginBase):
             return
 
 
-        # dump the table first
-        backup_path = "backup/%s" % search_type.replace("/", "_")
-        full_backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+        # dump the table data into backup folder
+        backup_path = "backup/%s.spt" % search_type.replace("/", "_")
+        full_backup_path = "%s/%s" % (my.plugin_dir, backup_path)
 
         if os.path.exists(full_backup_path):
             os.unlink(full_backup_path)
@@ -1479,23 +1503,21 @@ class PluginTools(PluginBase):
     def get_unique_sobject(my, sobject):
         '''get unique sobject in the existing table when installing plugin'''
         base_st = sobject.get_base_search_type()
-        if base_st == 'config/widget_config':
-            cols = ['view','search_type','category','widget_type','login']
-        elif base_st == 'config/naming':
-            cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
-        elif base_st == 'config/custom_script':
-            cols = ['folder','title']
-        elif base_st == 'config/url':
-            cols = ['url']
-        else:
-            cols = ['code']
+        cols = my.UNIQUE_DICT.get(base_st, ['code'])
 
         search = Search( sobject.get_base_search_type() )
+        has_filter = False
         for col in cols:
             value = sobject.get_value(col)
             if value:
-                search.add_filter(col, value)
-        unique_sobject = search.get_sobject()
+                search.add_filter(col, value)  
+                has_filter = True
+
+        # ensure there is some filtering before getting sobject
+        if has_filter:
+            unique_sobject = search.get_sobject()
+        else:
+            unique_sobject = None
         return unique_sobject
 
 
@@ -1584,12 +1606,13 @@ class PluginTools(PluginBase):
                     if filter_sobject_handler:
                         sobject = filter_sobject_handler(sobject)
                     
-                    project = Project.get()
+                    
 
                     # if the search type is in sthpw namespace, then change
                     # the project code to the current project
                     base_search_type = sobject.get_base_search_type()
                     if base_search_type.startswith("sthpw/"):
+                        project = Project.get()
                         project_code = project.get_value("code")
 
                         if SearchType.column_exists(sobject, "project_code"):
@@ -1707,129 +1730,6 @@ class PluginTools(PluginBase):
             print "\t... added [%s] entries" % count
         return jobs
 
-
-
-
-class PluginUninstaller(PluginBase):
-
-    def execute(my):
-
-        # uninstall the plugin
-        nodes = my.xml.get_nodes("manifest/*")
-
-        nodes.reverse()
-
-        my.handle_nodes(nodes)
-        
-        my.add_description('Remove plugin [%s]' %my.code)
-        
-    def handle_nodes(my, nodes):
-
-        tools = PluginTools(plugin_dir=my.plugin_dir)
-
-        for node in nodes:
-            node_name = my.xml.get_node_name(node)
-            if node_name == 'search_type':
-                #my.remove_search_type(node)
-                tools._remove_search_type(node)
-            elif node_name == 'sobject':
-                my.remove_sobjects(node)
-            elif node_name == 'include':
-                my.handle_include(node)
-            elif node_name == 'python':
-                my.handle_python(node)
-
-
-        # remove plugin contents
-        search = Search("config/plugin_content")
-        search.add_filter("plugin_code", my.code)
-        plugin_contents = search.get_sobjects()
-        for plugin_content in plugin_contents:
-            plugin_content.delete()
-
-
-
-        # deregister the plugin
-        plugin = Search.eval("@SOBJECT(config/plugin['code','%s'])" % my.code, single=True)
-        if plugin:
-            plugin.delete()
-
-
-
-
-    def remove_sobjects(my, node):
-
-        sobjects = my.get_sobjects_by_node(node)
-        if not sobjects:
-            print "Skipping as no sobjects found for: ", node
-            return
-
-        # delete all the sobjects present in the plugin
-        for sobject in sobjects:
-            sobject.delete()
-
-
-    def handle_include(my, node):
-        path = my.xml.get_attribute(node, "path")
-        if not path:
-            raise TacticException("No path found for search type in manifest")
-
-        path = "%s/%s" % (my.plugin_dir, path)
-
-        if path.endswith(".py"):
-            from tactic.command import PythonCmd
-            cmd = PythonCmd(file_path=path)
-            manifest = cmd.execute()
-
-        if not manifest:
-            return
-
-        xml = Xml()
-        xml.read_string(manifest)
-        nodes = xml.get_nodes("manifest/*")
-        nodes.reverse()
-
-        my.handle_nodes(nodes)
-
-
-    def handle_python(my, node):
-        '''during uninstall, handle the python undo_path'''
-        path = my.xml.get_attribute(node, "undo_path")
-        
-        # if no path, then nothing to undo
-        if not path:
-            print "No undo_path defined for this python node"
-            return
-
-        if not path.endswith('.py'):
-            raise TacticException("Path should have the .py extension for python in manifest")
-
-        path = "%s/%s" % (my.plugin_dir, path)
-        if not os.path.exists(path):
-            raise TacticException("Undo Path [%s] does not exist python in manifest" %path)
-        if path.endswith(".py"):
-            from tactic.command import PythonCmd
-            cmd = PythonCmd(file_path=path)
-            cmd.execute()
-        
-
-
-__all__.append('PluginTools')
-class PluginTools(PluginBase):
-
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        my.xml = kwargs.get("xml")
-
-        my.plugin_dir = kwargs.get("plugin_dir")
-        if not my.plugin_dir:
-            my.plugin_dir = "."
-
-        my.verbose = my.kwargs.get("verbose") not in [False, 'false']
-
-        my.plugin = kwargs.get("plugin")
-
-
     #
     # Simple wrapper methods
     #
@@ -1923,6 +1823,7 @@ class PluginTools(PluginBase):
             dumper.set_ignore_columns(['code'])
         dumper.set_include_id(include_id)
         dumper.set_ignore_columns(ignore_columns)
+        dumper.set_skip_invalid_column()
         dumper.set_sobjects(sobjects)
 
         if replace_variable =="true":
@@ -2001,8 +1902,8 @@ class PluginTools(PluginBase):
 
 
         # dump the table first
-        backup_path = "backup/%s" % search_type.replace("/", "_")
-        full_backup_path = "%s/backup/%s" % (my.plugin_dir, search_type.replace("/", "_"))
+        backup_path = "backup/%s.spt" % search_type.replace("/", "_")
+        full_backup_path = "%s/%s" % (my.plugin_dir, backup_path)
 
         if os.path.exists(full_backup_path):
             os.unlink(full_backup_path)
