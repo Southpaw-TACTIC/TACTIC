@@ -921,6 +921,8 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         if not command_class:
             command_class = 'tactic.ui.tools.DeleteProjectCmd'
 
+        on_complete = my.kwargs.get("on_complete")
+
         button.add_behavior( {
         'type': 'click_up',
         #'search_type': search_type,
@@ -928,6 +930,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         'site': site,
         'related_types': related_types,
         'command_class': command_class,
+        'on_complete': on_complete,
         'cbjs_action': '''
             spt.app_busy.show("Deleting");
             var class_name = bvr.command_class;
@@ -981,6 +984,15 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                 spt.app_busy.hide();
 
                 if (success) {
+
+
+                    if (bvr.on_complete) {
+                       on_complete = function() {
+                           eval(bvr.on_complete);
+                       }
+                       on_complete();
+                    }
+
                     spt.notify.show_message("Successfully deleted project ["+bvr.project_code+"]");
 
                     spt.tab.set_main_body_tab();
