@@ -76,8 +76,9 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
     
         div = DivWdg()
         div.add_class("hand")
-        #div.add_style("width: 100%")
-        #div.add_style("height: 100%")
+        div.add_style("width: 26px")
+        div.add_style("margin-left: auto")
+        div.add_style("margin-right: auto")
 
         target_id = "main_body"
 

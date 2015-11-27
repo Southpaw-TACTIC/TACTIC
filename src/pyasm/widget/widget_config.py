@@ -339,6 +339,20 @@ class WidgetConfig(Base):
 
         # NOTE: special case for custom layout widget
         handler = my.xml.get_attribute(node, "class")
+
+
+        has_config = False
+        if handler:
+            try:
+                from pyasm.common import Common
+                statement = Common.get_import_from_class_path(handler)
+                exec(statement)
+
+                has_config = eval("%s.has_config()" % handler)
+            except:
+                pass
+
+
         if handler == 'tactic.ui.panel.CustomLayoutWdg':
             children = my.xml.get_children(node)
             values = {}
@@ -354,7 +368,7 @@ class WidgetConfig(Base):
                     value = value.replace("&amp;", "&")
                 values[name] = value
                  
-        elif handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg', 'tactic.ui.container.ContentBoxWdg']:
+        elif has_config or handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg', 'tactic.ui.container.ContentBoxWdg']:
             children = my.xml.get_children(node)
             values = {}
             for child in children:
