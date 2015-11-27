@@ -4430,7 +4430,7 @@ class SwitchLayoutMenu(object):
 
 
         views = ['table', 'tile', 'list', 'content', 'navigate', 'schedule', 'checkin', 'tool', 'browser', 'card', 'collection', 'overview']
-        labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Collections', 'Overview']
+        labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Collection', 'Overview']
 
         # this is fast table biased
         if my.kwargs.get("is_refresh") in ['false', False]:

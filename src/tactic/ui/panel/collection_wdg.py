@@ -614,7 +614,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                     server.execute_cmd(cls, kwargs);
                     spt.table.remove_selected();
                 } catch(e) {
-                    spt.alert(e);
+                    spt.alert(spt.exception.handler(e));
                 }
 
 

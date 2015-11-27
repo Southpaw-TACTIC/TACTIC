@@ -1022,10 +1022,11 @@ class DeleteProjectCmd(DeleteCmd):
 
     def execute(my):
         from pyasm.search import DbContainer
+        from pyasm.security import Security
 
-        login = Environment.get_user_name()
-        if login != 'admin':
-            raise Exception("Only admin can delete projects")
+        security = Environment.get_security()
+        if security.is_in_group("admin"):
+            raise Exception("Only admin users can delete projects")
 
 
         project_code = my.kwargs.get("project_code")
