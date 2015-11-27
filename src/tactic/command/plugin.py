@@ -1084,6 +1084,9 @@ class PluginInstaller(PluginBase):
             value = sobject.get_value(col)
             if value:
                 search.add_filter(col, value)   
+            else:
+                search.add_filter(col, None)   
+
         unique_sobject = search.get_sobject()
         return unique_sobject
 
