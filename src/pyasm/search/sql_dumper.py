@@ -356,7 +356,7 @@ class TableDataDumper(object):
                 search_type = sobject.get_base_search_type()
                 f.write("insert = SearchType.create('%s')\n" % search_type)
                 if my.skip_invalid_column:
-                    f.write("insert.skip_invalid_column()")
+                    f.write("insert.skip_invalid_column()\n")
             else:
                 f.write("insert.set_table('%s')\n" % my.table)
 
