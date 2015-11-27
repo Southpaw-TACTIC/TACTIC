@@ -4429,12 +4429,13 @@ class SwitchLayoutMenu(object):
         default_element_names = config.get_element_names()
 
 
-        views = ['table', 'tile', 'list', 'content', 'navigate', 'schedule', 'checkin', 'tool', 'browser', 'card', 'overview']
-        labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Overview']
+        views = ['table', 'tile', 'list', 'content', 'navigate', 'schedule', 'checkin', 'tool', 'browser', 'card', 'collection', 'overview']
+        labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Collection', 'Overview']
 
         # this is fast table biased
         if my.kwargs.get("is_refresh") in ['false', False]:
             class_names = [
+                'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
@@ -4459,6 +4460,7 @@ class SwitchLayoutMenu(object):
                 'tactic.ui.panel.tool_layout_wdg.ToolLayoutWdg',
                 'tactic.ui.panel.tool_layout_wdg.RepoBrowserLayoutWdg',
                 'tactic.ui.panel.tool_layout_wdg.CardLayoutWdg',
+                'tactic.ui.panel.collection_wdg.CollectionLayoutWdg',
                 'tactic.ui.panel.FastTableLayoutWdg',
             ]
 
@@ -4474,6 +4476,7 @@ class SwitchLayoutMenu(object):
             'tool',
             'browser',
             'card',
+            'collection',
             'default',
         ]
 
@@ -4488,6 +4491,7 @@ class SwitchLayoutMenu(object):
             ['name','description','detail', 'file_list','general_checkin'],
             [],
             [],
+            [],
             ['preview','name','task_pipeline_report','summary','completion'],
 	    ]
 
@@ -4500,6 +4504,7 @@ class SwitchLayoutMenu(object):
             ['show_related','detail','code','description'],
             ['preview','code','description','task_pipeline_vertical','task_edit','notes'],
             ['preview','code','general_checkin','file_list', 'history','description','notes'],
+            [],
             [],
             [],
             [],

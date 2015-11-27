@@ -3299,6 +3299,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
+        elif layout == 'collection':
+            from collection_wdg import CardLayoutWdg
+            layout_table = CollectionWdg(**kwargs)
+
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)

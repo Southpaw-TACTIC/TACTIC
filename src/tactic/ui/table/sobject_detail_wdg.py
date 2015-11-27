@@ -85,7 +85,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         if my.widget:
             widget = my.widget
         else:
-            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+            widget = IconButtonWdg(title=title, icon="BS_SEARCH")
 
 
         code = sobject.get_code()

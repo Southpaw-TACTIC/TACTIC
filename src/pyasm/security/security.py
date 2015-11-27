@@ -841,9 +841,18 @@ class Site(object):
         try:
             sql = DbContainer.get("sthpw")
         except:
+            Site.pop_site()
             raise Exception("WARNING: site [%s] does not exist" % site)
-            
 
+
+        try:
+            # check if user is allowed to see the site
+            #from pyasm.search import Search
+            #search = Search("sthpw/login")
+            pass
+        except:
+            Site.pop_site()
+            raise Exception("WARNING: permission denied to set to site [%s]" % site)
 
     set_site = classmethod(set_site)
 

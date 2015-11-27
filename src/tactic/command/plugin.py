@@ -1526,6 +1526,9 @@ class PluginTools(PluginBase):
 
 
     def import_data(my, path, commit=True, unique=False):
+
+        raise Exception("import_data deprecated")
+
         if not os.path.exists(path):
             # This is printed too often in harmless situations
             #print "WARNING: path [%s] does not exist" % path
@@ -1651,6 +1654,7 @@ class PluginTools(PluginBase):
 
 
                         if base_search_type == "sthpw/login_group":
+
                             if old_project_code:
                                 login_group = sobject.get_value("login_group")
                                 delimiter = None
@@ -1737,10 +1741,6 @@ class PluginTools(PluginBase):
 
 
    
-   
-
-
-
    
 
 
