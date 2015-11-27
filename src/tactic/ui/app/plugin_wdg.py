@@ -214,8 +214,8 @@ class PluginWdg(BaseRefreshWdg):
 
         base_dir = plugin_dir
 
+        plugin_div_dict = {}
         last_title = ""
-        last_folder = None
         folder_wdgs = {}
         folder_wdgs['/'] = div
         folder_states = {}
@@ -252,7 +252,6 @@ class PluginWdg(BaseRefreshWdg):
                 folder_content = folder_wdg.get_widget("content")
             else:
                 parts = folder.split("/")
-
                 # need to find the leaf folder, creating on the way, if
                 # necessary
                 parent_wdg = folder_wdgs.get("/")
@@ -431,15 +430,15 @@ class PluginWdg(BaseRefreshWdg):
                     plugin_div.add(icon)
                     plugin_div.add("N/A <i>(%s)</i>" % title)
             else:
+                plugin_div.add(icon)
                 if title == last_title:
-                    plugin_div.add(icon)
-                    # FIXME: this gives false impression it's not activated. 
-                    plugin_div.add("<i style='opacity: 0.5'>%s</i>" % title)
-                    #plugin_div.add(HtmlElement.i(title))
-                else:
-                    plugin_div.add(icon)
-                    plugin_div.add(title)
 
+                    plugin_div_dict[title] = plugin_div
+                    plugin_div.add(title, "TITLE")
+                else:
+                    plugin_div.add(title)
+                  
+      
             if not invalid:
                 if version:
                     version_str = '''<span style="opacity: 0.5; font-style: italic; font-size: 10px"> (v%s)</span>''' % version
@@ -447,9 +446,9 @@ class PluginWdg(BaseRefreshWdg):
                     version_str = '''<span style="opacity: 0.5; font-style: italic; font-size: 10px"> (DEV)</span>'''
                 plugin_div.add(version_str)
 
-
+            
             last_title = title
-
+           
             plugin_div.add_behavior( {
             'type': 'click_up',
             'plugin_dir': plugin_dir,
@@ -479,6 +478,10 @@ class PluginWdg(BaseRefreshWdg):
             } )
 
 
+        # bold the last version of each duplicated title
+        for dup_title, special_div in plugin_div_dict.items():
+            title_wdg = HtmlElement.b(dup_title)
+            special_div.add(title_wdg, "TITLE")
 
 
         return div
@@ -660,8 +663,8 @@ class PluginEditWdg(BaseRefreshWdg):
             info_div.add(action_wdg)
         info_div.add_color("background", "background")
         info_div.set_name("info")
-        info_div.add_style("height: 100%")
-        info_div.add_style("margin: 0px 20px 20px 20px")
+        info_div.add_style("height: 50px")
+        info_div.add_style("margin: 0px 20px 10px 20px")
 
         if my.mode == "insert":
             info_div.add("<br/>"*2)
@@ -743,8 +746,6 @@ class PluginEditWdg(BaseRefreshWdg):
             text.set_value("DEV")
         else:
             text.set_value(my.version)
-
-
 
 
         table.add_row()
@@ -886,7 +887,7 @@ class PluginEditWdg(BaseRefreshWdg):
             title_wdg.add_color("background", "background3")
             title_wdg.add_style("margin: -5 -16 15 -16")
             title_wdg.add_style("padding: 5px")
-            title_wdg.add_style("height: 35px")
+            title_wdg.add_style("height: 40px")
             title_wdg.add_border()
 
             button_row = ButtonRowWdg()
@@ -1041,7 +1042,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
         shelf_wdg = DivWdg()
         manifest_div.add(shelf_wdg)
-        shelf_wdg.add_style("height: 35px")
+        shelf_wdg.add_style("height: 40px")
         shelf_wdg.add_style("padding: 5px 10px")
         shelf_wdg.add_color("background", "background3")
 

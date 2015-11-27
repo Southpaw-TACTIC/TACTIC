@@ -24,8 +24,8 @@ __all__ = [
 
 import os, shutil, string, types
 
-from pyasm.common import Common, Marshaller, Date, TacticException
-from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser
+from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
+from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
 from pyasm.web import *
 from pyasm.search import Search, SearchKey, SearchException
 from icon_wdg import IconButtonWdg, IconWdg
@@ -245,6 +245,20 @@ class BaseInputWdg(HtmlElement):
 
     def is_editable(my):
         return True
+
+    def get_timezone_value(my, value):
+        '''given a datetime value, try to convert to timezone specified in the widget.
+           If not specified, use the My Preferences time zone'''
+        timezone = my.get_option('timezone')
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+        
+        return value
 
     def check_persistent_values(my, cgi_values):
         web = WebContainer.get_web()
