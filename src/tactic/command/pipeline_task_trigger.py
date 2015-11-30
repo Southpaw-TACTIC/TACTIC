@@ -451,7 +451,7 @@ class TaskCreatorTrigger(Trigger):
         if pipeline.get_value("autocreate_tasks", no_exception=True) not in ['true', True]:
             return
 
-        processes = pipeline.get_process_names()
+        processes = pipeline.get_process_names(recurse=True, type=["node","approval", "manual"])
         #search = Search("config/process")
         #search.add_filter("pipeline_code", pipeline_code)
         #processes = search.get_sobjects()
