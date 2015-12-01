@@ -558,8 +558,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("border", -10))
+        #inner.add_style("border-width: 0px 1px 0px 0px")
+        inner.add_style("border-width: 0px")
+        inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
