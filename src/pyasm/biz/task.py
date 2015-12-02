@@ -816,7 +816,7 @@ class Task(SObject):
         if processes:
             process_names = processes
         else:
-            process_names = pipeline.get_process_names(recurse=True, type=["node","approval"])
+            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual"])
 
 
         # remember which ones already exist
