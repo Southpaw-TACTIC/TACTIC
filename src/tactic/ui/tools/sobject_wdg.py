@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['SObjectDetailWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
+__all__ = ['SObjectDetailWdg', 'RelatedSObjectWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -73,16 +73,16 @@ class SObjectDetailWdg(BaseRefreshWdg):
             title.add(thumb)
             thumb.set_icon_size(30)
             thumb.set_sobject(search_type_obj)
-            thumb.add_style("float: left")
+            thumb.add_style("float: right")
 
 
 
-        title.add_color("background", "background", -5)
+        #title.add_color("background", "background", -5)
+        #title.add_border(color="#DDD")
         title.add_style("height: 23px")
         title.add_style("padding: 10px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
 
 
         stype_title = search_type_obj.get_value("title")
@@ -98,6 +98,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             title.add("(No name)")
 
+        title.add("<hr/>")
 
         return title
 
@@ -374,12 +375,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
         <tab>''')
 
 
+        search_type_obj = SearchType.get(my.search_type)
+        settings = search_type_obj.get_value("settings", no_exception=True)
+
+
         tabs = my.kwargs.get("tab_element_names")
         if tabs:
             tabs = tabs.split(",")
         else:
-            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit"]
-
+            tabs = ["tasks","related","revisions","attachments","snapshots","checkin","edit"]
 
         if my.sobject.get_value("pipeline_code", no_exception=True):
             tabs.append("pipeline")
@@ -449,6 +453,16 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 </element>
                 ''' % values)
 
+            elif tab == "related":
+                config_xml.append('''
+                <element name="related" title="Related">
+                  <display class='tactic.ui.tools.RelatedSObjectWdg'>
+                    <search_key>%(search_key)s</search_key>
+                  </display>
+                </element>
+                ''' % values)
+
+
             elif tab == "snapshots":
                 config_xml.append('''
                 <element name="snapshots" title="Check-in History">
@@ -463,7 +477,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "checkin":
                 config_xml.append('''
-                <element name="checkin" title="Checkin">
+                <element name="checkin" title="Check-in">
                   <display class='tactic.ui.widget.CheckinWdg'>
                     <search_key>%(search_key)s</search_key>
                     <use_applet>false</use_applet>
@@ -661,7 +675,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         edit_div = DivWdg()
-        #edit_div.add_border(color="#EEE")
         info_div.add(edit_div)
         edit_div.add_style("margin-top: -36px")
         edit_div.add_style("margin-left: 1px")
@@ -730,6 +743,102 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         return div
+
+
+
+class RelatedSObjectWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = my.top
+        top.add_class("spt_related_top")
+
+        from pyasm.biz import Schema
+        schema = Schema.get()
+
+        search_key = my.kwargs.get("search_key")
+        sobject = Search.get_by_search_key(search_key)
+
+        search_type = sobject.get_base_search_type()
+        related_types = Schema.get().get_related_search_types(search_type)
+
+
+        table = Table()
+        top.add(table)
+
+        table.add_row()
+        left = table.add_cell()
+        left.add_style("vertical-align: top")
+        left.add_style("padding: 10px")
+        left.add_style("width: 200px")
+        left.add_style("min-width: 200px")
+
+        left.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_related_item',
+            'search_type': search_type,
+            'search_key': search_key,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_related_top");
+            var content = top.getElement(".spt_related_content");
+            var related_type = bvr.src_el.getAttribute("spt_related_type");
+            var class_name = "tactic.ui.panel.ViewPanelWdg";
+            var kwargs = {
+                search_type: related_type,
+                parent_key: bvr.search_key,
+            };
+            var name = "Related: " + related_type;
+            var title = name
+            //spt.tab.add_new(name, title, class_name, kwargs);
+            spt.panel.load(content, class_name, kwargs);
+            '''
+        } )
+
+        left.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'spt_related_item',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "#EEE");
+            '''
+        } )
+
+
+        left.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_related_item',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+
+
+        for related_type in related_types:
+            attrs = schema.get_relationship_attrs(search_type, related_type)
+
+            related_sobj = SearchType.get(related_type)
+            name = related_sobj.get_title()
+            print "attrs: ", related_type, attrs
+
+
+            related_div = DivWdg()
+            left.add(related_div)
+            related_div.add("<b>%s</b> <i style='opacity: 0.5'>(%s)</i>" % (name, related_type))
+            related_div.add_style("padding: 3px")
+            related_div.add_class("spt_related_item")
+            related_div.add_attr("spt_related_type", related_type)
+
+            left.add("<hr/>")
+
+        right = table.add_cell()
+        right.add_class("spt_related_content")
+        right.add_style("vertical-align: top")
+
+
+
+        return top
+
 
 
 

@@ -16,7 +16,8 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
 from pyasm.web import DivWdg
-from pyasm.widget import BaseInputWdg, SelectWdg, SimpleTableElementWdg
+from pyasm.widget import BaseInputWdg, SelectWdg
+from tactic.ui.common import SimpleTableElementWdg
 
 class ProcessGroupSelectWdg(BaseInputWdg):
     '''This widget builds a select widget '''

@@ -134,6 +134,8 @@ class EditWdg(BaseRefreshWdg):
         sobject = None
         if my.search_key:
             sobject = Search.get_by_search_key(my.search_key)
+            if not sobject:
+                raise Exception("No sobject found for search_key [%s]" % my.search_key)
             my.search_id = sobject.get_id()
             my.search_type = sobject.get_base_search_type()
             if sobject.is_insert():
@@ -624,7 +626,7 @@ class EditWdg(BaseRefreshWdg):
 
             tr, td = table.add_row_cell( multi_div )
 
-            if my.color_mode == "default":
+            if my.color_mode == "defaultX":
                 td.add_color("border-color", "table_border", default="border")
                 td.add_style("border-width: 1px")
                 td.add_style("border-style: solid")
@@ -753,7 +755,7 @@ class EditWdg(BaseRefreshWdg):
                 if security.check_access("builtin", "view_site_admin", "allow"):
                     SmartMenu.assign_as_local_activator( td, 'HEADER_CTX' )
 
-                if my.color_mode == "default":
+                if my.color_mode == "defaultX":
                     td.add_color("border-color", "table_border", default="border")
                     td.add_style("border-width: 1" )
                     td.add_style("border-style: solid" )
@@ -778,7 +780,7 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("padding: 10px 25px 10px 5px")
                 td.add_style("vertical-align: top")
 
-                if my.color_mode == "default":
+                if my.color_mode == "defaultX":
                     td.add_color("border-color", "table_border", default="border")
                     td.add_style("border-width: 1" )
                     td.add_style("border-style: solid" )

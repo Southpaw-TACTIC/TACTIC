@@ -17,6 +17,7 @@ from pyasm.command import Command
 from pyasm.search import Search, SearchKey, SearchType, TableDropUndo, FileUndo, SqlException, SearchException
 from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement
 from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, TextWdg, TextAreaWdg, SelectWdg, HiddenWdg, WidgetConfig, CheckboxWdg, RadioWdg
+from pyasm.security import Site
 
 from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, ButtonRowWdg, ButtonNewWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -439,8 +440,7 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         top.add(title_wdg)
         title_wdg.add(IconWdg(icon=IconWdg.WARNING))
         title_wdg.add("Delete %s sType: %s" % (label,search_type))
-        title_wdg.add_gradient("background", "background", -10, -10)
-        title_wdg.add_style("padding: 5px")
+        title_wdg.add_color("background", "background", -10)
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("font-size: 14px")
 
@@ -701,6 +701,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
 
     def get_display(my):
+
         top = my.top
         top.add_color("background", "background")
         top.add_color("color", "color")
@@ -708,9 +709,52 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         top.add_border()
         top.add_class("spt_delete_project_tool_top")
 
+        login = Environment.get_user_name()
+        if login != 'admin':
+            top.add(IconWdg(icon=IconWdg.WARNING))
+            top.add("Only Admin can delete projects")
+            top.add_style("padding: 50px")
+            top.add_style("text-align: center")
+            return top
+
+
+
+        site = my.kwargs.get("site")
+        if site:
+            Site.set_site(site)
+
+
+
         project_code = my.kwargs.get("project_code")
+
+        # check if delete permissions exist for this site and project
+        security = Environment.get_security()
+        if False and not security.check_access("project", project_code, "delete"):
+            top.add(IconWdg(icon=IconWdg.WARNING))
+            top.add("Not permitted to delete this project")
+            top.add_style("padding: 30px")
+            top.add_style("text-align: center")
+            top.add_style("margin: 50px 30px")
+            top.add_border()
+            top.add_color("background", "background3")
+            return top
+
+
+        
+
+
         if project_code:
             project = Project.get_by_code(project_code)
+            if not project:
+                top.add(IconWdg(icon=IconWdg.WARNING))
+                top.add("No project [%s] exists in this database" % project_code)
+                top.add_style("padding: 30px")
+                top.add_style("text-align: center")
+                top.add_style("margin: 50px 30px")
+                top.add_border()
+                top.add_color("background", "background3")
+                return top
+            search_key = project.get_search_key()
         else:
             search_key = my.kwargs.get("search_key")
             project = Search.get_by_search_key(search_key)
@@ -725,7 +769,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             top.add(title_wdg)
             title_wdg.add(IconWdg(icon=IconWdg.WARNING))
             title_wdg.add("Deleting Project: %s" % project.get_value("title") ) 
-            title_wdg.add_gradient("background", "background", -10, -10)
+            title_wdg.add_color("background", "background", -5)
             title_wdg.add_style("padding: 5px")
             title_wdg.add_style("font-weight: bold")
             title_wdg.add_style("font-size: 14px")
@@ -741,9 +785,11 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             content.add("<br/>")
             return top
 
-        warning_msg = "Deleting a project will delete the database associated with this project.  All data will be lost.  Please consider carefully before proceeding."
+        warning_msg = "Deleting a project will delete the database associated with this project.  All data and files will be lost.  Please consider carefully before proceeding."
         if warning_msg:
-            content.add(DivWdg(warning_msg, css='warning'))
+            warning_wdg = DivWdg(warning_msg, css='warning')
+            content.add(warning_wdg)
+            warning_wdg.add_style("margin: 20 10px")
             content.add("<br/>")
 
         
@@ -760,7 +806,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
         content.add("<br/>")
 
-        content.add("<b>WARNING: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
+        content.add("<b>NOTE: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
 
 
       
@@ -841,8 +887,10 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         radio = RadioWdg("mode")
         radio.add_class("spt_mode_radio")
         radio.set_value("delete")
+        radio.add_style("margin-left: 15")
+        radio.add_style("margin-top: 5")
         content.add(radio)
-        content.add("<br/>"*2)
+        content.add("<br/>"*3)
 
         #content.add("<b>Or do you just wish to retire the project? </b>")
         #radio = RadioWdg("mode")
@@ -866,18 +914,28 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         buttons.add_style("width: 250px")
 
 
-        button = ActionButtonWdg(title="Delete")
+        button = ActionButtonWdg(title="Delete", color="danger")
         buttons.add_cell(button)
+
+        command_class = my.kwargs.get("command_class")
+        if not command_class:
+            command_class = 'tactic.ui.tools.DeleteProjectCmd'
+
+        on_complete = my.kwargs.get("on_complete")
 
         button.add_behavior( {
         'type': 'click_up',
         #'search_type': search_type,
         'project_code': project_code,
+        'site': site,
         'related_types': related_types,
+        'command_class': command_class,
+        'on_complete': on_complete,
         'cbjs_action': '''
             spt.app_busy.show("Deleting");
-            var class_name = "tactic.ui.tools.DeleteProjectCmd";
+            var class_name = bvr.command_class;
             var kwargs = {
+                'site': bvr.site,
                 'project_code': bvr.project_code,
                 'related_types': bvr.related_types
             };
@@ -926,6 +984,15 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                 spt.app_busy.hide();
 
                 if (success) {
+
+
+                    if (bvr.on_complete) {
+                       on_complete = function() {
+                           eval(bvr.on_complete);
+                       }
+                       on_complete();
+                    }
+
                     spt.notify.show_message("Successfully deleted project ["+bvr.project_code+"]");
 
                     spt.tab.set_main_body_tab();
@@ -954,6 +1021,10 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         } )
 
 
+        if site:
+            Site.pop_site()
+
+
         return top
 
 
@@ -963,6 +1034,12 @@ class DeleteProjectCmd(DeleteCmd):
 
     def execute(my):
         from pyasm.search import DbContainer
+        from pyasm.security import Security
+
+        security = Environment.get_security()
+        if security.is_in_group("admin"):
+            raise Exception("Only admin users can delete projects")
+
 
         project_code = my.kwargs.get("project_code")
         if project_code:

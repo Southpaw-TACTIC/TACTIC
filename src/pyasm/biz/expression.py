@@ -1416,6 +1416,8 @@ class MethodMode(ExpressionParser):
                         ids.add(sobject_id)
                 else:
                     results = list(set(result))
+                    # provide some predictability in the result
+                    results.sort()
             else:
                 raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
 
@@ -1650,12 +1652,10 @@ class MethodMode(ExpressionParser):
                     # support optional arg for timecode for example
                     if args_len > 2:
                         format_option = args[2]
-                """
                 else: # this part does not seem to be used
                     format_type = args[1]
                     format = args[2]
-                """
-               
+
                 if format_type == 'format':
                     f = FormatValue()
                     # sometimes result could be a list from @GET
@@ -2041,7 +2041,7 @@ class MethodMode(ExpressionParser):
                     search = Search(related_type)
                 else:
                     # Base type have to be the same
-                    assert(related_type, my.search.get_base_search_type())
+                    assert(related_type == my.search.get_base_search_type())
                     search = my.search
 
                 if my.show_retired:
@@ -2176,7 +2176,7 @@ class MethodMode(ExpressionParser):
                         sub_search.add_relationship_search_filter(related_search)
                         
                     related_search = sub_search
-                    
+
                 else:
                     tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=my.show_retired)
 

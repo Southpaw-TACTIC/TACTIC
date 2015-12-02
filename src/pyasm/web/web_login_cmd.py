@@ -16,7 +16,7 @@ __all__ = ['WebLoginCmd']
 from pyasm.common import Config, SecurityException
 from pyasm.command import Command
 from pyasm.web import WebContainer
-from pyasm.search import Search
+from pyasm.search import Search, SearchType
 
 class WebLoginCmd(Command):
 
@@ -28,6 +28,7 @@ class WebLoginCmd(Command):
     is_undoable = classmethod(is_undoable)
 
     def reenable_user(my, login_sobject, delay):
+        from tactic.command import SchedulerTask, Scheduler
         class EnableUserTask(SchedulerTask):
             def execute(my):
                 Batch()
@@ -41,6 +42,11 @@ class WebLoginCmd(Command):
         task = EnableUserTask(sobject=login_sobject, delay=delay)
         scheduler.add_single_task(task, delay)
         scheduler.start_thread()
+
+
+    def is_logged_in(my):
+        security = WebContainer.get_security()
+        return security.is_logged_in()
 
               
     def execute(my):
@@ -62,7 +68,7 @@ class WebLoginCmd(Command):
         if my.login == "" and my.password == "":
             return False
 
-        
+
         if my.login == "" or  my.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Empty username or password") 
@@ -82,18 +88,20 @@ class WebLoginCmd(Command):
                     "Passwords do not match.") 
                 return False
 
+        login_sobject = None
+        if SearchType.column_exists("sthpw/login", "upn"):
             search = Search("sthpw/login")
-         
             search.add_filter('upn',my.login)
             login_sobject = search.get_sobject()
-            if not login_sobject:
-                search2 = Search("sthpw/login")              
-                search2.add_filter('login',my.login)
-                login_sobject = search2.get_sobject()
-            if login_sobject.get_value("login") == "admin":
-                login_sobject.set_password(verify_password)
+        if not login_sobject:
+            search2 = Search("sthpw/login")              
+            search2.add_filter('login',my.login)
+            login_sobject = search2.get_sobject()
 
-          
+        # FIXME: need to only be able to do this if admin password is empty
+        if verify_password:
+            if login_sobject and login_sobject.get_value("login") == "admin":
+                login_sobject.set_password(verify_password)
 
         try:
             security.login_user(my.login, my.password, domain=my.domain)

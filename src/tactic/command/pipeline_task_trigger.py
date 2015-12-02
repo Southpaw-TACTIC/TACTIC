@@ -451,14 +451,9 @@ class TaskCreatorTrigger(Trigger):
         if pipeline.get_value("autocreate_tasks", no_exception=True) not in ['true', True]:
             return
 
-        processes = pipeline.get_process_names()
-        #search = Search("config/process")
-        #search.add_filter("pipeline_code", pipeline_code)
-        #processes = search.get_sobjects()
-
         #import time
         #start = time.time()
-        Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes, skip_duplicate=True, mode='standard')
+        Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, skip_duplicate=True, mode='standard')
 
         #print "intial_tasks ...", search_key, time.time() - start
 

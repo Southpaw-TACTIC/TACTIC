@@ -15,7 +15,7 @@ __all__ = ["PipelineException", "Process", "ProcessConnect", "Pipeline", "Projec
 import types
 
 from pyasm.common import Container, Base, Xml, Environment, Common, XmlException
-from pyasm.search import SObject, Search, SearchType, Sql, DbContainer
+from pyasm.search import SObject, Search, SearchType, Sql, DbContainer, SqlException
 from pyasm.security import LoginGroup
 
 from project import Project
@@ -72,7 +72,7 @@ class Process(Base):
         if node_type == "auto":
             node_type = "action"
         if not node_type:
-            node_type = "node"
+            node_type = "manual"
         return node_type
 
     def get_group(my):
@@ -131,6 +131,8 @@ class Process(Base):
         node_type = Xml.get_attribute(my.node, "type")
         if node_type == "approval":
             return "approval"
+        if node_type == "dependency":
+            return "dependency"
 
         if not task_pipeline_code and default:
             return "task"
@@ -303,7 +305,7 @@ class Pipeline(SObject):
         search_type = my.get_value('search_type')
         my.update_process_table(search_type=search_type)
 
-        # don't do anything for task table
+        # don't do anything for task sType
         if search_type =='sthpw/task':
             return
 
@@ -311,14 +313,18 @@ class Pipeline(SObject):
         if not search_type:
             return
 
-
-        columns = SearchType.get_columns(search_type)
-        if not 'pipeline_code' in columns:
-            # add the pipeline code column
-            from pyasm.command import ColumnAddCmd
-            cmd = ColumnAddCmd(search_type, "pipeline_code", "varchar")
-            cmd.execute()
         if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
+            try:
+                columns = SearchType.get_columns(search_type)
+                if not 'pipeline_code' in columns:
+                    # add the pipeline code column
+                    from pyasm.command import ColumnAddCmd
+                    cmd = ColumnAddCmd(search_type, "pipeline_code", "varchar")
+                    cmd.execute()
+            except SqlException, e:
+                print "Error creating column [pipeline_code] for %" %search_type 
+                pass
+
             # go through all of the sobjects and set all the empty ones
             # to the new pipeline
             search = Search(search_type)
@@ -327,7 +333,7 @@ class Pipeline(SObject):
             search.add_filter("pipeline_code", "")
             search.add_op("or")
             sobject_ids = search.get_sobject_ids()
-           
+            
             if sobject_ids:
                 # this is much faster and memory efficient
                 db_resource = SearchType.get_db_resource_by_search_type(search_type)
@@ -617,6 +623,7 @@ class Pipeline(SObject):
             my.process_sobjects = {}
 
             for process_sobject in sobjects:
+                # prevent changing variable process
                 pcs = process_sobject.get("process")
                 my.process_sobjects[pcs] = process_sobject
 
@@ -909,6 +916,19 @@ class Pipeline(SObject):
             pipeline.set_pipeline(xml)
             pipeline.set_value("search_type", "sthpw/task")
             #pipeline.commit()
+
+
+        if not pipeline and code == 'dependency':
+            # Create a default task pipeline
+            pipeline = SearchType.create("sthpw/pipeline")
+            pipeline.set_value("code", "dependency")
+            from pyasm.biz import Task
+            xml = Task.get_default_dependency_xml()
+            pipeline.set_value("pipeline", xml)
+            pipeline.set_pipeline(xml)
+            pipeline.set_value("search_type", "sthpw/task")
+            #pipeline.commit()
+
 
 
 

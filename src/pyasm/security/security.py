@@ -160,19 +160,7 @@ class Login(SObject):
         groups = search.get_sobjects()
 
 
-        # check to see if the default is there
-        """
-        has_default = False
-        for group in groups:
-            if group.get_login_group() == 'default':
-                has_default = True
-
-        if not has_default:
-            default_group = SearchType.create("sthpw/login_group")
-            default_group.set_value("login_group", "default")
-            groups.append(default_group)
-        """
-
+        # look access level rules for this user
         access_level = LoginGroup.NONE
         project_codes = set()
         for group in groups:
@@ -317,7 +305,7 @@ class Login(SObject):
 
 
 
-    def create(user_name, password, first_name, last_name, groups=None, namespace=None):
+    def create(cls, user_name, password, first_name=None, last_name=None, groups=None, namespace=None, display_name=None, project_code=None):
 
         login = SearchType.create("sthpw/login")
         login.set_value("login", user_name)
@@ -326,19 +314,35 @@ class Login(SObject):
         encrypted = hashlib.md5(password).hexdigest()
         login.set_value("password", encrypted)
 
-        login.set_value("first_name", first_name)
-        login.set_value("last_name", last_name)
+        if first_name:
+            login.set_value("first_name", first_name)
+        if last_name:
+            login.set_value("last_name", last_name)
 
-        if groups != None:
-            login.set_value("groups", groups)
+        if display_name:
+            login.set_value("display_name", display_name)
+
+        # DEPRECATED: this is no longed supported
+        #if groups != None:
+        #    login.set_value("groups", groups)
+
         if namespace != None:
             login.set_value("namespace", namespace)
 
+
         login.commit()
+
+        if groups:
+            for group in groups:
+                login.add_to_group(group)
+        else:
+            default_group = LoginGroup.get_project_default(project_code=project_code)
+            if default_group:
+                login.add_to_group(default_group)
 
         return login
 
-    create = staticmethod(create)
+    create = classmethod(create)
 
 
     def get_default_encrypted_password():
@@ -492,7 +496,7 @@ class LoginGroup(Login):
 
 
 
-    def get_by_project(project_code=None):
+    def get_by_project(cls, project_code=None):
 
         if not project_code:
             from pyasm.biz import Project
@@ -531,7 +535,19 @@ class LoginGroup(Login):
 
 
         return project_groups
-    get_by_project = staticmethod(get_by_project)
+    get_by_project = classmethod(get_by_project)
+
+
+    def get_project_default(cls, project_code=None):
+        groups = cls.get_by_project(project_code)
+        for group in groups:
+            if group.get_value("is_default", no_exception=True):
+                return group
+        return None
+    get_project_default = classmethod(get_project_default)
+
+
+
 
     def get_access_level(my):
         level = my.get_value('access_level')
@@ -739,7 +755,11 @@ class Site(object):
     def get_connect_data(cls, site):
         return {}
     get_connect_data = classmethod(get_connect_data)
- 
+  
+    def get_site_dir(cls, site):
+        return
+    get_site_dir = classmethod(get_site_dir)
+
     def get_asset_dir(cls, file_object=None, alias=None):
         return
     get_asset_dir = classmethod(get_asset_dir)
@@ -755,11 +775,15 @@ class Site(object):
     get_default_project = classmethod(get_default_project)
 
 
-    def get_login_wdg(cls):
+    def get_login_wdg(cls, hash=None):
         from tactic.ui.panel import HashPanelWdg
         web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
         return web_wdg
     get_login_wdg = classmethod(get_login_wdg)
+
+
+    def allow_guest(cls, url=None):
+        return True
  
 
 
@@ -794,7 +818,15 @@ class Site(object):
             return ""
         return sites[0]
     get_first_site = classmethod(get_first_site)
+
+
+    def get_sites(cls):
+        '''Get the initial site'''
+        sites = Container.get("sites")
+        return sites
+    get_sites = classmethod(get_sites)
  
+
 
     def set_site(cls, site):
         '''Set the global site for this "session"'''
@@ -805,6 +837,22 @@ class Site(object):
             sites = []
             Container.put("sites", sites)
         sites.append(site)
+
+        try:
+            sql = DbContainer.get("sthpw")
+        except:
+            Site.pop_site()
+            raise Exception("WARNING: site [%s] does not exist" % site)
+
+
+        try:
+            # check if user is allowed to see the site
+            #from pyasm.search import Search
+            #search = Search("sthpw/login")
+            pass
+        except:
+            Site.pop_site()
+            raise Exception("WARNING: permission denied to set to site [%s]" % site)
 
     set_site = classmethod(set_site)
 
@@ -817,6 +865,11 @@ class Site(object):
         site = sites.pop()
     pop_site = classmethod(pop_site)
 
+
+    def clear_sites(cls):
+        '''Clear all of the sites'''
+        Container.put("sites", [])
+    clear_sites = classmethod(clear_sites)
 
 
 
@@ -1003,6 +1056,7 @@ class Security(Base):
         my._groups = []
         my._group_names = []
         my._ticket = None
+        my._admin_login = None
 
         my.add_access_rules_flag = True
 
@@ -1062,9 +1116,22 @@ class Security(Base):
 
 
     def get_login(my):
-        return my._login
+        if my.is_admin():
+            if not my._admin_login:
+                login = SearchType.create("sthpw/login")
+                login.set_value("login", "admin")
+                login.set_value("code", "admin")
+                login.set_value("first_name", "Adminstrator")
+                login.set_value("last_name", "")
+                login.set_value("display_name", "Administrator")
+                my._admin_login = login
+            return my._admin_login
+        else:
+            return my._login
 
     def get_user_name(my):
+        if not my._login:
+            return None
         return my._login.get_login()
 
     def get_ticket(my):
@@ -1111,12 +1178,6 @@ class Security(Base):
         #my.login_cache = LoginCache.get("logins")
 
         # find all of the groups for this login
-        
-        #login = my._login.get_login()
-        #my._groups = my.login_cache.get_attr("%s:groups" % login)
-        #my._groups = my.login_cache.get_attr("%s:groups" % login)
-        #my._groups = my.login_cache.get_attr("%s:groups" % login)
-        #my._group_names = my.login_cache.get_attr("%s:group_names" % login)
         my._groups = None
         if my._groups == None:
             my._groups = []
@@ -1165,6 +1226,7 @@ class Security(Base):
 
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
+        search.set_show_retired(True)
         my._login = search.get_sobject()
         if not my._login:
             # login must exist in the database
@@ -1193,7 +1255,7 @@ class Security(Base):
 
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        my._find_all_login_groups()
+        #my._find_all_login_groups()
 
         # create a new ticket for the user
         my._ticket = my._generate_ticket(login_name)
@@ -1269,6 +1331,9 @@ class Security(Base):
             </rules>
             ''')
             access_manager.add_xml_rules(xml)
+        elif my._login.get("login") == "admin":
+            access_manager = my.get_access_manager()
+            access_manager.set_admin(True)
 
         return my._login
 
@@ -1409,8 +1474,12 @@ class Security(Base):
      
 
         authenticate = Common.create_from_class_path(auth_class)
-        
-        is_authenticated = authenticate.verify(auth_login_name, password)
+        try:
+            is_authenticated = authenticate.verify(auth_login_name, password)
+        except Exception, e:
+            print "WARNING: ", e
+            raise
+
         if is_authenticated != True:
             raise SecurityException("Login/Password combination incorrect")
 
@@ -1420,6 +1489,7 @@ class Security(Base):
         
         if not mode:
             mode = 'default'
+
         
         # lowercase name if case-insensitive is set to true
         if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
@@ -1454,7 +1524,7 @@ class Security(Base):
                 authenticate.add_user_info( my._login, password)
             except Exception, e:
                 raise SecurityException("Error updating user info: %s" % e.__str__())
-                
+
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
             if my._login.has_user_license():
@@ -1466,8 +1536,9 @@ class Security(Base):
 
         else:
             # get the login from database and don't bother updating
-            my._login = Login.get_by_login(login_name, use_upn=True)
-
+            my._login = authenticate.get_login()
+            if not my._login:
+                my._login = Login.get_by_login(login_name, use_upn=True)
 
 
         # if it doesn't exist, then the login fails
@@ -1492,8 +1563,12 @@ class Security(Base):
         my._ticket = my._generate_ticket(login_name, expiry, category="gui")
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        
+
         my._do_login()
+
+
+        # allow for some postprocessing
+        authenticate.postprocess(my._login, my._ticket)
         
 
 
@@ -1634,6 +1709,7 @@ class Security(Base):
 
     def _find_all_login_groups(my, group=None):
 
+
         if not group:
             groups = my._login.get_sub_groups()
             for group in groups:
@@ -1644,6 +1720,7 @@ class Security(Base):
 
                 my._groups.append(group)
                 my._group_names.append(group.get_login_group())
+
                 my._find_all_login_groups(group)
 
         else:
@@ -1683,8 +1760,6 @@ class Security(Base):
 
         # go through all of the groups and add access rules
         for group in my._groups:
-            #access_rules_xml = group.get_xml_value("access_rules")
-            #my._access_manager.add_xml_rules(access_rules_xml)
             my._access_manager.add_xml_rules(group)
 
 
@@ -1826,6 +1901,25 @@ class License(object):
 
     def is_licensed(my):
         return my.licensed
+
+
+    def is_licensed_for(my, product, version=None):
+        my.licensed = False
+        my.message = "No valid license for %s found." % product
+
+        products = my.xml.get_value("license/data/products")
+        if not products:
+            return
+
+
+        products = products.split(",")
+        if product in products:
+            my.message = ""
+            my.licensed = True
+
+        return my.licensed
+
+
 
 
     def get_message(my):
@@ -2020,24 +2114,29 @@ class License(object):
             license_version = my.xml.get_value("license/data/tactic_version")
             release_version = Environment.get_release_version()
             if not license_version:
-                raise LicenseException("License file not locked to a specific version of TACTIC")
-            try:
-                if license_version in ["EPL", "ALL"]:
-                    # really big
-                    license_version = 10**6
-                else:
-                    parts = license_version.split(".")
-                    license_version = float("%s.%s" % (parts[0],parts[1])) 
-
-                parts = release_version.split(".")
-                release_version = float("%s.%s" % (parts[0],parts[1])) 
-
-            except:
-                raise LicenseException("Incorrect format for version in license file")
+                # This is no longer an issue.  License should be time based, not
+                # version based
+                #raise LicenseException("License file not locked to a specific version of TACTIC")
+                pass
 
             else:
-                if release_version > license_version:
-                    raise LicenseException("License not valid for this version of TACTIC. License is for v%s" % license_version)
+                try:
+                    if license_version in ["EPL", "ALL"]:
+                        # really big
+                        license_version = 10**6
+                    else:
+                        parts = license_version.split(".")
+                        license_version = float("%s.%s" % (parts[0],parts[1])) 
+
+                    parts = release_version.split(".")
+                    release_version = float("%s.%s" % (parts[0],parts[1])) 
+
+                except:
+                    raise LicenseException("Incorrect format for version in license file")
+
+                else:
+                    if release_version > license_version:
+                        raise LicenseException("License not valid for this version of TACTIC. License is for v%s" % license_version)
 
 
 
@@ -2055,9 +2154,10 @@ class License(object):
                     # it doesn't really matter because nobody can use the
                     # software anways
                     current = 0
-                    
+                   
+                print "current: ", current, license_users, current > license_users
                 if current > license_users:
-                    raise LicenseException("Too many users for license [%s]" % my.license_path)
+                    raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
         #print "License verified ... "
 
 

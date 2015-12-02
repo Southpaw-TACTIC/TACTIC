@@ -46,6 +46,8 @@ class FormatValue(object):
 
     def number_format(my, num, places=0):
         """Format a number according to locality and given places"""
+        if not isinstance(num, float):
+            num = float(num)
         return locale.format("%.*f", (places, num), True)
 
     def currency_format(my, num, grouping=False, monetary=False):
@@ -97,6 +99,10 @@ class FormatValue(object):
             # break the value up by 3s
             if not value:
                 value = 0
+
+            elif isinstance(value, basestring):
+                value = float(value)
+
             value = my.number_format(value, places=2)
 
         # ------------------------------------------------
@@ -470,7 +476,7 @@ class FormatValue(object):
                 ext = "KB"
             else:
                 value = int(value)
-                return "%s &nbsp;&nbsp;B" % value
+                return "%s B" % value
 
             value = my.currency_format(value, grouping=True)
             # HACK: remove $ and last decimal

@@ -54,6 +54,16 @@ APPROVAL_PIPELINE = '''
 '''
 
 
+DEPENDENCY_PIPELINE = '''
+<pipeline type="serial">
+  <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="20" color="#e9e386" name="In Progress"/>
+  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="100" color="#a3d991" name="Complete"/>
+</pipeline>
+'''
+
+
 default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
@@ -118,6 +128,24 @@ class Task(SObject):
         return xml.to_string()
     get_default_approval_xml = staticmethod(get_default_approval_xml)
 
+
+
+    def get_default_dependency_xml():
+        global DEPENDENCY_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(DEPENDENCY_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            if color:
+                Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
+    get_default_dependency_xml = staticmethod(get_default_dependency_xml)
 
 
 
@@ -565,7 +593,6 @@ class Task(SObject):
             # FIXME: why doesn't the ops work here?
             filters = []
             search.add_relationship_filters(sobjects)
-    
             """
             for sobject in sobjects:
                 search_type = sobject.get_search_type()
@@ -627,10 +654,12 @@ class Task(SObject):
         task.set_parent(sobject)
 
         task.set_value("process", process )
-        task.set_value("description", description )
-        if assigned:
+        if description:
+            task.set_value("description", description )
+        if assigned != None:
             task.set_value("assigned", assigned)
-        if supervisor:
+
+        if supervisor != None:
             task.set_value("supervisor", supervisor)
 
         if not project_code:
@@ -661,6 +690,7 @@ class Task(SObject):
         # let get_defaults() set the context properly instead of auto-map
         if context:
             task.set_value("context", context)
+
         # DEPRECATED
         if depend_id:
             task.set_value("depend_id", depend_id)
@@ -786,7 +816,7 @@ class Task(SObject):
          
                 if existed:
                     context = "%s/%0.3d" % (context, max_num+1)
-                
+            
 
             return context
         # get pipeline
@@ -816,7 +846,7 @@ class Task(SObject):
         if processes:
             process_names = processes
         else:
-            process_names = pipeline.get_process_names(recurse=True, type=["node","approval"])
+            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual"])
 
 
         # remember which ones already exist
@@ -959,7 +989,6 @@ class Task(SObject):
                 if contexts and context not in contexts:
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
-             
                 last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration,assigned=assigned)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
@@ -1071,6 +1100,9 @@ class Milestone(SObject):
 
 
         return defaults
+
+
+
 
 
 

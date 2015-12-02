@@ -11,7 +11,14 @@ insert.set_value('schema', """<schema parent="__NONE__">
    <search_type name='prod/asset'/>
 
    <connect from='prod/shot' to='prod/sequence' relationship='code' type='hierarchy'/>
-   <connect from="prod/shot" to="sthpw/login" relationship="code" from_col="login" to_col="login"/>
+   <connect from='prod/shot' to='sthpw/login' relationship='code' from_col='login' to_col='login'/>
+
+
+   <connect from='prod/shot' to='prod/asset_in_shot' relationship='code'/>
+   <connect from='prod/asset' to='prod/asset_in_shot' relationship='code'/>
+   <connect from='prod/asset' to='prod/shot' relationship='instance' instance_type='prod/asset_in_shot'/>
+
+
  </schema>""")
 #-- End Entry --#
 

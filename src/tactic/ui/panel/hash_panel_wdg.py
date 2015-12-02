@@ -290,10 +290,11 @@ class HashPanelWdg(BaseRefreshWdg):
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
         
+
+        # guest user should never be able to see admin site
         if key != 'login':
             security = Environment.get_security()
             login = security.get_user_name()
-            # guest user should never be able to see admin site
             if login == "guest" and key == 'admin':
                 from pyasm.widget import WebLoginWdg
                 # HACK: if the guest access is full, the the outer form

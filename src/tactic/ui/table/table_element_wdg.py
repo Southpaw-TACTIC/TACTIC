@@ -605,9 +605,13 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
         if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
             my.process = sobject.get_value('process')
-            my.context = sobject.get_value('context')
             if not my.process:
                 my.process = ''
+
+            my.context = sobject.get_value('context')
+            if re.search(r'/(\d+)$', my.context):
+                my.context = ""
+
 
 
             sobject_mode = my.kwargs.get("sobject_mode")
@@ -634,10 +638,6 @@ class CheckinButtonElementWdg(ButtonElementWdg):
                 my.process = "publish"
             search_key = SearchKey.get_by_sobject(sobject)
 
-
-        #my.behavior['process'] = my.process
-        #my.behavior['context'] = my.context
-        #my.behavior['search_key'] = search_key
 
         # set the atrs
         div = super(CheckinButtonElementWdg, my).get_display()
@@ -668,6 +668,10 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         top = DivWdg()
         icon = IconButtonWdg( "Checkout", eval( "IconWdg.%s" % my.get_option('icon') ) )
         top.add(icon)
+        top.add_style("width: 26px")
+        top.add_style("margin-left: auto")
+        top.add_style("margin-right: auto")
+
 
 
         my.process = my.get_option('process')

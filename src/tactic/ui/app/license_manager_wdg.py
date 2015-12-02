@@ -66,11 +66,8 @@ class LicenseManagerWdg(BaseRefreshWdg):
             behavior = {
                 'type': 'load',
                 'cbjs_action': '''
-                var el = $(LicenseManagerWdg);
+                var el = $("LicenseManagerWdg");
                 el.setStyle("display","");
-                //var parent = el.getParent(".spt_panel");
-                //parent.setStyle("left: 0px");
-                //parent.setStyle("margin-right: auto");
                 '''
             }
             div.add_behavior(behavior)
@@ -92,21 +89,20 @@ class LicenseManagerWdg(BaseRefreshWdg):
         content.add_color("background", "background")
         content.add_color("color", "color")
         content.add_style("padding: 20px")
-        content.add_border()
        
         license = Environment.get_security().get_license()
         error_msg = license.get_message()
 
         if error_msg.startswith("Cannot find license file"):
-            first_error = True
+            my.first_error = True
         else:
-            first_error = False
+            my.first_error = False
 
-        if first_error:
+        if my.first_error:
             message = my.get_welcome_wdg(error_msg)
             content.add(message)
-            content.add_style("width: 700px")
-            content.add_gradient("background", "background", 0, -10)
+            content.add_style("width: auto")
+            content.add_gradient("background", "background", 0, -3)
 
 
         elif error_msg:
@@ -119,13 +115,11 @@ class LicenseManagerWdg(BaseRefreshWdg):
             content.add("<br/>")
 
             pre = DivWdg()
+            pre.add_style("text-align: center")
             pre.add_style("width: 300px")
             pre.add_style("border: solid black 1px")
-            pre.add_style("margin: 20px")
-            pre.add_style("margin-left: auto")
-            pre.add_style("margin-right: auto")
+            pre.add_style("margin: 20px auto")
             pre.add_style("padding: 20px")
-            pre.add_style("background: grey")
             pre.add_style("color: black")
             pre.add(error_msg)
             content.add(pre)
@@ -141,13 +135,20 @@ class LicenseManagerWdg(BaseRefreshWdg):
 
         security = Environment.get_security()
         if security.is_admin():
-            if not first_error: 
+            if not my.first_error: 
                 content.add("<hr/>")
                 content.add("<br/>")
                 content.add("Please verify the license or upload a new one:")
                 content.add("<br/>"*2)
+
+                upload_div = DivWdg()
+                content.add(upload_div)
+                upload_div.add_style("width: 100px")
+                upload_div.add_style("margin: 0px auto")
+
                 upload = LicenseUploadWdg()
-                content.add(upload)
+                upload_div.add(upload)
+                upload_div.add_style("text-align: center")
         else:
             content.add("Please notify the site administrator to check the license or upload a new one.")
             content.add("<br/><hr/>")
@@ -160,37 +161,32 @@ class LicenseManagerWdg(BaseRefreshWdg):
         div = DivWdg()
 
         license = Environment.get_security().get_license()
-        if not license.is_licensed():
+        if my.first_error:
             return div
-
-        title = DivWdg()
-        div.add(title)
-        title.add("License Manager")
-        title.add_color("background", "background3")
-        title.add_style("font-size: 14px")
-        title.add_style("font-weight: bold")
-        title.add_style("padding: 10px")
-        title.add_border()
-        title.add_style("margin: -21px -21px 20px -21px")
-
-        div.add("<br/>")
-
+        #if not license.is_licensed():
+        #    return div
 
         msg = DivWdg()
         div.add(msg)
         msg.add("The following describes the details of the installed license:<br/><br/>")
 
 
-        div.add("TACTIC Version: ")
+        info_wdg = DivWdg()
+        div.add(info_wdg)
+        info_wdg.add_style("margin: 10px 30px")
+        info_wdg.add_style("font-size: 12px")
+
         version = license.get_data("tactic_version")
-        if version == "ALL":
-            version = "ALL (Open Source)"
-        div.add(version)
-        div.add(HtmlElement.br(2))
+        if version:
+            info_wdg.add("TACTIC Version: ")
+            if version == "ALL":
+                version = "ALL (Open Source)"
+            info_wdg.add(version)
+            info_wdg.add(HtmlElement.br(2))
 
 
         company = license.get_data("company")
-        div.add("Licensed To: ")
+        info_wdg.add("Licensed To: ")
         if company.find("Southpaw EPL") != -1:
             company = SpanWdg("<a name='license'>Eclipse Public License v1.0</a> &nbsp;")
             icon = IconWdg("EPL v1.0", IconWdg.ZOOM)
@@ -202,23 +198,23 @@ class LicenseManagerWdg(BaseRefreshWdg):
                     spt.help.load_alias("license")
                 '''
             } )
-        div.add(company)
-        div.add(HtmlElement.br(2))
+        info_wdg.add(company)
+        info_wdg.add(HtmlElement.br(2))
 
-        div.add("Max Users: ")
-        div.add(license.get_data("max_users") )
-        div.add(HtmlElement.br(2))
+        info_wdg.add("Max Users: ")
+        info_wdg.add(license.get_data("max_users") )
+        info_wdg.add(HtmlElement.br(2))
 
-        div.add("Current Users: ")
-        div.add(license.get_current_users() )
-        div.add(HtmlElement.br(2))
+        info_wdg.add("Current Users: ")
+        info_wdg.add(license.get_current_users() )
+        info_wdg.add(HtmlElement.br(2))
 
-        div.add("Expiry Date: ")
+        info_wdg.add("Expiry Date: ")
         expiry_date = license.get_data("expiry_date")
         if not expiry_date:
             expiry_date = "Permanent"
-        div.add(expiry_date)
-        div.add(HtmlElement.br(2))
+        info_wdg.add(expiry_date)
+        info_wdg.add(HtmlElement.br(2))
 
         return div
 
@@ -247,6 +243,8 @@ class LicenseManagerWdg(BaseRefreshWdg):
 
         upload_div = DivWdg()
         upload_div.add_style("text-align: center")
+        upload_div.add_style("width: 100px")
+        upload_div.add_style("margin: 0px auto")
         div.add(upload_div)
         upload = LicenseUploadWdg()
         upload_div.add(upload)
@@ -276,70 +274,6 @@ class LicenseUploadWdg(BaseRefreshWdg):
         div = DivWdg()
         div.set_id(key)
         div.add_class("spt_upload")
-
-
-        # override the column
-        # SWF upload is deprecated
-        """
-        column_input = HiddenWdg("file_name")
-        div.add(column_input)
-
-        # the button div that will get replaced by the swf
-        wrapper_div = DivWdg()
-        wrapper_div.add_style("padding: 5px")
-        wrapper_div.add_style("float: left")
-        button_div = DivWdg()
-        wrapper_div.add(button_div)
-        div.add(wrapper_div)
-
-        button_id = "%sButton" % key
-        button_div.set_id(button_id)
-        button_div.add_class("spt_upload_button")
-        button_div.add_style("display: block")
-
- 
-        # add a upload button so it does not require edit_pressed
-        from tactic.ui.widget import TextBtnWdg
-        install_div = DivWdg()
-        install_div.add_style("padding: 8px")
-        install_button = TextBtnWdg(label="Install License", size='medium')
-        behavior = {
-            'type': 'click_up',
-            'key': key,
-            'cbjs_action': "spt.Upload.upload_cbk(bvr)"
-        }
-        install_button.add_behavior(behavior)
-        install_div.add(install_button)
-        div.add(install_div)
-
-        div.add("<br/>")
-
-        # add a stats widget
-        stats_div = DivWdg()
-        stats_div.add_style("float: right")
-        stats_div.add_class("spt_upload_stats")
-        div.add(stats_div)
-
-
-        from tactic.ui.widget import UploadProgressWdg
-        upload_progress = UploadProgressWdg()
-        div.add(upload_progress)
-
-
-        # add the onload behavior for this widget to initialize the swf
-        load_div = DivWdg()
-        behavior = {
-            'type': 'load',
-            'cbfn_action': "spt.Upload.setup_cbk",
-            'key': key,
-            'settings': {
-                'upload_complete_handler':  'spt.Upload.license_complete',
-            }
-        }
-        load_div.add_behavior(behavior)
-        div.add(load_div)
-        """
-
 
         from tactic.ui.widget import ActionButtonWdg
         #browse = ActionButtonWdg(title="Browse", tip="Click to browse for license file and renew")
@@ -371,6 +305,7 @@ class LicenseUploadWdg(BaseRefreshWdg):
               alert('Error: file object cannot be found.')
             }
             spt.app_busy.hide();'''
+
         browse = UploadButtonWdg(title="Browse", tip="Click to browse for license file and renew", on_complete=on_complete)
         browse.add_style("margin-left: auto")
         browse.add_style("margin-right: auto")

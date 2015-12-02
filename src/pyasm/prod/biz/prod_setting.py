@@ -68,19 +68,21 @@ class ProdSetting(SObject):
         site = Site.get_site()
         Site.set_site( Site.get_first_site() )
 
-        project = Project.get_project_code() 
-        dict_key = '%s:%s' %(key, search_type)
-       
-        search = Search(cls.SEARCH_TYPE, project_code=project)
-        search.add_filter("key", key)
-        if search_type:
-            search.add_filter("search_type", search_type)
+        try:
 
-        if Project.get_project_name() in ['admin', 'sthpw']:
-            return None
-        prod_setting = ProdSetting.get_by_search(search, dict_key)
+            project = Project.get_project_code() 
+            dict_key = '%s:%s' %(key, search_type)
+           
+            search = Search(cls.SEARCH_TYPE, project_code=project)
+            search.add_filter("key", key)
+            if search_type:
+                search.add_filter("search_type", search_type)
 
-        Site.pop_site()
+            if Project.get_project_name() in ['admin', 'sthpw']:
+                return None
+            prod_setting = ProdSetting.get_by_search(search, dict_key)
+        finally:
+            Site.pop_site()
 
         return prod_setting
 

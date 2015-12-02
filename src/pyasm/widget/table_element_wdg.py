@@ -49,7 +49,7 @@ import re, time, types
 from dateutil import parser
 from datetime import datetime
 
-from pyasm.common import Container, Xml, XmlException, SecurityException, Environment, Date, UserException, Common
+from pyasm.common import Container, Xml, XmlException, SecurityException, Environment, Date, UserException, Common, SPTDate
 from pyasm.biz import Snapshot
 from pyasm.command import Command
 from pyasm.search import SearchType, Search, SObject, SearchException, SearchKey
@@ -314,6 +314,21 @@ class BaseTableElementWdg(HtmlElement):
             return ""
         '''
 
+    def get_timezone_value(my, value):
+        '''given a datetime value, try to convert to timezone specified in the widget.
+           If not specified, use the My Preferences time zone'''
+        timezone = my.get_option('timezone')
+        if not timezone:
+            from pyasm.biz import PrefSetting
+            timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+        
+        return value
+
     def set_option(my, key, value):
         my.options[key] = value
 
@@ -452,7 +467,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
     def get_text_value(my):
         value = my.get_value()
         return value
-        
+       
 
     def get_simple_display(my):
         value = my.get_value()

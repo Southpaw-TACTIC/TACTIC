@@ -28,6 +28,8 @@ from web_tools import *
 from html_wdg import *
 from url_security import *
 
+from web_login_cmd import WebLoginCmd
+
 import os, cStringIO
 
 try:
@@ -231,7 +233,7 @@ class BaseAppServer(Base):
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, reset_msg)
 
 
-            sudo = Sudo()
+            #sudo = Sudo()
             try:
                 # get the project from the url because we are still 
                 # in the admin project at this stage
@@ -244,24 +246,41 @@ class BaseAppServer(Base):
                     web_wdg = None
                 else:
 
-                    # custom login widget
+                    # custom global site login widget
                     if not current_project or current_project == "default":
                         current_project = Project.get_default_project()
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        web_wdg = site_obj.get_login_wdg()
+                        # FIXME: this doesn't work!!!  It resets the home page
+                        """
+                        search = Search("config/url")
+                        urls = search.get_sobjects()
+                        open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
+                        print "xxxx: ", open_hashes
+                        """
+                        open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
+                        if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                            link = "/%s" % "/".join(my.hash)
+                            web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
+                        else:
+                            web_wdg = None
+
+                        if not web_wdg:
+                            web_wdg = site_obj.get_login_wdg()
+
                         if web_wdg:
-                            web_wdg = web_wdg.get_buffer_display()
+                            if not isinstance(web_wdg, basestring):
+                                web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
                     else:
                         web_wdg = None
 
                 # display default web login
                 if not web_wdg:
-
                     # get login screen from Site
-                    web_wdg = site_obj.get_login_wdg()
+                    link = "/%s" % "/".join(my.hash)
+                    web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
                         web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
@@ -270,7 +289,8 @@ class BaseAppServer(Base):
 
             finally:
                 # sudo out of scope here
-                sudo.exit()
+                #sudo.exit()
+                pass
 
 
         # create a web app and run it through the pipeline
@@ -291,6 +311,8 @@ class BaseAppServer(Base):
         from pyasm.biz import Project
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
+
+
         
         # guest mode
         #
@@ -300,11 +322,19 @@ class BaseAppServer(Base):
         else:
             allow_guest = False
 
+        site_obj = Site.get()
+        site_allow_guest = site_obj.allow_guest()
+        if site_allow_guest != None:
+            allow_guest = site_allow_guest
+
+
+
         security = Security()
         try:
             security = my.handle_security(security)
             is_logged_in = security.is_logged_in()
         except Exception, e:
+            print "Exception: ", e
             return my.handle_not_logged_in()
 
  
@@ -312,10 +342,10 @@ class BaseAppServer(Base):
         if not guest_mode:
             guest_mode = 'restricted'
 
+
+        # Test
         #allow_guest = True
         #guest_mode = "full"
-
-
 
         # if not logged in, then log in as guest
         if not is_logged_in:
@@ -355,7 +385,6 @@ class BaseAppServer(Base):
             access = True
 
 
-        access = True
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
@@ -367,7 +396,7 @@ class BaseAppServer(Base):
                 return my.handle_not_logged_in(allow_change_admin=False)
 
             else:
-                from pyasm.widget import WebLicenseWdg, BottomWdg, Error403Wdg
+                from pyasm.widget import BottomWdg, Error403Wdg
                 widget = Widget()
                 top = my.get_top_wdg()
                 widget.add( top )
@@ -426,7 +455,8 @@ class BaseAppServer(Base):
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
-                    default_project = Project.get_default_project()
+                    current_project = Project.get_default_project()
+
                 if current_project and current_project != "default":
                     try:
                         Project.set_project(current_project)
@@ -436,9 +466,29 @@ class BaseAppServer(Base):
                             pass
                         else:
                             raise
-                    web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
+
+
+                    # find the guest views
+                    # FIXME: this doesn't work!!!  It resets the home page
+                    search = Search("config/url")
+                    urls = search.get_sobjects()
+                    open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
+                    print "open_hashes: ", open_hashes
+                    link = "/%s" % "/".join(my.hash)
+
+
+                    # guest views
+                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
+                    if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                        web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
+                    else:
+                        web_wdg = None
+
+                    if not web_wdg:
+                        web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True, kwargs={"hash": link})
                     if web_wdg:
-                        web_wdg = web_wdg.get_buffer_display()
+                        if not isinstance(web_wdg, basestring):
+                            web_wdg = web_wdg.get_buffer_display()
                         top.add(web_wdg)
                 else:
                     web_wdg = None
@@ -547,7 +597,7 @@ class BaseAppServer(Base):
             widget.add( BottomWdg() )
             widget.get_display()
 
-        # put an annoying alert if there is a problem with the licensed
+        # put an annoying alert if there is a problem with the license
         if not is_licensed:
             # to be sure, reread license.  This gets around the problem
             # of the extra error message when uploading a new license
@@ -614,7 +664,6 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
-                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
@@ -636,11 +685,14 @@ class BaseAppServer(Base):
                     reset_cmd.execute()
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
+
+            # FIXME: not sure why this is here???
+            """
             else:
-                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+            """
 
         # clear the password
         web.set_form_value('password','')
@@ -653,15 +705,17 @@ class BaseAppServer(Base):
 
 
         # TEST TEST TEST
+        """
         try:
             ticket = security.get_ticket()
             if ticket:
                 site_obj.handle_ticket(ticket)
         except Exception, e:
             print "ERROR in handle_ticket: ", e
+        """
 
 
-            
+
         # set up default securities
         #my.set_default_security(security)
 
@@ -673,23 +727,28 @@ class BaseAppServer(Base):
 
     def handle_guest_security(my, security):
 
-        WebContainer.set_security(security)
-        security.login_as_guest()
+        Site.set_site("default")
+        try:
 
-        ticket_key = security.get_ticket_key()
+            WebContainer.set_security(security)
+            security.login_as_guest()
 
-        web = WebContainer.get_web()
-        web.set_cookie("login_ticket", ticket_key)
+            ticket_key = security.get_ticket_key()
 
-        access_manager = security.get_access_manager()
-        xml = Xml()
-        xml.read_string('''
-        <rules>
-          <rule column="login" value="{$LOGIN}" search_type="sthpw/login" access="deny" op="!=" group="search_filter"/>
-        </rules>
-        ''')
-        access_manager.add_xml_rules(xml)
- 
+            web = WebContainer.get_web()
+            web.set_cookie("login_ticket", ticket_key)
+
+            access_manager = security.get_access_manager()
+            xml = Xml()
+            xml.read_string('''
+            <rules>
+              <rule column="login" value="{$LOGIN}" search_type="sthpw/login" access="deny" op="!=" group="search_filter"/>
+            </rules>
+            ''')
+            access_manager.add_xml_rules(xml)
+        finally:
+            Site.pop_site()
+
 
 
 
@@ -823,54 +882,10 @@ class BaseAppServer(Base):
     add_onload_script = staticmethod(add_onload_script)    
         
 
-"""
-class AppServerSecurityRules(object):
-    ''' A set of rules applied at the start up of drawing of a page'''
-    def __init__(my, security):
-        assert security != None
-        my.security = security
-        my.access_manager = security.get_access_manager()
-
-        # we just need one instance of my.xml
-        my.xml = Xml() 
-        my.execute()
-
-    def execute(my):
-        my.add_wdg_rules()
-
-        # the main administrator has no default restrictions
-        if 'admin' not in my.security.get_group_names():
-            my.add_default_rules()
-
-    def add_wdg_rules(my):
-        ''' these rules are to be applied to all users'''
-        my.xml.read_string('''
-        <rules>
-          <rule category='secure_wdg' default='deny'/>
-          <rule category='public_wdg' access='edit'/>
-        </rules>
-        ''')
-            
-        my.access_manager.add_xml_rules(my.xml)
-
-    def add_default_rules(my):
-        ''' these rules are to be applied to all but users in the admin group'''
-
-        security_version = get_security_version()
-
-        if security_version == 1:
-            my.xml.read_string('''
-            <rules>
-              <rule group='project' default='view'/>  
-              <rule group='project' key='admin' access='deny'/>
-              <rule group='tab' key='Admin' access='deny'/>
-            </rules>
-            ''') 
-            my.access_manager.add_xml_rules(my.xml)
 
 
 
-"""
+
 
 # NOTE: this function has to be declared after BaseAppServer
 def get_app_server_class():
