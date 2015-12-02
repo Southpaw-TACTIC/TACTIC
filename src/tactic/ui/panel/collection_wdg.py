@@ -139,12 +139,12 @@ class CollectionAddWdg(BaseRefreshWdg):
                 'cbjs_action': '''
                 var search_keys = spt.table.get_selected_search_keys(false);
                 if (search_keys.length == 0) {
-                    spt.notify.show_message("Nothig selected");
+                    spt.notify.show_message("Nothing selected");
                     return;
                 }
                 var collection_key = bvr.src_el.getAttribute("collection_key");
 
-                var cmd = "tactic.ui.panel.base_table_layout_wdg.CollectionAddCmd";
+                var cmd = "tactic.ui.panel.CollectionAddCmd";
                 var kwargs = {
                     collection_key: collection_key,
                     search_keys: search_keys
@@ -164,7 +164,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         add_div.add_class("hand")
 
 
-        insert_view = "insert"
+        insert_view = "edit_collection"
 
         add_div.add_behavior( {
             'type': 'click_up',
@@ -175,15 +175,16 @@ class CollectionAddWdg(BaseRefreshWdg):
                 var search_type = top.getAttribute("spt_search_type")
                 kwargs = {
                   search_type: search_type,
-                  mode: 'insert',
+                  mode: "insert",
                   view: bvr.insert_view,
                   save_event: bvr.event_name,
                   show_header: false,
+                  'num_columns': 2,
                   default: {
-                    _is_collection: true,
+                    _is_collection: "true"
                   }
                 };
-                spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
             '''
         } )
 
