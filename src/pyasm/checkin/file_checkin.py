@@ -38,7 +38,8 @@ class FileCheckin(BaseCheckin):
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
-            checkin_type='', version=None, single_snapshot=False):
+            checkin_type='', version=None, single_snapshot=False, process=None
+            ):
 
         '''sobject - the sobject that this checkin belongs to
            file_paths - array of all the files to checkin
@@ -154,7 +155,12 @@ class FileCheckin(BaseCheckin):
             parts = [my.context]
         else:
             parts = my.context.split("/")
-        my.process = parts[0]
+
+        if not process:
+            my.process = parts[0]
+        else:
+            my.process = process
+
         my.checkin_type = checkin_type
 
         if my.checkin_type and my.checkin_type not in ['strict','auto']:
@@ -415,7 +421,7 @@ class FileCheckin(BaseCheckin):
             my.context, my.column, my.description, snapshot_xml,
             is_current=my.is_current, is_revision=my.is_revision,
             level_type=my.level_type, level_id=my.level_id, is_latest=is_latest,
-            is_synced=is_synced, version=my.version, triggers="integral", set_booleans=False)
+            is_synced=is_synced, version=my.version, triggers="integral", set_booleans=False, process=my.process)
 
         if my.single_snapshot and my.snapshot.get_version() > 1:
             raise SingleSnapshotException("There is an existing snapshot for \

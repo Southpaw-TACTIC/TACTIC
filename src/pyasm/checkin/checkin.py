@@ -184,15 +184,14 @@ class BaseCheckin(Command):
         
         # get the process (assumption here) and call both on process and process code
         process = my.process
+        pipeline = None
         if process:
             Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=process)
-            
+        
             pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
-            pipeline = None
             if pipeline_code:
                 pipeline = Pipeline.get_by_code(pipeline_code)
- 
-            pipeline = Pipeline.get_by_code(pipeline_code)
+
             if pipeline and process:
                 search = Search("config/process")
                 search.add_filter("pipeline_code", pipeline_code)

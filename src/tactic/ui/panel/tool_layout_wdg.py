@@ -174,9 +174,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if info.get("count") == None:
             info["count"] = len(my.sobjects)
 
-        search_limit_mode = my.kwargs.get('search_limit_mode') 
-        if not search_limit_mode:
-            search_limit_mode = 'bottom'
+        show_search_limit = my.kwargs.get("show_search_limit")
+        if show_search_limit in ['false', False]:
+            search_limit_mode = None
+        else:
+            search_limit_mode = my.kwargs.get('search_limit_mode') 
+            if not search_limit_mode:
+                search_limit_mode = 'bottom'
+
+
 
         if search_limit_mode in ['top','both']:
             from tactic.ui.app import SearchLimitSimpleWdg

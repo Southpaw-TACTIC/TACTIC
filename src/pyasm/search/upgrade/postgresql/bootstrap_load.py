@@ -73,7 +73,7 @@ def import_bootstrap():
                 continue
             cmds.append(cmd)
 
-        from pyasm.search import DbContainer
+        from pyasm.search import DbContainer, DbResource
         sql = DbContainer.get("sthpw")
         for cmd in cmds:
             sql.do_update(cmd)

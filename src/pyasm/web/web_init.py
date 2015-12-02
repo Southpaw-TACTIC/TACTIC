@@ -112,7 +112,15 @@ class DisplayNameTrigger(Trigger):
         display = sobject.get_value('display_name')
 
         if not display:
-            sobject.set_value('display_name', '%s, %s'%(last, first))
+            if first and last:
+                sobject.set_value('display_name', '%s %s'%(first, last))
+            elif first:
+                sobject.set_value("display_name", first)
+            elif last:
+                sobject.set_value("display_name", last)
+            else:
+                sobject.set_value("display_name", sobject.get_value("code"))
+
 
         # The admin user may not be committed yet
         if sobject.get_value("code") == 'admin':

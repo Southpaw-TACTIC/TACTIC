@@ -77,12 +77,24 @@ def startup(port, server=""):
         startup.set_config('global', 'server.thread_pool', 50)
         #startup.set_config('global', 'server.socket_host', server)
 
-        startup.set_config('global', 'log.screen', True)
+        startup.set_config('global', 'log.screen', False)
 
         startup.set_config('global', 'request.show_tracebacks', True)
         startup.set_config('global', 'server.log_unhandled_tracebacks', True)
 
         startup.set_config('global', 'engine.autoreload_on', True)
+
+
+        """ 
+        access_log = cherrypy.log.access_log
+        for handler in tuple(access_log.handlers):
+            access_log.removeHandler(handler)
+        cherrypy.log.error_log.propagate = False
+        cherrypy.log.access_log.propagate = False
+        """
+
+
+
 
 
     else:

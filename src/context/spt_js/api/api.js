@@ -271,6 +271,38 @@ spt.api.jsondumps = function(data) {
 }
 
 
+// Method to a dynamic update to the element
+//
+// @params:
+//     el: The element that will dynamically updated
+//     update: Update data structure giving instructions how to update
+//
+// @return:
+//     None
+//
+// @examples:
+//     var data_string = {"a": 1, "b": 2, "c": 3};
+//     var data_string = spt.api.jsondumps(data);
+// 
+
+spt.api.add_update = function(el, update) {
+    var el_id = el.getAttribute("id");
+    if (!el_id) {
+        el_id = "SPT_" + Math.random(1000000);
+        el.setAttribute("id", el_id);
+    }
+    el.addClass("spt_update");
+    el.spt_update = {};
+    el.spt_update[el_id] = update;
+}
+
+
+spt.api.remove_update = function(el) {
+    el.removeClass("spt_update");
+    el.spt_update = null;
+}
+
+
 /* Some others that need to be implmeneted
 
 spt.load_link(el, link);

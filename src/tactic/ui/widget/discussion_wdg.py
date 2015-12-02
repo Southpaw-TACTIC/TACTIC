@@ -1078,7 +1078,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         if my.is_refresh =='true':
-            top = Widget()
+            top = DivWdg()
         else:
             top = DivWdg()
             if not my._load_js:
@@ -1093,13 +1093,25 @@ class DiscussionWdg(BaseRefreshWdg):
             my.set_as_panel(top)
             top.add_style("min-width: 300px")
 
-            context_str = ",".join(contexts)
 
             max_height = my.kwargs.get("max_height")
             if max_height:
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
+
+
+        context_str = ",".join(contexts)
+        update_div = DivWdg()
+        top.add(update_div)
+        update_div.add_update( {
+            'search_key': my.kwargs.get("search_key"),
+            'compare': "@jOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
+            'cbjs_postaction': '''
+            var top = bvr.src_el.getParent(".spt_discussion_top");
+            spt.panel.refresh(top);
+            '''
+        } )
 
         if my.use_parent == 'true' and not notes and not my.parent:
             sobj = my.parent
@@ -1292,10 +1304,6 @@ class DiscussionWdg(BaseRefreshWdg):
         #else:
         #    show_context_notes = False
 
-
-
-
-
         # go through every context and display notes
         for context in contexts:
 
@@ -1426,7 +1434,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     attachments=my.attachments,
             )
 
-
             #note_dialog.add(notes_wdg)
 
         return top
@@ -1478,6 +1485,11 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div.add_style("font-size: 1.0em")
         count_div.add_style("font-style: italic")
         count_div.add_style("margin-left: 3px")
+
+        #count_div.add_update( {
+        #    'search_key': my.kwargs.get("search_key"),
+        #    'expression': "({@COUNT(sthpw/note['context','%s'])})" % context,
+        #} )
 
         return div
 
@@ -1582,6 +1594,12 @@ class NoteCollectionWdg(BaseRefreshWdg):
         return div
 
 
+        if my.show_note_status:
+            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
+        else:
+            my.note_status_dict = {}
+
+        my.note_format = my.kwargs.get("note_format")
 
 
 class NoteWdg(BaseRefreshWdg):
@@ -1611,7 +1629,6 @@ class NoteWdg(BaseRefreshWdg):
             my.note_status_dict = {}
 
         my.note_format = my.kwargs.get("note_format")
-
 
         return my.get_note_wdg(note, note_hidden)
 

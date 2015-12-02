@@ -521,49 +521,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # Make this into a function.  Former code is kept here for now.
         my._process_search_args()
-        """
-        # this is different name from the old table selected_search_keys
-        search_keys = my.kwargs.get("search_keys")
-      
-        # if a search key has been explicitly set without expression, use that
-        expression = my.kwargs.get('expression') 
-        matched_search_key = False
-        if my.search_key:
-            base_search_type = SearchKey.extract_base_search_type(my.search_key)
-        else:
-            base_search_type = ''
-
-        if my.search_type == base_search_type:
-            matched_search_key = True
-        if search_keys and search_keys != '[]':
-            if isinstance(search_keys, basestring):
-                if search_keys == "__NONE__":
-                    search_keys = []
-                else:
-                    search_keys = search_keys.split(",")
-
-            # keep the order for precise redrawing/ refresh_rows purpose
-            if not search_keys:
-
-                my.sobjects = []
-            else:
-                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-
-            my.items_found = len(my.sobjects)
-            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
-        elif my.search_key and matched_search_key and not expression:
-            sobject = Search.get_by_search_key(my.search_key)
-            if sobject: 
-                my.sobjects = [sobject]
-                my.items_found = len(my.sobjects)
-
-
-        elif my.kwargs.get("do_search") != "false":
-            my.handle_search()
-        """
-
-
-
 
         # set some grouping parameters
         my.process_groups()
@@ -601,8 +558,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("border", -10))
+        #inner.add_style("border-width: 0px 1px 0px 0px")
+        inner.add_style("border-width: 0px")
+        inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -1599,6 +1557,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 var dst_el = spt.get_event_target(evt);
                 var src_el = spt.behavior.get_bvr_src(bvr);
 
+                /* Keeping this around for later use */
                 var dst_row = dst_el.getParent(".spt_table_row");
                 var dst_search_key = dst_row.getAttribute("spt_search_key");
 
@@ -1607,6 +1566,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
         } )
+
 
 
         # selection behaviors
@@ -2457,13 +2417,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return
      
 
-        table.add_attr("ondragenter", "return false")
-        table.add_attr("ondragover", "return false")
-        table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+        #table.add_attr("ondragenter", "return false")
+        #table.add_attr("ondragover", "return false")
+        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
+
+        table.add_style("width: 100%")
 
 
         tr, td = table.add_row_cell()
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+
         tr.add_class("spt_table_no_items")
         td.add_style("border-style: solid")
         td.add_style("border-width: 1px")
@@ -2498,7 +2467,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
 
             no_results_msg = my.kwargs.get("no_results_msg")
-
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             #msg.set_box_shadow("0px 0px 5px")
@@ -3114,15 +3082,24 @@ spt.table.drop_row = function(evt, el) {
 
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
-    var size = thumb_el.getSize();
+    if (thumb_el) {
+        var size = thumb_el.getSize();
+    }
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file = files[i];
 
+        var filename = file.name;
 
         var search_key = top.getAttribute("spt_search_key");
-        var filename = file.name;
+        if (!search_key) {
+            var layout = spt.table.get_layout();
+            var search_type = layout.getAttribute("spt_search_type");
+            var server = TacticServerStub.get();
+            var sobject = server.insert(search_type, {name: filename})
+            search_key = sobject.__search_key__;
+        }
         var context = "publish" + "/" + filename;
 
         var upload_file_kwargs =  {

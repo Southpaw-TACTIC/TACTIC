@@ -318,7 +318,6 @@ class CherryPyStartup(CherryPyStartup20):
 
         }
 
-      
 
         # set up the root directory
         cherrypy.root = Root()
@@ -355,6 +354,8 @@ class CherryPyStartup(CherryPyStartup20):
             project_code = project.get_code()
             my.register_project(project_code, config)
         my.register_project("default", config)
+
+        print
 
 
         from pyasm.security import Site

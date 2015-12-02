@@ -1,0 +1,322 @@
+###########################################################
+#
+# Copyright (c) 2008, Southpaw Technology
+#                     All Rights Reserved
+#
+# PROPRIETARY INFORMATION.  This software is proprietary to
+# Southpaw Technology, and is not to be reproduced, transmitted,
+# or disclosed in any way without written permission.
+#
+#
+#
+
+
+# ALPHA: do not use
+
+__all__ = ['CGApp']
+
+import types
+
+from tactic_client_lib import TacticServerStub
+
+
+class CGAppException(Exception):
+    pass
+    
+
+
+class CGApp(object):
+
+    def __init__(my):
+
+        # need to set up the environment (don't fight it for now!)
+        from pyasm.application.common import BaseAppInfo
+
+        from pyasm.application.common import AppEnvironment
+        from pyasm.application.maya import Maya85
+        my.env = AppEnvironment.get()
+        my.env.set_tmpdir("C:/Temp")
+
+        my.app = Maya85()
+        my.env.set_app(my.app)
+
+
+    #
+    # High level methods
+    #
+    def checkin(my, tactic_node, search_key, context):
+        '''Standard checkin mechanism.  This is a sample checkin mechanism
+        that is full featured enough to handle many situations.
+
+        @params:
+          tactic_node: the tactic node to be checkedin
+          search_key: the search key to check into
+          context: the context to check into
+
+        @return
+          snapshot: a dictionary representing the final snapshot
+          
+        
+        '''
+        server = TacticServerStub.get()
+
+        # verify that this is not a reference!!!
+
+
+        # create a snapshot
+        snapshot = server.create_snapshot(search_key, context)
+
+        # find all of the dependencies
+        dependent_nodes = my.get_dependent_nodes(tactic_node)
+        for node in dependent_nodes:
+            # find out if there is a node there is a file associated with
+            # this tactic node
+            files = my.get_dependent_references(node)
+            print files
+
+
+        # update the tactic node with the latest snapshot data.  Also, update
+        # the tactic node name as it likely has changed
+        node_data = my.set_introspect_data(tactic_node, snapshot)
+        tactic_node = node_data.get_app_node_name()
+
+
+        # add the files to the snapshot
+        handler = BaseFileExtractionHandler(tactic_node)
+        paths = handler.execute()
+        #paths = my.extract_to_files(top_node)
+        for path in paths:
+            print "path: ", path
+            server.add_file(snapshot.get("code"), path, mode='upload')
+
+        return snapshot
+
+
+    def load(my, search_key, context, version=-1, file_type='main', mode='reference',namespace=''):
+        '''Generic loading function used by TACTIC interface by default
+
+        @params:
+        search_key: the search key of the sobject to be loaded
+        context: the context of the snapshot to be loaded
+        version: the version of the snapshot to be loaded
+        file_type: the specific file in the snapshot to be loaded
+
+        mode: reference|import|open: the mode in which to bring the file in
+        
+        
+        '''
+        server = TacticServerStub.get()
+
+        # FIXME: do we really need to make 2 calls?
+        snapshot = server.get_snapshot(search_key, context=context, version=version)
+        if not snapshot:
+            raise CGAppException("No snapshot found for [%s]" % search_key)
+
+
+        paths = server.get_paths(search_key, context, version, file_type)
+        web_paths = paths.get("web_paths")
+
+        for path in web_paths:
+            to_path = my.download(path)
+            my.load_file(to_path, namespace=namespace, mode=mode)
+
+
+        # FIXME: if the instance already exists, it will be auto renmaed by
+        # the application ... this gets tricky to discover
+        snapshot_code = snapshot.get('code')
+        if namespace:
+            tactic_node = "%s:tactic_%s" % (namespace, snapshot_code)
+        else:
+            tactic_node = "tactic_%s" % snapshot_code
+        return tactic_node
+
+
+
+    #
+    # Node methods
+    #
+
+
+    def get_tactic_nodes(my, top_node=None):
+        return my.app.get_tactic_nodes()
+
+
+    def is_tactic_node(my, node):
+        '''determines if a node is a tactic node or not
+
+        @param
+        node_name: name of the maya node
+
+        @return
+        True/False
+
+        '''
+        return my.app.is_tactic_node(node)
+
+
+
+
+    #
+    # Dependency methods
+    #
+    def get_dependent_nodes(my, tactic_node):
+        '''find all of the dependent TACTIC nodes'''
+        return ['chr001']
+
+    def get_dependent_references(my, tactic_node):
+        '''determine all of the files that are part of this tactic_node'''
+        return ['file1.ma', 'file2.ma']
+
+
+    def is_node_repo(my, tactic_node):
+        '''determines is a TACTIC node is local or from the repo'''
+        pass
+
+    def get_dependent_textures(my, tactic_node):
+        '''determine all of the files that are part of this tactic_node'''
+        return {
+            'file1': '/home/apache/whatever.png',
+            'file2': '/home/apache/whatever2.png'
+        }
+
+
+    #
+    # Loading methods
+    #
+    def load_file(my, path, mode='reference', namespace=''):
+        '''Load a file in the session
+        
+        @params:
+          path: the full path of the file to be loaded into the session
+          mode: reference|import|load
+          namespace:
+        '''
+        if mode == 'reference':
+            my.app.import_reference(path, namespace=namespace)
+        elif mode == 'load':
+            my.app.load(path)
+        elif mode == 'import':
+            my.app.import_file(path, namespace=namespace)
+        else:
+            raise CGAppException("Load mode [%s] not supported" % mode)
+
+
+
+    #
+    # Extraction methods
+    #
+    def extract_to_files(my, tactic_node, dir=None):
+
+        # first get the node to be extracted
+        top_node = my.app.get_parent( tactic_node )
+        if not top_node:
+            top_node = tactic_node
+
+        tmp_dir = my.env.get_tmpdir()
+        file_type = 'mayaAscii'
+        preserve_ref = True
+
+        context = 'temp_context'    # Should not be necessary
+        filename = '%s.ma' % tactic_node
+        instance = 'whatever'       # Should not be necessary
+
+
+        # use the old export node method to extract
+        path = my.app.export_node(top_node, context, tmp_dir,
+            type=file_type, preserve_ref=preserve_ref, filename=filename,
+            instance=instance)
+
+        return [path]
+
+
+    #
+    # Introspect methods
+    #
+    def introspect(my):
+        '''introspects the session and updates the database'''
+        pass
+
+    def set_introspect_data(my, tactic_node, snapshot):
+        '''adds intropection data to a tactic node
+        
+        @params:
+          tactic_node: the node in the maya session to add the
+            introspection data
+          snapshot: the snapshot from which to add the information
+
+        @return
+        NodeData object
+        '''
+        #if not my.is_tactic_node(tactic_node):
+        #    raise CGAppException("Node [%s] is not a Tactic node" % tactic_node)
+
+        # add the attr if it doesn't exist
+        #my.app.add_attr(tactic_node, "tacticNodeData")
+
+        # rename to tactic_<snapshot_code>
+        snapshot_code = snapshot.get("code")
+        new_tactic_node = "tactic_%s" % snapshot_code
+
+        tactic_node = my.app.rename_node(tactic_node, new_tactic_node)
+        assert tactic_node == new_tactic_node
+
+        snapshot_code = snapshot.get('code')
+
+        from pyasm.application.common import NodeData
+        node_data = NodeData(tactic_node, my.app)
+        node_data.create()
+        node_data.set_attr("snapshot", "code", snapshot_code)
+        node_data.commit()
+
+        return node_data
+
+
+
+
+
+    #
+    # Common methods
+    #
+    def download(my, url, to_dir=''):
+        return my.env.download(url, to_dir)
+
+
+
+
+
+class BaseFileExtractionHandler(object):
+
+    def __init__(my, tactic_node):
+        my.tactic_node = tactic_node
+
+        from pyasm.application.common import AppEnvironment
+        my.env = AppEnvironment.get()
+        my.app = my.env.get_app()
+
+    def execute(my):
+
+        # first get the node to be extracted
+        top_node = my.app.get_parent( my.tactic_node )
+        if not top_node:
+            top_node = my.tactic_node
+
+        tmp_dir = my.env.get_tmpdir()
+        file_type = 'mayaAscii'
+        preserve_ref = True
+
+        context = 'temp_context'    # Should not be necessary
+        filename = '%s.ma' % my.tactic_node
+        instance = 'whatever'       # Should not be necessary
+
+
+        # use the old export node method to extract
+        path = my.app.export_node(top_node, context, tmp_dir,
+            type=file_type, preserve_ref=preserve_ref, filename=filename,
+            instance=instance)
+
+        return [path]
+
+
+
+
+

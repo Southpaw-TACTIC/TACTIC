@@ -1429,7 +1429,7 @@ class WebLoginWdg(Widget):
         span = SpanWdg()
 
         if override_login:
-            up = HtmlElement.img('')
+            up = SpanWdg()
             span.add("<div class='spt_login_button'>Login</div>")
         else:
             up = HtmlElement.img('/context/icons/logo/submit_on.png')

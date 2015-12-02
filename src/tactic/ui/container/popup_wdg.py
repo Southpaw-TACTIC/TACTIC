@@ -235,51 +235,8 @@ class PopupWdg(BaseRefreshWdg):
 
         table.add_row()
 
-        """
-        # Qt doesn't support shadows very well
-        if web.get_browser() == 'Qtx':
-            # dynamically add css files
-
-            table.add_class("css_shadow_table")
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_top_left SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_top SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_top_right SPT_POPUP_SHADOW")
-
-
-            # Middle (Content) Row of Shadow table ...
-            table.add_row()
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_left SPT_POPUP_SHADOW")
-        """
-
         content_td = table.add_cell()
         content_td.add_class("css_shadow_td")
-
-        """
-        if web.get_browser() == 'Qtx':
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_right SPT_POPUP_SHADOW")
-
-
-            # Bottom Row of Shadow table ...
-            table.add_row()
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_bottom_left SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_bottom SPT_POPUP_SHADOW")
-
-            td = table.add_cell()
-            td.add_class("css_shadow_td css_shadow_bottom_right SPT_POPUP_SHADOW")
-        """
-
 
         drag_div = DivWdg()
 
@@ -428,6 +385,7 @@ class PopupWdg(BaseRefreshWdg):
         #content_div.add_style("padding: 10px")
         if not my.content_wdg:
             my.content_wdg = "No Content"
+        content_div.add_color("background", "background")
 
         content_div.add(my.content_wdg)
 
