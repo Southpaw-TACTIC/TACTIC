@@ -57,7 +57,10 @@ class MetadataElementWdg(ButtonElementWdg):
         if sobject.get_base_search_type() == "sthpw/snapshot":
             snapshot = sobject
             sobject = snapshot.get_parent()
-            search_type = sobject.get_search_type()
+            if sobject:
+                search_type = sobject.get_search_type()
+            else:
+                search_type = snapshot.get('search_type')
 
         else:
             if process:

@@ -474,7 +474,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-
     def get_onload_js(my):
         return '''
         spt.discussion = {};
@@ -1179,7 +1178,8 @@ class DiscussionWdg(BaseRefreshWdg):
             if my.contexts:
                 context_choices = my.contexts
             elif has_process and has_context:
-                context_choices = [sobj.get_value('context')]
+                sobj_context = sobj.get_value('context')
+                context_choices = [sobj_context]
             else:
                 context_choices = []
 
@@ -1319,7 +1319,8 @@ class DiscussionWdg(BaseRefreshWdg):
             if my.contexts:
                 context_choices = my.contexts
             elif has_process and has_context:
-                context_choices = [sobj.get_value('context')]
+                sobj_context = sobj.get_value('context')
+                context_choices = [sobj_context]
             else:
                 context_choices = []
 
@@ -1947,9 +1948,12 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         if process_names == ["publish"]:
             hidden = HiddenWdg("add_process", 'publish')
             #hidden.set_value("publish")
-            content_div.add(hidden)
+            content_div.add(hidden) 
+            # it is common to have use_parent==true for snapshot or task note set-up
             if my.contexts:
-                content_div.add("Warning: You should define %s in process display option. 'publish' will override." % my.contexts)
+                if not my.contexts[0].startswith('publish/'):
+
+                    content_div.add("Warning: You should define %s in process display option. 'publish' will override." % my.contexts)
         
             # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
