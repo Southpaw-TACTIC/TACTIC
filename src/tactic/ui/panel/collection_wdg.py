@@ -43,7 +43,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         collections = search.get_sobjects()
 
         top = my.top
-
+        top.add_class("spt_dialog")
         button = IconButtonWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
         top.add(button)
 
@@ -57,11 +57,46 @@ class CollectionAddWdg(BaseRefreshWdg):
 
         dialog.add("<div style='margin: 10px'><b>Add selected items to a collection</b></div>")
 
+        add_div = DivWdg()
+        dialog.add(add_div)
+        icon = IconWdg(name="Add new collection", icon="BS_PLUS")
+        add_div.add(icon)
+        add_div.add("Create new Collection")
+        add_div.add_style("margin: 3px")
+        add_div.add_style("text-align: center")
+        add_div.add_style("background-color: #e6e6e6")
+        add_div.add_style("padding: 5px")
+        add_div.add_class("hand")
+
+
+        insert_view = "edit_collection"
+
+        add_div.add_behavior( {
+            'type': 'click_up',
+            'insert_view': insert_view,
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_table_top");
+                var table = top.getElement(".spt_table");
+                var search_type = top.getAttribute("spt_search_type")
+                kwargs = {
+                  search_type: search_type,
+                  mode: "insert",
+                  view: bvr.insert_view,
+                  save_event: bvr.event_name,
+                  show_header: false,
+                  'num_columns': 2,
+                  default: {
+                    _is_collection: "true"
+                  }
+                };
+                spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
+            '''
+        } )
+
         content_div = DivWdg()
         dialog.add(content_div)
-        content_div.add_style("width: 300px")
-        content_div.add_style("padding: 10px")
-
+        content_div.add_style("width: 270px")
+        content_div.add_style("padding: 5px")
 
         text = LookAheadTextInputWdg(
             name="name",
@@ -71,15 +106,12 @@ class CollectionAddWdg(BaseRefreshWdg):
         ) 
         content_div.add(text)
 
-
         content_div.add_style("max-height: 300px")
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
 
-
         for collection in collections:
-
 
             search_type = collection.get_base_search_type()
             parts = search_type.split("/")
@@ -115,13 +147,13 @@ class CollectionAddWdg(BaseRefreshWdg):
             collection_div.add(check_div)
 
             check = CheckboxWdg("collection_key")
+            check.add_class("spt_collection_checkbox")
             check_div.add(check)
             check_div.add_style("float: left")
             check_div.add_style("margin-right: 5px")
             check_div.add_style("margin-top: -3px")
 
             check.add_attr("collection_key", collection.get_search_key() )
-
 
             info_div = DivWdg()
             collection_div.add(info_div)
@@ -130,84 +162,55 @@ class CollectionAddWdg(BaseRefreshWdg):
             if num_items:
                 info_div.add(" (%s)" % num_items)
 
-
             collection_div.add("<hr/>")
 
 
-            check.add_behavior( {
-                'type': 'click',
-                'cbjs_action': '''
-                var search_keys = spt.table.get_selected_search_keys(false);
-                if (search_keys.length == 0) {
-                    spt.notify.show_message("Nothing selected");
-                    return;
-                }
-                var collection_key = bvr.src_el.getAttribute("collection_key");
+        add_button = ActionButtonWdg(title="Add")
+        add_button.add_style("margin: 10px")
 
-                var cmd = "tactic.ui.panel.CollectionAddCmd";
-                var kwargs = {
-                    collection_key: collection_key,
-                    search_keys: search_keys
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(cmd, kwargs);
-                '''
-            } )
+        dialog.add(add_button)
 
-
-        add_div = DivWdg()
-        dialog.add(add_div)
-        icon = IconWdg(name="Add new collection", icon="BS_PLUS")
-        add_div.add(icon)
-        add_div.add("Create new Collection")
-        add_div.add_style("margin: 10px")
-        add_div.add_class("hand")
-
-
-        insert_view = "edit_collection"
-
-        add_div.add_behavior( {
-            'type': 'click_up',
-            'insert_view': insert_view,
-            'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
-                kwargs = {
-                  search_type: search_type,
-                  mode: "insert",
-                  view: bvr.insert_view,
-                  save_event: bvr.event_name,
-                  show_header: false,
-                  'num_columns': 2,
-                  default: {
-                    _is_collection: "true"
-                  }
-                };
-                spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
-            '''
-        } )
-
- 
-
-        """
-        button = ActionButtonWdg(title="Add")
-        button.add_style("margin: 10px")
-        dialog.add(button)
-
-
-        button.add_behavior( {
+        add_button.add_behavior( {
             'type': 'click',
             'cbjs_action': '''
             var search_keys = spt.table.get_selected_search_keys(false);
 
-            var top = bvr.src_el.getParent(".spt_content_top");
-            var values = spt.api.get_input_values(top);
-            console.log(values);
+            if (search_keys.length == 0) {
+                spt.notify.show_message("No assets selected.");
+                return;
+            }
 
+            var top = bvr.src_el.getParent(".spt_dialog");
+            var checkboxes = top.getElements(".spt_collection_checkbox");
+            var cmd = "tactic.ui.panel.CollectionAddCmd";
+            var server = TacticServerStub.get();
+            var is_checked = false;
+
+            for (i = 0; i < checkboxes.length; i++) {
+                var checked_collection_attr = checkboxes[i].attributes;
+                var collection_key = checked_collection_attr[3].value;
+                
+                if (checkboxes[i].checked == true) {
+                    // if there is at least one checkbox selected, set is_checked to 'true'
+
+                    is_checked = true;
+                    var search_keys = spt.table.get_selected_search_keys(false);
+                    var kwargs = {
+                        collection_key: collection_key,
+                        search_keys: search_keys
+                    }
+                    server.execute_cmd(cmd, kwargs);
+                }
+            }
+
+            if (is_checked == false) {
+                spt.notify.show_message("No collection selected.");
+                return;
+            }
+            
             '''
         } )
-        """
+        
 
         return top
 
@@ -360,7 +363,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         button.add_style("display: inline-block")
         button.add_style("vertical-align: top")
 
-        insert_view = "insert"
+        insert_view = "edit_collection"
 
         button.add_behavior( {
             'type': 'click_up',
@@ -373,8 +376,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                   view: bvr.insert_view,
                   save_event: bvr.event_name,
                   show_header: false,
+                  num_columns: 2,
                   default: {
-                    _is_collection: true,
+                    _is_collection: "true"
                   }
                 };
                 var popup = spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
