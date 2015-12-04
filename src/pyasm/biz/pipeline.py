@@ -72,7 +72,7 @@ class Process(Base):
         if node_type == "auto":
             node_type = "action"
         if not node_type:
-            node_type = "node"
+            node_type = "manual"
         return node_type
 
     def get_group(my):

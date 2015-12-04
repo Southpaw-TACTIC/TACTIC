@@ -979,7 +979,7 @@ class Common(Base):
             elif char == "}":
                 token = "".join(token)
                 args_keys.append(token)
-                re_expression = re_expression.replace("{%s}"%token, "([\w/=\?&\.-]+)")
+                re_expression = re_expression.replace("{%s}"%token, "([\w/=\?@&\.-]+)")
                 token = []
             else:
                 token.append(char)

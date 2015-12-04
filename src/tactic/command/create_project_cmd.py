@@ -100,6 +100,7 @@ class CreateProjectCmd(Command):
         project_code = my.kwargs.get('project_code')
         project_title = my.kwargs.get('project_title')
         project_type = my.kwargs.get('project_type')
+        project_description = my.kwargs.get("description")
         if not project_type:
             project_type = "simple"
 
@@ -135,6 +136,7 @@ class CreateProjectCmd(Command):
                     project_type_sobj = SearchType.create("sthpw/project_type")
                     project_type_sobj.set_value("code", project_type)
                     project_type_sobj.set_value("type", "simple")
+
                     project_type_sobj.commit()
 
         # set the current project to Admin
@@ -146,6 +148,8 @@ class CreateProjectCmd(Command):
         project.set_value("code", project_code)
         project.set_value("title", project_title)
         project.set_value("type", project_type)
+        if project_description:
+            project.set_value("description", project_description)
         # set the update of the database to current (this is obsolete)
         #project.set_value("last_db_update", "now()")
         project.set_value("last_version_update", "2.5.0.v01")
