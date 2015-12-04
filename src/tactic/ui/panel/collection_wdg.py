@@ -52,6 +52,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
         dialog = DialogWdg()
         top.add(dialog)
+        dialog.add_class("dialog_top")
         dialog.set_as_activator(button, offset={'x':-25,'y': 0})
         dialog.add_title("Collections")
 
@@ -65,6 +66,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         add_div.add_style("text-align: center")
         add_div.add_style("background-color: #e6e6e6")
         add_div.add_style("padding: 5px")
+        add_div.add_style("height: 20px")
         add_div.add_class("hand")
 
 
@@ -76,7 +78,12 @@ class CollectionAddWdg(BaseRefreshWdg):
             'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
+                var search_type = top.getAttribute("spt_search_type");
+                
+                // Hide the dialog when popup loads.
+                var dialog_top = bvr.src_el.getParent(".dialog_top");
+                dialog_top.style.visibility = "hidden";
+
                 kwargs = {
                   search_type: search_type,
                   mode: "insert",
