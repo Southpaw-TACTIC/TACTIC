@@ -62,7 +62,6 @@ class CollectionAddWdg(BaseRefreshWdg):
         icon = IconWdg(name="Add new collection", icon="BS_PLUS")
         add_div.add(icon)
         add_div.add("Create new Collection")
-        add_div.add_style("margin: 3px")
         add_div.add_style("text-align: center")
         add_div.add_style("background-color: #e6e6e6")
         add_div.add_style("padding: 5px")
@@ -96,7 +95,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         content_div = DivWdg()
         dialog.add(content_div)
         content_div.add_style("width: 270px")
-        content_div.add_style("padding: 5px")
+        content_div.add_style("padding: 10px")
 
         text = LookAheadTextInputWdg(
             name="name",
