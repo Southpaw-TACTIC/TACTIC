@@ -61,10 +61,12 @@ class CollectionAddWdg(BaseRefreshWdg):
         add_div = DivWdg()
         dialog.add(add_div)
         icon = IconWdg(name="Add new collection", icon="BS_PLUS")
+        icon.add_style("opacity: 0.6")
+        icon.add_style("padding-right: 3px")
         add_div.add(icon)
         add_div.add("Create new Collection")
         add_div.add_style("text-align: center")
-        add_div.add_style("background-color: #e6e6e6")
+        add_div.add_style("background-color: #EEEEEE")
         add_div.add_style("padding: 5px")
         add_div.add_style("height: 20px")
         add_div.add_class("hand")
@@ -102,7 +104,8 @@ class CollectionAddWdg(BaseRefreshWdg):
         content_div = DivWdg()
         dialog.add(content_div)
         content_div.add_style("width: 270px")
-        content_div.add_style("padding: 10px")
+        content_div.add_style("padding: 5px")
+        content_div.add_style("padding-bottom: 0px")
 
         text = LookAheadTextInputWdg(
             name="name",
@@ -171,9 +174,11 @@ class CollectionAddWdg(BaseRefreshWdg):
             collection_div.add("<hr/>")
 
 
-        add_button = ActionButtonWdg(title="Add")
-        add_button.add_style("margin: 10px")
-
+        add_button = DivWdg()
+        add_button.add("Add")
+        add_button.add_style("margin: 0px 10px 10px 10px")
+        add_button.add_style("width: 50px")
+        add_button.add_class("btn btn-primary")
         dialog.add(add_button)
 
         add_button.add_behavior( {
@@ -192,14 +197,21 @@ class CollectionAddWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var is_checked = false;
 
+            var dialog_top = bvr.src_el.getParent(".dialog_top");
+
             for (i = 0; i < checkboxes.length; i++) {
                 var checked_collection_attr = checkboxes[i].attributes;
                 var collection_key = checked_collection_attr[3].value;
-                
+                // Preventing a collection being added to itself, check if search_keys contain collection_key.
+                if (search_keys.indexOf(collection_key) != -1) {
+                    spt.notify.show_message("Collection cannot be added to itself.");
+                    return;
+                }
+
                 if (checkboxes[i].checked == true) {
                     // if there is at least one checkbox selected, set is_checked to 'true'
-
                     is_checked = true;
+
                     var search_keys = spt.table.get_selected_search_keys(false);
                     var kwargs = {
                         collection_key: collection_key,
@@ -212,6 +224,11 @@ class CollectionAddWdg(BaseRefreshWdg):
             if (is_checked == false) {
                 spt.notify.show_message("No collection selected.");
                 return;
+            }
+            else {
+                spt.notify.show_message("Assets added to Collection.");
+                // refresh dialog_top, so users can see the number change in Collections
+                spt.panel.refresh(dialog_top);
             }
             
             '''
