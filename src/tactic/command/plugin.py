@@ -1142,7 +1142,10 @@ class PluginUninstaller(PluginBase):
 
         # delete all the sobjects present in the plugin
         for sobject in sobjects:
-            sobject.delete()
+            try:
+                sobject.delete()
+            except Exception, e:
+                print "WARNING: could not delete [%s] due to error [%s]" % (sobject.get_search_key(), e)
 
 
     def handle_include(my, node):
@@ -1693,7 +1696,14 @@ class PluginTools(PluginBase):
 
                     try:
                         if commit:
-                            sobject.commit(triggers=False)
+                            try:
+                                sobject.commit(triggers=False)
+                            except UnicodeDecodeError, e:
+                                raise
+                            except Exception, e:
+                                print "WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e)
+                                continue
+
 
                             chunk = 100
                             if my.verbose and count and count % chunk == 0:
