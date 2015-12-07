@@ -22,7 +22,8 @@ import getpass
 import xmlrpclib, sys, os, shutil
 
 import imp
-get_md5 = imp.load_source('get_md5', 'C:/Program Files/Southpaw/tactic/src/bin/get_md5.py')
+md5_path = "%s/src/bin/get_md5.py" % tacticenv.get_install_dir()
+get_md5 = imp.load_source('get_md5', md5_path)
 
 from pyasm.common import Xml,TacticException, Config
 from pyasm.security import Batch
