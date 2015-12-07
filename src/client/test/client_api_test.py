@@ -21,6 +21,9 @@ import unittest
 import getpass
 import xmlrpclib, sys, os, shutil
 
+import imp
+get_md5 = imp.load_source('get_md5', 'C:/Program Files/Southpaw/tactic/src/bin/get_md5.py')
+
 from pyasm.common import Xml,TacticException, Config
 from pyasm.security import Batch
 from pyasm.checkin import CheckinException
@@ -29,7 +32,6 @@ from pyasm.security import Batch
 from pyasm.biz import Project
 from pyasm.prod.service import ApiException
 from pyasm.unittest import UnittestEnvironment
-
 
 
 class ClientApiTest(unittest.TestCase):
@@ -82,20 +84,23 @@ class ClientApiTest(unittest.TestCase):
             except Exception, e:
                 x = e.__str__().find("Login/Password combination incorrect") == -1
                 my.assertEquals(False, x, e.__str__() )
+        
+        
+        my.server.set_ticket(test_ticket)		
+        description = "run 10 or more tests"		
+        my.server.start("Client API Unittest", description)		
+		
 
-       
-        my.server.set_ticket(test_ticket)
-        description = "run 10 or more tests"
-        my.server.start("Client API Unittest", description)
-
-        # test basic functionality in a transaction.  A new ticket is
+        # test basic functionality in a transaction.  A new ticket is		
         # generated which is used to append to the transaction.
+	 
         try:
+            '''
             people = my.server.query("unittest/person")
             for person in people:
                 my.server.delete_sobject(person.get('__search_key__') )
 
-
+            
             #my._test_widget()
             my._test_version()
 
@@ -134,6 +139,8 @@ class ClientApiTest(unittest.TestCase):
             my._test_eval()
             my._test_execute()
             my._test_create_task()
+            '''
+            my._test_upload()
         except Exception:
             my.server.abort()
             raise
@@ -1966,6 +1973,103 @@ class ClientApiTest(unittest.TestCase):
         person_sk = result.get('__search_key__')
         task = my.server.create_task(person_sk, process='start', assigned='ben')
         my.assertEquals(task.get('assigned'), 'ben')
+
+    def _test_upload(my):
+        from pyasm.common import Environment
+        
+        file_path = "%s/test/miso_ramen.jpg" % my.client_lib_dir
+        size  = os.path.getsize(file_path)
+        checksum = get_md5.get_md5(file_path)
+       
+        my.server.upload_file(file_path)
+        transaction_ticket = my.server.get_transaction_ticket()
+
+        upload_dir = Environment.get_upload_dir(transaction_ticket)
+        upload_path = "%s/miso_ramen.jpg" % upload_dir
+
+        exists = os.path.exists(upload_path)
+        my.assertEquals(True, exists)
+    
+        upload_size = os.path.getsize(upload_path)
+        my.assertEquals(size, upload_size)
+
+        upload_checksum = get_md5.get_md5(upload_path)
+        my.assertEquals(checksum, upload_checksum)
+
+        # Do further upload tests if test files exist
+        file_name = "large_file.jpg"
+        file_path = "%s/test/%s" % (my.client_lib_dir, file_name)
+        if os.path.exists(file_path):
+            my._test_multipart_upload(file_name)
+
+        file_name = "base64_file.png"
+        file_path = "%s/test/%s" % (my.client_lib_dir, file_name)
+        if os.path.exists(file_path):
+            my._test_base64_upload(file_name)
+      
+        file_name = "large_base64_file.png"
+        file_path = "%s/test/%s" % (my.client_lib_dir, file_name)
+        if os.path.exists(file_path):
+            my._test_base64_upload(file_name)
+
+    def _test_multipart_upload(my, file_name):
+        from pyasm.common import Environment
+
+        file_path = "%s/test/%s" % (my.client_lib_dir, file_name)
+        my.server.upload_file(file_path)
+        transaction_ticket = my.server.get_transaction_ticket()
+        upload_dir = Environment.get_upload_dir(transaction_ticket)
+        upload_path = "%s/%s" % (upload_dir, file_name)
+        size = os.path.getsize(file_path)
+        checksum = get_md5.get_md5(upload_path) 
+
+        exists = os.path.exists(upload_path)
+        my.assertEquals(True, exists)
+
+        upload_size = os.path.getsize(upload_path)
+        my.assertEquals(size, upload_size)
+
+        upload_checksum = get_md5.get_md5(upload_path)
+        my.assertEquals(checksum, upload_checksum)
+
+    def _test_base64_upload(my, file_name):
+        from pyasm.common import Environment
+        file_path = "%s/test/%s" % (my.client_lib_dir, file_name)
+        my.server.upload_file(file_path)
+        transaction_ticket = my.server.get_transaction_ticket()
+        upload_dir = Environment.get_upload_dir(transaction_ticket)
+        
+        # On upload, an action file should be created in the same
+        # upload directory.
+        upload_path = "%s/%s" % (upload_dir, file_name)
+        action_path = "%s.action" % upload_path
+        file_exists = os.path.exists(upload_path)
+        action_exists = os.path.exists(action_path)
+        my.assertEquals(True, file_exists)
+        my.assertEquals(True, action_exists)
+        
+        decoded_data = open(upload_path, "rb")
+        header = decoded_data.read(22)
+        my.assertNotEqual(header, "data:image/png;base64,")
+        decoded_data.close()
+
+        # On upload a file of the same name, the original action 
+        # file should be deleted.
+        unencoded_file = "%s/test/miso_ramen.jpg" % my.client_lib_dir
+        temporary_name = "%s/test/base64_original.png" % my.client_lib_dir
+        os.rename(file_path, temporary_name) 
+        os.rename(unencoded_file, file_path)
+
+        my.server.upload_file(file_path)
+
+        upload_exists = os.path.exists(upload_path)
+        action_exists = os.path.exists(action_path)
+        my.assertEquals(True, upload_exists)
+        my.assertEquals(False, action_exists)
+        
+        # Revert names
+        os.rename(file_path, unencoded_file)
+        os.rename(temporary_name, file_path) 
 
     def _test_pipeline(my):
         search_type = "unittest/person"
