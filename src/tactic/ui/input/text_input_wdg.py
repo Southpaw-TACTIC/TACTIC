@@ -68,7 +68,7 @@ class TextInputWdg(BaseInputWdg):
         'category': 'Options'
     },
     'display_format': {
-        'description': 'format key to dispaly the data',
+        'description': 'format key to display the data',
         'type': 'TextWdg',
         'order': 2,
         'category': 'Options'
@@ -449,7 +449,28 @@ class TextInputWdg(BaseInputWdg):
             my.icon_wdg.add_class("input-group-addon")
             my.icon_wdg.add(icon)
 
-
+            # Below is added only for collection search icon
+            # Adding the same custom_cbk from Collections to icon click_up
+            is_collection = my.kwargs.get("is_collection")
+            if is_collection:
+                custom_cbk = my.kwargs.get("custom_cbk")
+                icon.add_behavior( {
+                    'type': 'mouseover',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 1.0);
+                    '''
+                } )
+                icon.add_behavior( {
+                    'type': 'mouseout',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 0.6);
+                    '''
+                } )
+                icon.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': custom_cbk['enter']
+                } )
+            
 
 
 

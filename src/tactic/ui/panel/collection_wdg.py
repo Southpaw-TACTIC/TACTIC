@@ -43,7 +43,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         collections = search.get_sobjects()
 
         top = my.top
-
+        top.add_class("spt_dialog")
         button = IconButtonWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
         top.add(button)
 
@@ -52,34 +52,116 @@ class CollectionAddWdg(BaseRefreshWdg):
 
         dialog = DialogWdg()
         top.add(dialog)
+        
         dialog.set_as_activator(button, offset={'x':-25,'y': 0})
         dialog.add_title("Collections")
 
         dialog.add("<div style='margin: 10px'><b>Add selected items to a collection</b></div>")
 
+        add_div = DivWdg()
+        dialog.add(add_div)
+        icon = IconWdg(name="Add new collection", icon="BS_PLUS")
+        icon.add_style("opacity: 0.6")
+        icon.add_style("padding-right: 3px")
+        add_div.add(icon)
+        add_div.add("Create new Collection")
+        add_div.add_style("text-align: center")
+        add_div.add_style("background-color: #EEEEEE")
+        add_div.add_style("padding: 5px")
+        add_div.add_style("height: 20px")
+        add_div.add_class("hand")
+
+
+        insert_view = "edit_collection"
+
+        add_div.add_behavior( {
+            'type': 'click_up',
+            'insert_view': insert_view,
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_table_top");
+                var table = top.getElement(".spt_table");
+                var search_type = top.getAttribute("spt_search_type");
+                
+                // Hide the dialog when popup loads.
+                var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
+                dialog_top.style.visibility = "hidden";
+
+                kwargs = {
+                  search_type: search_type,
+                  mode: "insert",
+                  view: bvr.insert_view,
+                  save_event: bvr.event_name,
+                  show_header: false,
+                  'num_columns': 2,
+                  default: {
+                    _is_collection: true
+                  }
+                };
+                spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
+            '''
+        } )
+
         content_div = DivWdg()
         dialog.add(content_div)
-        content_div.add_style("width: 300px")
-        content_div.add_style("padding: 10px")
+        content_div.add_style("width: 270px")
+        content_div.add_style("padding: 5px")
+        content_div.add_style("padding-bottom: 0px")
 
+        custom_cbk = {}
+        custom_cbk['enter'] = '''
 
+            var top = bvr.src_el.getParent(".spt_dialog");
+            var input = top.getElement(".spt_main_search");
+            var search_value = input.value.toLowerCase();
+            var collections = top.getElements(".spt_collection_div");
+            var num_result = 0;
+            for (i = 0; i < collections.length; i++) {
+                // Access the Collection title (without number count) 
+                var collection_title = collections[i].attributes[0].value.toLowerCase();
+
+                if (collection_title.indexOf(search_value) != '-1') {
+                    collections[i].style.display = "block";
+                    num_result += 1;
+                }
+                else {
+                    collections[i].style.display = "none";
+                }
+            }
+            // if no search results, display all
+            if (num_result == 0) {
+                for (i = 0; i < collections.length; i++) {
+                    collections[i].style.display = "block";
+                }
+            }
+
+        '''
+        filters = []
+        filters.append(("_is_collection",True))
+        filters.append(("status","Verified"))
         text = LookAheadTextInputWdg(
-            name="name",
+            search_type = "workflow/asset",
+            column="name",
             icon="BS_SEARCH",
             icon_pos="right",
-            width="100%"
-        ) 
+            width="100%",
+            hint_text="'Enter' to search for Colllection...",
+            value_column="name",
+            filters=filters,
+            custom_cbk=custom_cbk,
+            is_collection=True
+        )
+        text.add_class("spt_main_search")
+
         content_div.add(text)
-
-
-        content_div.add_style("max-height: 300px")
+        # set minimum if there is at least one collection
+        if len(collections) > 0:
+            content_div.add_style("min-height: 300")
+        content_div.add_style("max-height: 300")
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
 
-
         for collection in collections:
-
 
             search_type = collection.get_base_search_type()
             parts = search_type.split("/")
@@ -90,6 +172,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
 
             collection_div = DivWdg()
+            collection_div.add_class("spt_collection_div")
             content_div.add(collection_div)
             collection_div.add_style("margin: 3px 5px 0px 5px")
 
@@ -108,6 +191,9 @@ class CollectionAddWdg(BaseRefreshWdg):
 
 
             name = collection.get_value("name")
+            # Adding Collection title (without the number count) as an attribute
+            collection_div.set_attr("collection_name", name)
+
             if not name:
                 name = collection.get_value("code")
 
@@ -115,13 +201,13 @@ class CollectionAddWdg(BaseRefreshWdg):
             collection_div.add(check_div)
 
             check = CheckboxWdg("collection_key")
+            check.add_class("spt_collection_checkbox")
             check_div.add(check)
             check_div.add_style("float: left")
             check_div.add_style("margin-right: 5px")
             check_div.add_style("margin-top: -3px")
 
             check.add_attr("collection_key", collection.get_search_key() )
-
 
             info_div = DivWdg()
             collection_div.add(info_div)
@@ -130,83 +216,69 @@ class CollectionAddWdg(BaseRefreshWdg):
             if num_items:
                 info_div.add(" (%s)" % num_items)
 
-
             collection_div.add("<hr/>")
 
 
-            check.add_behavior( {
-                'type': 'click',
-                'cbjs_action': '''
-                var search_keys = spt.table.get_selected_search_keys(false);
-                if (search_keys.length == 0) {
-                    spt.notify.show_message("Nothig selected");
-                    return;
-                }
-                var collection_key = bvr.src_el.getAttribute("collection_key");
+        add_button = DivWdg()
+        add_button.add("Add")
+        add_button.add_style("margin: 0px 10px 10px 10px")
+        add_button.add_style("width: 50px")
+        add_button.add_class("btn btn-primary")
+        dialog.add(add_button)
 
-                var cmd = "tactic.ui.panel.base_table_layout_wdg.CollectionAddCmd";
-                var kwargs = {
-                    collection_key: collection_key,
-                    search_keys: search_keys
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(cmd, kwargs);
-                '''
-            } )
-
-
-        add_div = DivWdg()
-        dialog.add(add_div)
-        icon = IconWdg(name="Add new collection", icon="BS_PLUS")
-        add_div.add(icon)
-        add_div.add("Create new Collection")
-        add_div.add_style("margin: 10px")
-        add_div.add_class("hand")
-
-
-        insert_view = "insert"
-
-        add_div.add_behavior( {
-            'type': 'click_up',
-            'insert_view': insert_view,
-            'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_table_top");
-                var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
-                kwargs = {
-                  search_type: search_type,
-                  mode: 'insert',
-                  view: bvr.insert_view,
-                  save_event: bvr.event_name,
-                  show_header: false,
-                  default: {
-                    _is_collection: true,
-                  }
-                };
-                spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
-            '''
-        } )
-
- 
-
-        """
-        button = ActionButtonWdg(title="Add")
-        button.add_style("margin: 10px")
-        dialog.add(button)
-
-
-        button.add_behavior( {
+        add_button.add_behavior( {
             'type': 'click',
             'cbjs_action': '''
             var search_keys = spt.table.get_selected_search_keys(false);
 
-            var top = bvr.src_el.getParent(".spt_content_top");
-            var values = spt.api.get_input_values(top);
-            console.log(values);
+            if (search_keys.length == 0) {
+                spt.notify.show_message("No assets selected.");
+                return;
+            }
 
+            var top = bvr.src_el.getParent(".spt_dialog");
+            var checkboxes = top.getElements(".spt_collection_checkbox");
+            var cmd = "tactic.ui.panel.CollectionAddCmd";
+            var server = TacticServerStub.get();
+            var is_checked = false;
+
+            var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
+
+            for (i = 0; i < checkboxes.length; i++) {
+                var checked_collection_attr = checkboxes[i].attributes;
+                var collection_key = checked_collection_attr[3].value;
+                // Preventing a collection being added to itself, check if search_keys contain collection_key.
+                if (search_keys.indexOf(collection_key) != -1) {
+                    spt.notify.show_message("Collection cannot be added to itself.");
+                    return;
+                }
+
+                if (checkboxes[i].checked == true) {
+                    // if there is at least one checkbox selected, set is_checked to 'true'
+                    is_checked = true;
+
+                    var search_keys = spt.table.get_selected_search_keys(false);
+                    var kwargs = {
+                        collection_key: collection_key,
+                        search_keys: search_keys
+                    }
+                    server.execute_cmd(cmd, kwargs);
+                }
+            }
+
+            if (is_checked == false) {
+                spt.notify.show_message("No collection selected.");
+                return;
+            }
+            else {
+                spt.notify.show_message("Assets added to Collection.");
+                // refresh dialog_top, so users can see the number change in Collections
+                spt.panel.refresh(dialog_top);
+            }
+            
             '''
         } )
-        """
+        
 
         return top
 
@@ -337,6 +409,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         title_div = DivWdg("Collection Manager") 
         div.add(title_div)
+        div.add_class("spt_collection_left")
         title_div.add_style("font-size: 1.2em")
         title_div.add_style("font-weight: bold")
 
@@ -359,7 +432,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         button.add_style("display: inline-block")
         button.add_style("vertical-align: top")
 
-        insert_view = "insert"
+        insert_view = "edit_collection"
 
         button.add_behavior( {
             'type': 'click_up',
@@ -372,8 +445,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                   view: bvr.insert_view,
                   save_event: bvr.event_name,
                   show_header: false,
+                  num_columns: 2,
                   default: {
-                    _is_collection: true,
+                    _is_collection: true
                   }
                 };
                 var popup = spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
@@ -381,14 +455,54 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         } )
         text_div = DivWdg()
         shelf_div.add(text_div)
+
+        custom_cbk = {}
+        custom_cbk['enter'] = '''
+
+            var top = bvr.src_el.getParent(".spt_collection_left");
+            var input = top.getElement(".spt_main_search");
+            var search_value = input.value.toLowerCase();
+            var collections = top.getElements(".spt_collection_div");
+
+            var num_result = 0;
+            for (i = 0; i < collections.length; i++) {
+                // Access the Collection title (without number count) 
+                var collection_title = collections[i].attributes[4].nodeValue.toLowerCase();
+
+                if (collection_title.indexOf(search_value) != '-1') {
+                    collections[i].style.display = "block";
+                    num_result += 1;
+                }
+                else {
+                    collections[i].style.display = "none";
+                }
+            }
+            // if no search results, display all
+            if (num_result == 0) {
+                for (i = 0; i < collections.length; i++) {
+                    collections[i].style.display = "block";
+                }
+            }
+
+        '''
+
+        filters = []
+        filters.append(("_is_collection",True))
+        filters.append(("status","Verified"))
         text = LookAheadTextInputWdg(
-            name="name",
-            icon="BS_SEARCH",
-            icon_pos="right",
-            width="100%"
-        ) 
+            search_type = "workflow/asset",
+            column="name",
+            width="100%",
+            hint_text="Enter terms to filter collections...",
+            value_column="name",
+            filters=filters,
+            custom_cbk=custom_cbk,
+            is_collection=True
+        )
+        text.add_class("spt_main_search")
+
         text_div.add(text)
-        text_div.add_style("width: 200px")
+        text_div.add_style("width: 270px")
         text_div.add_style("display: inline-block")
 
         div.add("<br clear='all'/>")
@@ -495,7 +609,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
             collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"))
             collections_div.add(collection_wdg)
-
+            collection_wdg.add_class("spt_collection_div")
 
             subcollection_wdg = DivWdg()
             collections_div.add(subcollection_wdg)
@@ -603,20 +717,26 @@ class CollectionContentWdg(BaseRefreshWdg):
                     spt.notify.show_message("Nothing selected to remove");
                     return;
                 }
+                var ok = null;
+                var cancel = function() { return };
+                var msg = "Are you sure you wish to remove the selected Assets from the Collection?";
 
-                var cls = 'tactic.ui.panel.CollectionRemoveCmd';
-                var kwargs = {
-                    collection_key: bvr.collection_key,
-                    search_keys: search_keys,
+                var ok = function() {
+                    var cls = 'tactic.ui.panel.CollectionRemoveCmd';
+                    var kwargs = {
+                        collection_key: bvr.collection_key,
+                        search_keys: search_keys,
+                    }
+                    var server = TacticServerStub.get();
+                    try {
+                        server.execute_cmd(cls, kwargs);
+                        spt.table.remove_selected();
+                    } catch(e) {
+                        spt.alert(spt.exception.handler(e));
+                    }
                 }
-                var server = TacticServerStub.get();
-                try {
-                    server.execute_cmd(cls, kwargs);
-                    spt.table.remove_selected();
-                } catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-
+                
+                spt.confirm(msg, ok, cancel);
 
                 '''
             } )
@@ -633,27 +753,33 @@ class CollectionContentWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'collection_key': my.collection_key,
                 'cbjs_action': '''
+                var ok = null;
+                var cancel = function() { return };
+                var msg = "Are you sure you wish to delete the Collection?";
 
-                var cls = 'tactic.ui.panel.CollectionDeleteCmd';
-                var kwargs = {
-                    collection_key: bvr.collection_key,
+                var ok = function() {
+                    var cls = 'tactic.ui.panel.CollectionDeleteCmd';
+                    var kwargs = {
+                        collection_key: bvr.collection_key,
+                    }
+                    var server = TacticServerStub.get();
+                    try {
+                        server.execute_cmd(cls, kwargs);
+                    } catch(e) {
+                        spt.alert(e);
+                        return;
+                    }
+
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    if (top) {
+                        var layout = top.getParent(".spt_layout");
+                        spt.table.set_layout(layout);
+                    }
+
+                    spt.table.run_search();
                 }
-                var server = TacticServerStub.get();
-                try {
-                    server.execute_cmd(cls, kwargs);
-                } catch(e) {
-                    spt.alert(e);
-                    return;
-                }
 
-                var top = bvr.src_el.getParent(".spt_collection_top");
-                if (top) {
-                    var layout = top.getParent(".spt_layout");
-                    spt.table.set_layout(layout);
-                }
-
-                spt.table.run_search();
-
+                spt.confirm(msg, ok, cancel);
                 '''
             } )
 

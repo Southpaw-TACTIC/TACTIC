@@ -232,7 +232,7 @@ class BaseAppServer(Base):
             if reset_msg:
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, reset_msg)
 
-
+            web_wdg = None
             #sudo = Sudo()
             try:
                 # get the project from the url because we are still 
@@ -243,28 +243,22 @@ class BaseAppServer(Base):
                         project = Project.get_by_code(current_project)
                         assert project
                 except Exception, e:
-                    web_wdg = None
+                    pass
                 else:
 
                     # custom global site login widget
                     if not current_project or current_project == "default":
                         current_project = Project.get_default_project()
                     if current_project and current_project != "default":
-                        Project.set_project(current_project)
+                        try:
+                            Project.set_project(current_project)
+                        except SecurityException, e:
+                            print e
+                            if 'is not permitted to view project' not in e.__str__():
+                                raise
 
-                        # FIXME: this doesn't work!!!  It resets the home page
-                        """
-                        search = Search("config/url")
-                        urls = search.get_sobjects()
-                        open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
-                        print "xxxx: ", open_hashes
-                        """
-                        open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
-                        if len(my.hash) >= 1 and my.hash[0] in open_hashes:
-                            link = "/%s" % "/".join(my.hash)
-                            web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
-                        else:
-                            web_wdg = None
+                        
+                       
 
                         if not web_wdg:
                             web_wdg = site_obj.get_login_wdg()
@@ -334,7 +328,7 @@ class BaseAppServer(Base):
             security = my.handle_security(security)
             is_logged_in = security.is_logged_in()
         except Exception, e:
-            print "Exception: ", e
+            print "AppServer Exception: ", e
             return my.handle_not_logged_in()
 
  
