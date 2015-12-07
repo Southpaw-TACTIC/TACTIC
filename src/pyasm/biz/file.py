@@ -82,7 +82,7 @@ if os.name == 'nt':
     ffprobe_exe = "ffprobe.exe"
     ffmpeg_exe = "ffmpeg.exe"
 
-if Common.which(ffmpeg_exe):
+if Common.which(ffprobe_exe):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
