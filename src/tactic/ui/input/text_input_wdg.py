@@ -1226,7 +1226,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-    def get_test_wdg(my, results, values, labels):
+    def get_icon_result_wdg(my, results, values, labels):
         from tactic.ui.panel import ThumbWdg2
 
         top = DivWdg()
@@ -1292,7 +1292,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-    def get_value_column_result(my, results, values, labels):
+    def get_results_wdg(my, results, values, labels):
         top = DivWdg()
 
         for i, result in enumerate(results):
@@ -1472,38 +1472,36 @@ class TextInputResultsWdg(BaseRefreshWdg):
             info_dict['results'] = results
    
 
-
-        test = False
-        if test:
+        mode = "icon"
+        if mode == "icon":
 
             results = search_dict.get(search_type).get('results')
 
             labels = [x.get_value(column) for x in results]
             values = [x.get_value(value_column) for x in results]
 
-            widget = my.get_test_wdg(search_dict, search_type, column, value_column)
+            widget = my.get_icon_result_wdg(results, values, labels )
             top.add(widget)
             return top
-
 
 
         # if the value column is specified then don't use keywords
         # this assume only 1 column is used with "value_column" option
-        if value_column:
+        elif value_column:
 
             results = search_dict.get(search_type).get('results')
 
             labels = [x.get_value(column) for x in results]
             values = [x.get_value(value_column) for x in results]
 
-            widget = my.get_value_column_result(results, labels, values)
+            widget = my.get_results_wdg(results, values, labels)
             top.add(widget)
             return top
 
 
 
 
-        # use keyword searching
+        # use keywords
 
 
         top.add_style('font-size: 12px')
