@@ -95,7 +95,7 @@ class ClientApiTest(unittest.TestCase):
         # generated which is used to append to the transaction.
 	 
         try:
-            '''
+            
             people = my.server.query("unittest/person")
             for person in people:
                 my.server.delete_sobject(person.get('__search_key__') )
@@ -139,7 +139,6 @@ class ClientApiTest(unittest.TestCase):
             my._test_eval()
             my._test_execute()
             my._test_create_task()
-            '''
             my._test_upload()
         except Exception:
             my.server.abort()
