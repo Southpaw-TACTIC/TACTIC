@@ -22,8 +22,6 @@ from pyasm.security import Sudo
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
 
-from tactic.command import PythonTrigger
-
 class PipelineTaskStatusTrigger(Trigger):
     # if the "ingest" task is set to "Approved",
     # then set the "work" task to "Pending"
@@ -82,17 +80,6 @@ class PipelineTaskStatusTrigger(Trigger):
             if src_status and src_task.get_value("status") != src_status:
                 continue
 
-            # Execute script if necessary 
-            script_path = trigger_sobj.get_value("script_path")
-            if script_path:
-                cmd = PythonTrigger(script_path=script_path)
-                cmd.set_input(my.input)
-                cmd.set_output(my.input)
-                cmd.execute()
-                continue
-
-            # If no script was execute, then assume other task
-            # statuses should be updated.
             dst_process = data.get("dst_process")
             dst_status = data.get("dst_status")
 
