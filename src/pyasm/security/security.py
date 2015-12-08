@@ -1262,6 +1262,7 @@ class Security(Base):
 
         my._do_login()
 
+        """
         access_manager = my.get_access_manager()
         xml = Xml()
         xml.read_string('''
@@ -1270,7 +1271,7 @@ class Security(Base):
         </rules>
         ''')
         access_manager.add_xml_rules(xml)
-
+        """
 
 
 
