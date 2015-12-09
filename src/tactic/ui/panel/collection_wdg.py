@@ -153,8 +153,10 @@ class CollectionAddWdg(BaseRefreshWdg):
         text.add_class("spt_main_search")
 
         content_div.add(text)
-
-        content_div.add_style("max-height: 300px")
+        # set minimum if there is at least one collection
+        if len(collections) > 0:
+            content_div.add_style("min-height: 300")
+        content_div.add_style("max-height: 300")
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
