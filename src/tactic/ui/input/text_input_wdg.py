@@ -454,7 +454,18 @@ class TextInputWdg(BaseInputWdg):
             _is_collection = my.kwargs.get("_is_collection")
             if _is_collection:
                 custom_cbk = my.kwargs.get("custom_cbk")
-                
+                icon.add_behavior( {
+                    'type': 'mouseover',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 1.0);
+                    '''
+                } )
+                icon.add_behavior( {
+                    'type': 'mouseout',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 0.6);
+                    '''
+                } )
                 icon.add_behavior( {
                     'type': 'click_up',
                     'cbjs_action': custom_cbk['enter']
