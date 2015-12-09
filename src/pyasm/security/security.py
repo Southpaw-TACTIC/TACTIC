@@ -1262,17 +1262,7 @@ class Security(Base):
 
         my._do_login()
 
-        """
-        access_manager = my.get_access_manager()
-        xml = Xml()
-        xml.read_string('''
-        <rules>
-          <rule column="login" value="cow" search_type="sthpw/login" op="!=" group="search_filter"/>
-        </rules>
-        ''')
-        access_manager.add_xml_rules(xml)
-        """
-
+      
 
 
 
