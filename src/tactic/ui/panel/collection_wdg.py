@@ -148,7 +148,7 @@ class CollectionAddWdg(BaseRefreshWdg):
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
-            _is_collection=True
+            is_collection=True
         )
         text.add_class("spt_main_search")
 

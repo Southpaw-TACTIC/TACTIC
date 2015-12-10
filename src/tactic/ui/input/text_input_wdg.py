@@ -451,7 +451,7 @@ class TextInputWdg(BaseInputWdg):
 
             # Below is added only for collection search icon
             # Adding the same custom_cbk from Collections to icon click_up
-            is_collection = my.kwargs.get("_is_collection")
+            is_collection = my.kwargs.get("is_collection")
             if is_collection:
                 custom_cbk = my.kwargs.get("custom_cbk")
                 icon.add_behavior( {
