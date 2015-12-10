@@ -63,7 +63,8 @@ class Environment(Base):
 
         # insert the plugin path
         plugin_dir = Environment.get_plugin_dir()
-        sys.path.insert(0, plugin_dir)
+        if plugin_dir not in sys.path:
+            sys.path.insert(0, plugin_dir)
 
 
     def initialize(my):

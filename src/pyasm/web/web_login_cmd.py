@@ -117,11 +117,14 @@ class WebLoginCmd(Command):
                 max_attempts = int(Config.get_value("security", "max_login_attempt"))
             except:
                 pass
-            if max_attempts >0:
-                login_attempt = login_sobject.get_value('login_attempt')
 
-                login_attempt = login_attempt+1
-                login_sobject.set_value('login_attempt', login_attempt)
+            if max_attempts > 0:
+                login_attempt = 0
+                if login_sobject:
+                    login_attempt = login_sobject.get_value('login_attempt')
+
+                    login_attempt = login_attempt + 1
+                    login_sobject.set_value('login_attempt', login_attempt)
 
                 if login_attempt == max_attempts:
                     #set license_Type to disabled and set off the thread to re-enable it
@@ -146,8 +149,8 @@ class WebLoginCmd(Command):
 
                     my.reenable_user(login_sobject, delay)
 
-                
-                login_sobject.commit(triggers=False)
+                if login_sobject: 
+                    login_sobject.commit(triggers=False)
             
         if security.is_logged_in():
 
