@@ -677,6 +677,11 @@ class CollectionContentWdg(BaseRefreshWdg):
                     return;
                 }
 
+                var msg = "Are you sure you wish to remove the selected Assets from the Collection?";
+                if (! confirm(msg)) {
+                    return;
+                }
+                
                 var cls = 'tactic.ui.panel.CollectionRemoveCmd';
                 var kwargs = {
                     collection_key: bvr.collection_key,
@@ -706,6 +711,11 @@ class CollectionContentWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'collection_key': my.collection_key,
                 'cbjs_action': '''
+
+                var msg = "Are you sure you wish to delete the Collection?";
+                if (! confirm(msg)) {
+                    return;
+                }
 
                 var cls = 'tactic.ui.panel.CollectionDeleteCmd';
                 var kwargs = {
