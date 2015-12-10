@@ -676,20 +676,26 @@ class CollectionContentWdg(BaseRefreshWdg):
                     spt.notify.show_message("Nothing selected to remove");
                     return;
                 }
+                var ok = null;
+                var cancel = function() { return };
+                var msg = "Are you sure you wish to remove the selected Assets from the Collection?";
 
-                var cls = 'tactic.ui.panel.CollectionRemoveCmd';
-                var kwargs = {
-                    collection_key: bvr.collection_key,
-                    search_keys: search_keys,
+                var ok = function() {
+                    var cls = 'tactic.ui.panel.CollectionRemoveCmd';
+                    var kwargs = {
+                        collection_key: bvr.collection_key,
+                        search_keys: search_keys,
+                    }
+                    var server = TacticServerStub.get();
+                    try {
+                        server.execute_cmd(cls, kwargs);
+                        spt.table.remove_selected();
+                    } catch(e) {
+                        spt.alert(spt.exception.handler(e));
+                    }
                 }
-                var server = TacticServerStub.get();
-                try {
-                    server.execute_cmd(cls, kwargs);
-                    spt.table.remove_selected();
-                } catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-
+                
+                spt.confirm(msg, ok, cancel);
 
                 '''
             } )
@@ -706,27 +712,33 @@ class CollectionContentWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'collection_key': my.collection_key,
                 'cbjs_action': '''
+                var ok = null;
+                var cancel = function() { return };
+                var msg = "Are you sure you wish to delete the Collection?";
 
-                var cls = 'tactic.ui.panel.CollectionDeleteCmd';
-                var kwargs = {
-                    collection_key: bvr.collection_key,
+                var ok = function() {
+                    var cls = 'tactic.ui.panel.CollectionDeleteCmd';
+                    var kwargs = {
+                        collection_key: bvr.collection_key,
+                    }
+                    var server = TacticServerStub.get();
+                    try {
+                        server.execute_cmd(cls, kwargs);
+                    } catch(e) {
+                        spt.alert(e);
+                        return;
+                    }
+
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    if (top) {
+                        var layout = top.getParent(".spt_layout");
+                        spt.table.set_layout(layout);
+                    }
+
+                    spt.table.run_search();
                 }
-                var server = TacticServerStub.get();
-                try {
-                    server.execute_cmd(cls, kwargs);
-                } catch(e) {
-                    spt.alert(e);
-                    return;
-                }
 
-                var top = bvr.src_el.getParent(".spt_collection_top");
-                if (top) {
-                    var layout = top.getParent(".spt_layout");
-                    spt.table.set_layout(layout);
-                }
-
-                spt.table.run_search();
-
+                spt.confirm(msg, ok, cancel);
                 '''
             } )
 
