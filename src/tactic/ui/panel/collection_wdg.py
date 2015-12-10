@@ -52,7 +52,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
         dialog = DialogWdg()
         top.add(dialog)
-        dialog.add_class("dialog_top")
+        
         dialog.set_as_activator(button, offset={'x':-25,'y': 0})
         dialog.add_title("Collections")
 
@@ -83,7 +83,7 @@ class CollectionAddWdg(BaseRefreshWdg):
                 var search_type = top.getAttribute("spt_search_type");
                 
                 // Hide the dialog when popup loads.
-                var dialog_top = bvr.src_el.getParent(".dialog_top");
+                var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
                 dialog_top.style.visibility = "hidden";
 
                 kwargs = {
@@ -94,7 +94,7 @@ class CollectionAddWdg(BaseRefreshWdg):
                   show_header: false,
                   'num_columns': 2,
                   default: {
-                    _is_collection: "true"
+                    _is_collection: true
                   }
                 };
                 spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
@@ -121,7 +121,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
-                    num_result = num_result + 1;
+                    num_result += 1;
                 }
                 else {
                     collections[i].style.display = "none";
@@ -242,7 +242,7 @@ class CollectionAddWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var is_checked = false;
 
-            var dialog_top = bvr.src_el.getParent(".dialog_top");
+            var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
 
             for (i = 0; i < checkboxes.length; i++) {
                 var checked_collection_attr = checkboxes[i].attributes;
@@ -446,7 +446,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                   show_header: false,
                   num_columns: 2,
                   default: {
-                    _is_collection: "true"
+                    _is_collection: true
                   }
                 };
                 var popup = spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
