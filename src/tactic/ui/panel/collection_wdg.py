@@ -409,6 +409,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         title_div = DivWdg("Collection Manager") 
         div.add(title_div)
+        div.add_class("spt_collection_left")
         title_div.add_style("font-size: 1.2em")
         title_div.add_style("font-weight: bold")
 
@@ -454,14 +455,56 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         } )
         text_div = DivWdg()
         shelf_div.add(text_div)
+
+        custom_cbk = {}
+        custom_cbk['enter'] = '''
+
+            var top = bvr.src_el.getParent(".spt_collection_left");
+            var input = top.getElement(".spt_main_search");
+            var search_value = input.value.toLowerCase();
+            var collections = top.getElements(".spt_collection_div");
+
+            var num_result = 0;
+            for (i = 0; i < collections.length; i++) {
+                // Access the Collection title (without number count) 
+                var collection_title = collections[i].attributes[4].nodeValue.toLowerCase();
+
+                if (collection_title.indexOf(search_value) != '-1') {
+                    collections[i].style.display = "block";
+                    num_result += 1;
+                }
+                else {
+                    collections[i].style.display = "none";
+                }
+            }
+            // if no search results, display all
+            if (num_result == 0) {
+                for (i = 0; i < collections.length; i++) {
+                    collections[i].style.display = "block";
+                }
+            }
+
+        '''
+
+        filters = []
+        filters.append(("_is_collection",True))
+        filters.append(("status","Verified"))
         text = LookAheadTextInputWdg(
-            name="name",
+            search_type = "workflow/asset",
+            column="name",
             icon="BS_SEARCH",
             icon_pos="right",
-            width="100%"
-        ) 
+            width="100%",
+            hint_text="'Enter' to search for Colllection...",
+            value_column="name",
+            filters=filters,
+            custom_cbk=custom_cbk,
+            is_collection=True
+        )
+        text.add_class("spt_main_search")
+
         text_div.add(text)
-        text_div.add_style("width: 200px")
+        text_div.add_style("width: 270px")
         text_div.add_style("display: inline-block")
 
         div.add("<br clear='all'/>")
@@ -568,7 +611,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
             collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"))
             collections_div.add(collection_wdg)
-
+            collection_wdg.add_class("spt_collection_div")
 
             subcollection_wdg = DivWdg()
             collections_div.add(subcollection_wdg)
