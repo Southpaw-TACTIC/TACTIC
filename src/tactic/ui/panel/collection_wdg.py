@@ -17,7 +17,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
-from pyasm.web import DivWdg, Table
+from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -507,7 +507,32 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         text_div.add_style("width: 270px")
         text_div.add_style("display: inline-block")
 
+        # Asset Library folder access
         div.add("<br clear='all'/>")
+        asset_lib_div = DivWdg()
+        div.add(asset_lib_div)
+        folder_icon = IconWdg(icon="FOLDER_2", width='30px')
+
+        asset_lib_div.add(folder_icon)
+        asset_lib_div.add_style("margin: 5px 0px 5px -5px")
+        asset_lib_div.add_style("height: 20px")
+        asset_lib_div.add_style("padding-top: 5px")
+        asset_lib_div.add_style("padding-bottom: 5px")
+        asset_lib_div.add_style("font-weight: bold")
+
+        asset_lib_div.add("Asset Library")
+        asset_lib_div.add_class("tactic_hover")
+        asset_lib_div.add_class("hand")
+        asset_lib_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_collection_top");
+                var content = top.getElements(".spt_collection_content");
+
+                spt.panel.refresh(top);
+                '''
+            } )
+
 
         # collection
         search = Search(my.search_type)
@@ -652,13 +677,12 @@ class CollectionContentWdg(BaseRefreshWdg):
         my.collection_key = my.kwargs.get("collection_key")
 
         collection = Search.get_by_search_key(my.collection_key)
-
+        print collection
 
         top = my.top
 
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
-
 
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
@@ -670,20 +694,46 @@ class CollectionContentWdg(BaseRefreshWdg):
             title_div = DivWdg()
             top.add(title_div)
             title_div.add_style("float: left")
-            title_div.add_style("margin: 15px 0px")
+            title_div.add_style("margin: 15px 0px 15px 30px")
 
-            icon = IconWdg(name="View Collection", icon="BS_FOLDER_OPEN")
-            title_div.add(icon)
-            icon.add_style("margin-right: 10px")
+            asset_lib_span_div = SpanWdg()
+            title_div.add(asset_lib_span_div)
+
+            icon = IconWdg(name="Asset Library", icon="BS_FOLDER_OPEN")
+            icon.add_behavior( {
+                'type': 'mouseover',
+                'cbjs_action': '''
+                bvr.src_el.setStyle('opacity', 1.0);
+                '''
+            } )
+            icon.add_behavior( {
+                'type': 'mouseout',
+                'cbjs_action': '''
+                bvr.src_el.setStyle('opacity', 0.6);
+                '''
+            } )
+            asset_lib_span_div.add(icon)
+
+            asset_lib_span_div.add(" <a class='spt_collection_link'><b>Asset Library</b></a> ")
+
+            # make icon and All Assets title clickable to return to view all assets
+            asset_lib_span_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_collection_top");
+                var content = top.getElements(".spt_collection_content");
+
+                spt.panel.refresh(top);
+                '''
+            } )
 
             path = path.strip("/")
             parts = path.split("/")
 
             for part in parts:
                 title_div.add(" / ")
-                title_div.add(" <a class='spt_colleciton_link'><b>%s</b></a> " % part)
+                title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
                 title_div.add_style("margin-top: 10px")
-                title_div.add_style("margin-left: 20px")
             #title_div.add("/ %s" % collection.get_value("name") )
 
         #scale_wdg = tile.get_scale_wdg()
