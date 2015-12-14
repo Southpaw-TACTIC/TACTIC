@@ -136,6 +136,7 @@ spt.dg_table_action.csv_export = function( evt, bvr )
 {
 
     var project = spt.Environment.get().get_project();
+    var site = spt.Environment.get().get_site();
     var my_search_type = bvr.search_type;
     var my_is_export_all = bvr.is_export_all;
     var filename = my_search_type.replace(/[\/\?\=]/g,"_") + "_" + bvr.view + ".csv";
@@ -198,7 +199,18 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     param_dict['widget'] = class_name;
     param_dict['filepath'] = csv_file_name;
     var url = spt.Environment.get_widget_server_url(project, param_dict);
+
+    var current_url = document.location.href;
+
+    if (current_url.split('/')[4] != "default")
+    {
+        url = url.split('/')
+        url.splice(4, 0, site);
+        url = url.join('/');
+    }
+    
     document.location = url;
+
 }
 
 
