@@ -209,23 +209,16 @@ spt.Environment = function() {
         else return null;
     }
 
-    this.get_widget_server_url = function(project_code, site, param_dict) {
-        if (project_code == null) {
-            project_code = this.project_code;
-        }
-
-        if (site == null) {
-            site = this.site;
-        }
+    this.get_widget_server_url = function(param_dict) {
 
         var location = window.location;
         var base = location.protocol + "//" + location.host;
 
-        var url = base + '/tactic/default/WidgetServer/?project=' + project_code +'&';
+        var url = base + '/tactic/default/WidgetServer/?project=' + this.project_code +'&';
 
-        if (site != "default" || site != null)
+        if (this.site != "default" && this.site != null)
         {
-            url = base + '/tactic/' + site + '/default/WidgetServer/?project=' + project_code +'&';
+            url = base + '/tactic/' + this.site + '/default/WidgetServer/?project=' + this.project_code +'&';
         }
 
         for (param in param_dict)
