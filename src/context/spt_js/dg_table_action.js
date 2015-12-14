@@ -198,14 +198,8 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     param_dict['dynamic_file'] = "true";
     param_dict['widget'] = class_name;
     param_dict['filepath'] = csv_file_name;
-    var url = spt.Environment.get_widget_server_url(project, param_dict);
 
-    if (site != "default")
-    {
-        url = url.split('/')
-        url.splice(4, 0, site);
-        url = url.join('/');
-    }
+    var url = spt.Environment.get().get_widget_server_url(project, site, param_dict);
     
     document.location = url;
 

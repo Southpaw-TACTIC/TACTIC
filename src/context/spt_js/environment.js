@@ -209,6 +209,33 @@ spt.Environment = function() {
         else return null;
     }
 
+    this.get_widget_server_url = function(project_code, site, param_dict) {
+        if (project_code == null) {
+            project_code = this.project_code;
+        }
+
+        if (site == null) {
+            site = this.site;
+        }
+
+        var location = window.location;
+        var base = location.protocol + "//" + location.host;
+
+        var url = base + '/tactic/default/WidgetServer/?project=' + project_code +'&';
+
+        if (site != "default" || site != null)
+        {
+            url = base + '/tactic/' + site + '/default/WidgetServer/?project=' + project_code +'&';
+        }
+
+        for (param in param_dict)
+            url += param + '=' + param_dict[param] + '&';
+            
+        return url
+    }
+
+
+
 }
 
 
@@ -219,16 +246,5 @@ spt.Environment.get = function() {
         this._environment = new spt.Environment();
     }
     return this._environment;
-}
-
-spt.Environment.get_widget_server_url = function(project_code, param_dict) {
-    var location = window.location;
-    var base = location.protocol + "//" + location.host;
-    
-    var url = base + '/tactic/default/WidgetServer/?project=' + project_code +'&';
-    for (param in param_dict)
-        url += param + '=' + param_dict[param] + '&';
-        
-    return url
 }
 
