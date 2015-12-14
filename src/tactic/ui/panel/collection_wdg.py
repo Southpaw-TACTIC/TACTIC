@@ -492,10 +492,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         text = LookAheadTextInputWdg(
             search_type = "workflow/asset",
             column="name",
-            icon="BS_SEARCH",
-            icon_pos="right",
             width="100%",
-            hint_text="'Enter' to search for Colllection...",
+            hint_text="Enter terms to filter collections...",
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
