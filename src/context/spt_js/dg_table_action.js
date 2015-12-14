@@ -200,9 +200,7 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     param_dict['filepath'] = csv_file_name;
     var url = spt.Environment.get_widget_server_url(project, param_dict);
 
-    var current_url = document.location.href;
-
-    if (current_url.split('/')[4] != "default")
+    if (site != "default")
     {
         url = url.split('/')
         url.splice(4, 0, site);
