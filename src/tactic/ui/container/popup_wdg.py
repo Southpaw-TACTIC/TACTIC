@@ -170,8 +170,6 @@ class PopupWdg(BaseRefreshWdg):
         Container.put("PopupWdg:background", True)
 
 
-
-        # This is the absolute outside of a popup, including the drop shadow
         widget = DivWdg()
         div.add(widget)
         widget.add_class("spt_popup")
@@ -245,8 +243,6 @@ class PopupWdg(BaseRefreshWdg):
         #drag_div.add(arrow)
 
 
-        # FIXME: for some reason, this causes popups to stop functioning after
-        # close a couple of times
         my.add_header_context_menu(drag_div)
 
 
