@@ -955,9 +955,9 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_style("height: 20px")
         collection_div.add_style("padding-top: 10px")
 
-        icon_div = DivWdg()
         
         if has_child_collections:
+            icon_div = DivWdg()
             icon = IconWdg(name="View Collection", icon="BS_CHEVRON_DOWN")
             icon_div.add(icon)
             icon.add_style("float: right")
