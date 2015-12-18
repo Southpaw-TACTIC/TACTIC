@@ -66,6 +66,7 @@ spt.notify.hide = function() {
 }
 
 
+
 spt.notify.set_message = function(message, kwargs) {
     var el = $('spt_notify_top').getElement(".spt_notify_message");
     spt.behavior.replace_inner_html(el, message);
