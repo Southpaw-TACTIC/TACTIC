@@ -573,7 +573,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             'search_type': my.search_type,
             'bvr_match_class': 'spt_collection_open',
             'cbjs_action': '''
-            var item = bvr.src_el.getParent(".spt_collection_item");
+            var item = bvr.src_el.getParent(".spt_collection_div_top");
             var next = item.getNext();
 
             if (bvr.src_el.hasClass("spt_open")) {
@@ -933,10 +933,15 @@ class CollectionItemWdg(BaseRefreshWdg):
 
 
         top = my.top
+        collection_top = top
+        collection_top.add_class("spt_collection_div_top")
+        collection_div = DivWdg()
+        
 
-        collection_div = top
-        collection_div.add_class("tactic_hover")
-        collection_div.add_class("hand")
+        collection_top.add(collection_div)
+        collection_top.add_class("tactic_hover")
+        collection_top.add_class("hand")
+
         collection_div.add_class("spt_collection_item")
         collection_div.add_attr("spt_collection_key", collection.get_search_key())
         collection_div.add_attr("spt_collection_code", collection.get_code())
@@ -950,14 +955,17 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_style("height: 20px")
         collection_div.add_style("padding-top: 10px")
 
+        
         if has_child_collections:
+            icon_div = DivWdg()
             icon = IconWdg(name="View Collection", icon="BS_CHEVRON_DOWN")
+            icon_div.add(icon)
             icon.add_style("float: right")
-            collection_div.add(icon)
-            icon.add_class("spt_collection_open")
-            icon.add_attr("spt_collection_key", collection.get_search_key())
-            icon.add_attr("spt_collection_path", path)
-
+            icon.add_style("margin-top: -20px")
+            collection_top.add(icon_div)
+            icon_div.add_class("spt_collection_open")
+            icon_div.add_attr("spt_collection_key", collection.get_search_key())
+            icon_div.add_attr("spt_collection_path", path)
 
         from tactic.ui.panel import ThumbWdg2
         thumb_wdg = ThumbWdg2()
