@@ -1063,7 +1063,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'border': border,
-            'bvr_match_class': 'spt_tile_title',
+            'bvr_match_class': 'spt_tile_select',
             'cbjs_action': '''
 
             var checkbox = bvr.src_el.getElement('.spt_tile_checkbox');
