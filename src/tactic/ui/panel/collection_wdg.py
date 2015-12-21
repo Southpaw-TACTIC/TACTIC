@@ -684,7 +684,6 @@ class CollectionContentWdg(BaseRefreshWdg):
         my.collection_key = my.kwargs.get("collection_key")
 
         collection = Search.get_by_search_key(my.collection_key)
-        print collection
 
         top = my.top
 
