@@ -603,6 +603,7 @@ class TaskElementWdg(BaseTableElementWdg):
             for pipeline in pipelines:
                 processes = pipeline.get_processes(type=[
                         "node",
+                        "manual",
                         "approval",
                         "hierarchy",
                         #"dependency",
@@ -1142,7 +1143,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
         if pipeline and show_filler_tasks in ["true", True]:
 
-            processes = pipeline.get_process_names(type=["node","approval","hierarchy","dependency"])
+            processes = pipeline.get_process_names(type=["node","manual","approval","hierarchy","dependency"])
 
             if my.filler_cache == None:
                 my.filler_cache = {}
@@ -1534,7 +1535,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                     # make the task slightly opaque
-                    if node_type in ['manual', 'node','approval'] and tasks[0].get_id() == -1:
+                    if node_type in ['manual', 'node','manal','approval'] and tasks[0].get_id() == -1:
                         td.add_style("opacity: 0.5")
 
 

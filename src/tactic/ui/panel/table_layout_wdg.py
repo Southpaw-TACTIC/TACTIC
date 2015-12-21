@@ -558,7 +558,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
-        #inner.add_style("border-width: 0px 1px 0px 0px")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = my.kwargs.get("has_extra_header")
@@ -1681,20 +1680,36 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # set styles at the table level to be relayed down
         border_color = table.get_color("table_border", default="border")
-        table.add_smart_styles("spt_table_select", {
-            "border": "solid 1px %s" % border_color,
+
+
+                
+        select_styles = {
             "width": "30px",
             "min-width": "30px"
-        } )
+        }
 
 
-        table.add_smart_styles("spt_cell_edit", {
-            "border": "solid 1px %s" % border_color,
-            "padding": "3px",
+
+        cell_styles = {
+            "padding": "3px 8px",
+
             "vertical-align": "top",
             "background-repeat": "no-repeat",
             "background-position": "bottom right",
-        } )
+        }
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            cell_styles["border"] = "solid 1px %s" % border_color
+            cell_styles["padding"] = "3px"
+            select_styles["border"] = "solid 1px %s" % border_color
+
+
+
+
+        table.add_smart_styles("spt_table_select", select_styles)
+        table.add_smart_styles("spt_cell_edit", cell_styles)
 
         
         is_editable = my.kwargs.get("is_editable")
@@ -1853,13 +1868,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
 
+
         if my.kwargs.get("__hidden__") == True:
             tr.add_color("background", "background", -8)
             border_color = table.get_color("table_border", default="border")
-            tr.add_gradient("background", "background", -5, -10)
         else:
-            #tr.add_gradient("background", "background", -5, -10)
-            #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
             border_color = table.get_color("table_border", 0, default="border")
        
@@ -1895,7 +1908,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th.add_class("spt_table_header")
             th.add_class("spt_table_header_%s" %my.table_id)
             th.add_attr("spt_element_name", name)
-            th.add_style("border: solid 1px %s" % border_color)
+
+
+            show_border = my.kwargs.get("show_border")
+            if show_border not in [False, "false"]:
+                th.add_style("border: solid 1px %s" % border_color)
 
             edit_wdg = my.edit_wdgs.get(name)
             if edit_wdg:
@@ -2834,7 +2851,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #th.add_gradient("background", "background", -10)
         if not border_color:
             border_color = table.get_color("table_border", 0, default="border")
-        th.add_style("border", "solid 1px %s" % border_color)
+
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            th.add_style("border", "solid 1px %s" % border_color)
+
         th.add_looks( 'dg_row_select_box' )
         th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
@@ -3050,6 +3073,11 @@ spt.table.run_search = function(kwargs) {
         extra_args: kwargs
     }
     spt.dg_table.search_cbk( {}, bvr );
+}
+
+// Search methods
+spt.table.do_search = function(kwargs) {
+    return spt.table.run_search(kwargs);
 }
 
 
