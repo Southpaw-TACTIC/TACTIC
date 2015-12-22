@@ -45,15 +45,202 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        top = my.top
+        top.add_class("spt_ingest_top")
+
+        table = Table()
+        top.add(table)
+        table.add_row()
+
+        left = table.add_cell()
+        left.add_style("vertical-align: top")
+
+        middle = table.add_cell()
+        middle.add_style("height: 10") # not sure why we need this height
+        middle.add_style("padding: 30px 20px")
+        line = DivWdg()
+        middle.add(line)
+        line.add_style("height: 100%")
+        line.add_style("border-style: solid")
+        line.add_style("border-width: 0px 0px 0px 1px")
+        line.add_style("border-color: #DDD")
+        line.add(" ")
+
+
+        right = table.add_cell()
+        right.add_style("vertical-align: top")
+
+
+        left.add( my.get_content_wdg() )
+        right.add( my.get_settings_wdg() )
+
+        return top
+
+
+
+    def get_settings_wdg(my):
+
+        div = DivWdg()
+        div.add_style("width: 400px")
+        div.add_style("padding: 20px")
+        
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Ingest Settings")
+        title_wdg.add_style("font-size: 25px")
+
+        div.add("<hr/>")
+
+
+        # process
+
+        from pyasm.biz import Pipeline
+        from pyasm.widget import SelectWdg
+        search_type_obj = SearchType.get(my.search_type)
+        base_type = search_type_obj.get_base_key()
+        search = Search("sthpw/pipeline")
+        search.add_filter("search_type", base_type)
+        pipelines = search.get_sobjects()
+        if pipelines:
+            pipeline = pipelines[0]
+
+            process_names = pipeline.get_process_names()
+            if process_names:
+                title_wdg = DivWdg()
+                div.add(title_wdg)
+                title_wdg.add("Process")
+                title_wdg.add_style("margin-top: 20px")
+                title_wdg.add_style("font-size: 16px")
+
+                desc_wdg = DivWdg("Select which process to ingest these files into")
+                div.add(desc_wdg)
+
+                div.add("<br/>")
+
+                select = SelectWdg("process")
+                div.add(select)
+                process_names.append("---")
+                process_names.append("publish")
+                process_names.append("icon")
+                select.set_option("values", process_names)
+        
+
+
+
+        # update mode
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Update Mode")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
+
+        desc_wdg = DivWdg("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
+        div.add(desc_wdg)
+
+        div.add("<br/>")
+
+
+        update_mode_option = my.kwargs.get("update_mode")
+        if not update_mode_option:
+            update_mode_option = "true"
+        update_mode = SelectWdg(name="update mode")
+        update_mode.add_class("spt_update_mode_select")
+        update_mode.set_option("values", ["false", "true", "sequence"])
+        update_mode.set_option("labels", ["Off", "On", "Sequence"])
+        update_mode.set_option("default", update_mode_option)
+        update_mode.add_style("float: left")
+        update_mode.add_style("margin-top: -3px")
+        update_mode.add_style("margin-left: 5px")
+        update_mode.add_style("margin-right: 5px")
+        #update_mode.add_style("width: 100px")
+        div.add(update_mode)
+
+
+
+        div.add("<br/>"*3)
+
+
+        # Metadata
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Metadata")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
+
+        desc_wdg = DivWdg("Add extra metadata to each uploaded image")
+        div.add(desc_wdg)
+
+        # edit
+        from tactic.ui.panel import EditWdg
+
+        ingest_data_view = my.kwargs.get('ingest_data_view')
+
+        sobject = SearchType.create(my.search_type)
+        edit = EditWdg(
+                search_key=sobject.get_search_key(),
+                mode='view',
+                view=ingest_data_view,
+                show_header=False,
+                width="auto",
+        )
+        
+        div.add(edit)
+        hidden = HiddenWdg(name="parent_key")
+        div.add(hidden)
+        hidden.add_class("spt_parent_key")
+        parent_key = my.kwargs.get("parent_key") or ""
+        if parent_key:
+            hidden.set_value(parent_key)
+
+
+        extra_data = my.kwargs.get("extra_data")
+        if not isinstance(extra_data, basestring):
+            extra_data = jsondumps(extra_data)
+
+        if extra_data and extra_data != "null":
+            # it needs a TextArea instead of Hidden because of JSON data
+            text = TextAreaWdg(name="extra_data")
+            text.add_style('display: none')
+            text.set_value(extra_data)
+            div.add(text)
+
+
+
+
+
+
+
+        return div
+
+
+
+
+
+    def get_content_wdg(my):
+
         relative_dir = my.kwargs.get("relative_dir")
         my.relative_dir = relative_dir
 
         div = DivWdg()
-        div.add_class("spt_ingest_top")
         div.add_style("width: auto")
         div.add_style("min-width: 600px")
         div.add_style("padding: 20px")
         div.add_color("background", "background")
+
+
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Ingest Files")
+        title_wdg.add_style("font-size: 25px")
+
+        desc_div = DivWdg("You can uplaod any type of file.  Just drag files into the box or click 'Select Files'")
+        div.add(desc_div)
+
+        div.add("<hr/>")
+
+
+
+
         
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
@@ -69,11 +256,11 @@ class IngestUploadWdg(BaseRefreshWdg):
             folder_div.add_style("margin-bottom: 10px")
 
 
-
+        """
         data_div = my.get_data_wdg()
         data_div.add_style("float: left")
-        data_div.add_style("float: left")
         div.add(data_div)
+        """
 
         # create the help button
         help_button_wdg = DivWdg()
@@ -92,7 +279,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(upload)
 
 
-        button = ActionButtonWdg(title="Add")
+        button = ActionButtonWdg(title="Add Files")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
         div.add(button)
@@ -153,6 +340,9 @@ class IngestUploadWdg(BaseRefreshWdg):
                 spt.behavior.destroy( file_els[i] );
             };
 
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
          '''
          } )
 
@@ -164,26 +354,26 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         border_color_light = div.get_color("background2", 8)
         border_color_dark = div.get_color("background2", -15)
-        background_mouseout = div.get_color("background3", 10)
-        background_mouseenter = div.get_color("background3", 8)
+        background_mouseout = div.get_color("background", 10)
+        background_mouseenter = div.get_color("background", 8)
 
 
         files_div = DivWdg()
         files_div.add_style("position: relative")
         files_div.add_class("spt_to_ingest_files")
         div.add(files_div)
-        files_div.add_style("max-height: 300px")
-        files_div.add_style("height: 300px")
+        files_div.add_style("max-height: 400px")
+        files_div.add_style("height: 400px")
         files_div.add_style("overflow-y: auto")
         files_div.add_style("padding: 3px")
         files_div.add_color("background", background_mouseout)
         files_div.add_style("border: 3px dashed %s" % border_color_light)
-        files_div.add_style("border-radius: 20px 20px 20px 20px")
+        #files_div.add_style("border-radius: 20px 20px 20px 20px")
         files_div.add_style("z-index: 1")
         #files_div.add_style("display: none")
 
-        bgcolor = div.get_color("background3")
-        bgcolor2 = div.get_color("background3", -3)
+        bgcolor = div.get_color("background")
+        bgcolor2 = div.get_color("background", -3)
 
         #style_text = "text-align: center; margin-top: 100px; color: #A0A0A0; font-size: 3.0em; z-index: 10;"
 
@@ -192,10 +382,15 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add(background)
 
         background.add_style("text-align: center")
-        background.add_style("margin-top: 100px")
-        background.add_style("opacity: 0.65")
+        background.add_style("margin-top: 75px")
         background.add_style("font-size: 3.0em")
         background.add_style("z-index: 10")
+        background.add_color("color", "color", 70)
+
+
+        icon = "<i class='fa fa-cloud-upload' style='font-size: 150px'> </i>"
+        background.add(icon)
+
 
         background_text = DivWdg("<p>Drag Files Here</p>")
 
@@ -218,6 +413,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         } ) 
 
 
+        background.add( my.get_select_files_button() )
+
+
 
 
 
@@ -235,11 +433,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         spt.drag.show_file = function(file, top, delay, icon) {
 
-            if (!background) {
-                background = top.getElement(".spt_files_background");
-                if (background)
-                    background.setStyle("display", "none");
-            }
+            background = top.getElement(".spt_files_background");
+            if (background)
+                background.setStyle("display", "none");
+
+
             var template = top.getElement(".spt_upload_file_template");
             var clone = spt.behavior.clone(template);
 
@@ -380,8 +578,18 @@ class IngestUploadWdg(BaseRefreshWdg):
             'type': 'mouseup',
             'bvr_match_class': 'spt_remove',
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_upload_file");
-            spt.behavior.destroy_element(top);
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+
+            var el = bvr.src_el.getParent(".spt_upload_file");
+            spt.behavior.destroy_element(el);
+
+            var els = top.getElements(".spt_upload_file");
+
+            if (els.length == 0) {
+                var background = top.getElement(".spt_files_background");
+                background.setStyle("display", "");
+            }
+
             '''
         } )
 
@@ -481,7 +689,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         remove_div = DivWdg()
         remove_div.add_class("spt_remove")
         file_template.add(remove_div)
-        icon = IconButtonWdg(title="Remove", icon=IconWdg.DELETE)
+        icon = IconButtonWdg(title="Remove", icon="BS_REMOVE")
         icon.add_style("float: right")
         remove_div.add(icon)
         #remove_div.add_style("text-align: right")
@@ -677,13 +885,36 @@ class IngestUploadWdg(BaseRefreshWdg):
         '''
 
 
+
+        button = ActionButtonWdg(title="Clear")
+        button.add_style("float: right")
+        button.add_style("margin-top: -3px")
+        div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
+         '''
+         } )
+
         upload_div = DivWdg()
         div.add(upload_div)
         #button = UploadButtonWdg(**kwargs)
-        button = ActionButtonWdg(title="Ingest")
+        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
         upload_div.add(button)
         button.add_style("float: right")
         upload_div.add_style("margin-bottom: 15px")
+
+
+
         upload_div.add("<br clear='all'/>")
 
 
@@ -799,7 +1030,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("float: left")
         button.add_style("margin-top: -3px")
         buttons.add_cell(button)
-        
+
         select_label = DivWdg("Update mode");
         select_label.add_style("float: left")
         select_label.add_style("margin-top: -3px")
@@ -897,9 +1128,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             name_div.add("<br/>")
 
-        ingest_data_view = my.kwargs.get('ingest_data_view')
 
+
+        # edit
         from tactic.ui.panel import EditWdg
+
+        ingest_data_view = my.kwargs.get('ingest_data_view')
 
         sobject = SearchType.create(my.search_type)
         edit = EditWdg(search_key =sobject.get_search_key(), mode='view', view=ingest_data_view )
@@ -924,76 +1158,68 @@ class IngestUploadWdg(BaseRefreshWdg):
             text.set_value(extra_data)
             dialog_data_div.add(text)
 
-        """
- 
-        dialog_data_div.add("Keywords:<br/>")
-        dialog.add(dialog_data_div)
-        text = TextAreaWdg(name="keywords")
-        dialog_data_div.add(text)
-        text.add_class("spt_keywords")
-        text.add_style("padding: 1px")
-
-
-        dialog_data_div.add("<br/>"*2)
-    
-
-       
-        text.add_class("spt_extra_data")
-        text.add_style("padding: 1px")
-
-        """
-
-        #### TEST Image options
-        """
-        button = IconButtonWdg(title="Resize", icon=IconWdg.FILM)
-        buttons.add_cell(button)
-
-        dialog = DialogWdg(display="false", show_title=False)
-        div.add(dialog)
-        dialog.set_as_activator(button, offset={'x':-10,'y':10})
-
-        try:
-            from spt.tools.convert import ConvertOptionsWdg
-            convert_div = DivWdg()
-            dialog.add(convert_div)
-            convert_div.add_style("padding: 20px")
-            convert_div.add_color("background", "background")
-            convert_div.add_class("spt_image_convert")
-
-            convert = ConvertOptionsWdg()
-            convert_div.add(convert)
-        except:
-            pass
-        """
-
-
-        # use base name for name
-        """
-        name_div = DivWdg()
-        dialog_data_div.add(name_div)
-        name_div.add_style("margin: 15px 0px")
-
-
-        checkbox = CheckboxWdg("use_file_name")
-        name_div.add(checkbox)
-        name_div.add(" Use name of file for name")
-
-        name_div.add("<br/>")
-
-        checkbox = CheckboxWdg("use_base_name")
-        name_div.add(checkbox)
-        name_div.add(" Remove extension")
-
-
-        name_div.add("<br/>")
-
-        checkbox = CheckboxWdg("file_keywords")
-        name_div.add(checkbox)
-        name_div.add(" Use file name for keywords")
-        """
 
 
         return div
+
+
+
+
+    def get_select_files_button(my):
+
+
+        button = ActionButtonWdg(title="Select Files")
+
+        from tactic.ui.input import Html5UploadWdg
+        upload = Html5UploadWdg(multiple=True)
+        button.add(upload)
+
+
+        button.add_style("margin: 30px auto")
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+        var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                var delay = 0; 
+                for (var i = 0; i < files.length; i++) {
+                    var size = files[i].size;
+                    var file_name = files[i].name;
+                    var is_normal = regex.test(file_name);
+                    if (size >= 10*1024*1024 || is_normal) {
+                        spt.drag.show_file(files[i], files_el, 0, false);
+                    }
+                    else {
+                        spt.drag.show_file(files[i], files_el, delay, true);
+
+                        if (size < 100*1024)       delay += 50;
+                        else if (size < 1024*1024) delay += 500;
+                        else if (size < 10*1024*1024) delay += 1000;
+                    }
+                }
+        }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
+         '''
+        } )
+
+        return button
 
 
 
