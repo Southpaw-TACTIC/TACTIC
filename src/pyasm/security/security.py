@@ -803,7 +803,7 @@ class Site(object):
 
 
     def get_site(cls):
-        '''Set the global site for this "session"'''
+        '''Get the global site for this "session"'''
         sites = Container.get("sites")
         if sites == None or sites == []:
             return ""

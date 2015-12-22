@@ -1063,7 +1063,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'border': border,
-            'bvr_match_class': 'spt_tile_title',
+            'bvr_match_class': 'spt_tile_select',
             'cbjs_action': '''
 
             var checkbox = bvr.src_el.getElement('.spt_tile_checkbox');
@@ -1725,7 +1725,11 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     search_code: src_code
                 };
                 server.insert(collection_type, data);
-                spt.table.refresh_rows([dst_top], null, null);
+                spt.notify.show_message("Added to Collection");
+                if (!dst_top.hasClass("spt_collection_item")){
+                    spt.table.refresh_rows([dst_top], null, null);
+                }
+                
             }
         }
 
