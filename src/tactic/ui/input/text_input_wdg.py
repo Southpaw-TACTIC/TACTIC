@@ -1317,7 +1317,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         top = DivWdg()
 
         for i, result in enumerate(results):
-            display = values[i]
+            display = labels[i]
             div = DivWdg()
             div.add(display)
             div.add_style("padding: 3px")
@@ -1325,7 +1325,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             # turn off cache to prevent ascii error
             display = HtmlElement.get_json_string(display, use_cache=False)
             div.add_attr("spt_display", display)
-            div.add_attr("spt_value", labels[i])
+            div.add_attr("spt_value", values[i])
             top.add(div)
         if not results:
             div = DivWdg()
