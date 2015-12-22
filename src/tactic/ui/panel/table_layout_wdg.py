@@ -146,6 +146,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false|none',
             'order': '08'
         },
+
         
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
@@ -183,7 +184,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         },
 
 
-
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '14',
+            'category': 'Display'
+        },
+ 
+ 
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",

@@ -2725,7 +2725,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determines whether or not to show borders on the table",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": '11a',
+            "order": '11b',
             'category': 'Display'
         },
         'checkin_context': {
