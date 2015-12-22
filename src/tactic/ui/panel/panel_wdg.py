@@ -2721,6 +2721,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order": '11a',
             'category': 'Display'
         },
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '11a',
+            'category': 'Display'
+        },
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
             'category': 'Check-in',
