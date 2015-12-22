@@ -2146,7 +2146,7 @@ class License(object):
                     # software anways
                     current = 0
                    
-                print "current: ", current, license_users, current > license_users
+                #print "current: ", current, license_users, current > license_users
                 if current > license_users:
                     raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
         #print "License verified ... "

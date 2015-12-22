@@ -50,8 +50,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_ingest_top")
-        div.add_style("width: 100%px")
-        div.add_style("min-width: 500px")
+        div.add_style("width: auto")
+        div.add_style("min-width: 600px")
         div.add_style("padding: 20px")
         div.add_color("background", "background")
         

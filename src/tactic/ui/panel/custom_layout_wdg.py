@@ -967,6 +967,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 continue
 
             try:
+
+                if Xml.get_value(xml, "config/tmp/element/@enabled") == "false":
+                    continue
+
+
                 element_wdg = my.get_element_wdg(xml, my.def_config)
                 if element_wdg:
                     element_html = element_wdg.get_buffer_display()

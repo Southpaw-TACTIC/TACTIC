@@ -57,7 +57,7 @@ class PrefSetting(PrefList):
 
     SEARCH_TYPE = "sthpw/pref_setting"
 
-    def get_value_by_key(cls, key, user=None):
+    def get_value_by_key(cls, key, user=None, project_code=None):
         ''' get the value of this pref '''
 
         #try:
@@ -69,7 +69,7 @@ class PrefSetting(PrefList):
         # protect against database connection issues (This is called at a very
         # low level, so it needs this)
         try:
-            pref_setting = cls.get_by_key(key,user)
+            pref_setting = cls.get_by_key(key, user, project_code)
             value = ''
             if pref_setting:
                 value = pref_setting.get_value("value")
@@ -81,20 +81,31 @@ class PrefSetting(PrefList):
 
 
 
-    def get_by_key(cls, key, user=None):
+    def get_by_key(cls, key, user=None, project_code=None, use_cache=True):
       
         if not user:
             user = Environment.get_user_name()
+
         # ignore the project_code column for now
-        dict_key = '%s:%s' %(cls.SEARCH_TYPE, user) 
-        settings_dict = Container.get(dict_key)
+        dict_key = '%s:%s:%s' %(cls.SEARCH_TYPE, project_code, user) 
+        if use_cache:
+            settings_dict = Container.get(dict_key)
+        else:
+            settings_dict = None
 
         # explicit check for None
         if settings_dict == None:
             settings_dict = {}
-            Container.put(dict_key, settings_dict)
+
+            if use_cache:
+                Container.put(dict_key, settings_dict)
+
             search = Search(cls.SEARCH_TYPE)
             search.add_filter("login", user)
+            if project_code:
+                search.add_filter("project_code", project_code)
+            else:
+                search.add_null_filter("project_code")
             # don't filter with the key in order to build a dict
             pref_settings = search.get_sobjects()
             for setting in pref_settings:
@@ -107,17 +118,27 @@ class PrefSetting(PrefList):
 
 
 
-    def create(cls, key, value):
-        setting = cls.get_by_key(key)
+    def create(cls, key, value, user=None, project_code=None):
+
+        if not user:
+            user = Environment.get_user_name()
+
+
+        setting = cls.get_by_key(key, user, project_code, use_cache=False)
+        print "setting: ", setting
         if not setting:
             setting = PrefSetting.create_new()
             setting.set_value("key", key)
-            user = Environment.get_user_name()
             setting.set_value("login", user)
+            if project_code:
+                setting.set_value("project_code", project_code)
 
         setting.set_value("value", value)
         setting.commit()
 
+        # ignore the project_code column for now
+        dict_key = '%s:%s:%s' %(cls.SEARCH_TYPE, project_code, user) 
+        settings_dict = Container.put(dict_key, None)
 
         return setting
 

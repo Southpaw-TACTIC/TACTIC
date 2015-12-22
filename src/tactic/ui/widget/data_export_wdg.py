@@ -363,7 +363,10 @@ class CsvImportWdg(BaseRefreshWdg):
     def get_display(my):
         
         widget = DivWdg()
-        if not my.is_refresh:
+
+        show_title = my.kwargs.get("show_title") not in [False, 'false']
+
+        if show_title and not my.is_refresh:
             from tactic.ui.widget import TitleWdg
             title = TitleWdg(name_of_title='Import CSV', help_alias='importing-csv-data')
             widget.add(title)

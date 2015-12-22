@@ -924,6 +924,46 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return True
 
 
+
+
+    #
+    # Preferences
+    #
+    @xmlrpc_decorator
+    def get_preference(my, ticket, key):
+        '''Get the users preference for this project
+
+        @params
+        ticket - authentication ticket
+        key - unique key to identify preference
+
+        @return
+        current value of preference
+        '''
+        project_code = Project.get_project_code()
+
+        from pyasm.biz import PrefSetting
+        value = PrefSetting.get_value_by_key(key, project_code=project_code)
+        return value
+
+
+    @xmlrpc_decorator
+    def set_preference(my, ticket, key, value):
+        '''Set the users preference for this project
+
+        @params
+        ticket - authentication ticket
+        key - unique key to identify preference
+        value - value to set the preference
+
+        '''
+        project_code = Project.get_project_code()
+
+        from pyasm.biz import PrefSetting
+        PrefSetting.create(key, value, project_code=project_code)
+
+
+
     #
     # Messaging and Subscriptions
     #
