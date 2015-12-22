@@ -602,7 +602,7 @@ class TaskElementWdg(BaseTableElementWdg):
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes(type=[
-                        "node",
+                        #"node",
                         "manual",
                         "approval",
                         "hierarchy",
@@ -1535,7 +1535,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                     # make the task slightly opaque
-                    if node_type in ['manual', 'node','manal','approval'] and tasks[0].get_id() == -1:
+                    if node_type in ['manual', 'node','approval'] and tasks[0].get_id() == -1:
                         td.add_style("opacity: 0.5")
 
 
