@@ -1492,8 +1492,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             results = search.get_sobjects()
             info_dict['results'] = results
    
-
-        mode = "icon"
+        mode = my.kwargs.get("mode")
         if mode == "icon":
 
             results = search_dict.get(search_type).get('results')
