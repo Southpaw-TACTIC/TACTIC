@@ -240,6 +240,12 @@ class TopWdg(Widget):
             }
  
             spt.panel.load(target, class_name, kwargs);
+
+            var scroll = bvr.src_el.getAttribute("scroll");
+            if (scroll == "top") {
+                window.scrollTo(0,0);
+            }
+
             '''
         } )
 

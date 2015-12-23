@@ -560,10 +560,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.search_wdg:
             my.search_wdg = my.kwargs.get("search_wdg")
         if not my.search_wdg:
+            search = my.kwargs.get("search")
+
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
+            my.search_wdg = SearchWdg(search=search, search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
         search = my.search_wdg.get_search()

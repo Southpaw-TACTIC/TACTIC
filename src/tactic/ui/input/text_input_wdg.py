@@ -1245,10 +1245,79 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_attr("spt_display", keywords)
 
 
-    def get_value_column_result(my, search_dict, search_type, column, value_column, top):
-        results = search_dict.get(search_type).get('results')
-        for result in results:
-            display = result.get_value(column)
+
+
+    def get_icon_result_wdg(my, results, values, labels):
+        from tactic.ui.panel import ThumbWdg2
+
+        top = DivWdg()
+        top.add_style("font-size: 14px")
+        top.add_style("width: 300px")
+        top.add_style("margin: 3px 0px")
+        top.add_style("padding: 0px 0px")
+
+        # display only the first 8 (arbitrary)
+        results = results[:8]
+
+        for i, result in enumerate(results):
+            div = DivWdg()
+            top.add(div)
+            div.add_style("padding: 3px 3px")
+            div.add_style("height: 45px")
+
+            thumb = ThumbWdg2()
+            thumb.set_sobject(result)
+            thumb.add_style("height: 40px")
+            thumb.add_style("max-width: 45px")
+            thumb.add_style("margin-right: 5px")
+            thumb.add_style("display: inline-block")
+            div.add(thumb)
+
+            display = labels[i]
+
+            info_div = DivWdg()
+            div.add(info_div)
+            info_div.add(display)
+            info_div.add_style("display: inline-block")
+            info_div.add_style("vertical-align: top")
+
+
+
+            name = result.get_value("name")
+            if name:
+                info_div.add("<br/>")
+                info_div.add("<span style='opacity: 0.5; font-size: 10px'>%s</span>" % name)
+
+
+            div.add_class("spt_input_text_result")
+            # turn off cache to prevent ascii error
+            display = HtmlElement.get_json_string(display, use_cache=False)
+
+            div.add_attr("spt_display", display)
+            div.add_attr("spt_value", values[i])
+
+            if result != results[-1]:
+                top.add("<hr style='margin: 0px; padding: 0px'/>")
+
+
+        if not results:
+            div = DivWdg()
+            div.add("-- no results --")
+            div.add_style("opacity: 0.5")
+            div.add_style("font-style: italic")
+            div.add_style("text-align: center")
+            top.add(div)
+
+        return top
+
+
+
+
+    def get_results_wdg(my, results, values, labels):
+        top = DivWdg()
+
+        for i, result in enumerate(results):
+            display = labels[i]
             div = DivWdg()
             div.add(display)
             div.add_style("padding: 3px")
@@ -1256,7 +1325,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             # turn off cache to prevent ascii error
             display = HtmlElement.get_json_string(display, use_cache=False)
             div.add_attr("spt_display", display)
-            div.add_attr("spt_value", result.get_value(value_column))
+            div.add_attr("spt_value", values[i])
             top.add(div)
         if not results:
             div = DivWdg()
@@ -1266,6 +1335,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_style("text-align: center")
             top.add(div)
         return top
+
 
     def get_display(my):
         top = my.top
@@ -1422,20 +1492,39 @@ class TextInputResultsWdg(BaseRefreshWdg):
             results = search.get_sobjects()
             info_dict['results'] = results
    
+        mode = my.kwargs.get("mode")
+        if mode == "icon":
 
-        top.add_style('font-size: 11px')
+            results = search_dict.get(search_type).get('results')
+
+            labels = [x.get_value(column) for x in results]
+            values = [x.get_value(value_column) for x in results]
+
+            widget = my.get_icon_result_wdg(results, values, labels )
+            top.add(widget)
+            return top
+
 
         # if the value column is specified then don't use keywords
         # this assume only 1 column is used with "value_column" option
-        if value_column:
-           return my.get_value_column_result(search_dict, search_type, column, value_column, top)
+        elif value_column:
 
-       
+            results = search_dict.get(search_type).get('results')
+
+            labels = [x.get_value(column) for x in results]
+            values = [x.get_value(value_column) for x in results]
+
+            widget = my.get_results_wdg(results, values, labels)
+            top.add(widget)
+            return top
 
 
 
 
+        # use keywords
 
+
+        top.add_style('font-size: 12px')
 
         # English: ???
         ignore = set()
@@ -1563,6 +1652,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
         return top
+
+
+
 
 
 
