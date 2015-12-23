@@ -467,7 +467,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var num_result = 0;
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
-                var collection_title = collections[i].attributes[4].nodeValue.toLowerCase();
+                var collection_title = collections[i].attributes[0].value.toLowerCase();
 
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
@@ -1049,6 +1049,9 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_top.add_class("spt_collection_div_top")
         collection_div = DivWdg()
         
+        name = collection.get_value("name")
+        # Adding Collection title (without the number count) as an attribute
+        collection_top.set_attr("collection_name", name)
 
         collection_top.add(collection_div)
         collection_top.add_class("tactic_hover")
