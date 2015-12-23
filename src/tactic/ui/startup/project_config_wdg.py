@@ -211,6 +211,7 @@ class UserConfigWdg(ProjectConfigWdg):
         panels = []
 
         show_security = my.kwargs.get("show_security")
+        show_add = my.kwargs.get("show_add")
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -224,9 +225,10 @@ class UserConfigWdg(ProjectConfigWdg):
         <element name="Users">
             <display class='tactic.ui.startup.UserPanelWdg'>
                 <show_security>%s</show_security>
+                <show_add>%s</show_add>
             </display>
         </element>
-          ''' %(show_security))
+          ''' %(show_security, show_add))
 
         config_xml.append('''
         <element name="Group Assignment">
@@ -815,30 +817,34 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div.add_style('display','inline-flex')
         tool_div.add_style('width','50%')
         tool_div.add_style('margin-bottom','-4px')
-       
-        button = ActionButtonWdg(title="Add", tip="Add New User")
-        button.add_style('align-self: flex-end')
-        tool_div.add(button)
+
+        show_add = my.kwargs.get("show_add")
+        if show_add not in ['false', False]:
+            button = ActionButtonWdg(title="Add", tip="Add New User")
+            button.add_style('align-self: flex-end')
+            tool_div.add(button)
         
-        button.add_style("float: left")
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.panel.EditWdg';
-            var kwargs = {
-                search_type: "sthpw/login",
-                view: "insert",
-                show_header: false,
-            }
-            var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
-            var top = bvr.src_el.getParent(".spt_panel_user_top");
-            popup.on_save_cbk = function() {
-                spt.panel.refresh(top);
-            }
+            button.add_style("float: left")
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.EditWdg';
+                var kwargs = {
+                    search_type: "sthpw/login",
+                    view: "insert",
+                    show_header: false,
+                }
+                var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
+                var top = bvr.src_el.getParent(".spt_panel_user_top");
+                popup.on_save_cbk = function() {
+                    spt.panel.refresh(top);
+                }
 
-            '''
-        } )
-
+                '''
+            } )
+        else:
+            tool_div.add_style('position','relative')
+            tool_div.add_style('top','-8px')
 
         security = Environment.get_security()
         license = security.get_license()
@@ -894,7 +900,9 @@ class UserPanelWdg(BaseRefreshWdg):
             spt.tab.add_new("Security", "Security", class_name)
             '''
             } )
-
+        else:
+            tool_div.add_style('position','relative')
+            tool_div.add_style('top','0px')
 
 
 
