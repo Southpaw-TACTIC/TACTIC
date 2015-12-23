@@ -689,7 +689,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
-
+        my.kwargs["expand_mode"] = "plain"
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
             **my.kwargs
@@ -710,34 +710,11 @@ class CollectionContentWdg(BaseRefreshWdg):
             title_div.add(asset_lib_span_div)
 
             icon = IconWdg(name="Asset Library", icon="BS_FOLDER_OPEN")
-            icon.add_class("hand")
-            icon.add_behavior( {
-                'type': 'mouseover',
-                'cbjs_action': '''
-                bvr.src_el.setStyle('opacity', 1.0);
-                '''
-            } )
-            icon.add_behavior( {
-                'type': 'mouseout',
-                'cbjs_action': '''
-                bvr.src_el.setStyle('opacity', 0.6);
-                '''
-            } )
+            
             asset_lib_span_div.add(icon)
 
-            asset_lib_span_div.add(" <a class='hand'><b>Asset Library</b></a> ")
-
-            # make icon and All Assets title clickable to return to view all assets
-            asset_lib_span_div.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_collection_top");
-                var content = top.getElements(".spt_collection_content");
-
-                spt.panel.refresh(top);
-                '''
-            } )
-
+            asset_lib_span_div.add(" <a><b>Asset Library</b></a> ")
+            
             path = path.strip("/")
             parts = path.split("/")
 
@@ -747,9 +724,9 @@ class CollectionContentWdg(BaseRefreshWdg):
                 if has_parent and (idx is not len(parts) - 1):
                     # reverse order of parent_keys to add to attr of each spt_collection_link
                     search_key = parent_keys[len(parts)-idx-2]
-                    title_div.add(" <a class='spt_collection_link hand' search_key=%s><b>%s</b></a> " % (search_key, part))
+                    title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
                 else:
-                    title_div.add(" <a class='spt_collection_link hand'><b>%s</b></a> " % part)
+                    title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
                 title_div.add_style("margin-top: 10px")
 
 
@@ -758,43 +735,72 @@ class CollectionContentWdg(BaseRefreshWdg):
             parts = my.kwargs.get("search_type").split("/")
             collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
-            title_div.add_relay_behavior( {
-                'type': 'mouseup',
-                'search_type': my.kwargs.get("search_type"),
-                'collection_type': collection_type,
-                'bvr_match_class': 'spt_collection_link',
-                'cbjs_action': '''
+            # These behaviors are only activated if the view is within collection layout,
+            # "is_new_tab" is a kwargs set to true, if opening a new tab
+            if not my.kwargs.get("is_new_tab"):
+                icon.add_class("hand")
+                icon.add_behavior( {
+                    'type': 'mouseover',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 1.0);
+                    '''
+                } )
+                icon.add_behavior( {
+                    'type': 'mouseout',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 0.6);
+                    '''
+                } )
+                # make icon and All Assets title clickable to return to view all assets
+                asset_lib_span_div.add_class("hand")
+                asset_lib_span_div.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var content = top.getElements(".spt_collection_content");
 
-                var top = bvr.src_el.getParent(".spt_collection_top");
-                var content = top.getElement(".spt_collection_content");
+                    spt.panel.refresh(top);
+                    '''
+                } )
 
-                var collection_key = bvr.src_el.getAttribute("search_key");
-                if (!collection_key) {
-                    spt.notify.show_message("Already in the Collection.");
-                } 
-                else {
-                    var collection_code = collection_key.split("workflow/asset?project=workflow&code=")[1];
-                    var collection_path = bvr.src_el.innerText;
-                    var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+                title_div.add_class("hand")
+                title_div.add_relay_behavior( {
+                    'type': 'mouseup',
+                    'search_type': my.kwargs.get("search_type"),
+                    'collection_type': collection_type,
+                    'bvr_match_class': 'spt_collection_link',
+                    'cbjs_action': '''
 
-                    var cls = "tactic.ui.panel.CollectionContentWdg";
-                    var kwargs = {
-                        collection_key: collection_key,
-                        path: collection_path,
-                        search_type: bvr.search_type,
-                        show_shelf: false,
-                        show_search_limit: false,
-                        expression: expr
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var content = top.getElement(".spt_collection_content");
+
+                    var collection_key = bvr.src_el.getAttribute("search_key");
+                    if (!collection_key) {
+                        spt.notify.show_message("Already in the Collection.");
+                    } 
+                    else {
+                        var collection_code = collection_key.split("workflow/asset?project=workflow&code=")[1];
+                        var collection_path = bvr.src_el.innerText;
+                        var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+
+                        var cls = "tactic.ui.panel.CollectionContentWdg";
+                        var kwargs = {
+                            collection_key: collection_key,
+                            path: collection_path,
+                            search_type: bvr.search_type,
+                            show_shelf: false,
+                            show_search_limit: false,
+                            expression: expr
+                        }
+                        spt.panel.load(content, cls, kwargs);
+
+                        bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
                     }
-                    spt.panel.load(content, cls, kwargs);
 
-                    bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
-                }
-
-                '''
-            } )
-                
-            #title_div.add("/ %s" % collection.get_value("name") )
+                    '''
+                } )
+                    
+                #title_div.add("/ %s" % collection.get_value("name") )
 
         #scale_wdg = tile.get_scale_wdg()
         #top.add(scale_wdg)

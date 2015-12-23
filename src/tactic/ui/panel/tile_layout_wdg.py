@@ -608,17 +608,23 @@ class TileLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_tile_top");
 
             var name = top.getAttribute("spt_name");
+            var parent_keys = [];
 
             var search_key = top.getAttribute("spt_search_key");
             var parent_code = top.getAttribute("spt_search_code");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
-            var class_name = "tactic.ui.panel.ViewPanelWdg";
+            var class_name = "tactic.ui.panel.CollectionContentWdg";
+            
             var kwargs = {
                 search_type: bvr.search_type,
-                layout: 'tile',
+                collection_key: search_key,
                 expression: expr,
-                use_last_search: false
+                use_last_search: false,
+                show_shelf: false,
+                parent_keys: parent_keys,
+                path: name,
+                is_new_tab: true
             }
             spt.tab.add_new(parent_code, name, class_name, kwargs);
             '''
@@ -682,18 +688,23 @@ class TileLayoutWdg(ToolLayoutWdg):
                         var top = bvr.src_el.getParent(".spt_tile_top");
 
                         var name = top.getAttribute("spt_name");
+                        var parent_keys = [];
 
                         var search_key = top.getAttribute("spt_search_key");
                         var parent_code = top.getAttribute("spt_search_code");
 
                         var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
-                        var class_name = "tactic.ui.panel.ViewPanelWdg";
-
+                        var class_name = "tactic.ui.panel.CollectionContentWdg";
+                        
                         var kwargs = {
                             search_type: bvr.search_type,
-                            layout: 'tile',
+                            collection_key: search_key,
                             expression: expr,
-                            use_last_search: false
+                            use_last_search: false,
+                            show_shelf: false,
+                            parent_keys: parent_keys,
+                            path: name,
+                            is_new_tab: true
                         }
                         spt.tab.add_new(parent_code, name, class_name, kwargs);
                     }
