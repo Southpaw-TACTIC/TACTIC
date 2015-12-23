@@ -558,13 +558,14 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_collection_top");
             var content = top.getElement(".spt_collection_content");
 
-            bvr.src_el.setStyle("border", "solid 3x blue");
+            
             var list = bvr.src_el.getParent(".spt_collection_list");
             var items = list.getElements(".spt_collection_item");
             for (var i = 0; i < items.length; i++) {
+                items[i].setStyle("background", "");
                 items[i].setStyle("box-shadow", "");
             }
-
+            bvr.src_el.setStyle("background", "#EEE");
             var collection_key = bvr.src_el.getAttribute("spt_collection_key");
             var collection_code = bvr.src_el.getAttribute("spt_collection_code");
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
