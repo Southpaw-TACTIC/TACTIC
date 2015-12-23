@@ -1725,7 +1725,11 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     search_code: src_code
                 };
                 server.insert(collection_type, data);
-                spt.table.refresh_rows([dst_top], null, null);
+                spt.notify.show_message("Added to Collection");
+                if (!dst_top.hasClass("spt_collection_item")){
+                    spt.table.refresh_rows([dst_top], null, null);
+                }
+                
             }
         }
 
