@@ -572,7 +572,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
 
-            var parent_dict = {}
+            var parent_dict = {};
             var parent_collection = bvr.src_el.getParent(".spt_subcollection_wdg");
             var path = collection_path.substring(0, collection_path.lastIndexOf("/"));
             if (parent_collection) {
@@ -606,7 +606,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var panel = bvr.src_el.getParent(".spt_panel");
             var search_limit_div = panel.getElements(".spt_search_limit_top");
             if (search_limit_div.length == 2){
-                search_limit_div[search_limit_div.length - 1].setStyle("visibility", "hidden");
+                search_limit_div[1].setStyle("visibility", "hidden");
             }
             '''
         } )
@@ -732,7 +732,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 title_div.add(" / ")
                 # the last spt_collection_link does not need a search_key
                 if has_parent and (idx is not len(parts) - 1):
-                    search_key = parent_dict[part]
+                    search_key = parent_dict.get(part)
                     title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
                 else:
                     title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
@@ -746,7 +746,8 @@ class CollectionContentWdg(BaseRefreshWdg):
             
             exists = SearchType.get(collection_type, no_exception=True)
             if not exists:
-                return None
+                title_div.add("SearchType %s is not registered." % collection_type)
+                return top
 
             # These behaviors are only activated if the view is within collection layout,
             # "is_new_tab" is a kwargs set to true, if opening a new tab
