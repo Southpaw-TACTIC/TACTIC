@@ -212,6 +212,8 @@ class UserConfigWdg(ProjectConfigWdg):
 
         show_security = my.kwargs.get("show_security")
         show_add = my.kwargs.get("show_add")
+        view = my.kwargs.get("view")
+        filter_by = my.kwargs.get("filter_by")
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -226,9 +228,11 @@ class UserConfigWdg(ProjectConfigWdg):
             <display class='tactic.ui.startup.UserPanelWdg'>
                 <show_security>%s</show_security>
                 <show_add>%s</show_add>
+                <view>%s</view>
+                <filter_by>%s</filter_by>
             </display>
         </element>
-          ''' %(show_security, show_add))
+          ''' %(show_security, show_add, view, filter_by))
 
         config_xml.append('''
         <element name="Group Assignment">
@@ -805,7 +809,15 @@ class UserPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        expr_filter = "sthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']"
+        filter_by = my.kwargs.get("filter_by")
+        project = Project.get().get_code()
+
+        if filter_by == "project":
+            new_filter = "sthpw/login_group['project_code', '%s'].sthpw/login_in_group." % project 
+        else:
+            new_filter = ""
+
+        expr_filter = "%ssthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']" % new_filter
         current_users = Search.eval("@COUNT(%s)" %expr_filter)
 
         top = my.top
@@ -940,8 +952,14 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add(div)
         #div.add_style("max-height: 300px")
         #div.add_style("overflow-y: auto")
+
+        view = my.kwargs.get("view")
+
+        if not view:
+            view = "manage_user"
+
         expr = "@SEARCH(%s)" %expr_filter
-        panel = ViewPanelWdg(search_type='sthpw/login',view='manage_user',show_insert='false',\
+        panel = ViewPanelWdg(search_type='sthpw/login',view=view,show_insert='false',\
             show_gear='false', show_select='false', height='700', expression=expr,\
             simple_search_view='simple_manage_filter', show_column_manager='false',\
             show_layout_switcher='false', show_expand='false')
