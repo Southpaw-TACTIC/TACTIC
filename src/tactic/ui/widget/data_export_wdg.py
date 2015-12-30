@@ -1048,6 +1048,59 @@ class PreviewDataWdg(BaseRefreshWdg):
         skipped_columns = []
         new_col_indices = []
 
+        # Analyze data. It will try to create a timestamp, then integer, then float, then varchar, then text column
+        def guess_column_type(idx):
+            column_types = {}
+            data_cell_list = []
+            my.CHECK = 5
+            column_type = ''       
+            for k, row in enumerate(csv_data):
+                if k >= len(row):
+                    data = ''
+                else:
+                    data = row[idx] 
+                if data.strip() == '':
+                    continue
+                if my.CHECK == 5:
+                    column_type = my._check_timestamp(data)
+                if my.CHECK == 4:
+                    column_type = my._check_integer(data)
+                if my.CHECK == 3:
+                    column_type = my._check_float(data)
+                if my.CHECK == 2:
+                    column_type = my._check_varchar(data)
+
+
+
+                # TEST: use democracy to determine type
+                column_type = my._check_timestamp(data)
+                if not column_type:
+                    column_type = my._check_integer(data)
+                    if not column_type:
+                        column_type = my._check_float(data)
+                        if not column_type:
+                            column_type = my._check_varchar(data)
+
+                if column_types.get(column_type) == None:
+                    column_types[column_type] = 1
+                else:
+                    column_types[column_type] = column_types[column_type] + 1
+
+
+                # max 30 per analysis    
+                if k > 30:
+                    break
+
+            largest = 0
+            for key, num in column_types.items():
+                if num > largest:
+                    column_type = key
+                    largest = num
+            #table.add_cell(column_type)
+            return column_type
+            #hidden = HiddenWdg('new_column_type_%s' %idx, value=column_type)
+            #div.add(hidden)
+        
         for j, cell in enumerate(row):
             # skip extra empty title
             if j >= len(csv_titles):
@@ -1117,6 +1170,8 @@ class PreviewDataWdg(BaseRefreshWdg):
             td = table.add_cell( display )
             td.add_style("padding: 3px")
 
+            
+            #TODO... how do we now this is a new column?
             if csv_titles[j] != 'id':
                 if my.is_refresh:
                     if sel_val != '':
@@ -1125,25 +1180,20 @@ class PreviewDataWdg(BaseRefreshWdg):
                     if not is_new_column:
                         td.add_color('background','background2')
                 
-            #if is_new_column:
-            if True:
-                # this star is not necessary, and could be misleading if one checks off Use TItle Row
-                #td.add(" <b style='color: red'>*</b>")
-                #FLAG
-                # new property
-                new_column_div = DivWdg()
+            # "Create New Column" options - title and type
+            new_column_div = DivWdg()
+            td = table.add_cell( new_column_div )
+            
+            if sel_val:
+                new_column_div.add_style("display", "none")
+            else:
+                new_column_div.add_style("display", "block")
+            
+            new_column_div.set_id("new_column_div_%s" % j)
 
-                if sel_val:
-                    new_column_div.add_style("display", "none")
-                else:
-                    new_column_div.add_style("display", "block")
-
-                new_column_div.set_id("new_column_div_%s" % j)
-
-                td = table.add_cell( new_column_div )
-                if sel_val == '':
-                    td.add_color('background','background2')
-                   
+            if sel_val == '':
+                td.add_color('background','background2')
+               
                 new_col_indices.append(j)
 
                 column_name = TextWdg("new_column_%s" % j)
@@ -1160,14 +1210,24 @@ class PreviewDataWdg(BaseRefreshWdg):
                     column_name.set_value(new_title)
 
                 column_type = SelectWdg("new_column_type_%s" % j)
+                new_column_div.add( column_type )
+                column_type.set_option("values", "varchar(256)|text|integer|float|timestamp")
                 column_type.add_class("form-control")
                 column_type.add_style('border-color: #8DA832')
-                # TODO... text.set_persist_on_submit()
-                new_column_div.add( column_type )
- 
-                #processed_type = process_csv_types[i]
-                #column_type.set_value()
+                # TODO: what is this? 
+                #column_type.set_persist_on_submit()
 
+                '''
+                processed_type = processed_csv_types[j]
+                if processed_type:
+                    column_type = processed_type 
+                else:
+                    column_type = guess_column_type(j)
+                    processed_type[j] = column_type
+                '''
+                column_type_str = guess_column_type(j)
+                column_type.set_value(column_type_str)
+            
         if skipped_columns:
             div.add(SpanWdg('WARNING: Some titles are empty or there are too many data cells. Column index [%s] '\
                 'are skipped.' %','.join(skipped_columns), css='warning'))
@@ -1177,58 +1237,6 @@ class PreviewDataWdg(BaseRefreshWdg):
                             
         div.add(table)
 
-        # Analyze data. It will try to create a timestamp, then integer, then float, then varchar, then text column
-        for idx in new_col_indices:
-            column_types = {}
-            data_cell_list = []
-            my.CHECK = 5
-            column_type = ''       
-            for k, row in enumerate(csv_data):
-                if k >= len(row):
-                    data = ''
-                else:
-                    data = row[idx] 
-                if data.strip() == '':
-                    continue
-                if my.CHECK == 5:
-                    column_type = my._check_timestamp(data)
-                if my.CHECK == 4:
-                    column_type = my._check_integer(data)
-                if my.CHECK == 3:
-                    column_type = my._check_float(data)
-                if my.CHECK == 2:
-                    column_type = my._check_varchar(data)
-
-
-
-                # TEST: use democracy to determine type
-                column_type = my._check_timestamp(data)
-                if not column_type:
-                    column_type = my._check_integer(data)
-                    if not column_type:
-                        column_type = my._check_float(data)
-                        if not column_type:
-                            column_type = my._check_varchar(data)
-
-                if column_types.get(column_type) == None:
-                    column_types[column_type] = 1
-                else:
-                    column_types[column_type] = column_types[column_type] + 1
-
-
-                # max 30 per analysis    
-                if k > 30:
-                    break
-
-            largest = 0
-            for key, num in column_types.items():
-                if num > largest:
-                    column_type = key
-                    largest = num
-            #table.add_cell(column_type)
-
-            hidden = HiddenWdg('new_column_type_%s' %idx, value=column_type)
-            div.add(hidden)
 
 
      
