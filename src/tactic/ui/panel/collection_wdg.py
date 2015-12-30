@@ -572,14 +572,19 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
 
-            var parent_keys = []
+            var parent_dict = {}
             var parent_collection = bvr.src_el.getParent(".spt_subcollection_wdg");
+            var path = collection_path.substring(0, collection_path.lastIndexOf("/"));
             if (parent_collection) {
                 for (var i = 0; i < collection_path.split("/").length - 1; i++) {
+                    var n = path.lastIndexOf("/");
+                    var collection_name = path.substring(n+1);                
+                    path = path.substring(0, n);
 
                     var parent_key = parent_collection.getAttribute("spt_parent_key");
-                    parent_keys.push(parent_key);
+                    parent_dict[collection_name] = parent_key;
                     parent_collection = parent_collection.getParent(".spt_subcollection_wdg");
+                    
                 }
             }            
 
@@ -591,7 +596,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 show_shelf: false,
                 show_search_limit: true,
                 expression: expr,
-                parent_keys: parent_keys
+                parent_dict: parent_dict
             }
             spt.panel.load(content, cls, kwargs);
 
@@ -600,9 +605,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             // hide the bottom show_search_limit when clicking into a collection
             var panel = bvr.src_el.getParent(".spt_panel");
             var search_limit_div = panel.getElements(".spt_search_limit_top");
-            search_limit_div.setStyle("visibility", "hidden");
-
-
+            if (search_limit_div.length == 2){
+                search_limit_div[search_limit_div.length - 1].setStyle("visibility", "hidden");
+            }
             '''
         } )
 
@@ -699,9 +704,9 @@ class CollectionContentWdg(BaseRefreshWdg):
         tile = TileLayoutWdg(
             **my.kwargs
         )
-        parent_keys = my.kwargs.get("parent_keys")
+        parent_dict = my.kwargs.get("parent_dict")
         has_parent=False
-        if parent_keys:
+        if parent_dict:
             has_parent = True
 
         path = my.kwargs.get("path")
@@ -727,8 +732,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 title_div.add(" / ")
                 # the last spt_collection_link does not need a search_key
                 if has_parent and (idx is not len(parts) - 1):
-                    # reverse order of parent_keys to add to attr of each spt_collection_link
-                    search_key = parent_keys[len(parts)-idx-2]
+                    search_key = parent_dict[part]
                     title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
                 else:
                     title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
