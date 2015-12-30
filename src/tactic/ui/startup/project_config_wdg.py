@@ -213,7 +213,7 @@ class UserConfigWdg(ProjectConfigWdg):
         show_security = my.kwargs.get("show_security")
         show_add = my.kwargs.get("show_add")
         view = my.kwargs.get("view")
-        filter_by = my.kwargs.get("filter_by")
+        filter_mode = my.kwargs.get("filter_mode")
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -229,10 +229,10 @@ class UserConfigWdg(ProjectConfigWdg):
                 <show_security>%s</show_security>
                 <show_add>%s</show_add>
                 <view>%s</view>
-                <filter_by>%s</filter_by>
+                <filter_mode>%s</filter_mode>
             </display>
         </element>
-          ''' %(show_security, show_add, view, filter_by))
+          ''' %(show_security, show_add, view, filter_mode))
 
         config_xml.append('''
         <element name="Group Assignment">
@@ -809,10 +809,10 @@ class UserPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        filter_by = my.kwargs.get("filter_by")
+        filter_mode = my.kwargs.get("filter_mode")
         project = Project.get().get_code()
 
-        if filter_by == "project":
+        if filter_mode == "project":
             new_filter = "sthpw/login_group['project_code', '%s'].sthpw/login_in_group." % project 
         else:
             new_filter = ""
