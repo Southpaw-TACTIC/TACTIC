@@ -254,7 +254,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def add_layout_behaviors(my, layout_wdg):
 
 
-        my.tile_layout.add_layout_behaviors(layout_wdg)
+        #my.tile_layout.add_layout_behaviors(layout_wdg)
 
         """
         layout_wdg.add_relay_behavior( {
@@ -273,7 +273,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
-        """
+        
 
         main_bg1 = layout_wdg.get_color("background")
         main_bg2 = layout_wdg.get_color("background", 5)
@@ -303,6 +303,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             }
             ''' %(main_bg1, bg1)
         } )
+        """
 
 
 

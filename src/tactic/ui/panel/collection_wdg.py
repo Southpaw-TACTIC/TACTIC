@@ -17,7 +17,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
-from pyasm.web import DivWdg, Table
+from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -467,7 +467,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var num_result = 0;
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
-                var collection_title = collections[i].attributes[4].nodeValue.toLowerCase();
+                var collection_title = collections[i].attributes[0].value.toLowerCase();
 
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
@@ -505,7 +505,32 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         text_div.add_style("width: 270px")
         text_div.add_style("display: inline-block")
 
+        # Asset Library folder access
         div.add("<br clear='all'/>")
+        asset_lib_div = DivWdg()
+        div.add(asset_lib_div)
+        folder_icon = IconWdg(icon="FOLDER_2", width='30px')
+
+        asset_lib_div.add(folder_icon)
+        asset_lib_div.add_style("margin: 5px 0px 5px -5px")
+        asset_lib_div.add_style("height: 20px")
+        asset_lib_div.add_style("padding-top: 5px")
+        asset_lib_div.add_style("padding-bottom: 5px")
+        asset_lib_div.add_style("font-weight: bold")
+
+        asset_lib_div.add("Asset Library")
+        asset_lib_div.add_class("tactic_hover")
+        asset_lib_div.add_class("hand")
+        asset_lib_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_collection_top");
+                var content = top.getElements(".spt_collection_content");
+
+                spt.panel.refresh(top);
+                '''
+            } )
+
 
         # collection
         search = Search(my.search_type)
@@ -533,21 +558,35 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_collection_top");
             var content = top.getElement(".spt_collection_content");
 
-            bvr.src_el.setStyle("border", "solid 3x blue");
+            
             var list = bvr.src_el.getParent(".spt_collection_list");
             var items = list.getElements(".spt_collection_item");
             for (var i = 0; i < items.length; i++) {
+                items[i].setStyle("background", "");
                 items[i].setStyle("box-shadow", "");
             }
-
-
-
+            bvr.src_el.setStyle("background", "#EEE");
             var collection_key = bvr.src_el.getAttribute("spt_collection_key");
             var collection_code = bvr.src_el.getAttribute("spt_collection_code");
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
 
+            var parent_dict = {};
+            var parent_collection = bvr.src_el.getParent(".spt_subcollection_wdg");
+            var path = collection_path.substring(0, collection_path.lastIndexOf("/"));
+            if (parent_collection) {
+                for (var i = 0; i < collection_path.split("/").length - 1; i++) {
+                    var n = path.lastIndexOf("/");
+                    var collection_name = path.substring(n+1);                
+                    path = path.substring(0, n);
+
+                    var parent_key = parent_collection.getAttribute("spt_parent_key");
+                    parent_dict[collection_name] = parent_key;
+                    parent_collection = parent_collection.getParent(".spt_subcollection_wdg");
+                    
+                }
+            }            
 
             var cls = "tactic.ui.panel.CollectionContentWdg";
             var kwargs = {
@@ -555,15 +594,20 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 path: collection_path,
                 search_type: bvr.search_type,
                 show_shelf: false,
-                show_search_limit: false,
+                show_search_limit: true,
                 expression: expr,
+                parent_dict: parent_dict
             }
             spt.panel.load(content, cls, kwargs);
 
             bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
 
-
-
+            // hide the bottom show_search_limit when clicking into a collection
+            var panel = bvr.src_el.getParent(".spt_panel");
+            var search_limit_div = panel.getElements(".spt_search_limit_top");
+            if (search_limit_div.length == 2){
+                search_limit_div[1].setStyle("visibility", "hidden");
+            }
             '''
         } )
 
@@ -651,38 +695,126 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         collection = Search.get_by_search_key(my.collection_key)
 
-
         top = my.top
 
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
-
-
+        my.kwargs["expand_mode"] = "plain"
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
             **my.kwargs
         )
+        parent_dict = my.kwargs.get("parent_dict")
+        has_parent=False
+        if parent_dict:
+            has_parent = True
 
         path = my.kwargs.get("path")
         if collection and path:
             title_div = DivWdg()
             top.add(title_div)
             title_div.add_style("float: left")
-            title_div.add_style("margin: 15px 0px")
+            title_div.add_style("margin: 15px 0px 15px 30px")
 
-            icon = IconWdg(name="View Collection", icon="BS_FOLDER_OPEN")
-            title_div.add(icon)
-            icon.add_style("margin-right: 10px")
+            asset_lib_span_div = SpanWdg()
+            title_div.add(asset_lib_span_div)
 
+            icon = IconWdg(name="Asset Library", icon="BS_FOLDER_OPEN")
+            
+            asset_lib_span_div.add(icon)
+
+            asset_lib_span_div.add(" <a><b>Asset Library</b></a> ")
+            
             path = path.strip("/")
             parts = path.split("/")
 
-            for part in parts:
+            for idx, part in enumerate(parts):
                 title_div.add(" / ")
-                title_div.add(" <a class='spt_colleciton_link'><b>%s</b></a> " % part)
+                # the last spt_collection_link does not need a search_key
+                if has_parent and (idx is not len(parts) - 1):
+                    search_key = parent_dict.get(part)
+                    title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
+                else:
+                    title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
                 title_div.add_style("margin-top: 10px")
-                title_div.add_style("margin-left: 20px")
-            #title_div.add("/ %s" % collection.get_value("name") )
+
+
+            # Adding behavior to collections link
+
+            parts = my.kwargs.get("search_type").split("/")
+            collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+            
+            exists = SearchType.get(collection_type, no_exception=True)
+            if not exists:
+                title_div.add("SearchType %s is not registered." % collection_type)
+                return top
+
+            # These behaviors are only activated if the view is within collection layout,
+            # "is_new_tab" is a kwargs set to true, if opening a new tab
+            if not my.kwargs.get("is_new_tab"):
+                icon.add_class("hand")
+                icon.add_behavior( {
+                    'type': 'mouseover',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 1.0);
+                    '''
+                } )
+                icon.add_behavior( {
+                    'type': 'mouseout',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 0.6);
+                    '''
+                } )
+                # make icon and All Assets title clickable to return to view all assets
+                asset_lib_span_div.add_class("hand")
+                asset_lib_span_div.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var content = top.getElements(".spt_collection_content");
+
+                    spt.panel.refresh(top);
+                    '''
+                } )
+
+                title_div.add_class("hand")
+                title_div.add_relay_behavior( {
+                    'type': 'mouseup',
+                    'search_type': my.kwargs.get("search_type"),
+                    'collection_type': collection_type,
+                    'bvr_match_class': 'spt_collection_link',
+                    'cbjs_action': '''
+
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var content = top.getElement(".spt_collection_content");
+
+                    var collection_key = bvr.src_el.getAttribute("search_key");
+                    if (!collection_key) {
+                        spt.notify.show_message("Already in the Collection.");
+                    } 
+                    else {
+                        var collection_code = collection_key.split("workflow/asset?project=workflow&code=")[1];
+                        var collection_path = bvr.src_el.innerText;
+                        var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+
+                        var cls = "tactic.ui.panel.CollectionContentWdg";
+                        var kwargs = {
+                            collection_key: collection_key,
+                            path: collection_path,
+                            search_type: bvr.search_type,
+                            show_shelf: false,
+                            show_search_limit: true,
+                            expression: expr
+                        }
+                        spt.panel.load(content, cls, kwargs);
+
+                        bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
+                    }
+
+                    '''
+                } )
+                    
+                #title_div.add("/ %s" % collection.get_value("name") )
 
         #scale_wdg = tile.get_scale_wdg()
         #top.add(scale_wdg)
@@ -937,6 +1069,9 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_top.add_class("spt_collection_div_top")
         collection_div = DivWdg()
         
+        name = collection.get_value("name")
+        # Adding Collection title (without the number count) as an attribute
+        collection_top.set_attr("collection_name", name)
 
         collection_top.add(collection_div)
         collection_top.add_class("tactic_hover")
