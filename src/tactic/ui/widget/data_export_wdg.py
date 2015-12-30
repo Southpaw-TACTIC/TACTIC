@@ -926,6 +926,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         # for 2nd guess of similar column titles
         processed_csv_titles = [x.replace(' ', '_').lower() for x in csv_titles]
+        processed_csv_types = []
         csv_data = csv_parser.get_data()
 
         web = WebContainer.get_web()
@@ -998,7 +999,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         th.add_style("padding: 5px")
         th.add_style('min-width: 100px')
         th.add_class('smaller')
-       
+         
 
         # set the columns and labels
         columns = my.columns
@@ -1128,7 +1129,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             if True:
                 # this star is not necessary, and could be misleading if one checks off Use TItle Row
                 #td.add(" <b style='color: red'>*</b>")
-
+                #FLAG
                 # new property
                 new_column_div = DivWdg()
 
@@ -1143,30 +1144,29 @@ class PreviewDataWdg(BaseRefreshWdg):
                 if sel_val == '':
                     td.add_color('background','background2')
                    
-
                 new_col_indices.append(j)
 
-                text = TextWdg("new_column_%s" % j)
-                # Bootstrap
-                text.add_class("form-control")
-                
-                text.add_style('border-color: #8DA832')
-                text.set_persist_on_submit()
+                column_name = TextWdg("new_column_%s" % j)
+                new_column_div.add( column_name )
+                column_name.add_class("form-control")
+                column_name.add_style('border-color: #8DA832')
+                column_name.set_persist_on_submit()
 
                 if my.has_title:
                     if use_processed:
                         new_title = processed_csv_titles[j]
                     else:
                         new_title = csv_titles[j]
-                    text.set_value(new_title)
+                    column_name.set_value(new_title)
 
-                # prefer to use bg color instead of OR to notify which one is used
-                """
-                or_span =  SpanWdg(" OR ", css='med')
-                or_span.add_color('color','color')
-                new_column_div.add(or_span)
-                """
-                new_column_div.add( text )
+                column_type = SelectWdg("new_column_type_%s" % j)
+                column_type.add_class("form-control")
+                column_type.add_style('border-color: #8DA832')
+                # TODO... text.set_persist_on_submit()
+                new_column_div.add( column_type )
+ 
+                #processed_type = process_csv_types[i]
+                #column_type.set_value()
 
         if skipped_columns:
             div.add(SpanWdg('WARNING: Some titles are empty or there are too many data cells. Column index [%s] '\
