@@ -589,7 +589,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 path: collection_path,
                 search_type: bvr.search_type,
                 show_shelf: false,
-                show_search_limit: false,
+                show_search_limit: true,
                 expression: expr,
                 parent_keys: parent_keys
             }
@@ -597,6 +597,10 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
             bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
 
+            // hide the bottom show_search_limit when clicking into a collection
+            var panel = bvr.src_el.getParent(".spt_panel");
+            var search_limit_div = panel.getElements(".spt_search_limit_top");
+            search_limit_div.setStyle("visibility", "hidden");
 
 
             '''
@@ -735,6 +739,10 @@ class CollectionContentWdg(BaseRefreshWdg):
 
             parts = my.kwargs.get("search_type").split("/")
             collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+            
+            exists = SearchType.get(collection_type, no_exception=True)
+            if not exists:
+                return None
 
             # These behaviors are only activated if the view is within collection layout,
             # "is_new_tab" is a kwargs set to true, if opening a new tab
@@ -790,7 +798,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                             path: collection_path,
                             search_type: bvr.search_type,
                             show_shelf: false,
-                            show_search_limit: false,
+                            show_search_limit: true,
                             expression: expr
                         }
                         spt.panel.load(content, cls, kwargs);
