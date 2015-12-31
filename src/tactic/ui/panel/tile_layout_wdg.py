@@ -12,6 +12,7 @@
 __all__ = ["TileLayoutWdg"]
 
 import re, os
+import urllib
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
@@ -175,15 +176,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-
-
-
-
-
-
-    
-
-
     def can_select(my):
         return True
 
@@ -282,16 +274,26 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 group_wdg = DivWdg()
                 inner.add(group_wdg)
-
-                group_wdg.add_style("width: auto")
-                group_wdg.add_border()
-                group_wdg.add(title)
-                group_wdg.add_style("height: 16px")
-                group_wdg.add_style("margin: 20px 0px")
+                group_wdg.add_style("margin: 20px 0px 5px 0px")
                 group_wdg.add_style("padding: 10px 10px")
-                group_wdg.add_color("background", "background3")
-                group_wdg.add_style("font-size: 1.2em")
-                group_wdg.add_style("font-weight: bold")
+                group_wdg.add_style("width: auto")
+
+                icon = IconWdg(name=title, icon="BS_FOLDER_OPEN")
+                group_wdg.add(icon)
+                icon.add_style("display: inline-block")
+                icon.add_style("margin-right: 10px")
+                icon.add_style("vertical-align: top")
+
+
+                title_wdg = DivWdg()
+                group_wdg.add(title_wdg)
+                title_wdg.add(title)
+                title_wdg.add_style("font-size: 1.2em")
+                title_wdg.add_style("font-weight: bold")
+                title_wdg.add_style("display: inline-block")
+
+                title_wdg.add("<div style='margin-top: 5px; opacity: 0.5; font-size: 0.8em; font-weight: normal'>This is a description</div>")
+
 
 
                 group_values[group_column] = group_value
@@ -473,7 +475,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = None
 
         my.bottom_expr = my.kwargs.get("bottom_expr")
-        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") not in ['false', False]
+        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") in ['true', True]
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
@@ -496,7 +498,12 @@ class TileLayoutWdg(ToolLayoutWdg):
             parts = re.split('[\Wx]+', my.aspect_ratio)
             my.aspect_ratio = (int(parts[0]), int(parts[1]))
         else:
+
             my.aspect_ratio = (240, 160)
+            #my.aspect_ratio = (240, 135)
+            #my.aspect_ratio = (240, 240)
+
+
 
         my.show_name_hover = my.kwargs.get('show_name_hover')
 
@@ -601,22 +608,19 @@ class TileLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_tile_top");
 
             var name = top.getAttribute("spt_name");
-            var search_code = top.getAttribute("spt_search_code");
 
             var search_key = top.getAttribute("spt_search_key");
             var parent_code = top.getAttribute("spt_search_code");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
-            //spt.table.run_search( { expression: expr } );
             var class_name = "tactic.ui.panel.ViewPanelWdg";
             var kwargs = {
                 search_type: bvr.search_type,
                 layout: 'tile',
                 expression: expr,
-                keywords: "__NONE__",
-                use_last_search: false,
+                use_last_search: false
             }
-            spt.tab.add_new(search_code, name, class_name, kwargs);
+            spt.tab.add_new(parent_code, name, class_name, kwargs);
             '''
         } )
 
@@ -637,6 +641,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         if mode == "plain":
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'collection_type': collection_type,
+                'search_type': my.search_type,
                 'process': process,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
@@ -644,20 +650,58 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var search_key = top.getAttribute("spt_search_key");
                 var server = TacticServerStub.get();
                 var tmps = server.split_search_key(search_key);
+
+                var encode = function(path){
+                    var path_list = path.split("/");
+                    var filename = path_list.pop();
+                    filename = encodeURIComponent(filename);
+                    path_list.push(filename);
+                    snapshot_path = path_list.join("/");
+
+                    return snapshot_path;
+                }
+
                 if (/sthpw\/snapshot/.test(search_key)) {
                     snapshots = server.query_snapshots({filters: [['id', tmps[1]]], include_web_paths_dict: true});
                     
-                    window.open(snapshots[0].__web_paths_dict__.main);
+                    var snapshot_path = encode(snapshots[0].__web_paths_dict__.main[0]);
+                    window.open(snapshot_path);
                 }
                 else {
+                    var asset_sobject = server.get_by_search_key(search_key);
+                    var is_collection = asset_sobject._is_collection;
+
                     var snapshot = server.get_snapshot(search_key, {context: "", process: bvr.process, include_web_paths_dict:true});
                     if (snapshot.__search_key__) {
-                        window.open(snapshot.__web_paths_dict__.main);
+                        var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
+                        window.open(snapshot_path);
+                    }
+                    // The relay behavior for spt_tile_collection does not work, therefore adding the code here.
+                    else if (is_collection == true) {
+                        var layout = bvr.src_el.getParent(".spt_layout");
+                        var top = bvr.src_el.getParent(".spt_tile_top");
+
+                        var name = top.getAttribute("spt_name");
+
+                        var search_key = top.getAttribute("spt_search_key");
+                        var parent_code = top.getAttribute("spt_search_code");
+
+                        var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
+                        var class_name = "tactic.ui.panel.ViewPanelWdg";
+
+                        var kwargs = {
+                            search_type: bvr.search_type,
+                            layout: 'tile',
+                            expression: expr,
+                            use_last_search: false
+                        }
+                        spt.tab.add_new(parent_code, name, class_name, kwargs);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
                         if (snapshot.__search_key__) {
-                            window.open(snapshot.__web_paths_dict__.main);
+                            var snapshot_path = encode(snapshot.__web_paths_dict__.main[0]);
+                            window.open(snapshot_path);
                         }
                         else {
                             alert("WARNING: No file for this asset");
@@ -801,8 +845,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "0.8");
             var el = bvr.src_el.getElement(".spt_tile_title");
-            if (el)
-                el.setStyle("background", "%s");
+            if (el) {
+                //el.setStyle("background", "%s");
+            }
             ''' % bg2
         } )
 
@@ -812,8 +857,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
             var el = bvr.src_el.getElement(".spt_tile_title");
-            if (el)
-                el.setStyle("background", "%s");
+            if (el) {
+                //el.setStyle("background", "%s");
+            }
             ''' % bg1
         } )
 
@@ -1019,6 +1065,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             'border': border,
             'bvr_match_class': 'spt_tile_select',
             'cbjs_action': '''
+
+            var checkbox = bvr.src_el.getElement('.spt_tile_checkbox');
+
             spt.table.set_table(bvr.src_el);
             if (evt.shift == true) {
                 var row = bvr.src_el.getParent(".spt_table_row");
@@ -1059,12 +1108,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                     if (row) {
 
                         var checkbox = row.getElement(".spt_tile_checkbox");
+                        var bg = row.getElement(".spt_tile_bg");
 
                         if (select) {
                             checkbox.checked = true;
                             row.removeClass("spt_table_selected");
                             spt.table.select_row(row);
-                            row.setStyle("box-shadow", "0px 0px 15px #FF0");
+                            bg.setStyle("opacity", "0.7");
 
 
                         }
@@ -1073,7 +1123,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                             row.addClass("spt_table_selected");
                             spt.table.unselect_row(row);
 
-                            row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                            bg.setStyle("opacity", "0.3");
 
                         }
                     }
@@ -1084,19 +1134,20 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 var row = bvr.src_el.getParent(".spt_table_row");
                 var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
+                var bg = row.getElement(".spt_tile_bg");
 
                 if (checkbox.checked == true) {
                     checkbox.checked = false;
                    
                     spt.table.unselect_row(row);
-                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    bg.setStyle("opacity", "0.3");
 
                 }
                 else {
                     checkbox.checked = true;
                     
                     spt.table.select_row(row);
-                    row.setStyle("box-shadow", "0px 0px 15px #FF0");
+                    bg.setStyle("opacity", "0.7");
 
                 }
 
@@ -1111,10 +1162,12 @@ class TileLayoutWdg(ToolLayoutWdg):
             'type': 'click',
             'bvr_match_class': 'spt_tile_checkbox',
             'cbjs_action': '''
-             var row = bvr.src_el.getParent(".spt_table_row");
+
+            var row = bvr.src_el.getParent(".spt_table_row");
 
             spt.table.set_table(row);
-             if (evt.shift == true) {
+            if (evt.shift == true) {
+
               
 
                 var rows = spt.table.get_all_rows(true);
@@ -1153,12 +1206,14 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (row) {
 
                     var checkbox = bvr.src_el;
+                    var bg = row.getElement(".spt_tile_bg");
 
                     if (select) {
                         checkbox.checked = true;
                         row.removeClass("spt_table_selected");
                         spt.table.select_row(row);
-                        row.setStyle("box-shadow", "0px 0px 15px #FF0");
+
+                        bg.setStyle("opacity", "0.7");
 
 
                     }
@@ -1167,22 +1222,24 @@ class TileLayoutWdg(ToolLayoutWdg):
                         row.addClass("spt_table_selected");
                         spt.table.unselect_row(row);
 
-                        row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                        bg.setStyle("opacity", "0.3");
 
                     }
                 }
             }
             else {
+                var bg = row.getElement(".spt_tile_bg");
                 if (bvr.src_el.checked) {
                     spt.table.select_row(row);
-                    row.setStyle("box-shadow", "0px 0px 15px #FF0");
+                    bg.setStyle("opacity", "0.7");
                 }
                 else {
                     spt.table.unselect_row(row);
-                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                    bg.setStyle("opacity", "0.3");
                 }
             }
             evt.stopPropagation();
+
             '''
         } )
 
@@ -1275,13 +1332,23 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
 
+ 
         if my.kwargs.get("show_title") not in ['false', False]:
+
             if my.title_wdg:
                 my.title_wdg.set_sobject(sobject)
                 div.add(my.title_wdg.get_buffer_display())
             else:
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
+
+
+            title_wdg.add_style("position: absolute")
+            title_wdg.add_style("top: 0")
+            title_wdg.add_style("left: 0")
+            title_wdg.add_style("width: 100%")
+            #title_wdg.add_style("opacity: 0.5")
+
 
         div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
@@ -1296,7 +1363,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         if my.show_drop_shadow:
             div.set_box_shadow()
-        div.add_color("background", "background", -3)
+
+        #div.add_color("background", "background", -3)
         
         div.add_style("overflow: hidden")
 
@@ -1324,14 +1392,15 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
 
-
-        
+        thumb_div.add_style("overflow: hidden")
         thumb_div.add_style("width: %s" % my.aspect_ratio[0])
 
         thumb_div.add_style("height: %s" % my.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
 
-        kwargs = {'show_name_hover': my.show_name_hover}
+        kwargs = {}
+        kwargs['show_name_hover'] = my.show_name_hover
+        kwargs['aspect_ratio'] = my.aspect_ratio
 
         thumb = ThumbWdg2(**kwargs)
         thumb.set_sobject(sobject)
@@ -1355,6 +1424,19 @@ class TileLayoutWdg(ToolLayoutWdg):
             bottom.add_style("overflow-y: auto")
             div.add(bottom)
             #bottom.add_style("width: %s" % (my.aspect_ratio[0]-20))
+        else:
+            table = Table()
+            #div.add(table)
+
+            table.add_style("width: 100%")
+            table.add_style("margin: 5px 10px")
+            table.add_row()
+            table.add_cell("Name:")
+            table.add_cell("Whatever")
+            table.add_row()
+            table.add_cell("File Type:")
+            table.add_cell("Image.jpg")
+ 
         
 
         div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
@@ -1618,7 +1700,8 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
     var dst_el = spt.get_event_target(evt);
-    var dst_top = dst_el.getParent(".spt_tile_top");
+    var dst_top = dst_el.hasClass("spt_tile_top") ? dst_el : dst_el.getParent(".spt_tile_top");
+
     if (dst_top) {
         if( bvr._drag_copy_el ) {
             spt.behavior.destroy_element(bvr._drag_copy_el);
@@ -1635,25 +1718,35 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             var src_top = bvr.src_el.getParent(".spt_tile_top");
             var src_code = src_top.getAttribute("spt_search_code");
             var parent_code = dst_top.getAttribute("spt_search_code");
-            var data = {
-                parent_code: parent_code,
-                search_code: src_code
-            };
-            var sobject = server.get_unique_sobject(collection_type, data);
-            //server.insert(collection_type, data);
-            spt.table.refresh_rows([dst_top], null, null);
+            
+            if (parent_code != src_code){
+                var data = {
+                    parent_code: parent_code,
+                    search_code: src_code
+                };
+                server.insert(collection_type, data);
+                spt.notify.show_message("Added to Collection");
+                if (!dst_top.hasClass("spt_collection_item")){
+                    spt.table.refresh_rows([dst_top], null, null);
+                }
+                
+            }
         }
-        return;
-    }
 
-    if (spt.drop) {
-        spt.drop.sobject_drop_action(evt, bvr);
     }
     else {
-        if( bvr._drag_copy_el ) {
-            spt.behavior.destroy_element(bvr._drag_copy_el);
+        if (spt.drop) {
+            spt.drop.sobject_drop_action(evt, bvr);
+        }
+        else {
+            if( bvr._drag_copy_el ) {
+                spt.behavior.destroy_element(bvr._drag_copy_el);
+            }
         }
     }
+
+    var tile_top = bvr.src_el.getParent(".spt_tile_top");
+    spt.table.refresh_rows([tile_top], null, null);
 }
 
         ''' } )
@@ -1809,9 +1902,25 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
         div.add_class("spt_tile_title")
 
-        div.add_color("background", "background3")
-        div.add_style("padding: 5px")
+        #div.add_color("background", "background3")
+        div.add_style("padding: 3px")
         div.add_style("height: 20px")
+        div.add_style("position: relative")
+
+
+        bg_wdg = DivWdg()
+        div.add(bg_wdg)
+        bg_wdg.add_class("spt_tile_bg")
+        bg_wdg.add_style("position: absolute")
+        bg_wdg.add_style("top: 0")
+        bg_wdg.add_style("left: 0")
+        bg_wdg.add_style("height: 100%")
+        bg_wdg.add_style("width: 100%")
+        #bg_wdg.add_style("background: rgba(0,0,0,0.3)")
+        bg_wdg.add_style("background: #000")
+        bg_wdg.add_style("opacity: 0.3")
+        bg_wdg.add_style("z-index: 1")
+        bg_wdg.add(" ")
 
 
         if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
@@ -1819,6 +1928,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             div.add(detail_div)
             detail_div.add_style("float: right")
             detail_div.add_style("margin-top: -2px")
+            detail_div.add_style("position: relative")
+            detail_div.add_style("z-index: 2")
 
             if sobject.get_value("_is_collection", no_exception=True) == True:
                 detail_div.add_class("spt_tile_collection");
@@ -1826,30 +1937,32 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 search_type = sobject.get_base_search_type()
                 parts = search_type.split("/")
                 collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-                #collection_type = "jobs/media_in_media"
 
                 num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
                 detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
-                #detail = IconButtonWdg(title="Detail", icon="BS_FOLDER_CLOSE")
-                #detail_div.add(detail)
+                detail_div.add_style("margin-right: 5px")
             else:
                 detail_div.add_class("spt_tile_detail")
+                detail_div.add_style("color: #FFF")
 
                 detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
                 detail_div.add(detail)
+                detail_div.add_style("margin-right: 3px")
 
 
         header_div = DivWdg()
         header_div.add_class("spt_tile_select")
-        #header_div.add_attr("title",'[ draggable ]')
         div.add(header_div)
         header_div.add_class("SPT_DTS")
         header_div.add_style("overflow-x: hidden")
         header_div.add_style("overflow-y: hidden")
+        header_div.add_style("position: relative")
+        header_div.add_style("z-index: 3");
 
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")
         checkbox.add_class("spt_tile_checkbox")
+        checkbox.add_style("margin-top: 2px")
         # to prevent clicking on the checkbox directly and not turning on the yellow border
         #checkbox.add_attr("disabled","disabled")
 
@@ -1877,8 +1990,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         title_div.add_style("top: 3px")
         title_div.add_style("position: absolute")
         title_div.add_attr("title", title)
-        #title_div.add_style("white-space", "nowrap")
-        #td.add_style("overflow: hidden")
+        title_div.add_style("text-overflow: ellipsis")
+        title_div.add_style("white-space: nowrap")
+        title_div.add_style("color: #FFF")
         title_div.add("<br clear='all'/>")
         title_div.add_class("hand")
 
@@ -1920,10 +2034,14 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def get_display(my):
 
+        aspect_ratio = my.kwargs.get("aspect_ratio")
+
         width = my.kwargs.get("width")
         if not width:
             width = "100%"
         height = my.kwargs.get("height")
+        if not height:
+            height = "auto"
 
         sobject = my.get_current_sobject()
 
@@ -1932,9 +2050,12 @@ class ThumbWdg2(BaseRefreshWdg):
 
         path = my.path
 
+        my.is_collection = sobject.get_value("_is_collection", no_exception=True)
 
         search_type = sobject.get_base_search_type()
-        if path and path.endswith("indicator_snake.gif"):
+        from pyasm.biz import FileGroup
+        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(my.lib_path):   
+
             image_size = os.path.getsize(my.lib_path)
             if image_size != 0:
                 # generate icon dynamically
@@ -1950,16 +2071,17 @@ class ThumbWdg2(BaseRefreshWdg):
                 div.set_attr("spt_image_size", image_size)
 
 
-
         if path:
+            path = urllib.pathname2url(path)
             img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
-
             if path:
+                path = urllib.pathname2url(path)
+
                 img = DivWdg()
-                img.add_style("opacity: 0.2")
+                img.add_style("opacity: 0.3")
 
                 img_inner = HtmlElement.img(src=path)
                 img.add(img_inner)
@@ -1967,10 +2089,11 @@ class ThumbWdg2(BaseRefreshWdg):
                 img_inner.add_style("width: %s" % width)
 
         if path and path.startswith("/context"):
-            img.add_style("padding: 10px 15%")
+            img.add_style("padding: 15% 15%")
             img.add_style("width: 100%")
             img.add_style("height: auto")
-            div.add_style("height: 100%")
+
+            #div.add_style("height: 100%")
             div.add_style("text-align: center")
         elif path:
             img.add_style("width: %s" % width)
@@ -1978,6 +2101,7 @@ class ThumbWdg2(BaseRefreshWdg):
                 img.add_style("height: %s" % height)
             else:
                 img.add_style("height: auto")
+
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
 
@@ -2038,7 +2162,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if not snapshot:
-            snapshot = Snapshot.get_snapshot("sthpw/search_type", base_search_type, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=['icon','publish',''])
 
 
         if snapshot:

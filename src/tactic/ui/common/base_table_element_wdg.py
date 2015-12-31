@@ -17,13 +17,12 @@ import types
 import locale
 from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
-from pyasm.common import SPTDate
-from pyasm.common import Date, Common, TacticException
+from pyasm.common import Date, SPTDate, Common, TacticException
 from pyasm.search import Search, SearchType, SObject
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
 from base_refresh_wdg import BaseRefreshWdg
-
+from pyasm.biz import PrefSetting
 from dateutil import parser
 
 class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
@@ -161,7 +160,20 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         else:
             return False
 
-   
+    def get_timezone_value(my, value):
+        '''given a datetime value, try to convert to timezone specified in the widget.
+           If not specified, use the My Preferences time zone'''
+        timezone = my.get_option('timezone')
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+        
+        return value
+ 
     def get_text_value(my):
         return my.get_value()
 
@@ -209,12 +221,15 @@ class RawTableElementWdg(BaseTableElementWdg):
         else:
             data_type = 'text'
 
-        if data_type == "timestamp" or my.name == "timestamp":
-	    if value == 'now':
+        if data_type in ["timestamp","time"] or my.name == "timestamp":
+            if value == 'now':
                 value = ''
             elif value:
                 date = parser.parse(value)
-                value = SPTDate.add_gmt_timezone(date)
+                # we want to match what's in the db which is server local timezone
+                if not SPTDate.has_timezone(value):
+                    value = SPTDate.convert_to_local(value)
+                #value = SPTDate.add_gmt_timezone(date)
                 value = str(value)
             else:
                 value = ''
@@ -468,20 +483,20 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         if name == 'id' and value == -1:
             value = ''
 
-        elif data_type == "timestamp" or name == "timestamp":
-	    if value == 'now':
+        elif data_type in ["timestamp","time"] or name == "timestamp":
+            if value == 'now':
                 value = ''
             elif value:
                 # This date is assumed to be GMT
                 date = parser.parse(value)
-                # convert to local
+                # convert to user timezone
                 if not SObject.is_day_column(name):
-                    date = SPTDate.convert_to_local(date)
-		try:
-		   encoding = locale.getlocale()[1]		
-		   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
-		except:
-		   value = date.strftime("%b %d, %Y - %H:%M")
+                    date = my.get_timezone_value(date)
+                try:
+                    encoding = locale.getlocale()[1]		
+                    value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                except:
+                    value = date.strftime("%b %d, %Y - %H:%M")
 
             else:
                 value = ''
@@ -493,12 +508,21 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                     value + 1
                 except TypeError:
                     value = str(value)
-                else:
-                    value_wdg = DivWdg()
-                    value_wdg.add_style("float: right")
-                    value_wdg.add_style("padding-right: 3px")
-                    value_wdg.add( str(value) )
-                    return value_wdg
+                #else:
+                #    value_wdg.add_style("float: right")
+                #    value_wdg.add_style("padding-right: 3px")
+
+
+
+        if sobject and SearchType.column_exists(sobject.get_search_type(), name):
+            value_wdg = DivWdg()
+            value_wdg.add_update( {
+                'search_key': sobject.get_search_key(),
+                'column': name
+            } )
+            # don't call str() to prevent utf-8 encode error
+            value_wdg.add(value)
+            return value_wdg
 
         return value
 

@@ -103,6 +103,7 @@ class SPTDate(object):
             date = date.replace(tzinfo=TZGMT)
 
         TZ = gettz(timezone)
+        
         date = date.astimezone(TZ)
         return date
     convert_to_timezone = classmethod(convert_to_timezone)
@@ -168,6 +169,21 @@ class SPTDate(object):
         return date
     add_local_timezone = classmethod(add_local_timezone)
 
+    def add_timezone(cls, date, timezone):
+        '''add an arbitrary timezone without affecting the value'''
+        if isinstance(date, basestring):
+            try:
+                # do not use cls.parse ... it does a convert.
+                date = parser.parse(date)
+            except:
+                # This could be "now()", for example
+                return date
+        new_tz = gettz(timezone)
+
+        date = date.replace(tzinfo=new_tz)
+        return date
+    add_timezone = classmethod(add_timezone)
+
 
     def has_timezone(cls, date):
         err = False
@@ -192,15 +208,40 @@ class SPTDate(object):
         pass
 
 
+
+    def get_time_ago(cls, date):
+
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        now = cls.now()
+
+        diff = now - date
+
+        # less than a minue
+        if diff.seconds < 60:
+            value = "%s seconds ago" % diff.seconds
+
+        # less than an hour
+        elif diff.seconds < 60 * 60:
+            value = "%s minutes ago" % (diff.seconds/60)
+
+        else:
+            value = date.strftime("%b %d at %I:%m %p")
+
+        return value
+
+    get_time_ago = classmethod(get_time_ago)
+
+
 if __name__ == '__main__':
 
-    one_day = SPTDate.timedelta(days=1)
-    now = SPTDate.now()
-    print "now: ", now
-    print now + one_day
-    expression = "2011-04-03 12:30"
-    print "expression: ", expression
-    print "expression: ", SPTDate.parse(expression)
+
+    date = SPTDate.now() - timedelta(minutes=500.23)
+
+    print SPTDate.get_time_ago(date)
+
+
 
 
 

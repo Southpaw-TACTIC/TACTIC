@@ -304,6 +304,9 @@ class CsvImportWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         
         my.is_refresh = my.kwargs.get('is_refresh')
+        if not my.is_refresh:
+            my.is_refresh = web.get_form_value('is_refresh')
+
         my.search_type = my.kwargs.get('search_type')
         if not my.search_type:
             my.search_type = web.get_form_value('search_type_filter')
@@ -361,9 +364,11 @@ class CsvImportWdg(BaseRefreshWdg):
         
         widget = DivWdg()
 
-        if my.kwargs.get("is_refresh") == 'true':
+        show_title = my.kwargs.get("show_title") not in [False, 'false']
+
+        if show_title and not my.is_refresh:
             from tactic.ui.widget import TitleWdg
-            title = TitleWdg(name_of_title='Import CSV',help_alias='importing-csv-data')
+            title = TitleWdg(name_of_title='Import CSV', help_alias='importing-csv-data')
             widget.add(title)
 
         widget.add_style('padding: 10px')
@@ -511,7 +516,8 @@ class CsvImportWdg(BaseRefreshWdg):
                     spt.panel.load('csv_import_main','%s', {}, {
                         search_type_filter: '%s',
                         columns: bvr.columns,
-                        labels: bvr.labels
+                        labels: bvr.labels,
+                        is_refresh: true
                     });''' %(Common.get_full_class_name(my), my.search_type)
                 } )
                 widget.add(button)

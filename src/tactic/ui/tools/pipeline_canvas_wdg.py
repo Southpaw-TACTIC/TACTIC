@@ -364,6 +364,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add(node)
 
 
+        # add an unknown type
+        node = my.get_node("XXXXX", node_type="unknown")
+        node.add_style("left: 0px")
+        node.add_style("top: 0px")
+        template_div.add(node)
+
+
 
         # add folder group node
         folder = my.get_folder("XXXXX")
@@ -646,6 +653,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             width = width
             height = height + 50
         elif node_type == "dependency":
+            border_radius =  5
+            #width = width
+            height = 60
+            width = 80
+        elif node_type == "progress":
+            border_radius =  30
+            #width = width
+            height = 55
+            width = 55
+        elif node_type == "unknown":
+            border_radius = 50;
+            width = 50
+            height = 50
             border_radius =  5
             #width = width
             height = 60
@@ -2594,14 +2614,19 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
     var template_class = "spt_pipeline_" + node_type;
     var template = template_container.getElement("."+template_class);
+    var is_unknown = false;
     if (!template) {
-        if (template_class !='spt_pipeline_manual')
-            spt.alert("Can't find template for ["+template_class+"]");
-        return;
+        var template_class = "spt_pipeline_unknown";
+        template = template_container.getElement("."+template_class);
+        is_unknown = true;
     }
 
 
     var new_node = spt.behavior.clone(template);
+    if (is_unknown) {
+        // change it from "unknonw"
+        new_node.setAttribute("spt_node_type", node_type);
+    }
     new_node.spt_node_type = node_type;
 
 
@@ -2643,6 +2668,10 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         color = spt.pipeline.get_group_color(group);
     else // for schema {
         color = spt.pipeline.get_group_color(name);
+
+    if (is_unknown) {
+        color = "#C00";
+    }
 
     spt.pipeline.set_color(new_node, color)
     new_node.color = color;

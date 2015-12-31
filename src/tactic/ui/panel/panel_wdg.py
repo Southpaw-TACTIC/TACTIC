@@ -47,7 +47,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
             my_view = "my_view_%s" % Environment.get_user_name()
             my_view = my_view.replace("\\", "_")
             views.append(my_view)
-        
+                
 
         
 
@@ -152,17 +152,18 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_bookmark_menu_wdg(my, title, config, view):
+    def get_bookmark_menu_wdg(my, title, config, views):
 
         kwargs = {
             'title': title,
-            'view': view,
+            'view': views,
             'config': config,
             'auto_size': my.kwargs.get('auto_size')
         }
         section_div = DivWdg()
         section_div.add_style("display: block")
 
+        
         section_wdg = SideBarBookmarkMenuWdg(**kwargs)
         section_div.add(section_wdg)
         return section_div
@@ -1827,7 +1828,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 if os.path.exists(file_path):
                     for view in views:
                         config = WidgetConfig.get(file_path=file_path, view=view)
-                        if config.get_view_node() is not None:
+                    
+                        view_node = config.get_view_node()
+                        if view_node is not None:
                             configs.append(config)
 
             # finally, just look at the DEFAULT config
@@ -1838,12 +1841,16 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if os.path.exists(file_path):
                 for view in views:
                     config = WidgetConfig.get(file_path=file_path, view=view)
-                    if config.get_view_node() is not None:
+                 
+                    view_node = config.get_view_node()
+
+                    if view_node is not None:
                         configs.append(config)
 
         except XmlException, e:
             msg = "Error with view [%s]"% ' '.join(views)
             print "Error: ", str(e)
+            
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
@@ -1913,6 +1920,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if config:
                 configs.append(config)
             # then look for a file
+           
             SideBarBookmarkMenuWdg.add_internal_config(configs, [defined_view])
             
             logins = []
@@ -2713,6 +2721,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order": '11a',
             'category': 'Display'
         },
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '11b',
+            'category': 'Display'
+        },
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
             'category': 'Check-in',
@@ -2765,6 +2780,21 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'order': '18'
         },    
+
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '19'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '20'
+        }, 
 
 
         "link": {
@@ -3029,9 +3059,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         #if show_shelf not in [False, 'false']:
         #if True:
         if can_search:
+            search = my.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
+                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
             except SearchException, e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -3167,8 +3198,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         if not layout:
             layout = 'default'
 
+        search = my.kwargs.get("search")
+
         kwargs = {
             "table_id": table_id,
+            "search": search,
             "search_type": search_type,
             "order_by": order_by,
             "view": view,
@@ -3256,12 +3290,16 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
+            kwargs['show_border'] = my.kwargs.get("show_border")
+            kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
 
         elif layout == 'tool':
             from tool_layout_wdg import ToolLayoutWdg
+            kwargs['tool_icon'] = my.kwargs.get('tool_icon')
+            kwargs['tool_msg'] = my.kwargs.get('tool_msg')
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
@@ -3273,6 +3311,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['process'] = my.kwargs.get("process")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
+
+        elif layout == 'collection':
+            from collection_wdg import CardLayoutWdg
+            layout_table = CollectionWdg(**kwargs)
 
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
@@ -3291,6 +3333,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = OldTableLayoutWdg(**kwargs)
         else:
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
+            kwargs['show_border'] = my.kwargs.get("show_border")
+            kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
@@ -3516,6 +3560,20 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         var top = bvr.src_el.getParent(".spt_new_view_top");
         var code_el = top.getElement(".spt_new_view_name");
         code_el.value = code;
+        var radios = top.getElements("input[name='save_mode']");
+        
+        var is_checked = false;
+        for (var k = 0 ; k < radios.length; k++) {
+            if (radios[k].checked) {
+                is_checked = true;
+                break
+            }
+        }
+        if (!is_checked) {
+            
+            radios[0].checked = true;
+
+        }
         '''
         } )
 

@@ -227,7 +227,10 @@ class SearchWdg(BaseRefreshWdg):
 
         # create a search for this search widget
         my.search_type = my.kwargs.get('search_type')
-        my.search = Search(my.search_type)
+
+        my.search = my.kwargs.get("search")
+        if not my.search:
+            my.search = Search(my.search_type)
         my.config = None
 
         # determine whether or not to use the last search.  If any kind of

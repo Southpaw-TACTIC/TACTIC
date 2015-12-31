@@ -290,10 +290,11 @@ class HashPanelWdg(BaseRefreshWdg):
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
         
+
+        # guest user should never be able to see admin site
         if key != 'login':
             security = Environment.get_security()
             login = security.get_user_name()
-            # guest user should never be able to see admin site
             if login == "guest" and key == 'admin':
                 from pyasm.widget import WebLoginWdg
                 # HACK: if the guest access is full, the the outer form
@@ -345,8 +346,11 @@ class HashPanelWdg(BaseRefreshWdg):
 
         use_index, use_admin, use_sidebar = cls._get_flags(xml, sobject, force_no_index, kwargs)
 
+        # add the admin bar
+        security = Environment.get_security()
+        is_admin = security.check_access("builtin", "view_site_admin", "allow")
 
-        if use_admin:
+        if is_admin and use_admin:
             # use admin
             from tactic.ui.app import PageNavContainerWdg
             top = PageNavContainerWdg( hash=hash, use_sidebar=use_sidebar )

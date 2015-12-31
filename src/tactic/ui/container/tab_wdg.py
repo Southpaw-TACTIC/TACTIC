@@ -13,7 +13,7 @@
 __all__ = ['TabWdg', 'TabSaveStateCmd']
 
 from pyasm.common import TacticException, Xml, Common, Environment, Container
-from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer
+from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer, WidgetSettings
 from pyasm.search import Search
 from pyasm.widget import WidgetConfigView, WidgetConfig, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -38,6 +38,11 @@ class TabWdg(BaseRefreshWdg):
              'values': 'true|false',
             'category': 'Display'
         },
+        'save_state': {
+            'description': 'key which is used to save state [ie: "save_state|main_tab" is the default]',
+            'category': 'Display'
+        },
+ 
     }
 
     def get_onload_js(my):
@@ -359,6 +364,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         spt.hash.set_hash(state, title, hash);
     }
 
+    if (top.hasClass("spt_tab_save_state") ) {
+        spt.tab.save_state();
+    }
+
     return header;
 }
 
@@ -474,10 +483,14 @@ spt.tab.select = function(element_name) {
         headers[i].setStyle("opacity", "0.4");
         headers[i].setStyle("font-weight", "normal");
         headers[i].removeClass("spt_is_selected");
+        headers[i].removeClass("spt_tab_selected");
+        headers[i].addClass("spt_tab_unselected");
     }
 
     header.setStyle("opacity", "1.0");
     header.addClass("spt_is_selected");
+    header.addClass("spt_tab_selected");
+    header.removeClass("spt_tab_unselected");
     header.setStyle("font-weight", "bold");
     header.setStyle("z-index", "200");
 
@@ -577,12 +590,17 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
             headers[i].setStyle("opacity", "0.4");
             headers[i].setStyle("font-weight", "normal");
             headers[i].removeClass("spt_is_selected");
+            headers[i].removeClass("spt_tab_selected");
+            headers[i].addClass("spt_tab_unselected");
         }
 
 
         header.setStyle("opacity", "1.0");
         header.addClass("spt_is_selected");
-        header.setStyle("font-weight", "bold");
+        header.addClass("spt_tab_selected");
+        header.removeClass("spt_tab_unselected");
+
+        //header.setStyle("font-weight", "bold");
         header.setStyle("z-index", "200");
 
         var content_top = top.getElement(".spt_tab_content_top");
@@ -700,6 +718,8 @@ spt.tab.get_last_selected_element_name = function() {
 
 spt.tab.save_state = function() {
     var top = spt.tab.top;
+    var save_state = top.getAttribute("spt_tab_save_state");
+
     var header_top = top.getElement(".spt_tab_header_top");
     var headers = header_top.getElements(".spt_tab_header");
 
@@ -737,7 +757,8 @@ spt.tab.save_state = function() {
     var kwargs = {
         class_names: class_names,
         attrs_list: attrs_list,
-        kwargs_list: kwargs_list
+        kwargs_list: kwargs_list,
+        save_state: save_state
     };
     server.execute_cmd(command, kwargs);
 
@@ -752,7 +773,7 @@ spt.tab.dragging = false;
 
 spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
-    spt.tab.header_pos = bvr.src_el.getPosition();
+    spt.tab.header_pos = bvr.src_el.getPosition(spt.tab.top);
     spt.tab.mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
     var header = bvr.src_el;
     var element_name = header.getAttribute("spt_element_name");
@@ -811,6 +832,11 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
     bvr.drag_el.setStyle("left", "");
 
     bvr.drag_el.setStyle("background", bvr.gradient);
+
+    var top = spt.tab.top;
+    if (top.hasClass("spt_tab_save_state") ) {
+        spt.tab.save_state();
+    }
 
 }
 
@@ -874,6 +900,10 @@ spt.tab.close = function(src_el) {
             var last = headers[headers.length - 1].getAttribute("spt_element_name");
             spt.tab.select(last);
         }
+
+        if (top.hasClass("spt_tab_save_state") ) {
+            spt.tab.save_state();
+        }
     }
    
     var changed_el = content.getElement(".spt_has_changes");
@@ -904,15 +934,84 @@ spt.tab.close = function(src_el) {
         '''
 
 
+    def add_styles(my):
 
+        my.use_default_style = my.kwargs.get("use_default_style")
+        if my.use_default_style not in [False, 'false']:
+            my.use_default_style = True
+        else:
+            my.use_default_style = False
+
+        if my.use_default_style:
+
+            palette = my.top.get_palette()
+            border = palette.color("border")
+            color = palette.color("color")
+            background = palette.color("background")
+
+            data = {
+                'border': border,
+                'color': color,
+                'background': background,
+                'header_id': my.header_id,
+            }
+
+
+
+            from pyasm.web import HtmlElement
+
+            style = HtmlElement.style()
+            my.top.add(style)
+            style.add('''
+            #%(header_id)s .spt_tab_header {
+                border-style: solid;
+                border-color: %(border)s;
+                border-width: 1px 1px 0px 1px;
+                padding: 7px 5px;
+                color: %(color)s;
+                background: %(background)s;
+            }
+
+            #%(header_id)s .spt_tab_selected {
+                opacity: 1.0;
+            }
+
+            #%(header_id)s .spt_tab_unselected {
+                opacity: 0.4 ;
+            }
+
+            #%(header_id)s .spt_tab_hover {
+            }
+
+
+            .spt_tab_content_body {
+            }
+            ''' % data)
+
+ 
 
     def get_display(my):
+
+        top = my.top
+        top.add_class("spt_tab_top")
+
 
         my.search_type = None
 
         my.view = my.kwargs.get("view")
         config_xml = my.kwargs.get("config_xml")
         config = my.kwargs.get("config")
+
+        my.save_state = my.kwargs.get("save_state")
+        if my.save_state in [True, 'true']:
+            my.save_state = "save_state|main_tab"
+        if my.save_state:
+            saved_config_xml = WidgetSettings.get_value_by_key(my.save_state)
+            if saved_config_xml:
+                config_xml = saved_config_xml
+
+            top.add_class("spt_tab_save_state")
+            top.add_attr("spt_tab_save_state", my.save_state)
 
 
         my.mode = my.kwargs.get('mode')
@@ -949,7 +1048,6 @@ spt.tab.close = function(src_el) {
                     config_xml = config_sobj.get_value("config")
                 config = WidgetConfig.get(view=my.view, xml=config_xml)
         else:
-            
 
             if config:
                 pass
@@ -982,8 +1080,6 @@ spt.tab.close = function(src_el) {
             element_names = []
 
 
-        top = my.top
-        top.add_class("spt_tab_top")
         #top.add_style("padding: 10px")
         my.unique_id = top.set_unique_id()
         top.set_attr("spt_tab_id", my.unique_id)
@@ -994,6 +1090,9 @@ spt.tab.close = function(src_el) {
 
         inner = DivWdg();
         top.add(inner);
+        inner.add_style("position: relative")
+        inner.add_style("width: auto")
+
 
         if not Container.get_dict("JSLibraries", "spt_tab"):
             inner.add_behavior( {
@@ -1002,22 +1101,23 @@ spt.tab.close = function(src_el) {
             'cbjs_action': my.get_onload_js()
             } )
 
-        #outer_header = DivWdg()
-        #inner.add(outer_header)
-        #outer_header.add_style("overflow-x: hidden")
-        #outer_header.add_style("height: 30px")
-        #outer_header.add_style("float: left")
 
         header_div = DivWdg()
-        inner.add(header_div)
-        #outer_header.add(header_div)
-        header_div.add_style("height: 30px")
         header_div.add_class("spt_tab_header_top")
+        my.header_id = header_div.set_unique_id()
+        inner.add(header_div)
+        header_div.add_style("height: auto")
         header_div.add_style("overflow-y: hidden")
-        #header_div.add_style("width: 5000")
+        header_div.add_style("overflow-x: hidden")
         header_div.add_style("float: left")
+        header_div.add_style("position: relative")
+        header_div.add_style("z-index: 2")
 
-        #state = WebState.get().get_current()
+
+
+        my.add_styles()
+
+
         # if a search_key has been passed in, add it to the state.
         state = my.kwargs.get("state")
         if not state:
@@ -1053,6 +1153,9 @@ spt.tab.close = function(src_el) {
             title = attrs.get("title")
             if not title:
                 title = Common.get_display_title(element_name)
+
+            if attrs.get("display") == "false":
+                continue
 
             load_now = attrs.get('load')
             is_loaded = load_now =='true'
@@ -1141,17 +1244,21 @@ spt.tab.close = function(src_el) {
 
 
         content_top = DivWdg()
+        content_top.add_class("spt_tab_content_top")
+        content_top.add_style("z-index: 1")
+        content_top.add_style("margin-top: -1px")
 
         # add a div so that it breaks correctly
         if my.mode == 'default':
             content_top.add("<div style='height:5px'></div>")
             content_top.set_round_corners(5, corners=['TR','BR','BL'])
-            palette = content_top.get_palette()
-            border = palette.color("border")
+            border = my.kwargs.get("border_color")
+            if not border:
+                palette = content_top.get_palette()
+                border = palette.color("border")
             content_top.add_style("border: 1px solid %s" % border)
 
         inner.add(content_top)
-        content_top.add_class("spt_tab_content_top")
         content_top.add_style("min-height: 500px")
 
         height = my.kwargs.get("height")
@@ -1716,45 +1823,60 @@ spt.tab.close = function(src_el) {
 
 
         web = WebContainer.get_web()
-        is_IE = web.is_IE()
 
         header = DivWdg()
-        header.set_round_corners(5, corners=['TL','TR'])
-        #header = SpanWdg()
         header.add_class("spt_tab_header")
         header.add_attr("spt_tab_id", my.unique_id)
-        palette = header.get_palette()
-        border = palette.color("border")
-        header.add_style("border-style: solid")
-        header.add_style("border-color: %s" % border)
-        header.add_style("border-width: 1px 1px 0px 1px")
-        header.add_style("overflow: hidden")
-
-        header.add_style("float: left")
-        header.add_style("padding: 7px 5px")
-        header.add_style("margin-right: 1px")
-        #header.add_style("margin-left: 1px")
-        if is_IE:
-            header.add_style("width: 150px")
         header.add_class("hand")
 
+        header.add_style("overflow: hidden")
+
+        if my.use_default_style:
+            header.set_round_corners(5, corners=['TL','TR'])
+
+
+        #header.add_style("border-style: solid")
+        #header.add_style("border-color: %s" % border)
+        #header.add_style("border-width: 1px 1px 0px 1px")
+        #header.add_style("padding: 7px 5px")
+        #header.add_color("color", "color")
+
+        header.add_style("float: left")
+        header.add_style("margin-right: 1px")
+
+
         if is_selected:
-            header.add_color("color", "color")
-            header.add_gradient("background", "background", -5, 5)
-            header.add_style("opacity", "1.0");
+            header.add_class("spt_tab_selected")
+            #header.add_style("opacity", "1.0");
             header.add_class("spt_is_selected")
+            #header.add_gradient("background", "background", -5, 5)
+            #header.add_color("background", "background", -3)
         else:
-            header.add_color("color", "color")
-            header.add_style("opacity", "0.4");
-            header.add_gradient("background", "background", -5, 5)
+            header.add_class("spt_tab_unselected")
+            #header.add_style("opacity", "0.4");
+            #header.add_color("color", "color")
+            #header.add_gradient("background", "background", -5, 5)
+            #header.add_color("background", "background")
 
 
         palette = header.get_palette()
         hover_color = palette.color("background3")
+
         header.add_behavior( {
-        'type': 'hover',
-        'mod_styles': 'background: %s' % hover_color
+            'type': 'mouseenter',
+            'color': hover_color,
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.color);
+            '''
         } )
+        header.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
 
 
         header.add_attr("spt_element_name", element_name)
@@ -1788,16 +1910,23 @@ spt.tab.close = function(src_el) {
 
 
  
-        #header.add_behavior( {
-        #'type': 'click_up',
-        #'mouse_btn': 'RMB',
-        #'modkeys': '',
-        #'cbjs_action': '''
-        #alert("RMB");
-        #'''
-        #} )
-
         title_div = DivWdg()
+
+        icon = None
+        badge = None
+        if icon:
+            icon = IconWdg(name="whatever", icon=icon)
+            title_div.add(icon)
+        if badge:
+            badge_wdg = SpanWdg("12")
+            badge_wdg.add_class("badge")
+            #title_div.add(badge_wdg)
+            #badge_wdg.add_update( {
+            #    'expression': "@COUNT(workflow/employee)"
+            #} )
+
+
+
         title_div.add_style("min-width: 100px")
         title_div.add_style("text-align: left")
         title_div.add_style("overflow: hidden")
@@ -1811,17 +1940,6 @@ spt.tab.close = function(src_el) {
         title_div.add(display_title)
         header.add(title_div)
 
-
-        """
-        count = 12
-        if count:
-            count_wdg = SpanWdg()
-            title_div.add(count_wdg)
-            count_wdg.add_class("badge")
-            count_wdg.add(count)
-            count_wdg.add_style("margin: 0px 5px 0px 10px")
-            count_wdg.add_style("font-size: 0.8em")
-        """
 
 
         title_div.add_attr("title", "%s (%s)" % (title, element_name))
@@ -1901,6 +2019,7 @@ class TabSaveStateCmd(Command):
         class_names = my.kwargs.get("class_names")
         attrs_list = my.kwargs.get("attrs_list")
         kwargs_list = my.kwargs.get("kwargs_list")
+        save_state = my.kwargs.get("save_state")
 
         xml = Xml()
         xml.create_doc("config")
@@ -1927,7 +2046,6 @@ class TabSaveStateCmd(Command):
 
         xml_string = xml.to_string()
 
-        from pyasm.web import WidgetSettings
-        WidgetSettings.set_value_by_key("main_body_tab", xml_string)
+        WidgetSettings.set_value_by_key(save_state, xml_string)
 
 

@@ -602,7 +602,8 @@ class TaskElementWdg(BaseTableElementWdg):
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes(type=[
-                        "node",
+                        #"node",
+                        "manual",
                         "approval",
                         "hierarchy",
                         #"dependency",
@@ -874,6 +875,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_title(my):
         
+        # If for all sObjects in table, no processes
+        # exists, display null title "Tasks".
+        if not my.sorted_processes:
+            return "Tasks"
+
         if my.show_processes_in_title == 'true':
             table = Table()
             table.add_style("margin-top: 4px")
@@ -1132,14 +1138,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # fill in any missing tasks
+        pipeline_code = my.get_pipeline_code()
+        pipeline = Pipeline.get_by_code(pipeline_code)
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
-        if show_filler_tasks in ["true", True]:
+        if pipeline and show_filler_tasks in ["true", True]:
 
-            pipeline_code = my.get_pipeline_code()
-            pipeline = Pipeline.get_by_code(pipeline_code)
-            assert(pipeline)
-
-            processes = pipeline.get_process_names(type=["node","approval","hierarchy","dependency"])
+            processes = pipeline.get_process_names(type=["node","manual","approval","hierarchy","dependency"])
 
             if my.filler_cache == None:
                 my.filler_cache = {}
@@ -1325,7 +1329,21 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_display(my):
-
+       
+        # Check if pipeline exists
+        pipeline_code = my.get_pipeline_code()
+        pipeline = None
+        if pipeline_code:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+        if not pipeline:
+            no_pipeline_div = DivWdg()
+            icon = IconWdg("WARNING", IconWdg.WARNING)
+            no_pipeline_div.add(icon)
+            no_pipeline_div.add("<b>You must select a pipeline to manage tasks.</b>")
+            no_pipeline_div.add("<br/>"*2)
+            return no_pipeline_div 
+        
+ 
         sobject = my.get_current_sobject()
         my.tasks = my.get_tasks(sobject)
 
@@ -1488,7 +1506,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     for task_list in items:
 
                         # check if this process in any of the tasks lists
-                        if task_list and (process in task_list[0].get_value("process")):
+                        if task_list and (process == task_list[0].get_value("process")):
                             tasks = task_list
                             is_task_displayed = True
                             break
@@ -1758,11 +1776,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 search.add_filter("pipeline_code", pipeline_code)
                 search.add_filter("process", process)
                 process_sobj = search.get_sobject()
-                workflow = process_sobj.get_json_value("workflow")
-                if workflow:
-                    related_type = workflow.get("search_type")
-                    related_process = workflow.get("process")
-                    related_scope = workflow.get("scope")
+                if process_sobj:
+                    workflow = process_sobj.get_json_value("workflow", {})
+                    if workflow:
+                        related_type = workflow.get("search_type")
+                        related_process = workflow.get("process")
+                        related_scope = workflow.get("scope")
 
             if not related_process:
                 related_process = process
@@ -1784,6 +1803,99 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             search_type = sobject.get_base_search_type()
             code = sobject.get_code()
 
+
+
+            key = "%s|%s|status" % (sobject.get_search_key(), process)
+            message_sobj = Search.get_by_code("sthpw/message", key)
+            if message_sobj:
+                status = message_sobj.get("message")
+            else:
+                status = 'pending'
+
+            display_status = Common.get_display_title(status)
+
+            color = Task.get_default_color(status)
+
+
+            div.add_behavior( {
+                'type': 'click_up',
+                'code': code,
+                'scope': related_scope,
+                'search_type': search_type,
+                'related_type': related_type,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.ViewPanelWdg';
+                if (bvr.scope == "global") {
+                    var expression = "@SOBJECT("+ bvr.related_type + ")";
+                }
+                else {
+                    var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
+                }
+                var kwargs = {
+                    search_type: bvr.related_type,
+                    expression: expression,
+                    element_names: 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
+                }
+                var server = TacticServerStub.get();
+                var sobject = server.get_by_code(bvr.search_type, bvr.code);
+                spt.tab.set_main_body_tab();
+                var name = sobject.name;
+                if (!name) {
+                    name = sobject.code;
+                }
+                name = "Related: " + name
+                var title = name;
+                spt.tab.add_new(name, title, class_name, kwargs);
+                '''
+            } )
+
+
+
+            complete = my.get_complete(sobject, related_type, related_process, related_scope)
+
+            num_complete = 0
+            for key, value in complete.items():
+                if value:
+                    num_complete += 1
+
+            count = num_complete
+            total = len(complete)
+
+
+
+            from spt.ui.widgets import RadialProgressWdg
+            progress_wdg = RadialProgressWdg(
+                total=total,
+                count=count,
+                color=color
+            )
+
+
+            #if my.layout in ['horizontal',  'vertical']:
+            progress_div.add("<b>%s</b>" % display_status)
+
+            progress_div.add(progress_wdg)
+            progress_div.add_style("margin: 0px auto")
+            progress_div.add_style("width: 70px")
+            progress_div.add_style("text-align: center")
+
+
+            return div
+
+
+            """
+            if node_type == "dependency":
+
+                dependency_div = DivWdg()
+                div.add(dependency_div)
+                dependency_div.add_style("margin: 8px 0px 8px -8px")
+                dependency_div.add_class("spt_dependency_top")
+
+                dependency_div.add("H!H!H!")
+
+
+                return div
+            """
 
 
             key = "%s|%s|status" % (sobject.get_search_key(), process)
@@ -2141,7 +2253,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 status_div.add_style("font-size: %spx" % (my.font_size))
                 status_div.add_style("font-weight: bold")
-                status_div.add_style("background-color: %s" %bgColor)
+                
+                if bgColor:
+                    status_div.add_style("background-color: %s" %bgColor)
                 status_div.add(status)
              
             elif my.permission['status']['is_editable']:
@@ -2174,7 +2288,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
 
-
+                # TODO: while convenient, this is extremely heavy
                 select.add_behavior( {
                     'type': 'change',
                     'color': status_colors,
@@ -2209,7 +2323,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 select.add_class("spt_task_status_select")
-                select.add_style("background: %s" %bgColor)
+                if bgColor:
+                    select.add_style("background: %s" %bgColor)
 
 
                 if my.layout in ['horizontal', 'vertical']:
@@ -2232,6 +2347,32 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)
 
+                if task.is_insert():
+                    update = {
+                        "parent_key": task.get_parent_search_key(),
+                        "expression": "@GET(sthpw/task['process','%s'].status)" % process,
+                    }
+                else:
+                    update = {
+                        "search_key": task.get_search_key(),
+                        "column": "status",
+                    }
+
+                update['cbjs_postaction'] = '''
+                        var element = bvr.src_el;
+                        if ("createEvent" in document) {
+                            var evt = document.createEvent("HTMLEvents");
+                            evt.initEvent("change", false, true);
+                            element.dispatchEvent(evt);
+                        }
+                        else {
+                            element.fireEvent("onchange");
+                        }
+                        var top = bvr.src_el.getParent(".spt_task_top");
+                        top.getParent().setStyle("opacity", 1.0);
+
+                        '''
+                select.add_update(update)
 
       
         assigned_div = None
@@ -2276,6 +2417,37 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         select.add_style("width", my.width)
 
+                    if task.is_insert():
+                        update = {
+                            "parent_key": task.get_parent_search_key(),
+                            "expression": "@GET(sthpw/task['process','%s'].assigned)" % process,
+                        }
+                    else:
+                        update = {
+                            "search_key": task.get_search_key(),
+                            "column": "assigned",
+                        }
+
+                    update['cbjs_postaction'] = '''
+                            var element = bvr.src_el;
+                            if ("createEvent" in document) {
+                                var evt = document.createEvent("HTMLEvents");
+                                evt.initEvent("change", false, true);
+                                element.dispatchEvent(evt);
+                            }
+                            else {
+                                element.fireEvent("onchange");
+                            }
+                            var top = bvr.src_el.getParent(".spt_task_top");
+                            top.getParent().setStyle("opacity", 1.0);
+
+                            '''
+                    select.add_update(update)
+
+
+
+
+
                 else:
                     
                     assigned_label = assigned
@@ -2284,6 +2456,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     if not assigned:
                         assigned = HtmlElement.i("Unassigned")
                         assigned.add_style("opacity: 0.5")
+                        assigned_label = assigned
                     assigned_div.add(assigned_label)
                     assigned_div.add("<br/>")
 
@@ -2573,17 +2746,29 @@ class TaskElementCbk(DatabaseAction):
 
 
     def execute(my):
-
+        web = WebContainer.get_web()
         if my.data != None:
             xx = my.data
         else:
-            web = WebContainer.get_web()
             xx = web.get_form_data()
             xx = xx.get('data').get('data')
+        
+        
+        web_data = web.get_form_value('web_data')
+        
+        processes = []
+        if web_data:
+            process_data= web_data.get('process_data')
+            if process_data:
+                try:
+                    process_data = jsonloads(process_data)
+                    processes = process_data.get('processes')
+                except:
+                    processes = []
+            
+
         xx = jsonloads(xx)
         my.xx = xx
-
-
 
         #if my.xx.get("add_initial_tasks"):
         #    return
@@ -2597,7 +2782,7 @@ class TaskElementCbk(DatabaseAction):
         # create all of the new tasks first
         import re
         p = re.compile("(\w+)\|(\w+)\|(.*)")
-        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)\|(\w+)")
+        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)_(\w+)")
         for key, value in xx.items():
             if key.find("|COPY") != -1:
                 m = re.match(copy_p, key)
@@ -2613,7 +2798,6 @@ class TaskElementCbk(DatabaseAction):
                 column = "bid_duration"
 
             action = groups[1]
-
             if action == "NEW":
                 process = groups[2]
                 task = new_tasks_by_process.get(process)
@@ -2654,7 +2838,14 @@ class TaskElementCbk(DatabaseAction):
 
         # commit all of the new tasks
         tasks = {}
-        for process, task in new_tasks_by_process.items():
+
+        processes.reverse()
+        # reverse the order of the task in this dict as a list
+        sorted_tasks = map(new_tasks_by_process.get, processes)
+        # remove the None after mapping
+        sorted_tasks = [x for x in sorted_tasks if x]
+        for task in sorted_tasks:
+           
             tasks[task.get_id()] = task
             task.commit()
 

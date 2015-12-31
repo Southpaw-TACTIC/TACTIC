@@ -53,12 +53,8 @@ class Html5UploadWdg(BaseRefreshWdg):
         input.set_attr("name", "file")
         input.add_class("spt_file")
         input.set_attr("type", "file")
-        #input.add_style("display: none")
-        #input.add_style("visibility: hidden")
         input.add_style("position: absolute")
         input.add_style("margin-left: -5000px")
-        #input.add_style("margin-left: 500px")
-        #input.add_style("margin-top: -50px")
 
         multiple = my.kwargs.get("multiple")
         if multiple in [True, 'true']:

@@ -508,7 +508,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 category_projects.append(project)
 
             if category_projects:
-                suffix = Common.get_filesystem_name(category)
+                suffix = Common.clean_filesystem_name(category)
                 label = "%s (%s)" % (category, len(category_projects))
                 menu_item = MenuItem(type='submenu', label=label)
                 menu_item.set_submenu_tag_suffix(suffix)
@@ -1334,18 +1334,28 @@ class ProjectCreateWdg(BaseRefreshWdg):
             }
             spt.api.Utility.clear_inputs(top);
 
+            var env = spt.Environment.get();
+            var site = env.get_site();
+            if (site) {
+                site = site + "/";
+            }
+            else {
+                site = "";
+            }
+
+
             // show feedback at the end
             var jump = values['jump_project'][0];
             if (jump == 'project' || jump == 'admin') {
                 var location;
                 if (jump == 'admin') {
-                    location = "/tactic/" + project_code + "/admin";
+                    location = "/tactic/" + site + project_code + "/admin";
                 }
                 else if (project_theme) {
-                    location = "/tactic/" + project_code + "/";
+                    location = "/tactic/" + site + project_code + "/";
                 }
                 else {
-                    location = "/tactic/" + project_code + "/admin/link/_startup";
+                    location = "/tactic/" + site + project_code + "/admin/link/_startup";
                 }
                 setTimeout( function() {
                     document.location = location;

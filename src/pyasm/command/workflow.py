@@ -14,10 +14,15 @@ __all__ = ['Workflow', 'BaseProcessTrigger', 'ProcessStatusTrigger']
 
 import tacticenv
 
-from pyasm.common import Common, Config, jsondumps
+from pyasm.common import Common, Config, jsondumps, TacticException
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
+
+'''
+"node" and "manual" type nodes are synonymous, but the latter 
+is preferred as of 4.5
+'''
 
 
 PREDEFINED = [
@@ -160,7 +165,6 @@ class TaskStatusChangeTrigger(Trigger):
 
         process_name = task.get_value("process")
         status = task.get_value("status")
-
         if status.lower() in PREDEFINED:
             status = status.lower()
 
@@ -186,7 +190,7 @@ class TaskStatusChangeTrigger(Trigger):
             'sobject': sobject,
             'pipeline': pipeline,
             'process': process_name,
-            'status': status
+            'status': status,
         }
         Trigger.call(task, event, output=output)
 
@@ -268,7 +272,9 @@ class BaseProcessTrigger(Trigger):
         process_sobj = search.get_sobject()
 
         #print "callback process: ", process, pipeline.get_code()
-        assert(process_sobj)
+        if not process_sobj:
+            raise TacticException('Process item [%s] has not been created. Please save your pipeline in the Project Workflow Editor to refresh the processes.'%process)
+
 
 
         triggers = {}
@@ -334,6 +340,7 @@ class BaseProcessTrigger(Trigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         status = my.input.get("status")
+        data = my.input.get("data")
 
 
 
@@ -341,7 +348,8 @@ class BaseProcessTrigger(Trigger):
             'sobject': sobject,
             'pipeline': pipeline,
             'process': process,
-            'status': status
+            'status': status,
+            'data': data
         }
         input = {
             'sobject': sobject.get_sobject_dict(),
@@ -350,6 +358,7 @@ class BaseProcessTrigger(Trigger):
             'status': status,
             'inputs': [x.get_name() for x in pipeline.get_input_processes(process)],
             'outputs': [x.get_name() for x in pipeline.get_output_processes(process)],
+            'data': data,
         }
         return kwargs, input
 
@@ -405,12 +414,11 @@ class BaseProcessTrigger(Trigger):
                 search.add_filter("pipeline_code", pipeline.get_code())
                 process_sobj = search.get_sobject()
 
-                workflow = process_sobj.get_json_value("workflow")
+                workflow = process_sobj.get_json_value("workflow", {})
                 related_search_type = workflow.get("search_type")
                 related_proces = workflow.get("proces")
                 related_status = workflow.get("status")
                 related_scope = workflow.get("scope")
-
 
 
 
@@ -485,7 +493,7 @@ class BaseProcessTrigger(Trigger):
         complete[key] = True
 
         is_complete = True
-        print "complete: ", complete
+        #print "complete: ", complete
         for related_sobject in related_sobjects:
             key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
             if not complete.get(key):
@@ -493,7 +501,92 @@ class BaseProcessTrigger(Trigger):
                 break
 
 
-        print "    is complete: ", is_complete
+        #print "    is complete: ", is_complete
+
+        return is_complete
+
+
+
+
+    def check_complete_inputs(my):
+
+        # Check dependencies
+        caller_sobject = my.input.get("related_sobject")
+        if not caller_sobject:
+            return True
+
+
+        related_pipeline = my.input.get("related_pipeline")
+        related_process = my.input.get("related_process")
+        related_search_type = caller_sobject.get_base_search_type()
+
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+
+        # find related sobjects
+        #related_sobjects = sobject.get_related_sobjects(related_search_type)
+        related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
+        if not related_sobjects:
+            return True
+
+        # get the message status from each of these
+        keys = []
+        for related_sobject in related_sobjects:
+            # ignore the caller as we know that is complete
+            if related_sobject.get_search_key() == caller_sobject.get_search_key():
+                continue
+
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            keys.append(key)
+
+        # get the statuses
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        message_sobjects = search.get_sobjects()
+
+
+        complete = {}
+
+        # find the status
+        for message_sobject in message_sobjects:
+            status = message_sobject.get_value("message")
+            if status in ["complete"]:
+                complete[message_sobject.get_code()] = True
+
+
+        # some backwards compatibility to figure out if the related sobject is "complete"
+        if False and len(message_sobjects) < len(keys):
+            # look at the overall status
+            for related_sobject in related_sobjects:
+                key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+                overall_status = related_sobject.get_value("status", no_exception=True)
+                if overall_status.lower() == "complete":
+                    complete[key] = True
+
+                else:
+                    related_tasks = Search.eval("@SOBJECT(sthpw/task['process','%s'])" % related_process, related_sobject)
+                    for related_task in related_tasks:
+                        related_status = related_task.get_value("status")
+                        if related_status.lower() == "complete":
+                            complete[key] = True
+
+
+        # the caller is implied to be complete
+        key = "%s|%s|status" % (caller_sobject.get_search_key(), related_process)
+        complete[key] = True
+
+        is_complete = True
+        #print "complete: ", complete
+        for related_sobject in related_sobjects:
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+            if not complete.get(key):
+                is_complete = False
+                break
+
+
+        #print "    is complete: ", is_complete
 
         return is_complete
 
@@ -512,6 +605,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         my.pipeline = my.input.get("pipeline")
         my.process = my.input.get("process")
         my.sobject = my.input.get("sobject")
+        my.input_data = my.input.get("data")
+        my.data = my.input_data
+
 
         if my.process.find(".") != -1:
             parts = my.process.split(".")
@@ -572,7 +668,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         #if not my.check_inputs():
         #    return
 
-        print "pending: ", my.process
+        #print "pending: ", my.process
 
         # simply calls action
         my.log_message(my.sobject, my.process, "pending")
@@ -594,7 +690,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
     def handle_complete(my):
 
 
-        print "complete: ", my.process
+        #print "complete: ", my.process
  
         # run a nodes complete trigger
         status = "complete"
@@ -603,6 +699,40 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         my.run_callback(my.pipeline, my.process, status)
 
         process_obj = my.pipeline.get_process(my.process)
+
+
+
+
+
+        my.output_data = my.data
+        # ---------------------------------------
+        # build the output data
+        search = Search("config/process")        
+        search.add_filter("process", my.process)
+        search.add_filter("pipeline_code", my.pipeline.get_code())
+        process_sobj = search.get_sobject()
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
+        else:
+            workflow = {}
+
+        process_output = workflow.get("output")
+        if process_output:
+            from pyasm.biz import Snapshot
+            snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+            if snapshot:
+                my.output_data = {
+                    'snapshot': snapshot,
+                    'path': snapshot.get_lib_path_by_type()
+                }
+
+        # ---------------------------------------
+
+
+
+
+
+
 
         # call the process|pending event for all output processes
         output_processes = my.pipeline.get_output_processes(my.process)
@@ -615,7 +745,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             output = {
                 'pipeline': my.pipeline,
                 'sobject': my.sobject,
-                'process': output_process
+                'process': output_process,
+                'data': my.output_data
             }
 
             event = "process|pending"
@@ -689,7 +820,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         #if not my.check_inputs():
         #    return
 
-        print "pending: ", my.process
+        #print "pending: ", my.process
 
         # simply calls action
         my.log_message(my.sobject, my.process, "pending")
@@ -699,12 +830,11 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         search.add_filter("process", my.process)
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
-
-        workflow = process_sobj.get_json_value("workflow")
-        if workflow.get("autocreate_task") in ['true', True]:
-            autocreate_task = True
-        else:
-            autocreate_task = False
+        autocreate_task = False
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow", {})
+            if workflow.get("autocreate_task") in ['true', True]:
+                autocreate_task = True
 
 
         # check to see if the tasks exist and if they don't then create one
@@ -733,7 +863,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_action(my):
-        print "action: ", my.process
+        #print "action: ", my.process
 
         my.log_message(my.sobject, my.process, "in_progress")
 
@@ -793,15 +923,16 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
 
-        workflow = process_sobj.get_json_value("workflow")
-        if workflow:
-            assigned = workflow.get("assigned")
-        else:
-            assigned = None
-
+        assigned = None
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow", {})
+            if workflow:
+                assigned = workflow.get("assigned")
+     
 
         # check to see if the tasks exist and if they don't then create one
         tasks = Task.get_by_sobject(my.sobject, process=my.process)
+      
         if not tasks:
             tasks = Task.add_initial_tasks(my.sobject, processes=[my.process], assigned=assigned)
         else:
@@ -911,7 +1042,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             search.add_filter("pipeline_code", pipeline.get_code())
             process_sobj = search.get_sobject()
 
-            workflow = process_sobj.get_json_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", {})
             related_search_type = workflow.get("search_type")
             related_process = workflow.get("process")
             related_status = workflow.get("status")
@@ -1033,7 +1164,8 @@ class WorkflowOutputNodeHandler(BaseWorkflowNodeHandler):
         output = {
             'pipeline': suppipeline,
             'sobject': my.sobject,
-            'process': supprocess
+            'process': supprocess,
+            'data': my.data,
         }
 
         event = "process|complete"
@@ -1138,6 +1270,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     'sobject': sobject,
                     'pipeline': pipeline,
                     'process': output_process_name,
+                    'data': my.data
                 }
                 Trigger.call(my, event, output)
 
@@ -1157,6 +1290,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                 'sobject': sobject,
                 'pipeline': pipeline,
                 'process': process_name,
+                'data': my.data,
             }
             Trigger.call(my, event, output)
 
@@ -1474,7 +1608,6 @@ class ProcessCustomTrigger(BaseProcessTrigger):
             return
 
         status_pipeline_code = process_obj.get_task_pipeline()
-
         status_pipeline = Pipeline.get_by_code(status_pipeline_code)
         if not status_pipeline:
             print "No custom status pipeline [%s]" % process
@@ -1491,14 +1624,13 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         direction = status_obj.get_attribute("direction")
         to_status = status_obj.get_attribute("status")
         mapping = status_obj.get_attribute("mapping")
-
         if not to_status and not mapping:
             search = Search("config/process")        
             search.add_filter("pipeline_code", status_pipeline.get_code())
             search.add_filter("process", status)
             process_sobj = search.get_sobject()
             if process_sobj:
-                workflow = process_sobj.get_json_value("workflow")
+                workflow = process_sobj.get_json_value("workflow", {})
                 direction = workflow.get("direction")
                 to_status = workflow.get("status")
                 mapping = workflow.get("mapping")
@@ -1511,6 +1643,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
 
         if mapping:
+            mapping = mapping.lower()
             event = "process|%s" % mapping
             Trigger.call(my.get_caller(), event, output=my.input)
         elif to_status:
@@ -1535,6 +1668,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
                     'pipeline': pipeline,
                     'process': process_name,
                     'status': to_status,
+                    'data': my.data
                 }
                 Trigger.call(my, event, output)
 

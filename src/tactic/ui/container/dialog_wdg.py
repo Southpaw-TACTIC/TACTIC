@@ -406,8 +406,8 @@ class DialogWdg(BaseRefreshWdg):
 
 
         widget.add(content_div)
-        content_div.add_color("color", "color2")
-        content_div.add_gradient( "background", "background2" )
+        content_div.add_color("color", "color")
+        content_div.add_color( "background", "background" )
 
         content_div.set_id("%s_content" % my.name)
         content_div.add_class("spt_popup_content")

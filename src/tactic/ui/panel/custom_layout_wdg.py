@@ -389,6 +389,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_custom_top")
+        top.add_class("spt_panel")
 
         ignore_events = my.kwargs.get("ignore_events") in ['true', True]
 
@@ -775,6 +776,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     elif bvr.get("type") == "smart_drag":
                         bvr['bvr_match_class'] = css_class
                         my.content.add_behavior(bvr)
+
+                    elif bvr.get("type") == "listen":
+                        bvr['event_name'] = Xml.get_attribute(behavior_node,'event_name')
+                        my.content.add_behavior(bvr)
+
                     else:
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
                         if not bvr.get("type"):
@@ -817,9 +823,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
             includes = includes.split("|")
 
             for include in includes:
-                tmp_path = __file__
-                dir_name = os.path.dirname(tmp_path)
-                file_path="%s/../config/%s" % (dir_name, include)
+                if include.find('/') != -1:
+                    file_path = include
+                else:
+                    tmp_path = __file__
+                    dir_name = os.path.dirname(tmp_path)
+                    file_path ="%s/../config/%s" % (dir_name, include)
                 config = WidgetConfig.get(file_path=file_path, view=my.view)
                 if config and config.has_view(my.view):
                     return config
@@ -958,6 +967,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 continue
 
             try:
+
+                if Xml.get_value(xml, "config/tmp/element/@enabled") == "false":
+                    continue
+
+
                 element_wdg = my.get_element_wdg(xml, my.def_config)
                 if element_wdg:
                     element_html = element_wdg.get_buffer_display()
@@ -1283,7 +1297,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             includes = my.kwargs.get("include")
-            element_wdg = config.get_display_widget(element_name, extra_options={"include":includes, "parent_view":parent_view})
+            extra_options = {"parent_view": parent_view}
+            if includes:
+                extra_options['include'] = includes
+
+            element_wdg = config.get_display_widget(element_name, extra_options=extra_options)
 
             element_top = element_wdg.get_top()
             for name, value in attrs.items():

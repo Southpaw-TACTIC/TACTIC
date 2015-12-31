@@ -15,6 +15,7 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 import string, types, re, sys
 import decimal
+import uuid
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -83,12 +84,14 @@ class Search(Base):
         protocol = 'local'
         if type(search_type) in types.StringTypes:
             # project is *always* local.  This prevents an infinite loop
+            from pyasm.biz import Project
             if search_type != "sthpw/project":
                 try:
-                    key = "Search:resource:%s" % search_type
+                    from pyasm.security import Site
+                    site = Site.get_site()
+                    key = "Search:resource:%s:%s" % (site, search_type)
                     parts = Container.get(key)
                     if not parts:
-                        from pyasm.biz import Project
                         if not project_code:
                             project_code = Project.extract_project_code(search_type)
                         project = Project.get_by_code(project_code)
@@ -527,8 +530,7 @@ class Search(Base):
 
             elif len(filter) == 2:
                 name, value = filter
-                if my.is_expr(value):
-                    value = Search.eval(value, single=True)
+               
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
@@ -546,8 +548,10 @@ class Search(Base):
                         my.add_column(filter[1], distinct=True)
 
 
-                elif type(value) in types.StringTypes:
+                elif isinstance(value, basestring):
                     # <name> = '<value>'
+                    if my.is_expr(value):
+                        value = Search.eval(value, single=True)
                     my.add_filter(name, value, table=table)
                     #print 'name: [%s],[%s]' % (name, value)
                 elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
@@ -624,7 +628,8 @@ class Search(Base):
         '''convenience function to add a filter for the given sobject'''
         my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
 
-        if sobject.column_exists("code") and my.column_exists("%ssearch_code" % prefix):
+        if SearchType.column_exists(sobject.get_search_type(), "code") and \
+            SearchType.column_exists(my.get_search_type(), "%ssearch_code" % prefix):
             search_code = sobject.get_value("code")
             if not op:
                 op = '='
@@ -1763,7 +1768,8 @@ class Search(Base):
             if not statement:
                 statement = my.select.get_statement()
             #print "statement: ", statement
-            
+           
+            from pyasm.security import Site
             results = sql.do_query(statement)
 
             # this gets the actual order of columns in this SQL
@@ -2136,7 +2142,6 @@ class Search(Base):
 
         # go through the related sobjects and map them
         for related_sobject in related_sobjects:
-
             if relationship == 'search_type':
                 relationship = schema.resolve_search_type_relationship(attrs, search_type, related_type)
 
@@ -2185,7 +2190,6 @@ class Search(Base):
                 items = []
                 tmp_data[key] = items
             items.append(related_sobject)
-
 
 
         # go through all of the original sobjects and map
@@ -2385,6 +2389,7 @@ class SObject(object):
         my._prev_data = None
         my._prev_update_data = None
         my.update_description = None
+        my._skip_invalid_column = False
         #my.database_impl = None
 
         # id override
@@ -3059,6 +3064,8 @@ class SObject(object):
         return xml
 
     
+    def skip_invalid_column(my):
+        my._skip_invalid_column = True
 
     def set_value(my, name, value, quoted=1, temp=False):
         '''set the value of this sobject. It is
@@ -3071,8 +3078,10 @@ class SObject(object):
             tmp_name = "%s_%s" % (name, lang)
             if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
                 name = tmp_name
-
-
+        
+        # skip if column does not exist
+        if my._skip_invalid_column and not SearchType.column_exists(my.full_search_type, name):
+            return
 
         if temp:
             my._set_value(name, value, quoted=quoted)
@@ -3350,6 +3359,11 @@ class SObject(object):
         will update the incorrect in the database.'''
         my.new_id = int(value)
 
+    def set_auto_code(my):
+        '''set a unique code automatically for certain internal sTypes'''
+        unique_id = uuid.uuid1()
+        unique_code = '%s_%s'%(my.get_code_key(), unique_id)
+        my.set_value('code', unique_code)
 
     def set_user(my, user=None):
         if user == None:
@@ -3542,6 +3556,22 @@ class SObject(object):
         '''validate entries into this sobject'''
         return True
 
+
+    def handle_commit_security(my):
+
+        return True
+
+        search_type = my.get_base_search_type()
+
+        login = Environment.get_user_name()
+
+        if search_type == "sthpw/login":
+            if login != "admin":
+                return False
+
+        return True
+
+
     def commit(my, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
         is_insert = False 
@@ -3551,6 +3581,11 @@ class SObject(object):
         if id in ['-1', '']:
             my.set_id(-1)
             is_insert = True
+
+
+        if not my.handle_commit_security():
+            raise SecurityException("Security: Action not permitted")
+
 
         impl = my.get_database_impl()
         # before we make the final statement, we allow the sobject to set
@@ -3639,8 +3674,10 @@ class SObject(object):
 
         # fill in the updated values
         is_postgres = impl.get_database_type() == 'PostgreSQL'
-        #is_sqlite = impl.get_database_type() == 'Sqlite'
+        is_sqlite = impl.get_database_type() == 'Sqlite'
+        
         #is_mysql = impl.get_database_type() == 'MySQL'
+        
         for key, value in my.update_data.items():
             quoted = my.quoted_flag.get(key)
             escape_quoted = False
@@ -3656,18 +3693,23 @@ class SObject(object):
 
             # if this is a timestamp, then add the a time zone.
             # For SQLite, this should always be set to GMT
-            # For Postgres, if there is no timestamp, then the value
+            # For Postgres, if there is no time zone, then the value
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 if value and not SObject.is_day_column(key):
                     info = column_info.get(key)
-                    if is_postgres and not info.get("time_zone"):
+                    if not is_sqlite and not info.get("time_zone"):
+                        # if it has no timezone, it assumes it is GMT
                         value = SPTDate.convert_to_local(value)
                     else:
                         value = SPTDate.add_gmt_timezone(value)
+                    
+                    value = impl.process_date(value)
+                    
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S %z')
+           
                 changed = True
 
             if changed:
@@ -3823,6 +3865,9 @@ class SObject(object):
 
         # now that we have all the changed data, store which changes
         # were made
+        from pyasm.security import Site
+        # Note: if this site is not explicitly the first one, then logging the change
+        # timestamp is not supported (at the moment)
         search_type = my.get_search_type()
         if search_type not in [
                 "sthpw/change_timestamp",
@@ -3834,18 +3879,21 @@ class SObject(object):
                 'sthpw/queue',
 
         ] \
-                and sobject and sobject.has_value("code"):
+                and sobject and sobject.has_value("code") \
+                and Site.get_site() == Site.get_first_site():
 
 
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if not is_insert and search_code and transaction:
+            #if not is_insert and search_code and transaction:
+            if search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
                     # create a virtual log
                     log = SearchType.create("sthpw/change_timestamp")
+                    log.set_auto_code()
                     log.set_value("search_type", search_type)
                     log.set_value("search_code", search_code)
                     transaction.change_timestamps[key] = log
@@ -3855,12 +3903,13 @@ class SObject(object):
                     changed_on = log.get_json_value("changed_on", {})
                     changed_by = log.get_json_value("changed_by", {})
 
-                login = Environment.get_user_name()
-                for name, value in my.update_data.items():
-                    changed_on[name] = "CHANGED"
-                    changed_by[name] = login
-                log.set_json_value("changed_on", changed_on)
-                log.set_json_value("changed_by", changed_by)
+                if not is_insert:
+                    login = Environment.get_user_name()
+                    for name, value in my.update_data.items():
+                        changed_on[name] = "CHANGED"
+                        changed_by[name] = login
+                    log.set_json_value("changed_on", changed_on)
+                    log.set_json_value("changed_by", changed_by)
 
 
         # store the undo information.  The transaction_log needs to
@@ -5418,6 +5467,13 @@ class SearchType(SObject):
             if database == "{project}":
                 from pyasm.biz import Project
                 my.database = Project.get().get_database_name()
+            elif database.startswith("{") and database.endswith("}"):
+                # TEST
+                var = database[1:-1]
+                settings = {
+                    'database': "portal"
+                }
+                my.database = settings.get("database")
             else:
                 my.database = database
 
@@ -5469,7 +5525,7 @@ class SearchType(SObject):
         #        columns.remove("s_status")
 
         for column in columns:
-            if column.startswith("_"):
+            if column.startswith("_tmp"):
                 columns.remove(column)
 
         return columns
@@ -6085,6 +6141,9 @@ class SearchType(SObject):
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
+            #from pyasm.security import Site
+            #print "Site: ", Site.get_site()
+            #print "sql: ", select.get_statement()
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )
@@ -6259,7 +6318,7 @@ class SObjectUndo:
                 "sthpw/queue",
 
                 'sthpw/message',
-                'sthpw/message_log',
+                'sthpw/message_log'
         ]:
             return
         if sobject.get_search_type() == "sthpw/transaction_log":
@@ -6375,6 +6434,12 @@ class SObjectUndo:
                 "sthpw/sync_server",
                 "sthpw/transaction_log",
                 "sthpw/ticket",
+                "sthpw/cache",
+                "sthpw/queue",
+
+                'sthpw/message',
+                'sthpw/message_log'
+
         ]:
             return
 
@@ -6400,12 +6465,16 @@ class SObjectUndo:
 
 
         Xml.set_attribute(sobject_node,"action","delete")
-
+        tmp_col_name = sobject.get_database_impl().get_temp_column_name()
+        if tmp_col_name and data.get(tmp_col_name):
+            del data[tmp_col_name]
+            
         for key,value in data.items():
             node = xml.create_element("column")
             Xml.set_attribute(node,"name",key)
             if value == None:
                 value = ""
+            
             Xml.set_attribute(node,"from",value)
             xml.append_child(sobject_node, node)
 
@@ -6461,12 +6530,15 @@ class SObjectUndo:
             sobject = SearchType.create(search_type)
 
             columns = Xml.xpath(node,"column")
+           
+            tmp_col_name = sobject.get_database_impl().get_temp_column_name()
+          
             for column in columns:
                 name = Xml.get_attribute(column,"name")
                 # id and code are set outside of the columns.  They
                 # recorded only for information purposes.  Should they
                 # even be recorded at all?
-                if name in ['code', 'id']:
+                if name in ['code', 'id', tmp_col_name]:
                     continue
 
                 value = Xml.get_attribute(column,"from")

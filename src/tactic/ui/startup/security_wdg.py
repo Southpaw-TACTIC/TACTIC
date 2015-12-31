@@ -403,7 +403,10 @@ class GroupAssignCbk(Command):
         current_groups = set()
         for x in login_in_groups:
             if x.get_value("login_group") not in group_names:
-                x.delete()
+                if x.get_value('login_group') == 'admin':
+                    current_groups.add( x.get_value("login_group") )
+                else:
+                    x.delete()
             else:
                 current_groups.add( x.get_value("login_group") )
 

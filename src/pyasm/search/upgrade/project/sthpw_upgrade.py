@@ -18,12 +18,169 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
     #
-    # 4.4.0.a01
+    # 4.5.0.a01
     #
+    def upgrade_v4_5_0_a01_012(my):
+        my.run_sql(''' 
+        CREATE INDEX "change_timestamp_stype_idx" ON change_timestamp (search_type);
+        ''') 
+
+    def upgrade_v4_5_0_a01_011(my):
+        my.run_sql(''' 
+        ALTER TABLE "login_group" ADD "name" text; 
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_010(my):
+        my.run_sql(''' 
+        ALTER TABLE "login_group" ADD "is_default" boolean; 
+        ''') 
+
+
+
+
+    def upgrade_v4_5_0_a01_009(my):
+        my.run_sql(''' 
+        CREATE INDEX "sobject_log_stype_idx" ON sobject_log (search_type);
+        ''') 
+
+    def upgrade_v4_5_0_a01_008(my):
+
+        def get_timezone_names():
+            import os
+            import tarfile
+            import dateutil.zoneinfo
+
+            zi_path = os.path.abspath(os.path.dirname(dateutil.zoneinfo.__file__))
+            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, 'zoneinfo-2008e.tar.gz'))
+            zonenames = zonesfile.getnames()
+            return zonenames
+
+        # add time zone names to timezone prefernce if it does not exist
+        from dateutil.tz import *
+        from pyasm.search import Search
+        pref_list_id = Search.eval("@GET(sthpw/pref_list['key','timezone'].id)")
+        if not pref_list_id:
+            names = get_timezone_names()
+            timezones = []
+            for name in names:
+                try:
+                    gettz(name)
+                    timezones.append(name)
+                except:
+                    continue
+            timezones = sorted(timezones)
+            timezone_str = '|'.join(timezones)
+            timezone_str = '|%s'%timezone_str
+            my.run_sql('''
+                INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('timezone','Your local time zone.', '%s','sequence','general','Time Zone');
+            '''%timezone_str)
+
+    def upgrade_v4_5_0_a01_007(my):
+        my.run_sql('''
+        ALTER TABLE "pref_list" alter COLUMN "options" TYPE text;
+        ''')
+
+
+    def critical_v4_5_0_a01_006(my):
+        my.run_sql('''
+        ALTER TABLE change_timestamp ADD COLUMN "timestamp" timestamp;
+        ''')
+
+
+    def upgrade_v4_5_0_a01_005(my):
+        my.run_sql('''
+        CREATE INDEX "sobject_log_timestamp_idx" on sobject_log(timestamp);
+        ''')
+
+    def upgrade_v4_5_0_a01_004(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN action varchar(128);
+        ''')
+
+    def upgrade_v4_5_0_a01_003(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_code varchar(128);
+        ''')
+
+
+    def upgrade_v4_5_0_a01_002(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD COLUMN parent_type varchar(256);
+        ''')
+
+
+ 
+
+    def upgrade_v4_5_0_a01_001(my):
+        my.run_sql('''
+        CREATE INDEX "change_timestamp_timestamp_idx" on change_timestamp(timestamp);
+        ''')
+
+
+    def upgrade_v4_4_0_v01_006(my):
+
+        if my.get_database_type() == 'MySQL':
+            my.run_sql('''
+            ALTER table "file" MODIFY "code" varchar(256) NULL;
+            ''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''
+            ALTER TABLE "file" alter COLUMN "code" varchar(256) NULL;
+            ''')
+        else:
+            my.run_sql('''
+            ALTER TABLE "file" alter COLUMN "code" DROP not NULL;
+            ''')
+
+    def upgrade_v4_4_0_v01_005(my):
+        my.run_sql(''' 
+
+        INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
+
+        ''')
+
+
+    def upgrade_v4_4_0_v01_004(my):
+        my.run_sql(''' 
+        CREATE TABLE department (
+        id serial PRIMARY KEY,
+        code varchar(256),
+        name varchar(256),
+        login varchar(256),
+        ou text,
+        CONSTRAINT "department_code_idx" UNIQUE (code),
+        CONSTRAINT "department_name_idx" UNIQUE (name)
+        );
+        ''') 
+
+    def upgrade_v4_4_0_v01_003(my):
+        my.run_sql(''' 
+
+        ALTER TABLE login add constraint "login_upn_idx" UNIQUE (upn);
+        ''') 
+    def upgrade_v4_4_0_v01_002(my):
+        my.run_sql(''' 
+        UPDATE login set upn = login where upn is NULL;
+        ''')
+
+    def upgrade_v4_4_0_v01_001(my):
+        my.run_sql(''' 
+        ALTER TABLE "login" ADD "upn" varchar(256) NULL; 
+        ''') 
+        
     def upgrade_v4_4_0_b01_007(my):
         my.run_sql(''' 
         ALTER TABLE "login" ADD "location" text NULL; 
         ''') 
+
+    #
+    # 4.4.0.a01
+    #
+   
+
 
     def upgrade_v4_4_0_a01_006(my):
         my.run_sql('''

@@ -481,9 +481,11 @@ class Project(SObject):
                     user = user.get_value("login")
                     raise SecurityException("User [%s] is not permitted to view project [%s]" % (user, project_code))
                 else:
-                    raise SecurityException("Not permitted to view project [%s]" % (project_code))
+                    raise SecurityException("User is not permitted to view project [%s]" % (project_code))
 
-        PROJECT_KEY = "Project:global"
+        from pyasm.security import Site
+        site = Site.get_site()
+        PROJECT_KEY = "Project:global:%s:" % site
         Container.put(PROJECT_KEY, project_code)
     set_project = classmethod(set_project)
  
@@ -494,7 +496,9 @@ class Project(SObject):
     set_global_project_code = classmethod(set_global_project_code)
         
     def get_global_project_code(cls):
-        PROJECT_KEY = "Project:global"
+        from pyasm.security import Site
+        site = Site.get_site()
+        PROJECT_KEY = "Project:global:%s:" % site
         project_code = Container.get(PROJECT_KEY)
         if not project_code:
             project_code = "admin"
@@ -518,12 +522,18 @@ class Project(SObject):
             return full_key
 
 
+
         if project_code:
             code = project_code
         elif project:
             code = project.get_code()
         else:
-            code = Project.get_global_project_code()
+            # get the current project
+            #code = Project.get_global_project_code()
+            search_type_obj = SearchType.get(base_key)
+            code = search_type_obj.get_database()
+
+
 
         # NOTE: if someone expliclity set the Project.set('sthpw') before this, 
         # it will affect the full key of this sobject

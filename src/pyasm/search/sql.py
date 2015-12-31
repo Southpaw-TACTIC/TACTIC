@@ -775,7 +775,7 @@ class Sql(Base):
             my.cursor = my.conn.cursor()
 
             #my.execute(query)
-            #print "update: ", query
+            from pyasm.security import Site
             my.cursor.execute(query)
 
             # remember the row count
@@ -1149,7 +1149,23 @@ class DbResource(Base):
 
 
     def get_default(cls, database, use_cache=True, use_config=False):
-        key = "Project:db_resource_cache"
+        # evaluate ticket
+        #ticket = Environment.get_ticket()
+        ticket = ""
+
+
+        from pyasm.security import Site
+        site_obj = Site.get()
+        site = None
+        if ticket:
+            site = site_obj.get_by_ticket(ticket)
+        if not site:
+            site = site_obj.get_site()
+
+        if site:
+            key = "Project:db_resource_cache:%s" % site
+        else:
+            key = "Project:db_resource_cache"
 
         # NOTE: this should be moved DatabaseImpl
         if use_cache:
@@ -1167,18 +1183,6 @@ class DbResource(Base):
             if db_resource != None:
                 return db_resource
 
-
-        # evaluate ticket
-        ticket = Environment.get_ticket()
-        ticket = ""
-
-        from pyasm.security import Site
-        site_obj = Site.get()
-        site = None
-        if ticket:
-            site = site_obj.get_by_ticket(ticket)
-        if not site:
-            site = site_obj.get_site()
 
         data = None
         if not use_config and site:

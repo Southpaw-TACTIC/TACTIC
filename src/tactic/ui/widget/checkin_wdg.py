@@ -385,7 +385,6 @@ class CheckinWdg(BaseRefreshWdg):
 
         top.add(title_div)
 
-        top.add(my.get_action_wdg() )
 
         # we are interested in the parent for snapshots
         if isinstance(my.sobject, Snapshot):
@@ -412,12 +411,14 @@ class CheckinWdg(BaseRefreshWdg):
         }
 
 
+        action_wdg = my.get_action_wdg()
 
 
         if not my.panel_cls:
             my.panel_cls = 'tactic.ui.widget.CheckinInfoPanelWdg'
        
         panel_kwargs = {
+                'action_wdg': action_wdg,
                 'search_key':my.search_key,
                 'context':my.context,
                 'process':my.process,
@@ -438,6 +439,7 @@ class CheckinWdg(BaseRefreshWdg):
                 'show_history': show_history,
                 'show_links': show_links,
                 'options': options
+
         }
 
         info_panel = Common.create_from_class_path(my.panel_cls, {}, panel_kwargs)
@@ -457,8 +459,6 @@ class CheckinWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_style("height: 25px")
-        div.add_style("float: left")
-        div.add_style("position: absolute")
 
         if my.snapshot:
             snapshot_div = DivWdg()
@@ -485,20 +485,10 @@ class CheckinWdg(BaseRefreshWdg):
             hidden.add_class("spt_checkin_subcontext")
             div.add(hidden)
 
-            """
-            div.add("Action: ")
-
-            select = SelectWdg("action")
-            select.set_option("values", "create_empty|add_files")
-            select.set_option("labels", "Create Empty Snapshot|Add Selected Files")
-            """
-
 
         else:
 
-            div.add_style("margin: 15px 12px 12px 12px")
-            # width prevents it from jumping in IE during refresh
-            div.add_style("min-width: 700px")
+            div.add_style("margin: 15px 12px 15px 12px")
             div.add_style("width: 100%")
             process_div = FloatDivWdg('Process: &nbsp;')
             process_div.add_style("font-weight: bold")
@@ -509,7 +499,6 @@ class CheckinWdg(BaseRefreshWdg):
                 # in case a single pipeline with one process called "publish" is defined
                 # we should not hide it
                 process_div.add_style("display: none")
-
 
             if my.lock_process:
                 div.add(process_div)
@@ -600,8 +589,6 @@ class CheckinWdg(BaseRefreshWdg):
                     else:
                         my.process = my.processes[0]
 
-
-            div.add_style("margin-bottom: 20px")
 
 
         return div
@@ -865,8 +852,11 @@ spt.checkin.get_checkin_data = function() {
     var sandbox_dir = top.getAttribute("spt_sandbox_dir");
     data['sandbox_dir'] = sandbox_dir;
 
-
+    
     var file_paths = spt.checkin.get_selected_paths();
+    
+    var add_note = top.getElement(".spt_checkin_add_note");
+    data['add_note'] = add_note.checked;
 
     var info = top.getElement('.spt_checkin_info')
     var is_context = info.getAttribute('context_mode') == 'true';
@@ -1280,7 +1270,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         
-        # these may be changed by the user in the UI, which take prescedence
+        # these may be changed by the user in the UI, which take precedence
         web = WebContainer.get_web()
         my.process = web.get_form_value('process')
         if not my.process:
@@ -1338,7 +1328,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         my.mode = my.kwargs.get("mode")
         my.context_options = []
         my.subcontext_options = []
-        
+
         if not my.mode and my.process_sobj:
             my.mode = my.process_sobj.get_value("checkin_mode", no_exception=True)
 
@@ -1353,8 +1343,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 my.context_options = my.context_options.split("|")
             else:
                 my.context_options = []
-            
-            
+
+
             # get the subcontext_options
             my.subcontext_options = my.kwargs.get("subcontext_options")
 
@@ -1404,8 +1394,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             top.add_attr('context_mode','true')
 
 
-        from tactic.ui.container import ResizableTableWdg
-        #table = ResizableTableWdg()
+
         table = Table()
         table.add_color("color", "color")
         top.add(table)
@@ -1430,6 +1419,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         # control the max width for the publish desc area
         td.add_style('width: 250px')
         td.add_border()
+
+        action_wdg = my.kwargs.get("action_wdg")
+        td.add(action_wdg)
+
+
         publish_wdg = my.get_publish_wdg(my.search_key, my.snapshot, my.process, my.pipeline, my.transfer_mode)  
         td.add( publish_wdg )
         td.add_color("background", "background3")
@@ -1957,11 +1951,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top = DivWdg()
         top.add_class("spt_checkin_all_options")
         top.add_style("padding: 10px")
-        show_context = False
-        if show_context:
-            margin_top = '60px'
-        else:
-            margin_top = '40px'
+        margin_top = '20px'
 
         top.add_style("margin-top", margin_top)
         top.add_style("position: relative")
@@ -2163,82 +2153,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         if snapshot:
             snapshot_code = snapshot.get_code()
 
-        """
-        # TEST: using api
-        behavior = {
-            'type': 'click_up',
-            'cbjs_action': '''
-var server = TacticServerStub.get();
-server.start( {description: "Checking in files"} );
-try {
-    var paths = spt.checkin.transfer_selected_paths("upload");
-
-    var options = spt.checkin.get_checkin_data();
-
-    var process = options.process;
-    var search_key = options.search_key;
-
-    for (var i = 0; i < paths.length; i++) {
-        options.subcontext = options.subcontexts[i];
-        spt.checkin.checkin_path(search_key, paths[i], process, options);
-    }
-
-    server.finish( {description: "Checking in files: " + paths } );
-}
-catch(e) {
-    spt.alert(e);
-    server.abort();
-}
-            '''
-        }
-
-
-        # Dropbox check-in
-        behavior = {
-            'type': 'click_up',
-            'cbjs_action': '''
-
-var server = TacticServerStub.get();
-var applet = spt.Applet.get();
-
-server.start( {description: "Checking in files"} );
-
-try {
-
-    //var paths = spt.checkin.transfer_selected_paths("copy");
-    var paths = spt.checkin.get_selected_paths();
-
-    var options = spt.checkin.get_checkin_data();
-    //options.transfer_mode = 'local';
-
-    var process = options.process;
-    var search_key = options.search_key;
-
-    for (var i = 0; i < paths.length; i++) {
-        options.subcontext = options.subcontexts[i];
-        var snapshot = spt.checkin.checkin_path(search_key, paths[i], process, options);
-
-        // in local mode, the local checkin paths are returned so that they
-        // can be moved to the local repo
-        var repo_paths = snapshot.__paths__;
-        for (var j = 0; j < repo_paths.length; j++) {
-            applet.copytree(paths[i], repo_paths[i]);
-        }
-    }
-
-    server.finish( {description: "Checking in files: " + paths } );
-
-}
-catch(e) {
-    spt.alert(e);
-    server.abort();
-}
-
-spt.app_busy.hide();
-
-        '''
-        }
-"""
 
         # checkin_mode is true if context_options are set
         # main check-in
@@ -2255,6 +2169,7 @@ spt.app_busy.hide();
 var top = bvr.src_el.getParent(".spt_checkin_top");
 var progress = top.getElement(".spt_checkin_progress");
 progress.setStyle("display", "");
+
 
 spt.checkin._get_context = function(process, context, subcontext, is_context, file_path, use_file_name) {
     var this_context = context;
@@ -2294,6 +2209,7 @@ spt.checkin.html5_checkin = function(files) {
     var process = options.process;
     var context = options.context;
     var description = options.description;
+    var add_note = options.add_note;
 
     var is_current = true;
     var file_type = 'file';
@@ -2324,6 +2240,11 @@ spt.checkin.html5_checkin = function(files) {
                 bvr['script'] = script;
                 spt.CustomProject.exec_custom_script(evt, bvr);
             }
+            
+            var note = [];
+            if (add_note) {
+                note.push('CHECK-IN');
+            } 
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
@@ -2351,10 +2272,13 @@ spt.checkin.html5_checkin = function(files) {
                 var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
 
 
-
-
-
-                snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+                snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type, process: process});
+                // Add to check-in note 
+                if (add_note) {
+                    var version = snapshot.version;
+                    note.push(file_path+' (v'+version+')');
+                }
+                    
             }
             progress.setStyle("display", "");
         }
@@ -2368,6 +2292,12 @@ spt.checkin.html5_checkin = function(files) {
         }
 
         if (! has_error) {
+            if (add_note) {
+                note.push(': '); 
+                note.push(description);
+                note = note.join(" ");
+                server.create_note(search_key, note, {process: process});
+            }
             server.finish();
             spt.panel.refresh(top);
             spt.info("Check-in finished.");
@@ -2508,8 +2438,6 @@ context = process;
 
 
 
-var description = top.getElement(".spt_checkin_description").value;
-var add_note = top.getElement(".spt_checkin_add_note");
 
 
 var file_type = 'main';
@@ -2630,7 +2558,7 @@ try {
     }
     // Handle the default check-in functionality
     else {
-
+    
         // if the transfer mode is upload, then handle the upload mode
         //var transfer_mode = bvr.transfer_mode
         if (transfer_mode == 'upload' || transfer_mode =='web') {
@@ -2861,9 +2789,9 @@ try {
             var filename = parts[parts.length-1];
             note.push(filename+' (v'+version+')');
         }
-        note.push(': ');
+        note.push(': '); 
         note.push(description);
-
+        
         note = note.join(" ");
         server.create_note(bvr.search_key, note, {process: process});
     }
@@ -5623,7 +5551,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             my.set_as_panel(my.top)
 
 
-
         div.add( my.get_filter_wdg(my.search_type, my.search_code) )
 
         # get the sobject
@@ -5790,10 +5717,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             'show_shelf': False,
             'parent_key': parent_key,
             'mode': 'simple',
-            '__hidden__': 'true',
+            '__hidden__': True,
             'state': my.get_state(),
         }
-  
+ 
+        
         from tactic.ui.panel import FastTableLayoutWdg, TileLayoutWdg, StaticTableLayoutWdg
         if layout == 'tile':
             table = TileLayoutWdg(**kwargs)

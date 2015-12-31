@@ -9,10 +9,12 @@
 #
 #
 #
+
+
 __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
-from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
+from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser, Project
@@ -558,10 +560,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.search_wdg:
             my.search_wdg = my.kwargs.get("search_wdg")
         if not my.search_wdg:
+            search = my.kwargs.get("search")
+
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
+            my.search_wdg = SearchWdg(search=search, search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
         search = my.search_wdg.get_search()
@@ -589,6 +593,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if expr_search:
             search.add_relationship_search_filter(expr_search)
 
+        keywords = my.kwargs.get('keywords')
+        if keywords:
+            keywords_column = 'keywords'
+            search.add_text_search_filter(keywords_column, keywords)
 
         if my.connect_key == "__NONE__":
             search.set_null_filter()
@@ -754,6 +762,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-top: 3px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
+        
+        border_color = div.get_color("table_border",  default="border")
+        
+        div.add_styles('border-top: solid 1px %s;' % border_color)
+
         #div.add_gradient("background", "background")
         div.add_color("background", "background",-3)
 
@@ -851,10 +864,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else:
             show_keyword_search = True
 
-
         show_search = my.kwargs.get("show_search") != 'false'
 
-        if show_search and show_keyword_search:
+        if show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
 
@@ -966,10 +978,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
             # -- SEARCH LIMIT DISPLAY
             if my.items_found == 0:
-                if my.search:
-                    my.items_found = my.search.get_count()
-                elif my.sobjects:
-                    my.items_found = len(my.sobjects)
+                try:
+                    if my.search:
+                        
+                        my.items_found = my.search.get_count()
+                    elif my.sobjects:
+                        my.items_found = len(my.sobjects)
+                except SqlException:
+                    DbContainer.abort_thread_sql()
+
+                    my.items_found = 0
 
            
             if my.items_found == 1:
@@ -1166,6 +1184,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
+        from collection_wdg import CollectionAddWdg
+        collection_div = CollectionAddWdg(search_type=my.search_type)
+        wdg_list.append( {'wdg': collection_div} )
+        
+
+
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
             wdg_list.append( { 'wdg': spacing_divs[0] } )
@@ -1252,11 +1276,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             xx.add_style("float: left")
             xx.add_style("margin-left: -25")
             xx.add_style("margin-top: -5")
-            div.add_style("opacity: 0.6")
+            #div.add_style("opacity: 0.6")
             height = "32px"
         else:
             height = "41px"
-            div.add_style("opacity: 0.6")
+            #div.add_style("opacity: 0.6")
 
 
         outer.add(div)
@@ -1266,17 +1290,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             outer.add(my.view_save_dialog)
 
         outer.add_style("min-width: 750px")
-        #outer.add_style("width: 300px")
-        #outer.add_style("overflow: hidden")
-        #outer.add_class("spt_resizable")
-
-        #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
         div.add_style("margin: 0px -1px 0px -1px")
 
         
-        
-
+        # This was included when our icons had color and we heavily used hidden row.
+        # The shelf lit everything up ... with the new glyph icons, I think this isn't
+        # necessary anymore. 
+        """
         div.add_behavior( {
             'type': 'mouseenter',
             'cbjs_action': '''
@@ -1289,6 +1310,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             bvr.src_el.setStyle("opacity", 0.6);
             '''
         } )
+        """
 
 
 
@@ -1305,7 +1327,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_save_button(my):
         show_save = True
 
-        if my.edit_permission == False:
+        if my.edit_permission == False or not my.view_editable:
             show_save = False
 
         if not my.can_save():
@@ -1556,8 +1578,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
             # collection
-            #if SearchType.column_exists(my.search_type, "is_collection"):
-            if True:
+            if SearchType.column_exists(my.search_type, "_is_collection"):
                 menu_item = MenuItem(type='action', label='Add New Collection')
                 menu_item.add_behavior( {
                     'cbjs_action': '''
@@ -3040,5 +3061,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         }
         access_keys = [access_key1, access_key2]
         return access_keys
+
+
+
 
 

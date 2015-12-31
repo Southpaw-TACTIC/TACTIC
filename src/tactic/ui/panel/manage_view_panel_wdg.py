@@ -550,7 +550,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 "cb_set_prefix": 'spt.side_bar.pp'
             }
             if recurse:
-                behavior['cbjs_action_onnomotion'] = ''''
+                behavior['cbjs_action_onnomotion'] = '''
                     spt.side_bar.toggle_section_display_cbk(evt,bvr);
                     spt.side_bar.display_element_info_cbk(evt,bvr);
                 '''

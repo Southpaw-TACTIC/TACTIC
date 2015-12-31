@@ -146,6 +146,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false|none',
             'order': '08'
         },
+
         
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
@@ -183,11 +184,34 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         },
 
 
-
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '14',
+            'category': 'Display'
+        },
+ 
+ 
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
             'category' : 'internal'
+        },
+
+        "no_results_msg" : {
+            'description': 'the message displayed when the search returns no item',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'Order': '14'
+        },
+
+        "no_results_mode" : {
+            'description': 'the display modes for no results',
+            'type': 'SelectWdg',
+            'values': 'default|compact',
+            'category': 'Display',
+            'order': '15'
         }
         
 
@@ -334,7 +358,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             from tactic.ui.filter import FilterData
             filter = my.kwargs.get("filter")
             values = {}
-            if filter:
+            if filter and filter != 'None':
+                
                 filter_data = FilterData(filter)
                 values_list = filter_data.get_values_by_prefix("group")
                 if values_list:
@@ -505,49 +530,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # Make this into a function.  Former code is kept here for now.
         my._process_search_args()
-        """
-        # this is different name from the old table selected_search_keys
-        search_keys = my.kwargs.get("search_keys")
-      
-        # if a search key has been explicitly set without expression, use that
-        expression = my.kwargs.get('expression') 
-        matched_search_key = False
-        if my.search_key:
-            base_search_type = SearchKey.extract_base_search_type(my.search_key)
-        else:
-            base_search_type = ''
-
-        if my.search_type == base_search_type:
-            matched_search_key = True
-        if search_keys and search_keys != '[]':
-            if isinstance(search_keys, basestring):
-                if search_keys == "__NONE__":
-                    search_keys = []
-                else:
-                    search_keys = search_keys.split(",")
-
-            # keep the order for precise redrawing/ refresh_rows purpose
-            if not search_keys:
-
-                my.sobjects = []
-            else:
-                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-
-            my.items_found = len(my.sobjects)
-            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
-        elif my.search_key and matched_search_key and not expression:
-            sobject = Search.get_by_search_key(my.search_key)
-            if sobject: 
-                my.sobjects = [sobject]
-                my.items_found = len(my.sobjects)
-
-
-        elif my.kwargs.get("do_search") != "false":
-            my.handle_search()
-        """
-
-
-
 
         # set some grouping parameters
         my.process_groups()
@@ -585,8 +567,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("table_border", -10, default="border"))
+        inner.add_style("border-width: 0px")
+        inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -856,7 +838,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -1583,6 +1565,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 var dst_el = spt.get_event_target(evt);
                 var src_el = spt.behavior.get_bvr_src(bvr);
 
+                /* Keeping this around for later use */
                 var dst_row = dst_el.getParent(".spt_table_row");
                 var dst_search_key = dst_row.getAttribute("spt_search_key");
 
@@ -1591,6 +1574,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
         } )
+
 
 
         # selection behaviors
@@ -1704,21 +1688,37 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set styles at the table level to be relayed down
-        border_color = table.get_color("#EEE", default="border")
-        table.add_smart_styles("spt_table_select", {
-            "border": "solid 1px %s" % border_color,
+        border_color = table.get_color("table_border", default="border")
+
+
+                
+        select_styles = {
             "width": "30px",
             "min-width": "30px"
-        } )
+        }
 
 
-        table.add_smart_styles("spt_cell_edit", {
-            "border": "solid 1px %s" % border_color,
-            "padding": "3px",
+
+        cell_styles = {
+            "padding": "3px 8px",
+
             "vertical-align": "top",
             "background-repeat": "no-repeat",
             "background-position": "bottom right",
-        } )
+        }
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            cell_styles["border"] = "solid 1px %s" % border_color
+            cell_styles["padding"] = "3px"
+            select_styles["border"] = "solid 1px %s" % border_color
+
+
+
+
+        table.add_smart_styles("spt_table_select", select_styles)
+        table.add_smart_styles("spt_cell_edit", cell_styles)
 
         
         is_editable = my.kwargs.get("is_editable")
@@ -1877,15 +1877,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
 
+
         if my.kwargs.get("__hidden__") == True:
             tr.add_color("background", "background", -8)
             border_color = table.get_color("table_border", default="border")
-            tr.add_gradient("background", "background", -5, -10)
         else:
-            #tr.add_gradient("background", "background", -5, -10)
-            #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
-            border_color = table.get_color("#E0E0E0", 0, default="border")
+            border_color = table.get_color("table_border", 0, default="border")
+       
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
@@ -1897,6 +1896,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # boolean to determine if there is any width set for any columns
         width_set = False
+
 
         for i, widget in enumerate(my.widgets):
             name = widget.get_name()
@@ -1917,7 +1917,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th.add_class("spt_table_header")
             th.add_class("spt_table_header_%s" %my.table_id)
             th.add_attr("spt_element_name", name)
-            th.add_style("border: solid 1px %s" % border_color)
+
+
+            show_border = my.kwargs.get("show_border")
+            if show_border not in [False, "false"]:
+                th.add_style("border: solid 1px %s" % border_color)
 
             edit_wdg = my.edit_wdgs.get(name)
             if edit_wdg:
@@ -2142,6 +2146,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         summary = (0,0)
 
                     group_summary, total = summary
+                    
+                    if isinstance(result, basestring) and result.startswith('$'):
+                        result = result[1:]
+                        result = float(result)
+               
                     group_summary += result
                     total += result
                     widget_summary_dict[widget] = (group_summary, total)
@@ -2434,13 +2443,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return
      
 
-        table.add_attr("ondragenter", "return false")
-        table.add_attr("ondragover", "return false")
-        table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+        #table.add_attr("ondragenter", "return false")
+        #table.add_attr("ondragover", "return false")
+        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
+
+        table.add_style("width: 100%")
 
 
         tr, td = table.add_row_cell()
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+
         tr.add_class("spt_table_no_items")
         td.add_style("border-style: solid")
         td.add_style("border-width: 1px")
@@ -2475,7 +2493,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
 
             no_results_msg = my.kwargs.get("no_results_msg")
-
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             #msg.set_box_shadow("0px 0px 5px")
@@ -2701,12 +2718,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = my.value
 
+                # add timezone conversion
+                if not SObject.is_day_column(element_name):
+                    element_type = SearchType.get_tactic_type(my.search_type, element_name)
+                    
+                    if element_type in ['time', 'datetime']:
+                        value = widget.get_timezone_value(value)
+                     
+
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
 
                 if isinstance(value, bool):
                     value = str(value).lower()
+            
+
+
                 td.add_attr("spt_input_value", value)
                 #td.add_attr("spt_input_column", column)
             else:
@@ -2832,7 +2860,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #th.add_gradient("background", "background", -10)
         if not border_color:
             border_color = table.get_color("table_border", 0, default="border")
-        th.add_style("border", "solid 1px %s" % border_color)
+
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            th.add_style("border", "solid 1px %s" % border_color)
+
         th.add_looks( 'dg_row_select_box' )
         th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
@@ -3050,6 +3084,11 @@ spt.table.run_search = function(kwargs) {
     spt.dg_table.search_cbk( {}, bvr );
 }
 
+// Search methods
+spt.table.do_search = function(kwargs) {
+    return spt.table.run_search(kwargs);
+}
+
 
 // Preview methods
 
@@ -3080,15 +3119,24 @@ spt.table.drop_row = function(evt, el) {
 
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
-    var size = thumb_el.getSize();
+    if (thumb_el) {
+        var size = thumb_el.getSize();
+    }
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file = files[i];
 
+        var filename = file.name;
 
         var search_key = top.getAttribute("spt_search_key");
-        var filename = file.name;
+        if (!search_key) {
+            var layout = spt.table.get_layout();
+            var search_type = layout.getAttribute("spt_search_type");
+            var server = TacticServerStub.get();
+            var sobject = server.insert(search_type, {name: filename})
+            search_key = sobject.__search_key__;
+        }
         var context = "publish" + "/" + filename;
 
         var upload_file_kwargs =  {
@@ -4478,7 +4526,8 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg.getParent(".spt_cell_edit");
     }
 
-
+    var old_value = edited_cell.getAttribute("spt_input_value");
+    
     var ignore_multi = kwargs.ignore_multi ? true : false;
 
     var header = spt.table.get_header_by_cell(edited_cell);
@@ -4488,11 +4537,17 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     
     // Multi EDIT
     var selected_rows = spt.table.get_selected_rows();
-    if (!ignore_multi && selected_rows.length > 0) {
+    var in_selected_row = edited_cell.getParent("tr.spt_table_selected");
+    
+    var changed = old_value != new_value;
+
+    if (!ignore_multi && selected_rows.length > 0 && changed && in_selected_row) {
         // get all of the cells with the same element_name
         var index = spt.table.get_column_index_by_cell(edited_cell);
+
         for (var i = 0; i < selected_rows.length; i++) {
             var cell = selected_rows[i].getElements(".spt_cell_edit")[index];
+           
             spt.table._accept_single_edit(cell, new_value);
 
             if (set_display) {
@@ -4500,6 +4555,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
                 cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
+            
         }
 
     }
@@ -5579,8 +5635,9 @@ spt.table.set_column_width = function(element_name, width) {
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
-    insert_cell.setStyle("width", width);
-  
+    if (insert_cell)
+        insert_cell.setStyle("width", width);
+   
 }
 
 

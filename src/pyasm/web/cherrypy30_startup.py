@@ -137,6 +137,7 @@ class CherryPyStartup(CherryPyStartup20):
         except (AttributeError, SyntaxError), e:
             print "WARNING: ", e
             has_project = False
+            has_site = True
         except Exception, e:
             print "WARNING: ", e
             has_project = False
@@ -317,7 +318,6 @@ class CherryPyStartup(CherryPyStartup20):
 
         }
 
-      
 
         # set up the root directory
         cherrypy.root = Root()
@@ -354,6 +354,8 @@ class CherryPyStartup(CherryPyStartup20):
             project_code = project.get_code()
             my.register_project(project_code, config)
         my.register_project("default", config)
+
+        print
 
 
         from pyasm.security import Site
@@ -406,7 +408,8 @@ class CherryPyStartup(CherryPyStartup20):
             #print "... WARNING: SitePage not found"
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
-        except SyntaxError:
+        except SyntaxError, e:
+            print e.__str__()
             print "WARNING: skipping project [%s]" % project
 
 

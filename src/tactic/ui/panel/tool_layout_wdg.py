@@ -24,7 +24,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
     ARGS_KEYS = {
         "search_type": {
-            'description': "search type that this panels works with",
+            'description': "Search type that this panels works with",
             'type': 'TextWdg',
             'order': 0,
             'category': 'Required'
@@ -36,18 +36,26 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'category': 'Display'
         },
         "expand_mode" : {
-            'description': 'support Tile Layout gallery, single_gallery, plain, detail, and custom mode',
+            'description': 'Support Tile Layout gallery, single_gallery, plain, detail, and custom mode',
             'type': 'SelectWdg',
             'values': 'gallery|single_gallery|plain|detail|custom',
-            'order' : '16',
+            'order' : '2',
             'category': 'Display'
 
-    },
-
-
-
+        },
+        "tool_icon" : {
+            'description': 'Add icons to the no-content pane which indicates tools to modify settings. Also takes a | seperated list of icon keys.',
+            'type': 'IconSelectWdg',
+            'order' : '3',
+            'category': 'Display'
+        },
+        "tool_msg" : {
+            'description': 'Add a message to the no-content pane which indicates how users can modify settings.',
+            'type': 'TextWdg',
+            'order' : '4',
+            'category': 'Display'
+        }
     } 
-
 
     def can_inline_insert(my):
         return False
@@ -166,9 +174,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if info.get("count") == None:
             info["count"] = len(my.sobjects)
 
-        search_limit_mode = my.kwargs.get('search_limit_mode') 
-        if not search_limit_mode:
-            search_limit_mode = 'bottom'
+        show_search_limit = my.kwargs.get("show_search_limit")
+        if show_search_limit in ['false', False]:
+            search_limit_mode = None
+        else:
+            search_limit_mode = my.kwargs.get('search_limit_mode') 
+            if not search_limit_mode:
+                search_limit_mode = 'bottom'
+
+
 
         if search_limit_mode in ['top','both']:
             from tactic.ui.app import SearchLimitSimpleWdg
@@ -350,7 +364,32 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         no_content_wdg = DivWdg()
         content.add(no_content_wdg)
         no_content_wdg.add("<br/>"*3)
-        no_content_wdg.add("<i>-- No Content --</i>")
+
+        '''
+        The no content message displays tool icons
+        and a message in format:
+                         <tools>
+                          <msg>
+        '''
+        tool_icons = my.kwargs.get('tool_icon')
+        if isinstance(tool_icons, basestring):
+            tool_icon_lst = tool_icons.split("|")
+        else:
+            tool_icon_lst = None
+
+        if tool_icon_lst:
+            for icon in tool_icon_lst:
+                icon = IconWdg(icon=icon) 
+                icon.add_style("padding", "5px")
+                no_content_wdg.add(icon)
+            no_content_wdg.add("</br></br>")
+       
+        tool_msg = my.kwargs.get('tool_msg')
+        if tool_msg:
+            no_content_wdg.add("<p>%s<p>" % tool_msg)
+        else:
+            no_content_wdg.add("Click the tool(s) to modify settings.") 
+       
         #no_content_wdg.add_style("opacity: 0.5")
         no_content_wdg.add_style("margin: 30px auto")
         no_content_wdg.add_color("color", "color3")

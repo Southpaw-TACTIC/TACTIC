@@ -41,5 +41,7 @@ from hash_panel_wdg import *
 from static_table_layout_wdg import *
 from tool_layout_wdg import *
 
+from collection_wdg import *
+
 
 
