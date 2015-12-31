@@ -588,6 +588,8 @@ class ThumbWdg(BaseTableElementWdg):
 
         if missing:
             img = HtmlElement.img(ThumbWdg.get_missing_image())
+        elif sobject.get_value("_is_collection", no_exception=True):
+            img = HtmlElement.img("/context/icons/mime-types/folder2.jpg")
         else:
             img = HtmlElement.img(ThumbWdg.get_no_image())
 
