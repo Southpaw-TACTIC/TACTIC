@@ -543,7 +543,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-            elif tab == "review":
+            elif tab == "revisions":
                 config_xml.append('''
                 <element name="revisions" title="Revisions">
                   <display class='tactic.ui.panel.TileLayoutWdg'>
