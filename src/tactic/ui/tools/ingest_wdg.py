@@ -125,16 +125,19 @@ class IngestUploadWdg(BaseRefreshWdg):
                 select.set_option("values", process_names)
         
 
+        div.add("<br/>")
+        div.add("<hr/>")
 
 
         # update mode
         title_wdg = DivWdg()
         div.add(title_wdg)
-        title_wdg.add("Update Mode")
+        title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
+        desc_wdg = DivWdg("Determines how the file name matches up to a particular enry")
 
-        desc_wdg = DivWdg("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
+        #desc_wdg = DivWdg("When update mode is 'Update', if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
         div.add(desc_wdg)
 
         div.add("<br/>")
@@ -146,18 +149,35 @@ class IngestUploadWdg(BaseRefreshWdg):
         update_mode = SelectWdg(name="update mode")
         update_mode.add_class("spt_update_mode_select")
         update_mode.set_option("values", ["false", "true", "sequence"])
-        update_mode.set_option("labels", ["Off", "On", "Sequence"])
+        update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update as a sequence"])
         update_mode.set_option("default", update_mode_option)
-        update_mode.add_style("float: left")
         update_mode.add_style("margin-top: -3px")
-        update_mode.add_style("margin-left: 5px")
         update_mode.add_style("margin-right: 5px")
-        #update_mode.add_style("width: 100px")
         div.add(update_mode)
 
 
+        label_div = DivWdg()
+        label_div.add("Ignore File Extension")
+        div.add(label_div)
+        label_div.add_style("margin-top: 10px")
+        label_div.add_style("margin-bottom: 5px")
 
-        div.add("<br/>"*3)
+        ignore_ext_option = my.kwargs.get("ignore_ext")
+        if not ignore_ext_option:
+            ignore_ext_option = "false"
+        ignore_ext = SelectWdg(name="update mode")
+        ignore_ext.add_class("spt_ignore_ext_select")
+        ignore_ext.set_option("values", ["true", "false"])
+        ignore_ext.set_option("labels", ["Yes", "No"])
+        ignore_ext.set_option("default", ignore_ext_option)
+        ignore_ext.add_style("margin-top: -3px")
+        ignore_ext.add_style("margin-right: 5px")
+        div.add(ignore_ext)
+
+
+
+        div.add("<br/>")
+        div.add("<hr/>")
 
 
         # Metadata
@@ -167,7 +187,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        desc_wdg = DivWdg("Add extra metadata to each uploaded image")
+        desc_wdg = DivWdg("This extra metaadata will be added to each added item")
         div.add(desc_wdg)
 
         # edit
@@ -239,6 +259,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<hr/>")
 
 
+        shelf_div = DivWdg()
+        div.add(shelf_div)
+        shelf_div.add_style("margin-bottom: 10px")
 
 
         
@@ -249,22 +272,17 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         if relative_dir:
             folder_div = DivWdg()
-            div.add(folder_div)
+            shelf_div.add(folder_div)
             folder_div.add("Folder: %s" % relative_dir)
             folder_div.add_style("opacity: 0.5")
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
 
 
-        """
-        data_div = my.get_data_wdg()
-        data_div.add_style("float: left")
-        div.add(data_div)
-        """
 
         # create the help button
         help_button_wdg = DivWdg()
-        div.add(help_button_wdg)
+        shelf_div.add(help_button_wdg)
         help_button_wdg.add_style("float: right")
         help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
         help_button_wdg.add(help_button)
@@ -276,13 +294,13 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
-        div.add(upload)
+        shelf_div.add(upload)
 
 
         button = ActionButtonWdg(title="Add Files")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
-        div.add(button)
+        shelf_div.add(button)
         button.add_behavior( {
             'type': 'click_up',
             'normal_ext': File.NORMAL_EXT,
@@ -330,7 +348,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button = ActionButtonWdg(title="Clear")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
-        div.add(button)
+        shelf_div.add(button)
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -343,14 +361,21 @@ class IngestUploadWdg(BaseRefreshWdg):
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
 
+            var button = top.getElement(".spt_upload_file_button");
+            button.setStyle("display", "none");
          '''
          } )
 
 
 
+        upload_div = DivWdg()
+        shelf_div.add(upload_div)
+        upload_div.add_class("spt_upload_file_button")
+        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
+        upload_div.add(button)
+        upload_div.add_style("display: none")
 
-        div.add("<br clear='all'/>")
-        div.add("<br clear='all'/>")
+        shelf_div.add("<br clear='all'/>")
 
         border_color_light = div.get_color("background2", 8)
         border_color_dark = div.get_color("background2", -15)
@@ -433,9 +458,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         spt.drag.show_file = function(file, top, delay, icon) {
 
-            background = top.getElement(".spt_files_background");
-            if (background)
-                background.setStyle("display", "none");
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "none");
 
 
             var template = top.getElement(".spt_upload_file_template");
@@ -814,6 +838,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         var update_mode_select = top.getElement(".spt_update_mode_select");
         var update_mode = update_mode_select.value;
 
+        var ignore_ext_select = top.getElement(".spt_ignore_ext_select");
+        var ignore_ext = ignore_ext_select.value;
+
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
             var name = files[i].name;
@@ -858,6 +885,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             process: process,
             convert: convert,
             update_mode: update_mode,
+            ignore_ext: ignore_ext,
         }
         on_complete = function(rtn_data) {
 
@@ -907,7 +935,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         upload_div = DivWdg()
         div.add(upload_div)
-        #button = UploadButtonWdg(**kwargs)
         button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
         upload_div.add(button)
         button.add_style("float: right")
@@ -1234,6 +1261,8 @@ class IngestUploadCmd(Command):
         base_dir = upload_dir
 
         update_mode = my.kwargs.get("update_mode")
+        ignore_ext = my.kwargs.get("ignore_ext")
+
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
@@ -1326,7 +1355,13 @@ class IngestUploadCmd(Command):
             # Create a new file
             if not sobject:
                 sobject = SearchType.create(search_type)
-                sobject.set_value("name", filename)
+
+                if ignore_ext in ['true', True]:
+                    name, ext = os.path.splitext(filename)
+                else:
+                    name = filename
+
+                sobject.set_value("name", name)
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
 
