@@ -727,6 +727,21 @@ class TacticServerStub(object):
 
 
 
+    def get_message(my, key):
+        '''API Function: gog_message(key)
+
+        Get the message with the appropriate key
+
+        @params
+        key - unique key for this message
+
+        @return
+        message
+        '''
+        return my.server.get_message(my.ticket, key)
+
+
+
     def log_message(my, key, message, status="", category="default"):
         '''API Function: log_message(key, message, status=None, category="default")
 
