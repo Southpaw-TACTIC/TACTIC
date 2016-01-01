@@ -1746,6 +1746,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
     }
     else {
+
         if (spt.drop) {
             spt.drop.sobject_drop_action(evt, bvr);
         }

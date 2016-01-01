@@ -106,6 +106,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         # menu_wdg 
         menu_wdg = DivWdg()
         top.add(menu_wdg)
+        menu_wdg.add_color("background", "background")
+        menu_wdg.add_border()
         menu_wdg.add_class("spt_switcher_menu")
         menu_wdg.add_style("display: none")
         menu_wdg.add_style("margin-top", "15px")

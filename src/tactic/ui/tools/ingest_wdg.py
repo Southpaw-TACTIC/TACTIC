@@ -176,6 +176,25 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
+        label_div = DivWdg()
+        label_div.add("Map file name to column:")
+        div.add(label_div)
+        label_div.add_style("margin-top: 10px")
+        label_div.add_style("margin-bottom: 5px")
+
+        column_option = my.kwargs.get("column")
+        if not column_option:
+            column_option = "name"
+        column_select = SelectWdg(name="update mode")
+        column_select.add_class("spt_column_select")
+        column_select.set_option("values", ["name", "code"])
+        column_select.set_option("labels", ["Name", "Code"])
+        column_select.set_option("default", column_option)
+        column_select.add_style("margin-top: -3px")
+        column_select.add_style("margin-right: 5px")
+        div.add(column_select)
+
+
         div.add("<br/>")
         div.add("<hr/>")
 
@@ -223,10 +242,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             text.add_style('display: none')
             text.set_value(extra_data)
             div.add(text)
-
-
-
-
 
 
 
@@ -316,7 +331,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
-        var onchange = function (evt) {
+            var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
                 for (var i = 0; i < files.length; i++) {
@@ -334,7 +349,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
-        }
+            }
 
             spt.html5upload.clear();
             spt.html5upload.set_form( top );
@@ -841,6 +856,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         var ignore_ext_select = top.getElement(".spt_ignore_ext_select");
         var ignore_ext = ignore_ext_select.value;
 
+        var column_select = top.getElement(".spt_column_select");
+        var column = column_select.value;
+
+
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
             var name = files[i].name;
@@ -886,6 +905,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             convert: convert,
             update_mode: update_mode,
             ignore_ext: ignore_ext,
+            column: column,
         }
         on_complete = function(rtn_data) {
 
@@ -1262,6 +1282,9 @@ class IngestUploadCmd(Command):
 
         update_mode = my.kwargs.get("update_mode")
         ignore_ext = my.kwargs.get("ignore_ext")
+        column = my.kwargs.get("column")
+        if not column:
+            column = "name"
 
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
@@ -1296,8 +1319,8 @@ class IngestUploadCmd(Command):
             return date.split(" ")[0]
         """
 
-        if not SearchType.column_exists(search_type, "name"):
-            raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
+        if not SearchType.column_exists(search_type, column):
+            raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "%s" column for this sType.' % column)
 
         input_prefix = update_data.get('input_prefix')
         non_seq_filenames = []
@@ -1324,7 +1347,7 @@ class IngestUploadCmd(Command):
             if update_mode in ["true", "True"]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
-                search.add_filter("name", filename)
+                search.add_filter(column, filename)
                 if relative_dir and search.column_exists("relative_dir"):
                     search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
@@ -1339,7 +1362,7 @@ class IngestUploadCmd(Command):
                 if not FileGroup.is_sequence(filename):
                     raise TacticException('Please modify sequence naming to have at least three digits.')
                 search = Search(search_type)
-                search.add_filter("name", filename)
+                search.add_filter(column, filename)
 
                 if relative_dir and search.column_exists("relative_dir"):
                     search.add_filter("relative_dir", relative_dir)
@@ -1361,7 +1384,7 @@ class IngestUploadCmd(Command):
                 else:
                     name = filename
 
-                sobject.set_value("name", name)
+                sobject.set_value(column, name)
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
 
