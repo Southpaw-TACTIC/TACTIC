@@ -207,7 +207,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     
                     // Get target class
                     var target_class = bvr.target;
-                    if (target_class.indexOf(".") != "-1") {
+                    if (target_class.indexOf(".") != -1) {
                         var parts = target_class.split(".");
                         target_class = parts[1]; 
                     }

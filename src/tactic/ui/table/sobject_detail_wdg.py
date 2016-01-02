@@ -170,7 +170,7 @@ class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
         if my.widget:
             widget = my.widget
         else:
-            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+            widget = IconButtonWdg(title=title, icon="BS_SEARCH")
 
 
         code = sobject.get_code()
@@ -241,7 +241,7 @@ class TaskDetailPanelElementWdg(SObjectDetailElementWdg):
         if my.widget:
             widget = my.widget
         else:
-            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+            widget = IconButtonWdg(title=title, icon="BS_SEARCH")
 
 
         code = sobject.get_code()

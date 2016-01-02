@@ -235,8 +235,8 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         if not target:
             target = ".spt_content"
         else:
-            if target[0] not in [".", "#"]:
-                target = ".%s" % target
+            if target[0] in ["."]:
+                target = target[1:]
 
         #link = "/link/%s" % (element_name)
         link = "/tab/%s" % (element_name)
@@ -253,7 +253,23 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 'link': link,
                 'target': target,
                 'cbjs_action': '''
-                var content = $(document).getElement(bvr.target);
+
+                var target_class = bvr.target;
+
+                if (target_class.indexOf("#") != -1) {
+                    var target = $(document.body).getElement(target_class);
+                }
+                else if (target_class.indexOf(".") != -1) {
+                    var parts = target_class.split(".");
+                    var top = bvr.src_el.getParent("."+parts[0]);
+                    var target = top.getElement("."+parts[1]);  
+                }
+                else {
+                    var target = $(document.body).getElement("."+target_class);
+                }
+
+                //var content = $(document).getElement(bvr.target);
+                var content = target;
                 spt.app_busy.show("Loading link "+bvr.title);
                 spt.panel.load_link(content, bvr.link);
                 spt.app_busy.hide();
@@ -271,7 +287,24 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 'target': target,
                 'cbjs_action': '''
 
-                var content = $(document).getElement(bvr.target);
+                var target_class = bvr.target;
+
+                if (target_class.indexOf("#") != -1) {
+                    var target = $(document.body).getElement(target_class);
+                }
+                else if (target_class.indexOf(".") != -1) {
+                    var parts = target_class.split(".");
+                    var top = bvr.src_el.getParent("."+parts[0]);
+                    var target = top.getElement("."+parts[1]);  
+                }
+                else {
+                    var target = $(document.body).getElement("."+target_class);
+                }
+
+
+                //var content = $(document).getElement(bvr.target);
+                var content = target;
+
                 var tab_top = null;;
                 // check if there even is a tab
                 if (spt.tab) {
