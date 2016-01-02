@@ -78,8 +78,10 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         activator.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_switcher_top");
+            var activator = bvr.src_el;
+            var top = activator.getParent(".spt_switcher_top");
             var menu = top.getElement(".spt_switcher_menu");
+            
             if (top.hasClass("spt_selected")) {
                 top.removeClass("spt_selected");
                 menu.setStyle("display", "none");    
@@ -87,28 +89,90 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 top.addClass("spt_selected");
                 menu.setStyle("display", "");
                 var body = $(document.body);
-                var pos = bvr.src_el.getPosition();
-                var size = menu.getSize();
+                var pos = activator.getPosition();
+                var button_size = activator.getSize();
+                var menu_size = menu.getSize();
                 var offset = {
-                    x: pos.x + 10 - size.x,
-                    y: pos.y
+                    x: pos.x + button_size.x - menu_size.x,
+                    y: pos.y + button_size.y
                 };
                 menu.position({position: 'upperleft', relativeTo: body, offset: offset});
+            
+                var pointer = menu.getElement(".spt_popup_pointer");
+                pointer.setStyle("margin-left", menu_size.x - button_size.x);
             } 
             '''
         } )
- 
-        style = my.get_style()
-        top.add(style)
+            
+        # menu_wdg 
+        menu_wdg = DivWdg()
+        top.add(menu_wdg)
+        menu_wdg.add_class("spt_switcher_menu")
+        menu_wdg.add_style("display: none")
+        menu_wdg.add_style("margin-top", "15px")
+        menu_wdg.add_style("position", "absolute")
+        menu_wdg.add_style("z-index", "10")
+        menu_wdg.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            var menu = bvr.src_el;
+            var top = menu.getParent(".spt_switcher_top");
+            top.removeClass("spt_selected");
+            menu.setStyle("display", "none")
+            '''
+        } )
+        
+        # Pointer under activator
+        pointer_wdg = DivWdg()
+        menu_wdg.add(pointer_wdg)
+        pointer_wdg.add('''
+            <div class="spt_first_arrow_div"> </div>
+            <div class="spt_second_arrow_div"> </div>
+        ''')
+        pointer_wdg.add_class("spt_popup_pointer")
 
+        style = HtmlElement.style('''
+            .spt_switcher_menu .spt_popup_pointer {
+                z-index: 10;
+                margin-top: -15px;
+                margin-left: 100px;
+            }
+
+            .spt_switcher_menu .spt_first_arrow_div {
+                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ccc;
+                top: -15px;
+                z-index: 1;
+                border-width: 0 15px 15px;
+                height: 0;
+                width: 0;
+                border-style: dashed dashed solid;
+                left: 15px;
+            }
+
+            .spt_switcher_menu .spt_second_arrow_div{
+                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #fff;
+                z-index: 1;
+                border-width: 0 15px 15px;
+                height: 0;
+                width: 0;
+                border-style: dashed dashed solid;
+                margin-top: -14px;
+                position: absolute;
+            }
+        ''')
+        pointer_wdg.add(style)
+ 
         if menu:
-            menu_wdg = SimpleSideBarWdg(view=menu, search_type="SidebarWdg", target=target) 
+            simple_sidebar = SimpleSideBarWdg(view=menu, search_type="SidebarWdg", target=target) 
+            menu_wdg.add(simple_sidebar)
         else:
+            style = my.get_style()
+            top.add(style)
+            
             my.view = 'tab'
             config = WidgetConfig.get(view=my.view, xml=config_xml)
             element_names = config.get_element_names()
 
-            menu_wdg = DivWdg()
             for element_name in element_names:
 
                 item_div = DivWdg()
@@ -157,93 +221,27 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     '''
                 } )
         
-        top.add(menu_wdg)
-        menu_wdg.add_class("spt_switcher_menu")
-        menu_wdg.add_style("display: none")
-        menu_wdg.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-            var menu = bvr.src_el;
-            var top = menu.getParent(".spt_switcher_top");
-            top.removeClass("spt_selected");
-            menu.setStyle("display", "none")
-            '''
-        } )
-
-        pointer_wdg = DivWdg()
-        top.add(pointer_wdg)
-        pos = 10 
-        pointer_wdg.add_style("margin-left: %spx" % pos)
-        pointer_wdg.add_class("spt_popup_pointer")
-        pointer_wdg.add('''
-            <div class="spt_first_arrow_div"> </div>
-            <div class="spt_second_arrow_div"> </div>
-        ''')
-        
         return top
 
 
     def get_style(my):
+        '''Default style used when menu switcher is defined from config_xml'''
 
         style = HtmlElement.style('''
 
-.spt_switcher_button {
-  float: right;
-  padding: 5px;
-  cursor: pointer;
-}
-
-
-.spt_switcher_top {
-  position: relative;
-}
-
 .spt_switcher_menu {
-  margin-top: 15px;
-  //margin-left:200px;
   padding: 0px 0px;
-  //border: solid 1px #CCC;
+  border: solid 1px #CCC;
   width: 200px;
   height: auto;
-  position: absolute;
   right: 5px;
   background: #FFF;
-  z-index: 2;
   text-align: center;
-
 }
 
 .spt_switcher_menu .spt_switcher_item {
   padding: 10px 0px;
   cursor: pointer;
-}
-
-
-.spt_switcher_menu .spt_popup_pointer{
-  z-index: 10;
-  margin-top: -15px;
-}
-
-.spt_switcher_menu .spt_first_arrow_div{
-    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ccc;
-    top: -15px;
-    z-index: 1;
-    border-width: 0 15px 15px;
-    height: 0;
-    width: 0;
-    border-style: dashed dashed solid;
-    left: 15px;
-}
-
-.spt_switcher_menu .spt_second_arrow_div{
-    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #fff;
-    z-index: 1;
-    border-width: 0 15px 15px;
-    height: 0;
-    width: 0;
-    border-style: dashed dashed solid;
-    margin-top: -14px;
-    position: absolute;
 }
 
         ''')
