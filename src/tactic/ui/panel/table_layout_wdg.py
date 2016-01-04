@@ -806,7 +806,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
             sticky_header = True
 
-        #inner.add_style("width: 100%")
+        inner.add_style("width: 100%")
 
         if sticky_header:
 
@@ -835,9 +835,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             height = my.kwargs.get("height")
             if height:
                 scroll.add_style("height: %s" % height)
-
+            scroll.add_style("margin-right: -17px")
             scroll.add_style("overflow-y: auto")
-            scroll.add_style("overflow-x: hidden")
+            scroll.add_style("overflow-x: hidden")  
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
