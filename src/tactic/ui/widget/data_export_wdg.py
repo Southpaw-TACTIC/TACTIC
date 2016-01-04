@@ -893,8 +893,9 @@ class PreviewDataWdg(BaseRefreshWdg):
             my.labels = my.kwargs.get("labels")
         if my.labels and isinstance(my.labels, basestring):
             my.labels = my.labels.split("|")
-
-
+ 
+        my.csv_column_data = {}
+        my.selected_column_option_id = None
 
 
 
@@ -922,11 +923,9 @@ class PreviewDataWdg(BaseRefreshWdg):
             div.add(span, 'warning')
             return div
         
+        # For 2nd guess of similar column titles
         csv_titles = csv_parser.get_titles()
-
-        # for 2nd guess of similar column titles
         processed_csv_titles = [x.replace(' ', '_').lower() for x in csv_titles]
-        processed_csv_types = []
         csv_data = csv_parser.get_data()
 
         web = WebContainer.get_web()
@@ -974,8 +973,10 @@ class PreviewDataWdg(BaseRefreshWdg):
         tr = table.add_row()
         tr.add_color("background", "background", -5)
         tr.add_border()
-        cb = CheckboxWdg('csv_row')
         
+        # Checkbox
+        # TODO: Toggle all JS is broken
+        cb = CheckboxWdg('csv_row')
         cb.set_default_checked()
         js =  '''
              var cbs = bvr.src_el.getParent('.spt_csv_table').getElements('.spt_csv_row');
@@ -989,24 +990,29 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         th = table.add_header(cb)
         th.add_style("padding: 5px")
+        
+        # Preview column value
         th = table.add_header("CSV Column Value")
         th.add_style("padding: 5px")
         th.add_class('smaller')
+ 
+        # Matching TACTIC column or new column selection
         th = table.add_header("TACTIC Column")
         th.add_style("padding: 5px")
         th.add_class('smaller')
-        th = table.add_header("Create New Column")
+    
+        # Settings activator 
+        th = table.add_header("<div class='glyphicon glyphicon-cog'/>")
         th.add_style("padding: 5px")
-        th.add_style('min-width: 100px')
+        th.add_style('min-width: 10px')
         th.add_class('smaller')
-         
 
         # set the columns and labels
         columns = my.columns
         labels = my.labels
-
+        
+        # Get columns or labels if missing
         if not columns:
-
             columns = SearchType.get_columns(my.search_type)
             sobj = SObjectFactory.create(my.search_type)
             required_columns = sobj.get_required_columns()
@@ -1031,76 +1037,28 @@ class PreviewDataWdg(BaseRefreshWdg):
                 labels.append(label)
 
        
-
-        # add an implicit not column
+        # Add an implicit note column
         columns.append("(note)")
         labels.append("(Note)")
-
 
 
         row = csv_data[data_row]
         my.num_columns = len(row)
         hidden = HiddenWdg("num_columns", my.num_columns)
         div.add(hidden)
-
-     
-
+ 
+        # TODO: Why are some columns skipped?
         skipped_columns = []
-        new_col_indices = []
 
-        # Analyze data. It will try to create a timestamp, then integer, then float, then varchar, then text column
-        def guess_column_type(idx):
-            column_types = {}
-            data_cell_list = []
-            my.CHECK = 5
-            column_type = ''       
-            for k, row in enumerate(csv_data):
-                if k >= len(row):
-                    data = ''
-                else:
-                    data = row[idx] 
-                if data.strip() == '':
-                    continue
-                if my.CHECK == 5:
-                    column_type = my._check_timestamp(data)
-                if my.CHECK == 4:
-                    column_type = my._check_integer(data)
-                if my.CHECK == 3:
-                    column_type = my._check_float(data)
-                if my.CHECK == 2:
-                    column_type = my._check_varchar(data)
-
-
-
-                # TEST: use democracy to determine type
-                column_type = my._check_timestamp(data)
-                if not column_type:
-                    column_type = my._check_integer(data)
-                    if not column_type:
-                        column_type = my._check_float(data)
-                        if not column_type:
-                            column_type = my._check_varchar(data)
-
-                if column_types.get(column_type) == None:
-                    column_types[column_type] = 1
-                else:
-                    column_types[column_type] = column_types[column_type] + 1
-
-
-                # max 30 per analysis    
-                if k > 30:
-                    break
-
-            largest = 0
-            for key, num in column_types.items():
-                if num > largest:
-                    column_type = key
-                    largest = num
-            #table.add_cell(column_type)
-            return column_type
-            #hidden = HiddenWdg('new_column_type_%s' %idx, value=column_type)
-            #div.add(hidden)
-        
+        # Column option section - form based on note or new column selection
+        column_option_section = DivWdg()
+        column_option_section.add_class("spt_column_option_section")
+        column_option_section.add_style("padding: 10px")
+        column_option_section.add("Column options - select <div class='glyphicon glyphicon-cog'></div> to edit column definition.")
+         
+        csv_column_data = my.csv_column_data
+        print csv_column_data
+        # Build the column selection table
         for j, cell in enumerate(row):
             # skip extra empty title
             if j >= len(csv_titles):
@@ -1109,19 +1067,16 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             column_select = SelectWdg("column_%s" % j)
 
-            is_new_column = True
             use_processed = False
             # only set the value if it is actually in there
             if csv_titles[j] in columns:
                 column_select.set_option("default", csv_titles[j])
-                is_new_column = False
             elif processed_csv_titles[j] in columns:
                 column_select.set_option("default", processed_csv_titles[j])
-                is_new_column = False
                 use_processed = True
             sel_val = column_select.get_value()
             
-
+            
             table.add_row()
             cb = CheckboxWdg('column_enabled_%s' %j) 
             cb.add_style("margin-left: 5px")
@@ -1132,12 +1087,16 @@ class PreviewDataWdg(BaseRefreshWdg):
             # disable the id column by default
             if csv_titles[j] in columns and csv_titles[j] == 'id':
                 cb.set_option('special','true')
-                cb.add_behavior({'type':'click_up',
+                cb.add_behavior({
+                    'type':'click_up',
                     #'propagate_evt': True,
-                    'cbjs_action': '''spt.alert('The id column is not meant to be imported. It can only be chosen as an Identifying Column for update purpose.'); bvr.src_el.checked = false;'''})
+                    'cbjs_action': '''
+            spt.alert('The id column is not meant to be imported. It can only be chosen as an Identifying Column for update purpose.'); bvr.src_el.checked = false;
+                    '''
+                } )
             else:
                 # if it is not a new column, and column selected is empty, we don't select the checkbox by default
-                if sel_val != '' or is_new_column or not my.is_refresh:
+                if sel_val != '' or not my.is_refresh:
                     cb.set_default_checked()
 
             table.add_cell(cb) 
@@ -1159,83 +1118,170 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             '''% (j,j)})
 
-
-            column_select.add_empty_option("(New Column)")
+            # Get new column or new note context options
+            column_data = csv_column_data.get(j)
+            print column_data
+            if column_data and my.has_title:
+                processed_title = column_data.get("name")
+                if processed_title == "(note)":
+                    context_value = column_data.get("context")
+                    if not context_value:
+                        context_value = "publish"
+                else:
+                    if not processed_title and use_processed:
+                        processed_title = processed_csv_titles[j]
+                    if not processed_title:
+                        processed_title = csv_titles[j]
+                    
+                    processed_type = column_data.get("type")
+                    if not processed_type:
+                        processed_type = my._guess_column_type(csv_data, j)
+            
+            column_select.add_empty_option("%s (New)" % processed_title)
             column_select.set_persist_on_submit()
             column_select.set_option("values", columns)
             column_select.set_option("labels", labels)
 
-           
             display = column_select.get_buffer_display()
             td = table.add_cell( display )
             td.add_style("padding: 3px")
 
-            
-            #TODO... how do we now this is a new column?
-            if csv_titles[j] != 'id':
-                if my.is_refresh:
-                    if sel_val != '':
-                        td.add_color('background','background2')
-                else:
-                    if not is_new_column:
-                        td.add_color('background','background2')
+            # Secondary column options - column type or note context
+            column_option_div = IconWdg(icon="BS_COG")
+            td = table.add_cell( column_option_div )
+            if sel_val == '(note)' or sel_val == '':
+                column_option_div.add_style("opacity", "0.0")
+                column_option_div.add_behavior( {
+                    'type': 'mouseenter',
+                    'cbjs_action': '''
+                        bvr.src_el.setStyle("opacity", "1.0");
+                    '''
+                } )
+                column_option_div.add_behavior( {
+                    'type': 'mouseleave',
+                    'cbjs_action': '''
+                        bvr.src_el.setStyle("opacity", "0.0");
+                    '''
+                } )
+                column_option_div.add_behavior( {
+                    'type': "click",
+                    'id': j,
+                    'cbjs_action': '''
+                    var values = spt.api.Utility.get_input_values('csv_import_main');
+                    values['selected_column_option_id'] = bvr.id; 
+                    spt.panel.refresh('preview_data', values );
+                    '''
+                } )
                 
-            # "Create New Column" options - title and type
-            new_column_div = DivWdg()
-            td = table.add_cell( new_column_div )
-            
-            if sel_val:
-                new_column_div.add_style("display", "none")
+                if my.selected_column_option_id == j: 
+                    options_form = DivWdg(id="column_options_form")
+                    options_form.add_class("spt_form")
+                    column_option_section.add(options_form) 
+                    
+                    options_form.add("</br>")
+                    options_form.add("</br>")
+                    
+                    # Inputs in form depend on note or new column
+                    options_form_inputs = DivWdg()
+                    options_form.add(options_form_inputs)
+                    # Save script should update HiddenWdg form values and refresh
+                    save = ActionButtonWdg(title="save_column_options")
+                    options_form.add(save)
+                    save.add_behavior( {
+                        'type': 'click_up',
+                        'id': j,
+                        'cbjs_action': '''
+                            var values = spt.api.Utility.get_input_values('csv_import_main');
+                            var settings = spt.api.Utility.get_input_values('column_options_form');
+                            
+                            name_key = 'new_column_' + bvr.id;
+                            if (settings['column_option_name']) {
+                                values[name_key] = settings['column_option_name']; 
+                            }
+
+                            type_key  = 'new_column_type_' + bvr.id;
+                            if (settings['column_option_type']) {
+                                values[type_key] = settings['column_option_type']; 
+                            }
+
+                            context_key = 'new_note_context_' + bvr.id;
+                            if (settings['new_note_context']) {
+                                values[context_key] = settings['new_note_context']; 
+                            }
+
+                            values['selected_column_option_id'] = bvr.id; 
+                            spt.panel.refresh('preview_data', values );
+                        '''
+                    } )
             else:
-                new_column_div.add_style("display", "block")
+                column_option_div.add_style("display", "none")
+ 
+            if sel_val == '(note)':
+                # Context options for note column
+                context = HiddenWdg("new_note_context_%s" % j)
+                column_option_div.add( context )
+                context.add_style("display", "none")
+                context.set_value(context_value)
+                
+                # Option form for new note column
+                if my.selected_column_option_id == j:
+                    options_form_inputs.add("Note context:")
+                    
+                    context_input = TextWdg("new_note_context")
+                    options_form_inputs.add(context_input)
+                    context_input.add_class("form-control")
+                    context_input.add_style('border-color: #8DA832')
+                    context_input.add_style("width", "150px")
+                    context_input.set_value(context_value)
             
-            new_column_div.set_id("new_column_div_%s" % j)
+            elif sel_val == '':
+                # Name and type options for new column
+                column_name = HiddenWdg("new_column_%s" % j)
+                column_option_div.add( column_name )
+                column_name.set_value(processed_title)
+ 
+                column_type = HiddenWdg("new_column_type_%s" % j)
+                column_option_div.add( column_type )
+                column_type.set_value(processed_type)
+      
+                # Option form for new column
+                if my.selected_column_option_id == j:
+                    options_form_inputs.add("Column name:") 
+                    options_form_inputs.add("</br>")
+                    options_form_inputs.add("</br>")
+                    
+                    column_name_input = TextWdg("column_option_name")
+                    options_form_inputs.add(column_name_input)
+                    column_name_input.add_class("form-control")
+                    column_name_input.add_style('border-color: #8DA832')
+                    column_name_input.add_style("width", "150px")
+                    column_name_input.set_value(processed_title)
+                    
+                    options_form_inputs.add("</br>")
+                    options_form_inputs.add("</br>")
+                    
+                    options_form_inputs.add("Column type:") 
+                    options_form_inputs.add("</br>")
+                    options_form_inputs.add("</br>")
+ 
+                    column_type_input = SelectWdg("column_option_type")
+                    options_form_inputs.add( column_type_input )
+                    column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp")
+                    column_type_input.add_class("form-control")
+                    column_type_input.add_style('border-color: #8DA832')
+                    column_type_input.add_style("width", "150px")
+                    column_type_input.set_option("default", processed_type)
 
-            if sel_val == '':
-                td.add_color('background','background2')
-               
-                new_col_indices.append(j)
-
-                column_name = TextWdg("new_column_%s" % j)
-                new_column_div.add( column_name )
-                column_name.add_class("form-control")
-                column_name.add_style('border-color: #8DA832')
-                column_name.set_persist_on_submit()
-
-                if my.has_title:
-                    if use_processed:
-                        new_title = processed_csv_titles[j]
-                    else:
-                        new_title = csv_titles[j]
-                    column_name.set_value(new_title)
-
-                column_type = SelectWdg("new_column_type_%s" % j)
-                new_column_div.add( column_type )
-                column_type.set_option("values", "varchar(256)|text|integer|float|timestamp")
-                column_type.add_class("form-control")
-                column_type.add_style('border-color: #8DA832')
-                # TODO: what is this? 
-                #column_type.set_persist_on_submit()
-
-                '''
-                processed_type = processed_csv_types[j]
-                if processed_type:
-                    column_type = processed_type 
-                else:
-                    column_type = guess_column_type(j)
-                    processed_type[j] = column_type
-                '''
-                column_type_str = guess_column_type(j)
-                column_type.set_value(column_type_str)
-            
         if skipped_columns:
             div.add(SpanWdg('WARNING: Some titles are empty or there are too many data cells. Column index [%s] '\
                 'are skipped.' %','.join(skipped_columns), css='warning'))
             div.add(HtmlElement.br(2))
 
 
-                            
         div.add(table)
+
+        # Add the options form
+        div.add(column_option_section)
 
 
 
@@ -1243,12 +1289,6 @@ class PreviewDataWdg(BaseRefreshWdg):
     
 
     def get_display(my):
-        widget = DivWdg(id='preview_data')
-        widget.add_style('padding: 6px')
-        my.set_as_panel(widget)
-        widget.add(SpanWdg(), 'warning')
-        widget.add(HtmlElement.br(2))
-        my.get_column_preview(widget)
 
 
         web = WebContainer.get_web()
@@ -1270,18 +1310,37 @@ class PreviewDataWdg(BaseRefreshWdg):
             #csv_parser.parse()
 
         csv_titles = csv_parser.get_titles()
+        csv_column_data = {}
         csv_data = csv_parser.get_data()
 
         columns = []
         num_columns = len(csv_titles)
         for i in range(0, num_columns):
             column = web.get_form_value("column_%s" % i)
-            if column:
-                pass
-                #column = csv_titles[i]
+            if column == "(note)":
+                # If new column is a note, get note context:
+                new_note_context = web.get_form_value("new_note_context_%s" % i)
+                csv_column_data[i] = {'name': '(note)', 'context': new_note_context}
+            elif column == "":
+                new_column_name = web.get_form_value("new_column_%s" % i)
+                new_column_type = web.get_form_value("new_column_type_%s" % i)
+                csv_column_data[i] = {'name': new_column_name, 'type': new_column_type}
             else:
-                column = web.get_form_value("new_column_%s" % i)
+                csv_column_data[i] = {'name': column}
             columns.append(column)
+        print csv_column_data
+        my.csv_column_data = csv_column_data
+
+        # Get the selected column option id
+        my.selected_column_option_id = web.get_form_value("selected_column_option_id")
+
+        # Preview data and column selection 
+        widget = DivWdg(id='preview_data')
+        widget.add_style('padding: 6px')
+        my.set_as_panel(widget)
+        widget.add(SpanWdg(), 'warning')
+        widget.add(HtmlElement.br(2))
+        my.get_column_preview(widget)
 
         response_div = DivWdg(css='spt_cmd_response')
         #response_div.add_style('color','#F0C956') 
@@ -1410,6 +1469,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
 
         table.add_row()
+        #TODO... set the new column headers here
         for i, title in enumerate(columns):
             if not title:
                 title = "<b style='color:red'>*</b>"
@@ -1442,7 +1502,55 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         return widget 
 
+    # TODO: Proper docstring
+    # Analyze data. It will try to create a timestamp, then integer, then float, then varchar, then text column
+    def _guess_column_type(my, csv_data, idx):
+        column_types = {}
+        data_cell_list = []
+        my.CHECK = 5
+        column_type = ''       
+        for k, row in enumerate(csv_data):
+            if k >= len(row):
+                data = ''
+            else:
+                data = row[idx] 
+            if data.strip() == '':
+                continue
+            if my.CHECK == 5:
+                column_type = my._check_timestamp(data)
+            if my.CHECK == 4:
+                column_type = my._check_integer(data)
+            if my.CHECK == 3:
+                column_type = my._check_float(data)
+            if my.CHECK == 2:
+                column_type = my._check_varchar(data)
 
+            # TEST: use democracy to determine type
+            column_type = my._check_timestamp(data)
+            if not column_type:
+                column_type = my._check_integer(data)
+                if not column_type:
+                    column_type = my._check_float(data)
+                    if not column_type:
+                        column_type = my._check_varchar(data)
+
+            if column_types.get(column_type) == None:
+                column_types[column_type] = 1
+            else:
+                column_types[column_type] = column_types[column_type] + 1
+
+
+            # max 30 per analysis    
+            if k > 30:
+                break
+
+        largest = 0
+        for key, num in column_types.items():
+            if num > largest:
+                column_type = key
+                largest = num
+            return column_type
+    
     # ensure this is not a partial date, which should be treated as a regular integer
     def _parse_date(my, dt_str):    
         from dateutil import parser
