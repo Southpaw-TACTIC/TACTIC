@@ -88,16 +88,15 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             } else {
                 top.addClass("spt_selected");
                 menu.setStyle("display", "");
-                var body = $(document.body);
                 var pos = activator.getPosition();
                 var button_size = activator.getSize();
                 var menu_size = menu.getSize();
                 var offset = {
-                    x: pos.x + button_size.x - menu_size.x,
-                    y: pos.y + button_size.y
-                };
-                menu.position({position: 'upperleft', relativeTo: body, offset: offset});
-            
+                    x: button_size.x - menu_size.x,
+                    y: button_size.y
+                }
+                menu.position({position: 'upperleft', relativeTo: activator, offset: offset});
+
                 var pointer = menu.getElement(".spt_popup_pointer");
                 pointer.setStyle("margin-left", menu_size.x - button_size.x);
             } 
