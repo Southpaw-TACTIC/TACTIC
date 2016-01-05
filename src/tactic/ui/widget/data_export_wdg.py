@@ -18,7 +18,7 @@ import string
 import datetime
 
 from pyasm.biz import CsvParser, File, Project
-from pyasm.search import Search, SObjectFactory, SearchType, SearchKey
+from pyasm.search import Search, SObjectFactory, SearchType, SearchKey, SObject
 from pyasm.command import Command, FileUpload
 from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg 
 from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenWdg, WidgetConfigView, ProdIconButtonWdg, TextWdg, TextAreaWdg, IconWdg, ProgressWdg, HintWdg, SelectWdg
@@ -960,8 +960,9 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         div.add( IconWdg("Important", IconWdg.CREATE) )
         div.add("Use the sample row to match which columns the data will be imported into TACTIC<br/><br/>")
-        #table = Table(css='spt_csv_table')
+        
         table = Table()
+        table.add_class("spt_csv_table")
         table.add_color('background','background')
         table.add_color('color','color')
         table.add_style("width: 100%")
@@ -975,18 +976,22 @@ class PreviewDataWdg(BaseRefreshWdg):
         tr.add_border()
         
         # Checkbox
-        # TODO: Toggle all JS is broken
         cb = CheckboxWdg('csv_row')
         cb.set_default_checked()
-        js =  '''
-             var cbs = bvr.src_el.getParent('.spt_csv_table').getElements('.spt_csv_row');
-             for (i=0; i < cbs.length; i++){
-                if (!cbs[i].getAttribute('special'))
-                    cbs[i].checked = bvr.src_el.checked;
-            }'''
-        cb.add_behavior({'type': 'click_up',
-             'propagate_evt': True,
-             'cbjs_action': js}) 
+        cb.add_behavior( {
+            'type': 'click_up',
+            'propagate_evt': True,
+            'cbjs_action': '''
+             // Toggle all cbs off or on
+             var top_cb = bvr.src_el;
+             var toggle =  top_cb.checked;
+
+             var cbs = top_cb.getParent('.spt_csv_table').getElements('.spt_csv_row');
+             for (i=0; i < cbs.length; i++) {
+                cbs[i].checked = toggle;
+             }
+        '''
+        } ) 
 
         th = table.add_header(cb)
         th.add_style("padding: 5px")
@@ -1039,7 +1044,7 @@ class PreviewDataWdg(BaseRefreshWdg):
        
         # Add an implicit note column
         columns.append("(note)")
-        labels.append("(Note)")
+        labels.append("Note")
 
 
         row = csv_data[data_row]
@@ -1047,7 +1052,6 @@ class PreviewDataWdg(BaseRefreshWdg):
         hidden = HiddenWdg("num_columns", my.num_columns)
         div.add(hidden)
  
-        # TODO: Why are some columns skipped?
         skipped_columns = []
 
         # Column option section - form based on note or new column selection
@@ -1118,15 +1122,18 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             '''% (j,j)})
 
-            # Get new column or new note context options
+            # Get new column or note process options
             column_data = csv_column_data.get(j)
-            print column_data
+            
+            processed_title = ""
+            processed_type = ""
+            process_value = ""
             if column_data and my.has_title:
                 processed_title = column_data.get("name")
                 if processed_title == "(note)":
-                    context_value = column_data.get("context")
-                    if not context_value:
-                        context_value = "publish"
+                    process_value = column_data.get("process")
+                    if not process_value:
+                        process_value = "publish"
                 else:
                     if not processed_title and use_processed:
                         processed_title = processed_csv_titles[j]
@@ -1137,6 +1144,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                     if not processed_type:
                         processed_type = my._guess_column_type(csv_data, j)
             
+            
             column_select.add_empty_option("%s (New)" % processed_title)
             column_select.set_persist_on_submit()
             column_select.set_option("values", columns)
@@ -1146,7 +1154,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             td = table.add_cell( display )
             td.add_style("padding: 3px")
 
-            # Secondary column options - column type or note context
+            # Secondary column options - column type or note process
             column_option_div = IconWdg(icon="BS_COG")
             td = table.add_cell( column_option_div )
             if sel_val == '(note)' or sel_val == '':
@@ -1165,7 +1173,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 } )
                 column_option_div.add_behavior( {
                     'type': "click",
-                    'id': j,
+                    'id': str(j),
                     'cbjs_action': '''
                     var values = spt.api.Utility.get_input_values('csv_import_main');
                     values['selected_column_option_id'] = bvr.id; 
@@ -1175,21 +1183,23 @@ class PreviewDataWdg(BaseRefreshWdg):
                 
                 if my.selected_column_option_id == j: 
                     options_form = DivWdg(id="column_options_form")
-                    options_form.add_class("spt_form")
                     column_option_section.add(options_form) 
-                    
-                    options_form.add("</br>")
-                    options_form.add("</br>")
+                    options_form.add_style("margin-top", "10px")
+                    options_form.add_class("spt_form")
                     
                     # Inputs in form depend on note or new column
                     options_form_inputs = DivWdg()
                     options_form.add(options_form_inputs)
+                    options_form_inputs.add_style("display", "inline-block")
                     # Save script should update HiddenWdg form values and refresh
-                    save = ActionButtonWdg(title="save_column_options")
+                    save = ActionButtonWdg(title="Save")
+                    save.add_style("display", "inline-block")
+                    save.add_style("padding", "5px")
+                    save.add_style("float", "right")
                     options_form.add(save)
                     save.add_behavior( {
                         'type': 'click_up',
-                        'id': j,
+                        'id': str(j),
                         'cbjs_action': '''
                             var values = spt.api.Utility.get_input_values('csv_import_main');
                             var settings = spt.api.Utility.get_input_values('column_options_form');
@@ -1204,9 +1214,14 @@ class PreviewDataWdg(BaseRefreshWdg):
                                 values[type_key] = settings['column_option_type']; 
                             }
 
-                            context_key = 'new_note_context_' + bvr.id;
-                            if (settings['new_note_context']) {
-                                values[context_key] = settings['new_note_context']; 
+                            note_process_key = 'new_note_process_' + bvr.id;
+                            note_process = settings['new_note_process'];
+                            if (note_process == 'custom') {
+                                note_process = settings['new_note_process_custom'];
+                            }
+                            
+                            if (note_process) {
+                                values[note_process_key] = note_process; 
                             }
 
                             values['selected_column_option_id'] = bvr.id; 
@@ -1218,22 +1233,79 @@ class PreviewDataWdg(BaseRefreshWdg):
  
             if sel_val == '(note)':
                 # Context options for note column
-                context = HiddenWdg("new_note_context_%s" % j)
-                column_option_div.add( context )
-                context.add_style("display", "none")
-                context.set_value(context_value)
+                process = HiddenWdg("new_note_process_%s" % j)
+                column_option_div.add( process )
+                process.add_style("display", "none")
+                if not process_value:
+                    process_value = "publish"
+                process.set_value(process_value)
                 
                 # Option form for new note column
                 if my.selected_column_option_id == j:
-                    options_form_inputs.add("Note context:")
+                    note_process_group = DivWdg()
+                    options_form_inputs.add(note_process_group)
+                    note_process_group.add_class("form-group")
+                    note_process_group.add_style("display", "inline-block")
+                    note_process_group.add_style("padding", "5px")
                     
-                    context_input = TextWdg("new_note_context")
-                    options_form_inputs.add(context_input)
-                    context_input.add_class("form-control")
-                    context_input.add_style('border-color: #8DA832')
-                    context_input.add_style("width", "150px")
-                    context_input.set_value(context_value)
-            
+                    note_process_group.add("<label>Note process</label>")
+                    
+                    note_process_input_group = DivWdg()
+                    note_process_group.add(note_process_input_group)
+                   
+                    # Choose process from pipeline (SelectWdg) or custom process (TextWdg)
+                    # Custom process is hidden by default
+                    process_pipeline_input = SelectWdg("new_note_process")
+                    note_process_input_group.add(process_pipeline_input)
+                    
+                    # Get processes from pipelines, and add 'publish' and 'custom' options
+                    from pyasm.biz import Pipeline
+                    search_type_obj = SearchType.get(my.search_type)
+                    base_type = search_type_obj.get_base_key()
+                    pipelines = Pipeline.get_by_search_type(base_type)
+                    all_processes = []
+                    for pipeline in pipelines:
+                        process_names = pipeline.get_process_names()
+                        all_processes.extend(process_names) 
+                    process_names = list(set(all_processes))
+                    
+                    process_names.append("publish")
+                    if process_value not in process_names:
+                        process_names.append(process_value)
+                    process_pipeline_input.set_option("values", process_names)
+                    process_pipeline_input.set_option("default", process_value)
+                    process_pipeline_input.append_option("Custom process", "custom")
+                    
+                    process_pipeline_input.add_style("display", "inline-block")
+                    process_pipeline_input.add_class("form-control")
+                    process_pipeline_input.add_style('border-color: #8DA832')
+                    process_pipeline_input.add_style("width", "150px")
+                    process_pipeline_input.add_behavior( {
+                        'type': 'change',
+                        'cbjs_action': '''
+                            // Toggle display of custom input
+                            var pipeline_input = bvr.src_el;
+                            var input_top = pipeline_input.getParent(".form-group");
+                            var custom_input = input_top.getElement(".spt_custom_process_input");
+                            var select_value = pipeline_input.value;
+                            if (select_value == 'custom') {
+                                custom_input.setStyle("display", "inline-block");
+                            } else {
+                                custom_input.setStyle("display", "none");
+                            }
+                        '''
+                    } )
+
+                    process_text_input = TextWdg("new_note_process_custom")
+                    note_process_input_group.add(process_text_input)
+                    process_text_input.add_class("spt_custom_process_input")
+                    process_text_input.add_class("form-control")
+                    process_text_input.add_style("margin-left", "5px")
+                    process_text_input.add_style("display", "none")
+                    process_text_input.add_class("form-control")
+                    process_text_input.add_style('border-color: #8DA832')
+                    process_text_input.add_style("width", "150px")
+
             elif sel_val == '':
                 # Name and type options for new column
                 column_name = HiddenWdg("new_column_%s" % j)
@@ -1246,26 +1318,29 @@ class PreviewDataWdg(BaseRefreshWdg):
       
                 # Option form for new column
                 if my.selected_column_option_id == j:
-                    options_form_inputs.add("Column name:") 
-                    options_form_inputs.add("</br>")
-                    options_form_inputs.add("</br>")
-                    
+                    column_name_group = DivWdg()
+                    options_form_inputs.add(column_name_group)
+                    column_name_group.add_class("form-group")
+                    column_name_group.add_style("display", "inline-block")
+                    column_name_group.add_style("padding", "5px")
+
+                    column_name_group.add("<label>Column name</label>") 
                     column_name_input = TextWdg("column_option_name")
-                    options_form_inputs.add(column_name_input)
+                    column_name_group.add(column_name_input)
                     column_name_input.add_class("form-control")
                     column_name_input.add_style('border-color: #8DA832')
                     column_name_input.add_style("width", "150px")
                     column_name_input.set_value(processed_title)
+
+                    column_type_group = DivWdg()
+                    options_form_inputs.add(column_type_group)
+                    column_type_group.add_class("form-group")
+                    column_type_group.add_style("display", "inline-block")
+                    column_type_group.add_style("padding", "5px")
                     
-                    options_form_inputs.add("</br>")
-                    options_form_inputs.add("</br>")
-                    
-                    options_form_inputs.add("Column type:") 
-                    options_form_inputs.add("</br>")
-                    options_form_inputs.add("</br>")
- 
+                    column_type_group.add("<label>Column type</label>")
                     column_type_input = SelectWdg("column_option_type")
-                    options_form_inputs.add( column_type_input )
+                    column_type_group.add( column_type_input )
                     column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp")
                     column_type_input.add_class("form-control")
                     column_type_input.add_style('border-color: #8DA832')
@@ -1318,21 +1393,26 @@ class PreviewDataWdg(BaseRefreshWdg):
         for i in range(0, num_columns):
             column = web.get_form_value("column_%s" % i)
             if column == "(note)":
-                # If new column is a note, get note context:
-                new_note_context = web.get_form_value("new_note_context_%s" % i)
-                csv_column_data[i] = {'name': '(note)', 'context': new_note_context}
+                # If new column is a note, get note process:
+                new_note_process = web.get_form_value("new_note_process_%s" % i)
+                csv_column_data[i] = {'name': '(note)', 'process': new_note_process}
+                columns.append('note')
             elif column == "":
                 new_column_name = web.get_form_value("new_column_%s" % i)
                 new_column_type = web.get_form_value("new_column_type_%s" % i)
                 csv_column_data[i] = {'name': new_column_name, 'type': new_column_type}
+                columns.append(new_column_name)
             else:
                 csv_column_data[i] = {'name': column}
-            columns.append(column)
-        print csv_column_data
+                columns.append(column)
         my.csv_column_data = csv_column_data
 
         # Get the selected column option id
-        my.selected_column_option_id = web.get_form_value("selected_column_option_id")
+        selected_column_option_id = web.get_form_value("selected_column_option_id")
+        try:
+            my.selected_column_option_id = int(selected_column_option_id)
+        except ValueError:
+            my.selected_column_option_id = None
 
         # Preview data and column selection 
         widget = DivWdg(id='preview_data')
@@ -1365,7 +1445,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         h3.add_style("margin-left: -20px")
         h3.add_style("margin-right: -20px")
         div.add(h3)
-        div.add("<br/>")
+        div.add("</br>")
         
         refresh_button = ActionButtonWdg(title="Refresh")
 
@@ -1384,7 +1464,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             'type':'click_up', 
             'top_id':'csv_import_main',
             'cbjs_action':'''
-            //spt.dg_table_action.csv_import(bvr);
+            var src_el = bvr.src_el;
 
             var project = spt.Environment.get().get_project();
             var my_search_type = bvr.search_type;
@@ -1395,46 +1475,67 @@ class PreviewDataWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var class_name = 'pyasm.command.CsvImportCmd';
 
-            var response_div = bvr.src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
+            var response_div = src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
+            var csv_control = src_el.getParent('.spt_panel').getElement('.spt_csv_sample')
+            
+            var run_cmd = function (start_index) {
+                spt.app_busy.show("Importing Data");
+         
+                server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
+
+                // TODO... why is there a set timeout here?
+                setTimeout(function() {spt.hide(csv_control)}, 500);
+            }
+ 
             var on_complete = function(response_div) {
+                spt.app_busy.hide();
                 
                 response_div.innerHTML = 'CSV Import Completed';
                  
                 setTimeout( function() { 
-                    
                     var popup = bvr.src_el.getParent(".spt_popup");
                     if (popup) {
                         spt.popup.hide_background();
                         popup.destroy();
                     }
-                    
-                    spt.table.run_search() } , 2000);
-
+                    spt.table.run_search() } , 2000
+                );
             }
-            spt.app_busy.show("Importing Data");
            
-            var has_error = false;
-            var src_el = bvr.src_el;
-
+            /* On error includes handling of failure for single commit.
+             * If a single commit fails, user is prompted to skip that 
+             * entry or abort entire import. */
             var on_error = function(e) {
-                var err_message = spt.exception.handler(e);
-                spt.error(err_message);
+                spt.app_busy.hide();
                 
-                var response_div = document.getElement('.spt_cmd_response');
+                // This function is executed when Command fails or user
+                // chooses to abort after single entry fails.
+                var abort = function() {
+                    var response_div = document.getElement('.spt_cmd_response');
+                    err_message = err_message.replace(/\\n/g,'<br/>');
+                    response_div.innerHTML = 'Error: ' + err_message;
+                    response_div.setStyle("display", "");
+                    setTimeout(function() {spt.show(csv_control)}, 500);
+                }
 
-                err_message = err_message.replace(/\\n/g,'<br/>');
-                response_div.innerHTML = 'Error: ' + err_message;
-                response_div.setStyle("display", "");
-                setTimeout(function() {spt.show(csv_control)}, 500);
-           }
-            var csv_control = src_el.getParent('.spt_panel').getElement('.spt_csv_sample')
-            
-            server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
+                var err_message = spt.exception.handler(e);
+                //TODO err_message should be dictionary...
+                
+                if err_message.startsWith("Error creating new entry for row") {
+                    message = "Upload failed with the following message: " + spt.exception.handler(err) + ". Try again?";
+                    fail_index = 1;
+                    ok_fn = run_cmd;
+                    ok_fn_args = {}
+                    cancel_fn = abort();
+                    options = {ok_args: [fail_index], okText: "Skip"}; 
+                    spt.confirm(message, ok_fn, cancel_fn, options);
+                    return;
+                } else {
+                    spt.error(err_message);
+                    abort();
+                }
+            }
 
-            setTimeout(function() {spt.hide(csv_control)}, 500);
-           
-            
-            spt.app_busy.hide();
             '''
         })
         import_button.add_style("float: left")
@@ -1469,7 +1570,6 @@ class PreviewDataWdg(BaseRefreshWdg):
 
 
         table.add_row()
-        #TODO... set the new column headers here
         for i, title in enumerate(columns):
             if not title:
                 title = "<b style='color:red'>*</b>"
@@ -1502,9 +1602,8 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         return widget 
 
-    # TODO: Proper docstring
-    # Analyze data. It will try to create a timestamp, then integer, then float, then varchar, then text column
     def _guess_column_type(my, csv_data, idx):
+        ''' given csv data and a column idx, determine appropriate data type '''
         column_types = {}
         data_cell_list = []
         my.CHECK = 5
