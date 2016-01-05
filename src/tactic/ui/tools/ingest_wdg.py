@@ -66,13 +66,16 @@ class IngestUploadWdg(BaseRefreshWdg):
         line.add_style("border-color: #DDD")
         line.add(" ")
 
+        left.add( my.get_content_wdg() )
+
 
         right = table.add_cell()
         right.add_style("vertical-align: top")
-
-
-        left.add( my.get_content_wdg() )
         right.add( my.get_settings_wdg() )
+
+        show_settings = my.kwargs.get("show_settings")
+        if show_settings in [False, 'false']:
+            right.add_style("display: none")
 
         return top
 
@@ -278,9 +281,21 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(shelf_div)
         shelf_div.add_style("margin-bottom: 10px")
 
+        my.search_key = my.kwargs.get("search_key")
+        if my.search_key:
+            my.sobject = Search.get_by_search_key(my.search_key)
+            my.search_type = my.sobject.get_search_type()
+        else: 
+            my.search_type = my.kwargs.get("search_type")
+            my.sobject = None
+            my.search_key = None
 
-        
-        my.search_type = my.kwargs.get("search_type")
+        if my.search_key:
+            div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % my.search_key)
+        else:
+            div.add("<input class='spt_input' type='hidden' name='search_key' value=''/>")
+
+
         if not my.search_type:
             div.add("No search type specfied")
             return div
@@ -873,6 +888,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
+        var search_key = values.search_key[0];
 
         var convert_el = top.getElement(".spt_image_convert")
         var convert = spt.api.get_input_values(convert_el);
@@ -892,6 +908,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var update_data = spt.api.get_input_values(update_data_top, null, return_array);
 
         var kwargs = {
+            search_key: search_key,
             search_type: search_type,
             relative_dir: relative_dir,
             filenames: filenames,
@@ -1277,8 +1294,10 @@ class IngestUploadCmd(Command):
 
         filenames = my.kwargs.get("filenames")
 
-        upload_dir = Environment.get_upload_dir()
-        base_dir = upload_dir
+        base_dir = my.kwargs.get("base_dir")
+        if not base_dir:
+            upload_dir = Environment.get_upload_dir()
+            base_dir = upload_dir
 
         update_mode = my.kwargs.get("update_mode")
         ignore_ext = my.kwargs.get("ignore_ext")
@@ -1286,7 +1305,16 @@ class IngestUploadCmd(Command):
         if not column:
             column = "name"
 
-        search_type = my.kwargs.get("search_type")
+
+        search_key = my.kwargs.get("search_key")
+        if search_key:
+            my.sobject = Search.get_by_search_key(search_key)
+            search_type = my.sobject.get_search_key()
+        else:
+            search_type = my.kwargs.get("search_type")
+            my.sobject = None
+
+
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
         if not relative_dir:
@@ -1344,7 +1372,35 @@ class IngestUploadCmd(Command):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
-            if update_mode in ["true", "True"]:
+
+            if filename.endswith(".zip"):
+                from pyasm.common import ZipUtil
+
+                unzip_dir = "/tmp/xxx"
+                if not os.path.exists(unzip_dir):
+                    os.makedirs(unzip_dir)
+
+                zip_path = "%s/%s" % (base_dir, filename)
+                ZipUtil.extract(zip_path, base_dir=unzip_dir)
+
+                paths = ZipUtil.get_file_paths(zip_path)
+                print "paths: ", paths
+
+
+                new_kwargs = my.kwargs.copy()
+                new_kwargs['filenames'] = paths
+                new_kwargs['base_dir'] = unzip_dir
+                ingest = IngestUploadCmd(**new_kwargs)
+                ingest.execute()
+
+                continue
+
+
+
+            if my.sobject:
+                sobject = my.sobject
+
+            elif update_mode in ["true", True]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 search.add_filter(column, filename)
@@ -1375,7 +1431,8 @@ class IngestUploadCmd(Command):
             else:
                 sobject = None 
 
-            # Create a new file
+
+            # Create a new entry
             if not sobject:
                 sobject = SearchType.create(search_type)
 
@@ -1384,9 +1441,25 @@ class IngestUploadCmd(Command):
                 else:
                     name = filename
 
+                # if the name contains a path, the only take basename
+                name = os.path.basename(name)
+
                 sobject.set_value(column, name)
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
+
+
+            # extract keywords from filename
+            file_keywords = my.get_keywords_from_path(filename)
+            file_keywords = " ".join(file_keywords)
+
+            if SearchType.column_exists(search_type, "keywords"):
+                if keywords:
+                    file_keywords = "%s %s " % (keywords, file_keywords)
+
+                if file_keywords:
+                    sobject.set_value("keywords", file_keywords)
+
 
 
 
@@ -1399,6 +1472,8 @@ class IngestUploadCmd(Command):
             else:
                 file_path = "%s/%s" % (base_dir, filename)
 
+
+            """
             # TEST: convert on upload
             try:
                 convert = my.kwargs.get("convert")
@@ -1408,6 +1483,7 @@ class IngestUploadCmd(Command):
                     cmd.execute()
             except Exception, e:
                 print "WARNING: ", e
+            """
 
 
             if not os.path.exists(file_path):
@@ -1454,15 +1530,13 @@ class IngestUploadCmd(Command):
                 if SearchType.column_exists(search_type, key):
                     if value:
                         sobject.set_value(key, value)
-            """
-            if SearchType.column_exists(search_type, "keywords"):
-                if keywords:
-                    sobject.set_value("keywords", keywords)
 
-            """
+
+
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
                     sobject.set_value(key, value)
+
 
             """
             if category:
@@ -1488,7 +1562,7 @@ class IngestUploadCmd(Command):
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (process, filename.lower())
+                context = "%s/%s" % (process, filename)
             
             if update_mode == "sequence":
 
@@ -1517,7 +1591,14 @@ class IngestUploadCmd(Command):
                 file_path = "%s/%s" % (base_dir, filename)
                 server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
             else: 
-                server.simple_checkin(search_key, context, filename, mode='uploaded')
+                if my.kwargs.get("base_dir"):
+                    from pyasm.checkin import FileCheckin
+                    checkin = FileCheckin(sobject, file_path, context=context)
+                    checkin.execute()
+                else:
+                    server.simple_checkin(search_key, context, filename, mode='uploaded')
+
+
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 
@@ -1528,6 +1609,11 @@ class IngestUploadCmd(Command):
 
             server.log_message(key, msg, status="in progress")
 
+
+
+
+
+
         msg = {
             'progress': '100',
             'description': 'Check-ins complete'
@@ -1536,6 +1622,61 @@ class IngestUploadCmd(Command):
 
         my.info = non_seq_filenames
         return non_seq_filenames
+
+
+    def get_keywords_from_path(cls, rel_path):
+
+        # delimiters
+        P_delimiters = re.compile("[- _\.]")
+        # special characters
+        P_special_chars = re.compile("[\[\]{}\(\)\,]")
+        # camel case
+        P_camel_case = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+
+
+        #parts = rel_path.split("/")
+        parts =  re.split(r'/|\\', rel_path)
+        keywords = set()
+
+        for item in parts:
+            item = P_camel_case.sub(r'_\1', item)
+            parts2 = re.split(P_delimiters, item)
+            for item2 in parts2:
+                if not item2:
+                    continue
+
+                item2 = re.sub(P_special_chars, "", item2)
+
+                # skip 1 letter keywords
+                if len(item2) == 1:
+                    continue
+
+                try:
+                    int(item2)
+                    continue
+                except:
+                    pass
+
+
+                #print "item: ", item2
+                item2 = item2.lower()
+
+                keywords.add(item2)
+
+        keywords_list = list(keywords)
+        keywords_list.sort()
+        return keywords_list
+
+    get_keywords_from_path = classmethod(get_keywords_from_path)
+
+
+
+
+
+
+
+
+
 
     def natural_sort(my,l):
         '''

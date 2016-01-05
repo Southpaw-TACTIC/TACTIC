@@ -98,8 +98,9 @@ class Translation(SObject):
             else:
                 return msgstr
 
-        if language != 'en':
-            return "__%s__" % msg
+        # DEBUG
+        #if language != 'en':
+        #    return "__%s__" % msg
 
         return msg
 

@@ -4937,8 +4937,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         # initialize the translation module
+        from pyasm.biz import ProdSetting
         from pyasm.biz import Translation
-        Translation.install()
+        language = ProdSetting.get_value_by_key("language")
+        Translation.install(language)
 
         # NOTE: this is deprecated.  The state is in the ticket passed
         # in, so restoration of transaction state is not really necessary

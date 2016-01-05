@@ -837,8 +837,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_style("height: %s" % height)
 
             # Always adding a scroll bar, but using margin-right to hide it
-            scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
-            scroll.add_style("overflow-y: scroll")
+            #scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
+            #scroll.add_style("overflow-y: scroll")
+            scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")  
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height

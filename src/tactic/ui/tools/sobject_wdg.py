@@ -58,11 +58,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
             code = my.parent.get_value("code", no_exception=True)
             name = my.parent.get_value("name", no_exception=True)
             desc = my.parent.get_value("description", no_exception=True)
+            status = my.parent.get_value("status", no_exception=True)
             search_type_obj = my.parent.get_search_type_obj()
         else:
             code = my.sobject.get_value("code", no_exception=True)
             name = my.sobject.get_value("name", no_exception=True)
             desc = my.sobject.get_value("description", no_exception=True)
+            status = my.sobject.get_value("status", no_exception=True)
             search_type_obj = my.sobject.get_search_type_obj()
 
 
@@ -90,6 +92,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         stype_title = search_type_obj.get_value("title")
         if stype_title:
+            stype_title = _(stype_title)
             title.add("%s: " % stype_title)
 
         if name:
@@ -108,6 +111,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
             desc_div.add_color("color", "color", 30)
             desc_div.add_style("font-size: 1.2em")
             div.add(desc_div)
+
+
+        if status:
+            status_div = DivWdg()
+            div.add(status_div)
+            status_div.add(status)
+            status_div.add_style("padding: 3px 10px")
+            status_div.add_style("margin: 8px 0px 3px 0px")
+            status_div.add_style("border-radius: 5px")
+
+            from pyasm.biz import Task
+            color = Task.get_default_color(status)
+            if not color:
+                color = "#DDD"
+            status_div.add_style("background: %s" % color)
+            status_div.add_style("display: inline-block")
+
 
 
         return div
@@ -193,6 +213,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             thumb.set_sobject(my.sobject)
             search_key = my.sobject.get_search_key()
+
 
         gallery_div = DivWdg()
         div.add( gallery_div )
@@ -327,10 +348,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
         thumb = ThumbWdg2()
         thumb_table.add(thumb)
         thumb_table.add_style("width: 125px")
+        thumb_table.add_style("height: 125px")
         thumb_table.add_style("padding: 5px")
         thumb_table.add_style("margin-left: 20px")
         thumb_table.add_style("display: inline-block")
         thumb_table.add_style("vertical-align: top")
+        thumb_table.add_style("overflow-y: hidden")
         # use a larger version for clearer display
         #thumb.set_icon_type('web')
 
@@ -508,6 +531,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
             tabs = tabs.split(",")
         else:
             tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
+
+        if "info" not in tabs:
+            tabs.insert(0, "info")
 
         if my.sobject.get_value("pipeline_code", no_exception=True):
             tabs.append("pipeline")

@@ -2101,9 +2101,17 @@ class ThumbWdg2(BaseRefreshWdg):
                 img_inner.add_style("width: %s" % width)
 
         if path and path.startswith("/context"):
-            img.add_style("padding: 15% 15%")
-            img.add_style("width: 100%")
+            #img.add_style("padding: 15% 15%")
+            img.add_style("width: auto")
+            img.add_style("height: 70%")
+            img.add_style("margin: 10%")
+
+            img = DivWdg(img)
             img.add_style("height: auto")
+            #img.add_style("border: solid 1px blue")
+            img.add_style("margin: auto")
+
+
 
             #div.add_style("height: 100%")
             div.add_style("text-align: center")

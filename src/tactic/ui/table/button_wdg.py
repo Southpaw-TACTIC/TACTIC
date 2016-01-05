@@ -390,7 +390,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         display.add_style("height: 18px")
         display.add_style("min-width: 21px")
         display.add_style("overflow: hidden")
-        display.add_style("margin-top: 2px")
+        display.add_style("margin-top: 0px")
 
 
         expression = my.kwargs.get('expression')
