@@ -36,7 +36,7 @@ from base_table_layout_wdg import BaseTableLayoutWdg
 
 
 class FastTableLayoutWdg(BaseTableLayoutWdg):
-    
+    SCROLLBAR_WIDTH = 17
     ARGS_KEYS = {
 
         "mode": {
@@ -836,8 +836,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if height:
                 scroll.add_style("height: %s" % height)
 
-            scroll.add_style("overflow-y: auto")
-            scroll.add_style("overflow-x: hidden")
+            # Always adding a scroll bar, but using margin-right to hide it
+            scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
+            scroll.add_style("overflow-y: scroll")
+            scroll.add_style("overflow-x: hidden")  
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
