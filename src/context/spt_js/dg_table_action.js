@@ -135,7 +135,6 @@ spt.dg_table_action.get_popup_wdg2 = function( evt, bvr )
 spt.dg_table_action.csv_export = function( evt, bvr )
 {
 
-    var project = spt.Environment.get().get_project();
     var my_search_type = bvr.search_type;
     var my_is_export_all = bvr.is_export_all;
     var filename = my_search_type.replace(/[\/\?\=]/g,"_") + "_" + bvr.view + ".csv";
@@ -197,8 +196,11 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     param_dict['dynamic_file'] = "true";
     param_dict['widget'] = class_name;
     param_dict['filepath'] = csv_file_name;
-    var url = spt.Environment.get_widget_server_url(project, param_dict);
+
+    var url = spt.Environment.get().get_widget_server_url(param_dict);
+    
     document.location = url;
+
 }
 
 

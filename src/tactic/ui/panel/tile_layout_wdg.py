@@ -1709,39 +1709,91 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 }
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
+    
+    var row = bvr.src_el.getParent(".spt_table_row");
+
+    var checkbox = row.getElement(".spt_tile_checkbox");
+    var bg = row.getElement(".spt_tile_bg");
+    checkbox.checked = true;
+    spt.table.select_row(row);
+    bg.setStyle("opacity", "0.7");
 
     var dst_el = spt.get_event_target(evt);
     var dst_top = dst_el.hasClass("spt_tile_top") ? dst_el : dst_el.getParent(".spt_tile_top");
+    
+    var layout = bvr.src_el.getParent(".spt_layout");
+    var src_top = bvr.src_el.getParent(".spt_tile_top");
+    var has_inserted = false;
 
     if (dst_top) {
         if( bvr._drag_copy_el ) {
             spt.behavior.destroy_element(bvr._drag_copy_el);
         }
-
-        // add to the collection
+        var selected_tiles = spt.table.get_selected_rows();
+        
         var parent_key = dst_top.getAttribute("spt_search_key");
         var server = TacticServerStub.get();
         var parent = server.get_by_search_key(parent_key);
-        if (parent._is_collection == true) {
+        var parent_code = dst_top.getAttribute("spt_search_code");
 
-            var layout = bvr.src_el.getParent(".spt_layout");
-            var collection_type = layout.getAttribute("spt_collection_type");
-            var src_top = bvr.src_el.getParent(".spt_tile_top");
-            var src_code = src_top.getAttribute("spt_search_code");
-            var parent_code = dst_top.getAttribute("spt_search_code");
+        var collection_type = layout.getAttribute("spt_collection_type");
+
+        if (parent._is_collection == true) {
             
-            if (parent_code != src_code){
-                var data = {
-                    parent_code: parent_code,
-                    search_code: src_code
-                };
-                server.insert(collection_type, data);
-                spt.notify.show_message("Added to Collection");
-                if (!dst_top.hasClass("spt_collection_item")){
-                    spt.table.refresh_rows([dst_top], null, null);
-                }
+            // Regular single drag and drop
+            if (selected_tiles.length == 1) {
+                var src_code = src_top.getAttribute("spt_search_code");
                 
+                if (parent_code != src_code){
+                    var data = {
+                        parent_code: parent_code,
+                        search_code: src_code
+                    };
+                    try { 
+                    server.insert(collection_type, data);
+                    has_inserted = true;
+                    } catch(e) {
+                    log.debug("Failed to add");
+                    }
+                }
             }
+
+            // Multiple selections drag and drop
+            else {
+
+                for (i=0; i < selected_tiles.length; i++) {
+
+                    var src_code = selected_tiles[i].getAttribute("spt_search_code");
+
+                    if (parent_code != src_code){
+                        
+                        var data = {
+                            parent_code: parent_code,
+                            search_code: src_code
+                        };
+                        try { 
+                        server.insert(collection_type, data);
+                        has_inserted = true;
+                        } catch(e) {
+                        log.debug("Failed to add");
+                        }
+                        
+                    }
+                }  
+            }
+            if (has_inserted) {
+                spt.notify.show_message("Added to Collection");
+            }
+            else {
+                spt.notify.show_message("The Asset is already in the Collection")
+            }
+            if (!dst_top.hasClass("spt_collection_item")){
+                spt.table.refresh_rows([dst_top], null, null);
+            } 
+        }
+
+        else {
+            spt.notify.show_message("The destination is not a Collection")
         }
 
     }
@@ -1756,9 +1808,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             }
         }
     }
-
-    var tile_top = bvr.src_el.getParent(".spt_tile_top");
-    spt.table.refresh_rows([tile_top], null, null);
+    
+    spt.table.refresh_rows([src_top], null, null);
 }
 
         ''' } )
