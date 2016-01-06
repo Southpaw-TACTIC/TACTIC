@@ -1061,7 +1061,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         column_option_section.add("Column options - select <div class='glyphicon glyphicon-cog'></div> to edit column definition.")
          
         csv_column_data = my.csv_column_data
-        print csv_column_data
+        
         # Build the column selection table
         for j, cell in enumerate(row):
             # skip extra empty title
@@ -1463,7 +1463,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         import_button.add_behavior({
             'type':'click_up', 
             'top_id':'csv_import_main',
-            'cbjs_action':'''
+            'cbjs_action': r'''
             var src_el = bvr.src_el;
 
             var project = spt.Environment.get().get_project();
@@ -1478,15 +1478,8 @@ class PreviewDataWdg(BaseRefreshWdg):
             var response_div = src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
             var csv_control = src_el.getParent('.spt_panel').getElement('.spt_csv_sample')
             
-            var run_cmd = function (start_index) {
-                spt.app_busy.show("Importing Data");
-         
-                server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
+            var run_cmd;
 
-                // TODO... why is there a set timeout here?
-                setTimeout(function() {spt.hide(csv_control)}, 500);
-            }
- 
             var on_complete = function(response_div) {
                 spt.app_busy.hide();
                 
@@ -1506,6 +1499,8 @@ class PreviewDataWdg(BaseRefreshWdg):
              * If a single commit fails, user is prompted to skip that 
              * entry or abort entire import. */
             var on_error = function(e) {
+                var err_message = spt.exception.handler(e);
+
                 spt.app_busy.hide();
                 
                 // This function is executed when Command fails or user
@@ -1515,29 +1510,38 @@ class PreviewDataWdg(BaseRefreshWdg):
                     err_message = err_message.replace(/\\n/g,'<br/>');
                     response_div.innerHTML = 'Error: ' + err_message;
                     response_div.setStyle("display", "");
-                    setTimeout(function() {spt.show(csv_control)}, 500);
+                    spt.show(csv_control);
                 }
 
-                var err_message = spt.exception.handler(e);
-                //TODO err_message should be dictionary...
-                
-                if err_message.startsWith("Error creating new entry for row") {
-                    message = "Upload failed with the following message: " + spt.exception.handler(err) + ". Try again?";
-                    fail_index = 1;
+                if (err_message.startsWith("Error creating new entry for row [")) {
+                    var message_parts = err_message.match("^Error creating new entry for row \\[(.*)\\]:.*")
+                    new_start_index = parseInt(message_parts[1]) + 1;
                     ok_fn = run_cmd;
                     ok_fn_args = {}
-                    cancel_fn = abort();
-                    options = {ok_args: [fail_index], okText: "Skip"}; 
-                    spt.confirm(message, ok_fn, cancel_fn, options);
+                    cancel_fn = abort;
+                    options = {ok_args: [new_start_index], okText: "Skip this entry", cancelText: "Cancel entire import"}; 
+                    spt.confirm(err_message, ok_fn, cancel_fn, options);
                     return;
-                } else {
-                    spt.error(err_message);
-                    abort();
-                }
+                } 
+                
+                spt.error(err_message);
+                abort();
             }
+            
+            var run_cmd = function (start_index) {
+                if (start_index) {
+                    values['start_index'] = start_index; 
+                }
+                spt.app_busy.show("Importing Data");
+                server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
+                spt.hide(csv_control);
+            }
+
+            run_cmd();
 
             '''
         })
+        
         import_button.add_style("float: left")
         div.add( import_button )
         div.add(HtmlElement.br(clear='all'))

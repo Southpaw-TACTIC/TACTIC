@@ -191,6 +191,9 @@ class CsvImportCmd(Command):
         
         # create entries or update values
         for row_count, row in enumerate(csv_data):
+            if my.start_index and row_count < my.start_index:
+                continue
+
             sobject = None
             # if id_col doesn't exist
             is_new_entry = False
