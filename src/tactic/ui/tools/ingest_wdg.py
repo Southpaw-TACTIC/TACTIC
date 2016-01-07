@@ -1348,7 +1348,7 @@ class IngestUploadCmd(Command):
         """
 
         if not SearchType.column_exists(search_type, column):
-            raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "%s" column for this sType.' % column)
+            raise TacticException('The Ingestion puts the file name into the "%s" column which is the minimal requirement. Please first create a "%s" column for this sType.' % (column, column))
 
         input_prefix = update_data.get('input_prefix')
         non_seq_filenames = []
