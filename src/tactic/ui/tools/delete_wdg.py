@@ -1118,6 +1118,9 @@ class DeleteProjectCmd(DeleteCmd):
         project.delete(triggers=False)
 
       
+        schema = Schema.get_by_code(project_code)
+        if schema:
+            schema.delete()
 
         return
 
