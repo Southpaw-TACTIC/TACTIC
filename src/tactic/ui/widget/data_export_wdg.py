@@ -25,6 +25,7 @@ from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenW
 from pyasm.common import Common, Environment, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.container import DialogWdg
 
 from misc_input_wdg import SearchTypeSelectWdg
 from upload_wdg import SimpleUploadWdg
@@ -99,13 +100,13 @@ class CsvExportWdg(BaseRefreshWdg):
         return True
 
     def get_display(my): 
-
+      
         top = my.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("padding: 10px")
         top.add_style("min-width: 400px")
-
+     
         from tactic.ui.app import HelpButtonWdg
         help_wdg = HelpButtonWdg(alias="exporting-csv-data")
         top.add(help_wdg)
@@ -1171,19 +1172,11 @@ class PreviewDataWdg(BaseRefreshWdg):
                         bvr.src_el.setStyle("opacity", "0.0");
                     '''
                 } )
-                column_option_div.add_behavior( {
-                    'type': "click",
-                    'id': str(j),
-                    'cbjs_action': '''
-                    var values = spt.api.Utility.get_input_values('csv_import_main');
-                    values['selected_column_option_id'] = bvr.id; 
-                    spt.panel.refresh('preview_data', values );
-                    '''
-                } )
                 
-                if my.selected_column_option_id == j: 
+                if True:
+                #if my.selected_column_option_id == j: 
                     options_form = DivWdg(id="column_options_form")
-                    column_option_section.add(options_form) 
+                    #column_option_section.add(options_form) 
                     options_form.add_style("margin-top", "10px")
                     options_form.add_class("spt_form")
                     
@@ -1195,7 +1188,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                     save = ActionButtonWdg(title="Save")
                     save.add_style("display", "inline-block")
                     save.add_style("padding", "5px")
-                    save.add_style("float", "right")
+                    #save.add_style("float", "right")
                     options_form.add(save)
                     save.add_behavior( {
                         'type': 'click_up',
@@ -1228,6 +1221,12 @@ class PreviewDataWdg(BaseRefreshWdg):
                             spt.panel.refresh('preview_data', values );
                         '''
                     } )
+                
+                    dialog = DialogWdg()
+                    dialog.add(options_form, name="content")
+                    dialog.set_as_activator(column_option_div)
+                    div.add(dialog)  
+                
             else:
                 column_option_div.add_style("display", "none")
  
@@ -1241,7 +1240,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                 process.set_value(process_value)
                 
                 # Option form for new note column
-                if my.selected_column_option_id == j:
+                if True:
+                #if my.selected_column_option_id == j:
                     note_process_group = DivWdg()
                     options_form_inputs.add(note_process_group)
                     note_process_group.add_class("form-group")
@@ -1317,7 +1317,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type.set_value(processed_type)
       
                 # Option form for new column
-                if my.selected_column_option_id == j:
+                if True:
+                #if my.selected_column_option_id == j:
                     column_name_group = DivWdg()
                     options_form_inputs.add(column_name_group)
                     column_name_group.add_class("form-group")
@@ -1517,7 +1518,6 @@ class PreviewDataWdg(BaseRefreshWdg):
                     var message_parts = err_message.match("^Error creating new entry for row \\[(.*)\\]:.*")
                     new_start_index = parseInt(message_parts[1]) + 1;
                     ok_fn = run_cmd;
-                    ok_fn_args = {}
                     cancel_fn = abort;
                     options = {ok_args: [new_start_index], okText: "Skip this entry", cancelText: "Cancel entire import"}; 
                     spt.confirm(err_message, ok_fn, cancel_fn, options);
