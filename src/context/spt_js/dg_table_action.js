@@ -202,6 +202,10 @@ spt.dg_table_action.csv_export = function( evt, bvr )
 
     if (site != "default")
     {
+        // If site != default, the project is access from Portal.
+        // Split the csv download URL, and insert site at url[4]. 
+        // The final url should look something like this: 
+        // http://192.168.2.234/tactic/hello11/default/WidgetServer/...
         url = url.split('/')
         url.splice(4, 0, site);
         url = url.join('/');
