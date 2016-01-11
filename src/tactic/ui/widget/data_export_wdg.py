@@ -896,7 +896,6 @@ class PreviewDataWdg(BaseRefreshWdg):
             my.labels = my.labels.split("|")
  
         my.csv_column_data = {}
-        my.selected_column_option_id = None
 
 
 
@@ -1042,12 +1041,6 @@ class PreviewDataWdg(BaseRefreshWdg):
                 label = Common.get_display_title(column)
                 labels.append(label)
 
-       
-        # Add an implicit note column
-        columns.append("(note)")
-        labels.append("Note")
-
-
         row = csv_data[data_row]
         my.num_columns = len(row)
         hidden = HiddenWdg("num_columns", my.num_columns)
@@ -1055,11 +1048,11 @@ class PreviewDataWdg(BaseRefreshWdg):
  
         skipped_columns = []
 
-        # Column option section - form based on note or new column selection
-        column_option_section = DivWdg()
-        column_option_section.add_class("spt_column_option_section")
-        column_option_section.add_style("padding: 10px")
-        column_option_section.add("Column options - select <div class='glyphicon glyphicon-cog'></div> to edit column definition.")
+        column_option_message = DivWdg()
+        div.add(column_option_message)
+        column_option_message.add_class("spt_column_option_message")
+        column_option_message.add_style("padding: 10px")
+        column_option_message.add("Select <div class='glyphicon glyphicon-cog'></div> to edit column definition.")
          
         csv_column_data = my.csv_column_data
         
@@ -1111,17 +1104,22 @@ class PreviewDataWdg(BaseRefreshWdg):
             # this is an optimal max width
             td.add_style('max-width: 600px')
 
-            column_select.add_behavior({'type': "change",
-                'cbjs_action': '''if (bvr.src_el.value !='') {
-                    set_display_off('new_column_div_%s');
-                } else {
-                    set_display_on('new_column_div_%s')
-                };
-
+            # On change, refresh the panel.
+            column_select.add_behavior( {
+                'type': "change",
+                'id': str(j),
+                'cbjs_action': '''
                 var values = spt.api.Utility.get_input_values('csv_import_main');
-                spt.panel.refresh('preview_data', values );
+                
+                //If user selected "**Widget" option, then default to Note.
+                column_select_key = "column_" + bvr.id; 
+                if (values[column_select_key] == "widget") {
+                    values[column_select_key] = "(note)";
+                } 
 
-            '''% (j,j)})
+                spt.panel.refresh('preview_data', values );
+            '''
+            } )
 
             # Get new column or note process options
             column_data = csv_column_data.get(j)
@@ -1148,9 +1146,18 @@ class PreviewDataWdg(BaseRefreshWdg):
             
             column_select.add_empty_option("%s (New)" % processed_title)
             column_select.set_persist_on_submit()
-            column_select.set_option("values", columns)
-            column_select.set_option("labels", labels)
+            
+            # Set options and labels
+            column_options = list(columns)
+            column_options.append("widget")
+            column_options.append("(note)")
+            label_options = list(labels)
+            label_options.append("**Widget")
+            label_options.append("Note")
 
+            column_select.set_option("values", column_options)
+            column_select.set_option("labels", label_options)
+ 
             display = column_select.get_buffer_display()
             td = table.add_cell( display )
             td.add_style("padding: 3px")
@@ -1159,194 +1166,177 @@ class PreviewDataWdg(BaseRefreshWdg):
             column_option_div = IconWdg(icon="BS_COG")
             td = table.add_cell( column_option_div )
             if sel_val == '(note)' or sel_val == '':
-                column_option_div.add_style("opacity", "0.0")
-                column_option_div.add_behavior( {
-                    'type': 'mouseenter',
+                options_form = DivWdg(id="column_options_form")
+                options_form.add_style("width", "250px")
+                options_form.add_style("margin-top", "10px")
+                options_form.add_class("spt_form")
+                
+                # Inputs in form depend on note or new column
+                options_form_inputs = DivWdg()
+                options_form.add(options_form_inputs)
+                options_form_inputs.add_style("display", "inline-block")
+                
+                save = ActionButtonWdg(title="Save")
+                save.add_style("display", "inline-block")
+                save.add_style("padding", "5px")
+                options_form.add(save)
+                save.add_behavior( {
+                    'type': 'click_up',
+                    'id': str(j),
                     'cbjs_action': '''
-                        bvr.src_el.setStyle("opacity", "1.0");
+                        // Transfer over inputted values for column options
+                        var values = spt.api.Utility.get_input_values('csv_import_main');
+
+                        new_name_key = 'new_column_name_' + bvr.id;
+                        name_key = 'new_column_' + bvr.id;
+                        if (values[new_name_key]) {
+                            values[name_key] = values[new_name_key]; 
+                        }
+                        
+                        new_type_key  = 'column_type_' + bvr.id;
+                        type_key = 'column_type_' + bvr.id;  
+                        if (values[new_type_key]) {
+                            values[type_key] = values[new_type_key]; 
+                        }
+
+                        new_note_process_key = 'new_note_process_' + bvr.id;
+                        note_process_key = 'note_process_' + bvr.id;
+                        note_process = values[new_note_process_key]
+                        if (values[new_note_process_key] == 'custom') {
+                            custom_key = 'new_note_process_custom_' + bvr.id;
+                            note_process = values[custom_key];
+                        } else {
+                            note_process = values[new_note_process_key];
+                        }
+                        
+                        if (note_process) {
+                            values[note_process_key] = note_process;
+                        }
+   
+                        spt.panel.refresh('preview_data', values );
                     '''
                 } )
-                column_option_div.add_behavior( {
-                    'type': 'mouseleave',
-                    'cbjs_action': '''
-                        bvr.src_el.setStyle("opacity", "0.0");
-                    '''
-                } )
                 
-                if True:
-                #if my.selected_column_option_id == j: 
-                    options_form = DivWdg(id="column_options_form")
-                    #column_option_section.add(options_form) 
-                    options_form.add_style("margin-top", "10px")
-                    options_form.add_class("spt_form")
-                    
-                    # Inputs in form depend on note or new column
-                    options_form_inputs = DivWdg()
-                    options_form.add(options_form_inputs)
-                    options_form_inputs.add_style("display", "inline-block")
-                    # Save script should update HiddenWdg form values and refresh
-                    save = ActionButtonWdg(title="Save")
-                    save.add_style("display", "inline-block")
-                    save.add_style("padding", "5px")
-                    #save.add_style("float", "right")
-                    options_form.add(save)
-                    save.add_behavior( {
-                        'type': 'click_up',
-                        'id': str(j),
-                        'cbjs_action': '''
-                            var values = spt.api.Utility.get_input_values('csv_import_main');
-                            var settings = spt.api.Utility.get_input_values('column_options_form');
-                            
-                            name_key = 'new_column_' + bvr.id;
-                            if (settings['column_option_name']) {
-                                values[name_key] = settings['column_option_name']; 
-                            }
-
-                            type_key  = 'new_column_type_' + bvr.id;
-                            if (settings['column_option_type']) {
-                                values[type_key] = settings['column_option_type']; 
-                            }
-
-                            note_process_key = 'new_note_process_' + bvr.id;
-                            note_process = settings['new_note_process'];
-                            if (note_process == 'custom') {
-                                note_process = settings['new_note_process_custom'];
-                            }
-                            
-                            if (note_process) {
-                                values[note_process_key] = note_process; 
-                            }
-
-                            values['selected_column_option_id'] = bvr.id; 
-                            spt.panel.refresh('preview_data', values );
-                        '''
-                    } )
-                
-                    dialog = DialogWdg()
-                    dialog.add(options_form, name="content")
-                    dialog.set_as_activator(column_option_div)
-                    div.add(dialog)  
-                
+                offset = {'x':20, 'y': 0}
+                dialog = DialogWdg(offset=offset)
+                dialog.add(options_form, name="content")
+                dialog.set_as_activator(column_option_div)
+                div.add(dialog)  
             else:
                 column_option_div.add_style("display", "none")
  
             if sel_val == '(note)':
                 # Context options for note column
-                process = HiddenWdg("new_note_process_%s" % j)
+                process = HiddenWdg("note_process_%s" % j)
                 column_option_div.add( process )
                 process.add_style("display", "none")
                 if not process_value:
                     process_value = "publish"
                 process.set_value(process_value)
-                
+
                 # Option form for new note column
-                if True:
-                #if my.selected_column_option_id == j:
-                    note_process_group = DivWdg()
-                    options_form_inputs.add(note_process_group)
-                    note_process_group.add_class("form-group")
-                    note_process_group.add_style("display", "inline-block")
-                    note_process_group.add_style("padding", "5px")
-                    
-                    note_process_group.add("<label>Note process</label>")
-                    
-                    note_process_input_group = DivWdg()
-                    note_process_group.add(note_process_input_group)
-                   
-                    # Choose process from pipeline (SelectWdg) or custom process (TextWdg)
-                    # Custom process is hidden by default
-                    process_pipeline_input = SelectWdg("new_note_process")
-                    note_process_input_group.add(process_pipeline_input)
-                    
-                    # Get processes from pipelines, and add 'publish' and 'custom' options
-                    from pyasm.biz import Pipeline
-                    search_type_obj = SearchType.get(my.search_type)
-                    base_type = search_type_obj.get_base_key()
-                    pipelines = Pipeline.get_by_search_type(base_type)
-                    all_processes = []
-                    for pipeline in pipelines:
-                        process_names = pipeline.get_process_names()
-                        all_processes.extend(process_names) 
-                    process_names = list(set(all_processes))
-                    
-                    process_names.append("publish")
-                    if process_value not in process_names:
-                        process_names.append(process_value)
-                    process_pipeline_input.set_option("values", process_names)
-                    process_pipeline_input.set_option("default", process_value)
-                    process_pipeline_input.append_option("Custom process", "custom")
-                    
-                    process_pipeline_input.add_style("display", "inline-block")
-                    process_pipeline_input.add_class("form-control")
-                    process_pipeline_input.add_style('border-color: #8DA832')
-                    process_pipeline_input.add_style("width", "150px")
-                    process_pipeline_input.add_behavior( {
-                        'type': 'change',
-                        'cbjs_action': '''
-                            // Toggle display of custom input
-                            var pipeline_input = bvr.src_el;
-                            var input_top = pipeline_input.getParent(".form-group");
-                            var custom_input = input_top.getElement(".spt_custom_process_input");
-                            var select_value = pipeline_input.value;
-                            if (select_value == 'custom') {
-                                custom_input.setStyle("display", "inline-block");
-                            } else {
-                                custom_input.setStyle("display", "none");
-                            }
-                        '''
-                    } )
+                note_process_group = DivWdg()
+                options_form_inputs.add(note_process_group)
+                note_process_group.add_class("form-group")
+                note_process_group.add_style("display", "inline-block")
+                note_process_group.add_style("padding", "5px")
+                
+                note_process_group.add("<label>Note process</label>")
+                
+                note_process_input_group = DivWdg()
+                note_process_group.add(note_process_input_group)
+               
+                # Choose process from pipeline (SelectWdg) or custom process (TextWdg)
+                # Custom process is hidden by default
+                process_pipeline_input = SelectWdg("new_note_process_%s" % j)
+                note_process_input_group.add(process_pipeline_input)
+                
+                # Get processes from pipelines, and add 'publish' and 'custom' options
+                from pyasm.biz import Pipeline
+                search_type_obj = SearchType.get(my.search_type)
+                base_type = search_type_obj.get_base_key()
+                pipelines = Pipeline.get_by_search_type(base_type)
+                all_processes = []
+                for pipeline in pipelines:
+                    process_names = pipeline.get_process_names()
+                    all_processes.extend(process_names) 
+                process_names = list(set(all_processes))
+                
+                process_names.append("publish")
+                if process_value not in process_names:
+                    process_names.append(process_value)
+                process_pipeline_input.set_option("values", process_names)
+                process_pipeline_input.set_option("default", process_value)
+                process_pipeline_input.append_option("Custom process", "custom")
+                
+                process_pipeline_input.add_style("display", "inline-block")
+                process_pipeline_input.add_class("form-control")
+                process_pipeline_input.add_style('border-color: #8DA832')
+                process_pipeline_input.add_style("width", "150px")
+                process_pipeline_input.add_behavior( {
+                    'type': 'change',
+                    'cbjs_action': '''
+                        // Toggle display of custom input
+                        var pipeline_input = bvr.src_el;
+                        var input_top = pipeline_input.getParent(".form-group");
+                        var custom_input = input_top.getElement(".spt_custom_process_input");
+                        var select_value = pipeline_input.value;
+                        if (select_value == 'custom') {
+                            custom_input.setStyle("display", "inline-block");
+                        } else {
+                            custom_input.setStyle("display", "none");
+                        }
+                    '''
+                } )
 
-                    process_text_input = TextWdg("new_note_process_custom")
-                    note_process_input_group.add(process_text_input)
-                    process_text_input.add_class("spt_custom_process_input")
-                    process_text_input.add_class("form-control")
-                    process_text_input.add_style("margin-left", "5px")
-                    process_text_input.add_style("display", "none")
-                    process_text_input.add_class("form-control")
-                    process_text_input.add_style('border-color: #8DA832')
-                    process_text_input.add_style("width", "150px")
-
+                process_text_input = TextWdg("new_note_process_custom_%s" % j)
+                note_process_input_group.add(process_text_input)
+                process_text_input.add_class("spt_custom_process_input")
+                process_text_input.add_class("form-control")
+                process_text_input.add_style("margin", "10px")
+                process_text_input.add_style("display", "none")
+                process_text_input.add_class("form-control")
+                process_text_input.add_style('border-color: #8DA832')
+                process_text_input.add_style("width", "150px")
             elif sel_val == '':
                 # Name and type options for new column
                 column_name = HiddenWdg("new_column_%s" % j)
                 column_option_div.add( column_name )
                 column_name.set_value(processed_title)
  
-                column_type = HiddenWdg("new_column_type_%s" % j)
+                column_type = HiddenWdg("column_type_%s" % j)
                 column_option_div.add( column_type )
                 column_type.set_value(processed_type)
-      
+                
                 # Option form for new column
-                if True:
-                #if my.selected_column_option_id == j:
-                    column_name_group = DivWdg()
-                    options_form_inputs.add(column_name_group)
-                    column_name_group.add_class("form-group")
-                    column_name_group.add_style("display", "inline-block")
-                    column_name_group.add_style("padding", "5px")
+                column_name_group = DivWdg()
+                options_form_inputs.add(column_name_group)
+                column_name_group.add_class("form-group")
+                column_name_group.add_style("display", "inline-block")
+                column_name_group.add_style("padding", "5px")
 
-                    column_name_group.add("<label>Column name</label>") 
-                    column_name_input = TextWdg("column_option_name")
-                    column_name_group.add(column_name_input)
-                    column_name_input.add_class("form-control")
-                    column_name_input.add_style('border-color: #8DA832')
-                    column_name_input.add_style("width", "150px")
-                    column_name_input.set_value(processed_title)
+                column_name_group.add("<label>Column name</label>") 
+                column_name_input = TextWdg("new_column_name_%s" % j)
+                column_name_group.add(column_name_input)
+                column_name_input.add_class("form-control")
+                column_name_input.add_style('border-color: #8DA832')
+                column_name_input.add_style("width", "150px")
+                column_name_input.set_value(processed_title)
 
-                    column_type_group = DivWdg()
-                    options_form_inputs.add(column_type_group)
-                    column_type_group.add_class("form-group")
-                    column_type_group.add_style("display", "inline-block")
-                    column_type_group.add_style("padding", "5px")
-                    
-                    column_type_group.add("<label>Column type</label>")
-                    column_type_input = SelectWdg("column_option_type")
-                    column_type_group.add( column_type_input )
-                    column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp")
-                    column_type_input.add_class("form-control")
-                    column_type_input.add_style('border-color: #8DA832')
-                    column_type_input.add_style("width", "150px")
-                    column_type_input.set_option("default", processed_type)
+                column_type_group = DivWdg()
+                options_form_inputs.add(column_type_group)
+                column_type_group.add_class("form-group")
+                column_type_group.add_style("display", "inline-block")
+                column_type_group.add_style("padding", "5px")
+                
+                column_type_group.add("<label>Column type</label>")
+                column_type_input = SelectWdg("column_type_%s" % j)
+                column_type_group.add( column_type_input )
+                column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp")
+                column_type_input.add_class("form-control")
+                column_type_input.add_style('border-color: #8DA832')
+                column_type_input.add_style("width", "150px")
+                column_type_input.set_option("default", processed_type)
 
         if skipped_columns:
             div.add(SpanWdg('WARNING: Some titles are empty or there are too many data cells. Column index [%s] '\
@@ -1356,8 +1346,6 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         div.add(table)
 
-        # Add the options form
-        div.add(column_option_section)
 
 
 
@@ -1395,25 +1383,22 @@ class PreviewDataWdg(BaseRefreshWdg):
             column = web.get_form_value("column_%s" % i)
             if column == "(note)":
                 # If new column is a note, get note process:
-                new_note_process = web.get_form_value("new_note_process_%s" % i)
-                csv_column_data[i] = {'name': '(note)', 'process': new_note_process}
-                columns.append('note')
+                note_process = web.get_form_value("note_process_%s" % i)
+                if not note_process:
+                    note_process = "publish"
+                csv_column_data[i] = {'name': '(note)', 'process': note_process}
+                columns.append('Note: %s' % note_process)
             elif column == "":
                 new_column_name = web.get_form_value("new_column_%s" % i)
-                new_column_type = web.get_form_value("new_column_type_%s" % i)
-                csv_column_data[i] = {'name': new_column_name, 'type': new_column_type}
+                if not new_column_name and my.has_title:
+                    new_column_name = csv_titles[i]
+                column_type = web.get_form_value("column_type_%s" % i)
+                csv_column_data[i] = {'name': new_column_name, 'type': column_type}
                 columns.append(new_column_name)
             else:
                 csv_column_data[i] = {'name': column}
                 columns.append(column)
         my.csv_column_data = csv_column_data
-
-        # Get the selected column option id
-        selected_column_option_id = web.get_form_value("selected_column_option_id")
-        try:
-            my.selected_column_option_id = int(selected_column_option_id)
-        except ValueError:
-            my.selected_column_option_id = None
 
         # Preview data and column selection 
         widget = DivWdg(id='preview_data')
@@ -1593,7 +1578,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 tr.add_color("background", "background3")
 
             for j, cell in enumerate(row):
-                column_type = web.get_form_value("new_column_type_%s" % j)
+                column_type = web.get_form_value("column_type_%s" % j)
                 td = table.add_cell(cell)
 
                 if column_type == 'timestamp' and not my._check_timestamp(cell):

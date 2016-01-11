@@ -106,11 +106,11 @@ class CsvImportCmd(Command):
             my.new_columns.append(new_column)
             
             # New column type if column==''
-            new_column_type = web.get_form_value("new_column_type_%s" % i)
+            new_column_type = web.get_form_value("column_type_%s" % i)
             my.new_column_types.append(new_column_type)
 
             # New note process if column==('note')
-            new_note_process = web.get_form_value("new_note_process_%s" % i)
+            new_note_process = web.get_form_value("note_process_%s" % i)
             my.note_processes.append(new_note_process)
 
         # check for required columns
