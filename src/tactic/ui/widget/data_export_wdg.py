@@ -18,7 +18,7 @@ import string
 import datetime
 
 from pyasm.biz import CsvParser, File, Project
-from pyasm.search import Search, SObjectFactory, SearchType, SearchKey, SObject
+from pyasm.search import Search, SObjectFactory, SearchType, SearchKey
 from pyasm.command import Command, FileUpload
 from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg 
 from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenWdg, WidgetConfigView, ProdIconButtonWdg, TextWdg, TextAreaWdg, IconWdg, ProgressWdg, HintWdg, SelectWdg
