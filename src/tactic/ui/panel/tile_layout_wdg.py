@@ -1723,6 +1723,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     
     var layout = bvr.src_el.getParent(".spt_layout");
     var src_top = bvr.src_el.getParent(".spt_tile_top");
+    var has_inserted = false;
 
     if (dst_top) {
         if( bvr._drag_copy_el ) {
@@ -1740,7 +1741,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         if (parent._is_collection == true) {
             
             // Regular single drag and drop
-            if (selected_tiles.length == 0) {
+            if (selected_tiles.length == 1) {
                 var src_code = src_top.getAttribute("spt_search_code");
                 
                 if (parent_code != src_code){
@@ -1748,7 +1749,12 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                         parent_code: parent_code,
                         search_code: src_code
                     };
+                    try { 
                     server.insert(collection_type, data);
+                    has_inserted = true;
+                    } catch(e) {
+                    log.debug("Failed to add");
+                    }
                 }
             }
 
@@ -1765,14 +1771,29 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                             parent_code: parent_code,
                             search_code: src_code
                         };
+                        try { 
                         server.insert(collection_type, data);
+                        has_inserted = true;
+                        } catch(e) {
+                        log.debug("Failed to add");
+                        }
+                        
                     }
                 }  
             }
-            spt.notify.show_message("Added to Collection");
+            if (has_inserted) {
+                spt.notify.show_message("Added to Collection");
+            }
+            else {
+                spt.notify.show_message("The Asset is already in the Collection")
+            }
             if (!dst_top.hasClass("spt_collection_item")){
                 spt.table.refresh_rows([dst_top], null, null);
             } 
+        }
+
+        else {
+            spt.notify.show_message("The destination is not a Collection")
         }
 
     }
@@ -1787,7 +1808,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         }
     }
     
-    spt.table.refresh_rows([src_top], null, {show_select: true});
+    spt.table.refresh_rows([src_top], null, null);
 }
 
         ''' } )
