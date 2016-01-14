@@ -389,8 +389,21 @@ class Transaction(Base):
     def update_change_timestamps(my, transaction_log):
 
         # commit all of the changes logs
-	# NOTE: this does not get executed on undo/redo
+	    # NOTE: this does not get executed on undo/redo
         timestamp = transaction_log.get_value("timestamp")
+
+        from pyasm.biz import PrefSetting
+        # get the local time since timestamp column is tz-naive
+        timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            timestamp = SPTDate.convert_to_local(timestamp)
+        else:
+            timestamp = SPTDate.convert_to_timezone(timestamp, timezone)
+
+        if timestamp and not isinstance(timestamp, basestring):
+            timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+
         code = transaction_log.get_value("code")
 
         from pyasm.biz import Project

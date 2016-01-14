@@ -18,14 +18,18 @@ import os
 import re
 import string
 import types
+import locale
+
+from dateutil import parser
 
 from event_container import *
 
 from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
-from pyasm.search import Search
+from pyasm.search import Search, SObject, SearchType
 from widget import Widget
 from web_container import WebContainer
-
+from pyasm.biz import PrefSetting
+from pyasm.common import SPTDate
 
 
 
@@ -851,7 +855,24 @@ class HtmlElement(Widget):
         } )
 
 
+    def get_timezone_value(cls, value):
+        '''given a datetime value, use the My Preferences time zone'''
+        timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+       
+        try:
+            encoding = locale.getlocale()[1]		
+            value = value.strftime("%b %d, %Y - %H:%M").decode(encoding)
+        except:
+            value = value.strftime("%b %d, %Y - %H:%M")
 
+        return value
+    
+    get_timezone_value = classmethod(get_timezone_value)
 
 
     def eval_update(cls, update):
@@ -913,9 +934,15 @@ class HtmlElement(Widget):
 
             if column:
                 value = sobject.get_value(column)
-                #print "column: ", column
-                #print "value: ", value
-                #print
+
+                data_type = SearchType.get_column_type(sobject.get_search_type(), column)
+                if data_type in ["timestamp","time"]: 
+                    # convert to user timezone
+                    if not SObject.is_day_column(column):
+                        # This date is assumed to be GMT
+                        date = parser.parse(value)
+                        value = cls.get_timezone_value(date)
+
 
             elif compare:
                 value = Search.eval(compare, sobject, single=True)
