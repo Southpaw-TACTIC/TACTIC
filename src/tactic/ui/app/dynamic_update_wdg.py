@@ -270,6 +270,21 @@ top.spt_update_interval_id = setInterval( function() {
                         spt.update.display(el);
                     }
                 }
+                else if (typeof(value) == "boolean") {
+                    if (value) {
+                        value = 'true';
+                    }
+                    else {
+                        value = 'false';
+                    }
+
+                    var old_value = el.innerHTML;
+                    if (old_value != value) {
+                        el.innerHTML = value;
+
+                        spt.update.display(el);
+                    }
+                }
                 else {
                     var old_value = el.innerHTML;
                     if (old_value != value) {
@@ -326,7 +341,6 @@ class DynamicUpdateCmd(Command):
         timestamp = SPTDate.convert_to_local(timestamp)
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
-
 
         updates = my.kwargs.get("updates")
         if isinstance(updates, basestring):
@@ -425,10 +439,11 @@ class DynamicUpdateCmd(Command):
                     if cmp_result == True:
                         continue
 
-                    # some randome value
+                    # some value to display
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
+
 
                 if value == None:
                     continue

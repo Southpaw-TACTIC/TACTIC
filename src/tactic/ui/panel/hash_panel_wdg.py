@@ -346,8 +346,11 @@ class HashPanelWdg(BaseRefreshWdg):
 
         use_index, use_admin, use_sidebar = cls._get_flags(xml, sobject, force_no_index, kwargs)
 
+        # add the admin bar
+        security = Environment.get_security()
+        is_admin = security.check_access("builtin", "view_site_admin", "allow")
 
-        if use_admin:
+        if is_admin and use_admin:
             # use admin
             from tactic.ui.app import PageNavContainerWdg
             top = PageNavContainerWdg( hash=hash, use_sidebar=use_sidebar )

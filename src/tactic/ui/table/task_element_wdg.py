@@ -602,7 +602,8 @@ class TaskElementWdg(BaseTableElementWdg):
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes(type=[
-                        "node",
+                        #"node",
+                        "manual",
                         "approval",
                         "hierarchy",
                         #"dependency",
@@ -1142,7 +1143,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
         if pipeline and show_filler_tasks in ["true", True]:
 
-            processes = pipeline.get_process_names(type=["node","approval","hierarchy","dependency"])
+            processes = pipeline.get_process_names(type=["node","manual","approval","hierarchy","dependency"])
 
             if my.filler_cache == None:
                 my.filler_cache = {}
@@ -1627,7 +1628,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
 
         if not related_sobjects:
-            return True
+            return {}
 
         # get the message status from each of these
         keys = []

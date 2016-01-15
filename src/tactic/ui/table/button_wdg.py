@@ -302,6 +302,9 @@ class ButtonElementWdg(BaseTableElementWdg):
         display = DivWdg()
         display.add_style("position: relative")
         display.add_class("spt_button_top")
+        display.add_style("width: 26px")
+        display.add_style("margin-left: auto")
+        display.add_style("margin-right: auto")
 
 
         BASE = '/context/themes2/default/'

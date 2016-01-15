@@ -120,6 +120,8 @@ class ZipUtil(object):
         
         zipOut.close()
 
+        return zip_path
+
     zip_dir2 = classmethod(zip_dir2)
 
 

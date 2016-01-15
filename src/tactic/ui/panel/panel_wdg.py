@@ -2721,6 +2721,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order": '11a',
             'category': 'Display'
         },
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '11b',
+            'category': 'Display'
+        },
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
             'category': 'Check-in',
@@ -3052,9 +3059,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         #if show_shelf not in [False, 'false']:
         #if True:
         if can_search:
+            search = my.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
+                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
             except SearchException, e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -3190,8 +3198,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         if not layout:
             layout = 'default'
 
+        search = my.kwargs.get("search")
+
         kwargs = {
             "table_id": table_id,
+            "search": search,
             "search_type": search_type,
             "order_by": order_by,
             "view": view,
@@ -3279,6 +3290,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
+            kwargs['show_border'] = my.kwargs.get("show_border")
+            kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
@@ -3299,6 +3312,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
+        elif layout == 'collection':
+            from collection_wdg import CardLayoutWdg
+            layout_table = CollectionWdg(**kwargs)
+
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)
@@ -3316,6 +3333,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = OldTableLayoutWdg(**kwargs)
         else:
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
+            kwargs['show_border'] = my.kwargs.get("show_border")
+            kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 

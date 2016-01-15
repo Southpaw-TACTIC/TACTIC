@@ -174,9 +174,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if info.get("count") == None:
             info["count"] = len(my.sobjects)
 
-        search_limit_mode = my.kwargs.get('search_limit_mode') 
-        if not search_limit_mode:
-            search_limit_mode = 'bottom'
+        show_search_limit = my.kwargs.get("show_search_limit")
+        if show_search_limit in ['false', False]:
+            search_limit_mode = None
+        else:
+            search_limit_mode = my.kwargs.get('search_limit_mode') 
+            if not search_limit_mode:
+                search_limit_mode = 'bottom'
+
+
 
         if search_limit_mode in ['top','both']:
             from tactic.ui.app import SearchLimitSimpleWdg
@@ -248,7 +254,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def add_layout_behaviors(my, layout_wdg):
 
 
-        my.tile_layout.add_layout_behaviors(layout_wdg)
+        #my.tile_layout.add_layout_behaviors(layout_wdg)
 
         """
         layout_wdg.add_relay_behavior( {
@@ -267,7 +273,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
-        """
+        
 
         main_bg1 = layout_wdg.get_color("background")
         main_bg2 = layout_wdg.get_color("background", 5)
@@ -297,6 +303,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             }
             ''' %(main_bg1, bg1)
         } )
+        """
 
 
 

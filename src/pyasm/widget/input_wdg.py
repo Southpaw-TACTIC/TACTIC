@@ -24,8 +24,8 @@ __all__ = [
 
 import os, shutil, string, types
 
-from pyasm.common import Common, Marshaller, Date, TacticException
-from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser
+from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
+from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
 from pyasm.web import *
 from pyasm.search import Search, SearchKey, SearchException
 from icon_wdg import IconButtonWdg, IconWdg
@@ -245,6 +245,20 @@ class BaseInputWdg(HtmlElement):
 
     def is_editable(my):
         return True
+
+    def get_timezone_value(my, value):
+        '''given a datetime value, try to convert to timezone specified in the widget.
+           If not specified, use the My Preferences time zone'''
+        timezone = my.get_option('timezone')
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+        
+        return value
 
     def check_persistent_values(my, cgi_values):
         web = WebContainer.get_web()
@@ -1340,10 +1354,12 @@ class SelectWdg(BaseInputWdg):
                 my.labels.extend(extra_values)
 
         # add empty option
-        if my.empty_option_flag or my.get_option("empty") not in ['','false']:
+        is_empty = my.get_option("empty") not in ['','false'] or my.get_option("empty_label")
+        if my.empty_option_flag or is_empty:
             my.values.insert(0, my.empty_option_value)
-            if my.get_option("empty"):
-                my.labels.insert(0, my.get_option("empty"))
+            # empty_label takes prescedence over empty (boolean)
+            if my.get_option("empty_label"):
+                my.labels.insert(0, my.get_option("empty_label"))
             else:
                 my.labels.insert(0, my.empty_option_label)
 

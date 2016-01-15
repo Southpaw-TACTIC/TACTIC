@@ -36,7 +36,7 @@ from base_table_layout_wdg import BaseTableLayoutWdg
 
 
 class FastTableLayoutWdg(BaseTableLayoutWdg):
-    
+    SCROLLBAR_WIDTH = 17
     ARGS_KEYS = {
 
         "mode": {
@@ -146,6 +146,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false|none',
             'order': '08'
         },
+
         
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
@@ -183,7 +184,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         },
 
 
-
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '14',
+            'category': 'Display'
+        },
+ 
+ 
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
@@ -521,49 +530,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # Make this into a function.  Former code is kept here for now.
         my._process_search_args()
-        """
-        # this is different name from the old table selected_search_keys
-        search_keys = my.kwargs.get("search_keys")
-      
-        # if a search key has been explicitly set without expression, use that
-        expression = my.kwargs.get('expression') 
-        matched_search_key = False
-        if my.search_key:
-            base_search_type = SearchKey.extract_base_search_type(my.search_key)
-        else:
-            base_search_type = ''
-
-        if my.search_type == base_search_type:
-            matched_search_key = True
-        if search_keys and search_keys != '[]':
-            if isinstance(search_keys, basestring):
-                if search_keys == "__NONE__":
-                    search_keys = []
-                else:
-                    search_keys = search_keys.split(",")
-
-            # keep the order for precise redrawing/ refresh_rows purpose
-            if not search_keys:
-
-                my.sobjects = []
-            else:
-                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-
-            my.items_found = len(my.sobjects)
-            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
-        elif my.search_key and matched_search_key and not expression:
-            sobject = Search.get_by_search_key(my.search_key)
-            if sobject: 
-                my.sobjects = [sobject]
-                my.items_found = len(my.sobjects)
-
-
-        elif my.kwargs.get("do_search") != "false":
-            my.handle_search()
-        """
-
-
-
 
         # set some grouping parameters
         my.process_groups()
@@ -601,8 +567,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("border", -10))
+        inner.add_style("border-width: 0px")
+        inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -870,8 +836,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if height:
                 scroll.add_style("height: %s" % height)
 
-            scroll.add_style("overflow-y: auto")
-            scroll.add_style("overflow-x: hidden")
+            # Always adding a scroll bar, but using margin-right to hide it
+            scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
+            scroll.add_style("overflow-y: scroll")
+            scroll.add_style("overflow-x: hidden")  
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -1723,20 +1691,36 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # set styles at the table level to be relayed down
         border_color = table.get_color("table_border", default="border")
-        table.add_smart_styles("spt_table_select", {
-            "border": "solid 1px %s" % border_color,
+
+
+                
+        select_styles = {
             "width": "30px",
             "min-width": "30px"
-        } )
+        }
 
 
-        table.add_smart_styles("spt_cell_edit", {
-            "border": "solid 1px %s" % border_color,
-            "padding": "3px",
+
+        cell_styles = {
+            "padding": "3px 8px",
+
             "vertical-align": "top",
             "background-repeat": "no-repeat",
             "background-position": "bottom right",
-        } )
+        }
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            cell_styles["border"] = "solid 1px %s" % border_color
+            cell_styles["padding"] = "3px"
+            select_styles["border"] = "solid 1px %s" % border_color
+
+
+
+
+        table.add_smart_styles("spt_table_select", select_styles)
+        table.add_smart_styles("spt_cell_edit", cell_styles)
 
         
         is_editable = my.kwargs.get("is_editable")
@@ -1895,13 +1879,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
 
+
         if my.kwargs.get("__hidden__") == True:
             tr.add_color("background", "background", -8)
             border_color = table.get_color("table_border", default="border")
-            tr.add_gradient("background", "background", -5, -10)
         else:
-            #tr.add_gradient("background", "background", -5, -10)
-            #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
             border_color = table.get_color("table_border", 0, default="border")
        
@@ -1937,7 +1919,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th.add_class("spt_table_header")
             th.add_class("spt_table_header_%s" %my.table_id)
             th.add_attr("spt_element_name", name)
-            th.add_style("border: solid 1px %s" % border_color)
+
+
+            show_border = my.kwargs.get("show_border")
+            if show_border not in [False, "false"]:
+                th.add_style("border: solid 1px %s" % border_color)
 
             edit_wdg = my.edit_wdgs.get(name)
             if edit_wdg:
@@ -2876,7 +2862,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #th.add_gradient("background", "background", -10)
         if not border_color:
             border_color = table.get_color("table_border", 0, default="border")
-        th.add_style("border", "solid 1px %s" % border_color)
+
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            th.add_style("border", "solid 1px %s" % border_color)
+
         th.add_looks( 'dg_row_select_box' )
         th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
@@ -3092,6 +3084,11 @@ spt.table.run_search = function(kwargs) {
         extra_args: kwargs
     }
     spt.dg_table.search_cbk( {}, bvr );
+}
+
+// Search methods
+spt.table.do_search = function(kwargs) {
+    return spt.table.run_search(kwargs);
 }
 
 
@@ -5640,8 +5637,9 @@ spt.table.set_column_width = function(element_name, width) {
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
-    insert_cell.setStyle("width", width);
-  
+    if (insert_cell)
+        insert_cell.setStyle("width", width);
+   
 }
 
 

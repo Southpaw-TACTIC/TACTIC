@@ -19,6 +19,11 @@ from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
 
+'''
+"node" and "manual" type nodes are synonymous, but the latter 
+is preferred as of 4.5
+'''
+
 
 PREDEFINED = [
         'pending',

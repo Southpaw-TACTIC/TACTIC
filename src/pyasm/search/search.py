@@ -71,6 +71,7 @@ class Search(Base):
         my.is_search_done = False
         my.sobjects = []
 
+
         # retired asset flag - retired assets are never shown by default
         my.show_retired_flag = False
 
@@ -2141,7 +2142,6 @@ class Search(Base):
 
         # go through the related sobjects and map them
         for related_sobject in related_sobjects:
-
             if relationship == 'search_type':
                 relationship = schema.resolve_search_type_relationship(attrs, search_type, related_type)
 
@@ -2190,7 +2190,6 @@ class Search(Base):
                 items = []
                 tmp_data[key] = items
             items.append(related_sobject)
-
 
 
         # go through all of the original sobjects and map
@@ -2390,6 +2389,7 @@ class SObject(object):
         my._prev_data = None
         my._prev_update_data = None
         my.update_description = None
+        my._skip_invalid_column = False
         #my.database_impl = None
 
         # id override
@@ -3064,6 +3064,8 @@ class SObject(object):
         return xml
 
     
+    def skip_invalid_column(my):
+        my._skip_invalid_column = True
 
     def set_value(my, name, value, quoted=1, temp=False):
         '''set the value of this sobject. It is
@@ -3076,8 +3078,10 @@ class SObject(object):
             tmp_name = "%s_%s" % (name, lang)
             if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
                 name = tmp_name
-
-
+        
+        # skip if column does not exist
+        if my._skip_invalid_column and not SearchType.column_exists(my.full_search_type, name):
+            return
 
         if temp:
             my._set_value(name, value, quoted=quoted)
@@ -3670,8 +3674,10 @@ class SObject(object):
 
         # fill in the updated values
         is_postgres = impl.get_database_type() == 'PostgreSQL'
-        #is_sqlite = impl.get_database_type() == 'Sqlite'
+        is_sqlite = impl.get_database_type() == 'Sqlite'
+        
         #is_mysql = impl.get_database_type() == 'MySQL'
+        
         for key, value in my.update_data.items():
             quoted = my.quoted_flag.get(key)
             escape_quoted = False
@@ -3692,11 +3698,14 @@ class SObject(object):
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 if value and not SObject.is_day_column(key):
                     info = column_info.get(key)
-                    if is_postgres and not info.get("time_zone"):
+                    if not is_sqlite and not info.get("time_zone"):
                         # if it has no timezone, it assumes it is GMT
                         value = SPTDate.convert_to_local(value)
                     else:
                         value = SPTDate.add_gmt_timezone(value)
+                    
+                    value = impl.process_date(value)
+                    
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S %z')

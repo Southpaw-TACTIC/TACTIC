@@ -18,6 +18,7 @@ __all__ = ['FirstRunInit']
 from pyasm.common import Common, Config, Environment, Common, TacticException, Container
 
 import os, shutil
+import sys
 
 class FirstRunInit(object):
     def execute(my):
@@ -95,6 +96,9 @@ class FirstRunInit(object):
         if os.path.exists(config_path):
             config_exists = True
 
+        # insert the plugin path to run get_asset_dir()
+        plugin_dir = Environment.get_plugin_dir()
+        sys.path.insert(0, plugin_dir)
 
         asset_dir = Environment.get_asset_dir()
         print "Asset Directory [%s]" % asset_dir

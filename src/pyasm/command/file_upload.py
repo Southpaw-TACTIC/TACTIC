@@ -40,7 +40,9 @@ class FileUpload(Base):
         my.write_mode = "wb"
         my.create_icon = True
         my.default_type = 'main'
-    
+  
+        my.base_decode = None
+
     def set_append_mode(my, flag):
         if flag:
             my.write_mode = "ab"
@@ -70,6 +72,9 @@ class FileUpload(Base):
     def set_default_type(my, type):
         my.default_type = type
 
+    def set_decode(my, decode):
+        my.base_decode = decode
+    
     def get_file_path(my):
         if my.file_path:
             return File.process_file_path(my.file_path)
@@ -165,7 +170,7 @@ class FileUpload(Base):
 
     def _dump_file_to_temp(my):
 
-        # create the temporary file name
+        # Create the temporary file name
         tmp_file_path = my.get_file_path()
         if not tmp_file_path:
             return
@@ -175,12 +180,49 @@ class FileUpload(Base):
             return
 
         System().makedirs(dirname)
+   
+        '''
+        Determine if base_decode is necessary. Either base_decode
+        is set my upload_server_page on create mode, or 
+        an action file has been created to indicate decode is necessary.
+        example decode_action_path
+            /home/tactic/tactic_temp/upload/
+            XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg.action
+        '''
+        decode_action_path = "%s.action" % tmp_file_path
+        
+        # Clear action file from previous any previous base64 upload
+        if my.write_mode == "wb" and os.path.exists(decode_action_path):
+            os.remove(decode_action_path)
+        
+        base_decode = my.base_decode
+        if my.write_mode == "ab":
+            # Check for base_decode indicator file
+            if os.path.exists(decode_action_path):
+                base_decode = True
+        elif base_decode:
+            # Create indicator file if base_decode is necessary
+            f_action = open(decode_action_path, 'w')
+            f_action.write("base64decode")
+            f_action.close()
 
-        data = my.field_storage.file
+        # Get temporary file path to read from
+        # Linux uses mkstemp, while Windows uses TemporaryFile
+        if os.name == 'nt':
+            data = my.field_storage.file
+        else:
+            path = my.field_storage.get_path()
+            data = open(path, 'rb')
 
-        # write file to tmp directory
+        # Write file to tmp directory
         f = open("%s" % tmp_file_path, my.write_mode)
+       
+        # Use base 64 decode if necessary.
+        import base64
+        if base_decode and my.write_mode == "wb":
+            data.read(22)
 
+        # Write progress file
         f_progress = None
         file_progress_path = "%s_progress" % tmp_file_path
 
@@ -188,12 +230,20 @@ class FileUpload(Base):
             buffer = data.read(1024*64)
             if not buffer:
                 break
+            
+            if base_decode: 
+                buffer = base64.b64decode(buffer)
+            
             f.write( buffer )
             f_progress = open(file_progress_path, 'w')
             f_progress.write(str(f.tell()))
             f_progress.flush()
         f.close()
 
+        try:
+            data.close()
+        except Exception, e:
+            print str(e)
 
         # when upload is running in append mode f_progress could be None
         if f_progress:

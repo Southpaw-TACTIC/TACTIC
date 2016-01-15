@@ -668,6 +668,10 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         top = DivWdg()
         icon = IconButtonWdg( "Checkout", eval( "IconWdg.%s" % my.get_option('icon') ) )
         top.add(icon)
+        top.add_style("width: 26px")
+        top.add_style("margin-left: auto")
+        top.add_style("margin-right: auto")
+
 
 
         my.process = my.get_option('process')

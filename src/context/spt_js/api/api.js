@@ -218,9 +218,9 @@ spt.api.load_tab = function(title, class_name, kwargs) {
 // @return
 //  null
 //  
-spt.api.fire_event = function(name)
+spt.api.fire_event = function(name, bvr)
 {
-    return spt.named_events.fire_event(name)
+    return spt.named_events.fire_event(name, bvr)
 }
 
 

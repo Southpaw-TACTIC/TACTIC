@@ -116,41 +116,66 @@ class UploadServerWdg(Widget):
             else:
                 file_dir = custom_upload_dir
 
-
-        # set a default for now
+        '''
+        If upload method is html5, the action is an empty
+        string. Otherwise, action is either 'create' or 'append'.
+        '''
         action = web.get_form_value("action")
+        html5_mode = False
         if not action:
+            html5_mode = True
             action = "create"
 
-        # With some recent change done in cherrypy._cpreqbody line 294
-        # we can use the field storage directly and just move the file
-        # without using FileUpload
+        '''
+        With some recent change done in cherrypy._cpreqbody line 294, 
+        we can use the field storage directly on Linux when the file
+        is uploaded in html5 mode.
+        TODO: This shortcut cannot be used with upload_multipart.py 
+        '''
         path = field_storage.get_path()
-        if path and file_name and action != "append":
+        
+        # Base 64 encoded files are uploaded and decoded in FileUpload
+        base_decode = None
+        if action ==  "create": 
+            if os.name == 'nt':
+                f = field_storage.file
+            else:
+                f = open(path, 'rb')
+            header = f.read(22)
+            f.seek(0)
+
+            if header.startswith("data:image/png;base64,"):
+                base_decode = True
+            else:
+                base_decode = False
+        
+            if os.name != 'nt':
+                f.close()
+            
+          
+        if html5_mode and file_name and path and not base_decode:
+            
+            '''
+            example of path:
+                /home/tactic/tactic_temp/temp/tmpTxXIjM 
+            example of to_path: 
+                /home/tactic/tactic_temp/upload/
+                XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg
+            '''
 
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
+            shutil.move(path, to_path)
             
-            if os.name == 'nt':
-                # windows does not do anything.. and it shouldn't even get to 
-                # this point for windows.
-                pass
-            else:
-                f = open(path, 'rb')
-                header = f.read(22)
-                if header.startswith("data:image/png;base64,"):
-                    data = f.read()
-                    import base64
-                    decode = base64.b64decode(data)
-                    f2 = open(to_path, 'wb')
-                    f2.write(decode)
-                    f2.close()
-                else:
-                    shutil.move(path, to_path)
-                f.close()
-                    
+            '''
+            # Close the mkstemp file descriptor 
+            fd = field_storage.get_fd()
+            if fd: 
+                os.close( fd )
+            '''
+     
             # Because _cpreqbody makes use of mkstemp, the file permissions
             # are set to 600.  This switches to the permissions as defined
             # by the TACTIC users umask
@@ -164,13 +189,6 @@ class UploadServerWdg(Widget):
             return [to_path]
 
 
-
-        # This may be DEPRECATED
-        #raise Exception("Upload method is DEPRECATED")
-
-
-
-        #file_name = ''
         if field_storage == "":
             # for swfupload
             field_storage = web.get_form_value("Filedata")
@@ -179,10 +197,7 @@ class UploadServerWdg(Widget):
                 file_name = web.get_form_value("Filename")
 
 
-
-
-
-        # process and get the uploaded files
+        # Process and get the uploaded files
         upload = FileUpload()
         if action == "append":
             upload.set_append_mode(True)
@@ -199,8 +214,11 @@ class UploadServerWdg(Widget):
         # set the field storage
         if field_storage:
             upload.set_field_storage(field_storage, file_name)
-
+ 
         upload.set_file_dir(file_dir)
+
+        # set base64 decode
+        upload.set_decode(base_decode)
 
         upload.execute()
         files = upload.get_files()

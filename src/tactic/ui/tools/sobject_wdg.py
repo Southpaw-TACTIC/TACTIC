@@ -73,16 +73,16 @@ class SObjectDetailWdg(BaseRefreshWdg):
             title.add(thumb)
             thumb.set_icon_size(30)
             thumb.set_sobject(search_type_obj)
-            thumb.add_style("float: left")
+            thumb.add_style("float: right")
 
 
 
-        title.add_color("background", "background", -5)
+        #title.add_color("background", "background", -5)
+        #title.add_border(color="#DDD")
         title.add_style("height: 23px")
         title.add_style("padding: 10px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
 
 
         stype_title = search_type_obj.get_value("title")
@@ -98,6 +98,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             title.add("(No name)")
 
+        title.add("<hr/>")
 
         return title
 
@@ -454,7 +455,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "related":
                 config_xml.append('''
-                <element name="snapshots" title="Related">
+                <element name="related" title="Related">
                   <display class='tactic.ui.tools.RelatedSObjectWdg'>
                     <search_key>%(search_key)s</search_key>
                   </display>
@@ -674,7 +675,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         edit_div = DivWdg()
-        #edit_div.add_border(color="#EEE")
         info_div.add(edit_div)
         edit_div.add_style("margin-top: -36px")
         edit_div.add_style("margin-left: 1px")

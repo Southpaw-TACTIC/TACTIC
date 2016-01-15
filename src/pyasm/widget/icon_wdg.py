@@ -105,6 +105,7 @@ class IconWdg(DivWdg):
     'FILM_SUBMIT'          : "film_go.png",
     'FLOAT'                : "/context/icons/oo_prev/stock_cell-align-top-16.png", # need to replace!
     'FOLDER'               : "folder.png",
+    'FOLDER_2'             : "/context/icons/mime-types/folder2.jpg",
     'FOLDER_GRAY'          : "folder_GRAY.png",
     'FOLDER_GO'            : "folder_go.png",
     'FOLDER_EDIT'          : "folder_edit.png",

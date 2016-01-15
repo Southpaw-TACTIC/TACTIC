@@ -211,6 +211,9 @@ class UserConfigWdg(ProjectConfigWdg):
         panels = []
 
         show_security = my.kwargs.get("show_security")
+        show_add = my.kwargs.get("show_add")
+        view = my.kwargs.get("view")
+        filter_mode = my.kwargs.get("filter_mode")
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -224,9 +227,12 @@ class UserConfigWdg(ProjectConfigWdg):
         <element name="Users">
             <display class='tactic.ui.startup.UserPanelWdg'>
                 <show_security>%s</show_security>
+                <show_add>%s</show_add>
+                <view>%s</view>
+                <filter_mode>%s</filter_mode>
             </display>
         </element>
-          ''' %(show_security))
+          ''' %(show_security, show_add, view, filter_mode))
 
         config_xml.append('''
         <element name="Group Assignment">
@@ -803,7 +809,15 @@ class UserPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        expr_filter = "sthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']"
+        filter_mode = my.kwargs.get("filter_mode")
+        project = Project.get().get_code()
+
+        if filter_mode == "project":
+            new_filter = "sthpw/login_group['project_code', '%s'].sthpw/login_in_group." % project 
+        else:
+            new_filter = ""
+
+        expr_filter = "%ssthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']" % new_filter
         current_users = Search.eval("@COUNT(%s)" %expr_filter)
 
         top = my.top
@@ -815,30 +829,34 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div.add_style('display','inline-flex')
         tool_div.add_style('width','50%')
         tool_div.add_style('margin-bottom','-4px')
-       
-        button = ActionButtonWdg(title="Add", tip="Add New User")
-        button.add_style('align-self: flex-end')
-        tool_div.add(button)
+
+        show_add = my.kwargs.get("show_add")
+        if show_add not in ['false', False]:
+            button = ActionButtonWdg(title="Add", tip="Add New User")
+            button.add_style('align-self: flex-end')
+            tool_div.add(button)
         
-        button.add_style("float: left")
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.panel.EditWdg';
-            var kwargs = {
-                search_type: "sthpw/login",
-                view: "insert",
-                show_header: false,
-            }
-            var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
-            var top = bvr.src_el.getParent(".spt_panel_user_top");
-            popup.on_save_cbk = function() {
-                spt.panel.refresh(top);
-            }
+            button.add_style("float: left")
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.EditWdg';
+                var kwargs = {
+                    search_type: "sthpw/login",
+                    view: "insert",
+                    show_header: false,
+                }
+                var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
+                var top = bvr.src_el.getParent(".spt_panel_user_top");
+                popup.on_save_cbk = function() {
+                    spt.panel.refresh(top);
+                }
 
-            '''
-        } )
-
+                '''
+            } )
+        else:
+            tool_div.add_style('position','relative')
+            tool_div.add_style('top','-8px')
 
         security = Environment.get_security()
         license = security.get_license()
@@ -894,7 +912,9 @@ class UserPanelWdg(BaseRefreshWdg):
             spt.tab.add_new("Security", "Security", class_name)
             '''
             } )
-
+        else:
+            tool_div.add_style('position','relative')
+            tool_div.add_style('top','0px')
 
 
 
@@ -932,8 +952,14 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add(div)
         #div.add_style("max-height: 300px")
         #div.add_style("overflow-y: auto")
+
+        view = my.kwargs.get("view")
+
+        if not view:
+            view = "manage_user"
+
         expr = "@SEARCH(%s)" %expr_filter
-        panel = ViewPanelWdg(search_type='sthpw/login',view='manage_user',show_insert='false',\
+        panel = ViewPanelWdg(search_type='sthpw/login',view=view,show_insert='false',\
             show_gear='false', show_select='false', height='700', expression=expr,\
             simple_search_view='simple_manage_filter', show_column_manager='false',\
             show_layout_switcher='false', show_expand='false')
