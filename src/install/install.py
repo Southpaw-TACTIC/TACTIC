@@ -323,8 +323,8 @@ INSERT INTO login_group (login_group, description)
 VALUES ('admin', 'Site Administration');
 
         --add in admin user, default password 'tactic'
-INSERT INTO "login" ("login", "password", first_name, last_name)
-VALUES ('admin', '39195b0707436a7ecb92565bf3411ab1', 'Admin', '');
+INSERT INTO "login" ("login", "password", "upn", first_name, last_name)
+VALUES ('admin', '39195b0707436a7ecb92565bf3411ab1', 'admin', 'Admin', '');
 
         --add the admin user to the admin group
 INSERT INTO login_in_group ("login", login_group) VALUES ('admin', 'admin');
