@@ -369,16 +369,15 @@ class EmailTrigger(Trigger):
 
 class SendEmail(Command):
 
+    '''Class to send an email in a separate thread. The kwargs are as follows:
+        sender_email - string
+        recipient_emails - list of strings
+        msg - string, email message
+        subject - string, email header
+        cc - list of cc in email header
+        bcc - list of strings, email header
+    '''
     def execute(my):
-        '''Class to send an email in a separate thread. The kwargs are as follows:
-            sender_email - string
-            recipient_emails - list of strings
-            msg - string, email message
-            subject - string, email header
-            cc - list of cc in email header
-            bcc - list of strings, email header
-        '''
-
 
         sender_email = my.kwargs.get('sender_email')
         if not sender_email:
@@ -416,16 +415,6 @@ class SendEmail(Command):
 
         if is_uni:
             msg.add_header('html_encoding', 'base64')
-        my.msg = msg
-        
-        my.mailserver = Config.get_value('services','mailserver')
-        # get optional arguments
-        my.user = Config.get_value('services','mail_user', True)
-        my.password = Config.get_value('services','mail_password', True)
-        my.port = Config.get_value('services','mail_port', True)
-        my.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
-        my.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
-        
 
         recipient_emails = set(recipient_emails)
         cc = set(cc)
