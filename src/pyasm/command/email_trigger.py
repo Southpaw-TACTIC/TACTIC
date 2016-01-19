@@ -378,10 +378,14 @@ class SendEmail(Command):
         bcc - list of strings, email header
     '''
     def execute(my):
-
+        
         sender_email = my.kwargs.get('sender_email')
         if not sender_email:
-            raise TacticException("Sender's email is empty.")
+            sender_email = Environment.get_login().get_full_email()
+            if not sender_email:
+                raise TacticException("Sender's email is empty. Please check the email \
+                    attribute of [%s]." %Environment.get_user_name())
+
         recipient_emails = my.kwargs.get('recipient_emails')
         message = my.kwargs.get('msg')
 

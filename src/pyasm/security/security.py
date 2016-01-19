@@ -81,8 +81,12 @@ class Login(SObject):
         return "%s %s" % (my.get_value("first_name"), my.get_value("last_name"))
 
     def get_full_email(my):
-        return "%s %s <%s>" % (my.get_value("first_name"), \
-            my.get_value("last_name"), my.get_value("email") )
+        email = my.get_value("email")
+        if email:
+            return "%s %s <%s>" % (my.get_value("first_name"), \
+                my.get_value("last_name"), my.get_value("email") )
+        else:
+            return ""
 
     def has_user_license(my):
         '''determines if this user has a user level license'''
