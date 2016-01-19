@@ -54,6 +54,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'type': 'TextWdg',
             'order' : '4',
             'category': 'Display'
+        },
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '5',
+            'category': 'Display'
         }
     } 
 
@@ -340,6 +347,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         kwargs['show_shelf'] = False
         kwargs['show_search_limit'] = False
         kwargs['expand_on_load'] = False
+
         layout = FastTableLayoutWdg(**kwargs)
         layout_div.add(layout)
         layout.set_sobjects(my.sobjects)
