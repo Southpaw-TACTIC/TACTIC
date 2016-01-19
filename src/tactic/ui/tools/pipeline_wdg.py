@@ -718,6 +718,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipeline_div.add_behavior( {
         'type': 'listen',
         'pipeline_code': pipeline_code,
+        'project_code': Project.get_project_code(),
         'title': title,
         'event_name': 'pipeline_%s|click' % pipeline_code,
         'cbjs_action': '''
@@ -781,11 +782,38 @@ class PipelineListWdg(BaseRefreshWdg):
 
         };
 
+        var save_function = function(){
+            editor_top.removeClass("spt_has_changes");
+            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+
+            var group_name = spt.pipeline.get_current_group();
+            
+            var data = spt.pipeline.get_data();
+            var color = data.colors[group_name];
+
+            server = TacticServerStub.get();
+            spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
+            
+            var xml = spt.pipeline.export_group(group_name);
+            var search_key = server.build_search_key("sthpw/pipeline", group_name);
+            try {
+                var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+            } catch(e) {
+                spt.alert(spt.exception.handler(e));
+            }
+
+            spt.named_events.fire_event('pipeline|save', {});
+
+            spt.app_busy.hide();
+        }
+
 
         var current_group_name = spt.pipeline.get_current_group();
         var group_name = bvr.pipeline_code;
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
-            spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", ok, null); 
+            spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", save_function, ok, {okText: "Save", cancelText: "Don't Save"});
         }
         else if (current_group_name == group_name) {
             spt.confirm("Reload current pipeline?", ok, null); 
