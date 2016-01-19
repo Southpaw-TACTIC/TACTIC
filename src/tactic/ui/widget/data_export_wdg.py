@@ -19,7 +19,7 @@ import datetime
 
 from pyasm.biz import CsvParser, File, Project
 from pyasm.search import Search, SObjectFactory, SearchType, SearchKey
-from pyasm.command import Command, FileUpload
+from pyasm.command import Command, FileUpload, CsvImportCmd
 from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg 
 from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenWdg, WidgetConfigView, ProdIconButtonWdg, TextWdg, TextAreaWdg, IconWdg, ProgressWdg, HintWdg, SelectWdg
 from pyasm.common import Common, Environment, TacticException
@@ -1291,13 +1291,10 @@ class PreviewDataWdg(BaseRefreshWdg):
 
                 process_text_input = TextWdg("new_note_process_custom_%s" % j)
                 note_process_input_group.add(process_text_input)
+                process_text_input.add_class("form-control")
                 process_text_input.add_class("spt_custom_process_input")
-                process_text_input.add_class("form-control")
-                process_text_input.add_style("margin", "10px")
-                process_text_input.add_style("display", "none")
-                process_text_input.add_class("form-control")
-                process_text_input.add_style('border-color: #8DA832')
-                process_text_input.add_style("width", "150px")
+                styles = "margin: 10px; display: none; border-color: #8DA832; width: 150px"
+                process_text_input.add_styles(styles)
             elif sel_val == '':
                 # Name and type options for new column
                 column_name = HiddenWdg("new_column_%s" % j)
@@ -1332,7 +1329,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type_group.add("<label>Column type</label>")
                 column_type_input = SelectWdg("column_type_%s" % j)
                 column_type_group.add( column_type_input )
-                column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp")
+                column_type_input.set_option("labels", "Varchar(256)|Text|Integer|Float|Date|Boolean")
+                column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp|boolean")
                 column_type_input.add_class("form-control")
                 column_type_input.add_style('border-color: #8DA832')
                 column_type_input.add_style("width", "150px")
@@ -1431,7 +1429,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         h3.add_style("margin-left: -20px")
         h3.add_style("margin-right: -20px")
         div.add(h3)
-        div.add("</br>")
+        div.add("<br/>")
         
         refresh_button = ActionButtonWdg(title="Refresh")
 
@@ -1443,11 +1441,13 @@ class PreviewDataWdg(BaseRefreshWdg):
         div.add(refresh_button)
 
 
+        entry_error_msg = CsvImportCmd.ENTRY_ERROR_MSG
 
         import_button = ActionButtonWdg(title="Import")
         import_button.set_id('CsvImportButton')
         import_button.add_behavior({
             'type':'click_up', 
+            'entry_error_msg': entry_error_msg,
             'top_id':'csv_import_main',
             'cbjs_action': r'''
             var src_el = bvr.src_el;
@@ -1499,8 +1499,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                     spt.show(csv_control);
                 }
 
-                if (err_message.startsWith("Error creating new entry for row [")) {
-                    var message_parts = err_message.match("^Error creating new entry for row \\[(.*)\\]:.*")
+                if (err_message.startsWith(bvr.entry_error_msg)) {
+                    var message_parts = err_message.match("^"+bvr.entry_error_msg+" \\[(.*)\\]:.*")
                     new_start_index = parseInt(message_parts[1]) + 1;
                     ok_fn = run_cmd;
                     cancel_fn = abort;
@@ -1581,21 +1581,25 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type = web.get_form_value("column_type_%s" % j)
                 td = table.add_cell(cell)
 
+                # If data does not match selected column type, then let user know.
                 if column_type == 'timestamp' and not my._check_timestamp(cell):
                     td.add_style("color: red")
-                if column_type == 'integer' and not my._check_integer(cell):
+                elif column_type == 'boolean' and not my._check_boolean(cell):
                     td.add_style("color: red")
-                if column_type == 'float' and not my._check_float(cell):
+                elif column_type == 'integer' and not my._check_integer(cell):
                     td.add_style("color: red")
-
-
+                elif column_type == 'float' and not my._check_float(cell):
+                    td.add_style("color: red")
+                elif column_type == 'varchar(256)' and not my._check_varchar(cell):
+                    td.add_style("color: red")
+                
         return widget 
 
     def _guess_column_type(my, csv_data, idx):
         ''' given csv data and a column idx, determine appropriate data type '''
         column_types = {}
         data_cell_list = []
-        my.CHECK = 5
+        my.CHECK = 6
         column_type = ''       
         for k, row in enumerate(csv_data):
             if k >= len(row):
@@ -1604,8 +1608,11 @@ class PreviewDataWdg(BaseRefreshWdg):
                 data = row[idx] 
             if data.strip() == '':
                 continue
-            if my.CHECK == 5:
+
+            if my.CHECK == 6:
                 column_type = my._check_timestamp(data)
+            if my.CHECK == 5:
+                column_type = my._check_boolean(data)
             if my.CHECK == 4:
                 column_type = my._check_integer(data)
             if my.CHECK == 3:
@@ -1616,11 +1623,13 @@ class PreviewDataWdg(BaseRefreshWdg):
             # TEST: use democracy to determine type
             column_type = my._check_timestamp(data)
             if not column_type:
-                column_type = my._check_integer(data)
+                column_type = my._check_boolean(data)
                 if not column_type:
-                    column_type = my._check_float(data)
+                    column_type = my._check_integer(data)
                     if not column_type:
-                        column_type = my._check_varchar(data)
+                        column_type = my._check_float(data)
+                        if not column_type:
+                            column_type = my._check_varchar(data)
 
             if column_types.get(column_type) == None:
                 column_types[column_type] = 1
@@ -1658,6 +1667,15 @@ class PreviewDataWdg(BaseRefreshWdg):
             my.CHECK = 1
             column_type = 'text'
        
+        return column_type
+
+    def _check_boolean(my, data):
+        column_type = None
+        if data in ['true', 'True', 'False', 'false', '0','1']:
+            column_type = 'boolean'
+        else:
+            my.CHECK = 5
+
         return column_type
 
     def _check_integer(my, data):

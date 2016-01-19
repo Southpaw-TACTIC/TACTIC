@@ -24,6 +24,8 @@ from command import *
 
 class CsvImportCmd(Command):
 
+    ENTRY_ERROR_MSG = "Error creating new entry for row"
+
     def get_title(my):
         return "CSV Import"
 
@@ -280,7 +282,7 @@ class CsvImportCmd(Command):
                     note_obj.commit()
 
             except SqlException, e:
-                msg = "Error creating new entry for row [%s]: %s, %s" % (row_count, str(row), e.__str__() )
+                msg = "%s [%s]: %s, %s" % (my.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
                 if my.test_run:
                     error = True
                     error_entries.append(sobject.get_code())
