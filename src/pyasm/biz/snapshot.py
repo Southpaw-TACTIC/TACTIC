@@ -456,7 +456,7 @@ class Snapshot(SObject):
         return expanded_names
 
 
-    def get_web_path_by_type(my, type):
+    def get_web_path_by_type(my, type='main'):
         ''' get the lib path by specifying a file type '''
         xml = my.get_snapshot_xml()
 

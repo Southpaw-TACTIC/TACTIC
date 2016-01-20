@@ -363,7 +363,10 @@ class CsvImportWdg(BaseRefreshWdg):
     def get_display(my):
         
         widget = DivWdg()
-        if not my.is_refresh:
+
+        show_title = my.kwargs.get("show_title") not in [False, 'false']
+
+        if show_title and not my.is_refresh:
             from tactic.ui.widget import TitleWdg
             title = TitleWdg(name_of_title='Import CSV', help_alias='importing-csv-data')
             widget.add(title)
@@ -533,7 +536,7 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add_style("margin: 10 auto")
             #msg.add_style("text-align: center")
 
-            msg.add( "<div style='float: left; padding-top: 6px; margin-right: 105px'><b>Upload a csv file: </b></div>")
+            #msg.add( "<div style='float: left; padding-top: 6px; margin-right: 105px'><b>Upload a csv file: </b></div>")
 
             ticket = Environment.get_security().get_ticket_key()
 
@@ -564,10 +567,13 @@ class CsvImportWdg(BaseRefreshWdg):
             }
             spt.app_busy.hide();'''%ticket
             from tactic.ui.input import UploadButtonWdg
-            browse = UploadButtonWdg(name='new_csv_upload', title="Browse", tip="Click to choose a csv file",\
-                    on_complete=on_complete, ticket=ticket)
-            browse.add_style('float: left')
-            msg.add(browse)
+            browse_div = DivWdg()
+            msg.add(browse_div)
+            browse = UploadButtonWdg(name='new_csv_upload', title="Upload a CSV file", tip="Click to choose a csv file", on_complete=on_complete, ticket=ticket, width=250)
+
+            browse_div.add(browse)
+            browse_div.add_style("width: 250")
+            browse_div.add_style("margin: 0px auto")
 
 
             
@@ -602,7 +608,7 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add("<br/>"*3)
 
 
-            button = ActionButtonWdg(title="Parse")
+            button = ActionButtonWdg(title="Parse List", color="default", width=250)
             button.add_style("margin: 5px auto")
             msg.add(button)
             button.add_behavior( {

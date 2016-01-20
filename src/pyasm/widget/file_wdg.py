@@ -1197,17 +1197,22 @@ class ThumbWdg(BaseTableElementWdg):
         ext = ext.lower()
 
         if ext in ["xls", "xlsx"]:
-            icon = "gnome-application-vnd.ms-excel.png"
+            #icon = "gnome-application-vnd.ms-excel.png"
+            icon = "microsoft/Excel-2013.png"
         elif ext in ["ppt", "pptx"]:
-            icon = "gnome-application-vnd.ms-excel.png"
+            #icon = "gnome-application-vnd.ms-excel.png"
+            icon = "microsoft/Powerpoint-2013.png"
+        elif ext in ["doc", "docx", "rtf"]:
+            icon = "microsoft/Word-2013.png"
         elif ext == "mp3" or ext == "wav":
             icon = "mp3_and_wav.jpg"
         elif ext == "aif" or ext == 'aiff':
-            icon = "gnome-audio-x-aiff.png"
+            #icon = "gnome-audio-x-aiff.png"
+            icon = "mp3_and_wav.jpg"
         elif ext == "mpg":
             icon = "gnome-video-mpeg.png"
         elif ext in ["mov"]:
-            icon = "quicktime-logo.png"    
+            icon = "icon_qt_big.jpg"
         elif ext == "ma" or ext == "mb" or ext == "anim":
             icon = "maya.png"
         elif ext == "lwo":
@@ -1227,7 +1232,7 @@ class ThumbWdg(BaseTableElementWdg):
         elif ext == "dae":
             icon = "collada.png"
         elif ext == "pdf":
-            icon = "pdficon_large.gif"
+            icon = "adobe-PDF-icon.jpg"
         elif ext == "shk":
             icon = "icon_shake_white.gif"
         elif ext == "comp":
@@ -1244,6 +1249,8 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "ps_icon.jpg"
         elif ext == 'ai':
             icon = "icon_illustrator_lg.png"
+        elif ext == 'fdx':
+            icon = "finaldraft.png"
         elif ext == 'unity3d':
             icon = "unity_icon.jpg"
         elif repo_path and os.path.isdir(repo_path):
@@ -1446,6 +1453,10 @@ class ThumbCmd(Command):
             server = TacticServerStub.get()
             snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
             """
+
+            if not os.path.exists(path):
+                print "WARNING: path [%s] does not exist" % path
+                return
 
             icon_creator = IconCreator(path)
             icon_creator.execute()

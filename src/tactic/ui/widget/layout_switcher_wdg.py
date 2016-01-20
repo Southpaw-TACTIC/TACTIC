@@ -19,7 +19,6 @@ from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import IconButtonWdg
-from tactic.ui.panel import SimpleSideBarWdg
 
 class LayoutSwitcherWdg(BaseRefreshWdg):
 
@@ -106,6 +105,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         # menu_wdg 
         menu_wdg = DivWdg()
         top.add(menu_wdg)
+        menu_wdg.add_color("background", "background")
+        menu_wdg.add_border()
         menu_wdg.add_class("spt_switcher_menu")
         menu_wdg.add_style("display: none")
         menu_wdg.add_style("margin-top", "15px")
@@ -162,6 +163,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         pointer_wdg.add(style)
  
         if menu:
+            from tactic.ui.panel import SimpleSideBarWdg
             simple_sidebar = SimpleSideBarWdg(view=menu, search_type="SidebarWdg", target=target) 
             menu_wdg.add(simple_sidebar)
         else:
@@ -205,7 +207,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     
                     // Get target class
                     var target_class = bvr.target;
-                    if (target_class.indexOf(".") != "-1") {
+                    if (target_class.indexOf(".") != -1) {
                         var parts = target_class.split(".");
                         target_class = parts[1]; 
                     }

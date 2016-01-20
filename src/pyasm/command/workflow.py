@@ -712,7 +712,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
         if process_sobj:
-            workflow = process_sobj.get_json_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", {})
         else:
             workflow = {}
 

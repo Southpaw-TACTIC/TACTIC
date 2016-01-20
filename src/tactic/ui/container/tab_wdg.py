@@ -1154,6 +1154,9 @@ spt.tab.close = function(src_el) {
             if not title:
                 title = Common.get_display_title(element_name)
 
+
+            title = _(title)
+
             if attrs.get("display") == "false":
                 continue
 

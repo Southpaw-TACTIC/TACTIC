@@ -673,6 +673,34 @@ class TacticServerStub(object):
 
 
     #
+    # Preferences
+    #
+    def get_preference(my, key):
+        '''Get the user's preference for this project
+
+        @params
+        key - unique key to identify preference
+
+        @return
+        current value of preference
+        '''
+        return my.server.get_preference(my.ticket, key)
+
+
+
+    def set_preference(my, key, value):
+        '''Set the user's preference for this project
+
+        @params
+        key - unique key to identify preference
+        value - value to set the preference
+
+        '''
+        return my.server.set_preference(my.ticket, key, value)
+
+
+
+    #
     # Logging facilities
     #
     def log(my, level, message, category="default"):
@@ -696,6 +724,21 @@ class TacticServerStub(object):
             It defaults to "default"
         '''
         return my.server.log(my.ticket, level,message, category)
+
+
+
+    def get_message(my, key):
+        '''API Function: gog_message(key)
+
+        Get the message with the appropriate key
+
+        @params
+        key - unique key for this message
+
+        @return
+        message
+        '''
+        return my.server.get_message(my.ticket, key)
 
 
 

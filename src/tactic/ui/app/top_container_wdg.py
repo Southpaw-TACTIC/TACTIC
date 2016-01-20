@@ -57,10 +57,10 @@ class TopContainerWdg(BaseRefreshWdg):
                 widget = my.get_default_wdg()
 
             else:
-                print "HASH: ", hash
-                print "project: ", project_code
+                #print "HASH: ", hash
+                #print "project: ", project_code
                 from pyasm.security import Site
-                print "site: ", Site.get_site()
+                #print "site: ", Site.get_site()
                 widget = HashPanelWdg.get_widget_from_hash(hash, return_none=True)
 
             if not widget:

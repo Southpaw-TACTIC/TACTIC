@@ -57,7 +57,11 @@ class MetadataElementWdg(ButtonElementWdg):
         if sobject.get_base_search_type() == "sthpw/snapshot":
             snapshot = sobject
             sobject = snapshot.get_parent()
-            search_type = sobject.get_search_type()
+            if sobject:
+                search_type = sobject.get_search_type()
+            else:
+                top = DivWdg()
+                return top
 
         else:
             if process:
@@ -76,6 +80,7 @@ class MetadataElementWdg(ButtonElementWdg):
         top = DivWdg()
         icon = IconButtonWdg( "Show Metadata", eval( "IconWdg.%s" % my.get_option('icon') ) )
         top.add(icon)
+        top.add_style("text-align: center")
 
 
         lib_path = snapshot.get_lib_path_by_type("main")
