@@ -125,7 +125,6 @@ class PrefSetting(PrefList):
 
 
         setting = cls.get_by_key(key, user, project_code, use_cache=False)
-        print "setting: ", setting
         if not setting:
             setting = PrefSetting.create_new()
             setting.set_value("key", key)
@@ -136,7 +135,6 @@ class PrefSetting(PrefList):
         setting.set_value("value", value)
         setting.commit()
 
-        # ignore the project_code column for now
         dict_key = '%s:%s:%s' %(cls.SEARCH_TYPE, project_code, user) 
         settings_dict = Container.put(dict_key, None)
 

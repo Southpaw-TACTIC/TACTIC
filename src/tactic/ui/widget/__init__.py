@@ -39,4 +39,3 @@ from layout_switcher_wdg import *
 #from color_input_wdg import *
 #from preview_change_wdg import *
 
-from layout_switcher_wdg import *
