@@ -855,7 +855,7 @@ class HtmlElement(Widget):
         } )
 
 
-    def get_timezone_value(cls, value):
+    def get_timezone_value(cls, value, format="%b %d, %Y - %H:%M"):
         '''given a datetime value, use the My Preferences time zone'''
         timezone = PrefSetting.get_value_by_key('timezone')
         
@@ -866,9 +866,9 @@ class HtmlElement(Widget):
        
         try:
             encoding = locale.getlocale()[1]		
-            value = value.strftime("%b %d, %Y - %H:%M").decode(encoding)
+            value = value.strftime(format).decode(encoding)
         except:
-            value = value.strftime("%b %d, %Y - %H:%M")
+            value = value.strftime(format)
 
         return value
     
