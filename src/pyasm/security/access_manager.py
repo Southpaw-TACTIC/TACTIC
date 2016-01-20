@@ -36,26 +36,28 @@ class Sudo(object):
             #my.security.login_as_guest()
             pass
 
-        login = Environment.get_user_name()
-        if login == "admin" or my.security.is_in_group('admin'):
-            my.was_admin = True
-        else:
-            my.was_admin = False
-
-
         my.access_manager = my.security.get_access_manager()
+        login = Environment.get_user_name()
+        my.was_admin = my.access_manager.was_admin
+        if my.was_admin == None:
+            my.access_manager.set_up()
+            my.was_admin = my.access_manager.was_admin
+     
         my.access_manager.set_admin(True)
+    
+            
 
     def __del__(my):
-        #print "Removing admin"
+        
         # remove if I m not in admin group
-        if not my.security.is_in_group('admin') and my.was_admin == False:
+        if my.was_admin == False:
             my.access_manager.set_admin(False)
 
+
     def exit(my):
-        #print "Removing admin"
+        
         # remove if I m not in admin group
-        if not my.security.is_in_group('admin') and my.was_admin == False:
+        if my.was_admin == False:
             my.access_manager.set_admin(False)
 
 
@@ -69,6 +71,8 @@ class AccessManager(Base):
         my.groups = {}
         my.summary = {}
         my.project_codes = None
+        
+        my.was_admin = None 
 
 
 
@@ -76,8 +80,26 @@ class AccessManager(Base):
         return my.summary
 
 
-    def set_admin(my, flag):
+    def set_up(my):
+        if my.was_admin == None:
+            security = Environment.get_security()
+            my.was_admin = security.is_in_group('admin')
+
+    def set_admin(my, flag, sudo=False):
+        my.set_up()
         my.is_admin_flag = flag
+
+        security = Environment.get_security()
+        if not my.was_admin and flag:
+            if 'admin' not in security.get_group_names():
+                security._group_names.append('admin')
+        elif 'admin' in security.get_group_names():
+            if not my.was_admin:
+                security._group_names.remove('admin')
+                
+
+
+
 
     def is_admin(my):
         return my.is_admin_flag
@@ -129,7 +151,7 @@ class AccessManager(Base):
           </group>
         </rules>
         '''
-
+        
         from pyasm.search import SObject
         if isinstance(xml, SObject):
             sobject = xml
@@ -138,7 +160,6 @@ class AccessManager(Base):
                 project_code = sobject.get_value("project_code")
 
         project_override = project_code
-
         if isinstance(xml, basestring):
             xmlx = Xml()
             xmlx.read_string(xml)
@@ -220,6 +241,7 @@ class AccessManager(Base):
 
             # add a project code qualifier
             rule_keys = []
+          
             if project_code == '*' and group_type != 'search_filter':
                 for code in my.project_codes:
                     key = "%s?project=%s" % (rule_key, code)
@@ -229,6 +251,8 @@ class AccessManager(Base):
 
                 #key = str(key) # may need to stringify unicode string
                 rule_keys.append(key)
+                #key= "%s?project=*" % (rule_key)
+                #rule_keys.append(key)
 
             rule_access = xml.get_attribute(rule_node, 'access')
 
@@ -258,14 +282,15 @@ class AccessManager(Base):
 
 
                 rules[rule_key] = rule_access, attrs2
-
-
-        #for rule, values in rules.items():
-        #    print "rule: ", rule, values[0]
-
+                """
+                if rule_key.startswith('code') or group_type.startswith('project') :
+                    print "rule key ", rule_key
+                    for rule, values in rules.items():
+                        print "xml_rule: ", rule, " is ", values[0]
+                """
 
         # FIXME: this one doesn't support the multi-attr structure
-        # convert this to a python data structure
+           # convert this to a python data structure
         group_nodes = xml.get_nodes("rules/group")
         for group_node in group_nodes:
 
@@ -322,13 +347,12 @@ class AccessManager(Base):
                     rules[rule_key] = rule_access, attrs2
 
 
-
-    def get_access(my, type, key, default=None):
+    def get_access(my, group, key, default=None):
 
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
             for item in key:
-                user_access = my.get_access(type, item)
+                user_access = my.get_access(group, item)
                 if user_access != None:
                     return user_access
 
@@ -337,6 +361,9 @@ class AccessManager(Base):
 
         # qualify the key with a project_code 
         project_code = "*"
+        rule_project = None
+        
+        is_proj = False
         if isinstance(key, dict):
             # this avoids get_access() behavior changes on calling it twice
             key2 = key.copy()
@@ -351,13 +378,15 @@ class AccessManager(Base):
             else:
                 key = Common.get_dict_list(key2)
         # special case for projects
-        elif type == "project":
+        elif group == "project":
             project_code = key
-            key = [('code','plugins')]
-        
+           
+            #key = [('code','plugins')]
+            is_proj = True
+
         key = "%s?project=%s" % (key, project_code)
-        #print "key: ", key
-        
+        if is_proj:
+            print "final key: ", key
         # Fix added below to remove any unicode string markers from 'key' string ... sometimes the values
         # of the 'key' dictionary that is passed in contains values that are unicode strings, and sometimes
         # values that are ascii.
@@ -367,9 +396,9 @@ class AccessManager(Base):
 
         # boris: Since we took out str() in Common.get_dict_list(), we have to re-introduce this back, but with , instead of : since it's a tuple 
         key = key.replace("', u'", "', '")
-       
+    
         # if there are no rules, just return the default
-        rules = my.groups.get(type)
+        rules = my.groups.get(group)
         if not rules:
             return default
 
@@ -402,20 +431,26 @@ class AccessManager(Base):
 
 
     def check_access(my, group, key, required_access, value=None, is_match=False, default="edit"):
-        '''checks the access level of the user for a give group of access
-        and a key'''
+        '''Check the access level of the user for a given group of rule and category key
+            group - rule category like built-in or element
+            key - string or list of dictiorary like view_side_bar or ['search_type':'sthpw/task', 'project','main']
+            required_access - speific access level like allow, deny, edit, view, delete'''
+
         if my.is_admin():
             return True
 
+      
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
             for item in key:
+              
                 user_access = my.get_access(group, item)
                 if user_access != None:
                     break
         else:
             if value:
                 key = "%s||%s" % (key, value)
+                
             user_access = my.get_access(group, key)
 
 
@@ -449,14 +484,15 @@ class AccessManager(Base):
 
 
     def alter_search(my, search):
-        if my.is_admin_flag:
+     
+        if my.is_admin_flag:# and my.was_admin:
             return True
 
         group = "search_filter"
         search_type = search.get_base_search_type()
 
         my.alter_search_type_search(search)
-
+      
         rules = my.groups.get(group)
         if not rules:
             return

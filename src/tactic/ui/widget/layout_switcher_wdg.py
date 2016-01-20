@@ -19,7 +19,6 @@ from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import IconButtonWdg
-from tactic.ui.panel import SimpleSideBarWdg
 
 class LayoutSwitcherWdg(BaseRefreshWdg):
 
@@ -162,6 +161,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         pointer_wdg.add(style)
  
         if menu:
+            from tactic.ui.panel import SimpleSideBarWdg
             simple_sidebar = SimpleSideBarWdg(view=menu, search_type="SidebarWdg", target=target) 
             menu_wdg.add(simple_sidebar)
         else:

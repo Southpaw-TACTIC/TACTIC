@@ -20,7 +20,7 @@ import md5
 from pyasm.common import Environment, SecurityException, Xml
 from pyasm.search import *
 from pyasm.unittest import *
-from pyasm.biz import Project
+from pyasm.biz import Project, ExpressionParser
 
 from security import *
 from access_manager import *
@@ -35,6 +35,7 @@ class SecurityTest(unittest.TestCase):
     def _setup(my):
 
         # intialiaze the framework as a batch process
+        Site.set_site('default')
         security = Environment.get_security()
         from pyasm.biz import Project
         Project.set_project("unittest")
@@ -116,6 +117,7 @@ class SecurityTest(unittest.TestCase):
 
     def test_all(my):
         batch = Batch()
+        Environment.get_security().set_admin(True)
 
         from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
         test_env = UnittestEnvironment()
@@ -133,8 +135,11 @@ class SecurityTest(unittest.TestCase):
             #Project.set_project("unittest")
             Environment.get_security()._access_manager =  my.access_manager
             my._tear_down()
+            Environment.get_security().set_admin(True)
             test_env.delete()
+            Environment.get_security().set_admin(True)
             sample3d_env.delete()
+            Site.pop_site()
 
     def _test_initial_access_level(my):
         # before adding process unittest_guy in user group is in MIN access_level
@@ -168,7 +173,6 @@ class SecurityTest(unittest.TestCase):
 
             my._test_security_fail()
             my._test_security_pass()
-
             my._test_initial_access_level()
             my._test_sobject_access_manager()
     
@@ -209,6 +213,7 @@ class SecurityTest(unittest.TestCase):
         my.security.set_admin(True)
 
 
+        my.assertEquals('unittest_guy',  Environment.get_user_name())
         my.assertEquals( False, fail )
 
     def count(my, it):
@@ -256,6 +261,7 @@ class SecurityTest(unittest.TestCase):
         # reset it
         Environment.get_security().reset_access_manager()
 
+        my.security.set_admin(False)
         access_manager = Environment.get_security().get_access_manager()
         access_manager.add_xml_rules(xml)
 
@@ -286,9 +292,11 @@ class SecurityTest(unittest.TestCase):
         access_manager = security.get_access_manager()
         access_manager.add_xml_rules(xml)
 
+   
         search = Search('sthpw/task')
-        tasks = search.get_sobjects()
 
+        tasks = search.get_sobjects()
+      
         # 2 tasks were created above for unittest_guy
         my.assertEquals(2, len(tasks))
         assigned_codes = SObject.get_values(tasks,'assigned', unique=True)
@@ -518,6 +526,8 @@ class SecurityTest(unittest.TestCase):
           <rule group='search_type' code='unittest/person'  project='unittest' access='allow'/>
           <rule group='builtin' key='view_site_admin' access='allow'/>
           <rule group='builtin' key='export_all_csv' project='unittest' access='allow'/>
+          <rule group='builtin' key='import_csv' access='allow'/>
+
           <rule group='builtin' key='retire_delete' project='*' access='allow'/>
         
            </rules>
@@ -536,6 +546,9 @@ class SecurityTest(unittest.TestCase):
 
         # this is the new way to control per project csv export
         keys = [{'key':'export_all_csv', 'project': 'unittest'}, {'key':'export_all_csv'}]
+        test = access_manager.check_access('builtin', keys ,'allow')
+        my.assertEquals(test, True)
+        keys = [{'key':'import_csv', 'project': '*'}, {'key':'import_csv','project': Project.get_project_code()}]
         test = access_manager.check_access('builtin', keys ,'allow')
         my.assertEquals(test, True)
 
@@ -624,6 +637,7 @@ class SecurityTest(unittest.TestCase):
         test = access_manager.check_access('search_type',{'search_type':'sthpw/note','project':'unittest'},'delete')
         my.assertEquals(test, False)
         
+        my.assertEquals('unittest_guy',  Environment.get_user_name())
 
 
     def _test_crypto(my):

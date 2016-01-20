@@ -1037,7 +1037,7 @@ class DeleteProjectCmd(DeleteCmd):
         from pyasm.security import Security
 
         security = Environment.get_security()
-        if security.is_in_group("admin"):
+        if not security.is_in_group("admin"):
             raise Exception("Only admin users can delete projects")
 
 
