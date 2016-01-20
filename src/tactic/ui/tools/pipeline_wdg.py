@@ -782,7 +782,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         };
 
-        var save_function = function(){
+        var save = function(){
             editor_top.removeClass("spt_has_changes");
             var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
@@ -813,7 +813,7 @@ class PipelineListWdg(BaseRefreshWdg):
         var current_group_name = spt.pipeline.get_current_group();
         var group_name = bvr.pipeline_code;
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
-            spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", save_function, ok, {okText: "Save", cancelText: "Don't Save"});
+            spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
         }
         else if (current_group_name == group_name) {
             spt.confirm("Reload current pipeline?", ok, null); 
