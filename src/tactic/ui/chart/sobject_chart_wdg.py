@@ -22,8 +22,8 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types
 
-from chart2_wdg import ChartWdg as ChartWdg
-from chart2_wdg import ChartData as ChartData
+from chart_wdg import ChartWdg as ChartWdg
+from chart_wdg import ChartData as ChartData
 
 
 class BaseChartWdg(BaseRefreshWdg):
@@ -344,7 +344,7 @@ class SObjectChartWdg(BaseChartWdg):
 
 
         # draw a legend
-        from chart2_wdg import ChartLegend
+        from chart_wdg import ChartLegend
         legend = ChartLegend(labels=my.elements)
         top.add(legend)
         #legend.add_style("width: 200px")
