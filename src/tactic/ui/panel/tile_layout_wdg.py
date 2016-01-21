@@ -171,6 +171,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '17',
             'category': 'Display'
 
+    },
+
+    ARGS_KEYS['hide_checkbox'] = {
+            'description': 'If set to true, the checkbox on the tile title will be hidden',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '18',
+            'category': 'Display'
+
     }
 
 
