@@ -171,6 +171,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '17',
             'category': 'Display'
 
+    },
+
+    ARGS_KEYS['hide_checkbox'] = {
+            'description': 'If set to true, the checkbox on the tile title will be hidden',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '18',
+            'category': 'Display'
+
     }
 
 
@@ -1785,7 +1794,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 spt.notify.show_message("Added to Collection");
             }
             else {
-                spt.notify.show_message("The Asset is already in the Collection")
+                spt.notify.show_message("The Asset is already in the Collection");
             }
             if (!dst_top.hasClass("spt_collection_item")){
                 spt.table.refresh_rows([dst_top], null, null);
@@ -1793,7 +1802,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         }
 
         else {
-            spt.notify.show_message("The destination is not a Collection")
+            if (parent_code != src_code){
+                spt.notify.show_message("The destination is not a Collection");
+            }
         }
 
     }
@@ -2059,6 +2070,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         title_div.add("<br clear='all'/>")
         title_div.add_class("hand")
 
+        if my.kwargs.get("hide_checkbox") in ['true', True]:
+            checkbox.add_style("visibility: hidden")
+            title_div.add_style("left: 10px")
 
         description = sobject.get_value("description", no_exception=True)
         if description:
