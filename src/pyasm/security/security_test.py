@@ -491,7 +491,7 @@ class SecurityTest(unittest.TestCase):
         # reset it
         Environment.get_security().reset_access_manager()
 
-        access_manager = AccessManager()
+        access_manager = Environment.get_security().get_access_manager()
 
         xml = Xml()
         xml.read_string('''
@@ -529,29 +529,63 @@ class SecurityTest(unittest.TestCase):
           <rule group='builtin' key='import_csv' access='allow'/>
 
           <rule group='builtin' key='retire_delete' project='*' access='allow'/>
+          <rule group='builtin' key='view_side_bar' access='allow'/>
+          <rule group="project" code="sample3d" access="allow"/>
+          <rule group="project" code="unittest" access="allow"/>
         
            </rules>
         ''')
-
-        
-    
-
         access_manager.add_xml_rules(xml)
 
+        
+
+        # try mixing in a 2nd login_group rule with a project override, mimicking a 
+        # login_group with project_code 
+        xml2 = Xml()
+        xml2.read_string('''
+        <rules>
+          
+          <rule group='builtin' key='view_side_bar' project='sample3d' access='allow'/>
+        </rules>
+        ''')
+ 
+        access_manager.add_xml_rules(xml2)
+
+        access_manager.print_rules('builtin')
+        
         test = access_manager.check_access('builtin', 'view_site_admin','allow')
         my.assertEquals(test, True)
 
+        
+        Project.set_project('sample3d')
         test = access_manager.check_access('builtin', 'export_all_csv','allow')
         my.assertEquals(test, False)
+        Project.set_project('unittest')
+        # old way should work as well
+        test = access_manager.check_access('builtin', 'export_all_csv','allow')
+        my.assertEquals(test, True)
+
 
         # this is the new way to control per project csv export
-        keys = [{'key':'export_all_csv', 'project': 'unittest'}, {'key':'export_all_csv'}]
+        keys = [{'key':'export_all_csv', 'project': 'unittest'}, {'key':'export_all_csv','project': '*'}]
         test = access_manager.check_access('builtin', keys ,'allow')
         my.assertEquals(test, True)
         keys = [{'key':'import_csv', 'project': '*'}, {'key':'import_csv','project': Project.get_project_code()}]
         test = access_manager.check_access('builtin', keys ,'allow')
         my.assertEquals(test, True)
 
+
+        test = access_manager.check_access('builtin', 'view_side_bar','allow')
+        my.assertEquals(test, True)
+        key = { "project": 'unittest', 'key':'view_side_bar' }
+        key1 = { "project": 'sample3d', 'key':'view_side_bar' }
+        key2 = { "project": "*",'key': 'view_side_bar' }
+        keys = [key, key2]
+        test = access_manager.check_access('builtin', keys,'allow')
+        my.assertEquals(test, True)
+        keys = [key1, key2]
+        test = access_manager.check_access('builtin', keys,'allow')
+        my.assertEquals(test, True)
 
         test = access_manager.check_access('builtin', 'retire_delete','allow')
 
@@ -598,6 +632,7 @@ class SecurityTest(unittest.TestCase):
         test = access_manager.get_access('sobject', 'prod/layer' )
         my.assertEquals(test, None)
 
+        Project.set_project('sample3d')
         # security version 2 uses group = search_type
         asset = SearchType.create('prod/asset')
         asset.set_value('name','unit test obj')

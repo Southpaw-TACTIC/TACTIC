@@ -18,7 +18,6 @@ from pyasm.common import Base, Xml, Environment, Common
 from pyasm.search import Search
 
 
-
 class AccessException(Exception):
     pass
 
@@ -28,7 +27,6 @@ class AccessException(Exception):
 class Sudo(object):
 
     def __init__(my):
-        #print "Setting admin"
         my.security = Environment.get_security()
 
         # if not already logged in, login as a safe user (guest)
@@ -251,6 +249,7 @@ class AccessManager(Base):
 
                 #key = str(key) # may need to stringify unicode string
                 rule_keys.append(key)
+                    
                 #key= "%s?project=*" % (rule_key)
                 #rule_keys.append(key)
 
@@ -282,15 +281,10 @@ class AccessManager(Base):
 
 
                 rules[rule_key] = rule_access, attrs2
-                """
-                if rule_key.startswith('code') or group_type.startswith('project') :
-                    print "rule key ", rule_key
-                    for rule, values in rules.items():
-                        print "xml_rule: ", rule, " is ", values[0]
-                """
+            
 
         # FIXME: this one doesn't support the multi-attr structure
-           # convert this to a python data structure
+        # convert this to a python data structure
         group_nodes = xml.get_nodes("rules/group")
         for group_node in group_nodes:
 
@@ -363,10 +357,11 @@ class AccessManager(Base):
         project_code = "*"
         rule_project = None
         
-        is_proj = False
+        
         if isinstance(key, dict):
             # this avoids get_access() behavior changes on calling it twice
             key2 = key.copy()
+            
             rule_project = key.get('project')
             if rule_project:
                 project_code = rule_project
@@ -382,11 +377,9 @@ class AccessManager(Base):
             project_code = key
            
             #key = [('code','plugins')]
-            is_proj = True
 
         key = "%s?project=%s" % (key, project_code)
-        if is_proj:
-            print "final key: ", key
+        
         # Fix added below to remove any unicode string markers from 'key' string ... sometimes the values
         # of the 'key' dictionary that is passed in contains values that are unicode strings, and sometimes
         # values that are ascii.
@@ -396,15 +389,20 @@ class AccessManager(Base):
 
         # boris: Since we took out str() in Common.get_dict_list(), we have to re-introduce this back, but with , instead of : since it's a tuple 
         key = key.replace("', u'", "', '")
-    
+      
         # if there are no rules, just return the default
+
         rules = my.groups.get(group)
+       
+
         if not rules:
             return default
 
 
+
         result = None
         value = rules.get(key)
+        
         if value:
             result, dct = value
     
@@ -439,11 +437,13 @@ class AccessManager(Base):
         if my.is_admin():
             return True
 
-      
+        if isinstance(key, basestring):
+            from pyasm.biz import Project
+            key = [{'key': key, 'project': Project.get_project_code()}, {'key': key, 'project': '*'}]
+        
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
             for item in key:
-              
                 user_access = my.get_access(group, item)
                 if user_access != None:
                     break
@@ -484,15 +484,13 @@ class AccessManager(Base):
 
 
     def alter_search(my, search):
-     
-        if my.is_admin_flag:# and my.was_admin:
+        if my.is_admin_flag:
             return True
 
         group = "search_filter"
         search_type = search.get_base_search_type()
 
         my.alter_search_type_search(search)
-      
         rules = my.groups.get(group)
         if not rules:
             return
@@ -585,7 +583,6 @@ class AccessManager(Base):
                     search.add_filters(column, values, op=op)
 
             del sudo
-            #print search.get_statement() 
 
 
     def alter_search_type_search(my, search):
@@ -640,5 +637,16 @@ class AccessManager(Base):
 
         return access_manager
     get_by_group = staticmethod(get_by_group)
+
+    def print_rules(my, group):
+        '''For debugging, printing out the rules for a particular group'''
+        rules = my.groups[group] 
+        for rule, values in rules.items():
+            if isinstance(values, tuple):
+                v = values[0]
+            else:
+                v = values
+            print "xml_rule: ", rule, " is ", v
+        
 
 
