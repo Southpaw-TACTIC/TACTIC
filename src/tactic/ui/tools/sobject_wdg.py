@@ -527,8 +527,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         tabs = my.kwargs.get("tab_element_names")
+        config = WidgetConfigView.get_by_search_type(my.search_type, "tab_element_names")
+        
         if tabs:
             tabs = tabs.split(",")
+        elif config:
+            tabs = config.get_element_names()
         else:
             tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
 
