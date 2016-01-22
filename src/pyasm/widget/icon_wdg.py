@@ -19,6 +19,14 @@ from pyasm.web import  DivWdg, HtmlElement, WebContainer
 
 class IconWdg(DivWdg):
 
+    '''
+    The format for bootstrap icons are 'BS_<ICON_NAME> where icon_name
+    is the part of the bootstrap icon name after the first dash. 
+
+    Ex: if bootstrap icon is glyphicon glyphicon-remove,
+        icon_name = REMOVE
+    '''
+
     icons = {
     # 16x16 icons		    
     'ADD'                  : "add.png",
