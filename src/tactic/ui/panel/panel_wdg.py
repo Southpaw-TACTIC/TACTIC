@@ -3314,8 +3314,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
-            from collection_wdg import CardLayoutWdg
-            layout_table = CollectionWdg(**kwargs)
+            from collection_wdg import CollectionLayoutWdg
+            layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
