@@ -462,9 +462,12 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
     def process_tactic_mapping(my, tactic_data, metadata):
 
-        geometry = str(metadata.get("Geometry"))
+        geometry = metadata.get("Geometry")
 
         if geometry:
+            if not isinstance(geometry, basestring):
+                geometry = str(geometry)
+                
             p = re.compile("(\d+)x(\d+)\+(\d+)\+(\d+)")
             m = p.match(geometry)
             if m:
