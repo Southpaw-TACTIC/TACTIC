@@ -3051,7 +3051,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     if (pat.test(class_name)) {
         var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names'];
         for (var k=0; k < attr_list.length; k++) {
-            var attAsset Library table to tile view switch wipes searchr_val = target.getAttribute('spt_'+ attr_list[k]);
+            var attr_val = target.getAttribute('spt_'+ attr_list[k]);
             if (attr_val)
                 args[attr_list[k]] = attr_val;
         }
