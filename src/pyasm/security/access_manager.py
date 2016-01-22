@@ -134,7 +134,7 @@ class AccessManager(Base):
             access_level = None
 
         else:
-            raise Exception("[%s] is not a valid access_level_attr" % access_level_attr)
+            raise Exception("[%s] is not a valid access_level_attr" %access_level_attr)
 
         return access_level
 
@@ -239,8 +239,12 @@ class AccessManager(Base):
 
             # add a project code qualifier
             rule_keys = []
-          
-            if project_code == '*' and group_type != 'search_filter':
+         
+            # project rule is special
+            if group_type == 'project':
+                key = str(rule_key)
+                rule_keys.append(key)
+            elif project_code == '*' and group_type != 'search_filter':
                 for code in my.project_codes:
                     key = "%s?project=%s" % (rule_key, code)
                     rule_keys.append(key)
@@ -361,7 +365,6 @@ class AccessManager(Base):
         if isinstance(key, dict):
             # this avoids get_access() behavior changes on calling it twice
             key2 = key.copy()
-            
             rule_project = key.get('project')
             if rule_project:
                 project_code = rule_project
@@ -372,13 +375,11 @@ class AccessManager(Base):
                 key = key2['key']
             else:
                 key = Common.get_dict_list(key2)
-        # special case for projects
-        elif group == "project":
-            project_code = key
-           
-            #key = [('code','plugins')]
-
-        key = "%s?project=%s" % (key, project_code)
+       
+        if group == 'project':
+            key = str(key)
+        else:
+            key = "%s?project=%s" % (key, project_code)
         
         # Fix added below to remove any unicode string markers from 'key' string ... sometimes the values
         # of the 'key' dictionary that is passed in contains values that are unicode strings, and sometimes
@@ -406,13 +407,12 @@ class AccessManager(Base):
         if value:
             result, dct = value
     
-        # DEPRECATED
-        if not result:
+        # if default is explicitly turned off by caller, don't use __DEFAULT__
+        if not result and default != None:
             result = rules.get('__DEFAULT__')
 
         if not result:
             result = default
-
         return result
 
 
@@ -439,12 +439,24 @@ class AccessManager(Base):
 
         if isinstance(key, basestring):
             from pyasm.biz import Project
-            key = [{'key': key, 'project': Project.get_project_code()}, {'key': key, 'project': '*'}]
+            # order of keys shouldn't matter
+            if group == 'project':
+                key = [{'code': key}, {'code': '*'}]
+            else:
+                key = [{'key': key, 'project': Project.get_project_code()}, {'key': key, 'project': '*'}]
+            #key = [ {'key': key, 'project': '*'}, {'key': key, 'project': Project.get_project_code()}]
         
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
-            for item in key:
-                user_access = my.get_access(group, item)
+            # use default only on the last item in list
+            for idx, item in enumerate(key):
+                use_default = idx == len(key) - 1
+                if use_default:
+                    rule_default = default
+                else:
+                    rule_default = None
+                user_access = my.get_access(group, item, default=rule_default)
+               
                 if user_access != None:
                     break
         else:
@@ -640,7 +652,10 @@ class AccessManager(Base):
 
     def print_rules(my, group):
         '''For debugging, printing out the rules for a particular group'''
-        rules = my.groups[group] 
+        rules = my.groups.get(group)
+        if not rules:
+            print "no rules for %s" %group
+            return
         for rule, values in rules.items():
             if isinstance(values, tuple):
                 v = values[0]

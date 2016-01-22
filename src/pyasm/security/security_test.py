@@ -530,28 +530,29 @@ class SecurityTest(unittest.TestCase):
 
           <rule group='builtin' key='retire_delete' project='*' access='allow'/>
           <rule group='builtin' key='view_side_bar' access='allow'/>
-          <rule group="project" code="sample3d" access="allow"/>
-          <rule group="project" code="unittest" access="allow"/>
-        
+                  
            </rules>
         ''')
         access_manager.add_xml_rules(xml)
 
         
 
-        # try mixing in a 2nd login_group rule with a project override, mimicking a 
-        # login_group with project_code 
+        # try mixing in a 2nd login_group rule with a project override, mimmicking a 
+        # login_group with project_code. but project group is special it doesn't get the usual
+        # project_override treatment
         xml2 = Xml()
         xml2.read_string('''
         <rules>
-          
+          <rule group="project" code="sample3d" access="allow"/>
+          <rule group="project" code="unittest" access="allow"/>
+
           <rule group='builtin' key='view_side_bar' project='sample3d' access='allow'/>
         </rules>
         ''')
  
         access_manager.add_xml_rules(xml2)
 
-        access_manager.print_rules('builtin')
+        access_manager.print_rules('project')
         
         test = access_manager.check_access('builtin', 'view_site_admin','allow')
         my.assertEquals(test, True)
@@ -560,10 +561,20 @@ class SecurityTest(unittest.TestCase):
         Project.set_project('sample3d')
         test = access_manager.check_access('builtin', 'export_all_csv','allow')
         my.assertEquals(test, False)
+
+        # old way of checking project
+        test = access_manager.check_access('project', 'sample3d','allow')
+        my.assertEquals(test, True)
+
         Project.set_project('unittest')
         # old way should work as well
         test = access_manager.check_access('builtin', 'export_all_csv','allow')
         my.assertEquals(test, True)
+        
+        # default to the system's hardcoded deny for builtin
+        test = access_manager.check_access('builtin', 'export_all_csv','allow', default='deny')
+        my.assertEquals(test, True)
+
 
 
         # this is the new way to control per project csv export
