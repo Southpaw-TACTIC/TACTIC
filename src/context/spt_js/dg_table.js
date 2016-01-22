@@ -2701,7 +2701,7 @@ spt.dg_table.search_cbk = function(evt, bvr){
         panel = bvr.panel;
     }
     else if (bvr.src_el.hasClass('spt_view_panel')) {
-        panel = element;
+        panel = bvr.src_el;
     }
     else {
         panel = spt.get_parent(bvr.src_el, ".spt_view_panel");
@@ -2817,7 +2817,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     // this is usually null
     if (search_top == null) {
-        search_top = spt.get_cousin(search_el, ".spt_view_panel", ".spt_search");
+        if (spt.has_class( search_el, "spt_view_panel")){ 
+            search_top = search_el.getElement('.spt_search');
+        } else {
+            search_top = spt.get_cousin(search_el, ".spt_view_panel", ".spt_search");
+        }    
     }
     if (search_top == null) {
         spt.panel.refresh(panel);
