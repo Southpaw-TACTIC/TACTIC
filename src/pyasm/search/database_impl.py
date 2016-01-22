@@ -122,7 +122,7 @@ class DatabaseImpl(DatabaseImplInterface):
         return None
     
     def process_date(my, value):
-        '''process date str to work with db before commit. SQLServer needs it'''
+        '''DatabaseImpl process date str to work with db before commit. SQLServer needs it'''
         return value
 
 
@@ -1683,6 +1683,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     # Type process methods
     #
     def process_value(my, name, value, column_type="varchar"):
+        '''Postgres process_value'''
         if column_type == 'timestamp':
             quoted = True
             if value == "NOW":

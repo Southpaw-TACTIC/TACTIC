@@ -18,7 +18,6 @@ from pyasm.common import Base, Xml, Environment, Common
 from pyasm.search import Search
 
 
-
 class AccessException(Exception):
     pass
 
@@ -28,7 +27,6 @@ class AccessException(Exception):
 class Sudo(object):
 
     def __init__(my):
-        #print "Setting admin"
         my.security = Environment.get_security()
 
         # if not already logged in, login as a safe user (guest)
@@ -36,26 +34,28 @@ class Sudo(object):
             #my.security.login_as_guest()
             pass
 
-        login = Environment.get_user_name()
-        if login == "admin" or my.security.is_in_group('admin'):
-            my.was_admin = True
-        else:
-            my.was_admin = False
-
-
         my.access_manager = my.security.get_access_manager()
+        login = Environment.get_user_name()
+        my.was_admin = my.access_manager.was_admin
+        if my.was_admin == None:
+            my.access_manager.set_up()
+            my.was_admin = my.access_manager.was_admin
+     
         my.access_manager.set_admin(True)
+    
+            
 
     def __del__(my):
-        #print "Removing admin"
+        
         # remove if I m not in admin group
-        if not my.security.is_in_group('admin') and my.was_admin == False:
+        if my.was_admin == False:
             my.access_manager.set_admin(False)
 
+
     def exit(my):
-        #print "Removing admin"
+        
         # remove if I m not in admin group
-        if not my.security.is_in_group('admin') and my.was_admin == False:
+        if my.was_admin == False:
             my.access_manager.set_admin(False)
 
 
@@ -69,6 +69,8 @@ class AccessManager(Base):
         my.groups = {}
         my.summary = {}
         my.project_codes = None
+        
+        my.was_admin = None 
 
 
 
@@ -76,8 +78,26 @@ class AccessManager(Base):
         return my.summary
 
 
-    def set_admin(my, flag):
+    def set_up(my):
+        if my.was_admin == None:
+            security = Environment.get_security()
+            my.was_admin = security.is_in_group('admin')
+
+    def set_admin(my, flag, sudo=False):
+        my.set_up()
         my.is_admin_flag = flag
+
+        security = Environment.get_security()
+        if not my.was_admin and flag:
+            if 'admin' not in security.get_group_names():
+                security._group_names.append('admin')
+        elif 'admin' in security.get_group_names():
+            if not my.was_admin:
+                security._group_names.remove('admin')
+                
+
+
+
 
     def is_admin(my):
         return my.is_admin_flag
@@ -114,7 +134,7 @@ class AccessManager(Base):
             access_level = None
 
         else:
-            raise Exception("[%s] is not a valid access_level_attr" % access_level_attr)
+            raise Exception("[%s] is not a valid access_level_attr" %access_level_attr)
 
         return access_level
 
@@ -129,7 +149,7 @@ class AccessManager(Base):
           </group>
         </rules>
         '''
-
+        
         from pyasm.search import SObject
         if isinstance(xml, SObject):
             sobject = xml
@@ -138,7 +158,6 @@ class AccessManager(Base):
                 project_code = sobject.get_value("project_code")
 
         project_override = project_code
-
         if isinstance(xml, basestring):
             xmlx = Xml()
             xmlx.read_string(xml)
@@ -220,7 +239,12 @@ class AccessManager(Base):
 
             # add a project code qualifier
             rule_keys = []
-            if project_code == '*' and group_type != 'search_filter':
+         
+            # project rule is special
+            if group_type == 'project':
+                key = str(rule_key)
+                rule_keys.append(key)
+            elif project_code == '*' and group_type != 'search_filter':
                 for code in my.project_codes:
                     key = "%s?project=%s" % (rule_key, code)
                     rule_keys.append(key)
@@ -229,6 +253,9 @@ class AccessManager(Base):
 
                 #key = str(key) # may need to stringify unicode string
                 rule_keys.append(key)
+                    
+                #key= "%s?project=*" % (rule_key)
+                #rule_keys.append(key)
 
             rule_access = xml.get_attribute(rule_node, 'access')
 
@@ -258,11 +285,7 @@ class AccessManager(Base):
 
 
                 rules[rule_key] = rule_access, attrs2
-
-
-        #for rule, values in rules.items():
-        #    print "rule: ", rule, values[0]
-
+            
 
         # FIXME: this one doesn't support the multi-attr structure
         # convert this to a python data structure
@@ -322,13 +345,12 @@ class AccessManager(Base):
                     rules[rule_key] = rule_access, attrs2
 
 
-
-    def get_access(my, type, key, default=None):
+    def get_access(my, group, key, default=None):
 
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
             for item in key:
-                user_access = my.get_access(type, item)
+                user_access = my.get_access(group, item)
                 if user_access != None:
                     return user_access
 
@@ -337,6 +359,9 @@ class AccessManager(Base):
 
         # qualify the key with a project_code 
         project_code = "*"
+        rule_project = None
+        
+        
         if isinstance(key, dict):
             # this avoids get_access() behavior changes on calling it twice
             key2 = key.copy()
@@ -350,13 +375,11 @@ class AccessManager(Base):
                 key = key2['key']
             else:
                 key = Common.get_dict_list(key2)
-        # special case for projects
-        elif type == "project":
-            project_code = key
-            key = [('code','plugins')]
-        
-        key = "%s?project=%s" % (key, project_code)
-        #print "key: ", key
+       
+        if group == 'project':
+            key = str(key)
+        else:
+            key = "%s?project=%s" % (key, project_code)
         
         # Fix added below to remove any unicode string markers from 'key' string ... sometimes the values
         # of the 'key' dictionary that is passed in contains values that are unicode strings, and sometimes
@@ -367,25 +390,29 @@ class AccessManager(Base):
 
         # boris: Since we took out str() in Common.get_dict_list(), we have to re-introduce this back, but with , instead of : since it's a tuple 
         key = key.replace("', u'", "', '")
-       
+      
         # if there are no rules, just return the default
-        rules = my.groups.get(type)
+
+        rules = my.groups.get(group)
+       
+
         if not rules:
             return default
 
 
+
         result = None
         value = rules.get(key)
+        
         if value:
             result, dct = value
     
-        # DEPRECATED
-        if not result:
+        # if default is explicitly turned off by caller, don't use __DEFAULT__
+        if not result and default != None:
             result = rules.get('__DEFAULT__')
 
         if not result:
             result = default
-
         return result
 
 
@@ -402,20 +429,40 @@ class AccessManager(Base):
 
 
     def check_access(my, group, key, required_access, value=None, is_match=False, default="edit"):
-        '''checks the access level of the user for a give group of access
-        and a key'''
+        '''Check the access level of the user for a given group of rule and category key
+            group - rule category like built-in or element
+            key - string or list of dictiorary like view_side_bar or ['search_type':'sthpw/task', 'project','main']
+            required_access - speific access level like allow, deny, edit, view, delete'''
+
         if my.is_admin():
             return True
 
+        if isinstance(key, basestring):
+            from pyasm.biz import Project
+            # order of keys shouldn't matter
+            if group == 'project':
+                key = [{'code': key}, {'code': '*'}]
+            else:
+                key = [{'key': key, 'project': Project.get_project_code()}, {'key': key, 'project': '*'}]
+            #key = [ {'key': key, 'project': '*'}, {'key': key, 'project': Project.get_project_code()}]
+        
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
-            for item in key:
-                user_access = my.get_access(group, item)
+            # use default only on the last item in list
+            for idx, item in enumerate(key):
+                use_default = idx == len(key) - 1
+                if use_default:
+                    rule_default = default
+                else:
+                    rule_default = None
+                user_access = my.get_access(group, item, default=rule_default)
+               
                 if user_access != None:
                     break
         else:
             if value:
                 key = "%s||%s" % (key, value)
+                
             user_access = my.get_access(group, key)
 
 
@@ -456,7 +503,6 @@ class AccessManager(Base):
         search_type = search.get_base_search_type()
 
         my.alter_search_type_search(search)
-
         rules = my.groups.get(group)
         if not rules:
             return
@@ -549,7 +595,6 @@ class AccessManager(Base):
                     search.add_filters(column, values, op=op)
 
             del sudo
-            #print search.get_statement() 
 
 
     def alter_search_type_search(my, search):
@@ -604,5 +649,19 @@ class AccessManager(Base):
 
         return access_manager
     get_by_group = staticmethod(get_by_group)
+
+    def print_rules(my, group):
+        '''For debugging, printing out the rules for a particular group'''
+        rules = my.groups.get(group)
+        if not rules:
+            print "no rules for %s" %group
+            return
+        for rule, values in rules.items():
+            if isinstance(values, tuple):
+                v = values[0]
+            else:
+                v = values
+            print "xml_rule: ", rule, " is ", v
+        
 
 

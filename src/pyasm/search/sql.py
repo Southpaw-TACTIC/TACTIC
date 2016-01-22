@@ -19,7 +19,7 @@ import re, datetime
 from threading import Lock
 
 from pyasm.common import Config, TacticException, Environment
-
+from dateutil.tz import * 
 
 # import database libraries
 DATABASE_DICT = {}
@@ -459,6 +459,7 @@ class Sql(Base):
         # pgdb connection code
         auth = None
         try:
+            tz_name = datetime.datetime.now(tzlocal()).tzname()
             if my.vendor == "PostgreSQL":
                 # psycopg connection code
                 if my.password == "" or my.password == "none":
@@ -473,6 +474,8 @@ class Sql(Base):
                     (my.host, my.port, my.database_name, sslmode, my.user, password_str)
                 my.conn = my.pgdb.connect(auth)
 
+                #TODO: check other db impl on timezone impl
+                my.do_update("SET timezone='%s'"%tz_name)
             elif my.vendor == "Sqlite":
 
                 db_dir = Config.get_value("database", "sqlite_db_dir")

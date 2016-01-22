@@ -379,7 +379,7 @@
         <display class="pyasm.widget.ThumbInputWdg"/>
         <action class="NullAction"/>
     </element>
-    <element name="picture"/>
+    <element name="preview"/>
 
     <element name="login">
         <action class="LoginAction">

@@ -3162,6 +3162,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_insert = my.kwargs.get("show_insert")
         insert_view = my.kwargs.get("insert_view")
         edit_view = my.kwargs.get("edit_view")
+        show_border = my.kwargs.get("show_border")
         show_select = my.kwargs.get("show_select")
         show_refresh = my.kwargs.get("show_refresh")
         show_gear = my.kwargs.get("show_gear")
@@ -3227,6 +3228,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "search_key": search_key,
             "parent_key": parent_key,
             "state": my.state,
+            "show_border": show_border,
             "search_class": search_class,
             "search_view": search_view,
             "search_limit": search_limit,
@@ -3290,7 +3292,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
-            kwargs['show_border'] = my.kwargs.get("show_border")
             kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
@@ -3313,8 +3314,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
-            from collection_wdg import CardLayoutWdg
-            layout_table = CollectionWdg(**kwargs)
+            from collection_wdg import CollectionLayoutWdg
+            layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg

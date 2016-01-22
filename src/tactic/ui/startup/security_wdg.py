@@ -967,6 +967,11 @@ class SecurityGroupListWdg(BaseRefreshWdg):
 
     def get_display(my):
         top = my.top
+        view = my.kwargs.get("view")
+        expression = my.kwargs.get("expression")
+
+        if not view:
+            view = "startup"
 
         '''
         show_all_groups = True
@@ -982,9 +987,10 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
-            view='startup',
+            view=view,
             simple_search_view='simple_search',
             expand_on_load=True,
+            expression=expression
         )
         top.add(layout)
 
