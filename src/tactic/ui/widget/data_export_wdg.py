@@ -1599,7 +1599,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         ''' given csv data and a column idx, determine appropriate data type '''
         column_types = {}
         data_cell_list = []
-        my.CHECK = 6
+        #my.CHECK = 6
         column_type = ''       
         for k, row in enumerate(csv_data):
             if k >= len(row):
@@ -1608,7 +1608,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 data = row[idx] 
             if data.strip() == '':
                 continue
-
+            '''
             if my.CHECK == 6:
                 column_type = my._check_timestamp(data)
             if my.CHECK == 5:
@@ -1619,7 +1619,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type = my._check_float(data)
             if my.CHECK == 2:
                 column_type = my._check_varchar(data)
-
+            '''
             # TEST: use democracy to determine type
             column_type = my._check_timestamp(data)
             if not column_type:
@@ -1664,7 +1664,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         if len(data) <= 256:
             column_type = 'varchar(256)'
         else:
-            my.CHECK = 1
+            #my.CHECK = 1
             column_type = 'text'
        
         return column_type
@@ -1674,7 +1674,8 @@ class PreviewDataWdg(BaseRefreshWdg):
         if data in ['true', 'True', 'False', 'false', '0','1']:
             column_type = 'boolean'
         else:
-            my.CHECK = 5
+            pass
+            #my.CHECK = 5
 
         return column_type
 
@@ -1684,7 +1685,8 @@ class PreviewDataWdg(BaseRefreshWdg):
             int(data)
             column_type = 'integer'
         except ValueError, e:
-            my.CHECK = 3
+            pass
+            #my.CHECK = 3
        
         return column_type
 
@@ -1694,7 +1696,8 @@ class PreviewDataWdg(BaseRefreshWdg):
             float(data)
             column_type = 'float'
         except ValueError, e:
-            my.CHECK = 2
+            pass
+            #my.CHECK = 2
         return column_type
 
     def _check_timestamp(my, data):
@@ -1706,12 +1709,15 @@ class PreviewDataWdg(BaseRefreshWdg):
             else:
                 # if it is just some number instead of a real date or timestamp
                 column_type = my._check_integer(data)
+                '''
                 if column_type:
                     my.CHECK = 4
                 else:
                     my.CHECK = 3
+                '''
         except Exception, e:
-            my.CHECK = 4
+            pass
+            #my.CHECK = 4
            
         return column_type 
 
