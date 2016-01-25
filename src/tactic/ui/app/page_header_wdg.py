@@ -502,6 +502,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                     continue
 
                 project_code = project.get_code()
+                key = {'code': project_code}
                 if not security.check_access("project", project_code, "view"):
                     continue
                 
