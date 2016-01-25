@@ -530,12 +530,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config = WidgetConfigView.get_by_search_type(my.search_type, "tab_element_names")
         
         if tabs:
-            tabs = tabs.split(",")
+            tabs = [x.strip() for x in tabs.split(',')] 
         elif config:
             tabs = config.get_element_names()
         else:
             tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
-
+        
         if "info" not in tabs:
             tabs.insert(0, "info")
 
