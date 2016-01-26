@@ -1095,9 +1095,13 @@ class Security(Base):
         return my._is_logged_in
 
     def is_admin(my):
+        
         return my._access_manager.is_admin()
 
     def set_admin(my, flag):
+        
+        if flag == my._access_manager.is_admin_flag:
+            return
         return my._access_manager.set_admin(flag)
 
     def get_license(my):
@@ -1120,7 +1124,10 @@ class Security(Base):
 
 
     def get_login(my):
+        
+        return my._login
         if my.is_admin():
+            """
             if not my._admin_login:
                 login = SearchType.create("sthpw/login")
                 login.set_value("login", "admin")
@@ -1130,6 +1137,7 @@ class Security(Base):
                 login.set_value("display_name", "Administrator")
                 my._admin_login = login
             return my._admin_login
+            """
         else:
             return my._login
 
