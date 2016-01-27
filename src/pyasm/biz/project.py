@@ -266,9 +266,8 @@ class Project(SObject):
     def get_default_project(cls):
         from pyasm.security import Site
         project = Site.get().get_default_project()
-        if project:
-            return project
-        project = Config.get_value("install", "default_project")
+        if project == None:
+            project = Config.get_value("install", "default_project")
         return project
     get_default_project = classmethod(get_default_project) 
 

@@ -775,7 +775,7 @@ class Site(object):
 
 
     def get_default_project(cls):
-        return
+        return None
     get_default_project = classmethod(get_default_project)
 
 
