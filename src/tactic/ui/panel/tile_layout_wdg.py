@@ -1765,6 +1765,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     log.debug("Failed to add");
                     }
                 }
+                else {
+                    return;
+                }
             }
 
             // Multiple selections drag and drop
@@ -1787,6 +1790,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                         log.debug("Failed to add");
                         }
                         
+                    }
+                    else {
+                        return;
                     }
                 }  
             }
