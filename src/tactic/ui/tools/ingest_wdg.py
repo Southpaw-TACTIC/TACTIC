@@ -36,6 +36,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
+        'process': 'Process to ingest into',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
@@ -101,32 +102,38 @@ class IngestUploadWdg(BaseRefreshWdg):
         from pyasm.widget import SelectWdg
         search_type_obj = SearchType.get(my.search_type)
         base_type = search_type_obj.get_base_key()
-        search = Search("sthpw/pipeline")
-        search.add_filter("search_type", base_type)
-        pipelines = search.get_sobjects()
-        if pipelines:
-            pipeline = pipelines[0]
 
-            process_names = pipeline.get_process_names()
-            if process_names:
-                title_wdg = DivWdg()
-                div.add(title_wdg)
-                title_wdg.add("Process")
-                title_wdg.add_style("margin-top: 20px")
-                title_wdg.add_style("font-size: 16px")
+        process_names = []
+        pipeline_search = Search("sthpw/pipeline")
+        pipeline_search.add_filter("search_type", base_type)
+        pipelines = pipeline_search.get_sobjects()
+        for pipeline in pipelines:
+            process_names.extend(pipeline.get_process_names())
+  
+        selected_process = my.kwargs.get("process")
+        if selected_process:
+            process_names.append(selected_process)
+        process_names = list(set(process_names))
 
-                desc_wdg = DivWdg("Select which process to ingest these files into")
-                div.add(desc_wdg)
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Process")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
 
-                div.add("<br/>")
+        desc_wdg = DivWdg("Select which process to ingest these files into")
+        div.add(desc_wdg)
 
-                select = SelectWdg("process")
-                div.add(select)
-                process_names.append("---")
-                process_names.append("publish")
-                process_names.append("icon")
-                select.set_option("values", process_names)
-        
+        div.add("<br/>")
+
+        select = SelectWdg("process")
+        div.add(select)
+        process_names.append("---")
+        process_names.append("publish")
+        process_names.append("icon")
+        select.set_option("values", process_names)
+        if selected_process:
+            select.set_option("default", selected_process)
 
         div.add("<br/>")
         div.add("<hr/>")
@@ -271,7 +278,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Ingest Files")
         title_wdg.add_style("font-size: 25px")
 
-        desc_div = DivWdg("You can uplaod any type of file.  Just drag files into the box or click 'Select Files'")
+        desc_div = DivWdg("Drag files into the box or click 'Select Files'")
         div.add(desc_div)
 
         div.add("<hr/>")
@@ -1518,7 +1525,8 @@ class IngestUploadCmd(Command):
 
                     full_relative_dir = "%s/%s" % (relative_dir, date_str)
                     sobject.set_value("relative_dir", full_relative_dir)
-
+           
+            # FIXME: What is the purpose of parent_key?
             if parent_key:
                 parent = Search.get_by_search_key(parent_key)
                 if parent:
