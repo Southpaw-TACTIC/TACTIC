@@ -1184,9 +1184,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
-        from collection_wdg import CollectionAddWdg
-        collection_div = CollectionAddWdg(search_type=my.search_type)
-        wdg_list.append( {'wdg': collection_div} )
+        show_collection_tool = my.kwargs.get("show_collection_tool")
+
+        if show_collection_tool not in ["false", False]:
+            from collection_wdg import CollectionAddWdg
+            collection_div = CollectionAddWdg(search_type=my.search_type)
+            wdg_list.append( {'wdg': collection_div} )
         
 
 

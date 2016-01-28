@@ -212,6 +212,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'default|compact',
             'category': 'Display',
             'order': '15'
+        },
+
+        "show_collection_tool": {
+            'description': 'determines whether to show the collection button or not',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display',
+            'order': '16'
         }
         
 

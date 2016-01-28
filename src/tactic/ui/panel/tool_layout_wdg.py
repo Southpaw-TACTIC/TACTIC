@@ -61,6 +61,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'values': 'true|false',
             "order": '5',
             'category': 'Display'
+        },
+        "show_collection_tool": {
+            'description': "determines whether to show the collection button or not",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '6',
+            'category': 'Display'
         }
     } 
 
