@@ -2796,6 +2796,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '20'
         }, 
 
+        "show_collection_tool" : {
+            'description': 'determines whether to show the collection button or not',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display',
+            'order': '21'
+        }, 
+
 
         "link": {
             'description': "Definition from a link",
@@ -3181,6 +3189,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
+        show_collection_tool = my.kwargs.get("show_collection_tool")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3255,6 +3264,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "expand_mode": expand_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
+            "show_collection_tool": show_collection_tool
             #"search_wdg": search_wdg
             
         }
