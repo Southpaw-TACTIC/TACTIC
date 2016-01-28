@@ -49,12 +49,15 @@ class TacticIndex:
 
         from pyasm.security import Site
         default_project = Site.get().get_default_project()
-        if not default_project:
-            default_project = "admin"
-
-        path = path.rstrip("/")
-        path = "%s/%s" % (path, default_project)
-
+        #if not default_project:
+        #    default_project = "admin"
+       
+        if default_project:
+            path = path.rstrip("/")
+            path = "%s/%s" % (path, default_project)
+        else:
+            path = "/tactic/default"
+      
         return '''<META http-equiv="refresh" content="0;URL=%s">''' % path
     index.exposed = True
 
@@ -336,6 +339,8 @@ class CherryPyStartup(CherryPyStartup20):
 
         if not root_initialized:
             project_code = Project.get_default_project()
+            if not project_code:
+                project_code = Config.get_value('install','default_project')
             if project_code and project_code !='default':
                 from tactic.ui.app import SitePage
                 cherrypy.root.tactic = SitePage(project_code)
