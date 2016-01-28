@@ -486,6 +486,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
 
+        elif my.kwargs.get("sobjects"):
+            my.sobjects = my.kwargs.get("sobjects")
 
 
 

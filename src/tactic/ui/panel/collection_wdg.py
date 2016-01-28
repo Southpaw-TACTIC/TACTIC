@@ -680,7 +680,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 search_type=my.search_type,
                 show_shelf=False,
                 show_search_limit=False,
-                sobjects=my.sobjects
+                sobjects=my.sobjects,
+                do_search='false'
         )
         div.add(tile)
 
