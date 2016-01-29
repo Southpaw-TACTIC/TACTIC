@@ -766,7 +766,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         border_color = div.get_color("table_border",  default="border")
 
        
-        #div.add_color("background", "background",-3)
+        div.add_color("background", "background",-3)
 
         """
         if not my.kwargs.get("__hidden__"):

@@ -95,7 +95,8 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             widget.add( sobject.get_value(column) )
             widget.add_style('text-decoration: underline')
         else:
-            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+            #widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+            widget = IconButtonWdg(title=title, icon="BS_SEARCH")
             div.add_style("width: 26px")
             div.add_style("margin-left: auto")
             div.add_style("margin-right: auto")

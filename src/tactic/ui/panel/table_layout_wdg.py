@@ -1827,6 +1827,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.edit_wdgs = {}
         table = Table()
         table.add_style("display: none")
+        table.add_class("spt_table_insert_table")
 
         insert_sobject = SearchType.create(my.search_type)
 
@@ -3863,7 +3864,10 @@ spt.table.add_new_item = function(kwargs) {
         kwargs = {};
     }
 
-    var insert_row = spt.table.get_insert_row();
+    var layout = spt.table.get_layout();
+    var table = layout.getElement(".spt_table_insert_table")
+    var insert_row = table.getElement(".spt_table_insert_row");
+    //var insert_row = spt.table.get_insert_row();
 
     var row;
     var position;
