@@ -950,9 +950,10 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         title_wdg.add_style("font-size: 1.4em")
         title_wdg.add_style("margin-bottom: 5px")
 
-        desc_wdg = DivWdg()
-        td.add(desc_wdg)
-        desc_wdg.add("Detailed information about this item.  Want to edit the info? <a>Click here</a>")
+        # TODO: Offer option to edit. What is some users are not allowed to edit?
+        #desc_wdg = DivWdg()
+        #td.add(desc_wdg)
+        #desc_wdg.add("Detailed information about this item.  Want to edit the info? <a>Click here</a>")
         td.add("<hr/>")
 
 
