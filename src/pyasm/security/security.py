@@ -775,7 +775,7 @@ class Site(object):
 
 
     def get_default_project(cls):
-        return
+        return Config.get_value("install", "default_project")
     get_default_project = classmethod(get_default_project)
 
 
@@ -1245,6 +1245,7 @@ class Security(Base):
             my._login = SearchType.create("sthpw/login")
             my._login.set_value("code", login_name)
             my._login.set_value("login", login_name)
+            my._login.set_value("upn", login_name)
             my._login.set_value("first_name", "Guest")
             my._login.set_value("last_name", "User")
             my._login.set_value("display_name", "Guest")
