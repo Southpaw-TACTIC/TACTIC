@@ -22,7 +22,7 @@ from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import SwapDisplayWdg, CheckboxWdg, IconButtonWdg, IconWdg, TextWdg, TextAreaWdg, SelectWdg, ProdIconButtonWdg, HiddenWdg
 from pyasm.prod.biz import ProdSetting
 #from tactic.ui.panel import TableLayoutWdg
-from tactic.ui.container import DialogWdg, MenuWdg, MenuItem
+from tactic.ui.container import DialogWdg, MenuWdg, MenuItem, SmartMenu, Menu
 from pyasm.security import Login
 from pyasm.widget import ThumbWdg
 
@@ -666,7 +666,7 @@ class DiscussionWdg(BaseRefreshWdg):
         }
         '''
         })
- 
+
 
     add_layout_behaviors = classmethod(add_layout_behaviors)
 
@@ -1541,9 +1541,13 @@ class NoteCollectionWdg(BaseRefreshWdg):
         my.note_format = my.kwargs.get("note_format")
 
 
-        div = DivWdg()
+        div = my.top
 
         context_count = 0
+
+
+
+       
 
         for i, note in enumerate(notes):
 
@@ -1561,6 +1565,8 @@ class NoteCollectionWdg(BaseRefreshWdg):
                 note_hidden = False
 
             note_wdg = my.get_note_wdg(note, note_hidden=note_hidden)
+
+
             """
             if i % 2 == 0:
                 note_wdg.add_color("background", "background", -3)
@@ -1648,6 +1654,7 @@ class NoteWdg(BaseRefreshWdg):
         my.set_as_panel(div)
         div.add_class("spt_note")
         div.add_attr('note_search_key', note.get_search_key())
+        div.add_class("spt_note_top")
 
 
         note_value = note.get_value("note") 
@@ -1672,7 +1679,6 @@ class NoteWdg(BaseRefreshWdg):
         content.add_style("margin: 4px")
 
         div.add(content)
-        content.add_class("spt_note_top")
 
 
         tr = content.add_row()
@@ -1684,10 +1690,64 @@ class NoteWdg(BaseRefreshWdg):
         #td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 0px 5px")
+
+
         title = DivWdg()
         title.add_class("spt_note_header")
         title.add_style("margin: 5px 12px")
         #title.add_style("font-weight: bold")
+
+
+
+
+
+        icon = IconButtonWdg(title="Options", icon="BS_CHEVRON_DOWN")
+        title.add(icon)
+        icon.add_style("float: right")
+        icon.add_style("margin-top: -3px");
+
+ 
+        menu = Menu(width=120)
+        menu_item = MenuItem(type='title', label='Actions ...')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Edit Note')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Change Status')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Delete Note')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_note_top");
+            var search_key = top.getAttribute("note_search_key");
+            spt.confirm( "Are you sure you wish to delete this note?", function() {
+
+                var server = TacticServerStub.get();
+                server.delete_sobject(search_key);
+
+                spt.discussion.refresh(activator);
+                //spt.behavior.destroy_element(top);
+            } )
+            
+            '''
+        } )
+
+        menus = [menu]
+
+        SmartMenu.add_smart_menu_set( icon, { 'NOTE_EDIT_CTX': menus } )
+        SmartMenu.assign_as_local_activator( icon, "NOTE_EDIT_CTX", True )
+
+
+
+
+
+
+
 
         tbody = content.add_tbody()
 
@@ -1759,6 +1819,13 @@ class NoteWdg(BaseRefreshWdg):
             for attachment in attachments:
                 attachment_codes.append( attachment.get_code() )
             btn.add_attr("spt_note_attachment_codes", "|".join(attachment_codes) )
+
+
+
+
+
+
+
 
 
         tbody.add_class("spt_note_content")
