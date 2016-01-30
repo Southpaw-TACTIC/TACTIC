@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg', 'NoteCollectionWdg']
+__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'NoteStatusEditWdg', 'NoteCollectionWdg']
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
@@ -125,10 +125,10 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
     def handle_th(my, th, wdg_idx=None):
 
-        edit_wdg = DiscussionEditWdg()
-        my.menu = edit_wdg.get_menu()
-
-        th.add(edit_wdg)
+        #edit_wdg = DiscussionEditWdg()
+        #my.menu = edit_wdg.get_menu()
+        #th.add(edit_wdg)
+        pass
 
 
     def get_width(my):
@@ -266,7 +266,13 @@ class DiscussionElementWdg(BaseTableElementWdg):
         return ' '.join(comment_area)
 
 
+
+#
+# DEPRECATED
+#
+"""
 class DiscussionEditWdg(BaseRefreshWdg):
+
 
     def init(my):
         my.top_class = 'spt_note_edit_panel'
@@ -447,6 +453,10 @@ class DiscussionEditWdg(BaseRefreshWdg):
         my.menu.add(menu_item)
 
         return widget
+
+"""
+
+
 
 class DiscussionWdg(BaseRefreshWdg):
     '''Special widget to add work hours'''
@@ -949,8 +959,8 @@ class DiscussionWdg(BaseRefreshWdg):
         return allowed
 
 
-
-    def get_menu_wdg(my, top):
+    """
+    def get_menu_wdgX(my, top):
         '''Get the menu setup so the caller can place it outside this DiscussionWdg 
            with the top element passed in'''
         edit_wdg = DiscussionEditWdg()
@@ -966,6 +976,7 @@ class DiscussionWdg(BaseRefreshWdg):
         my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
         my.menu.set_activator_out(top, 'spt_discussion_top')
         return edit_wdg
+    """
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''
@@ -1164,14 +1175,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 no_notes_div.add_color("color", "color")
             no_notes_div.add_style("padding", "3px")
 
-            #add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
-            #no_notes_div.add(add_wdg)
-            #add_wdg.add_style("float: left")
-            #add_wdg.add_style("margin-top: -7px")
-            #add_wdg.add_style("margin-right: -2px")
   
             add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
-            #add_wdg.add_class(add_class)
 
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
@@ -1298,13 +1303,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 contexts_div.add("&nbsp;"*3)
             
 
-        # determines if each note in the context group is hidden
-        #show_context_notes = my.kwargs.get("show_context_notes")
-        #if show_context_notes in [True, "true"]:
-        #    show_context_notes = True
-        #else:
-        #    show_context_notes = False
-
         # go through every context and display notes
         for context in contexts:
 
@@ -1315,10 +1313,6 @@ class DiscussionWdg(BaseRefreshWdg):
             context_top.add_attr("my_context", context.encode('utf-8'))
             top.add(context_top)
 
-            #if show_context_notes or context in my.default_contexts_open:
-            #    context_top.add_attr("spt_state", 'open')
-            #else:
-            #    context_top.add_attr("spt_state", 'closed')
             if context not in my.default_contexts_open:
                 context_top.add_attr("spt_state", 'closed')
 
@@ -1465,7 +1459,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         div.add_color("color", "color")
         div.add_style("padding", "5px")
-        div.add_color("background", "background", -5, -5)
+        #div.add_color("background", "background", -5, -5)
         div.add_style("height", "15px")
         div.add_style("font-weight", "bold")
         #div.add_style("margin-bottom", "-1px")
@@ -1645,6 +1639,80 @@ class NoteWdg(BaseRefreshWdg):
         return my.get_note_wdg(note, note_hidden)
 
 
+
+    def get_note_menu(my):
+ 
+        menu = Menu(width=120)
+        menu_item = MenuItem(type='title', label='Actions ...')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Edit Note')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_note_top");
+            var search_key = top.getAttribute("note_search_key");
+ 
+            var server = TacticServerStub.get();
+            var note = null;
+            
+            try {
+                note = server.get_by_search_key(search_key);
+            }
+            catch(e) {
+                    spt.alert(spt.exception.handler(e));
+            }
+            
+            var ok = function(value) {
+                try{
+                    var title = 'Saving Note';
+                    server.update(search_key, {note: value});
+                    var menu = spt.table.get_edit_menu(bvr.src_el);
+                    spt.discussion.refresh(activator);
+
+                }
+                catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
+            }
+            spt.prompt('Edit note [ ' + note.context + ' ]:', ok, 
+            {title: 'Edit',
+            text_input_default: note.note, 
+            okText: 'Save'});
+            '''
+        } )
+
+
+
+        #menu_item = MenuItem(type='action', label='Change Status')
+        #menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Delete Note')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_note_top");
+            var search_key = top.getAttribute("note_search_key");
+            spt.confirm( "Are you sure you wish to delete this note?", function() {
+
+                var server = TacticServerStub.get();
+                server.delete_sobject(search_key);
+
+                spt.discussion.refresh(activator);
+            } )
+            
+            '''
+        } )
+
+
+        return menu
+
+
+
     def get_note_wdg(my, note, note_hidden=False):
         context = note.get_value("context")
 
@@ -1701,46 +1769,18 @@ class NoteWdg(BaseRefreshWdg):
 
 
 
-        icon = IconButtonWdg(title="Options", icon="BS_CHEVRON_DOWN")
-        title.add(icon)
-        icon.add_style("float: right")
-        icon.add_style("margin-top: -3px");
+        current_login = Environment.get_user_name()
+        if current_login == login:
 
- 
-        menu = Menu(width=120)
-        menu_item = MenuItem(type='title', label='Actions ...')
-        menu.add(menu_item)
+            icon = IconButtonWdg(title="Options", icon="BS_CHEVRON_DOWN")
+            title.add(icon)
+            icon.add_style("float: right")
+            icon.add_style("margin-top: -3px");
 
-        menu_item = MenuItem(type='action', label='Edit Note')
-        menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label='Change Status')
-        menu.add(menu_item)
-
-        menu_item = MenuItem(type='action', label='Delete Note')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_note_top");
-            var search_key = top.getAttribute("note_search_key");
-            spt.confirm( "Are you sure you wish to delete this note?", function() {
-
-                var server = TacticServerStub.get();
-                server.delete_sobject(search_key);
-
-                spt.discussion.refresh(activator);
-                //spt.behavior.destroy_element(top);
-            } )
-            
-            '''
-        } )
-
-        menus = [menu]
-
-        SmartMenu.add_smart_menu_set( icon, { 'NOTE_EDIT_CTX': menus } )
-        SmartMenu.assign_as_local_activator( icon, "NOTE_EDIT_CTX", True )
+            menus = [my.get_note_menu()]
+            SmartMenu.add_smart_menu_set( icon, { 'NOTE_EDIT_CTX': menus } )
+            SmartMenu.assign_as_local_activator( icon, "NOTE_EDIT_CTX", True )
 
 
 

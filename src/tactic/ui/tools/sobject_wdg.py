@@ -1000,8 +1000,8 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
             show_note_expand=False, show_task_process=my.show_task_process)
         
         notes_div.add(discussion_wdg)
-        menu = discussion_wdg.get_menu_wdg(notes_div)
-        notes_div.add(menu)
+        #menu = discussion_wdg.get_menu_wdg(notes_div)
+        #notes_div.add(menu)
 
         notes_div.add_style("min-width: 300px")
         notes_div.add_style("height: 200")
