@@ -2969,6 +2969,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var mode = target.getAttribute("spt_mode");
     var no_results_msg = target.getAttribute("spt_no_results_msg");
     var show_border = target.getAttribute("spt_show_border");
+    var show_collection_tool = target.getAttribute("spt_show_collection_tool");
      
     var height = target.getAttribute("spt_height");
     var element_names;
@@ -3047,6 +3048,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
+        'show_collection_tool': show_collection_tool
     }
 
     var pat = /TileLayoutWdg/;

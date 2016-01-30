@@ -212,6 +212,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'default|compact',
             'category': 'Display',
             'order': '15'
+        },
+
+        "show_collection_tool": {
+            'description': 'determines whether to show the collection button or not',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display',
+            'order': '16'
         }
         
 
@@ -486,6 +494,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
 
+        elif my.kwargs.get("sobjects"):
+            my.sobjects = my.kwargs.get("sobjects")
 
 
 
@@ -3865,9 +3875,14 @@ spt.table.add_new_item = function(kwargs) {
     }
 
     var layout = spt.table.get_layout();
+<<<<<<< HEAD
     var table = layout.getElement(".spt_table_insert_table")
     var insert_row = table.getElement(".spt_table_insert_row");
     //var insert_row = spt.table.get_insert_row();
+=======
+    var table = layout.getElement(".spt_table_insert_table");
+    var insert_row = table.getElement(".spt_table_insert_row");
+>>>>>>> b806c220183f01f6d260e2f72707c40605822b21
 
     var row;
     var position;
