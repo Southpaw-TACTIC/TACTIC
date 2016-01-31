@@ -621,14 +621,12 @@ class DirListWdg(BaseRefreshWdg):
                     search_types = [];
                 }
 
-             
 
-                //FIXME: these root_dir and base_dir are really needed in this handler_kwargs?
+                //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
                 var handler_kwargs = {
                         root_dir: root_dir,
                         base_dir: base_dir,
-                        // FIXME: this causes files to disappear
-                        //search_keys: search_keys,
+                        search_keys: search_keys,
                         search_types: search_types
                        
                     } 

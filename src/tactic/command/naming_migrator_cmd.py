@@ -14,7 +14,7 @@ __all__ = ['NamingMigratorCmd']
 
 import tacticenv
 
-from pyasm.common import Xml, Config
+from pyasm.common import Xml, Config, Environment
 from pyasm.search import Search, FileUndo
 from pyasm.security import Batch
 from pyasm.biz import Snapshot, Project
@@ -52,7 +52,7 @@ class NamingMigratorCmd(Command):
         # set an arbitrary limit for now
         limit = 1000
 
-        base_dir = Config.get_value("checkin", "asset_base_dir")
+        base_dir = Environment.get_asset_dir()
 
         num_found = 0
         errors = []
@@ -114,12 +114,14 @@ class NamingMigratorCmd(Command):
 
                 num_found += 1
 
+                print "snapshot: ", snapshot.get_value("code")
                 print "old: ", old_path
                 print "new: ", path
 
 
                 if not os.path.exists(old_path):
                     print '... old does not exist'
+                    continue
                     
 
                 print "-"*20

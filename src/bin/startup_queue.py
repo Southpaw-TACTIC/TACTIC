@@ -18,10 +18,10 @@ from tactic.command import JobTask
 
 import time
 
-def main():
+def main(site=None):
     #print "Starting Job Queue ..."
     from pyasm.security import Batch
-    Batch()
+    Batch(site=site)
 
     JobTask.start(
             check_interval=0.1,
@@ -38,5 +38,17 @@ def main():
 
 if __name__ == '__main__':
 
-    main()
+    from optparse import OptionParser
 
+
+    parser = OptionParser()
+    parser.add_option("-s", "--site", dest="site", help="Site to grab queue from")
+
+    (options, args) = parser.parse_args()
+
+    if len(args) == 1:
+        site = args[0]
+    else:
+        site = options.site
+
+    main(site=site)

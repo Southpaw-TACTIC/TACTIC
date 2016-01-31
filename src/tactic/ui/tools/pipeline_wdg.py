@@ -1618,6 +1618,32 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 class BaseInfoWdg(BaseRefreshWdg):
 
+    def get_description_wdg(my, process_sobj):
+        description = process_sobj.get_value("description")
+        desc_div = DivWdg()
+        desc_div.add_style("margin: 20px 10px")
+        desc_div.add("<div><b>Details:</b></div>")
+        text = TextAreaWdg()
+        desc_div.add(text)
+        text.add_style("width: 100%")
+        text.add_style("height: 100px")
+        text.add_style("padding: 10px")
+        text.add(description)
+        text.add_behavior( {
+            'type': 'blur',
+            'search_key': process_sobj.get_search_key(),
+            'cbjs_action': '''
+            var desc = bvr.src_el.value;
+            var server = TacticServerStub.get();
+            server.update(bvr.search_key, {description: desc} );
+            '''
+        } )
+
+        return desc_div
+
+
+
+
 
     def get_input_output_wdg(my, pipeline, process):
             
@@ -1755,6 +1781,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 class DefaultInfoWdg(BaseInfoWdg):
 
 
+
     def get_display(my):
         process = my.kwargs.get("process")
         pipeline_code = my.kwargs.get("pipeline_code")
@@ -1790,6 +1817,19 @@ class DefaultInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
 
         process_sobj = search.get_sobject()
+        if not process_sobj:
+            top.add("No process found.  Please save")
+            return top
+
+
+        info_div = DivWdg()
+        top.add(info_div)
+        info_div.add("A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished")
+        info_div.add_style("margin: 20px 10px")
+
+
+        desc_div = my.get_description_wdg(process_sobj)
+        top.add(desc_div)
 
 
 
@@ -2421,6 +2461,18 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
         title_wdg = my.get_title_wdg(process, node_type)
         top.add(title_wdg)
+
+
+        info_div = DivWdg()
+        top.add(info_div)
+        info_div.add("An approval process is used a specific user will have the task to approve work down in the previous processes.")
+        info_div.add_style("margin: 20px 10px")
+
+
+
+        desc_div = my.get_description_wdg(process_sobj)
+        top.add(desc_div)
+
 
 
 

@@ -139,8 +139,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(select)
         select.set_option("values", process_names)
 
+        if not process:
+            process = "publish"
+
         if process:
-            select.set_options("default", process)
+            select.set_option("default", process)
     
 
         div.add("<br/>")

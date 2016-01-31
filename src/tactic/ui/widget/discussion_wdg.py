@@ -161,8 +161,8 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
 
         # add action triggle for context itself
-        my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
-        my.menu.set_activator_out(layout, 'spt_discussion_top')
+        #my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
+        #my.menu.set_activator_out(layout, 'spt_discussion_top')
 
 
         DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email, my.show_task_process)

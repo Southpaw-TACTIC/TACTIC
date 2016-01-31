@@ -16,7 +16,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment
 
-from pyasm.web import DivWdg, WebContainer, Table
+from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings
 from pyasm.biz import Snapshot, Project
 from pyasm.search import Search, SearchType, SearchKey, FileUndo
 from pyasm.widget import IconWdg, CheckboxWdg
@@ -54,7 +54,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         table = Table()
         top.add(table)
         table.add_color("color", "color")
-        table.add_style("margin: -1px -1px -1px -1px")
+        #table.add_style("margin: -1px -1px -1px -1px")
         table.add_style("width: 100%")
 
         base_dir = Environment.get_asset_dir()
@@ -66,7 +66,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left = table.add_cell()
         left.add_style("vertical-align: top")
         left.add_style("width: 1px")
-        left.add_border()
+        left.add_border(size="0px 1px 0px 0px", color="table_border")
 
         shelf_wdg = DivWdg()
         left.add(shelf_wdg)
@@ -195,8 +195,12 @@ class RepoBrowserWdg(BaseRefreshWdg):
         else:
             search_types = None
 
+
+        parent_search = my.kwargs.get("search")
+
         search_keys =  [x.get_search_key() for x in my.sobjects]
         dynamic = True
+
 
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
@@ -207,6 +211,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 dynamic=dynamic,
                 keywords=keywords,
                 search_keys=search_keys,
+                search=parent_search
         )
         content_div.add(dir_list)
 
@@ -216,11 +221,9 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         content = table.add_cell()
         content.add_style("vertical-align: top")
-        content.add_border()
 
         outer_div = DivWdg()
         content.add(outer_div)
-        outer_div.add_style("margin: -2px")
         outer_div.add_class("spt_repo_browser_content")
 
 
@@ -236,7 +239,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         bottom.add_attr("colspan", "3")
         info_div = DivWdg()
         bottom.add(info_div)
-        bottom.add_border()
 
         #info_div.add_style("height: 100px")
 
@@ -393,6 +395,12 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.search_codes = {}
 
 
+        search = my.kwargs.get("search")
+        if search:
+            print "search: ", search.select.dumps()
+
+
+
         my.dynamic = my.kwargs.get("dynamic")
         if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
@@ -407,14 +415,12 @@ class RepoBrowserDirListWdg(DirListWdg):
         else:
             my.sobjects = []
 
-
         super(RepoBrowserDirListWdg, my).init()
 
 
 
 
     def get_file_search(my, base_dir, search_types, parent_ids, mode="count"):
-        show_empty_folders = True
 
         show_main_only = True
         show_latest = True
@@ -474,6 +480,16 @@ class RepoBrowserDirListWdg(DirListWdg):
         if my.sobjects:
             search.add_sobjects_filter(my.sobjects)
 
+        key = "test"
+        parent_search_str = WidgetSettings.get_value_by_key(key)
+        if parent_search_str:
+            parent_search = Search("workflow/asset")
+            parent_search.select.loads(parent_search_str)
+            parents = parent_search.get_sobjects()
+            parent_codes = [x.get_value("code") for x in parents]
+
+            search.add_filters("search_code", parent_codes)
+
         return search
 
 
@@ -489,10 +505,14 @@ class RepoBrowserDirListWdg(DirListWdg):
         show_empty_folders = True
         show_no_sobject_folders = True
 
+
         my.show_files = True
         show_main_only = True
         show_latest = True
         show_versionless = False
+
+
+
 
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
@@ -737,6 +757,15 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_top_behaviors(my, top):
 
+        search = my.kwargs.get("search")
+        if search:
+            key = "test"
+            print "search: ", search.select.dumps()
+            dump = search.select.dumps()
+            WidgetSettings.set_value_by_key(key, dump)
+
+
+
         border = top.get_color("shadow")
 
         top.add_behavior( {
@@ -911,12 +940,15 @@ class RepoBrowserDirListWdg(DirListWdg):
         # add in a context menu
         freeform_menu = my.get_dir_context_menu()
         strict_menu = my.get_dir_context_menu(mode="strict")
-        #menus = [menu.get_data()]
+        file_menu = my.get_file_context_menu()
+
         menus_in = {
             'FREEFORM_DIR_ITEM_CTX': freeform_menu,
             'STRICT_DIR_ITEM_CTX': strict_menu,
+            'FILE_ITEM_CTX': file_menu,
         }
         SmartMenu.attach_smart_context_menu( top, menus_in, False )
+
 
 
         # add in template UIs
@@ -994,6 +1026,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
 
 
+        """
         menu_item = MenuItem(type='action', label='Add New Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1013,8 +1046,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.panel.load_popup('Add New Item', 'tactic.ui.panel.EditWdg', kwargs);
             '''
         } )
+        """
 
- 
+        """ 
         menu_item = MenuItem(type='action', label='Add Multiple Items')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1034,8 +1068,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
             '''
         } )
+        """
 
-
+        """
         menu_item = MenuItem(type='action', label='Delete Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1064,12 +1099,13 @@ class RepoBrowserDirListWdg(DirListWdg):
             var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
             '''
         } )
+        """
 
 
         if mode == "freeform":
 
-            menu_item = MenuItem(type='separator')
-            menu.add(menu_item)
+            #menu_item = MenuItem(type='separator')
+            #menu.add(menu_item)
 
 
             menu_item = MenuItem(type='action', label='New Folder')
@@ -1363,9 +1399,55 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+        return menu
+
+
+    def get_file_context_menu(my):
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Rename Item')
+        menu.add(menu_item)
+
+
+        menu_item = MenuItem(type='action', label='Delete Item')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+
+            var snapshot_code = activator.getAttribute("spt_snapshot_code")
+
+            var server = TacticServerStub.get();
+
+            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var kwargs = {
+                action: 'delete_item',
+                snapshot_code,
+            }
+            try {
+                server.execute_cmd(class_name, kwargs);
+                activator.destroy();
+            }
+            catch(e) {
+                alert("Could not delete file.");
+            }
+
+
+            '''
+        } )
+
+
 
 
         return menu
+
 
 
 
@@ -1376,7 +1458,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         src_path = file_object.get_value("source_path")
         src_basename = os.path.basename(src_path)
 
-        src_basename = "%s <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % (src_basename, basename)
+        if src_basename != basename:
+            src_basename = "%s <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % (src_basename, basename)
 
         return src_basename
 
@@ -1439,6 +1522,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
 
+
+        SmartMenu.assign_as_local_activator( item_div, 'FILE_ITEM_CTX' )
 
 
 
@@ -1610,6 +1695,11 @@ class RepoBrowserActionCmd(Command):
 
     def execute(my):
 
+        # if the search_type is working in "single file" mode, then
+        # we can make a lot of assumptions about moving and deleting files
+        mode = "single_file"
+
+
         search_type = my.kwargs.get("search_type")
         action = my.kwargs.get("action")
 
@@ -1658,6 +1748,15 @@ class RepoBrowserActionCmd(Command):
             for file in files:
                 file.set_value("relative_dir", new_relative_dir)
                 file.commit()
+
+                # get the parent
+                if mode == "single_file":
+                    parent = Search.get_by_code( file.get("search_type"), file.get("search_code") )
+                    if parent.column_exists("relative_dir"):
+                        parent.set_value("relative_dir", new_relative_dir)
+                        parent.commit()
+
+
             FileUndo.move(old_dir, new_dir)
 
 
@@ -1683,9 +1782,16 @@ class RepoBrowserActionCmd(Command):
             if search_keys:
                 Clipboard.add_to_selected(search_keys)
 
-            print "snapshots: ", snapshots
  
 
+        elif action == "delete_item":
+
+            snapshot_code = my.kwargs.get("snapshot_code")
+
+            snapshot = Snapshot.get_by_code(snapshot_code)
+            #snapshot.delete()
+
+            parent = snapshot.get_parent()
 
 
 
@@ -1794,6 +1900,8 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         search.add_filter("search_type", search_type)
         search.add_filter("relative_dir", reldir)
         search.add_filter("file_name", basename)
+
+
         files = search.get_sobjects()
 
         good_file = None
@@ -1817,10 +1925,10 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         top.add(path_div)
         path_div.add("<b>Path:</b> %s" % path)
         path_div.add_color("color", "color")
-        path_div.add_color("background", "background", -5)
+        path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
         path_div.add_style("margin-bottom: 15px")
-        path_div.add_border()
+        #path_div.add_border()
 
         # display the info
         """
@@ -1892,7 +2000,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         config = config.replace("&", "&amp;")
 
 
-        from pyasm.web import WidgetSettings
         selected = WidgetSettings.get_value_by_key("repo_browser_selected")
 
         # remember last tab
@@ -1970,6 +2077,15 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             search2 = Search(search_type)
             search2.add_relationship_search_filter(search)
 
+            key = "test"
+            parent_search_str = WidgetSettings.get_value_by_key(key)
+            if parent_search_str:
+                parent_search = Search(search_type)
+                parent_search.select.loads(parent_search_str)
+                parent_search.add_column("code")
+                search2.add_search_filter("code", parent_search)
+
+
             sobjects = search2.get_sobjects()
 
 
@@ -1992,10 +2108,10 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         top.add(path_div)
         path_div.add("<b>Path:</b> %s" % path)
         path_div.add_color("color", "color")
-        path_div.add_color("background", "background", -5)
+        path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
-        path_div.add_style("margin: -1 -1 0 -1")
-        path_div.add_border()
+        #path_div.add_style("margin: -1 -1 0 -1")
+        #path_div.add_border()
 
 
 
@@ -2012,6 +2128,8 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             # a browser again.
             layout_mode = 'tile'
 
+        layout_mode = "tile"
+
 
         element_names = None
         if layout_mode == "checkin":
@@ -2025,15 +2143,16 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             expression=expression,
             view="table",
             element_names=element_names,
-            show_shelf=True,
+            show_shelf=False,
             layout=layout_mode,
             scale='75',
             width='100%',
+
         )
         #layout.set_sobjects(sobjects)
 
 
-        top.add_border(size="1px 1px 0px 1px")
+        #top.add_border(size="1px 1px 0px 1px")
         top.add(layout)
 
         return top
