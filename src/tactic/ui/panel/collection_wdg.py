@@ -681,6 +681,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 show_shelf=False,
                 show_search_limit=False,
                 sobjects=my.sobjects,
+                detail_element_names=my.kwargs.get("detail_element_names"),
                 do_search='false'
         )
         div.add(tile)
@@ -701,6 +702,7 @@ class CollectionContentWdg(BaseRefreshWdg):
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
         my.kwargs["expand_mode"] = "plain"
+
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
             **my.kwargs
