@@ -400,6 +400,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             table = Table()
             inner.add(table)
+            my.kwargs['custom_drag_bvr'] = True
             my.handle_no_results(table)
 
 
@@ -911,7 +912,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                     el.setStyle('border','none');
                 }
                 spt.thumb.background_drop = function(evt, el) {
-
                     //evt.stopPropagation();
                     //evt.preventDefault();
 
@@ -947,7 +947,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                                         var server = TacticServerStub.get();
                                         server.set_transaction_ticket(ticket);
                                         
-                                        
                                         for (var i = 0; i < files.length; i++) {
                                             var size = files[i].size;
                                             var file = files[i];
@@ -959,7 +958,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                                                 name: filename
                                             }
                                             if (bvr.search_key) {
-                                               search_key = bvr.search_key
+                                                search_key = bvr.search_key;
                                             }
                                             else {
                                                 var search_type = bvr.search_type;

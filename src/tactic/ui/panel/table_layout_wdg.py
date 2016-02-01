@@ -2443,7 +2443,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_no_results(my, table):
 
+
         no_results_mode = my.kwargs.get('no_results_mode')
+        custom_drag_bvr = my.kwargs.get('custom_drag_bvr')
+
+        # custom_drag_bvr will be set to true in other widgets if they have 
+        # a drag and drop behavior defined. It is initialised to False so
+        # that the default behavior will still be there to avoid having to
+        # refactor every instance handle_no_results is used
+
         if no_results_mode == 'compact':
 
             tr, td = table.add_row_cell()
@@ -2454,21 +2462,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             msg.add_style("opacity: 0.5")
             td.add(msg)
             return
-     
-
-        #table.add_attr("ondragenter", "return false")
-        #table.add_attr("ondragover", "return false")
-        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
-
 
         table.add_style("width: 100%")
 
 
         tr, td = table.add_row_cell()
 
-        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
-        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
-        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+        if not custom_drag_bvr:
+            tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+            tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+            tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
 
@@ -3122,7 +3125,8 @@ spt.table.dragleave_row = function(evt, el) {
 }
 
 
-
+// drop_row does NOT drop a row from the table
+// It was misnamed it refers to the action of DROPPING A ROW INTO the table
 spt.table.drop_row = function(evt, el) {
     evt.stopPropagation();
     evt.preventDefault();
