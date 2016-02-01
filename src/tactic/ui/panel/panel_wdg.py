@@ -3324,6 +3324,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
+            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
             from collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
