@@ -946,45 +946,46 @@ class TileLayoutWdg(ToolLayoutWdg):
                                
                                 upload_complete: function() {
 
-                                try {
-                                    var server = TacticServerStub.get();
-                                    server.set_transaction_ticket(ticket);
-                                    
-                                    for (var i = 0; i < files.length; i++) {
-                                        var size = files[i].size;
-                                        var file = files[i];
+                                    try {
+                                        var server = TacticServerStub.get();
+                                        server.set_transaction_ticket(ticket);
+                                        
+                                        for (var i = 0; i < files.length; i++) {
+                                            var size = files[i].size;
+                                            var file = files[i];
 
-                                        var filename = file.name;
+                                            var filename = file.name;
 
-                                        var search_key;
-                                        var data = {
-                                            name: filename
+                                            var search_key;
+                                            var data = {
+                                                name: filename
+                                            }
+                                            if (bvr.search_key) {
+                                                search_key = bvr.search_key;
+                                            }
+                                            else {
+                                                var search_type = bvr.search_type;
+                                                var item = server.insert(search_type, data);
+                                                search_key = item.__search_key__;
+                                            }
+
+                                            var context = bvr.process + "/" + filename;
+                                        
+                                        
+                                        var kwargs = {mode: 'uploaded'};
+                                        server.simple_checkin( search_key, context, filename, kwargs);
+
                                         }
-                                        if (bvr.search_key) {
-                                            search_key = bvr.search_key;
-                                        }
-                                        else {
-                                            var search_type = bvr.search_type;
-                                            var item = server.insert(search_type, data);
-                                            search_key = item.__search_key__;
-                                        }
-
-                                        var context = bvr.process + "/" + filename;
-                                    
-                                    
-                                    var kwargs = {mode: 'uploaded'};
-                                    server.simple_checkin( search_key, context, filename, kwargs);
-
+                                        server.finish();
+                                        var layout = el.getParent(".spt_layout");
+                                        spt.table.set_layout(layout);
+                                        spt.table.run_search();
+                                    } catch(e) {
+                                        spt.alert(spt.exception.handler(e));
+                                        server.abort();
                                     }
-                                    server.finish();
-                                    var layout = el.getParent(".spt_layout");
-                                    spt.table.set_layout(layout);
-                                    spt.table.run_search();
-                                } catch(e) {
-                                    spt.alert(spt.exception.handler(e));
-                                    server.abort();
                                 }
-                            }};
+                            };
                             spt.html5upload.upload_file(upload_file_kwargs);
 
                             // just support one file at the moment
