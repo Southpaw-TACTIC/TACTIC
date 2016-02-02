@@ -3022,7 +3022,7 @@ spt.table.dragleave_row = function(evt, el) {
 
 
 // drop_row does NOT drop a row from the table
-// It was misnamed it refers to the action of DROPPING A ROW INTO the table
+// It refers to the action of DROPPING A ROW INTO the table
 spt.table.drop_row = function(evt, el) {
     evt.stopPropagation();
     evt.preventDefault();
