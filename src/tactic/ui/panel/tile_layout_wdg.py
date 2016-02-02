@@ -401,6 +401,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             table = Table()
             inner.add(table)
             my.kwargs['custom_drag_bvr'] = True
+            my.kwargs['is_tile_layout'] = True
             my.handle_no_results(table)
 
 

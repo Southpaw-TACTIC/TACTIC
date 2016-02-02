@@ -2446,6 +2446,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         no_results_mode = my.kwargs.get('no_results_mode')
         custom_drag_bvr = my.kwargs.get('custom_drag_bvr')
+        is_tile_layout = my.kwargs.get('is_tile_layout')
 
         # custom_drag_bvr will be set to true in other widgets if they have 
         # a drag and drop behavior defined. It is initialised to False so
@@ -2481,7 +2482,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_color("border-color", "table_border", default="border")
         #td.add_border()
         td.add_color("color", "color")
-        td.add_color("background", "background", -7)
+        td.add_color("background", "background", -3)
         td.add_style("min-height: 250px")
         td.add_style("overflow: hidden")
 
@@ -2489,10 +2490,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             div = DivWdg()
             td.add(div)
             div.add_style("height: 30px")
-            if i % 2:
-                div.add_color("background", "background")
-            else:
-                div.add_color("background", "background", -3)
+
+            if not is_tile_layout:
+                if i % 2:
+                    div.add_color("background", "background")
+                else:
+                    div.add_color("background", "background", -3)
 
 
         msg_div = DivWdg()
