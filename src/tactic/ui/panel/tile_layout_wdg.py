@@ -315,10 +315,15 @@ class TileLayoutWdg(ToolLayoutWdg):
                     my.group_values[i+1] = next_dict
 
 
+    def add_no_results_bvr(my, tr):
+        return
 
 
-
-
+    def add_no_results_style(my, td):
+        for i in range(0, 10):
+            div = DivWdg()
+            td.add(div)
+            div.add_style("height: 30px")
    
 
     def get_content_wdg(my):
@@ -340,11 +345,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             div.add_event('oncontextmenu', 'return false;')
         if menus_in:
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
- 
-
-
-
-
         
 
         temp = my.kwargs.get("temp")
@@ -362,8 +362,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner.add("<br clear='all'/>")
         
         if my.upload_mode in ['button','both']:
-            inner.add( my.get_upload_wdg() )
-            inner.add( my.get_delete_wdg() )
+            button_div = DivWdg()
+            inner.add(button_div)
+            button_div.add( my.get_upload_wdg() )
+            button_div.add( my.get_delete_wdg() )
+            button_div.add_style("height: 55px")
             
         
         if my.sobjects:
@@ -400,8 +403,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             table = Table()
             inner.add(table)
-            my.kwargs['custom_drag_bvr'] = True
-            my.kwargs['is_tile_layout'] = True
             my.handle_no_results(table)
 
 
