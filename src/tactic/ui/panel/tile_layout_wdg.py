@@ -1808,6 +1808,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         }
 
         else {
+            var src_code = src_top.getAttribute("spt_search_code");
             if (parent_code != src_code){
                 spt.notify.show_message("The destination is not a Collection");
             }
