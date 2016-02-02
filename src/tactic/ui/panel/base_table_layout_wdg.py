@@ -3067,13 +3067,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def handle_no_results(my, table):
+        ''' This creates an empty html table when the TableLayout has no entries.
+        There are two helper functions, add_no_results_bvr and add_no_results_style
+        which can be overridden to support custom behaviors and appearances.'''
 
         no_results_mode = my.kwargs.get('no_results_mode')
-
-        # custom_drag_bvr will be set to true in other widgets if they have 
-        # a drag and drop behavior defined. It is initialised to False so
-        # that the default behavior will still be there to avoid having to
-        # refactor every instance handle_no_results is used
 
         if no_results_mode == 'compact':
 
@@ -3088,9 +3086,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         table.add_style("width: 100%")
 
-
         tr, td = table.add_row_cell()
-
 
         my.add_no_results_bvr(tr)
 
@@ -3098,7 +3094,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         td.add_style("border-style: solid")
         td.add_style("border-width: 1px")
         td.add_color("border-color", "table_border", default="border")
-        #td.add_border()
         td.add_color("color", "color")
         td.add_color("background", "background", -3)
         td.add_style("min-height: 250px")
@@ -3154,12 +3149,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         td.add("<br clear='all'/>")
 
     def add_no_results_bvr(my, tr):
+        ''' This adds a default drag and drop behavior to an empty table.
+        Override it in classes that extend BaseTableLayoutWdg to handle
+        custom drag/drop behaviors '''
+
         tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
         tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
         tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
     def add_no_results_style(my, td):
+        ''' This adds the default styling to an empty table.
+        Override it in classes that extend BaseTableLayoutWdg if you
+        want something different'''
+
         for i in range(0, 10):
             div = DivWdg()
             td.add(div)
