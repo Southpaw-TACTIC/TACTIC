@@ -138,7 +138,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
-        desc_wdg = DivWdg("Determines how the file name matches up to a particular enry")
+        desc_wdg = DivWdg("Determines how the file name matches up to a particular entry")
 
         #desc_wdg = DivWdg("When update mode is 'Update', if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
         div.add(desc_wdg)
