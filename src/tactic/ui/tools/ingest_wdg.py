@@ -36,7 +36,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
-        'process': 'Process to ingest into',
+        'process': 'The default process to ingest into',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
@@ -121,9 +121,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        desc_wdg = DivWdg("Select which process to ingest these files into")
-        div.add(desc_wdg)
-
         div.add("<br/>")
 
         select = SelectWdg("process")
@@ -132,6 +129,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         process_names.append("publish")
         process_names.append("icon")
         select.set_option("values", process_names)
+        select.add_empty_option("Select Ingest Process")
         if selected_process:
             select.set_option("default", selected_process)
 
