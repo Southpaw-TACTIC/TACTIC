@@ -320,10 +320,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def add_no_results_style(my, td):
-        for i in range(0, 10):
-            div = DivWdg()
-            td.add(div)
-            div.add_style("height: 30px")
+        div = DivWdg()
+        td.add(div)
+        div.add_style("height: 300px")
    
 
     def get_content_wdg(my):
@@ -366,7 +365,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             inner.add(button_div)
             button_div.add( my.get_upload_wdg() )
             button_div.add( my.get_delete_wdg() )
-            button_div.add_style("height: 55px")
+            button_div.add_style("height: 45px")
             
         
         if my.sobjects:
@@ -913,6 +912,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                     evt.preventDefault();
                     el.setStyle('border','none');
                 }
+
+                // background_drop creates an entirely new item based on the file name that is being inserted
                 spt.thumb.background_drop = function(evt, el) {
                     //evt.stopPropagation();
                     //evt.preventDefault();
@@ -938,62 +939,63 @@ class TileLayoutWdg(ToolLayoutWdg):
                     var yes = function() {
                         spt.app_busy.show("Attaching file");
 
-                                var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
-                                var upload_file_kwargs =  {
-                                    files: files,
-                                    ticket: ticket,
-                                   
-                                    upload_complete: function() {
+                            var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
+                            var upload_file_kwargs =  {
+                                files: files,
+                                ticket: ticket,
+                               
+                                upload_complete: function() {
 
-                                    try {
-                                        var server = TacticServerStub.get();
-                                        server.set_transaction_ticket(ticket);
-                                        
-                                        for (var i = 0; i < files.length; i++) {
-                                            var size = files[i].size;
-                                            var file = files[i];
+                                try {
+                                    var server = TacticServerStub.get();
+                                    server.set_transaction_ticket(ticket);
+                                    
+                                    for (var i = 0; i < files.length; i++) {
+                                        var size = files[i].size;
+                                        var file = files[i];
 
-                                            var filename = file.name;
+                                        var filename = file.name;
 
-                                            var search_key;
-                                            var data = {
-                                                name: filename
-                                            }
-                                            if (bvr.search_key) {
-                                                search_key = bvr.search_key;
-                                            }
-                                            else {
-                                                var search_type = bvr.search_type;
-                                                var item = server.insert(search_type, data);
-                                                search_key = item.__search_key__;
-                                            }
-
-                                            var context = bvr.process + "/" + filename;
-                                        
-                                        
-                                        var kwargs = {mode: 'uploaded'};
-                                        server.simple_checkin( search_key, context, filename, kwargs);
-
+                                        var search_key;
+                                        var data = {
+                                            name: filename
                                         }
-                                        server.finish();
-                                        var layout = el.getParent(".spt_layout");
-                                        spt.table.set_layout(layout);
-                                        spt.table.run_search();
-                                    } catch(e) {
-                                        spt.alert(spt.exception.handler(e));
-                                        server.abort();
-                                    }
-                                }};
-                                spt.html5upload.upload_file(upload_file_kwargs);
+                                        if (bvr.search_key) {
+                                            search_key = bvr.search_key;
+                                        }
+                                        else {
+                                            var search_type = bvr.search_type;
+                                            var item = server.insert(search_type, data);
+                                            search_key = item.__search_key__;
+                                        }
 
-                                // just support one file at the moment
-                                //break;
+                                        var context = bvr.process + "/" + filename;
+                                    
+                                    
+                                    var kwargs = {mode: 'uploaded'};
+                                    server.simple_checkin( search_key, context, filename, kwargs);
+
+                                    }
+                                    server.finish();
+                                    var layout = el.getParent(".spt_layout");
+                                    spt.table.set_layout(layout);
+                                    spt.table.run_search();
+                                } catch(e) {
+                                    spt.alert(spt.exception.handler(e));
+                                    server.abort();
+                                }
+                            }};
+                            spt.html5upload.upload_file(upload_file_kwargs);
+
+                            // just support one file at the moment
+                            //break;
                      
                         spt.app_busy.hide();
                     }
                     spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes);
                 }
      
+                // noop means inserting a file into an already existing tile
                 spt.thumb.noop_enter = function(evt, el) {
                     evt.preventDefault();
                     el.setStyle("box-shadow", "0px 0px 15px #970");
