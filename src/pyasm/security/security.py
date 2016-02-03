@@ -787,7 +787,7 @@ class Site(object):
 
 
     def allow_guest(cls, url=None):
-        return True
+        return False
  
 
 
