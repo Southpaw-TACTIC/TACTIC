@@ -572,7 +572,7 @@ spt.smenu._show_action = function( evt, menu, activation_type, activator_bvr )
     spt.smenu._setup_menu_items( menu );
 
     spt.show_block( menu );
-    menu.setStyle("z-index", "350" );
+    menu.setStyle("z-index", "1000" );
 
     if( "spt_defer_click_off" in menu ) {
         delete menu.spt_defer_click_off;

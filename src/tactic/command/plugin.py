@@ -983,7 +983,7 @@ class PluginInstaller(PluginBase):
 
                 # import the backup data back
                 backup_path = "%s/backup/%s.spt" % (my.plugin_dir, search_type.replace("/", "_"))
-                tools = PluginTools(plugin_dir=my.plugin_dir)
+                tools = PluginTools(plugin_dir=my.plugin_dir, verbose=my.verbose)
                 tools.import_data(backup_path)
 
 
@@ -1101,7 +1101,7 @@ class PluginUninstaller(PluginBase):
         my.add_description('Remove plugin [%s]' %my.code)
         
     def handle_nodes(my, nodes):
-        tools = PluginTools(plugin_dir=my.plugin_dir)
+        tools = PluginTools(plugin_dir=my.plugin_dir, verbose=my.verbose)
 
         for node in nodes:
             node_name = my.xml.get_node_name(node)

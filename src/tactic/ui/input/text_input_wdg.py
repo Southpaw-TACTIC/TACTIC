@@ -848,7 +848,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             ''' % (my.search_type, filter_search_type)
         """
  
-
+        mode = my.kwargs.get("mode")
 
         filters = my.kwargs.get("filters")
         script_path = my.kwargs.get("script_path")
@@ -864,6 +864,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'script_path': script_path,
             'filters': filters,
             'column': column,
+            'mode': mode,
             'relevant': relevant,
             'case_sensitive': case_sensitive,
             'value_column': value_column,
@@ -990,7 +991,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     script_path: bvr.script_path,
                     do_search: bvr.do_search,
                     case_sensitive: bvr.case_sensitive,
-                    value: value
+                    value: value,
+                    mode: bvr.mode
                 },
                 cbjs_action: cbk,
             }

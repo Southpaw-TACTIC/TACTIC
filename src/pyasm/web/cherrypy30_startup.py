@@ -49,15 +49,12 @@ class TacticIndex:
 
         from pyasm.security import Site
         default_project = Site.get().get_default_project()
-        #if not default_project:
-        #    default_project = "admin"
-       
-        if default_project:
+        if not default_project:
+            path = "/"
+        else:
             path = path.rstrip("/")
             path = "%s/%s" % (path, default_project)
-        else:
-            path = "/tactic/default"
-      
+
         return '''<META http-equiv="refresh" content="0;URL=%s">''' % path
     index.exposed = True
 

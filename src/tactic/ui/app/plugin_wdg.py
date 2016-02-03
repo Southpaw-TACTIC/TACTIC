@@ -1746,6 +1746,7 @@ class PluginCreatorCmd(Command):
 
 class PluginDirListWdg(DirListWdg):
 
+
     def handle_dir_div(my, item_div, dirname, basename):
         value_div = DivWdg()
         item_div.add(value_div)

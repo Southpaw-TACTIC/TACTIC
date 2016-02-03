@@ -14,7 +14,7 @@ __all__ = ['SObjectDetailElementWdg', 'SObjectTaskStatusElementWdg', 'TaskDetail
 
 from pyasm.common import Environment
 from pyasm.search import SearchKey
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, HtmlElement
 from pyasm.widget import IconWdg
 
 from tactic.ui.widget import IconButtonWdg
@@ -61,6 +61,9 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
     def get_width(my):
         return 50
 
+
+
+
     def get_display(my):
 
         sobject = my.get_current_sobject()
@@ -76,23 +79,41 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
     
         div = DivWdg()
         div.add_class("hand")
-        div.add_style("width: 26px")
-        div.add_style("margin-left: auto")
-        div.add_style("margin-right: auto")
-
         target_id = "main_body"
+
+        mode = my.get_option("mode")
+        #mode = "link"
 
         title = "Show Item Details"
         if my.widget:
             widget = my.widget
+        elif mode == "link":
+            widget = HtmlElement.href()
+            column = my.get_option("link_column")
+            if not column:
+                column = "code"
+            widget.add( sobject.get_value(column) )
+            widget.add_style('text-decoration: underline')
         else:
+            #widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
             widget = IconButtonWdg(title=title, icon="BS_SEARCH")
+            div.add_style("width: 26px")
+            div.add_style("margin-left: auto")
+            div.add_style("margin-right: auto")
+
 
 
         code = sobject.get_code()
         name = sobject.get_value("name", no_exception=True)
         if not name:
             name = code
+
+
+        search_type_obj = sobject.get_search_type_obj()
+        title = search_type_obj.get_title()
+        if not title:
+            title = "Detail"
+        title = _(title)
 
 
         tab_element_names = my.kwargs.get("tab_element_names") or ""
@@ -107,6 +128,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         'show_task_process': my.show_task_process,
         'code': code,
         'name': name,
+        'label': title,
         'cbjs_action': '''
         spt.tab.set_main_body_tab();
         var class_name = 'tactic.ui.tools.SObjectDetailWdg';
@@ -133,7 +155,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         }
         else {
             var element_name = "detail_"+bvr.code;
-            var title = "Detail ["+bvr.name+"]";
+            var title = bvr.label + " ["+bvr.name+"]";
             spt.tab.add_new(element_name, title, class_name, kwargs);
         }
         '''
@@ -179,12 +201,20 @@ class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
             name = code
 
 
+        search_type_obj = sobject.get_search_type_obj()
+        title = search_type_obj.get_title()
+        if not title:
+            title = "Detail"
+        title = _(title)
+
+
         tab_element_names = my.kwargs.get("tab_element_names") or ""
         detail_view = my.kwargs.get("detail_view") or ""
 
         widget.add_behavior( {
         'type': 'click_up',
         'search_key': my.search_key,
+        'label': title,
         'code': code,
         'name': name,
         'cbjs_action': '''
@@ -209,7 +239,7 @@ class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
         }
         else {
             var element_name = "detail_"+bvr.code;
-            var title = "Detail ["+bvr.name+"]";
+            var title = bvr.label + " ["+bvr.name+"]";
             spt.tab.add_new(element_name, title, class_name, kwargs);
         }
         '''
