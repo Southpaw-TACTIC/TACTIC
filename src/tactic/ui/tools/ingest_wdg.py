@@ -36,6 +36,8 @@ class IngestUploadWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
+        'process': 'The default process to ingest into',
+        'context': 'Fixed context to ingest into',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
@@ -74,7 +76,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         right.add( my.get_settings_wdg() )
 
         show_settings = my.kwargs.get("show_settings")
-        show_settings = True
         if show_settings in [False, 'false']:
             right.add_style("display: none")
 
@@ -95,34 +96,28 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         div.add("<hr/>")
 
-
-        # process
-        process = my.kwargs.get("process")
-
+        # Build list of process names
         process_names = set()
-
         from pyasm.biz import Pipeline
         from pyasm.widget import SelectWdg
         search_type_obj = SearchType.get(my.search_type)
         base_type = search_type_obj.get_base_key()
-        search = Search("sthpw/pipeline")
-        search.add_filter("search_type", base_type)
-        pipelines = search.get_sobjects()
 
+        pipeline_search = Search("sthpw/pipeline")
+        pipeline_search.add_filter("search_type", base_type)
+        pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
-            pipeline = pipelines[0]
             process_names.update(pipeline.get_process_names())
-
+  
+        selected_process = my.kwargs.get("process")
+        if selected_process:
+            process_names.add(selected_process) 
+        
         if process_names:
             process_names = list(process_names)
             process_names.sort()
         else:
             process_names = []
-
-        process_names.append("---")
-        process_names.append("publish")
-        process_names.append("icon")
-
 
         title_wdg = DivWdg()
         div.add(title_wdg)
@@ -130,22 +125,20 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        desc_wdg = DivWdg("Select which process to ingest these files into")
-        div.add(desc_wdg)
-
         div.add("<br/>")
 
         select = SelectWdg("process")
         div.add(select)
+        process_names.append("---")
+        process_names.append("publish")
+        process_names.append("icon")
         select.set_option("values", process_names)
-
-        if process:
-            select.set_options("default", process)
-    
+        select.add_empty_option("- Select Ingest Process -")
+        if selected_process:
+            select.set_option("default", selected_process)
 
         div.add("<br/>")
         div.add("<hr/>")
-
 
         # update mode
         title_wdg = DivWdg()
@@ -224,7 +217,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        desc_wdg = DivWdg("This extra metaadata will be added to each added item")
+        desc_wdg = DivWdg("This extra metadata will be added to each added item")
         div.add(desc_wdg)
 
         # edit
@@ -280,17 +273,29 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add_style("padding: 20px")
         div.add_color("background", "background")
 
-
+        header_div = DivWdg()
+        div.add(header_div)
+       
         title_wdg = DivWdg()
-        div.add(title_wdg)
-        title_wdg.add("Ingest Files")
-        title_wdg.add_style("font-size: 25px")
+        header_div.add(title_wdg)
+        title_wdg.add("<span style='font-size: 25px'>Ingest Files</span>")
+        title_wdg.add("<br/>")
+        title_wdg.add("Drag files into the box or click 'Add Files'")
+        title_wdg.add_style("display", "inline-block")
 
-        desc_div = DivWdg("You can uplaod any type of file.  Just drag files into the box or click 'Select Files'")
-        div.add(desc_div)
+        # create the help button
+        help_button_wdg = DivWdg()
+        header_div.add(help_button_wdg)
+        help_button_wdg.add_styles("float: right; margin-top: 11px;")
+        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+        help_button_wdg.add(help_button)
 
-        div.add("<hr/>")
+        help_button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+        } )
 
+        div.add("<hr style='margin-right: 4px'/>")
 
         shelf_div = DivWdg()
         div.add(shelf_div)
@@ -324,23 +329,30 @@ class IngestUploadWdg(BaseRefreshWdg):
             folder_div.add_style("margin-bottom: 10px")
 
 
-
-        # create the help button
-        help_button_wdg = DivWdg()
-        shelf_div.add(help_button_wdg)
-        help_button_wdg.add_style("float: right")
-        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
-        help_button_wdg.add(help_button)
-
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
-        } )
-
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         shelf_div.add(upload)
 
+        button = ActionButtonWdg(title="Clear")
+        button.add_style("float: right")
+        button.add_style("margin-top: -3px")
+        shelf_div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
+            var button = top.getElement(".spt_upload_file_button");
+            button.setStyle("display", "none");
+         '''
+         } )
 
         button = ActionButtonWdg(title="Add Files")
         button.add_style("float: right")
@@ -390,29 +402,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        shelf_div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            var button = top.getElement(".spt_upload_file_button");
-            button.setStyle("display", "none");
-         '''
-         } )
-
-
-
         upload_div = DivWdg()
         shelf_div.add(upload_div)
         upload_div.add_class("spt_upload_file_button")
@@ -440,6 +429,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_style("border: 3px dashed %s" % border_color_light)
         #files_div.add_style("border-radius: 20px 20px 20px 20px")
         files_div.add_style("z-index: 1")
+        files_div.add_style("width", "586px")
         #files_div.add_style("display: none")
 
         bgcolor = div.get_color("background")
@@ -776,7 +766,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_div = DivWdg()
         progress_div.add_class("spt_upload_progress_top")
         div.add(progress_div)
-        progress_div.add_style("width: 100%")
+        progress_div.add_style("width: 595px")
         progress_div.add_style("height: 15px")
         progress_div.add_style("margin-bottom: 10px")
         progress_div.add_border()
@@ -965,7 +955,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.message.set_interval(key, on_progress, 2000);
 
         '''
-
 
 
         button = ActionButtonWdg(title="Clear")
@@ -1252,7 +1241,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_select_files_button(my):
 
 
-        button = ActionButtonWdg(title="Select Files")
+        button = ActionButtonWdg(title="Add Files")
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -1538,11 +1527,15 @@ class IngestUploadCmd(Command):
 
                     full_relative_dir = "%s/%s" % (relative_dir, date_str)
                     sobject.set_value("relative_dir", full_relative_dir)
-
+           
+            # Add parent sObject
             if parent_key:
                 parent = Search.get_by_search_key(parent_key)
                 if parent:
-                    sobject.set_sobject_value(sobject)
+                    try:
+                        sobject.set_sobject_value(parent)
+                    except:
+                        pass
 
             for key, value in update_data.items():
                 if input_prefix:
