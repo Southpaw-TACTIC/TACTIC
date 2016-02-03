@@ -33,7 +33,6 @@ class CustomInfoWdg(BaseTableElementWdg):
             my.columns = []
             return 
         search_type = sobject.get_search_type_obj()
-        #config = WidgetConfig.get_by_search_type(search_type, "custom", local_search=True)
         config = WidgetConfigView.get_by_search_type(search_type, "custom")
         if not config:
             my.columns = []
