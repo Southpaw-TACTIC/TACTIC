@@ -912,9 +912,8 @@ class CalendarInputWdg(BaseInputWdg):
             text = input
         else:
             # TODO: add a kwarg - hint_text
-            if my.get_option('hint_text'):
-                hint_text = my.get_option('hint_text')
-            else:
+            hint_text = my.get_option('hint_text')
+            if not hint_text:
                 hint_text = None
             input = TextInputWdg( name=name, read_only=read_only, hint_text=hint_text, required=required, icon=activator, width=width)
             text = input.get_text()
