@@ -74,6 +74,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         right.add( my.get_settings_wdg() )
 
         show_settings = my.kwargs.get("show_settings")
+        show_settings = True
         if show_settings in [False, 'false']:
             right.add_style("display: none")
 
@@ -96,6 +97,9 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         # process
+        process = my.kwargs.get("process")
+
+        process_names = set()
 
         from pyasm.biz import Pipeline
         from pyasm.widget import SelectWdg
@@ -104,29 +108,40 @@ class IngestUploadWdg(BaseRefreshWdg):
         search = Search("sthpw/pipeline")
         search.add_filter("search_type", base_type)
         pipelines = search.get_sobjects()
-        if pipelines:
+
+        for pipeline in pipelines:
             pipeline = pipelines[0]
+            process_names.update(pipeline.get_process_names())
 
-            process_names = pipeline.get_process_names()
-            if process_names:
-                title_wdg = DivWdg()
-                div.add(title_wdg)
-                title_wdg.add("Process")
-                title_wdg.add_style("margin-top: 20px")
-                title_wdg.add_style("font-size: 16px")
+        if process_names:
+            process_names = list(process_names)
+            process_names.sort()
+        else:
+            process_names = []
 
-                desc_wdg = DivWdg("Select which process to ingest these files into")
-                div.add(desc_wdg)
+        process_names.append("---")
+        process_names.append("publish")
+        process_names.append("icon")
 
-                div.add("<br/>")
 
-                select = SelectWdg("process")
-                div.add(select)
-                process_names.append("---")
-                process_names.append("publish")
-                process_names.append("icon")
-                select.set_option("values", process_names)
-        
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Process")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
+
+        desc_wdg = DivWdg("Select which process to ingest these files into")
+        div.add(desc_wdg)
+
+        div.add("<br/>")
+
+        select = SelectWdg("process")
+        div.add(select)
+        select.set_option("values", process_names)
+
+        if process:
+            select.set_options("default", process)
+    
 
         div.add("<br/>")
         div.add("<hr/>")
@@ -864,6 +879,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
+        var context = bvr.kwargs.context;
         
         var update_mode_select = top.getElement(".spt_update_mode_select");
         var update_mode = update_mode_select.value;
@@ -919,6 +935,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             extra_data: extra_data,
             update_data: update_data,
             process: process,
+            context: context,
             convert: convert,
             update_mode: update_mode,
             ignore_ext: ignore_ext,
@@ -985,6 +1002,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         action_handler = my.kwargs.get("action_handler")
         if not action_handler:
             action_handler = 'tactic.ui.tools.IngestUploadCmd';
+
+        context = my.kwargs.get("context")
  
         button.add_behavior( {
             'type': 'click_up',
@@ -993,6 +1012,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'search_type': my.search_type,
                 'relative_dir': relative_dir,
                 'script_found': script_found,
+                'context': context,
             },
             'cbjs_action': '''
 
@@ -1559,10 +1579,15 @@ class IngestUploadCmd(Command):
             if not process:
                 process = "publish"
 
+
+            context = my.kwargs.get("context")
+            if not context:
+                context = process
+
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (process, filename)
+                context = "%s/%s" % (context, filename)
             
             if update_mode == "sequence":
 
@@ -1593,10 +1618,10 @@ class IngestUploadCmd(Command):
             else: 
                 if my.kwargs.get("base_dir"):
                     from pyasm.checkin import FileCheckin
-                    checkin = FileCheckin(sobject, file_path, context=context)
+                    checkin = FileCheckin(sobject, file_path, context=context, process=process)
                     checkin.execute()
                 else:
-                    server.simple_checkin(search_key, context, filename, mode='uploaded')
+                    server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
 
 
             percent = int((float(count)+1) / len(filenames)*100)

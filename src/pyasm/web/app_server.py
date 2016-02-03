@@ -257,8 +257,6 @@ class BaseAppServer(Base):
                             if 'is not permitted to view project' not in e.__str__():
                                 raise
 
-                        
-                       
 
                         if not web_wdg:
                             web_wdg = site_obj.get_login_wdg()

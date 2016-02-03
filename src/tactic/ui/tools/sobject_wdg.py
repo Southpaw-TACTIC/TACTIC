@@ -944,7 +944,8 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
 
         desc_wdg = DivWdg()
         td.add(desc_wdg)
-        desc_wdg.add("Detailed information about this item.  Want to edit the info? <a>Click here</a>")
+        #desc_wdg.add("Detailed information about this item.  Want to edit the info? <a>Click here</a>")
+        desc_wdg.add("Detailed information about this item.")
         td.add("<hr/>")
 
 

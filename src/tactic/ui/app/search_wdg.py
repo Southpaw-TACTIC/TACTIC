@@ -238,7 +238,7 @@ class SearchWdg(BaseRefreshWdg):
         my.use_last_search = True
         parent_key = my.kwargs.get('parent_key')
         state = my.kwargs.get('state')
-        if parent_key or state or my.kwargs.get('use_last_search') == False:
+        if parent_key or state or my.kwargs.get('use_last_search') in [False, 'false']:
             my.use_last_search = False
        
         my.prefix_namespace = my.kwargs.get('prefix_namespace')

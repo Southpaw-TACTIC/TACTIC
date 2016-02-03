@@ -1838,6 +1838,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table = Table()
         table.add_style("display: none")
         table.add_class("spt_table_insert_table")
+
         insert_sobject = SearchType.create(my.search_type)
 
         # set the sobjects to all the widgets then preprocess
@@ -3774,8 +3775,9 @@ spt.table.add_new_item = function(kwargs) {
     }
 
     var layout = spt.table.get_layout();
-    var table = layout.getElement(".spt_table_insert_table");
+    var table = layout.getElement(".spt_table_insert_table")
     var insert_row = table.getElement(".spt_table_insert_row");
+    //var insert_row = spt.table.get_insert_row();
 
     var row;
     var position;

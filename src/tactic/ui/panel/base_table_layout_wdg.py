@@ -764,27 +764,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_color("color", "color")
         
         border_color = div.get_color("table_border",  default="border")
-        
-        div.add_styles('border-top: solid 1px %s;' % border_color)
 
-        #div.add_gradient("background", "background")
+       
         div.add_color("background", "background",-3)
 
+        """
         if not my.kwargs.get("__hidden__"):
-            #div.add_style("margin-left: -1px")
-            #div.add_style("margin-right: -1px")
 
-            #div.add_border()
-            div.add_style("border-width: 1px 1px 0px 1px")
+            #div.add_style("border-width: 1px 1px 0px 1px")
+            div.add_style("border-width: 1px 0px 1px 0px")
             div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % div.get_color("border"))
-            div.add_style("border-color: #BBB")
+            div.add_style("border-color: %s" % border_color)
 
         else:
+
             div.add_style("border-width: 0px 0px 0px 0px")
             div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % div.get_color("table_border"))
-        #div.add_color("background", "background3")
+            div.add_style("border-color: %s" % border_color)
+        """
 
 
         # the label on the commit button
@@ -1294,7 +1291,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         outer.add_style("min-width: 750px")
         div.add_style("height: %s" % height)
-        div.add_style("margin: 0px -1px 0px -1px")
+        #div.add_style("margin: 0px -1px 0px -1px")
 
         
         # This was included when our icons had color and we heavily used hidden row.
