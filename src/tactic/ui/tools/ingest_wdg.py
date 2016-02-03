@@ -37,6 +37,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
         'process': 'The default process to ingest into',
+        'context': 'Fixed context to ingest into',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
