@@ -1528,11 +1528,14 @@ class IngestUploadCmd(Command):
                     full_relative_dir = "%s/%s" % (relative_dir, date_str)
                     sobject.set_value("relative_dir", full_relative_dir)
            
-            # FIXME: What is the purpose of parent_key?
+            # Add parent sObject
             if parent_key:
                 parent = Search.get_by_search_key(parent_key)
                 if parent:
-                    sobject.set_sobject_value(sobject)
+                    try:
+                        sobject.set_sobject_value(parent)
+                    except:
+                        pass
 
             for key, value in update_data.items():
                 if input_prefix:
