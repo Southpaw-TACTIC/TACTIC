@@ -4689,7 +4689,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_pipeline_processes(my, ticket, search_key, recurse=False):
-        ''''DEPRECATED: use get_pipeline_processes_info()
+        '''DEPRECATED: use get_pipeline_processes_info()
         method to retrieve the pipeline of a specific sobject.  The pipeline
         returned is a dictionary
        
