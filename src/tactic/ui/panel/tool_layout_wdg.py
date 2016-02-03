@@ -512,8 +512,13 @@ class CardLayoutWdg(ToolLayoutWdg):
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
-        for sobject in my.sobjects:
-            inner.add(my.get_item_wdg(sobject))
+        if my.sobjects:
+            for sobject in my.sobjects:
+                inner.add(my.get_item_wdg(sobject))
+        else:
+            table = Table()
+            inner.add(table)
+            my.handle_no_results(table);
 
         return div
 
