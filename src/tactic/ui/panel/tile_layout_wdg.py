@@ -1770,6 +1770,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     }
                 }
                 else {
+                    spt.table.unselect_row(row);
+                    checkbox.checked = false;
+                    bg.setStyle("opacity", "0.3");
                     return;
                 }
             }
@@ -1796,6 +1799,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                         
                     }
                     else {
+                        spt.table.unselect_row(row);
+                        checkbox.checked = false;
+                        bg.setStyle("opacity", "0.3");
                         return;
                     }
                 }  
