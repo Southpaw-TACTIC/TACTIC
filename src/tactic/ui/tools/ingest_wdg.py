@@ -95,25 +95,28 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         div.add("<hr/>")
 
-
-        # process
-
+        # Build list of process names
+        process_names = set()
         from pyasm.biz import Pipeline
         from pyasm.widget import SelectWdg
         search_type_obj = SearchType.get(my.search_type)
         base_type = search_type_obj.get_base_key()
 
-        process_names = []
         pipeline_search = Search("sthpw/pipeline")
         pipeline_search.add_filter("search_type", base_type)
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
-            process_names.extend(pipeline.get_process_names())
+            process_names.update(pipeline.get_process_names())
   
         selected_process = my.kwargs.get("process")
         if selected_process:
-            process_names.append(selected_process)
-        process_names = list(set(process_names))
+            process_names.add(selected_process) 
+        
+        if process_names:
+            process_names = list(process_names)
+            process_names.sort()
+        else:
+            process_names = []
 
         title_wdg = DivWdg()
         div.add(title_wdg)
@@ -136,14 +139,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<br/>")
         div.add("<hr/>")
 
-
         # update mode
         title_wdg = DivWdg()
         div.add(title_wdg)
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
-        desc_wdg = DivWdg("Determines how the file name matches up to a particular enry")
+        desc_wdg = DivWdg("Determines how the file name matches up to a particular entry")
 
         #desc_wdg = DivWdg("When update mode is 'Update', if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
         div.add(desc_wdg)
@@ -276,7 +278,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Ingest Files")
         title_wdg.add_style("font-size: 25px")
 
-        desc_div = DivWdg("Drag files into the box or click 'Select Files'")
+        desc_div = DivWdg("Drag files into the box or click 'Add Files'")
         div.add(desc_div)
 
         div.add("<hr/>")
@@ -869,6 +871,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
+        var context = bvr.kwargs.context;
         
         var update_mode_select = top.getElement(".spt_update_mode_select");
         var update_mode = update_mode_select.value;
@@ -924,6 +927,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             extra_data: extra_data,
             update_data: update_data,
             process: process,
+            context: context,
             convert: convert,
             update_mode: update_mode,
             ignore_ext: ignore_ext,
@@ -990,6 +994,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         action_handler = my.kwargs.get("action_handler")
         if not action_handler:
             action_handler = 'tactic.ui.tools.IngestUploadCmd';
+
+        context = my.kwargs.get("context")
  
         button.add_behavior( {
             'type': 'click_up',
@@ -998,6 +1004,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'search_type': my.search_type,
                 'relative_dir': relative_dir,
                 'script_found': script_found,
+                'context': context,
             },
             'cbjs_action': '''
 
@@ -1237,7 +1244,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_select_files_button(my):
 
 
-        button = ActionButtonWdg(title="Select Files")
+        button = ActionButtonWdg(title="Add Files")
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -1565,10 +1572,15 @@ class IngestUploadCmd(Command):
             if not process:
                 process = "publish"
 
+
+            context = my.kwargs.get("context")
+            if not context:
+                context = process
+
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (process, filename)
+                context = "%s/%s" % (context, filename)
             
             if update_mode == "sequence":
 
@@ -1599,10 +1611,10 @@ class IngestUploadCmd(Command):
             else: 
                 if my.kwargs.get("base_dir"):
                     from pyasm.checkin import FileCheckin
-                    checkin = FileCheckin(sobject, file_path, context=context)
+                    checkin = FileCheckin(sobject, file_path, context=context, process=process)
                     checkin.execute()
                 else:
-                    server.simple_checkin(search_key, context, filename, mode='uploaded')
+                    server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
 
 
             percent = int((float(count)+1) / len(filenames)*100)

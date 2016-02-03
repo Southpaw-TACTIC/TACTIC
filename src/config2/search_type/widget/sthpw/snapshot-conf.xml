@@ -128,6 +128,13 @@
 
 
 
+  <element edit='false' name='file'>
+       <display class="tactic.ui.table.SnapshotFileElementWdg">
+       </display>
+  </element>
+
+
+
   <element edit='false' name='files'>
        <display class="tactic.ui.table.HiddenRowElementWdg">
            <dynamic_class>tactic.ui.checkin.SnapshotFilesWdg</dynamic_class>
@@ -141,6 +148,11 @@
        </display>
   </element>
 
+
+  <element edit='false' name='history'>
+       <display class="tactic.ui.table.SnapshotFileElementWdg">
+       </display>
+  </element>
 
 
 

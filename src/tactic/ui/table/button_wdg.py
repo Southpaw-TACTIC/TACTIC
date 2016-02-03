@@ -364,7 +364,7 @@ class ButtonElementWdg(BaseTableElementWdg):
                 print "WARNING: ", str(e)
                 icon_link = IconWdg.ERROR
 
-            icon_wdg = IconButtonWdg(icon_tip, icon_link)
+            icon_wdg = IconButtonWdg(icon_tip, icon=icon_link)
             if not sobject.is_insert():
                 icon_wdg.add_class("hand")
                 #icon_wdg.add_behavior(my.behavior)

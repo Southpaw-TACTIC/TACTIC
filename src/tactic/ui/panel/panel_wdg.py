@@ -3324,6 +3324,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
+            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
             from collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
@@ -3447,7 +3448,15 @@ spt.view_panel = {}
 spt.view_panel.top = null;
 
 spt.view_panel.set_top = function(top_el) {
+    if (!top_el.hasClass("spt_view_panel_top")) {
+        top_el.getElement(".spt_view_panel_top"); 
+        if (!top_el) {
+            throw("Can't find view panel_top");
+        }
+    }
+
     spt.view_panel.top = top_el;
+
 }
 
 spt.view_panel.get_current_layout = function() {
@@ -3462,11 +3471,16 @@ spt.view_panel.switch_layout = function(layout) {
           
     var top = spt.view_panel.top;
     if (!top) {
-        alert("Error: spt_view_panel_top not found");
-        return;
+        throw("Error: spt_view_panel_top not found");
     }
 
-    var search_type = top.getAttribute("spt_search_type");
+    var layout_el = top.getElement(".spt_layout");
+
+    var search_type = layout_el.getAttribute("spt_search_type");
+
+    if (!search_type) {
+        throw("No search type found");
+    }
 
     var kwargs = {
         search_type: search_type,

@@ -494,6 +494,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
 
+        elif my.kwargs.get("sobjects"):
+            my.sobjects = my.kwargs.get("sobjects")
 
 
 
@@ -1835,6 +1837,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.edit_wdgs = {}
         table = Table()
         table.add_style("display: none")
+        table.add_class("spt_table_insert_table")
 
         insert_sobject = SearchType.create(my.search_type)
 
@@ -2435,107 +2438,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         tr.add_color("background", "background3", 5)
         tr.add_color("color", "color3")
-        
-
-
-
-    def handle_no_results(my, table):
-
-        no_results_mode = my.kwargs.get('no_results_mode')
-        if no_results_mode == 'compact':
-
-            tr, td = table.add_row_cell()
-            tr.add_class("spt_table_no_items")
-            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
-            msg.add_style("text-align: center")
-            msg.add_style("padding: 5px")
-            msg.add_style("opacity: 0.5")
-            td.add(msg)
-            return
-     
-
-        #table.add_attr("ondragenter", "return false")
-        #table.add_attr("ondragover", "return false")
-        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
-
-
-        table.add_style("width: 100%")
-
-
-        tr, td = table.add_row_cell()
-
-        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
-        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
-        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
-
-
-
-        tr.add_class("spt_table_no_items")
-        td.add_style("border-style: solid")
-        td.add_style("border-width: 1px")
-        td.add_color("border-color", "table_border", default="border")
-        #td.add_border()
-        td.add_color("color", "color")
-        td.add_color("background", "background", -7)
-        td.add_style("min-height: 250px")
-        td.add_style("overflow: hidden")
-
-        for i in range(0, 10):
-            div = DivWdg()
-            td.add(div)
-            div.add_style("height: 30px")
-            if i % 2:
-                div.add_color("background", "background")
-            else:
-                div.add_color("background", "background", -3)
-
-
-        msg_div = DivWdg()
-        td.add(msg_div)
-        msg_div.add_style("text-align: center")
-        msg_div.add_style("float: center")
-        msg_div.add_style("margin-left: auto")
-        msg_div.add_style("margin-right: auto")
-        msg_div.add_style("margin-top: -260px")
-
-
-        if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
-            msg = DivWdg("<i>-- Initial search set to no results --</i>")
-        else:
-
-            no_results_msg = my.kwargs.get("no_results_msg")
-
-            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
-            #msg.set_box_shadow("0px 0px 5px")
-            if no_results_msg:
-                msg.add("<br/>"*2)
-                msg.add(no_results_msg)
-
-            elif my.get_show_insert():
-                msg.add("<br/><br/>Click on the &nbsp;")
-                icon = IconWdg("Add", "BS_PLUS")
-                msg.add(icon)
-                msg.add(" button to add new items")
-                msg.add("<br/>")
-                msg.add("or ")
-                msg.add("alter search criteria for new search.")
-            else:
-                msg.add("<br/>"*2)
-                msg.add("Alter search criteria for new search.")
-
-        msg_div.add(msg)
-
-        msg.add_style("padding-top: 20px")
-        msg.add_style("height: 100px")
-        msg.add_style("width: 400px")
-        msg.add_style("margin-left: auto")
-        msg.add_style("margin-right: auto")
-        msg.add_color("background", "background3")
-        msg.add_color("color", "color3")
-        msg.add_border()
-
-        msg_div.add("<br clear='all'/>")
-        td.add("<br clear='all'/>")
 
 
 
@@ -3120,7 +3022,8 @@ spt.table.dragleave_row = function(evt, el) {
 }
 
 
-
+// drop_row does NOT drop a row from the table
+// It refers to the action of DROPPING A ROW INTO the table
 spt.table.drop_row = function(evt, el) {
     evt.stopPropagation();
     evt.preventDefault();
@@ -3871,7 +3774,10 @@ spt.table.add_new_item = function(kwargs) {
         kwargs = {};
     }
 
-    var insert_row = spt.table.get_insert_row();
+    var layout = spt.table.get_layout();
+    var table = layout.getElement(".spt_table_insert_table")
+    var insert_row = table.getElement(".spt_table_insert_row");
+    //var insert_row = spt.table.get_insert_row();
 
     var row;
     var position;

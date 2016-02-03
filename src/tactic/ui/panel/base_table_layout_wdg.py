@@ -764,27 +764,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_color("color", "color")
         
         border_color = div.get_color("table_border",  default="border")
-        
-        div.add_styles('border-top: solid 1px %s;' % border_color)
 
-        #div.add_gradient("background", "background")
+       
         div.add_color("background", "background",-3)
 
+        """
         if not my.kwargs.get("__hidden__"):
-            #div.add_style("margin-left: -1px")
-            #div.add_style("margin-right: -1px")
 
-            #div.add_border()
-            div.add_style("border-width: 1px 1px 0px 1px")
+            #div.add_style("border-width: 1px 1px 0px 1px")
+            div.add_style("border-width: 1px 0px 1px 0px")
             div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % div.get_color("border"))
-            div.add_style("border-color: #BBB")
+            div.add_style("border-color: %s" % border_color)
 
         else:
+
             div.add_style("border-width: 0px 0px 0px 0px")
             div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % div.get_color("table_border"))
-        #div.add_color("background", "background3")
+            div.add_style("border-color: %s" % border_color)
+        """
 
 
         # the label on the commit button
@@ -1294,7 +1291,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         outer.add_style("min-width: 750px")
         div.add_style("height: %s" % height)
-        div.add_style("margin: 0px -1px 0px -1px")
+        #div.add_style("margin: 0px -1px 0px -1px")
 
         
         # This was included when our icons had color and we heavily used hidden row.
@@ -3066,6 +3063,109 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         return access_keys
 
 
+    def handle_no_results(my, table):
+        ''' This creates an empty html table when the TableLayout has no entries.
+        There are two helper functions, add_no_results_bvr and add_no_results_style
+        which can be overridden to support custom behaviors and appearances.'''
+
+        no_results_mode = my.kwargs.get('no_results_mode')
+
+        if no_results_mode == 'compact':
+
+            tr, td = table.add_row_cell()
+            tr.add_class("spt_table_no_items")
+            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
+            msg.add_style("text-align: center")
+            msg.add_style("padding: 5px")
+            msg.add_style("opacity: 0.5")
+            td.add(msg)
+            return
+
+        table.add_style("width: 100%")
+
+        tr, td = table.add_row_cell()
+
+        my.add_no_results_bvr(tr)
+
+        tr.add_class("spt_table_no_items")
+        td.add_style("border-style: solid")
+        td.add_style("border-width: 1px")
+        td.add_color("border-color", "table_border", default="border")
+        td.add_color("color", "color")
+        td.add_color("background", "background", -3)
+        td.add_style("min-height: 250px")
+        td.add_style("overflow: hidden")
+
+        my.add_no_results_style(td)
+
+        msg_div = DivWdg()
+        td.add(msg_div)
+        msg_div.add_style("text-align: center")
+        msg_div.add_style("float: center")
+        msg_div.add_style("margin-left: auto")
+        msg_div.add_style("margin-right: auto")
+        msg_div.add_style("margin-top: -260px")
 
 
+        if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
+            msg = DivWdg("<i>-- Initial search set to no results --</i>")
+        else:
 
+            no_results_msg = my.kwargs.get("no_results_msg")
+
+            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
+            #msg.set_box_shadow("0px 0px 5px")
+            if no_results_msg:
+                msg.add("<br/>"*2)
+                msg.add(no_results_msg)
+
+            elif my.get_show_insert():
+                msg.add("<br/><br/>Click on the &nbsp;")
+                icon = IconWdg("Add", "BS_PLUS")
+                msg.add(icon)
+                msg.add(" button to add new items")
+                msg.add("<br/>")
+                msg.add("or ")
+                msg.add("alter search criteria for new search.")
+            else:
+                msg.add("<br/>"*2)
+                msg.add("Alter search criteria for new search.")
+
+        msg_div.add(msg)
+
+        msg.add_style("padding-top: 20px")
+        msg.add_style("height: 100px")
+        msg.add_style("width: 400px")
+        msg.add_style("margin-left: auto")
+        msg.add_style("margin-right: auto")
+        msg.add_color("background", "background3")
+        msg.add_color("color", "color3")
+        msg.add_border()
+
+        msg_div.add("<br clear='all'/>")
+        td.add("<br clear='all'/>")
+
+    def add_no_results_bvr(my, tr):
+        ''' This adds a default drag and drop behavior to an empty table.
+        Override it in classes that extend BaseTableLayoutWdg to handle
+        custom drag/drop behaviors '''
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+    def add_no_results_style(my, td):
+        ''' This adds the default styling to an empty table.
+        Override it in classes that extend BaseTableLayoutWdg if you
+        want something different'''
+
+        for i in range(0, 10):
+            div = DivWdg()
+            td.add(div)
+            div.add_style("height: 30px")
+
+            if i % 2:
+                div.add_color("background", "background")
+            else:
+                div.add_color("background", "background", -3)

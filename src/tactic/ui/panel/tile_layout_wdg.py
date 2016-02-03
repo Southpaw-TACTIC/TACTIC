@@ -315,10 +315,14 @@ class TileLayoutWdg(ToolLayoutWdg):
                     my.group_values[i+1] = next_dict
 
 
+    def add_no_results_bvr(my, tr):
+        return
 
 
-
-
+    def add_no_results_style(my, td):
+        div = DivWdg()
+        td.add(div)
+        div.add_style("height: 300px")
    
 
     def get_content_wdg(my):
@@ -340,11 +344,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             div.add_event('oncontextmenu', 'return false;')
         if menus_in:
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
- 
-
-
-
-
         
 
         temp = my.kwargs.get("temp")
@@ -362,8 +361,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner.add("<br clear='all'/>")
         
         if my.upload_mode in ['button','both']:
-            inner.add( my.get_upload_wdg() )
-            inner.add( my.get_delete_wdg() )
+            button_div = DivWdg()
+            inner.add(button_div)
+            button_div.add( my.get_upload_wdg() )
+            button_div.add( my.get_delete_wdg() )
+            button_div.add_style("height: 45px")
             
         
         if my.sobjects:
@@ -910,8 +912,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                     evt.preventDefault();
                     el.setStyle('border','none');
                 }
-                spt.thumb.background_drop = function(evt, el) {
 
+                // background_drop creates an entirely new item based on the file name that is being inserted
+                spt.thumb.background_drop = function(evt, el) {
                     //evt.stopPropagation();
                     //evt.preventDefault();
 
@@ -936,17 +939,16 @@ class TileLayoutWdg(ToolLayoutWdg):
                     var yes = function() {
                         spt.app_busy.show("Attaching file");
 
-                                var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
-                                var upload_file_kwargs =  {
-                                    files: files,
-                                    ticket: ticket,
-                                   
-                                    upload_complete: function() {
+                            var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
+                            var upload_file_kwargs =  {
+                                files: files,
+                                ticket: ticket,
+                               
+                                upload_complete: function() {
 
                                     try {
                                         var server = TacticServerStub.get();
                                         server.set_transaction_ticket(ticket);
-                                        
                                         
                                         for (var i = 0; i < files.length; i++) {
                                             var size = files[i].size;
@@ -959,7 +961,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                                                 name: filename
                                             }
                                             if (bvr.search_key) {
-                                               search_key = bvr.search_key
+                                                search_key = bvr.search_key;
                                             }
                                             else {
                                                 var search_type = bvr.search_type;
@@ -982,17 +984,19 @@ class TileLayoutWdg(ToolLayoutWdg):
                                         spt.alert(spt.exception.handler(e));
                                         server.abort();
                                     }
-                                }};
-                                spt.html5upload.upload_file(upload_file_kwargs);
+                                }
+                            };
+                            spt.html5upload.upload_file(upload_file_kwargs);
 
-                                // just support one file at the moment
-                                //break;
+                            // just support one file at the moment
+                            //break;
                      
                         spt.app_busy.hide();
                     }
                     spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes);
                 }
      
+                // noop means inserting a file into an already existing tile
                 spt.thumb.noop_enter = function(evt, el) {
                     evt.preventDefault();
                     el.setStyle("box-shadow", "0px 0px 15px #970");
