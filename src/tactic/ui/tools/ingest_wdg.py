@@ -132,7 +132,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         process_names.append("publish")
         process_names.append("icon")
         select.set_option("values", process_names)
-        select.add_empty_option("Select Ingest Process")
+        select.add_empty_option("- Select Ingest Process -")
         if selected_process:
             select.set_option("default", selected_process)
 
@@ -216,7 +216,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        desc_wdg = DivWdg("This extra metaadata will be added to each added item")
+        desc_wdg = DivWdg("This extra metadata will be added to each added item")
         div.add(desc_wdg)
 
         # edit
@@ -272,17 +272,29 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add_style("padding: 20px")
         div.add_color("background", "background")
 
-
+        header_div = DivWdg()
+        div.add(header_div)
+       
         title_wdg = DivWdg()
-        div.add(title_wdg)
-        title_wdg.add("Ingest Files")
-        title_wdg.add_style("font-size: 25px")
+        header_div.add(title_wdg)
+        title_wdg.add("<span style='font-size: 25px'>Ingest Files</span>")
+        title_wdg.add("<br/>")
+        title_wdg.add("Drag files into the box or click 'Add Files'")
+        title_wdg.add_style("display", "inline-block")
 
-        desc_div = DivWdg("Drag files into the box or click 'Add Files'")
-        div.add(desc_div)
+        # create the help button
+        help_button_wdg = DivWdg()
+        header_div.add(help_button_wdg)
+        help_button_wdg.add_styles("float: right; margin-top: 11px;")
+        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+        help_button_wdg.add(help_button)
 
-        div.add("<hr/>")
+        help_button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+        } )
 
+        div.add("<hr style='margin-right: 4px'/>")
 
         shelf_div = DivWdg()
         div.add(shelf_div)
@@ -316,23 +328,30 @@ class IngestUploadWdg(BaseRefreshWdg):
             folder_div.add_style("margin-bottom: 10px")
 
 
-
-        # create the help button
-        help_button_wdg = DivWdg()
-        shelf_div.add(help_button_wdg)
-        help_button_wdg.add_style("float: right")
-        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
-        help_button_wdg.add(help_button)
-
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
-        } )
-
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         shelf_div.add(upload)
 
+        button = ActionButtonWdg(title="Clear")
+        button.add_style("float: right")
+        button.add_style("margin-top: -3px")
+        shelf_div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
+            var button = top.getElement(".spt_upload_file_button");
+            button.setStyle("display", "none");
+         '''
+         } )
 
         button = ActionButtonWdg(title="Add Files")
         button.add_style("float: right")
@@ -382,29 +401,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        shelf_div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            var button = top.getElement(".spt_upload_file_button");
-            button.setStyle("display", "none");
-         '''
-         } )
-
-
-
         upload_div = DivWdg()
         shelf_div.add(upload_div)
         upload_div.add_class("spt_upload_file_button")
@@ -432,6 +428,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_style("border: 3px dashed %s" % border_color_light)
         #files_div.add_style("border-radius: 20px 20px 20px 20px")
         files_div.add_style("z-index: 1")
+        files_div.add_style("width", "586px")
         #files_div.add_style("display: none")
 
         bgcolor = div.get_color("background")
@@ -768,7 +765,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_div = DivWdg()
         progress_div.add_class("spt_upload_progress_top")
         div.add(progress_div)
-        progress_div.add_style("width: 100%")
+        progress_div.add_style("width: 595px")
         progress_div.add_style("height: 15px")
         progress_div.add_style("margin-bottom: 10px")
         progress_div.add_border()
@@ -957,7 +954,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.message.set_interval(key, on_progress, 2000);
 
         '''
-
 
 
         button = ActionButtonWdg(title="Clear")
