@@ -233,7 +233,7 @@ class BaseAppServer(Base):
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, reset_msg)
 
             web_wdg = None
-            #sudo = Sudo()
+            sudo = Sudo()
             try:
                 # get the project from the url because we are still 
                 # in the admin project at this stage
@@ -281,7 +281,7 @@ class BaseAppServer(Base):
 
             finally:
                 # sudo out of scope here
-                #sudo.exit()
+                sudo.exit()
                 pass
 
 
@@ -486,7 +486,7 @@ class BaseAppServer(Base):
                     web_wdg = None
 
             if not web_wdg:
-                msg = "No default page for Guest defined"
+                msg = "No default page defined for guest user. Please set up /guest in Custom URL."
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
                 return my.handle_not_logged_in(allow_change_admin=False)
 

@@ -17,7 +17,7 @@ from pyasm.web import HtmlElement, DivWdg, Table
 from pyasm.widget import IconWdg, WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import IconButtonWdg
+#from tactic.ui.widget import IconButtonWdg
 
 
 
@@ -192,6 +192,7 @@ class ContentBoxWdg(BaseRefreshWdg):
 
     def get_title_wdg(my):
 
+        from tactic.ui.widget import IconButtonWdg
         title = my.kwargs.get("title")
         if not title:
             widget = my.get_widget("title")
