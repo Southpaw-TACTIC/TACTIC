@@ -2950,7 +2950,7 @@ class TacticServerStub(object):
     #
     def create_note(my, search_key, note, process="publish", subcontext=None,
                     user=None):
-        ''''API Function: create_note(search_key, note, process="publish", subcontext=None, user=None)
+        '''API Function: create_note(search_key, note, process="publish", subcontext=None, user=None)
 
         Add a note for a particular sobject
 
@@ -3125,7 +3125,7 @@ class TacticServerStub(object):
 
 
     def get_base_dirs(my):
-        ''''API Function: get_base_dirs()
+        '''API Function: get_base_dirs()
 
         Get all of the base directories defined on the server
 
