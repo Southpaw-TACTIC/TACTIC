@@ -527,11 +527,19 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         tabs = my.kwargs.get("tab_element_names")
+
+        config_search = Search("config/widget_config")
+        config_search.add_filter("view", "tab_element_names")
+        config_search.add_filter("search_type", my.search_type)
+        config = config_search.get_sobject()
+
         if tabs:
-            tabs = tabs.split(",")
+            tabs = [x.strip() for x in tabs.split(',')] 
+        elif config:
+            tabs = config.get_element_names()
         else:
             tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
-
+        
         if "info" not in tabs:
             tabs.insert(0, "info")
 
@@ -944,7 +952,6 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
 
         desc_wdg = DivWdg()
         td.add(desc_wdg)
-        #desc_wdg.add("Detailed information about this item.  Want to edit the info? <a>Click here</a>")
         desc_wdg.add("Detailed information about this item.")
         td.add("<hr/>")
 
