@@ -1746,7 +1746,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
         var collection_type = layout.getAttribute("spt_collection_type");
 
-        var insert_collection = function(src_code) {
+        var insert_collection = function(collection_type, parent_code, src_code) {
             if (parent_code != src_code){
                 var data = {
                     parent_code: parent_code,
@@ -1754,13 +1754,13 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 };
                 try { 
                 server.insert(collection_type, data);
-                has_inserted = true;
+                return true;
                 } catch(e) {
                 log.debug("Failed to add");
                 }
             }
             else {
-                return;
+                return false;
             }
         }
 
@@ -1769,13 +1769,16 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             // Regular single drag and drop
             if (selected_tiles.indexOf(row) == -1) {
                 var src_code = src_tile.getAttribute("spt_search_code");
-                insert_collection(src_code);
+                has_inserted = insert_collection(collection_type, parent_code, src_code);
             }
             // Multiple selections drag and drop
             else {
                 for (i=0; i < selected_tiles.length; i++) {
                     var src_code = selected_tiles[i].getAttribute("spt_search_code");
-                    insert_collection(src_code);
+                    var inserted = insert_collection(collection_type, parent_code, src_code);
+                    if (inserted){
+                        has_inserted = true;
+                    }
                 }  
             }
             if (parent_code != src_code){
