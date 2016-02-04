@@ -969,9 +969,17 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         top = my.top
         view = my.kwargs.get("view")
         expression = my.kwargs.get("expression")
+        insert_view = my.kwargs.get("custom_insert_view")
+        edit_view = my.kwargs.get("custom_edit_view")
 
         if not view:
             view = "startup"
+
+        if not insert_view:
+            insert_view = "insert"
+
+        if not edit_view:
+            edit_view = "edit"
 
         '''
         show_all_groups = True
@@ -990,7 +998,9 @@ class SecurityGroupListWdg(BaseRefreshWdg):
             view=view,
             simple_search_view='simple_search',
             expand_on_load=True,
-            expression=expression
+            expression=expression,
+            insert_view=insert_view,
+            edit_view=edit_view
         )
         top.add(layout)
 
