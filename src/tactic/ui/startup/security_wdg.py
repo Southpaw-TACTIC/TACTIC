@@ -969,8 +969,8 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         top = my.top
         view = my.kwargs.get("view")
         expression = my.kwargs.get("expression")
-        insert_view = my.kwargs.get("portal_insert_view")
-        edit_view = my.kwargs.get("portal_edit_view")
+        insert_view = my.kwargs.get("custom_insert_view")
+        edit_view = my.kwargs.get("custom_edit_view")
 
         if not view:
             view = "startup"
