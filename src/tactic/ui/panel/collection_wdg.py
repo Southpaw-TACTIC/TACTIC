@@ -682,7 +682,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 show_search_limit=False,
                 sobjects=my.sobjects,
                 detail_element_names=my.kwargs.get("detail_element_names"),
-                do_search='false'
+                do_search='false',
+                upload_mode=my.kwargs.get("upload_mode")
         )
         div.add(tile)
 

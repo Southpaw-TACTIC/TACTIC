@@ -3051,7 +3051,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_collection_tool': show_collection_tool
     }
 
-    var pat = /TileLayoutWdg/;
+    var pat = /TileLayoutWdg|CollectionLayoutWdg/;
     if (pat.test(class_name)) {
         var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names','hide_checkbox'];
         for (var k=0; k < attr_list.length; k++) {

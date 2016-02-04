@@ -3324,7 +3324,22 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
+            kwargs['top_view'] = my.kwargs.get("top_view")
+            kwargs['bottom_view'] = my.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
+            kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['show_scale'] = my.kwargs.get("show_scale")
+            kwargs['styles'] = my.kwargs.get("styles")
+            kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
             kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = my.kwargs.get("title_expr")
+            kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
+            kwargs['overlay_color'] = my.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
+            kwargs['process'] = my.kwargs.get("process")
+            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
             from collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
