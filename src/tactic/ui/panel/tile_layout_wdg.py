@@ -1753,10 +1753,10 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     search_code: src_code
                 };
                 try { 
-                server.insert(collection_type, data);
-                return true;
+                    server.insert(collection_type, data);
+                    return true;
                 } catch(e) {
-                log.debug("Failed to add");
+                    log.debug("Failed to add");
                 }
             }
             else {
