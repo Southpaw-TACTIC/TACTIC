@@ -46,7 +46,7 @@ class CustomTabWdg(Widget):
 
     def _get_tab_wdg(my, search_type):
 
-        widget_config = WidgetConfig.get_by_search_type(search_type,"default")
+        widget_config = WidgetConfigView.get_by_search_type(search_type,"default")
 
         div = DivWdg()
         div.add_style("background-color: white")

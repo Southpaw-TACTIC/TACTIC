@@ -2796,6 +2796,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '20'
         }, 
 
+        "show_collection_tool" : {
+            'description': 'determines whether to show the collection button or not',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display',
+            'order': '21'
+        }, 
+
 
         "link": {
             'description': "Definition from a link",
@@ -3181,6 +3189,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
+        show_collection_tool = my.kwargs.get("show_collection_tool")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3255,6 +3264,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "expand_mode": expand_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
+            "show_collection_tool": show_collection_tool
             #"search_wdg": search_wdg
             
         }
@@ -3314,8 +3324,9 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
-            from collection_wdg import CardLayoutWdg
-            layout_table = CollectionWdg(**kwargs)
+            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            from collection_wdg import CollectionLayoutWdg
+            layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
@@ -3437,7 +3448,15 @@ spt.view_panel = {}
 spt.view_panel.top = null;
 
 spt.view_panel.set_top = function(top_el) {
+    if (!top_el.hasClass("spt_view_panel_top")) {
+        top_el.getElement(".spt_view_panel_top"); 
+        if (!top_el) {
+            throw("Can't find view panel_top");
+        }
+    }
+
     spt.view_panel.top = top_el;
+
 }
 
 spt.view_panel.get_current_layout = function() {
@@ -3452,11 +3471,16 @@ spt.view_panel.switch_layout = function(layout) {
           
     var top = spt.view_panel.top;
     if (!top) {
-        alert("Error: spt_view_panel_top not found");
-        return;
+        throw("Error: spt_view_panel_top not found");
     }
 
-    var search_type = top.getAttribute("spt_search_type");
+    var layout_el = top.getElement(".spt_layout");
+
+    var search_type = layout_el.getAttribute("spt_search_type");
+
+    if (!search_type) {
+        throw("No search type found");
+    }
 
     var kwargs = {
         search_type: search_type,

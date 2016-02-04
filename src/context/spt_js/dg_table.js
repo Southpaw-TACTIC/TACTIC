@@ -2969,6 +2969,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var mode = target.getAttribute("spt_mode");
     var no_results_msg = target.getAttribute("spt_no_results_msg");
     var show_border = target.getAttribute("spt_show_border");
+    var show_collection_tool = target.getAttribute("spt_show_collection_tool");
      
     var height = target.getAttribute("spt_height");
     var element_names;
@@ -3047,11 +3048,12 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
+        'show_collection_tool': show_collection_tool
     }
 
     var pat = /TileLayoutWdg/;
     if (pat.test(class_name)) {
-        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names'];
+        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names','hide_checkbox'];
         for (var k=0; k < attr_list.length; k++) {
             var attr_val = target.getAttribute('spt_'+ attr_list[k]);
             if (attr_val)

@@ -10,7 +10,7 @@
 #
 #
 
-__all___ = ['SnapshotLockedElementWdg', 'SnapshotVersionElementWdg', 'SnapshotMetadataElementWdg','SnapshotServerEementWdg']
+__all___ = ['SnapshotLockedElementWdg', 'SnapshotFileElementWdg', 'SnapshotVersionElementWdg', 'SnapshotMetadataElementWdg','SnapshotServerEementWdg']
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 
@@ -19,6 +19,8 @@ from pyasm.biz import Snapshot
 from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table
 from pyasm.widget import IconWdg
 from pyasm.search import SearchException
+
+import os
 
 class SnapshotLockedElementWdg(BaseTableElementWdg):
     '''simple widget which display a task value in an element'''
@@ -81,6 +83,20 @@ class SnapshotLockedElementWdg(BaseTableElementWdg):
 
         return div
 
+
+class SnapshotFileElementWdg(BaseTableElementWdg):
+    '''simple widget to display the main file of a snapshot'''
+    def get_display(my):
+
+        sobject = my.get_current_sobject()
+
+        if sobject:
+            path = sobject.get_web_path_by_type()
+            filename = os.path.basename(path)
+            widget = HtmlElement.href(filename, ref=path, target="_blank")
+        else:
+            widget = ""
+        return widget
 
 
 
