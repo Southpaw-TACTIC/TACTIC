@@ -1133,9 +1133,8 @@ class CollectionItemWdg(BaseRefreshWdg):
             expression = "@COUNT(%s['parent_code','%s'])" % (collection_type, collection.get_code())
             count_div.add(count)
             count_div.add_update( {
-                'parent_key': collection.get_search_key(),
-                #'expression': expression,
-                'expression': "@COUNT(group:workflow/asset_in_asset)",
+                #'parent_key': collection.get_search_key(),
+                'expression': expression,
                 'interval': 2
             } )
 
