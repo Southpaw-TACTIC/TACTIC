@@ -11,13 +11,13 @@
 #
 
 
-__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
+__all__ = ["CollectionAddWdg", "CollectionAddDialogWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
 
 
 
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
-from pyasm.web import DivWdg, Table, SpanWdg
+from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement, Widget
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -33,15 +33,9 @@ import re
 class CollectionAddWdg(BaseRefreshWdg):
 
     def get_display(my):
-        search_type = my.kwargs.get("search_type")
-
-        search = Search(search_type)
-        if not search.column_exists("_is_collection"):
-            return my.top
-
-        search.add_filter("_is_collection", True)
-        collections = search.get_sobjects()
-
+        
+        search_type = my.kwargs.get('search_type')
+        
         top = my.top
         top.add_class("spt_dialog")
         button = IconButtonWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
@@ -56,7 +50,35 @@ class CollectionAddWdg(BaseRefreshWdg):
         dialog.set_as_activator(button, offset={'x':-25,'y': 0})
         dialog.add_title("Collections")
 
-        dialog.add("<div style='margin: 10px'><b>Add selected items to a collection</b></div>")
+        dialog_content = CollectionAddDialogWdg(search_type= search_type)
+        dialog.add(dialog_content)
+        
+        return top
+
+
+class CollectionAddDialogWdg(BaseRefreshWdg):
+    ''' contents of the dialog activated by CollectionAddWdg'''
+
+    def get_display(my):
+       
+        search_type = my.kwargs.get("search_type")
+
+        search = Search(search_type)
+        if not search.column_exists("_is_collection"):
+            return my.top
+
+        search.add_filter("_is_collection", True)
+        collections = search.get_sobjects()
+
+        
+        dialog = DivWdg()
+        my.set_as_panel(dialog)
+        dialog.add_class('spt_col_dialog_top')
+
+        title_div = DivWdg()
+        title_div.add_style('margin: 10px')
+        title_div.add(HtmlElement.b("Add selected items to collection(s)"))
+        dialog.add(title_div)
 
         add_div = DivWdg()
         dialog.add(add_div)
@@ -75,8 +97,17 @@ class CollectionAddWdg(BaseRefreshWdg):
         insert_view = "edit_collection"
 
         add_div.add_behavior( {
+            'type': 'listen',
+            'event_name': 'refresh_col_dialog',
+            'cbjs_action': '''
+                var dialog_content = bvr.src_el.getParent('.spt_col_dialog_top');
+                spt.panel.refresh(dialog_content);
+            '''})
+
+        add_div.add_behavior( {
             'type': 'click_up',
             'insert_view': insert_view,
+            'event_name': 'refresh_col_dialog',
             'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
@@ -97,7 +128,7 @@ class CollectionAddWdg(BaseRefreshWdg):
                     _is_collection: true
                   }
                 };
-                spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
+                spt.panel.load_popup("Create New Collection", "tactic.ui.panel.EditWdg", kwargs);
             '''
         } )
 
@@ -179,9 +210,10 @@ class CollectionAddWdg(BaseRefreshWdg):
             go_wdg = DivWdg()
             collection_div.add(go_wdg)
             go_wdg.add_style("float: right")
-
-            icon = IconWdg(name="View Collection", icon="BS_CHEVRON_RIGHT")
-            go_wdg.add(icon)
+        
+            #TODO: add some interaction with this arrow
+            # icon = IconWdg(name="View Collection", icon="BS_CHEVRON_RIGHT")
+            # go_wdg.add(icon)
             #go_wdg.add_behavior( {
             #    'type': 'click_upX',
             #    'cbjs_action': '''
@@ -232,7 +264,7 @@ class CollectionAddWdg(BaseRefreshWdg):
             var search_keys = spt.table.get_selected_search_keys(false);
 
             if (search_keys.length == 0) {
-                spt.notify.show_message("No assets selected.");
+                spt.notify.show_message("No items selected.");
                 return;
             }
 
@@ -242,8 +274,8 @@ class CollectionAddWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var is_checked = false;
 
-            var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
-
+            var dialog_top = bvr.src_el.getParent(".spt_col_dialog_top");
+            
             for (i = 0; i < checkboxes.length; i++) {
                 var checked_collection_attr = checkboxes[i].attributes;
                 var collection_key = checked_collection_attr[3].value;
@@ -280,7 +312,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         } )
         
 
-        return top
+        return dialog
 
 
 
@@ -524,10 +556,10 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         asset_lib_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_collection_top");
-                var content = top.getElements(".spt_collection_content");
-
-                spt.panel.refresh(top);
+                var top = bvr.src_el.getParent(".spt_collection_top");             
+                var view_panel = top.getParent('.spt_view_panel');
+               
+                spt.panel.refresh(view_panel);
                 '''
             } )
 
@@ -1131,11 +1163,13 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("margin-top: -8px")
             count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
 
+            expression = "@COUNT(%s['parent_code','%s'])" % (collection_type, collection.get_code())
             count_div.add(count)
-            #count_div.add_update( {
-            #    'parent_key': collection.get_search_key(),
-            #    'expression': "@COUNT(%s)" % collection_type,
-            #} )
+            count_div.add_update( {
+                #'parent_key': collection.get_search_key(),
+                'expression': expression,
+                'interval': 2
+            } )
 
 
         name = collection.get_value("name")

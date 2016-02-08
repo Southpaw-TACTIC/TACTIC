@@ -1752,7 +1752,12 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     parent_code: parent_code,
                     search_code: src_code
                 };
-                try { 
+
+                var exists = server.query(collection_type, { single: true, filters:[['parent_code', parent_code], ['search_code', src_code]]});
+                if (exists.__search_key__) return false;
+
+                try {
+
                     server.insert(collection_type, data);
                     return true;
                 } catch(e) {
