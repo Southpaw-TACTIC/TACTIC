@@ -42,8 +42,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
         'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.',
-        'context_mode': 'Sets or removes context case sensitivity.',
-        'hidden_options': 'Comma separated list of options to be hidden i.e. "process,context_mode"'
+        'context_mode': 'Set or remove context case sensitivity.',
+        'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"'
     }
 
 
@@ -906,10 +906,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
-        if (context_mode_select)
-            var context_mode = context_mode_select.value;
-        else
-            var context_mode = bvr.kwargs.context_mode;
+        var context_mode = context_mode_select ? context_mode_select.value : bvr.kwargs.context_mode;
  
         var update_mode_select = top.getElement(".spt_update_mode_select");
         var update_mode = update_mode_select.value;
