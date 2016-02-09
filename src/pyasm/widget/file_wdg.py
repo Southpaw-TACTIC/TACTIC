@@ -820,6 +820,8 @@ class ThumbWdg(BaseTableElementWdg):
         div.add_class("spt_thumb_top")
         div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
+        """
+        # This is taken care of in the TileLayoutWdg or CollectionLayoutWdg
         if sobject.get_value("_is_collection", no_exception=True):
             expr = "@COUNT(jobs/media_in_media)"
             num_items = Search.eval(expr, sobject)
@@ -832,7 +834,7 @@ class ThumbWdg(BaseTableElementWdg):
             num_div.add_style("position: absolute")
             div.add(num_div)
              
- 
+        """
       
         # if no link path is found, display the no icon image
         if link_path == None:

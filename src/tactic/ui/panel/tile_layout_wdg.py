@@ -1378,7 +1378,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
-
+        div.add_attr("spt_is_collection", sobject.get_value('_is_collection', no_exception=True))
         display_value = sobject.get_display_value(long=True)
         div.add_attr("spt_display_value", display_value)
 
@@ -1727,7 +1727,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
     var dst_el = spt.get_event_target(evt);
     var dst_top = dst_el.hasClass("spt_tile_top") ? dst_el : dst_el.getParent(".spt_tile_top");
-    
     var layout = bvr.src_el.getParent(".spt_layout");
     var src_tile = bvr.src_el.getParent(".spt_tile_top");
     var has_inserted = false;
@@ -1743,21 +1742,36 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         var server = TacticServerStub.get();
         var parent = server.get_by_search_key(parent_key);
         var parent_code = dst_top.getAttribute("spt_search_code");
+        var parent_name = dst_top.getAttribute("spt_name");
 
         var collection_type = layout.getAttribute("spt_collection_type");
         var collection_selected = false;
 
+        var get_exist = function(collection_type, parent_code, src_code) {
+            var exist = server.query(collection_type, { filters:[['parent_code', parent_code], ['search_code', src_code]]});
+            var exist_code_list = [];
+            if (exist.length >= 1) {
+                for (var k=0; k < exist.length; k++)
+                    exist_code_list.push(exist[k].search_code);
+                return exist_code_list;
+            }    
+            else
+                return [];
+        }
+        
         var insert_collection = function(collection_type, parent_code, src_code) {
             if (parent_code != src_code){
                 var data = {
                     parent_code: parent_code,
                     search_code: src_code
                 };
-                try { 
+
+                try {
                     server.insert(collection_type, data);
                     return true;
                 } catch(e) {
                     log.debug("Failed to add");
+                    return false;
                 }
             }
             else {
@@ -1765,40 +1779,67 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             }
         }
 
+    
+
         if (parent._is_collection == true) {
             
             // Regular single drag and drop
             if (selected_tiles.indexOf(row) == -1) {
                 var src_code = src_tile.getAttribute("spt_search_code");
-                has_inserted = insert_collection(collection_type, parent_code, src_code);
-                
-                // only refresh left panel if collection selected
-                var src_key = src_tile.getAttribute("spt_search_key");
-                var src_sobject = server.get_by_search_key(src_key);
-                if (src_sobject._is_collection) {
-                    collection_selected = true;
+                var exist_cols = get_exist(collection_type, parent_code, src_code);
+                if (exist_cols.length == 0) {
+                    has_inserted = insert_collection(collection_type, parent_code, src_code);
+                    collection_selected = src_tile.getAttribute("spt_is_collection") == 'True';
+
                 }
+
             }
             // Multiple selections drag and drop
             else {
+                var src_codes = [];
+                var src_is_cols = [];
+                var final_codes = [];
+                var final_is_cols = [];
                 for (i=0; i < selected_tiles.length; i++) {
                     var src_code = selected_tiles[i].getAttribute("spt_search_code");
-                    var inserted = insert_collection(collection_type, parent_code, src_code);
-                    if (inserted){
-                        has_inserted = true;
-                    }
+                    src_codes.push(src_code);
+                    var src_is_col = selected_tiles[i].getAttribute("spt_is_collection");
+                    src_is_cols.push(src_is_col);
+                }
+                var exist_cols = get_exist(collection_type, parent_code, src_codes);
 
-                    // only refresh left panel if collection selected
-                    var src_key = selected_tiles[i].getAttribute("spt_search_key");
-                    var src_sobject = server.get_by_search_key(src_key);
-                    if (src_sobject._is_collection) {
-                        collection_selected = true;
+                // find the final codes that need to be added to collection
+                for (var k=0; k < src_codes.length; k++) {
+                    if (!exist_cols.contains(src_codes[k])) {
+                        final_codes.push(src_codes[k]);
+                        final_is_cols.push(src_is_cols[k]);
                     }
-                }  
+                }
+                if (final_codes.length > 0) {
+                    server.start({title: 'Add to collection', description: 'Add items to collection ' + parent_code } ); 
+                    for (var k=0; k < final_codes.length; k++) {
+                        var inserted = insert_collection(collection_type, parent_code, final_codes[k]);
+                       
+                        if (inserted) {
+                            has_inserted = inserted;
+                            // check if collection is selected only if it's false
+                            if (!collection_selected)
+                                collection_selected = final_is_cols[k] == 'True';
+                        }
+                    }
+                    
+                    if (has_inserted)
+                        server.finish();
+                    else
+                        server.abort();
+                    
+                }
+                
+
             }
-            if (parent_code != src_code){
+            if (parent_code != src_code) {
                 if (has_inserted) {
-                    spt.notify.show_message("Added to Collection");
+                    spt.notify.show_message("Added to Collection [ " + parent_name + " ].");
                     
                     // Refresh left panel if collection being dragged into other collection
                     if (collection_selected) {
@@ -1808,10 +1849,10 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     }
                 }
                 else {
-                    spt.notify.show_message("The Asset is already in the Collection");
+                    spt.notify.show_message("Item(s) are already in the Collection [ " + parent_name + " ].");
                 }
             }
-            if (!dst_top.hasClass("spt_collection_item")){
+            if (!dst_top.hasClass("spt_collection_item")) {
                 spt.table.refresh_rows([dst_top], null, null);
             } 
         }
