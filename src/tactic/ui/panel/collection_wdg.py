@@ -245,15 +245,16 @@ class CollectionAddWdg(BaseRefreshWdg):
             var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
 
             for (i = 0; i < checkboxes.length; i++) {
-                var checked_collection_attr = checkboxes[i].attributes;
-                var collection_key = checked_collection_attr[3].value;
-                // Preventing a collection being added to itself, check if search_keys contain collection_key.
-                if (search_keys.indexOf(collection_key) != -1) {
-                    spt.notify.show_message("Collection cannot be added to itself.");
-                    return;
-                }
-
+                
                 if (checkboxes[i].checked == true) {
+                    
+                    var checked_collection_attr = checkboxes[i].attributes;
+                    var collection_key = checked_collection_attr[3].value;
+                    // Preventing a collection being added to itself, check if search_keys contain collection_key.
+                    if (search_keys.indexOf(collection_key) != -1) {
+                        spt.notify.show_message("Collection cannot be added to itself.");
+                        return;
+                    }
                     // if there is at least one checkbox selected, set is_checked to 'true'
                     is_checked = true;
 
