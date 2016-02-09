@@ -17,7 +17,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
-from pyasm.web import DivWdg, Table, SpanWdg
+from pyasm.web import DivWdg, Table, SpanWdg, Widget
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -531,15 +531,59 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 '''
             } )
 
+        # Collections folder structure in the left panel
+        search_type = my.kwargs.get('search_type')
+        collections_div = CollectionFolderWdg(search_type=search_type)
+        div.add(collections_div)
 
-        # collection
+        return div
+
+
+    def get_right_content_wdg(my):
+
+        div = DivWdg()
+        div.add_style("width: 100%")
+        div.add_class("spt_collection_content")
+
+        #shelf_wdg = my.get_header_wdg()
+        #shelf_wdg.add_style("float: right")
+        #div.add(shelf_wdg)
+
+        tile = CollectionContentWdg(
+                search_type=my.search_type,
+                show_shelf=False,
+                show_search_limit=False,
+                sobjects=my.sobjects,
+                detail_element_names=my.kwargs.get("detail_element_names"),
+                do_search='false',
+                upload_mode=my.kwargs.get("upload_mode")
+        )
+        div.add(tile)
+
+        return div
+
+class CollectionFolderWdg(BaseRefreshWdg):
+    '''This is the collections folder structure in CollectionLayoutWdg's left panel. '''
+
+    def get_display(my):
+
+        my.search_type = my.kwargs.get("search_type")
         search = Search(my.search_type)
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
-
         collections_div = DivWdg()
-        collections_div.add_class("spt_collection_list")
+
+        is_refresh = my.kwargs.get("is_refresh")
+        if is_refresh:
+            div = Widget()
+        else:
+            div = DivWdg()
+            my.set_as_panel(div)
+            div.add_class("spt_collection_left_side")
+            
         div.add(collections_div)
+
+        collections_div.add_class("spt_collection_list")
         collections_div.add_style("margin: 5px 0px 5px -5px")
 
         from tactic.ui.panel import ThumbWdg2
@@ -660,33 +704,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             subcollection_wdg.add_class("spt_subcollection_wdg")
             subcollection_wdg.add_style("padding-left: 15px")
 
-
-        return div
-
-
-
-
-    def get_right_content_wdg(my):
-
-        div = DivWdg()
-        div.add_style("width: 100%")
-        div.add_class("spt_collection_content")
-
-        #shelf_wdg = my.get_header_wdg()
-        #shelf_wdg.add_style("float: right")
-        #div.add(shelf_wdg)
-
-        tile = CollectionContentWdg(
-                search_type=my.search_type,
-                show_shelf=False,
-                show_search_limit=False,
-                sobjects=my.sobjects,
-                detail_element_names=my.kwargs.get("detail_element_names"),
-                do_search='false',
-                upload_mode=my.kwargs.get("upload_mode")
-        )
-        div.add(tile)
-
         return div
 
 
@@ -775,9 +792,9 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'type': 'click_up',
                     'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_collection_top");
-                    var content = top.getElements(".spt_collection_content");
+                    var view_panel = top.getParent(".spt_view_panel");
 
-                    spt.panel.refresh(top);
+                    spt.panel.refresh(view_panel);
                     '''
                 } )
 
@@ -848,11 +865,24 @@ class CollectionContentWdg(BaseRefreshWdg):
                 'collection_key': my.collection_key,
                 'cbjs_action': '''
                 var search_keys = spt.table.get_selected_search_keys(false);
+                var server = TacticServerStub.get();
 
                 if (search_keys.length == 0) {
                     spt.notify.show_message("Nothing selected to remove");
                     return;
                 }
+                
+                // default to false, if there is at least one collection selected, change to true
+                var collection_selected = false;
+                
+                for (i=0; i<search_keys.length; i++){
+                    var sobject = server.get_by_search_key(search_keys[i]);
+
+                    if (sobject._is_collection){
+                        collection_selected = true;
+                    }
+                }
+
                 var ok = null;
                 var cancel = function() { return };
                 var msg = "Are you sure you wish to remove the selected Assets from the Collection?";
@@ -863,12 +893,19 @@ class CollectionContentWdg(BaseRefreshWdg):
                         collection_key: bvr.collection_key,
                         search_keys: search_keys,
                     }
-                    var server = TacticServerStub.get();
+
                     try {
                         server.execute_cmd(cls, kwargs);
                         spt.table.remove_selected();
                     } catch(e) {
                         spt.alert(spt.exception.handler(e));
+                    }
+
+                    // Refresh left panel only if a collection is removed
+                    if (collection_selected) {
+                        var top = bvr.src_el.getParent(".spt_collection_top");
+                        var collection_left = top.getElement(".spt_collection_left_side");
+                        spt.panel.refresh(collection_left);
                     }
                 }
                 
@@ -994,6 +1031,14 @@ class CollectionDeleteCmd(Command):
 
         for item in items:
             item.delete()
+
+        # Also need to delete the asset_in_asset relationships in its parent collections
+        parent_search = Search(collection_type)
+        parent_search.add_filter("search_code", collection.get_code())
+        parent_items = parent_search.get_sobjects()
+
+        for parent_item in parent_items:
+            parent_item.delete()
 
         collection.delete()
 

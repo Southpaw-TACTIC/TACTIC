@@ -1745,6 +1745,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         var parent_code = dst_top.getAttribute("spt_search_code");
 
         var collection_type = layout.getAttribute("spt_collection_type");
+        var collection_selected = false;
 
         var insert_collection = function(collection_type, parent_code, src_code) {
             if (parent_code != src_code){
@@ -1770,6 +1771,13 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             if (selected_tiles.indexOf(row) == -1) {
                 var src_code = src_tile.getAttribute("spt_search_code");
                 has_inserted = insert_collection(collection_type, parent_code, src_code);
+                
+                // only refresh left panel if collection selected
+                var src_key = src_tile.getAttribute("spt_search_key");
+                var src_sobject = server.get_by_search_key(src_key);
+                if (src_sobject._is_collection) {
+                    collection_selected = true;
+                }
             }
             // Multiple selections drag and drop
             else {
@@ -1779,11 +1787,25 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     if (inserted){
                         has_inserted = true;
                     }
+
+                    // only refresh left panel if collection selected
+                    var src_key = selected_tiles[i].getAttribute("spt_search_key");
+                    var src_sobject = server.get_by_search_key(src_key);
+                    if (src_sobject._is_collection) {
+                        collection_selected = true;
+                    }
                 }  
             }
             if (parent_code != src_code){
                 if (has_inserted) {
                     spt.notify.show_message("Added to Collection");
+                    
+                    // Refresh left panel if collection being dragged into other collection
+                    if (collection_selected) {
+                        var top = bvr.src_el.getParent(".spt_collection_top");
+                        var collection_left = top.getElement(".spt_collection_left_side");
+                        spt.panel.refresh(collection_left);
+                    }
                 }
                 else {
                     spt.notify.show_message("The Asset is already in the Collection");
