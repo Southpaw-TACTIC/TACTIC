@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionFolderWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
+__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
 
 
 
@@ -563,17 +563,24 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         return div
 
 class CollectionFolderWdg(BaseRefreshWdg):
-    
+    '''This is the collections folder structure in CollectionLayoutWdg's left panel. '''
+
     def get_display(my):
 
         my.search_type = my.kwargs.get("search_type")
         search = Search(my.search_type)
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
-        div = DivWdg()
-        my.set_as_panel(div)
+
+        refresh = my.kwargs.get("refresh")
+        if refresh:
+            div = Widget()
+        else:
+            div = DivWdg()
+            my.set_as_panel(div)
+            div.add_class("spt_collection_left_side")
         collections_div = DivWdg()
-        div.add_class("spt_collection_left_side")
+        
 
         collections_div.add_class("spt_collection_list")
         div.add(collections_div)
