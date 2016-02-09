@@ -219,7 +219,7 @@ class FormatMessageWdg(BaseRefreshWdg):
                 
                 progress_size = my.kwargs.get("progress_size")
                 if progress_size == "large":
-                    progress.add_styles("height: 8px; margin-top: 9px;")
+                    progress.add_styles("height: 16px; margin-top: 9px;")
                 else:
                     progress.add_styles("height: 5px; margin-top: 4px;")
 
