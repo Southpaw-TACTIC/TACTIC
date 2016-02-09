@@ -41,7 +41,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
         'oncomplete_script_path': 'Script to be run on a finished ingest',
-        'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.'
+        'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.',
+        'context_mode': 'Sets or removes context case sensitivity.',
+        'hidden_options': 'Comma separated list of options to be hidden i.e. "process,context_mode"'
     }
 
 
@@ -119,26 +121,57 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             process_names = []
 
-        title_wdg = DivWdg()
-        div.add(title_wdg)
-        title_wdg.add("Process")
-        title_wdg.add_style("margin-top: 20px")
-        title_wdg.add_style("font-size: 16px")
+        hidden_options = my.kwargs.get("hidden_options").split(',')
 
-        div.add("<br/>")
+        if "process" not in hidden_options:
+            title_wdg = DivWdg()
+            div.add(title_wdg)
+            title_wdg.add("Process")
+            title_wdg.add_style("margin-top: 20px")
+            title_wdg.add_style("font-size: 16px")
 
-        select = SelectWdg("process")
-        div.add(select)
-        process_names.append("---")
-        process_names.append("publish")
-        process_names.append("icon")
-        select.set_option("values", process_names)
-        select.add_empty_option("- Select Ingest Process -")
-        if selected_process:
-            select.set_option("default", selected_process)
+            div.add("<br/>")
 
-        div.add("<br/>")
-        div.add("<hr/>")
+            select = SelectWdg("process")
+            div.add(select)
+            process_names.append("---")
+            process_names.append("publish")
+            process_names.append("icon")
+            select.set_option("values", process_names)
+            select.add_empty_option("- Select Ingest Process -")
+            if selected_process:
+                select.set_option("default", selected_process)
+
+            div.add("<br/>")
+
+            if "context_mode" in hidden_options:
+                div.add("<hr/>")
+
+        if "context_mode" not in hidden_options:
+            title_wdg = DivWdg()
+            div.add(title_wdg)
+            title_wdg.add("Context Mode")
+            title_wdg.add_style("font-size: 16px")
+
+            div.add("<br/>")
+
+            context_mode_option = my.kwargs.get("context_mode")
+            if not context_mode_option:
+                context_mode_option = "case_insensitive"
+            context_mode = SelectWdg(name="context_mode")
+            context_mode.add_class("spt_context_mode_select")
+            context_mode.set_option("values", "case_insensitive|case_sensitive")
+            context_mode.set_option("labels", "Case Insensitive|Case Sensitive")
+            context_mode.set_option("default", context_mode_option)
+            context_mode.add_style("margin-top: -3px")
+            context_mode.add_style("margin-right: 5px")
+            div.add(context_mode)
+                
+            div.add("<br/>")
+            div.add("<hr/>")
+
+            if "process" in hidden_options:
+                title_wdg.add_style("margin-top: 20px")
 
         # update mode
         title_wdg = DivWdg()
@@ -870,7 +903,14 @@ class IngestUploadWdg(BaseRefreshWdg):
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
-        
+
+        // Data comes from Ingest Settings
+        var context_mode_select = top.getElement(".spt_context_mode_select");
+        if (context_mode_select)
+            var context_mode = context_mode_select.value;
+        else
+            var context_mode = bvr.kwargs.context_mode;
+ 
         var update_mode_select = top.getElement(".spt_update_mode_select");
         var update_mode = update_mode_select.value;
 
@@ -930,6 +970,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode: update_mode,
             ignore_ext: ignore_ext,
             column: column,
+            context_mode: context_mode
         }
         on_complete = function(rtn_data) {
 
@@ -993,6 +1034,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             action_handler = 'tactic.ui.tools.IngestUploadCmd';
 
         context = my.kwargs.get("context")
+        context_mode = my.kwargs.get("context_mode")
  
         button.add_behavior( {
             'type': 'click_up',
@@ -1002,6 +1044,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'relative_dir': relative_dir,
                 'script_found': script_found,
                 'context': context,
+                'context_mode': context_mode
             },
             'cbjs_action': '''
 
@@ -1308,6 +1351,9 @@ class IngestUploadCmd(Command):
             upload_dir = Environment.get_upload_dir()
             base_dir = upload_dir
 
+        context_mode = my.kwargs.get("context_mode")
+        if not context_mode:
+            context_mode = "case_insensitive"
         update_mode = my.kwargs.get("update_mode")
         ignore_ext = my.kwargs.get("ignore_ext")
         column = my.kwargs.get("column")
@@ -1581,6 +1627,9 @@ class IngestUploadCmd(Command):
                 context = "icon"
             else:
                 context = "%s/%s" % (context, filename)
+
+            if context_mode == "case_insensitive":
+                context = context.lower()                
             
             if update_mode == "sequence":
 
