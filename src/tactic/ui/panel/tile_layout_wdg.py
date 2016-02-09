@@ -1746,6 +1746,18 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
         var collection_type = layout.getAttribute("spt_collection_type");
 
+        var get_exist = function(collection_type, parent_code, src_code) {
+            var exist = server.query(collection_type, { filters:[['parent_code', parent_code], ['search_code', src_code]]});
+            var exist_code_list = [];
+            if (exist.length >= 1) {
+                for (var k=0; k < exist.length; k++)
+                    exist_code_list.push(exist[k].search_code);
+                return exist_code_list;
+            }    
+            else
+                return [];
+        }
+        
         var insert_collection = function(collection_type, parent_code, src_code) {
             if (parent_code != src_code){
                 var data = {
@@ -1753,15 +1765,12 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     search_code: src_code
                 };
 
-                var exists = server.query(collection_type, { single: true, filters:[['parent_code', parent_code], ['search_code', src_code]]});
-                if (exists.__search_key__) return false;
-
                 try {
-
                     server.insert(collection_type, data);
                     return true;
                 } catch(e) {
                     log.debug("Failed to add");
+                    return false;
                 }
             }
             else {
@@ -1774,17 +1783,37 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             // Regular single drag and drop
             if (selected_tiles.indexOf(row) == -1) {
                 var src_code = src_tile.getAttribute("spt_search_code");
-                has_inserted = insert_collection(collection_type, parent_code, src_code);
+                var exist_cols = get_exist(collection_type, parent_code, src_code);
+                if (exist_cols.length == 0)
+                    has_inserted = insert_collection(collection_type, parent_code, src_code);
             }
             // Multiple selections drag and drop
             else {
+                var src_codes = [];
+                var final_codes = []
                 for (i=0; i < selected_tiles.length; i++) {
                     var src_code = selected_tiles[i].getAttribute("spt_search_code");
-                    var inserted = insert_collection(collection_type, parent_code, src_code);
-                    if (inserted){
-                        has_inserted = true;
+                    src_codes.push(src_code);
+                }
+                var exist_cols = get_exist(collection_type, parent_code, src_codes);
+
+                // find the final codes that need to be added to collection
+                for (var k=0; k < src_codes.length; k++) {
+                    if (!exist_cols.contains(src_codes[k])) 
+                        final_codes.push(src_codes[k]);
+                }
+                if (final_codes.length > 0) {
+                    server.start({title: 'Add to collection', description: 'Add items to collection: ' + parent_code} ); 
+                    for (var k=0; k < final_codes.length; k++) {
+                        var inserted = insert_collection(collection_type, parent_code, final_codes[k]);
+                        if (inserted)
+                            has_inserted = inserted;
                     }
-                }  
+                    if (has_inserted)
+                        server.finish();
+                    else
+                        server.abort();
+                }
             }
             if (parent_code != src_code){
                 if (has_inserted) {
