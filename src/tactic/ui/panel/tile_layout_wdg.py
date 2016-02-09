@@ -1802,10 +1802,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     
                     // Refresh left panel if collection being dragged into other collection
                     if (collection_selected) {
-                        kw = {refresh: true}
                         var top = bvr.src_el.getParent(".spt_collection_top");
                         var collection_left = top.getElement(".spt_collection_left_side");
-                        spt.panel.refresh(collection_left, kw);
+                        spt.panel.refresh(collection_left);
                     }
                 }
                 else {

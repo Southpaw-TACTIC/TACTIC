@@ -17,7 +17,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
-from pyasm.web import DivWdg, Table, SpanWdg
+from pyasm.web import DivWdg, Table, SpanWdg, Widget
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -571,19 +571,19 @@ class CollectionFolderWdg(BaseRefreshWdg):
         search = Search(my.search_type)
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
+        collections_div = DivWdg()
 
-        refresh = my.kwargs.get("refresh")
-        if refresh:
+        is_refresh = my.kwargs.get("is_refresh")
+        if is_refresh:
             div = Widget()
         else:
             div = DivWdg()
             my.set_as_panel(div)
             div.add_class("spt_collection_left_side")
-        collections_div = DivWdg()
-        
+            
+        div.add(collections_div)
 
         collections_div.add_class("spt_collection_list")
-        div.add(collections_div)
         collections_div.add_style("margin: 5px 0px 5px -5px")
 
         from tactic.ui.panel import ThumbWdg2
@@ -903,10 +903,9 @@ class CollectionContentWdg(BaseRefreshWdg):
 
                     // Refresh left panel only if a collection is removed
                     if (collection_selected) {
-                        kw = {refresh: true}
                         var top = bvr.src_el.getParent(".spt_collection_top");
                         var collection_left = top.getElement(".spt_collection_left_side");
-                        spt.panel.refresh(collection_left, kw);
+                        spt.panel.refresh(collection_left);
                     }
                 }
                 
