@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["CollectionAddWdg", "CollectionAddDialogWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
+__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
 
 
 
@@ -57,7 +57,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
 
 class CollectionAddDialogWdg(BaseRefreshWdg):
-    ''' contents of the dialog activated by CollectionAddWdg'''
+    ''' Contents of the dialog activated by CollectionAddWdg'''
 
     def get_display(my):
        
@@ -224,7 +224,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
 
             name = collection.get_value("name")
             # Adding Collection title (without the number count) as an attribute
-            collection_div.set_attr("collection_name", name)
+            #collection_div.set_attr("collection_name", name)
 
             if not name:
                 name = collection.get_value("code")
@@ -240,6 +240,8 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             check_div.add_style("margin-top: -3px")
 
             check.add_attr("collection_key", collection.get_search_key() )
+            
+            check.add_attr("collection_name", collection.get_name() )
 
             info_div = DivWdg()
             collection_div.add(info_div)
@@ -273,19 +275,22 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             var cmd = "tactic.ui.panel.CollectionAddCmd";
             var server = TacticServerStub.get();
             var is_checked = false;
-
+            var added = [];
+            
             var dialog_top = bvr.src_el.getParent(".spt_col_dialog_top");
             
             for (i = 0; i < checkboxes.length; i++) {
-                var checked_collection_attr = checkboxes[i].attributes;
-                var collection_key = checked_collection_attr[3].value;
-                // Preventing a collection being added to itself, check if search_keys contain collection_key.
-                if (search_keys.indexOf(collection_key) != -1) {
-                    spt.notify.show_message("Collection cannot be added to itself.");
-                    return;
-                }
 
                 if (checkboxes[i].checked == true) {
+                    var collection_key = checkboxes[i].getAttribute('collection_key');
+                    var collection_name = checkboxes[i].getAttribute('collection_name');
+                    
+                    
+                    // Preventing a collection being added to itself, check if search_keys contain collection_key.
+                    if (search_keys.indexOf(collection_key) != -1) {
+                        spt.notify.show_message("Collection [" + collection_name + " ] cannot be added to itself.");
+                        return;
+                    }
                     // if there is at least one checkbox selected, set is_checked to 'true'
                     is_checked = true;
 
@@ -294,7 +299,9 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                         collection_key: collection_key,
                         search_keys: search_keys
                     }
-                    server.execute_cmd(cmd, kwargs);
+                    var rtn = server.execute_cmd(cmd, kwargs);
+                    if ((rtn.info.message) != 'No insert')
+                        added.push(collection_name);
                 }
             }
 
@@ -303,7 +310,10 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                 return;
             }
             else {
-                spt.notify.show_message("Assets added to Collection.");
+                if (added.length == 0)
+                    spt.notify.show_message("Items already added to Collection.");
+                else 
+                    spt.notify.show_message("Items added to Collection [ " + added.join(', ') + " ].");
                 // refresh dialog_top, so users can see the number change in Collections
                 spt.panel.refresh(dialog_top);
             }
@@ -352,6 +362,7 @@ class CollectionAddCmd(Command):
 
 
         # create new items
+        has_inserted = False
 
         sobjects = Search.get_by_search_keys(search_keys)
         for sobject in sobjects:
@@ -362,7 +373,7 @@ class CollectionAddCmd(Command):
             new_item.set_value("parent_code", collection.get_code())
             new_item.set_value("search_code", sobject.get_code())
             new_item.commit()
-
+            has_inserted = True
 
             # copy the metadata of the collection
             if has_keywords:
@@ -378,7 +389,11 @@ class CollectionAddCmd(Command):
                 sobject.commit()
 
 
-
+        
+        if not has_inserted:
+            my.info['message'] = "No insert"
+        else:
+            my.info['message'] = "Insert OK"
 
 
 class CollectionLayoutWdg(ToolLayoutWdg):
