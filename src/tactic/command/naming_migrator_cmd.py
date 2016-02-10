@@ -152,6 +152,16 @@ class NamingMigratorCmd(Command):
                 file.commit()
                 snapshot.commit()
 
+
+                # try to remove the old folder (if it's empty, it will be removed)
+                dirname = os.path.dirname(old_path)
+                while 1:
+                    try:
+                        os.rmdir(dirname)
+                        dirname = os.path.dirname(dirname)
+                    except:
+                        break
+
         if errors:
             print "Errors:"
             for error in errors:

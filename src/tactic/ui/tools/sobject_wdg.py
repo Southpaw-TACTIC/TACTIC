@@ -72,8 +72,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("padding: 10px 15px")
 
+
         title = DivWdg()
         div.add(title)
+        title.add_style("text-overflow: ellipsis")
+        title.add_style("overflow-x: hidden")
+        title.add_style("white-space: nowrap")
+
+
 
         search = Search("sthpw/snapshot")
         search.add_filter("search_type", "sthpw/search_type")
@@ -137,7 +143,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_displayX(my):
 
         my.sobject = my.get_sobject()
 
@@ -333,12 +339,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         my.set_as_panel(top)
+
         title_wdg = my.get_title_wdg()
+        top.add(title_wdg)
         title_wdg.add_style("display: inline-block")
         title_wdg.add_style("vertical-align: top")
         title_wdg.add_style("width: 500px")
-        top.add(title_wdg)
-
 
 
         from tactic.ui.panel import ThumbWdg2
@@ -347,7 +353,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         thumb = ThumbWdg2()
         thumb_table.add(thumb)
-        thumb_table.add_style("width: 125px")
+        thumb_table.add_style("width: 200px")
         thumb_table.add_style("height: 125px")
         thumb_table.add_style("padding: 5px")
         thumb_table.add_style("margin-left: 20px")
@@ -651,10 +657,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
             elif tab == "edit":
                 config_xml.append('''
                 <element name="edit" title="Edit">
-                  <display class='tactic.ui.container.ContentBoxWdg'>
-                      <title>Edit</title>
-                      <content_height>auto</content_height>
-                      <config>
+                  <display class='tactic.ui.panel.CustomLayoutWdg'>
+                      <html>
+                      <div style="padding: 20px">
+                      <div style="font-size: 25px">Edit Metadata</div>
+                      <div>Edit the data associated with this item</div>
+                      <hr/>
+                      <br/>
                       <element name="content" style="margin: 0px auto; width: 800px">
                       <display class='tactic.ui.panel.EditWdg'>
                         <search_key>%(search_key)s</search_key>
@@ -663,7 +672,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                         <show_header>false</show_header>
                       </display>
                       </element>
-                      </config>
+                      </div>
+                      </html>
                   </display>
                 </element>
                 ''' % values)
@@ -1123,6 +1133,7 @@ class TaskDetailWdg(SObjectDetailWdg):
         title.add_style("font-size: 1.4em")
         title.add_border(color="#DDD")
 
+
         code = my.parent.get_value("code", no_exception=True)
         name = my.parent.get_value("name", no_exception=True)
 
@@ -1451,7 +1462,7 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
         thumb = ThumbWdg2()
         title.add(thumb)
         thumb.set_sobject(my.sobject)
-        thumb.add_style("width: 80px")
+        thumb.add_style("width: px")
         thumb.add_style("float: left")
         thumb.add_style("margin: 0px 15px")
 

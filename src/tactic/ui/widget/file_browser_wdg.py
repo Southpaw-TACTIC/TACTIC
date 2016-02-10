@@ -872,6 +872,7 @@ class DirListWdg(BaseRefreshWdg):
         filename_div.add(my.get_basename(dirname, basename) )
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
+        filename_div.add_class("spt_item_value")
 
 
         #from pyasm.widget import CheckboxWdg, TextWdg
@@ -1112,7 +1113,7 @@ class DirListPathHandler(BaseRefreshWdg):
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
 
-        inner = DivWdg()
+        inner = DivWdg(css="spt_dir_list_handler_content")
         top.add(inner)
 
 
