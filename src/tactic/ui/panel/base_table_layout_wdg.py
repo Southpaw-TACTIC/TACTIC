@@ -1183,7 +1183,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         show_collection_tool = my.kwargs.get("show_collection_tool")
 
-        if show_collection_tool not in ["false", False]:
+        if show_collection_tool not in ["false", False] and SearchType.column_exists(my.search_type, "_is_collection"):
             from collection_wdg import CollectionAddWdg
             collection_div = CollectionAddWdg(search_type=my.search_type)
             wdg_list.append( {'wdg': collection_div} )
