@@ -29,7 +29,7 @@ from tactic.ui.container import ResizableTableWdg
 from tactic.ui.widget import DirListWdg, IconButtonWdg, ButtonNewWdg, ButtonRowWdg, ActionButtonWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu, DialogWdg
 
-import os, shutil
+import os, shutil, re
 
 
 class RepoBrowserWdg(BaseRefreshWdg):
@@ -232,7 +232,27 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div.add_style("min-width: 400px")
         outer_div.add(content_div)
 
+        count = parent_search.get_count()
+        if count:
+            widget = RepoBrowserDirContentWdg(
+                search_type=search_type,
+                view='table',
+                dirname="%s/%s" % (project_dir, "asset"),
+                basename="",
+            )
+            content.add(widget)
 
+        else:
+            msg_div = DivWdg()
+            msg_div.add("Search for content")
+            content.add(msg_div)
+            msg_div.add_style("margin: 100px auto")
+            msg_div.add_style("width: 250px")
+            msg_div.add_style("padding: 50px")
+            msg_div.add_style("font-size: 20px")
+            msg_div.add_border()
+            msg_div.add_style("text-align: center")
+ 
 
         table.add_row()
         bottom = table.add_cell()
@@ -479,7 +499,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         key = "repo_browser:%s" % search_type
         parent_search_str = WidgetSettings.get_value_by_key(key)
         if parent_search_str:
-            parent_search = Search("workflow/asset")
+            parent_search = Search(search_type)
             parent_search.select.loads(parent_search_str)
             parents = parent_search.get_sobjects()
             parent_codes = [x.get_value("code") for x in parents]
@@ -511,6 +531,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         asset_base_dir = Environment.get_asset_dir()
+
+
         relative_dir = base_dir.replace(asset_base_dir, "")
         relative_dir = relative_dir.strip("/")
 
@@ -560,7 +582,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         key = "repo_browser:%s" % search_type
         parent_search_str = WidgetSettings.get_value_by_key(key)
         if parent_search_str:
-            show_no_sobject_folders = True
+            show_no_sobject_folders = False
             show_empty_folders = True
 
 
@@ -625,25 +647,61 @@ class RepoBrowserDirListWdg(DirListWdg):
                     my.search_types_dict[tmp_dir] = search_type
 
 
-        # add dirnames only if they have files in them
-        if not show_no_sobject_folders:
+
+        # find any folders that match
+        dirnames = os.listdir(base_dir)
+        for dirname in dirnames:
+
+            parts = dirname.strip().split("/")
+            parts = [x.lower() for x in parts]
+            parts.append(dirname)
+            parts = set(parts)
+
+            for root, subdirnames, subbasenames in os.walk("%s/%s" % (base_dir, dirname)):
+                for subdirname in subdirnames:
+                    parts.add(subdirname.lower())
+
+            keywords = my.kwargs.get("keywords") or []
+
+            subdir = "%s/%s" % (base_dir, dirname)
+
+            for keyword in keywords:
+                if keyword.lower() in parts:
+                    paths.append("%s/" % subdir)
+
+            
+    
+
+        # add dirnames if they have sobject files in them
+        #if not show_no_sobject_folders:
+        my.counts = {}
+        if True:
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
                 subdir = "%s/%s" % (base_dir, dirname)
                 if not os.path.isdir(subdir):
                     continue
+
                 search = my.get_file_search(subdir, search_types, parent_ids, mode="count")
                 count = search.get_count()
+                my.counts[subdir] = count
                 if count:
                     full = "%s/" % subdir
                     # FIXME: this actually allows for the click-up behavior
                     # however, it only currently works for a single stype
                     my.search_types_dict[full] = search_types[0]
                     paths.append(full)
+                else:
+                    full = "%s/" % subdir
+                    paths.append(full)
 
-            return paths
+
+            #return paths
+
+        return paths
 
 
+        # FIXME: is the rest here even needed?
 
 
         project_code = Project.get_project_code()
@@ -919,7 +977,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 for (var i = 0; i < selected.length; i++) {
                     snapshot_codes.push( selected[i].getAttribute("spt_snapshot_code"));
                 }
-                console.log(snapshot_codes);
                 var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
                 var kwargs = {
                   search_type: bvr.search_type,
@@ -1191,8 +1248,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                     var server = TacticServerStub.get();
                     server.execute_cmd(class_name, kwargs);
 
-                    var dir_top = span.getParent(".spt_dir_list_handler_top");
-                    spt.panel.refresh(dir_top);
+                    //var dir_top = span.getParent(".spt_dir_list_handler_top");
+                    //spt.panel.refresh(dir_top);
                 };
                 input.onfocus = function() {
                     this.select();
@@ -1433,6 +1490,28 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
 
+
+        """
+        menu_item = MenuItem(type='action', label='Open Detail')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var snapshot = activator.getAttribute("spt_search_key");
+            spt.tab.set_main_body_tab();
+            var class_name = "tactic.ui.tools.SObjectDetailWdg";
+            var kwargs = {
+                
+            }
+            '''
+        } )
+        """
+
+
+
+
+
         menu_item = MenuItem(type='action', label='Rename Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1536,14 +1615,32 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+    def get_dirname(my, dirname, basename):
+
+        path = "%s/%s" % (dirname, basename)
+        counts = my.counts.get(path)
+        if counts:
+            return "%s <i style='display: inline-block; font-size: 9px; opacity: 0.8'>(%s)</i>" % (basename, counts)
+        else:
+            return "<span style='opacity: 0.3'>%s</span>" % (basename)
+
+
+
+
 
     def get_basename(my, dirname, basename):
+
         path = "%s/%s" % (dirname, basename)
         file_object = my.file_objects.get(path)
 
         #src_path = file_object.get_value("source_path")
         src_path = file_object.get_value("file_name")
         src_basename = os.path.basename(src_path)
+
+        # NOTE: pretty hacky
+        # remove version
+        src_basename = re.sub(r"_v\d+", "", src_basename)
+
 
         #if src_basename != basename:
         #    src_basename = "%s <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % (src_basename, basename)
@@ -1615,12 +1712,12 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         # TODO: make this into a "smart" behavior
         item_div.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
         'search_type': search_type,
         'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
         item_div.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
         'modkeys': 'CTRL',
         'search_type': search_type,
         'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
@@ -1631,19 +1728,21 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+    #def add_base_dir_behaviors(my, div, base_dir):
+    #    SmartMenu.assign_as_local_activator( div, 'FREEFORM_DIR_ITEM_CTX' )
+
 
     def add_dir_behaviors(my, item_div, dirname, basename):
 
         asset_base_dir = Environment.get_asset_dir()
 
         path = "%s/%s" % (dirname, basename)
+
         relative_dir = path.replace(asset_base_dir, "")
         relative_dir = relative_dir.strip("/")
 
-        #search_types = my.kwargs.get("search_types")
         search_types = my.search_types_dict
 
-        #search_codes = my.kwargs.get("search_codes")
         search_codes = my.search_codes
 
 
@@ -1658,10 +1757,11 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+        #SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
+        SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
+
 
         search_type = search_types.get("%s/" % path)
-
-
 
         if not search_type:
             parts = relative_dir.split("/")
@@ -1673,9 +1773,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         if not search_type:
             return
 
-
-        #SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
-        SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
 
         item_div.add_attr("spt_search_type", search_type)
 
@@ -1754,7 +1851,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             '''
         } )
         """
-
 
 
 
@@ -2252,7 +2348,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         ''' % file.get_search_key()
         )
 
-        """
         config.append('''
         <element name='sobject_detail' title='Detail'>
             <display class='tactic.ui.tools.SObjectDetailWdg'>
@@ -2261,6 +2356,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         </element>
         ''' % parent.get_search_key()
         )
+
         """
         process = snapshot.get_value("process")
         config.append('''
@@ -2278,6 +2374,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         </element>
         ''' % (parent.get_search_key(), process)
         )
+        """
  
 
 

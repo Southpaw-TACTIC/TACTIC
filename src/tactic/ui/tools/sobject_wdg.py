@@ -511,6 +511,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
             search_key = my.sobject.get_search_key()
         else:
             search_key = my.kwargs.get("search_key")
+
+            # convert to code=XYZ format
+
+            sobject = Search.get_by_search_key(search_key)
+            search_key = sobject.get_search_key()
         search_key = search_key.replace("&", "&amp;")
 
         title = my.search_type.split("/")[-1].title()
@@ -633,12 +638,25 @@ class SObjectDetailWdg(BaseRefreshWdg):
             elif tab == "snapshots":
                 config_xml.append('''
                 <element name="snapshots" title="Check-in History">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <search_type>sthpw/snapshot</search_type>
-                    <view>table</view>
-                    <parent_key>%(search_key)s</parent_key>
-                    <show_shelf>false</show_shelf>
-                    <width>100%%</width>
+                  <display class='tactic.ui.panel.CustomLayoutWdg'>
+                  <html>
+                    <div style="padding: 20px">
+                    <div style="font-size: 25px">Check-in History</div>
+                    <div>List of all of the check-ins for this item</div>
+                    <hr/>
+                    <br/>
+                    <element>
+                      <display class='tactic.ui.panel.ViewPanelWdg'>
+                        <search_type>sthpw/snapshot</search_type>
+                        <view>table</view>
+                        <parent_key>%(search_key)s</parent_key>
+                        <show_shelf>false</show_shelf>
+                        <width>100%%</width>
+                        <use_last_search>false</use_last_search>
+                      </display>
+                    </element>
+                    </div>
+                  </html>
                   </display>
                 </element>
                 ''' % values)

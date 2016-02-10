@@ -974,7 +974,7 @@ class SnapshotMetadataWdg(BaseRefreshWdg):
 
 
         tr = table.add_row()
-        tr.add_gradient("background", "background3")
+        tr.add_color("background", "background", -5)
         th = table.add_header("Property")
         th.add_style("min-width: 200px")
         th.add_style("padding: 5px")
@@ -1094,7 +1094,7 @@ class PathMetadataWdg(BaseRefreshWdg):
 
 
         tr = table.add_row()
-        tr.add_gradient("background", "background3")
+        tr.add_color("background", "background", -5)
         th = table.add_header("Property")
         th.add_style("min-width: 200px")
         th.add_style("padding: 5px")
@@ -1126,7 +1126,7 @@ class PathMetadataWdg(BaseRefreshWdg):
                 tr.add_color("background", "background")
                 tr.add_color("color", "color")
             else:
-                tr.add_color("background", "background", -8)
+                tr.add_color("background", "background", -3)
                 tr.add_color("color", "color")
 
             td = table.add_cell()
