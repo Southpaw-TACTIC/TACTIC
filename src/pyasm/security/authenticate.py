@@ -42,6 +42,9 @@ class Authenticate(object):
         return 'default'
 
     def verify(my, login_name, password):
+
+
+
         '''Method to authenticate the user with a given login name and a
         given password
 
@@ -77,15 +80,18 @@ class TacticAuthenticate(Authenticate):
     '''Authenticate using the TACTIC database'''
 
     def verify(my, login_name, password):
+
         #encrypted = md5.new(password).hexdigest()
         encrypted = hashlib.md5(password).hexdigest()
 
         # get the login sobject from the database
-        my.login = Login.get_by_login(login_name, use_upn=True)
+        my.login = Login.get_by_login(login_name)
         if not my.login:
             raise SecurityException("Login/Password combination incorrect")
 
         # encrypt and check the password
+        print encrypted
+        print my.login.get_value("password")
         if encrypted != my.login.get_value("password"):
             raise SecurityException("Login/Password combination incorrect")
         return True

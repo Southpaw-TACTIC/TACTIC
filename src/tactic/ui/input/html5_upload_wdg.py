@@ -223,7 +223,7 @@ spt.html5upload.upload_file = function(kwargs) {
     }
     var upload_dir = kwargs.upload_dir;
     if(!upload_dir){
-        upload_dir = "";
+     upload_dir = "";
     }
    
    
@@ -231,9 +231,9 @@ spt.html5upload.upload_file = function(kwargs) {
     // build the form data structure
     var fd = new FormData();
     for (var i = 0; i < files.length; i++) {
-        fd.append("file"+i, files[i]);
-        files[i].name = JSON.stringify(files[i].name)
-        fd.append("file_name"+i, files[i].name);
+      fd.append("file"+i, files[i]);
+      files[i].name = JSON.stringify(files[i].name)
+      fd.append("file_name"+i, files[i].name);
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);
@@ -241,7 +241,7 @@ spt.html5upload.upload_file = function(kwargs) {
    
 
     /* event listeners */
-
+   
     var xhr = new XMLHttpRequest();
     if (upload_start) {
         xhr.upload.addEventListener("loadstart", upload_start, false);
@@ -254,28 +254,10 @@ spt.html5upload.upload_file = function(kwargs) {
     }
     if (upload_failed) {
         xhr.addEventListener("error", upload_failed, false);
-        xhr.addEventListener("abort", upload_failed, false);
     }
-
-    xhr.addEventListener('readystatechange', function(evt) {
-        //console.log(evt);
-        //console.log(this.readyState);
-        //console.log(this.status);
-    } )
-
-
-    var env = spt.Environment.get();
-    var site = env.get_site();
-
     //xhr.addEventListener("abort", uploadCanceled, false);
     xhr.addEventListener("abort", function() {log.critical("abort")}, false);
-    //alert("/tactic/"+site+"/default/UploadServer/");
-    if (site && site != "default") {
-        xhr.open("POST", "/tactic/"+site+"/default/UploadServer/", true);
-    }
-    else {
-        xhr.open("POST", "/tactic/default/UploadServer/", true);
-    }
+    xhr.open("POST", "/tactic/default/UploadServer/", true);
     xhr.send(fd);
 
 }
@@ -483,24 +465,20 @@ class CheckinButtonWdg(UploadButtonWdg):
 
         search_key = my.kwargs.get("search_key")
 
-        checkin_type = my.kwargs.get("checkin_type")
-        if not checkin_type:
-            checkin_type = 'auto'
-
         return '''
             var server = TacticServerStub.get();
             var file = spt.html5upload.get_file();
             if (file) {
                file_name = file.name;
 
-               server.simple_checkin("%s", "%s", file_name, {mode:'uploaded', checkin_type:'%s'});
+               server.simple_checkin("%s", "%s", file_name, {mode:'uploaded', checkin_type:'auto'});
                spt.notify.show_message("Check-in of ["+file_name+"] successful");
             }
             else  {
               alert('Error: file object cannot be found.')
             }
             spt.app_busy.hide();
-        ''' % (search_key, context, checkin_type)
+        ''' % (search_key, context)
 
 
 

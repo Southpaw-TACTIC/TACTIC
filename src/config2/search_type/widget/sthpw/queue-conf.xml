@@ -38,20 +38,20 @@
     <element name="description" width='200px'/>
 
     
-    <element name="data_hidden" title='Data'>
+    <element name="serialized_hidden" title='Data'>
       <display class='HiddenRowToggleWdg'>
         <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
         <search_type>sthpw/queue</search_type>
         <show_search_limit>false</show_search_limit>
         <show_insert>false</show_insert>
-        <show_select>false</show_select>
+        <show_row_select>false</show_row_select>
         <show_gear>false</show_gear>
         <view>data</view>
       </display>
     </element>
 
 
-    <element name="serialized">
+    <element name="serialized" title="data">
     </element>
 
 </definition>
@@ -72,7 +72,7 @@
     <element name="project_code"/>
     <element name="command"/>
     <element name="script_path"/>
-    <element name="data_hidden" title="Data"/>
+    <element name="serialized_hidden"/>
     <element name="state"/>
     <element name="host"/>
 </table>
@@ -85,7 +85,7 @@
     <element name="login"/>
     <element name="timestamp"/>
     <element name="command"/>
-    <element name="data_hidden" title="Data"/>
+    <element name="serialized_hidden"/>
     <element name="description" width='200px'/>
 </interval>
 
@@ -95,7 +95,7 @@
 <test>
     <element name="project_code"/>
     <element name="command"/>
-    <element name="data_hidden"/>
+    <element name="serialized_hidden"/>
     <element name="interval"/>
     <element name="state"/>
     <element name="queue"/>
@@ -106,7 +106,7 @@
 
 
 <data>
-    <element name="data"/>
+    <element name="serialized"/>
 </data>
  
 
@@ -135,8 +135,8 @@
     </element>
     <element name="description"/>
     <element name="state">
-        <display class="SelectWdg">
-            <values>pending|complete|error|locked</values>
+        <display class="TextWdg">
+            <edit_all>true</edit_all>
         </display>
     </element>
     <element name="login">

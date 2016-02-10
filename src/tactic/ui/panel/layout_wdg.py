@@ -4485,7 +4485,7 @@ class SwitchLayoutMenu(object):
             ['show_related','detail','code','description'],
             ['preview','code','name','description','task_pipeline_vertical','task_edit','notes'],
             ['preview','code','name','general_checkin','file_list', 'history','description','notes'],
-            ['name','description','detail', 'file_list','general_checkin'],
+            [],
             [],
             [],
             ['preview','name','task_pipeline_report','summary','completion'],
@@ -5336,7 +5336,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         my.config = WidgetConfigView.get_by_search_type(search_type, "definition")
 
-        predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
+        predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()
 
 

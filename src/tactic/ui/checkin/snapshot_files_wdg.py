@@ -23,7 +23,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.tools import RepoBrowserDirListWdg
 from tactic.ui.widget import DirListWdg, SingleButtonWdg, ButtonNewWdg, IconButtonWdg
 from tactic.ui.container import DialogWdg, Menu, MenuItem, SmartMenu
-from pyasm.biz import FileGroup
+
 import os, re
 
 
@@ -177,12 +177,6 @@ class SnapshotDirListWdg(DirListWdg):
             var url = "/assets/" + path.replace(asset_dir, "");
             //window.open(url);
 
-            var url_parts = url.split("/");
-            var file = url_parts.pop();
-            file = encodeURIComponent(file);
-            url_parts.push(file);
-            url = url_parts.join("/");
-
             var class_name = 'tactic.ui.widget.EmbedWdg';
             var kwargs = {
                 src: url
@@ -207,13 +201,6 @@ class SnapshotDirListWdg(DirListWdg):
             else {
             var asset_dir = '%s';
             var url = "/assets/" + path.replace(asset_dir, "");
-
-            var url_parts = url.split("/");
-            var filename = url_parts.pop();
-            filename = encodeURIComponent(filename);
-            url_parts.push(filename);
-            url = url_parts.join("/");
-
             window.open(url);
             }
             ''' % asset_dir
@@ -344,25 +331,6 @@ class SnapshotDirListWdg(DirListWdg):
         SmartMenu.assign_as_local_activator( item_div, 'FILE_MENU_CTX' )
 
 
-
-    def get_info(my, dirname, basename):
-        location = my.kwargs.get("location")
-        # get some info about the file
-        path = "%s/%s" % (dirname, basename)
-
-        snapshot = my.snapshots.get(path)
-        file_range = None
-
-        if FileGroup.is_sequence(path) and snapshot:
-            file_range = snapshot.get_file_range()
-            #start_frame = file_range.get_frame_start()
-            #end_frame = file_range.get_frame_end()
-
-        if location == 'server':
-            my.info = Common.get_dir_info(path, file_range=file_range)
-        else:
-            my.info = {}
-        return my.info
 
 
     def handle_item_div(my, item_div, dirname, basename):

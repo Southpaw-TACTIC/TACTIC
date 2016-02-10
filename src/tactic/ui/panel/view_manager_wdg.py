@@ -30,9 +30,6 @@ from tactic.ui.container import HorizLayoutWdg, PopupWdg, RoundedCornerDivWdg
 
 # TODO: move this to ../manager ... if it is not already done
 
-
-# DEPRECATED
-
 class ViewManagerWdg(BaseRefreshWdg):
     '''Panel to manage views ... this is mean to be a generic interface for
     manipulating the side bar views'''

@@ -147,7 +147,7 @@ class ResetPasswordCmd(Command):
         if reset_on:
             security = WebContainer.get_security()
             #Batch()
-            login = Login.get_by_login(my.login, use_upn=True)
+            login = Login.get_by_login(my.login)
             if not login:
                 web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%my.login)
                 return

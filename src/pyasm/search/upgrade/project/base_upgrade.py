@@ -37,7 +37,6 @@ class BaseUpgrade(Command):
         my.quiet = False
         my.is_confirmed = False
         my.commit_now = True
-        my.upgrade_class = None
         super(BaseUpgrade, my).__init__()
     
     def set_project(my, project_code):
@@ -49,9 +48,6 @@ class BaseUpgrade(Command):
         if not isinstance(method, basestring):
             raise TacticException('method should be a string')
         my.upgrade_method = method 
-
-    def set_upgrade_class(my, class_name):
-        my.upgrade_class = class_name
 
     def set_to_version(my, version):
         my.to_version = version
@@ -132,9 +128,7 @@ class BaseUpgrade(Command):
             # upgrade script
             Common.add_func_to_class(method, upgrade, upgrade.__class__, 'execute')
             upgrade.set_project(my.project_code)
-            upgrade.set_upgrade_class(my.__class__.__name__)
             upgrade.set_upgrade_method(name)
-
             upgrade.set_quiet(my.quiet)
             upgrade.set_confirmed(my.is_confirmed)
 
@@ -175,16 +169,13 @@ class BaseUpgrade(Command):
                 print "Message: ", e
                 print
             members = inspect.getmembers(my, predicate=inspect.ismethod)
-            key = '%s|%s' %(my.project_code, my.upgrade_class)
-            
-            Container.append_seq(key, (my.upgrade_method, str(e)))
-            """  
+            key = '%s|%s' %(my.project_code, my.__class__.__name__)
             for name, member in members:
                 # there should only be 1 upgrade method
-                if name.startswith('upgrade_v'):       
+                if name.startswith('upgrade_v'):
                     Container.append_seq(key, (my.upgrade_method, str(e)))
                     break
-            """          
+
             # to prevent sql error affecting query that follows the Upgrade
             #DbContainer.abort_thread_sql()
             DbContainer.release_thread_sql()

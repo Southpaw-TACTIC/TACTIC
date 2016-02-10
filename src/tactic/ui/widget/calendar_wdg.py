@@ -762,15 +762,7 @@ class CalendarInputWdg(BaseInputWdg):
         'type': 'TextWdg',
         'category': 'Display',
         'order': 3
-        },
-
-        "offset" : {
-            'description': "offset the calendar, e.g. x,y",
-            'type': 'TextWdg',
-            'category': 'Display',
-            'order': 10,
         }
-
 
 
 
@@ -799,7 +791,7 @@ class CalendarInputWdg(BaseInputWdg):
         my.cbjs_validation = validation
         my.validation_warning = validation_warning
    
-     
+  
 
     def get_display(my):
         # should not have float by default
@@ -937,15 +929,6 @@ class CalendarInputWdg(BaseInputWdg):
         input_div.add(input)
         my.top.add(input_div)
 
-        offset_x = 0
-        offset_y = 0
-
-        offset = my.get_option('offset')
-        offsets = offset.split(",")
-        if len(offsets) > 1:
-            offset_x = offsets[0]
-            offset_y = offsets[1]
-
 
 
 
@@ -974,16 +957,13 @@ class CalendarInputWdg(BaseInputWdg):
                        
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
-                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:bvr.offset_x, y:bvr.offset_y}});
+                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:0, y:0}});
                     }
                     
                     spt.show(el);
                     spt.body.add_focus_element(el); 
                     //evt.stopPropagation();
-                    ''', 
-                    'offset_x' : offset_x,
-                    'offset_y' : offset_y
-                    })
+                    '''})
             # TODO: this onblur is nice because it hides the calendar,
             # but it stops the input from functioning
             #input.add_event('onblur', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
@@ -1012,10 +992,8 @@ class CalendarInputWdg(BaseInputWdg):
                 #    value = SPTDate.convert_to_local(value)
 
         current = my.get_current_sobject()
-        
         if current and not current.is_insert():
             db_date = current.get_value(my.get_name(), no_exception=True)
-            
             if db_date:
                 # This date is assumed to be GMT
                 try:
@@ -1023,18 +1001,17 @@ class CalendarInputWdg(BaseInputWdg):
                 except:
                     value = datetime.now()
                 
-
                 #from pyasm.common import SPTDate
                 #from pyasm.search import SObject
                 if not SObject.is_day_column(my.get_name()):
                     date = SPTDate.convert_to_local(value)
-                    
                 try:
-                    encoding = locale.getlocale()[1]		
-                    value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                   encoding = locale.getlocale()[1]		
+                   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
                 except:
-                    value = date.strftime("%b %d, %Y - %H:%M")
-               
+                   value = date.strftime("%b %d, %Y - %H:%M")
+
+
 
         if show_time:
             key = 'DATETIME'

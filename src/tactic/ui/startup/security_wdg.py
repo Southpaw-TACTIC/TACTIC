@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','GearMenuSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg','SecurityBuilder']
+__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg','SecurityBuilder']
 
 
 
@@ -403,10 +403,7 @@ class GroupAssignCbk(Command):
         current_groups = set()
         for x in login_in_groups:
             if x.get_value("login_group") not in group_names:
-                if x.get_value('login_group') == 'admin':
-                    current_groups.add( x.get_value("login_group") )
-                else:
-                    x.delete()
+                x.delete()
             else:
                 current_groups.add( x.get_value("login_group") )
 
@@ -618,7 +615,6 @@ class SecurityWdg(BaseRefreshWdg):
 
         desc_div = DivWdg()
         desc_div.add(description)
-        desc_div.add_style("text-align: center")
         desc_div.add_style("padding: 5px 10px 10px 10px")
         desc_div.add_style("font-size: 1.1em")
 
@@ -672,8 +668,8 @@ class SecurityWdg(BaseRefreshWdg):
 
 
 
-        from misc_wdg import MainShelfWdg
-        shelf_wdg = MainShelfWdg(top_class='spt_dashboard_top', list_class='spt_dashboard_list', height=207)
+        from misc_wdg import ShelfWdg
+        shelf_wdg = ShelfWdg(top_class='spt_dashboard_top', list_class='spt_dashboard_list', height=207)
         top.add(shelf_wdg)
 
         outer = DivWdg()
@@ -684,7 +680,7 @@ class SecurityWdg(BaseRefreshWdg):
         outer.add(div)
         div.add_class("spt_dashboard_list")
         div.add_style("overflow-x: auto")
-        div.add_style("width: 1200px")
+        div.add_style("width: 1000px")
         #div.add_behavior( {
         #    'type': 'load',
         #    'cbjs_action': '''
@@ -764,7 +760,7 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("padding: 3px")
         title = "Link Security"
         image = IconWdg('', IconWdg.SECURITY_32_21, width=32)
-        description = '''Link security determines which side bar links are visible to each group.'''
+        description = '''Link security determines which side bar links will be visible to each group.'''
 
         behavior = {
         'type': 'click_up',
@@ -782,33 +778,9 @@ class SecurityWdg(BaseRefreshWdg):
 
 
         }
-        gear_menu_security_wdg = my.get_section_wdg(title, description, image, behavior)
-        td.add(gear_menu_security_wdg)
-
-        #
-        td = table.add_cell()
-        td.add_style("vertical-align: top")
-        td.add_style("padding: 3px")
-        title = "Gear Menu Security"
-        image = IconWdg('', IconWdg.SECURITY_32_21, width=32) # Icon needs to be changed
-        description = '''Gear Menu security determines which gear menu items each group can see.'''
-
-        behavior = {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var class_name = 'tactic.ui.startup.GearMenuSecurityWdg';
-        var kwargs = {};
-        var top = bvr.src_el.getParent(".spt_dashboard_top");
-        spt.tab.set_tab_top(top);
-        spt.tab.add_new("gear_menu_security", "Gear Menu Security", class_name, kwargs);
- 
-
-        '''
-
-
-        }
         pipeline_wdg = my.get_section_wdg(title, description, image, behavior)
         td.add(pipeline_wdg)
+
 
         #
         td = table.add_cell()
@@ -1033,8 +1005,6 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
                 is_set = False
         elif my.security_type == 'link' and my.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'gear_menu' and my.access_level in ['high']:
-            is_set = True
         elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium','high']:
             is_set = True
         elif my.security_type == 'process' and my.access_level in ['low', 'medium','high']:
@@ -1138,8 +1108,6 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
                 is_set = False
  
         elif my.security_type == 'link' and my.access_level in ['high']:
-            is_set = True
-        elif my.security_type == 'gear_menu' and my.access_level in ['high']:
             is_set = True
         elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium', 'high']:
             is_set = True
@@ -1640,82 +1608,7 @@ class SearchTypeSecurityWdg(ProjectSecurityWdg):
 
         return sobjects
 
-class GearMenuSecurityWdg(ProjectSecurityWdg):
-    '''Control Gear Menu visibility'''
-    def get_security_type(my):
-        return "gear_menu"
 
-    def get_save_cbk(my):
-        return 'tactic.ui.startup.GearMenuSecurityCbk'
-
-    def get_display_columns(my):
-        return ['submenu', 'label']
-
-    def get_sobjects(my, group_names):
-
-        all_gear_menu_names = GearMenuSecurityWdg.get_all_menu_names()
-        rules_dict = {}
-
-        project = Project.get()
-        project_code = project.get_code()
-        
-        sobjects = []
-
-        for key,value in all_gear_menu_names:
-            
-            submenu = key
-            
-            for label in value.get('label'):
-                sobject = SearchType.create("sthpw/virtual")
-                
-                if submenu == "ALL MENU ITEMS":
-                    sobject.set_value("_extra_data", {"is_all": True})
-                    submenu = '*'
-
-                title_wdg = DivWdg()
-                title_wdg.add(label)
-                sobject.set_value("id", 1)
-                sobject.set_value("code", submenu)
-                sobject.set_value("submenu", submenu)
-                sobject.set_value("label", title_wdg)
-                sobject.set_value("_extra_data", {"label": label, "submenu": submenu})
-
-                for group_name in group_names:
-
-                    access_rules = rules_dict.get(group_name)
-
-                    if access_rules == None:
-                        group = LoginGroup.get_by_group_name(group_name)
-                        access_rules = group.get_xml_value("access_rules")
-                        rules_dict[group_name] = access_rules
-
-                    path = "rules/rule[@group='gear_menu' and @submenu='%s' and @label='%s' and @project='%s']" % (submenu, label, project_code)
-                    node = access_rules.get_node(path)
-
-                    if node is not None:
-                        sobject.set_value("_%s" % group_name, True)
-                    else:
-                        sobject.set_value("_%s" % group_name, False)
-
-                sobjects.append(sobject)
-        return sobjects
-
-    def get_all_menu_names(cls):
-        all_gear_menu_names = {'ALL MENU ITEMS':{'label': ['*'],'order': 0},
-                               'Edit': {'label': ['Retire Selected Items','Delete Selected Items','Show Server Transaction Log','Undo Last Server Transaction','Redo Last Server Transaction'],'order': 1},
-                               'File': {'label': ['Export All ...','Export Selected ...','Export Matched ...','Export Displayed ...','Import CSV','Ingest Files','Check-out Files'], 'order': 2},
-                               'Clipboard': {'label': ['Copy Selected','Paste','Connect','Append Selected','Show Clipboard Contents'], 'order': 3},
-                               'View': {'label': ['Column Manager','Create New Column','Save Current View','Save a New View','Edit Current View','Edit Config XML'], 'order': 4},
-                               'Print': {'label': ['Print Selected','Print Displayed','Print Matched'], 'order': 5},
-                               'Chart': {'label': ['Chart Items','Chart Selected'], 'order': 6},
-                               'Tasks': {'label': ['Show Tasks','Add Tasks to Selected','Add Tasks to Matched'], 'order': 7},
-                               'Notes': {'label': ['Show Notes'], 'order': 8},
-                               'Check-ins': {'label': ['Show Check-in History'], 'order': 9},
-                               'Pipelines': {'label': ['Show Pipeline Code','Edit Pipelines'], 'order': 10}
-                               }
-        all_gear_menu_names = sorted(all_gear_menu_names.items(), key=lambda (x,y):y['order'])
-        return all_gear_menu_names
-    get_all_menu_names = classmethod(get_all_menu_names)
 
 
 
@@ -1778,6 +1671,9 @@ class LinkSecurityWdg(ProjectSecurityWdg):
                 sub_config = SideBarBookmarkMenuWdg.get_config( "SideBarWdg", folder_view)
                 my.get_info(sub_config, names, links, titles, icons, level+1)
             
+
+
+
 
     def get_sobjects(my, group_names):
         #from pyasm.widget import WidgetConfig, WidgetConfigView
@@ -2016,7 +1912,6 @@ class TaskSecurityWdg(ProjectSecurityWdg):
 
 __all__.append("ProjectSecurityCbk")
 __all__.append("UserSecurityCbk")
-__all__.append("GearMenuSecurityCbk")
 __all__.append("LinkSecurityCbk")
 __all__.append("SearchTypeSecurityCbk")
 __all__.append("ProcessSecurityCbk")
@@ -2171,50 +2066,7 @@ class SearchTypeSecurityCbk(Command):
             group.set_value("access_rules", access_rules)
             group.commit()
 
-class GearMenuSecurityCbk(Command):
-    def execute(my):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
-            update_data = jsonloads(update_data)
-
-        extra_data = my.kwargs.get("extra_data")
-
-        if isinstance(extra_data, basestring):
-            extra_data = jsonloads(extra_data)
-
-        project = Project.get()
-        project_code = project.get_code()
-
-        builders = {}
-        for search_key,data,extra in zip(search_keys, update_data, extra_data):
-            
-            label = extra.get("label")
-            submenu = extra.get("submenu")
-            if submenu == "ALL MENU ITEMS":
-                submenu = '*'
-
-            for group_name, is_insert in data.items():
-                group_name = group_name.lstrip("_")
-
-                group = LoginGroup.get_by_code(group_name)
-                builder = builders.get(group_name)
-                if not builder:
-                    builder = SecurityBuilder(group=group)
-                    builders[group_name] = builder
-
-                if is_insert == "true":
-                    builder.add_gear_menu(submenu, label, project_code=project_code)
-                else:
-                    builder.remove_gear_menu(submenu, label, project_code=project_code)
-
-        for group_name, builder in builders.items():
-            group_name = group_name.lstrip("_")
-            group = LoginGroup.get_by_code(group_name)
-            access_rules = builder.to_string()
-            group.set_value("access_rules", access_rules)
-            group.commit()
 
 class LinkSecurityCbk(Command):
     def execute(my):
@@ -2376,56 +2228,14 @@ class SecurityBuilder(object):
                 my.xml.remove_child(my.root, node)
 
 
-
-
-
-    def add_gear_menu(my, submenu, label, access="allow", project_code=None):
-        if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
-
-        else:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu']")
-
-        submenus = [my.xml.get_attribute(node, 'submenu') for node in nodes]
-        labels = [my.xml.get_attribute(node, 'label') for node in nodes]
-
-        if label not in labels:
-            rule = my.xml.create_element("rule")
-            my.xml.set_attribute(rule, "group", "gear_menu")
-            my.xml.set_attribute(rule, "submenu", submenu)
-            my.xml.set_attribute(rule, "label", label)
-            if project_code:
-                my.xml.set_attribute(rule, "project", project_code)
-            my.xml.set_attribute(rule, "access", access)
-            my.xml.append_child(my.root, rule)
-            
-    def remove_gear_menu(my, submenu, label, project_code=None):
-        if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
-
-        else:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu']")
-        for node in nodes:
-            if my.xml.get_attribute(node, 'label') == label:
-                my.xml.remove_child(my.root, node)
-    
-
-
     def add_link(my, link, access="allow", project_code=None):
+        rule = my.xml.create_element("rule")
+        my.xml.set_attribute(rule, "group", "link")
+        my.xml.set_attribute(rule, "element", link)
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='link' and @project='%s']" % project_code)
-        else:
-            nodes = my.xml.get_nodes("rules/rule[@group='link']")
-        links = [my.xml.get_attribute(node, 'element') for node in nodes] 
-
-        if link not in links:
-            rule = my.xml.create_element("rule")
-            my.xml.set_attribute(rule, "group", "link")
-            my.xml.set_attribute(rule, "element", link)
-            if project_code:
-                my.xml.set_attribute(rule, "project", project_code)
-            my.xml.set_attribute(rule, "access", access)
-            my.xml.append_child(my.root, rule)
+            my.xml.set_attribute(rule, "project", project_code)
+        my.xml.set_attribute(rule, "access", access)
+        my.xml.append_child(my.root, rule)
 
 
     def remove_link(my, link, project_code=None):

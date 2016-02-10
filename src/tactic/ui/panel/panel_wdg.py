@@ -47,7 +47,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
             my_view = "my_view_%s" % Environment.get_user_name()
             my_view = my_view.replace("\\", "_")
             views.append(my_view)
-                
+        
 
         
 
@@ -152,18 +152,17 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_bookmark_menu_wdg(my, title, config, views):
+    def get_bookmark_menu_wdg(my, title, config, view):
 
         kwargs = {
             'title': title,
-            'view': views,
+            'view': view,
             'config': config,
             'auto_size': my.kwargs.get('auto_size')
         }
         section_div = DivWdg()
         section_div.add_style("display: block")
 
-        
         section_wdg = SideBarBookmarkMenuWdg(**kwargs)
         section_div.add(section_wdg)
         return section_div
@@ -936,6 +935,12 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
         var w = clonable.clientWidth;
         var h = clonable.clientHeight;
 
+        /*
+        // Use this if you want the initial ghost div position right over top of the source element ...
+        var pos = spt.get_absolute_offset( bvr.src_el );
+        ghost_el.setStyle( "left", pos.x );
+        ghost_el.setStyle( "top", pos.y );
+        */
 
         // Use this if you want the initial ghost div position to be offset from mouse same as on mouse momve ...
         ghost_el.setStyle( "left", (mouse_411.curr_x + 10) );
@@ -950,8 +955,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
 
         ghost_el.setStyle( "display", "block" );
         ghost_el.setStyle( "text-align", "left" );
-        //ghost_el.setStyle( "background", "#4F4FC4");
-        ghost_el.setStyle( "box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
+        ghost_el.setStyle( "background", "#4F4FC4");
     }
     else {
         spt.js_log.debug("WARNING: NO ghost el found in spt.side_bar.pp_setup() callback!");
@@ -1828,9 +1832,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 if os.path.exists(file_path):
                     for view in views:
                         config = WidgetConfig.get(file_path=file_path, view=view)
-                    
-                        view_node = config.get_view_node()
-                        if view_node is not None:
+                        if config.get_view_node() is not None:
                             configs.append(config)
 
             # finally, just look at the DEFAULT config
@@ -1841,16 +1843,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if os.path.exists(file_path):
                 for view in views:
                     config = WidgetConfig.get(file_path=file_path, view=view)
-                 
-                    view_node = config.get_view_node()
-
-                    if view_node is not None:
+                    if config.get_view_node() is not None:
                         configs.append(config)
 
         except XmlException, e:
             msg = "Error with view [%s]"% ' '.join(views)
             print "Error: ", str(e)
-            
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
@@ -1920,7 +1918,6 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if config:
                 configs.append(config)
             # then look for a file
-           
             SideBarBookmarkMenuWdg.add_internal_config(configs, [defined_view])
             
             logins = []
@@ -2654,7 +2651,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display'
         },
         "show_search": {
-            'description': "determines whether to show the Advanced Search button in the shelf",
+            'description': "determines whether or not to show the search box",
             'type': 'SelectWdg',
             'values': 'true|false',
             'order': '05',
@@ -2714,13 +2711,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '11',
             'category': 'Display'
         },
-        "show_expand": {
-            'description': "determines whether or not to expand the table",
-            'type': 'SelectWdg',
-            'values': 'true|false',
-            "order": '11a',
-            'category': 'Display'
-        },
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
             'category': 'Check-in',
@@ -2774,21 +2764,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '18'
         },    
 
-        "no_results_msg" : {
-            'description': 'the message displayed when the search returns no item',
-            'type': 'TextWdg',
-            'category': 'Display',
-            'Order': '19'
-        },
-
-        "no_results_mode" : {
-            'description': 'the display modes for no results',
-            'type': 'SelectWdg',
-            'values': 'default|compact',
-            'category': 'Display',
-            'order': '20'
-        }, 
-
 
         "link": {
             'description': "Definition from a link",
@@ -2834,16 +2809,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'type': 'TextWdg',
             'order': 13
-        },
-        "gallery_align" : {
-            'description': 'top or bottom gallery vertical alignment',
-            'type': 'SelectWdg',
-            'values': 'top|bottom',
-            'order' : 20,
-            'category': 'Display'
-
         }
-
     }
 
     def get_display(my):
@@ -3110,15 +3076,12 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             show_shelf = my.kwargs.get("show_shelf")
-            """
             if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
-                show_search = "false"
+                show_search = False
             elif show_shelf in [False, 'false']:
-                show_search = "true"
-            
+                show_search = True
             else:
                 show_search = True
-            """
             kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
@@ -3157,7 +3120,6 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_select = my.kwargs.get("show_select")
         show_refresh = my.kwargs.get("show_refresh")
         show_gear = my.kwargs.get("show_gear")
-        show_expand = my.kwargs.get("show_expand")
         show_shelf = my.kwargs.get("show_shelf")
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
@@ -3211,7 +3173,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
-            "show_expand": show_expand,
             "show_shelf": show_shelf,
             "search_key": search_key,
             "parent_key": parent_key,
@@ -3266,7 +3227,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['allow_drag'] = my.kwargs.get("allow_drag")
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             kwargs['process'] = my.kwargs.get("process")
-            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3285,8 +3245,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'tool':
             from tool_layout_wdg import ToolLayoutWdg
-            kwargs['tool_icon'] = my.kwargs.get('tool_icon')
-            kwargs['tool_msg'] = my.kwargs.get('tool_msg')
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
@@ -3295,7 +3253,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'card':
             kwargs['preview_width'] = my.kwargs.get("preview_width")
-            kwargs['process'] = my.kwargs.get("process")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
@@ -3541,20 +3498,6 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         var top = bvr.src_el.getParent(".spt_new_view_top");
         var code_el = top.getElement(".spt_new_view_name");
         code_el.value = code;
-        var radios = top.getElements("input[name='save_mode']");
-        
-        var is_checked = false;
-        for (var k = 0 ; k < radios.length; k++) {
-            if (radios[k].checked) {
-                is_checked = true;
-                break
-            }
-        }
-        if (!is_checked) {
-            
-            radios[0].checked = true;
-
-        }
         '''
         } )
 

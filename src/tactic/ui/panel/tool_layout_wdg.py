@@ -24,7 +24,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
     ARGS_KEYS = {
         "search_type": {
-            'description': "Search type that this panels works with",
+            'description': "search type that this panels works with",
             'type': 'TextWdg',
             'order': 0,
             'category': 'Required'
@@ -35,27 +35,10 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'order': 1,
             'category': 'Display'
         },
-        "expand_mode" : {
-            'description': 'Support Tile Layout gallery, single_gallery, plain, detail, and custom mode',
-            'type': 'SelectWdg',
-            'values': 'gallery|single_gallery|plain|detail|custom',
-            'order' : '2',
-            'category': 'Display'
 
-        },
-        "tool_icon" : {
-            'description': 'Add icons to the no-content pane which indicates tools to modify settings. Also takes a | seperated list of icon keys.',
-            'type': 'IconSelectWdg',
-            'order' : '3',
-            'category': 'Display'
-        },
-        "tool_msg" : {
-            'description': 'Add a message to the no-content pane which indicates how users can modify settings.',
-            'type': 'TextWdg',
-            'order' : '4',
-            'category': 'Display'
-        }
+
     } 
+
 
     def can_inline_insert(my):
         return False
@@ -89,25 +72,17 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         else:
             my.show_context_menu = True
 
-        my.expand_mode = my.kwargs.get("expand_mode")
-        my.process = my.kwargs.get("process")
-       
-        
     def get_display(my):
 
         my.view_editable = True
 
-
-
-        #if my.kwargs.get("do_search") != "false":
-        #    my.handle_search()
-        my._process_search_args()
-
+        if my.kwargs.get("do_search") != "false":
+            my.handle_search()
 
         #my.kwargs['show_gear'] = 'false'
 
         from tile_layout_wdg import TileLayoutWdg
-        my.tile_layout = TileLayoutWdg(search_type=my.search_type, expand_mode=my.expand_mode, process=my.process)
+        my.tile_layout = TileLayoutWdg(search_type=my.search_type)
 
 
         # set the sobjects to all the widgets then preprocess
@@ -307,35 +282,26 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         div = DivWdg()
         div.add_class("spt_tool_top")
 
-        #table = Table()
-        from tactic.ui.container import ResizableTableWdg
-        from table_layout_wdg import FastTableLayoutWdg
-
-        table = ResizableTableWdg()
-        table.add_style("table-layout", "fixed")
-        table.add_style("width: 100%")
+        table = Table()
         div.add(table)
         table.add_row()
 
         td = table.add_cell()
-
+        from table_layout_wdg import FastTableLayoutWdg
 
         kwargs = my.kwargs.copy()
 
 
+        td.add_style("width: 1%")
         td.add_style("vertical-align: top")
         layout_div = DivWdg()
         layout_div.add_style("min-height: 500px")
-        layout_div.add_style("height: auto")
         td.add(layout_div)
-        td.add_style("overflow: hidden")
 
-        kwargs['show_shelf'] = False
-        kwargs['show_search_limit'] = False
-        kwargs['expand_on_load'] = False
-        layout = FastTableLayoutWdg(**kwargs)
+        my.kwargs['element_names'] = ['name','description','detail', 'file_list','general_checkin']
+        my.kwargs['show_shelf'] = False
+        layout = FastTableLayoutWdg(**my.kwargs)
         layout_div.add(layout)
-        layout.set_sobjects(my.sobjects)
         #from tactic.ui.panel import TileLayoutWdg
         #layout = TileLayoutWdg(**my.kwargs)
         #layout_div.add(layout)
@@ -348,42 +314,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         content = DivWdg()
         td.add(content)
         content.add_class("spt_tool_content")
-        content.add_border(color="#EEE")
-        content.add_style("margin: -1px")
-        content.add_style("height: 100%")
-        #content.add_style("padding: 0px 20px")
-
+        #content.add_style("margin: -1px")
 
 
         no_content_wdg = DivWdg()
         content.add(no_content_wdg)
         no_content_wdg.add("<br/>"*3)
-
-        '''
-        The no content message displays tool icons
-        and a message in format:
-                         <tools>
-                          <msg>
-        '''
-        tool_icons = my.kwargs.get('tool_icon')
-        if isinstance(tool_icons, basestring):
-            tool_icon_lst = tool_icons.split("|")
-        else:
-            tool_icon_lst = None
-
-        if tool_icon_lst:
-            for icon in tool_icon_lst:
-                icon = IconWdg(icon=icon) 
-                icon.add_style("padding", "5px")
-                no_content_wdg.add(icon)
-            no_content_wdg.add("</br></br>")
-       
-        tool_msg = my.kwargs.get('tool_msg')
-        if tool_msg:
-            no_content_wdg.add("<p>%s<p>" % tool_msg)
-        else:
-            no_content_wdg.add("Click the tool(s) to modify settings.") 
-       
+        no_content_wdg.add("<i>-- No Content --</i>")
         #no_content_wdg.add_style("opacity: 0.5")
         no_content_wdg.add_style("margin: 30px auto")
         no_content_wdg.add_color("color", "color3")
@@ -393,7 +330,6 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         no_content_wdg.add_style("padding-bottom: 20px")
         no_content_wdg.add_style("width: 350px")
         no_content_wdg.add_style("height: 110px")
-        no_content_wdg.add_style("margin: 30px auto")
         no_content_wdg.add_border()
 
 

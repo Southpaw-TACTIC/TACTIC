@@ -34,10 +34,14 @@ TASK_PIPELINE = '''
   <process completion="20" color="#e9e386" name="In Progress"/>
   <process completion="20" color="#a96ccf" name="Waiting"/>
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
-  <process completion="80" color="#e84a4d" name="Revise"/>
-  <process completion="80" color="#e84a4d" name="Reject"/>
-  <process completion="100" color="#a3d991" name="Complete"/>
+  <process completion="80" color="#e84a4d" name="Review"/>
   <process completion="100" color="#a3d991" name="Approved"/>
+  <connect to="Review" from="Need Assistance"/>
+  <connect to="In Progress" from="Pending"/>
+  <connect to="Pending" from="Assignment"/>
+  <connect to="Need Assistance" from="Waiting"/>
+  <connect to="Waiting" from="In Progress"/>
+  <connect to="Approved" from="Review"/>
 </pipeline>
 '''
 
@@ -45,10 +49,11 @@ TASK_PIPELINE = '''
 APPROVAL_PIPELINE = '''
 <pipeline type="serial">
   <process completion="10" color="#8ad3e5" name="Pending"/>
-  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="50" color="#e84a4d" name="Revise"/>
   <process completion="100" color="#a3d991" name="Approved"/>
-  <connect to="Reject" from="Pending"/>
   <connect to="Approved" from="Pending"/>
+  <connect to="Revise" from="Pending"/>
+  <connect to="Approved" from="Needs Work"/>
 </pipeline>
 
 '''
@@ -62,7 +67,6 @@ OTHER_COLORS = {
     "Done":     "#a3d991",
     "Final":    "#a3d991",
     "Revise":   "#e84a4d",
-    "Reject":   "#e84a4d",
     "Ready":    "#a3d991",
     "In_Progress":"#e9e386",
 }
@@ -133,7 +137,7 @@ class Task(SObject):
             color = OTHER_COLORS.get(process.title())
 
         from pyasm.web import Palette
-        theme = Palette.get().get_theme()
+        theme = Palette.get()
         if theme == 'dark':
             color = Common.modify_color(color, -50)
 
@@ -226,7 +230,7 @@ class Task(SObject):
 
         # in case it's a subpipeline
         context = task_process
-        context = my._add_context_suffix(context, task_process, parent)
+        context=my._add_context_suffix(context,task_process,parent)
 
         # then use the project as a parent
         project = Project.get()
@@ -279,9 +283,7 @@ class Task(SObject):
 
                 subcontext = parts[1]
             try:
-                if not tasks:
-                    num = 0
-                elif subcontext == None:
+                if subcontext == None:
                     num = 1
                 else:
                     num = int(subcontext)
@@ -565,7 +567,6 @@ class Task(SObject):
             # FIXME: why doesn't the ops work here?
             filters = []
             search.add_relationship_filters(sobjects)
-    
             """
             for sobject in sobjects:
                 search_type = sobject.get_search_type()
@@ -618,23 +619,26 @@ class Task(SObject):
     get_by_sobject = staticmethod(get_by_sobject)
 
 
-    def create(cls, sobject, process, description="", assigned="", supervisor="",\
+    def create(cls, sobject, process, description, assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
             start_date=None, end_date=None, context='', bid_duration=8):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
+        #task.set_value( "search_type", sobject.get_search_type() )
+        #task.set_value( "search_id", sobject.get_id() )
+        #task.set_value( "search_code", sobject.get_code() )
         task.set_parent(sobject)
 
         task.set_value("process", process )
         task.set_value("description", description )
-        if assigned:
-            task.set_value("assigned", assigned)
+        task.set_value("assigned", assigned)
         if supervisor:
             task.set_value("supervisor", supervisor)
 
         if not project_code:
             project_code = sobject.get_project_code()
+            #project_code = Project.get_project_code()
         task.set_value("project_code", project_code )
         task.set_value("pipeline_code", pipeline_code) 
 
@@ -656,11 +660,9 @@ class Task(SObject):
         if end_date:
             task.set_value("bid_end_date", end_date)
         # auto map context as process as the default
-        #if not context:
-        #    context = process
-        # let get_defaults() set the context properly instead of auto-map
-        if context:
-            task.set_value("context", context)
+        if not context:
+            context = process
+        task.set_value("context", context)
         # DEPRECATED
         if depend_id:
             task.set_value("depend_id", depend_id)
@@ -751,7 +753,7 @@ class Task(SObject):
     sort_shot_tasks = staticmethod(sort_shot_tasks)
 
 
-    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0,assigned=None):
+    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0):
         '''add initial tasks based on the pipeline of the sobject'''
         from pipeline import Pipeline
 
@@ -786,7 +788,7 @@ class Task(SObject):
          
                 if existed:
                     context = "%s/%0.3d" % (context, max_num+1)
-                
+            
 
             return context
         # get pipeline
@@ -816,7 +818,7 @@ class Task(SObject):
         if processes:
             process_names = processes
         else:
-            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual"])
+            process_names = pipeline.get_process_names(recurse=True)
 
 
         # remember which ones already exist
@@ -896,7 +898,8 @@ class Task(SObject):
                 end_date_str = end_date.get_db_date()
 
                 # Create the task
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
+
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration)
                 
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -936,6 +939,7 @@ class Task(SObject):
                 # for a task to be x days long, we need duration x-1.
                 end_date.add_days(duration-1)
 
+
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
                 output_contexts = [process_name]
@@ -959,8 +963,7 @@ class Task(SObject):
                 if contexts and context not in contexts:
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
-             
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration,assigned=assigned)
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )

@@ -14,7 +14,7 @@ __all__ = ["CustomLayoutWdg", "SObjectHeaderWdg"]
 import os, types, re
 import cStringIO
 
-from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads, jsondumps
+from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads
 from pyasm.biz import Schema, ExpressionParser, Project
 from pyasm.search import Search, SearchKey, WidgetDbConfig, SObject
 from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table, Widget, Html, WebContainer
@@ -307,7 +307,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 # this will raise an exception if it is not in a table element
                 sobject = my.get_current_sobject()
             except:
-                sobject = SearchKey.get_by_search_key(my.search_key)
+	        sobject = SearchKey.get_by_search_key(my.search_key)
             sobjects = [sobject]
         else:
             try:
@@ -713,17 +713,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 '''
             })
 
-
-
-            # remove objects that cannot be json marshalled
-            view_kwargs = my.kwargs.copy()
-            for key, value in view_kwargs.items():
-                try:
-                    test = jsondumps(value)
-                except Exception, e:
-                    del(view_kwargs[key])
-
-
             for behavior_node in behavior_nodes:
 
                 bvr_div = DivWdg()
@@ -763,7 +752,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
                     # add the kwargs to this so behaviors have access
-                    bvr['kwargs'] = view_kwargs
+                    bvr['kwargs'] = my.kwargs
                     bvr['class_name'] = Common.get_full_class_name(my)
 
                     if relay_class:
@@ -817,12 +806,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
             includes = includes.split("|")
 
             for include in includes:
-                if include.find('/') != -1:
-                    file_path = include
-                else:
-                    tmp_path = __file__
-                    dir_name = os.path.dirname(tmp_path)
-                    file_path ="%s/../config/%s" % (dir_name, include)
+                tmp_path = __file__
+                dir_name = os.path.dirname(tmp_path)
+                file_path="%s/../config/%s" % (dir_name, include)
                 config = WidgetConfig.get(file_path=file_path, view=my.view)
                 if config and config.has_view(my.view):
                     return config
@@ -1138,14 +1124,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 '''
             } )
 
-        if my.kwargs.get("show_loading") not in ["False", False, "false"]:
-            loading_div = DivWdg()
-            loading_div.add_style("margin: auto auto")
-            loading_div.add_style("width: 150px")
-            loading_div.add_style("text-align: center")
-            loading_div.add_style("padding: 20px")
-            div.add(loading_div)
-            loading_div.add('''<img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b>''')
+        loading_div = DivWdg()
+        loading_div.add_style("margin: auto auto")
+        loading_div.add_style("width: 150px")
+        loading_div.add_style("text-align: center")
+        loading_div.add_style("padding: 20px")
+        div.add(loading_div)
+        loading_div.add('''<img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b>''')
 
         return div
 
@@ -1286,11 +1271,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             includes = my.kwargs.get("include")
-            extra_options = {"parent_view": parent_view}
-            if includes:
-                extra_options['include'] = includes
-
-            element_wdg = config.get_display_widget(element_name, extra_options=extra_options)
+            element_wdg = config.get_display_widget(element_name, extra_options={"include":includes, "parent_view":parent_view})
 
             element_top = element_wdg.get_top()
             for name, value in attrs.items():

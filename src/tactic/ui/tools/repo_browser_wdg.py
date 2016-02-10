@@ -1843,7 +1843,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         ''' % file.get_search_key()
         )
 
-        """
+
         config.append('''
         <element name='sobject_detail' title='Detail'>
             <display class='tactic.ui.tools.SObjectDetailWdg'>
@@ -1852,7 +1852,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         </element>
         ''' % parent.get_search_key()
         )
-        """
+
         process = snapshot.get_value("process")
         config.append('''
         <element name='notes' title='Notes'>

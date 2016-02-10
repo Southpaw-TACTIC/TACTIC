@@ -14,8 +14,8 @@ __all__ = ['ADAuthenticate', 'ADException']
 
 import types, os
 
-from pyasm.common import SecurityException, Config, Common
-from pyasm.security import Authenticate, TacticAuthenticate, Login, LoginInGroup
+from pyasm.common import SecurityException, Config
+from pyasm.security import Authenticate, LoginInGroup
 from pyasm.search import Search
 
 from pyasm.common import Environment
@@ -116,17 +116,7 @@ class ADAuthenticate(Authenticate):
         # preload data for further use later with original full login_name
         if is_logged_in:
             my.load_user_data(base_login_name, domain)
-        else:
-            # If AD authentication fails, attempt login via Tactic database+
-            # (Only allow login for external users)
-            login = Login.get_by_login(base_login_name)
-            if login and login.get_value('location', no_exception=True) == 'external':
-                auth_class = "pyasm.security.TacticAuthenticate"
-                authenticate = Common.create_from_class_path(auth_class)  
-                is_authenticated = authenticate.verify(base_login_name, password)
-                if is_authenticated == True:
-                    return True
-
+                
         return is_logged_in
 
 
@@ -293,8 +283,8 @@ class ADAuthenticate(Authenticate):
             domain = None
         """
         python = Config.get_value('services', 'python')
-        if not python:
-            python = 'python'
+	if not python:
+	    python = 'python'
 
         try:
             # get the info from a separate process
@@ -375,7 +365,7 @@ class ADAuthenticate(Authenticate):
 
         for line in lines:
             line = "".join(line)
-            #print "info line: ", line
+            #print "line: ", line
             name, value = line.split(": ", 1)
 
             if name == 'memberOf':
@@ -408,7 +398,7 @@ class ADAuthenticate(Authenticate):
 
 
     def handle_group(my, value):
-		
+
         # some values have commas in them.
         value = value.replace("\\,", "|||")
         parts = value.split(",")
@@ -421,8 +411,6 @@ class ADAuthenticate(Authenticate):
         # provide the column which stores the ad group.
         columns = Search("sthpw/login_group").get_columns()
         group_dict = {}
-
-        # optional ad_login_group can record the actual group name in AD
         if "ad_login_group" in columns:
             mapping_col = "ad_login_group"
             for x in my.tactic_groups:
@@ -451,18 +439,16 @@ class ADAuthenticate(Authenticate):
 
 
         # add a group
-        skipped_connects = user.remove_all_groups(except_list=my.groups)
-        skipped_group_names = [ x.get_value('login_group') for x in skipped_connects ]
-        for group in my.groups:
-            #print "user: ", user.get_value("login")
-            if not isinstance(group, basestring): 
-                group_name = group.get_value('login_group')
-            else:
-                group_name = group
-            #print "adding to: ", group_name
-            if group_name in skipped_group_names:
-                continue
-            user.add_to_group(group)
+        remaining = user.remove_all_groups(except_list=my.groups)
+        if not remaining:
+            for group in my.groups:
+                print "user: ", user.get_value("login")
+                if not isinstance(group, basestring): 
+                    group_name = group.get_value('login_group')
+                else:
+                    group_name = group
+                print "adding to: ", group_name
+                user.add_to_group(group)
 
     def add_default_group(my, user):
         '''add the user to the default group only if he is groupless'''

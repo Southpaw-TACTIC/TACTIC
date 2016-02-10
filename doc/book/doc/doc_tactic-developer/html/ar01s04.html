@@ -19,7 +19,7 @@ with only styles defined and include these styles into other top level
 views, just as how you would reference a normal view.</p><p>For example, you can create a view called <span class="emphasis"><em>common/styles</em></span> and add this
 line to the HTML of a view where you want the styles to appear.</p><pre class="screen">&lt;element view='common/styles'/&gt;</pre><p><span class="strong"><strong>Behaviors</strong></span></p><p>TACTIC’s behavior system makes use of standard JavaScript behaviors with
 the added functionality of some built-in classes.</p><p>Here are two ways to add an alert behavior to a button class called
-<span class="emphasis"><em>my_button</em></span>. The event attribute format is more concise.</p><pre class="screen">&lt;behavior class='my_button' event='click_up'&gt;
+<span class="emphasis"><em>my_button</em></span>.</p><pre class="screen">&lt;behavior class=”my_button” event='click_up'&gt;
 alert('Hello World');
 &lt;/behavior&gt;
 
@@ -30,13 +30,7 @@ alert('Hello World');
 alert('Hello World');
 
 "'
-}&lt;/behavior&gt;</pre><p>To relay the same behavior to many elements having the same class attribute,
-one can use the "relay_class" attribute. One would presumably apply this behavior to
-a parent element that contains the elements targeted.</p><pre class="screen">&lt;behavior relay_class='my_button_item' event='click_up'&gt;
-
-alert('Hello World');
-
-&lt;/behavior&gt;</pre><p>Here are the types of events that the TACTIC behavior system has
+}&lt;/behavior&gt;</pre><p>Here are the types of events that the TACTIC behavior system has
 built-in support for:</p><pre class="screen">click_up | click | wheel | double_click | drag | hover | move | change | blur | mouseover | mouseout | keyup | keydown | listen</pre><p>You can set the behavior class to activate upon the firing of another
 event using the <span class="emphasis"><em>listen</em></span> type event.</p><pre class="screen">&lt;behavior class='my_button'&gt;{
 'type': 'click_up', 'cbjs_action': "'
@@ -164,27 +158,27 @@ many options like the width of the input field.</p><p><span class="strong"><stro
 which comes with the input field.</p><p><span class="strong"><strong>Inject Layout</strong></span> injects a View Panel Widget.</p><p><span class="strong"><strong>Inject Table</strong></span> injects a Fast Table Layout Widget.</p><p><span class="strong"><strong>Inject Calendar</strong></span> injects a Calendar Widget.</p><p><span class="strong"><strong>Inject Search</strong></span> injects a Global Search Widget.</p><p><span class="strong"><strong>Inject Subscription</strong></span> injects a Subscription Bar Widget into your HTML.</p><p><span class="strong"><strong>Adding View to sidebar</strong></span></p><p><span class="inlinemediaobject"><img src="media/custom_layout_editor_sidebar.png" alt="image" /></span></p><p>You can add the view you have created directly to the sidebar. To do
 this, click on the gear in the top menu and select “Add to Side Bar”.
 This will add this view to the sidebar under the Project Views. By
-default, It will get named according to the view name and <span class="emphasis"><em>/</em></span> will be
-treated as a space. For example, <span class="emphasis"><em>app/chart</em></span> will be named <span class="emphasis"><em>App Chart</em></span>.
+default, It will get named according to the view name and “/” will be
+treated as a space. For example, “app/chart” will be named “App Chart”.
 You can always rename these views in the sidebar by right clicking on
 them and selecting “Edit Side Bar”. Now select the view you want to edit
 and change the Title field.</p><p><span class="strong"><strong>Creating URLs</strong></span></p><p>When you startup tactic and go to the main project URL
-(/tactic/&lt;project_code&gt;), you are presented with the tactic homepage of
+(…/tactic/&lt;project_name&gt;), you are presented with the tactic homepage of
 the project. That tactic homepage URL can be changed to show one of your
 created views. To do this, open up your view in the custom layout
-editor, then from the gear menu select <span class="emphasis"><em>Set as Project Url</em></span>. The current
+editor, then from the gear menu select “Set as Project Url”. The current
 view you have open will be shown when you go the main project URL. You
-can come back to admin side of tactic by adding <span class="emphasis"><em>/admin</em></span> to the URL
-(/tactic/&lt;project_code&gt;/admin).</p><p>You can also turn your view into a custom URL. This means that your view
+can come back to admin side of tactic by adding “/admin” to the URL
+(…/tactic/&lt;project_name&gt;/admin).</p><p>You can also turn your view into a custom URL. This means that your view
 will open when you go to a specific URL. To do this, open your view in
-the custom layout editor, then from the gear menu select <span class="emphasis"><em>Add as Custom
-Url</em></span>. This will open up a dialog box where you can specify what URL
+the custom layout editor, then from the gear menu select “Add as Custom
+Url”. This will open up a dialog box where you can specify what URL
 should open up the view. The URL specified there is showing the URL
-which is appended to (/tactic). You can specify which widget to run in
+which is appended to (…/tactic). You can specify which widget to run in
 the URL in the widget field. By default, it shows the widget code for
 the view that was open in the custom layout editor. You can check all
-your custom URLs by going to the gear menu and selecting <span class="emphasis"><em>Show Custom
-URLs</em></span>. This will show all the existing custom URLs. This is where you
+your custom URLs by going to the gear menu and selecting “Show Custom
+URLs”. This will show all the existing custom URLs. This is where you
 can delete existing custom URLs.</p><p><span class="strong"><strong>Creating Forms</strong></span></p><p>Forms provide an interface for updating TACTIC data. The Custom Layout
 Editor makes the creation of forms easy with built-in widgets and
 functions.</p><p>TACTIC already has some predefined input widgets that can be used as
@@ -213,7 +207,9 @@ behavior for saving the form.</p><pre class="screen">HTML: &lt;div class='spt_fo
 
 JavaScript:
 
-&lt;behavior class="spt_save_button" event="click"&gt; {
+&lt;behavior class="spt_save_button&gt; {
+"type": "click",
+"cbjs_action": '''
   //gets the parent of the behavior source element
   var top = bvr.src_el.getParent('.spt_form');
 
@@ -227,7 +223,7 @@ JavaScript:
   }
 
   search_key = values.spt_search_key;
-  server.update(search_key, data)
+  server.update(search_key, data) '''
 }</pre><p><span class="strong"><strong>Testing Interface</strong></span></p><p>You can customize your views to behave during a testing phase. To do
 this, you can add a condition in your code to check whether the code is
 being run in testing mode. You can use the following condition in the

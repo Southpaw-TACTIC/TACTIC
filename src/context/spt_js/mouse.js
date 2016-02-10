@@ -500,6 +500,19 @@ spt.mouse._CB_drag_setup = function( evt )
     mouse_411.dy = 0;
 
 
+    /*
+    if( spt.browser.is_touch_device() ) {
+        spt.touch_ui.drag.current_drag_bvr = bvr;
+        spt.touch_ui.drag.info = {
+            'mouse_411': mouse_411
+        };
+        spt.app_busy.show( "Drag action on Touch Device ...",
+                           "<br/>Please tap on the destination for this drag action",
+                           {'use_for_touch_drag': true} );
+        return;
+    }
+    */
+
     // set up tracking information for the current, in-progress drag behavior ...
     spt.mouse._current_drag.bvr = bvr;
     spt.mouse._current_drag.dragging = true;
@@ -1054,7 +1067,25 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     var pad_right = parseInt(el_to_copy.getStyle("padding-right"));
     var pad_top = parseInt(el_to_copy.getStyle("padding-top"));
     var pad_bottom = parseInt(el_to_copy.getStyle("padding-bottom"));
+    /*
+    var drag_copy = $(document.createElement('div'));
 
+    var w = el_to_copy.clientWidth;     // clientWidth/Height work due to no padding used!
+    var h = el_to_copy.clientHeight;
+
+    w = w - pad_left - pad_right;
+
+    drag_copy.setStyle( 'width', w );
+    drag_copy.setStyle( 'min-width', w );
+
+
+    h = h - pad_top - pad_bottom;
+
+    drag_copy.setStyle( 'height', h );
+    drag_copy.setStyle( 'min-height', h );
+
+    //drag_copy.innerHTML = el_to_copy.innerHTML;
+    */
     var copy = spt.behavior.duplicate_element(el_to_copy);
     
     //copy.inject(drag_copy, "bottom");
@@ -1065,15 +1096,14 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     spt.css.copy_styles( el_to_copy, copy, override_styles );
 
     // apply any extra styles (extra_styling is a CSS string) ...
-    if (extra_styling) {
-        var style_map = spt.get_style_map_from_str( extra_styling );
+    /* this creates drawing artifacts sometimes like a blank square
+    var style_map = spt.get_style_map_from_str( extra_styling );
 
-        for( var style in style_map ) {
-            if( ! style_map.hasOwnProperty(style) ) { continue; }
-            copy.setStyle( style, style_map[style] );
-        }
+    for( var style in style_map ) {
+        if( ! style_map.hasOwnProperty(style) ) { continue; }
+        copy.setStyle( style, style_map[style] );
     }
-
+    */
     copy.setStyle( "position", "absolute" );
     spt.show_block( copy );
 

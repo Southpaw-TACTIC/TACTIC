@@ -14,7 +14,6 @@
 __all__ = ["ThumbWdg", "ThumbCmd", "FileInfoWdg"]
 
 import re, time, types, string, os
-import urllib
 
 from pyasm.common import Xml, Container, Environment, Config
 from pyasm.search import Search, SearchException, SearchKey, SqlException, DbContainer
@@ -174,33 +173,26 @@ class ThumbWdg(BaseTableElementWdg):
             'use_delta': 'true',
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
-            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; max-width: 250px; background: %s' % (layout.get_color("border"), layout.get_color("background")),
+            #'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+             # don't use cbjs_pre_motion_setup as it assumes the drag el
+                                
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background")),
+            'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
 
-            'cbjs_setup': '''
-                if(spt.drop) {
-                    spt.drop.sobject_drop_setup( evt, bvr );
-                }
-            ''',
-            "cbjs_motion": '''
-                spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
-                var target_el = spt.get_event_target(evt);
-                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
-                if (target_el) {
-                    var orig_border_color = target_el.getStyle('border-color');
-                    var orig_border_style = target_el.getStyle('border-style');
-                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
-                    if (!target_el.getAttribute('orig_border_color')) {
-                        target_el.setAttribute('orig_border_color', orig_border_color);
-                        target_el.setAttribute('orig_border_style', orig_border_style);
-                    }
-                }
-            ''',
-            "cbjs_action": '''
-                if (spt.drop) {
-                    spt.drop.sobject_drop_action(evt, bvr);
-                }
+            "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                            var target_el = spt.get_event_target(evt);
+                            target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                            if (target_el) {
+                                var orig_border_color = target_el.getStyle('border-color');
+                                var orig_border_style = target_el.getStyle('border-style');
+                                target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                                if (!target_el.getAttribute('orig_border_color')) {
+                                    target_el.setAttribute('orig_border_color', orig_border_color);
+                                    target_el.setAttribute('orig_border_style', orig_border_style);
+                                }
+                            }''',
 
-            '''
+            "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
         } )
 
 
@@ -508,10 +500,10 @@ class ThumbWdg(BaseTableElementWdg):
         if not my.icon_size:
             my.icon_size = 120
 
-        unit = None
-        icon_size = my.icon_size
-        if isinstance(my.icon_size, basestring):
-            icon_size, unit = my.split_icon_size(my.icon_size)
+        if type(my.icon_size) in types.StringTypes and my.icon_size.endswith("%"):
+            return my.icon_size
+
+        icon_size = int(my.icon_size)
 
         icon_mult = PrefSetting.get_value_by_key("thumb_multiplier")
         if not icon_mult:
@@ -520,18 +512,15 @@ class ThumbWdg(BaseTableElementWdg):
             icon_mult = float(icon_mult)
 
         if not icon_size:
-            size = float(ICON_SIZE * icon_mult)
+            size = int(ICON_SIZE * icon_mult)
         else:
-            size = float(icon_size * icon_mult)
+            size = int(icon_size * icon_mult)
 
         # cap the size to 15
         if size < 15:
             size = 15
-            
-        if unit:
-            size = '%s%s' %(icon_size, unit)
-        return size
 
+        return size
 
     def set_aspect(my, aspect):
         my.aspect = aspect
@@ -616,14 +605,11 @@ class ThumbWdg(BaseTableElementWdg):
         if detail != 'false':
             my.add_icon_behavior(div, sobject)
 
-        unit = None
-        if isinstance(icon_size, basestring):
-            icon_size, unit = my.split_icon_size(icon_size)
-
+        if type(icon_size) == types.StringType and icon_size.endswith("%"):
             img.add_style("%s: 100%%" % my.aspect )
         else:
-            img.add_style("%s: %s" % (my.aspect, my.get_icon_size()) )
-            img.add_style("min-%s: 15px" % my.aspect)
+            img.add_style("%s: %spx" % (my.aspect, my.get_icon_size()) )
+        img.add_style("min-%s: 15px" % my.aspect)
 
         return div
 
@@ -636,6 +622,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
     def get_display(my):
+
         my.aspect = my.get_option('aspect')
         if not my.aspect:
             my.aspect = "width"
@@ -786,13 +773,8 @@ class ThumbWdg(BaseTableElementWdg):
         else:
             file_objects = my.file_objects
 
-        protocol = my.get_option("protocol")
-        if not protocol:
-            from pyasm.prod.biz import ProdSetting
-            protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
-
         # go through the nodes and try to find appropriate paths
-        my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless, protocol=protocol) 
+        my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless) 
         # find the link that will be used when clicking on the icon
         link_path = ThumbWdg.get_link_path(my.info, image_link_order=my.image_link_order)
 
@@ -810,26 +792,14 @@ class ThumbWdg(BaseTableElementWdg):
                 
             for file_object in snapshot_file_objects:
                 file_objects[file_object.get_code()] = file_object
-            my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless, protocol=protocol) 
+            my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless) 
             link_path = ThumbWdg.get_link_path(my.info, image_link_order=my.image_link_order)
-            
+          
         # define a div
         div = my.top
         div.add_class("spt_thumb_top")
-        div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
-        if sobject.get_value("_is_collection", no_exception=True):
-            expr = "@COUNT(jobs/media_in_media)"
-            num_items = Search.eval(expr, sobject)
-            if not num_items:
-                num_items = "0"
-            num_div = DivWdg(num_items)
-            num_div.add_class("badge")
-            num_div.add_style("font-size: 0.8em")
-            num_div.add_style("margin: 2px")
-            num_div.add_style("position: absolute")
-            div.add(num_div)
-             
+        div.force_default_context_menu()
  
       
         # if no link path is found, display the no icon image
@@ -858,13 +828,11 @@ class ThumbWdg(BaseTableElementWdg):
 
         if my.icon_type == 'default':
             # Fix Template icon_size=100% icon_type always load web versions
-            
-            if isinstance(icon_size, basestring):
-                icon_size, unit = my.split_icon_size(icon_size)
-
-            icon_size_check = float(icon_size)
- 
-    
+            if type(icon_size) == types.StringType and icon_size.endswith("%"):
+                icon_size_check = int(icon_size[0:-1])
+            else:
+                icon_size_check = icon_size
+	
             if icon_size_check > 120:
                 icon_type = 'web'
             else:
@@ -900,6 +868,7 @@ class ThumbWdg(BaseTableElementWdg):
                 icon_link = icon_link.replace("indicator_snake.gif", "generic_image.png")
 
 
+ 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         div.add_style( "display: block" )
         div.add_style("margin: 5px")
@@ -927,18 +896,21 @@ class ThumbWdg(BaseTableElementWdg):
         # TODO: make this a preference
         img.add_style("background: #ccc")
 
-        if isinstance(icon_size, basestring):
-            icon_size, unit = my.split_icon_size(icon_size)
-            img.add_style("%s: 100%%" % my.aspect)
+        if type(icon_size) == types.StringType and icon_size.endswith("%"):
+	    img.add_style("%s: 100%%" % my.aspect)
         else:
-            img.add_style("%s: %s" % (my.aspect, icon_size) )
+	    img.add_style("%s: %spx" % (my.aspect, icon_size) )
 
 
         detail = my.get_option("detail")
+        protocol = my.get_option("protocol")
+        if not protocol:
+            from pyasm.prod.biz import ProdSetting
+            protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
 
-        #deals with the icon attributes
         if detail == "false":
             if my.has_img_link:
+
                 if protocol =='file':
                     dir_naming = DirNaming()
                     client_base_dir = dir_naming.get_base_dir('client_repo')
@@ -953,6 +925,7 @@ class ThumbWdg(BaseTableElementWdg):
                 
                 else: # protocol not set or equals 'http'
                     is_dir = True
+
                     # add a file browser for directories
                     if repo_path and os.path.isdir(repo_path):
                         img.add_behavior( {
@@ -1014,9 +987,7 @@ class ThumbWdg(BaseTableElementWdg):
         if my.show_file_type:
             links_list = ThumbWdg.get_file_info_list(xml, file_objects, sobject, snapshot, my.show_versionless)
             my.set_type_link(div, links_list) 
-
-
-
+             
         return div
 
 
@@ -1153,25 +1124,24 @@ class ThumbWdg(BaseTableElementWdg):
         icon_link = None
         if my.info.has_key(icon_type):
             icon_link = my.info[icon_type]
+
             if not os.path.exists(repo_path):
                 icon_link = ThumbWdg.get_no_image()
                 icon_info['icon_missing'] = True
 
             # HACK for pdf icons
             if image_link.endswith(".pdf"):
-                #check if icon_size is a string: integer num endswith unit
-
-                if isinstance(icon_size, basestring):
-                    icon_size, unit = my.split_icon_size(icon_size)
+                if icon_size.endswith("%"):
+                    icon_size = float(icon_size[0:-1])
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
-                    icon_size = '%s%s' %(icon_size, unit)
-                        
+                    icon_size = '%s%%' %icon_size
                 else:
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
             
         else:
             icon_link = ThumbWdg.find_icon_link(image_link, repo_path)
             #icon_size = int( 60.0 / 120.0 * float(icon_size) )
+
         icon_info['icon_size'] = icon_size
         icon_info['icon_link'] = icon_link
 
@@ -1265,7 +1235,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
 
-    def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False, protocol='http'):
+    def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False):
         info = {}
         #TODO: {'file_type': [file_type]: [path], 'base_type': [base_type]: [file|directory|sequence]}
 
@@ -1304,9 +1274,6 @@ class ThumbWdg(BaseTableElementWdg):
                     file_name = file_names[0]
             path = "%s/%s" % (web_dir, file_name)
 
-            if protocol != "file":
-                path = urllib.pathname2url(path)
-
             if isinstance(info, dict):
                 info[type] = path
                 lib_dir = sobject.get_lib_dir(snapshot, file_object=file_object)
@@ -1340,17 +1307,6 @@ class ThumbWdg(BaseTableElementWdg):
         return info
 
     get_file_info_list = staticmethod(get_file_info_list)
-
-
-
-    def split_icon_size(my, icon_size):
-        m = re.match('(\d+\.?\d*)(pt|em|%|px)*', icon_size)
-        num = 0
-        unit = ''
-        if m:
-            num, unit = m.groups()
-            icon_size = float(num)
-        return icon_size, unit
 
 
 
@@ -1444,7 +1400,7 @@ class ThumbCmd(Command):
             icon_path = icon_creator.get_icon_path()
             if web_path and icon_path:
                 sub_file_paths = [path, web_path, icon_path]
-                sub_file_types = ['main', 'web', 'icon']
+                sub_file_types = [path, 'web', 'icon']
 
                 from pyasm.checkin import FileCheckin
                 checkin = FileCheckin(sobject, sub_file_paths, sub_file_types, context='icon', mode="copy")
@@ -1488,3 +1444,4 @@ class FileInfoWdg(BaseTableElementWdg):
             html.writeln("%0.10d : %s<br/>" % (int(file_codes[i]), images[i]) )
 
         return html.getvalue()
+

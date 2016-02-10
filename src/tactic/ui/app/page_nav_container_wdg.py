@@ -674,7 +674,6 @@ class MainBodyTabWdg(BaseRefreshWdg):
         config = WidgetConfig.get(view=my.view, xml=config_xml)
 
         top = DivWdg()
-        #tab = TabWdg(width=1000, save_state="admin_tab_state")
         tab = TabWdg(config=config, view=my.view, width=1000)
         top.add(tab)
         for widget in my.widgets:

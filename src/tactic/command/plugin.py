@@ -1072,8 +1072,6 @@ class PluginInstaller(PluginBase):
             cols = ['view','search_type','category','widget_type','login']
         elif base_st == 'config/naming':
             cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
-        elif base_st == 'config/custom_script':
-            cols = ['folder','title']
         elif base_st == 'config/url':
             cols = ['url']
         else:
@@ -1084,9 +1082,6 @@ class PluginInstaller(PluginBase):
             value = sobject.get_value(col)
             if value:
                 search.add_filter(col, value)   
-            else:
-                search.add_filter(col, None)   
-
         unique_sobject = search.get_sobject()
         return unique_sobject
 

@@ -24,11 +24,9 @@ class ProdSetting(SObject):
 
 
     # FIXME: what is this for?
-    """
     def get_app_tabs(my):
         '''This controls what tabs are visible'''
         return ["3D Asset", "Checkin", "Sets", "Anim Loader", "Anim Checkin", "Layer Loader", "Layer Checkin", "Shot"]
-    """
                
 
 
@@ -66,12 +64,9 @@ class ProdSetting(SObject):
 
 
     def get_by_key(cls, key, search_type=None):
-
-        import time
-        start = time.time()
         project = Project.get_project_code() 
         dict_key = '%s:%s' %(key, search_type)
-
+       
         search = Search(cls.SEARCH_TYPE, project_code=project)
         search.add_filter("key", key)
         if search_type:

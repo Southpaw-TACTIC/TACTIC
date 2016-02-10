@@ -36,7 +36,6 @@ var mooOverlay = new Class({
 
 	initialize: function(container, options){
 		this.setOptions(options);
-        
 		this.container = document.id(container);
 
 		this.bound = {
@@ -53,14 +52,9 @@ var mooOverlay = new Class({
 	},
 
 	build: function(){
-      /* tactic */
-      var current = this.container.getElement('.moo_overlay');
-      
-      this.overlay = current ? current : 
-	                new Element('div', {
+	  this.overlay = new Element('div', {
 			id: this.options.id,
 			opacity: 0,
-            class: 'moo_overlay',
 			styles: {
 				position: (Browser.ie6) ? 'absolute' : 'fixed',
 				background: this.options.color,
@@ -68,8 +62,7 @@ var mooOverlay = new Class({
 				top: 0,
 				'z-index': this.options.zIndex
 			}
-		});
-      this.overlay.inject(this.container);
+		}).inject(this.container);
 	  this.tween = new Fx.Tween(this.overlay, {
 			duration: this.options.duration,
 			link: 'cancel',

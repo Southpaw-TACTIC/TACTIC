@@ -117,7 +117,7 @@ class Login(SObject):
 
 
     def remove_all_groups(my, except_list=[]):
-        '''Remove the user from a specfied group. Return a list of skipped login_in_group'''
+        '''removes the user from a specfied group'''
         connectors = LoginInGroup.get_by_login_name(my.get_value("login")) 
         remaining = []
         for login_in_group in connectors:
@@ -173,7 +173,8 @@ class Login(SObject):
             groups.append(default_group)
         """
 
-        access_level = LoginGroup.NONE
+        (NONE, MIN, LOW, MED, HI) = range(5)
+        access_level = NONE
         project_codes = set()
         for group in groups:
             group_access_level = group.get_value("access_level", no_exception=True)
@@ -181,10 +182,19 @@ class Login(SObject):
             if project_code:
                 project_codes.add(project_code)
 
-            group_access_level = LoginGroup.ACCESS_DICT.get(group_access_level)
-            if group_access_level == None:               
-                group_access_level = LoginGroup.LOW
-            
+            if group_access_level == 'high':
+                group_access_level = HI
+            elif group_access_level == 'medium':
+                group_access_level = MED
+            elif group_access_level == 'low':
+                group_access_level = LOW
+            elif group_access_level == 'min':
+                group_access_level = MIN
+            elif group_access_level == 'none':
+                group_access_level = NONE
+            else:
+                group_access_level = LOW
+
             if group_access_level > access_level:
                 access_level = group_access_level
         groups.append(my.get_security_level_group(access_level, project_codes))
@@ -197,11 +207,60 @@ class Login(SObject):
         return "low"
     get_default_security_level = staticmethod(get_default_security_level)
 
-        
+
     def get_security_level_group(access_level, project_codes=[]):
-        
-        xml = LoginGroup.get_default_access_rule(access_level, project_codes, add_root=True)
-        
+        (NONE, MIN, LOW, MED, HI) = range(5)
+        assert access_level in [NONE, MIN, LOW, MED, HI]
+
+        xml = []
+        xml.append('''<rules>''')
+        if access_level == HI:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            else:
+                xml.append('''<rule group="project" code="*" access="allow"/>''')
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+            xml.append('''<rule group="link" element="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
+
+
+        elif access_level == MED:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            else:
+                xml.append('''<rule group="project" code="*" access="allow"/>''')
+
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
+
+
+        elif access_level == LOW:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
+
+        elif access_level == MIN:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
+
+        else: # no security access
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+
+
+        xml.append('''</rules>''')
+        xml = "\n".join(xml)
+
         default_group = SearchType.create("sthpw/login_group")
         default_group.set_value("login_group", "default")
         default_group.set_value("access_rules", xml)
@@ -210,7 +269,7 @@ class Login(SObject):
     get_security_level_group = staticmethod(get_security_level_group)
 
 
-   
+
 
     # static methods
 
@@ -223,7 +282,7 @@ class Login(SObject):
         return  Login.get_by_login(code)
     get_by_code = staticmethod(get_by_code)
     
-    def get_by_login(login_name, namespace=None, use_upn=False):
+    def get_by_login(login_name, namespace=None):
         if not login_name:
             return None
         
@@ -284,19 +343,11 @@ class Login(SObject):
         else:
             search = Search("sthpw/login")
             # make sure it's case insensitive
-            if use_upn:
-                search.add_op("begin")
             if case_insensitive:
-                search.add_op("begin")
                 search.add_regex_filter("login", '^%s'%login_name, op='EQI')
                 search.add_regex_filter("login", '%s$'%login_name, op='EQI')
-                search.add_op("and")
             else:
                 search.add_filter("login", login_name)
-                if use_upn:
-                    search.add_filter("upn", login_name)
-            if use_upn:
-                search.add_op("or")
             
             if namespace:
                 search.add_filter("namespace", namespace)
@@ -365,9 +416,7 @@ class Login(SObject):
 class LoginGroup(Login):
 
     SEARCH_TYPE = "sthpw/login_group"
-    (NONE, MIN, LOW, MED, HI) = range(5)
 
-    ACCESS_DICT = {'high': HI, 'medium': MED, 'low': LOW, 'min': MIN, 'none': NONE}
     
     def get_defaults(my):
         defaults = {}
@@ -533,82 +582,6 @@ class LoginGroup(Login):
         return project_groups
     get_by_project = staticmethod(get_by_project)
 
-    def get_access_level(my):
-        level = my.get_value('access_level')
-        if not level:
-            level = Login.get_default_security_level()
-        level = my.ACCESS_DICT.get(level)
-        return level
-
-
-
-    def get_default_access_rule(access_level, project_codes=[], add_root=True):
-        ''' Get the default xml rule for a paricular access level'''
-        #(NONE, MIN, LOW, MED, HI) = range(5)
-        assert access_level in [LoginGroup.NONE, LoginGroup.MIN, LoginGroup.LOW, LoginGroup.MED, LoginGroup.HI]
-        xml = []
-
-        if add_root:
-            xml.append('''<rules>''')
-
-        xml.append('''<rule group="builtin" default="deny"/>''')
-        xml.append('''<rule category="secure_wdg" default="deny"/>''')
-        xml.append('''<rule category="public_wdg" default="edit"/>''')
-
-        if access_level == LoginGroup.HI:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            else:
-                xml.append('''<rule group="project" code="*" access="allow"/>''')
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-            xml.append('''<rule group="link" element="*" access="allow"/>''')
-            xml.append('''<rule group="gear_menu" submenu="*" label="*" access="allow"/>''') 
-            xml.append('''<rule group="process" process="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
-            xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
-
-
-        elif access_level == LoginGroup.MED:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            else:
-                xml.append('''<rule group="project" code="*" access="allow"/>''')
-
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
-            xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
-
-
-        elif access_level == LoginGroup.LOW:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" access="allow"/>''')
-            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
-
-        elif access_level == LoginGroup.MIN:
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
-
-        else: # no security access
-            if project_codes:
-                for project_code in project_codes:
-                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-
-        if add_root:
-            xml.append('''</rules>''')
-        xml = "\n".join(xml)
-
-        return xml
-    
-    get_default_access_rule = staticmethod(get_default_access_rule)
-
 
 
 
@@ -666,6 +639,9 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
+    def get_max_users(my, site):
+        return
+
 
     # HACK: Some functions to spoof an sobject
     def get_project_code(my):
@@ -689,39 +665,9 @@ class Site(object):
             site = Site.get_site()
             return site
 
-
-    def get_request_path_info(my):
-        from pyasm.web import WebContainer
-        web = WebContainer.get_web()
-        path = web.get_request_path()
-        return my.break_up_request_path(path)
-
-
-
     #
     # Virtual methods
     #
-
-
-    def get_max_users(my, site):
-        return
-
-    def get_authenticate_class(my):
-        return
-
-    def get_site_root(my):
-        return ""
-
-    def break_up_request_path(my, path):
-        return {}
-
-    def register_sites(my, startup, config):
-        return
-    
-    def handle_ticket(my, ticket):
-        return
-
-
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)
@@ -752,14 +698,6 @@ class Site(object):
 
     def get_default_project(cls):
         return
-    get_default_project = classmethod(get_default_project)
-
-
-    def get_login_wdg(cls):
-        from tactic.ui.panel import HashPanelWdg
-        web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
-        return web_wdg
-    get_login_wdg = classmethod(get_login_wdg)
  
 
 
@@ -780,44 +718,18 @@ class Site(object):
 
     def get_site(cls):
         '''Set the global site for this "session"'''
-        sites = Container.get("sites")
-        if sites == None or sites == []:
+        site = Container.get("site")
+        if not site:
             return ""
-        return sites[-1]
+        return site
     get_site = classmethod(get_site)
-
-
-    def get_first_site(cls):
-        '''Get the initial site'''
-        sites = Container.get("sites")
-        if sites == None or sites == []:
-            return ""
-        return sites[0]
-    get_first_site = classmethod(get_first_site)
- 
 
     def set_site(cls, site):
         '''Set the global site for this "session"'''
         if not site:
             return
-        sites = Container.get("sites")
-        if sites == None:
-            sites = []
-            Container.put("sites", sites)
-        sites.append(site)
-
+        Container.put("site", site)
     set_site = classmethod(set_site)
-
-
-    def pop_site(cls):
-        '''Set the global site for this "session"'''
-        sites = Container.get("sites")
-        if sites == None:
-            return ""
-        site = sites.pop()
-    pop_site = classmethod(pop_site)
-
-
 
 
     def get_db_resource(cls, site, database):
@@ -900,7 +812,6 @@ class Ticket(SObject):
             expiry = impl.get_timestamp_now(offset=offset, type=type)
 
         ticket = SearchType.create("sthpw/ticket")
-        ticket.set_auto_code()
         ticket.set_value("ticket", key)
         ticket.set_value("login", login)
         ticket.set_value("timestamp", now, quoted=0)
@@ -1119,6 +1030,7 @@ class Security(Base):
         #my._group_names = my.login_cache.get_attr("%s:group_names" % login)
         my._groups = None
         if my._groups == None:
+            #print "recaching!!!!"
             my._groups = []
             my._group_names = []
             my._find_all_login_groups()
@@ -1146,7 +1058,7 @@ class Security(Base):
             login_name = "admin"
 
         # login must exist in the database
-        my._login = Login.get_by_login(login_name, use_upn=True)
+        my._login = Login.get_by_login(login_name)
         if not my._login:
             raise SecurityException("Security failed: Unrecognized user: '%s'" % login_name)
 
@@ -1171,7 +1083,6 @@ class Security(Base):
             my._login = SearchType.create("sthpw/login")
             my._login.set_value("code", login_name)
             my._login.set_value("login", login_name)
-            my._login.set_value("upn", login_name)
             my._login.set_value("first_name", "Guest")
             my._login.set_value("last_name", "User")
             my._login.set_value("display_name", "Guest")
@@ -1221,10 +1132,9 @@ class Security(Base):
         if key == "":
             return None
 
-
         # set the site if the key has one
-        #site = Site.get().get_by_ticket(key)
-        #Site.get().set_site(site)
+        site = Site.get().get_by_ticket(key)
+        Site.get().set_site(site)
 
         my.add_access_rules_flag = add_access_rules
 
@@ -1240,15 +1150,14 @@ class Security(Base):
 
         # try getting from global cache
         from pyasm.biz import CacheContainer
-        login_word = ticket.get_value("login")
-        
+        login_code = ticket.get_value("login")
         cache = CacheContainer.get("sthpw/login")
         if cache:
-            my._login = cache.get_sobject_by_key("login", login_word)
+            my._login = cache.get_sobject_by_key("login", login_code)
 
         # if it doesn't exist, try the old method
         if not my._login:
-            my._login = Login.get_by_login( login_word, use_upn=True )
+            my._login = Login.get_by_login( ticket.get_value("login") )
 
         if my._login is None:
             return None
@@ -1260,6 +1169,9 @@ class Security(Base):
             return None
 
         my._do_login()
+
+        #print "done: ", time.time() - start
+        #print "--- end security - login_with_ticket"
 
         if my._login.get("login") == "guest":
             access_manager = my.get_access_manager()
@@ -1380,7 +1292,6 @@ class Security(Base):
 
         # admin always uses the standard authenticate class
         auth_class = None
-
         if login_name == 'admin':
             auth_class = "pyasm.security.TacticAuthenticate"
 
@@ -1391,13 +1302,7 @@ class Security(Base):
         if not auth_class:
             auth_class = "pyasm.security.TacticAuthenticate"
 
-        #from security import Site
-        #site_obj = Site.get()
-        #site_auth_class = site_obj.get_authenticate_class()
-        #if site_auth_class:
-        #    auth_class = site_auth_class
 
-        
         # handle the windows domain, manually typed in domain overrides
         if login_name.find('\\') != -1:
             domain, login_name = login_name.split('\\', 1)
@@ -1410,7 +1315,6 @@ class Security(Base):
      
 
         authenticate = Common.create_from_class_path(auth_class)
-        
         is_authenticated = authenticate.verify(auth_login_name, password)
         if is_authenticated != True:
             raise SecurityException("Login/Password combination incorrect")
@@ -1430,11 +1334,9 @@ class Security(Base):
         # database.
         if mode == 'autocreate':
             # get the login from the authentication class
-            my._login = Login.get_by_login(login_name, use_upn=True)
+            my._login = Login.get_by_login(login_name)
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
-                if SearchType.column_exists('sthpw/login','upn'):
-                    my._login.set_value('upn', login_name)
                 my._login.set_value('login', login_name)
                 authenticate.add_user_info( my._login, password)
  
@@ -1444,11 +1346,9 @@ class Security(Base):
         # this is called
         elif mode == 'cache':
             # get the login from the authentication class
-            my._login = Login.get_by_login(login_name, use_upn=True)
+            my._login = Login.get_by_login(login_name)
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
-                if SearchType.column_exists('sthpw/login','upn'):
-                    my._login.set_value('upn', login_name)
                 my._login.set_value('login', login_name)
 
             try:
@@ -1467,7 +1367,7 @@ class Security(Base):
 
         else:
             # get the login from database and don't bother updating
-            my._login = Login.get_by_login(login_name, use_upn=True)
+            my._login = Login.get_by_login(login_name)
 
 
 
@@ -1513,7 +1413,7 @@ class Security(Base):
         '''
 
         # check to see if this user exists
-        test_login = Login.get_by_login(login_name, use_upn=True)
+        test_login = Login.get_by_login(login_name)
         if test_login:
             autocreate = False
         else:
@@ -1530,7 +1430,7 @@ class Security(Base):
             auth_class = "pyasm.security.TacticAuthenticate"
 
         # get once again (why??)
-        my._login = Login.get_by_login(login_name, use_upn=True)
+        my._login = Login.get_by_login(login_name)
 
         if not my._login:
             if autocreate:

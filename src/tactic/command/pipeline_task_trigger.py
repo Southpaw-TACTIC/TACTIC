@@ -17,12 +17,9 @@ from pyasm.common import Common, Xml, jsonloads, Container
 from pyasm.biz import Task
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
-from pyasm.security import Sudo
 
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
-
-from tactic.command import PythonTrigger
 
 class PipelineTaskStatusTrigger(Trigger):
     # if the "ingest" task is set to "Approved",
@@ -39,6 +36,7 @@ class PipelineTaskStatusTrigger(Trigger):
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         data = jsonloads(data)
+        print "trigger data: ", data, type(data)
 
         data_list = data
         if isinstance(data, dict):
@@ -67,6 +65,7 @@ class PipelineTaskStatusTrigger(Trigger):
             if src_task.get_value("process") != data.get("src_process"):
                 continue
 
+
             #conditionx = "@GET(.status) != 'Approved'"
             #result = Search.eval(conditionx, src_task)
             #print "result: ", result
@@ -82,17 +81,6 @@ class PipelineTaskStatusTrigger(Trigger):
             if src_status and src_task.get_value("status") != src_status:
                 continue
 
-            # Execute script if necessary 
-            script_path = trigger_sobj.get_value("script_path")
-            if script_path:
-                cmd = PythonTrigger(script_path=script_path)
-                cmd.set_input(my.input)
-                cmd.set_output(my.input)
-                cmd.execute()
-                continue
-
-            # If no script was execute, then assume other task
-            # statuses should be updated.
             dst_process = data.get("dst_process")
             dst_status = data.get("dst_status")
 
@@ -131,6 +119,7 @@ class PipelineTaskStatusTrigger(Trigger):
                 for task in tasks:
                     if task.get_value("process") == dst_process:
                         updated_tasks.append(task)
+
 
 
             for task in updated_tasks:
@@ -332,8 +321,6 @@ class RelatedTaskUpdateTrigger(Trigger):
     the same context'''
     def execute(my):
 
-        sudo = Sudo()
-
         input = my.get_input()
         search_key = input.get("search_key")
         update_data = input.get("update_data")
@@ -377,7 +364,7 @@ class RelatedTaskUpdateTrigger(Trigger):
                 # this should run trigger where applicable
                 task.commit(triggers=True)
 
-        del sudo
+
 
 
 
@@ -451,9 +438,14 @@ class TaskCreatorTrigger(Trigger):
         if pipeline.get_value("autocreate_tasks", no_exception=True) not in ['true', True]:
             return
 
+        processes = pipeline.get_process_names()
+        #search = Search("config/process")
+        #search.add_filter("pipeline_code", pipeline_code)
+        #processes = search.get_sobjects()
+
         #import time
         #start = time.time()
-        Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, skip_duplicate=True, mode='standard')
+        Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes, skip_duplicate=True, mode='standard')
 
         #print "intial_tasks ...", search_key, time.time() - start
 

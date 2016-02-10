@@ -363,16 +363,9 @@ class ProjectSelectWdg(BaseRefreshWdg):
         if not WebContainer.get_web().is_IE():
             widget.add_style("float: right")
 
-        from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
-
-        icon = my.kwargs.get("icon")
-        if icon:
-            button = IconButtonWdg(title='Open Project', icon=icon)
-        else:
-            button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
-
-
-
+        from tactic.ui.widget import SingleButtonWdg
+        #button = SingleButtonWdg(title='Open Project', icon=IconWdg.PROJECT, show_arrow=True)
+        button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
         widget.add(button)
 
 
@@ -461,28 +454,23 @@ class ProjectSelectWdg(BaseRefreshWdg):
             web = WebContainer.get_web()
             browser = web.get_browser()
 
-            site_root = web.get_site_root()
-            url = "/%s/%s" % (site_root, project_code)
-
             if browser != 'Qt':
 
                 menu_item.add_behavior( {
                 'type': 'click_up',
                 'project_code': project_code,
-                'url': url,
                 'cbjs_action': '''
-                window.open(bvr.url);
-                '''
+                window.open('/tactic/%s/');
+                ''' % project_code
                 } )
 
             else:
                 menu_item.add_behavior( {
                 'project_code': project_code,
-                'url': url,
                 'cbjs_action': '''
                 spt.app_busy.show("Jumping to Project ["+bvr.project_code+"]", "");
-                document.location = bvr.url;
-                '''
+                document.location = '/tactic/%s/';
+                ''' % project_code
                 } )
 
             menu.add(menu_item)
@@ -508,7 +496,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 category_projects.append(project)
 
             if category_projects:
-                suffix = Common.clean_filesystem_name(category)
+                suffix = Common.get_filesystem_name(category)
                 label = "%s (%s)" % (category, len(category_projects))
                 menu_item = MenuItem(type='submenu', label=label)
                 menu_item.set_submenu_tag_suffix(suffix)
@@ -629,7 +617,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 800px")
+        inner.add_style("width: 700px")
         inner.add_style("float: center")
         inner.add_border()
         inner.center()
@@ -844,7 +832,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
             var kwargs = {
                 ticket: ticket,
                 filename: filename
-            };
+            }
             try {
                 var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
                 var info = ret_val.info;
@@ -1334,28 +1322,18 @@ class ProjectCreateWdg(BaseRefreshWdg):
             }
             spt.api.Utility.clear_inputs(top);
 
-            var env = spt.Environment.get();
-            var site = env.get_site();
-            if (site) {
-                site = site + "/";
-            }
-            else {
-                site = "";
-            }
-
-
             // show feedback at the end
             var jump = values['jump_project'][0];
             if (jump == 'project' || jump == 'admin') {
                 var location;
                 if (jump == 'admin') {
-                    location = "/tactic/" + site + project_code + "/admin";
+                    location = "/tactic/" + project_code + "/admin";
                 }
                 else if (project_theme) {
-                    location = "/tactic/" + site + project_code + "/";
+                    location = "/tactic/" + project_code + "/";
                 }
                 else {
-                    location = "/tactic/" + site + project_code + "/admin/link/_startup";
+                    location = "/tactic/" + project_code + "/admin/link/_startup";
                 }
                 setTimeout( function() {
                     document.location = location;

@@ -33,7 +33,7 @@
 </table>
 
 <!-- view for users to edit their preference -->
-<user edit='false'>
+<user>
     <element name="title"/>
     <element name="description" edit="false">
         <display class="tactic.ui.table.PreferenceDescriptionWdg"/>

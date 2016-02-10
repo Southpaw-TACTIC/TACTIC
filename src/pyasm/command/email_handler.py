@@ -138,11 +138,9 @@ class EmailHandler(object):
             if id_col:
                 del prev_data.data[id_col]
 
-            prev_dict = my.input.get("prev_data")
-            if prev_dict:
-                for name, value in prev_dict.items():
-                    if value != None:
-                        prev_data.set_value(name, value)
+            for name, value in my.input.get("prev_data").items():
+                if value != None:
+                    prev_data.set_value(name, value)
 
 
             update_data = SearchType.create("sthpw/virtual")
@@ -151,11 +149,9 @@ class EmailHandler(object):
             if id_col:
                 del update_data.data[id_col]
 
-            update_dict = my.input.get("update_data")
-            if update_dict:
-                for name, value in update_dict.items():
-                    if value != None:
-                        update_data.set_value(name, value)
+            for name, value in my.input.get("update_data").items():
+                if value != None:
+                    update_data.set_value(name, value)
 
 
 

@@ -17,68 +17,9 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-    def upgrade_v4_4_0_v01_006(my):
-
-        if my.get_database_type() == 'MySQL':
-            my.run_sql('''
-            ALTER table "file" MODIFY "code" varchar(256) NULL;
-            ''')
-        elif my.get_database_type() == 'SQLServer':
-            my.run_sql('''
-            ALTER TABLE "file" alter COLUMN "code" varchar(256) NULL;
-            ''')
-        else:
-            my.run_sql('''
-            ALTER TABLE "file" alter COLUMN "code" DROP not NULL;
-            ''')
-    
-
-    def upgrade_v4_4_0_v01_005(my):
-        my.run_sql(''' 
-
-        INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
-
-        ''')
-
-
-    def upgrade_v4_4_0_v01_004(my):
-        my.run_sql(''' 
-        CREATE TABLE department (
-        id serial PRIMARY KEY,
-        code varchar(256),
-        name varchar(256),
-        login varchar(256),
-        ou text,
-        CONSTRAINT "department_code_idx" UNIQUE (code),
-        CONSTRAINT "department_name_idx" UNIQUE (name)
-        );
-        ''') 
-
-    def upgrade_v4_4_0_v01_003(my):
-        my.run_sql(''' 
-
-        ALTER TABLE login add constraint "login_upn_idx" UNIQUE (upn);
-        ''') 
-    def upgrade_v4_4_0_v01_002(my):
-        my.run_sql(''' 
-        UPDATE login set upn = login where upn is NULL;
-        ''')
-
-    def upgrade_v4_4_0_v01_001(my):
-        my.run_sql(''' 
-        ALTER TABLE "login" ADD "upn" varchar(256) NULL; 
-        ''') 
-        
-    def upgrade_v4_4_0_b01_007(my):
-        my.run_sql(''' 
-        ALTER TABLE "login" ADD "location" text NULL; 
-        ''') 
-
-    def upgrade_v4_4_0_a01_006(my):
-        my.run_sql('''
-        ALTER TABLE pipeline ADD COLUMN "parent_process" varchar(256);
-        ''')
-
+    #
+    # 4.4.0.a01
+    #
 
     def upgrade_v4_4_0_a01_005(my):
         my.run_sql('''
@@ -144,11 +85,6 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
-    def upgrade_v4_2_0_a01_017(my):
-       my.run_sql(''' 
-        ALTER TABLE "login" ADD "location" text NULL; 
-        ''') 
-
     def upgrade_v4_2_0_a01_016(my):
         my.run_sql('''
         ALTER TABLE login ADD  "login_attempt" INT;
@@ -1825,6 +1761,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         search = Search('sthpw/search_object')
         sobjects = search.get_sobjects()
         for i, sobj in enumerate(sobjects):
+            print i, sobj.get_data().keys()
             table_name = sobj.get_value('table_name')
             if table_name.find('{public}.') != -1:
                 table_name = table_name.replace('{public}.', '')

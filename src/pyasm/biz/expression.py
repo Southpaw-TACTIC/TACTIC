@@ -26,17 +26,6 @@ from pyasm.security import Site
 
 from project import Project
 
-
-
-def get_expression_key():
-    site = Site.get()
-    if site:
-        expression_key = "Expression:keys:%s" % site
-    else:
-        expression_key = "Expression:keys"
-    return expression_key
-
-
 class ParserException(TacticException):
     pass
 
@@ -46,6 +35,7 @@ class ParserException(TacticException):
 
 class ExpressionParser(object):
         
+    EXPRESSION_KEY = "Expression:keys"
     def __init__(my):
         my.init()
 
@@ -577,7 +567,7 @@ class ExpressionParser(object):
 
 
     def clear_cache():
-        Container.clear_dict(get_expression_key())
+        Container.clear_dict(ExpressionParser.EXPRESSION_KEY)
     clear_cache = staticmethod(clear_cache)
 
 
@@ -1895,7 +1885,7 @@ class MethodMode(ExpressionParser):
             key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
-        results = Container.get_dict(get_expression_key(), key)
+        results = Container.get_dict(my.EXPRESSION_KEY, key)
      
         if results != None:
             return results
@@ -2232,7 +2222,7 @@ class MethodMode(ExpressionParser):
         if is_search:
             return related_search
         #Container.put(key, related_sobjects)
-        Container.put_dict(get_expression_key(), key, related_sobjects)
+        Container.put_dict(my.EXPRESSION_KEY, key, related_sobjects)
 
         return related_sobjects
 

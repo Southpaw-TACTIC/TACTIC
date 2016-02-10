@@ -77,12 +77,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-        title.add_color("background", "background", -5)
-        title.add_style("height: 23px")
-        title.add_style("padding: 10px")
+        title.add_color("background", "background3")
+        title.add_style("height: 20px")
+        title.add_style("padding: 6px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
+        title.add_border()
 
 
         stype_title = search_type_obj.get_value("title")
@@ -246,13 +246,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
         notes_div = DivWdg()
         td.add(notes_div)
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False,\
-            show_note_expand=False, show_task_process=my.show_task_process)
-        
+        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False, show_note_expand=False, show_task_process=my.show_task_process)
         notes_div.add(discussion_wdg)
-        menu = discussion_wdg.get_menu_wdg(notes_div)
-        notes_div.add(menu)
-
         notes_div.add_style("min-width: 300px")
         notes_div.add_style("height: 200")
         notes_div.add_style("overflow-y: auto")
@@ -312,7 +307,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #menu = my.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
         tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=5 )
-        tab.add_style("margin: 0px -2px -2px -1px")
+        tab.add_style("margin: 0px -2px -2px -2px")
         td.add(tab)
         td.add_style("padding-top: 10px")
 
@@ -378,13 +373,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if tabs:
             tabs = tabs.split(",")
         else:
-            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit"]
-
-
-        if my.sobject.get_value("pipeline_code", no_exception=True):
-            tabs.append("pipeline")
-        if my.sobject.get_value("_is_collection", no_exception=True):
-            tabs.append("collection")
+            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit","pipeline"]
 
         for tab in tabs:
 
@@ -393,9 +382,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 <element name="tasks">
                   <display class='tactic.ui.panel.ViewPanelWdg'>
                     <search_type>sthpw/task</search_type>
-                    <view>detail</view>
+                    <view>table</view>
                     <parent_key>%(search_key)s</parent_key>
-                    <order_by>bid_start_date asc</order_by>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
                   </display>
@@ -443,7 +431,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
                     <upload_mode>both</upload_mode>
-                    <expand_mode>plain</expand_mode>
                     <no_results_msg>Drag and drop file here to upload.</no_results_msg>
                   </display>
                 </element>
@@ -501,23 +488,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
                   </display>
                 </element>
                 ''' % values)
-
-
-            elif tab == "collection":
-                config_xml.append('''
-                <element name="collection" title="Collection">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <view>table</view>
-                    <layout>tile</layout>
-                    <show_shelf>false</show_shelf>
-                    <search_key>%(search_key)s</search_key>
-                    <search_type>jobs/media_in_media</search_type>
-                    <element_names>preview,search_code</element_names>
-                  </display>
-                </element>
-                ''' % values)
-
-
 
             elif tab.find("/") != -1:
                 parts = tab.split("/")
@@ -746,7 +716,7 @@ class TaskDetailWdg(SObjectDetailWdg):
         title.add_style("padding: 6px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
+        title.add_border()
 
         code = my.parent.get_value("code", no_exception=True)
         name = my.parent.get_value("name", no_exception=True)
@@ -1029,201 +999,6 @@ class TaskDetailWdg(SObjectDetailWdg):
         return config_xml
 
 
-
-__all__.append("SObjectTaskStatusDetailWdg")
-class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
-
-    def get_display(my):
-        top = my.top
-
-        top.add_class("spt_tasks_status_detail_top")
-
-        search_key = my.kwargs.get("search_key")
-
-        from tactic.ui.table import TaskElementWdg
-        from pyasm.search import Search
-        my.sobject = Search.get_by_search_key(search_key)
-
-
-        if my.sobject.get_base_search_type() == "sthpw/task":
-            my.parent = my.sobject.get_parent()
-        else:
-            my.parent = None
-
-        if my.parent:
-            code = my.parent.get_value("code", no_exception=True)
-            name = my.parent.get_value("name", no_exception=True)
-            search_type_obj = my.parent.get_search_type_obj()
-        else:
-            code = my.sobject.get_value("code", no_exception=True)
-            name = my.sobject.get_value("name", no_exception=True)
-            search_type_obj = my.sobject.get_search_type_obj()
-
-
-
-        title = DivWdg()
-        top.add(title)
-        top.add_style("min-width: 500px")
-
-
-        from tactic.ui.panel import ThumbWdg2
-        from tactic.ui.widget import ActionButtonWdg
-        from tactic.ui.panel import TableLayoutWdg
-
-        search_key = my.sobject.get_search_key()
-
-
-        thumb = ThumbWdg2()
-        title.add(thumb)
-        thumb.set_sobject(my.sobject)
-        thumb.add_style("width: 80px")
-        thumb.add_style("float: left")
-        thumb.add_style("margin: 0px 15px")
-
-
-
-        title.add_color("background", "background", -5)
-        title.add_style("padding: 10px")
-        title.add_style("font-weight: bold")
-        title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
-
-        title.add_style("margin-bottom: 20px")
-
-
-
-        code = my.sobject.get("code")
-        name = my.sobject.get("name")
-        description = my.sobject.get("description")
-
-        info_div = DivWdg()
-        title.add(info_div)
-        info_div.add("%s<br/>" % code)
-        if name != code:
-            info_div.add("%s<br/>" % name)
-        else:
-            info_div.add("<br/>")
-        info_div.add("<span style='font-size: 0.8em'>%s</span><br/>" % description)
-        info_div.add_style("margin-left: 15px")
-
-
-
-
-        shelf_wdg = DivWdg()
-        top.add(shelf_wdg)
-        shelf_wdg.add_style("margin: 10px 0px")
-        """
-        button = ActionButtonWdg(title="Add")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-        """
-        
-        button = ActionButtonWdg(title="Save")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_tasks_status_detail_top");
-            var layout = top.getElement(".spt_layout");
-            spt.table.set_layout(layout);
-            spt.table.save_changes();
-
-            '''
-        } )
- 
-        button = ActionButtonWdg(title="Details")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-        button.add_behavior( {
-            'type': 'click_up',
-            'search_key': search_key,
-            'cbjs_action': '''
-            spt.tab.set_main_body_tab();
-
-            var class_name = 'tactic.ui.tools.SObjectDetailWdg';
-            var kwargs = {
-                search_key: bvr.search_key
-            }
-
-            var server = TacticServerStub.get();
-            var sobject = server.get_by_search_key(bvr.search_key);
-            var name = sobject.name;
-            if (!name) {
-                name = sobject.code;
-            }
-
-            var title = "Detail ["+name+"]";
-            spt.tab.add_new(title, title, class_name, kwargs);
-            '''
-        } )
-
-
-
-        # TODO: can't use this for now because the action class is not passed through
-        # the table layout to the EditMultipleCmd
-        """
-        config = '''
-        <config>
-        <test>
-        <element name='tasks' title='Tasks'>
-           <display class='tactic.ui.table.TaskElementWdg'>
-            <layout>vertical</layout>
-            <status_color>status</status_color>
-            <show_assigned>true</show_assigned>
-            <show_dates>true</show_dates>
-            <edit>true</edit>
-            <edit_status>true</edit_status>
-            <edit_assigned>true</edit_assigned>
-            <show_filler_tasks>true</show_filler_tasks>
-            <show_task_edit>true</show_task_edit>
-          </display>
-          <action class='tactic.ui.table.TaskElementCbk'/>
-        </element>
-        </test>
-        </config>
-        '''
-
-        from pyasm.common import Xml
-        xml = Xml()
-        xml.read_string(config)
-        """
-
-        element = TableLayoutWdg(
-                search_type=my.sobject.get_base_search_type(),
-                view="test",
-                show_shelf="false",
-                search_key=my.sobject.get_search_key(),
-                element_names=['task_pipeline_vertical'],
-                show_select="false",
-                show_search_limit="false",
-                show_row_highlight="false"
-        )
-        top.add(element)
-
-
-
-
-        """
-        element = TableLayoutWdg(
-                search_type="sthpw/task",
-                show_shelf=False,
-                parent_key=my.sobject.get_search_key(),
-                element_names=['process','description','status','assigned','priority'],
-                show_select=False,
-                init_load_num=-1,
-                show_search_limit=False,
-        )
-        top.add(element)
-        """
-
-
-        return top
-
-
-
-
-
 __all__.append("TaskDetailPipelineWrapperWdg")
 __all__.append("TaskDetailPipelineWdg")
 class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
@@ -1328,18 +1103,9 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
 
         spt.pipeline.set_status_color(bvr.search_key);
-
-        var top = spt.pipeline.top;
-        var text = top.getElement(".spt_pipeline_editor_current2");
         spt.pipeline.load_triggers();
+
         spt.pipeline.fit_to_canvas(bvr.pipeline);
-
-        var server = TacticServerStub.get();
-        var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
-        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
-        text.innerHTML = html;
-
-
 
         '''
         } )
@@ -1480,11 +1246,8 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
 
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=sobject.get_search_key(), process=process, context_hidden=True,\
-            show_note_expand=True)
+        discussion_wdg = DiscussionWdg(search_key=sobject.get_search_key(), process=process, context_hidden=True, show_note_expand=True)
         notes_div.add(discussion_wdg)
-        menu = discussion_wdg.get_menu_wdg(notes_div)
-        notes_div.add(menu)
 
         search = Search('sthpw/snapshot')
         search.add_parent_filter(sobject)
@@ -1520,172 +1283,6 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
 
         return top
-
-
-
-__all__.append("TaskDetailPanelWdg")
-class TaskDetailPanelWdg(BaseRefreshWdg):
-
-    def get_display(my):
-        top = my.top
-
-        top.add_class("spt_tasks_status_detail_top")
-
-        search_key = my.kwargs.get("search_key")
-
-        from tactic.ui.table import TaskElementWdg
-        from pyasm.search import Search
-        my.sobject = Search.get_by_search_key(search_key)
-
-
-        if my.sobject.get_base_search_type() == "sthpw/task":
-            my.parent = my.sobject.get_parent()
-        else:
-            my.parent = None
-
-        if my.parent:
-            code = my.parent.get_value("code", no_exception=True)
-            search_type_obj = my.parent.get_search_type_obj()
-        else:
-            code = my.sobject.get_value("code", no_exception=True)
-            search_type_obj = my.sobject.get_search_type_obj()
-
-
-
-        title = DivWdg()
-        top.add(title)
-        top.add_style("min-width: 500px")
-
-
-        from tactic.ui.panel import ThumbWdg2
-        from tactic.ui.widget import ActionButtonWdg
-        from tactic.ui.panel import TableLayoutWdg
-
-        search_key = my.sobject.get_search_key()
-
-
-        thumb = ThumbWdg2()
-        title.add(thumb)
-        if my.parent:
-            thumb.set_sobject(my.parent)
-        else:
-            thumb.set_sobject(my.sobject)
-        thumb.add_style("width: 80px")
-        thumb.add_style("float: left")
-        thumb.add_style("margin: 0px 15px")
-
-
-
-        title.add_color("background", "background", -5)
-        title.add_style("padding: 10px")
-        title.add_style("font-weight: bold")
-        title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
-
-        title.add_style("margin-bottom: 20px")
-
-
-
-        code = my.sobject.get("code")
-        description = my.sobject.get("description")
-
-        info_div = DivWdg()
-        title.add(info_div)
-        info_div.add("%s<br/>" % code)
-        info_div.add("<br/>")
-        info_div.add("<span style='font-size: 0.8em'>%s</span><br/>" % description)
-        info_div.add_style("margin-left: 15px")
-
-
-        shelf_wdg = DivWdg()
-        top.add(shelf_wdg)
-        shelf_wdg.add_style("margin-bottom: 10px")
-        shelf_wdg.add_style("text-align: center")
-
-        
-        button = ActionButtonWdg(title="Save")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_tasks_status_detail_top");
-            var layout = top.getElement(".spt_layout");
-            spt.table.set_layout(layout);
-            spt.table.save_changes();
-
-            '''
-        } )
-        button.add_style("display: inline-block")
- 
-
-
-        button = ActionButtonWdg(title="Submit")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-
-
-        button = ActionButtonWdg(title="Check-in")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-
-
-        button = ActionButtonWdg(title="Download")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-
-        button = ActionButtonWdg(title="Detail")
-        shelf_wdg.add(button)
-        button.add_style("display: inline-block")
-
-
-
-        from tactic.ui.panel import EditWdg
-
-        element = EditWdg(
-                search_type=my.sobject.get_base_search_type(),
-                search_key=my.sobject.get_search_key(),
-                element_names=['status','days_due','priority'],
-                show_header=False,
-                show_action=False
-        )
-        top.add(element)
-
-
-        element = TableLayoutWdg(
-                search_type=my.sobject.get_base_search_type(),
-                view="test",
-                show_shelf="false",
-                search_key=my.sobject.get_search_key(),
-                element_names=['work_hours'],
-                show_select="false",
-                show_search_limit="false",
-                show_row_highlight="false",
-                height="50px",
-        )
-        top.add(element)
-
-
-        element = TableLayoutWdg(
-                search_type=my.sobject.get_base_search_type(),
-                use_parent="true",
-                view="test",
-                show_shelf="false",
-                search_key=my.sobject.get_search_key(),
-                element_names=['notes'],
-                show_select="false",
-                show_search_limit="false",
-                show_row_highlight="false",
-                height="50px",
-        )
-        top.add(element)
-
-
-
-
-        return top
-
-
 
 
 

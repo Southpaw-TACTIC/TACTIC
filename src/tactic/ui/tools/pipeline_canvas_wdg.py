@@ -21,13 +21,13 @@ from pyasm.search import Search, SearchType
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 
-from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 
 class PipelineCanvasWdg(BaseRefreshWdg):
     '''Pipeline Widget'''
 
     def init(my):
+        print my.kwargs
         my.top = DivWdg()
         my.set_as_panel(my.top)
         my.top.add_class("spt_pipeline_top")
@@ -42,60 +42,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
     def get_unique_id(my):
         return my.unique_id
-
-
-    def get_canvas_title(my):
-
-        canvas_title = DivWdg()
-        canvas_title.add_border()
-        canvas_title.add_style("padding: 3px")
-        canvas_title.add_style("position: absolute")
-        canvas_title.add_style("font-weight: bold")
-        canvas_title.add_style("top: 0px")
-        canvas_title.add_style("left: 0px")
-        canvas_title.add_style("z-index: 200")
-
-        canvas_title.add_class("spt_pipeline_editor_current2")
-        canvas_title.add_relay_behavior( {
-            'type': 'mouseup',
-            'bvr_match_class': 'spt_pipeline_link',
-            'cbjs_action': '''
-            spt.pipeline.clear_canvas();
-            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
-            spt.pipeline.import_pipeline(pipeline_code);
-
-            var pipeline_name = bvr.src_el.innerHTML;
-
-            var parent = bvr.src_el.getParent(".spt_pipeline_editor_current2");
-            var els = parent.getElements(".spt_pipeline_link");
-
-            var html = [];
-            for (var i = 0; i < els.length; i++) {
-                html.push(els[i].outerHTML);
-                if (els[i].innerHTML == pipeline_name) {
-                    break;
-                }
-            }
-
-            parent.innerHTML = html.join(" / ");
-            '''
-        } )
-        canvas_title.add_relay_behavior( {
-            'type': 'mouseover',
-            'bvr_match_class': 'spt_pipeline_link',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background", "rgba(0,0,0,0.2)");
-            '''
-        } )
-        canvas_title.add_relay_behavior( {
-            'type': 'mouseout',
-            'bvr_match_class': 'spt_pipeline_link',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background", "");
-            '''
-        } )
-
-        return canvas_title
 
 
     def get_display(my):
@@ -133,15 +79,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             my.filter_node_name = False
             
 
-        top.add_style("position: relative")
-        top.add(my.get_canvas_title())
-
 
         # outer is used to resize canvas
         outer = DivWdg()
 
         top.add(outer);
         outer.add_class("spt_pipeline_resize")
+
         outer.add_class("spt_resizable")
        
 
@@ -152,21 +96,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add_style("width: %s" % my.width)
         outer.add_style("height: %s" % my.height)
 
-        process_menu = my.get_node_context_menu()
-        menus = [process_menu.get_data()]
-
-        # Simple context menu is for renaming and 
-        # deleting approval, action and condition nodes..        
-        simple_menu = my.get_simple_node_context_menu()
-        simple_menus = [simple_menu.get_data()]   
-    
+        menu = my.get_node_context_menu()
+        menus = [menu.get_data()]
         menus_in = {
             'NODE_CTX': menus,
-            'SIMPLE_NODE_CTX': simple_menus 
         }
-
         from tactic.ui.container.smart_menu_wdg import SmartMenu
         SmartMenu.attach_smart_context_menu( outer, menus_in, False )
+
+
 
         # inner is used to scale
         inner = DivWdg()
@@ -210,6 +148,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         
  
       
+        
+       
+        
+        
+
+
+
         #canvas.add_style("width: 100%")
         #canvas.add_style("height: 100%")
 
@@ -231,7 +176,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
-        """
         canvas.add_behavior( {
         "type": 'wheel',
         "cbjs_action": '''
@@ -245,7 +189,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
         '''
         } )
-        """
 
 
  
@@ -267,14 +210,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         } )
 
-        canvas.add_behavior( {
-        "type": 'click_up',
-        "cbjs_action": '''
-        // Add edited flag
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        editor_top.addClass("spt_has_changes");
-        '''
-        }) 
+
 
 
 
@@ -356,13 +292,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node = my.get_node("XXXXX")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
+        #canvas.add(node)
         template_div.add(node)
-
-        node = my.get_node("XXXXX", node_type="manual")
-        node.add_style("left: 0px")
-        node.add_style("top: 0px")
-        template_div.add(node)
-
 
 
         # add folder group node
@@ -372,31 +303,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # add approval node
         approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
-
-        approval = my.get_condition_node("XXXXX")
-        template_div.add(approval)
-
-        action = my.get_node("XXXXX", node_type="action")
-        template_div.add(action)
-
-        heirarchy = my.get_node("XXXXX", node_type="hierarchy")
-        template_div.add(heirarchy)
-
-        dependency = my.get_node("XXXXX", node_type="dependency")
-        template_div.add(dependency)
-
-
-        endpoint = my.get_endpoint_node("XXXXX", node_type="output")
-        template_div.add(endpoint)
-
-        endpoint = my.get_endpoint_node("XXXXX", node_type="input")
-        template_div.add(endpoint)
-
-
-
-        # add custom node
-        custom = my.get_custom_node("custom", "email")
-        template_div.add(custom)
 
 
         # add trigger node
@@ -585,6 +491,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         group_div.add(group_name)
         group_div.add_style("font-weight: bold")
 
+        from tactic.ui.widget import ActionButtonWdg
+        from tactic.ui.widget import IconButtonWdg
         button = IconButtonWdg(title="Create First Node", icon=IconWdg.ADD)
         content_div.add( button )
 
@@ -629,35 +537,20 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return div
 
 
-    def get_node(my, name, node_type="node"):
-
-        node = DivWdg()
+    def get_node(my, name):
 
         width, height = my.get_node_size()
 
-        if node_type == "action":
-            border_radius = 20 
-        elif node_type == "hierarchy":
-            border_radius =  50 
-            width = width
-            height = height + 50
-        elif node_type == "dependency":
-            border_radius =  100 
-            width = width
-            height = height + 25 
-        else:
-            border_radius = 3
-
 
         # add a node
+        node = DivWdg()
         node.add_class("spt_pipeline_node")
-        if node_type !="node":
-            node.add_class("spt_pipeline_%s" % node_type)
-        node.add_attr("spt_node_type", node_type)
 
         node.add_style("color", "#000")
         node.add_style("font-size", "12px")
         node.add_style("position: absolute")
+        node.add_style("width: %spx" % width)
+        node.add_style("height: %spx" % height)
         node.add_style("text-align: center")
         node.add_style("z-index: 100")
 
@@ -765,7 +658,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         # active glow
-        """
         BASE = "/context/themes2/default/pipeline"
         active = DivWdg()
         node.add(active)
@@ -777,9 +669,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         active.add_style("z-index: -200")
         active.add_style("display: none")
 
-        active.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.5)")
-        """
-
 
 
         content = DivWdg()
@@ -789,42 +678,24 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content.add_style("height: %spx" % height)
         content.add_style("border: solid 1px black")
         content.add_style("z-index: 200")
-        content.add_style("overflow: 200")
 
-
-        # parallelogram
-        #content.add_style("-webkit-transform", "skewX(-20deg)")
-        #content.add_style("transform", "skewX(-20deg)")
-
-        if border_radius:
-            content.set_round_corners(border_radius)
 
         extra_wdg = my.get_extra_node_content_wdg()
-        if extra_wdg:
-            content.add(extra_wdg)
+        content.add(extra_wdg)
 
-
-
-        label = Table()
-        label.add_row()
+        label = DivWdg()
         node.add(label)
         label.add_style("position: absolute")
 
         label.add_style("width: %spx" % width)
-        if node_type == "hierarchy":
-            label.add_style("height: %spx" % (height*0.75))
-        else:
-            label.add_style("height: %spx" % height)
+        label.add_style("height: %spx" % height)
 
-        label.add_style("top: 0px")
-        td = label.add_cell(name)
-        td.add_class("spt_label")
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
+        label.add_style("top: %spx" % (height/4+2) )
+        label.add_class("spt_label");
+        label.add(name)
+        label.add_style("vertical-align: middle")
         label.add_style("overflow: hidden")
-
-
-
+        label.add_style("text-align: center")
 
 
         from tactic.ui.input import LookAheadTextInputWdg, TextInputWdg
@@ -839,77 +710,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-
-        if node_type == "hierarchy":
-
-
-            icon_div = DivWdg()
-            node.add(icon_div)
-            icon = IconButtonWdg(name="Expand", icon="BS_ARROW_DOWN")
-            icon_div.add(icon)
-            icon_div.add_style("margin: 0px auto")
-            icon_div.add_style("top: 50px")
-            icon_div.add_style("left: %spx" % (width/2-12))
-            icon_div.add_style("position: absolute")
-            icon_div.add_style("z-index: 300")
-            icon_div.add_style("border: solid 1px transparent")
-            icon_div.add_style("width: 24px");
-            icon_div.add_style("text-align: center");
-
-            icon_div.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var server = TacticServerStub.get();
-
-            var node = bvr.src_el.getParent(".spt_pipeline_node");
-            var node_name = spt.pipeline.get_node_name(node);
-            var pipeline_code = spt.pipeline.get_current_group();
-
-            var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
-            var process = server.eval(expr, {single: true});
-
-            var subpipeline_code = process.subpipeline_code;
-            if (subpipeline_code) {
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
-            }
-            else {
-                var process_code = process.code;
-
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
-            }
-
-            if (!subpipeline) {
-                // create the pipeline
-                var data = {
-                    name: node_name + "_pipeline",
-                    parent_process: process_code
-                }
-                subpipeline = server.insert("sthpw/pipeline", data);
-            }
-
-            var subpipeline_code = subpipeline.code;
-
-            spt.pipeline.clear_canvas();
-            spt.pipeline.import_pipeline(subpipeline_code);
-
-            var top = spt.pipeline.top;
-            var text = top.getElement(".spt_pipeline_editor_current2");
-
-            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
-            text.innerHTML = text.innerHTML + " / " + html;
-
-            evt.stopPropagation();
-            '''
-            } )
-
-
-
-
         # add custom node behaviors
-        node_behaviors = my.get_node_behaviors()
-        for node_behavior in node_behaviors:
+        my.node_behaviors = my.get_node_behaviors()
+        for node_behavior in my.node_behaviors:
             node.add_behavior( node_behavior )
 
+        content.set_round_corners(5)
 
 
         my.add_default_node_behaviors(node, text)
@@ -918,7 +724,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-    def add_nobs(my, node, height, offset=0):
+    def add_nobs(my, node, width, height):
 
         # add nobbies on the node
         left_nob = DivWdg()
@@ -934,7 +740,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         left_nob.add_style("width: 10px")
         left_nob.add_style("height: 10px")
         left_nob.add_style("top: %spx" % (height/2-5))
-        left_nob.add_style("left: %spx" % (-11-offset))
+        left_nob.add_style("left: -11px")
         left_nob.add_style("z-index: 100")
         left_nob.add("")
         
@@ -946,8 +752,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob.add_style("cursor: pointer")
         right_nob.add_style("position: absolute")
         right_nob.add_style("top: 0px")
-        #right_nob.add_style("left: %spx" % (width+1))
-        right_nob.add_style("right: %spx" % (-11-offset))
+        right_nob.add_style("left: %spx" % (width+1))
         right_nob.add_style("z-index: 100")
         right_nob.add_style("width: 12px")
         right_nob.add_style("height: 40px")
@@ -1075,23 +880,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
  
 	 
-        text.add_behavior( {
-            'type': 'keyup',
-            'cbjs_action': '''
-            var key = evt.key;
-            if (key == "enter") {
-                bvr.src_el.blur();
-            }
-            else if (key == "esc") {
-                var node = bvr.src_el.getParent(".spt_pipeline_node");
-                var old_name = node.spt_name;
-                bvr.src_el.value = old_name;
-                bvr.src_el.blur();
-            }
-            '''
-        } )
-
-
 
 
         # When the text is blur, it will accept the value entered
@@ -1115,6 +903,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         // filter the value
         if (bvr.filter_node_name) {
             value = spt.convert_to_alpha_numeric( value );
+            bvr.src_el.value = value;
         }
 
         spt.pipeline.rename_node(node, value);
@@ -1134,13 +923,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # on normal click, select single node if not selected, otherwise
         # select the whole group
         node.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
         if (node.spt_is_selected) {
-            spt.pipeline.unselect_all_nodes();
-            spt.pipeline.select_single_node(node);
+            //spt.pipeline.select_nodes_by_group(node.spt_group);
         }
         else {
             spt.pipeline.select_single_node(node);
@@ -1202,12 +990,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
-    def get_endpoint_node(my, name, node_type ):
+
+
+    def get_approval_node(my, name, process=None):
 
         node = DivWdg()
-        node.add_class("spt_pipeline_%s" % node_type)
+        node.add_class("spt_pipeline_approval")
         node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", node_type)
 
 
         node.add_attr("spt_element_name", name)
@@ -1215,212 +1004,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         node.add_style("z-index", "200");
-        node.add_style("position: absolute")
 
-        node.add_style("width: auto")
-        node.add_style("height: auto")
-
-        width = 30
-        height = 20
-
-
-        my.add_nobs(node, height)
-
-
-        content = DivWdg()
-        node.add(content)
-
-
-        content.add_class("spt_content")
-
-        content.add_style("width: %spx" % width)
-        content.add_style("height: %spx" % height)
-        content.add_style("border: solid 1px black")
-
-        if node_type == "input":
-            content.add_style("border-radius: 0px 15px 15px 0px")
-        else:
-            content.add_style("border-radius: 15px 0px 0px 15px")
-
-
-        label = Table()
-        label.add_row()
-        node.add(label)
-        label.add_style("position: absolute")
-
-        label.add_style("width: %spx" % width)
-        label.add_style("height: %spx" % height)
-
-        label.add_style("top: 0px")
-        td = label.add_cell(name)
-        td.add_class("spt_label")
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
-        label.add_style("overflow: hidden")
-
-        text = TextWdg()
-        node.add(text)
-        text.add_style("position: absolute")
-        text.add_style("display: none")
-        text.add_style("top: %spx" % (height/4+5) )
-        text.add_style("left: 0px")
-        text.add_style("width: 65px")
-        text.set_value(name)
-
-        active = DivWdg()
-        node.add(active)
-        active.add_class("spt_active")
-
-        my.add_default_node_behaviors(node, text)
-
-        return node
-
-
-
-
-
-
-    def get_custom_node(my, name, node_type ):
-
-        node = DivWdg()
-        node.add_class("spt_pipeline_custom")
-        node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "custom")
-
-
-        node.add_attr("spt_element_name", name)
-        node.add_attr("title", name)
-
-
-        node.add_style("z-index", "200");
-        node.add_style("position: absolute")
-
-        node.add_style("width: auto")
-        node.add_style("height: auto")
-
-
-        class NotificationNodeWdg(BaseRefreshWdg):
-            def get_width(my):
-                return 50 
-            def get_height(my):
-                return 50 
-
-            def get_node_behaviors(my):
-                return []
-
-            def get_node_type(my):
-                return "email"
-
-            def get_handler_class(my):
-                return CustomWorkflowHandler
-
-            def get_display(my):
-                top = my.top
-                #top.add_style("width: %s" % my.get_width())
-                #top.add_style("height: %s" % my.get_height())
-                top.add_style("border-radius: 50px")
-                top.add_style("text-align: center")
-
-                icon_div = DivWdg()
-                top.add(icon_div)
-                icon = IconWdg(name="notification", icon="BS_ENVELOPE")
-                icon_div.add(icon)
-                icon_div.add_style("margin: -20px auto 0px auto")
-                return top
-
-        from pyasm.command import BaseProcessTrigger
-        class NotificationNodeHandler(BaseProcessTrigger):
-            def execute(my):
-                pipeline = my.input.get("pipeline")
-                process = my.input.get("process")
-                sobject = my.input.get("sobject")
-
-                # send email
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-
-
-
-        custom_node_wdg = NotificationNodeWdg()
-
-        width = custom_node_wdg.get_width()
-        height = custom_node_wdg.get_height()
-
-
-
-        # add custom node behaviors
-        node_behaviors = custom_node_wdg.get_node_behaviors()
-        for node_behavior in node_behaviors:
-            node.add_behavior( node_behavior )
-
-
-        my.add_nobs(node, height, 5)
-
-
-        node.add(custom_node_wdg)
-        custom_node_wdg.add_class("spt_content")
-
-        custom_node_wdg.add_style("width: %spx" % width)
-        custom_node_wdg.add_style("height: %spx" % height)
-        custom_node_wdg.add_style("border: solid 1px black")
-
-
-        label = Table()
-        label.add_row()
-        node.add(label)
-        label.add_style("position: absolute")
-
-        label.add_style("width: %spx" % width)
-        label.add_style("height: %spx" % height)
-
-        label.add_style("top: 0px")
-        td = label.add_cell(name)
-        td.add_class("spt_label")
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
-        label.add_style("overflow: hidden")
-
-        text = TextWdg()
-        node.add(text)
-        text.add_style("position: absolute")
-        text.add_style("display: none")
-        text.add_style("top: %spx" % (height/4+5) )
-        text.add_style("left: 0px")
-        text.add_style("width: 65px")
-        text.set_value(name)
-
-        active = DivWdg()
-        node.add(active)
-        active.add_class("spt_active")
-
-        my.add_default_node_behaviors(node, text)
-
-        return node
-
-
-
-
-
-
-
-    def get_condition_node(my, name, process=None):
-
-        node = DivWdg()
-        node.add_class("spt_pipeline_condition")
-        node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "condition")
-
-
-        node.add_attr("spt_element_name", name)
-        node.add_attr("title", name)
-
-
-        node.add_style("z-index", "200");
 
         width = 60
         height = 60
@@ -1431,105 +1015,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("width: auto")
         node.add_style("height: auto")
 
-
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
-
-        # add custom node behaviors
-        node_behaviors = my.get_node_behaviors()
-        for node_behavior in node_behaviors:
-            node.add_behavior( node_behavior )
-
-
-        offset = width * 0.12 # size to corner of square
-
-        my.add_nobs(node, height, 5)
-
-
-        content = DivWdg()
-        node.add(content)
-        #content.add_style("overflow: hidden")
-        content.add_class("spt_content")
-        content.add_style("width: %spx" % width)
-        content.add_style("height: %spx" % height)
-        content.add_style("border: solid 1px black")
-
-        content.add_style("transform: rotate(-45deg)")
-
-
-        label = Table()
-        label.add_row()
-        node.add(label)
-        label.add_style("position: absolute")
-
-        label.add_style("width: %spx" % width)
-        label.add_style("height: %spx" % height)
-
-        label.add_style("top: 0px")
-        td = label.add_cell(name)
-        td.add_class("spt_label")
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
-        label.add_style("overflow: hidden")
-
-        text = TextWdg()
-        node.add(text)
-        text.add_style("position: absolute")
-        text.add_style("display: none")
-        text.add_style("top: %spx" % (height/4+5) )
-        text.add_style("left: 0px")
-        text.add_style("width: 65px")
-        text.set_value(name)
-
-        active = DivWdg()
-        node.add(active)
-        active.add_class("spt_active")
-
-        my.add_default_node_behaviors(node, text)
-
-        return node
-
-
-
-
-
-    def get_approval_node(my, name, process=None):
-
-        node = DivWdg()
-        node.add_class("spt_pipeline_approval")
-        node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "approval")
-
-
-        node.add_attr("spt_element_name", name)
-        node.add_attr("title", name)
-
-
-        node.add_style("z-index", "200");
-
-
-        width = 65
-        height = 65
-
-
-        node.add_style("position: absolute")
-
-        node.add_style("width: auto")
-        node.add_style("height: auto")
-
-
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
- 
-        # add custom node behaviors
-        node_behaviors = my.get_node_behaviors()
-        for node_behavior in node_behaviors:
-            node.add_behavior( node_behavior )
-
-
-
-
-        my.add_nobs(node, height)
+        my.add_nobs(node, width, height)
 
 
         content = DivWdg()
@@ -1543,22 +1029,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-
-        label = Table()
-        label.add_row()
+        label = DivWdg()
         node.add(label)
         label.add_style("position: absolute")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
 
-        label.add_style("top: 0px")
-        td = label.add_cell(name)
-        td.add_class("spt_label")
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
+        label.add_style("top: %spx" % (height/4+7) )
+        label.add_class("spt_label");
+        label.add(name)
+        label.add_style("vertical-align: middle")
         label.add_style("overflow: hidden")
-
+        label.add_style("text-align: center")
 
         text = TextWdg()
         node.add(text)
@@ -1606,7 +1089,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-        #my.add_nobs(node, height)
+        #my.add_nobs(node, width, height)
 
         content = DivWdg()
         node.add(content)
@@ -1773,6 +1256,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         """
 
 
+
+
         menu_item = MenuItem(type='action', label='Rename Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1782,6 +1267,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
         menu.add(menu_item)
 
+
+
+
+
+ 
         menu_item = MenuItem(type='action', label='Delete Node')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1807,37 +1297,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return menu
 
 
-    def get_simple_node_context_menu(my):
-
-        menu = Menu(width=180)
-        menu.set_allow_icons(False)
-        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
-
-
-        menu_item = MenuItem(type='title', label='Actions')
-        menu.add(menu_item)
-
-        menu_item = MenuItem(type='action', label='Rename Node')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var node = spt.smenu.get_activator(bvr);
-            spt.pipeline.set_rename_mode(node);
-            '''
-        } )
-        menu.add(menu_item)
-
-        menu_item = MenuItem(type='action', label='Delete Node')
-        menu_item.add_behavior( {
-            'cbjs_action': ''' 
-            var node = spt.smenu.get_activator(bvr);
-            spt.pipeline.init( { src_el: node } );
-            spt.pipeline.remove_node(node);
-            '''
-        } ) 
-        menu.add(menu_item)
-
-        return menu 
-    
 
     def get_onload_js(my):
 
@@ -1897,11 +1356,15 @@ spt.pipeline._init = function() {
     data.paint = paint;
     data.ctx = ctx;
 
-    // FIXME: need this delay because the table seems to resize itself somewhere
-    setTimeout( function() {
-        var size = canvas.getSize()
-        spt.pipeline.set_size(size.x, size.y);
-    }, 500);
+    var size = canvas.getSize()
+    spt.pipeline.set_size(size.x, size.y);
+/*
+    var cookie = new Cookie('pipeline_canvas');
+    var state = JSON.parse( cookie.read() );
+    if (state != null) {
+        spt.pipeline.set_size(state.width, state.height);
+    }
+*/
 }
 
 
@@ -1982,7 +1445,7 @@ spt.pipeline.get_paint = function() {
 // hit test functionality
 spt.pipeline.hit_test_mouse = function(mouse_411) {
     var pos = spt.pipeline.get_mouse_position(mouse_411);
-    return spt.pipeline.hit_test(pos.x-2, pos.y-2, pos.x+2, pos.y+2);
+    return spt.pipeline.hit_test(pos.x-1, pos.y-1, pos.x+1, pos.y+1);
 }
 
 
@@ -2019,10 +1482,10 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
     }
 
     if (width == 0 ) {
-        width = 2;
+        width = 1;
     }
     if (height == 0) {
-        height = 2;
+        height = 1;
     }
 
     
@@ -2051,7 +1514,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
             var blue = pix[j+2];
             if (red != 0 || blue != 0 || green != 0) {
                 spt.pipeline.add_to_selected(connector);
-                connector.set_color("#990");
+                connector.set_color("red");
                 found = true;
                 ctx.clearRect(left,top,width,height);
                 hit_connector = connector;
@@ -2097,7 +1560,6 @@ spt.pipeline.clear_canvas = function() {
     data.groups = {};
 
     // clear the current_pipeline select
-    /*
     var top = spt.pipeline.top.getParent(".spt_pipeline_tool_top");
     var select = top.getElement(".spt_pipeline_editor_current");
     for (var i = select.options.length-1; i >=0; i--) {
@@ -2106,7 +1568,6 @@ spt.pipeline.clear_canvas = function() {
            select.remove(i);
         }
     }
-    */
    
     spt.pipeline.redraw_canvas();
 }
@@ -2236,10 +1697,9 @@ spt.pipeline.clear_selected = function(item) {
 spt.pipeline.select_node = function(node) {
     node.setStyle("z-index", "200");
     node.spt_is_selected = true;
-    //var active = node.getElement(".spt_active");
-    //active.setStyle("display", "");
+    var active = node.getElement(".spt_active");
+    active.setStyle("display", "");
     var content = node.getElement(".spt_content");
-    content.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
     content.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     content.setStyle("opacity", "0.8");
 
@@ -2256,10 +1716,9 @@ spt.pipeline.select_node = function(node) {
 spt.pipeline.unselect_node = function(node) {
     node.setStyle("z-index", "100");
     node.spt_is_selected = false;
-    //var active = node.getElement(".spt_active");
-    //active.setStyle("display", "none");
+    var active = node.getElement(".spt_active");
+    active.setStyle("display", "none");
     var content = node.getElement(".spt_content");
-    content.setStyle("box-shadow", "");
     content.setStyle("border", "solid 1px black");
     content.setStyle("opacity", "1.0");
 }
@@ -2348,13 +1807,6 @@ spt.pipeline.get_node_by_name = function(name) {
 spt.pipeline.get_node_name = function(node) {
     return node.getAttribute("spt_element_name");
 }
-
-
-spt.pipeline.get_node_type = function(node) {
-    return node.getAttribute("spt_node_type");
-}
-
-
 
 spt.pipeline.get_full_node_name = function(node, group_name) {
     name = node.getAttribute("spt_element_name");
@@ -2550,9 +2002,6 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
         node_type = kwargs.node_type;
     }
-    else {
-        kwargs = {};
-    }
 
     if (!node_type) {
         node_type = "node";
@@ -2585,8 +2034,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     var template_class = "spt_pipeline_" + node_type;
     var template = template_container.getElement("."+template_class);
     if (!template) {
-        if (template_class !='spt_pipeline_manual')
-            spt.alert("Can't find template for ["+template_class+"]");
+        alert("Can't find template for ["+template_class+"]");
         return;
     }
 
@@ -2621,15 +2069,14 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     // switch the color
     //var color = group_info.get_color();
     var color = '';
-    /*
     if (node_type == "trigger") {
         color = "#FFF";
     }
     else if (node_type == "approval") {
         color = "#FFF";
     }
-    */
-    if (group_info.get_node_type() == 'process') 
+
+    else if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
     else // for schema {
         color = spt.pipeline.get_group_color(name);
@@ -2651,11 +2098,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         spt.pipeline.select_single_node(new_node);
 
     // fire an event
-    if (kwargs.new != false) {
-        var top = bvr.src_el.getParent(".spt_pipeline_top");
-        var event_name = top.getAttribute("id") + "|node_create";
-        spt.named_events.fire_event(event_name, { src_el: new_node } );
-    }
+    var top = bvr.src_el.getParent(".spt_pipeline_top");
+    var event_name = top.getAttribute("id") + "|node_create";
+    spt.named_events.fire_event(event_name, { src_el: new_node } );
 
     return new_node;
 }
@@ -2756,23 +2201,12 @@ spt.pipeline.set_color = function(node, color) {
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
     var color2 = spt.css.modify_color_value(color, -10);
-    /*
     if( spt.browser.is_Firefox() ) {
         content.setStyle("background", "-moz-linear-gradient(top, "+color1+" 30%, "+color2+" 95%)");
     } 
     else {
         content.setStyle("background", "-webkit-gradient(linear, 0% 0%, 0% 100%, from("+color1+"), to("+color2+"))");
     }
-    */
-
-    if (spt.pipeline.get_node_type(node) == "condition") {
-        angle = 225;
-    } else {
-        angle = 180;
-    }
-
-    content.setStyle("background", "linear-gradient("+angle+"deg, "+color1+", 70%, "+color2+")");
-
     node.spt_color = color;
 }
 
@@ -2799,20 +2233,16 @@ spt.pipeline.rename_node = function(node, value) {
     var input = node.getElement(".spt_input");
     var text = node.getElement(".spt_label");
 
-
-    var old_name = node.spt_name;
-    if (old_name != value) {
-        // see if the name already exists in this group
-        var group_name = spt.pipeline.get_current_group();
-        var group = spt.pipeline.get_group(group_name);
-        var nodes = group.get_nodes();
-        for (var i = 0; i < nodes.length; i++) {
-            var node_name = spt.pipeline.get_node_name(nodes[i]);
-            if (value == node_name) {
-                spt.alert("Name ["+value+"] already exists");
-                input.value = "";
-                return;
-            }
+    // see if the name already exists in this group
+    var group_name = spt.pipeline.get_current_group();
+    var group = spt.pipeline.get_group(group_name);
+    var nodes = group.get_nodes();
+    for (var i = 0; i < nodes.length; i++) {
+        var node_name = spt.pipeline.get_node_name(nodes[i]);
+        if (value == node_name) {
+            spt.alert("Name ["+value+"] already exists");
+            input.value = "";
+            return;
         }
     }
 
@@ -2824,20 +2254,7 @@ spt.pipeline.rename_node = function(node, value) {
     text.innerHTML = value;
     input.value = value;
 
-
-    // fire an event
-    var top = bvr.src_el.getParent(".spt_pipeline_top");
-    var event_name = top.getAttribute("id") + "|node_rename";
-    spt.named_events.fire_event(event_name, {
-        src_el: node,
-        options: {
-            old_name: old_name,
-            name: value,
-        }
-    } );
-
 }
-
 
 
 spt.pipeline.set_rename_mode = function(node) {
@@ -2991,12 +2408,8 @@ spt.pipeline.get_canvas_size = function(node) {
 
 spt.pipeline.get_size = function(node) {
     // find the relative pos on the canvas
-    var node_size = node.getSize();
-    if (node.hasClass(".spt_pipeline_condition")) {
-        node_size.x = node_size.x * 1.12 // distance to corner of square
-    }
-
-    return node_size;
+    var node_pos = node.getSize();
+    return node_pos;
 }
 
 
@@ -3137,7 +2550,6 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
     var node = bvr.drag_el;
     node.removeClass("move");
-    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -3165,13 +2577,14 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
     var node_lastpos;
     
     if (data.line_mode == 'bezier') {
-        node = bvr.src_el.getParent(".spt_pipeline_node");
+        node = bvr.src_el;
         node_pos = spt.pipeline.get_position(node);
         node_lastpos = spt.pipeline.get_el_last_position(node);
-
-        var size = spt.pipeline.get_size(node);
         
-        node_pos = { x: (node_pos.x + size.x), y: (node_pos.y + size.y/2)};
+        node_pos = { x: (node_pos.x), y: (node_pos.y + 20 )};
+        
+        
+        var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
         
     }
     else {
@@ -3179,7 +2592,10 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
         node_pos = spt.pipeline.get_position(node);
         node_pos = { x: (node_pos.x + 50), y: (node_pos.y + 20)};
  
+        var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
+        
     }
+
 
     var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
     
@@ -3205,7 +2621,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     if ( to_node && from_node &&
         spt.pipeline.get_node_name(to_node) == spt.pipeline.get_node_name(from_node) )
     {
-        //spt.alert("Source node and destination node are the same");
+        spt.alert("Source node and destination node are the same");
         return;
     }
 
@@ -3305,19 +2721,6 @@ spt.pipeline.draw_curve = function(start, end) {
     var width = (end.x - start.x)/2;
     ctx.bezierCurveTo(start.x+width, start.y, end.x-width, end.y, end.x, end.y);
 }
-
-
-spt.pipeline.draw_curve_vertical = function(start, end) {
-    var ctx = spt.pipeline.get_ctx();
-    //var width = (end.x - start.x)/2;
-    //ctx.bezierCurveTo(start.x+width, start.y, end.x-width, end.y, end.x, end.y);
-    var height = (end.y - start.y)/2;
-    ctx.bezierCurveTo(start.x, start.y+height, end.x, end.y-height, end.x, end.y);
-}
-
-
-
-
 spt.pipeline.draw_arc = function(start, end, offset) {
     var ctx = spt.pipeline.get_ctx();
     var width = (end.x - start.x)/2;
@@ -3336,16 +2739,10 @@ spt.pipeline.draw_connector = function(start, end, color) {
     if (typeof(color) == 'undefined') {
         color = '#111';
     }
-
-    var back = false;
-    if (start.x - 100 > end.x + 100) {
-        color = "#900";
-        start.x = start.x - 50;
-        var back = true;
-    }
-
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeStyle = color; 
+    //ctx.fillStyle = color;
+    //ctx.textBaseline = 'middle';
     ctx.lineWidth = 1;
 
     ctx.beginPath();
@@ -3356,96 +2753,45 @@ spt.pipeline.draw_connector = function(start, end, color) {
 
     if (start.x > end.x) {
 
-        var offset = {}
-
-        var x_diff = - end.x + start.x;
-        if (x_diff > 50) {
-            x_diff = 50;
-        }
-        offset.x = x_diff/4;
-        
+        var x_arc = 25;
 
         var y_diff = end.y - start.y
-        if (y_diff < 0) {
-            if (y_diff < -50) {
-                y_diff = - 50;
-            }
-        }
-        else {
-            if (y_diff > 50) {
-                y_diff = 50;
-            }
-        }
-        offset.y = y_diff/4;
+        if (y_diff < 0) y_diff = -y_diff
+        var y_arc = 25 + (y_diff - 50)/4;
+        if (y_arc > 50) y_arc = 50;
 
-
-
+        // scale the results
         var scale = spt.pipeline.get_scale();
-        offset.x = offset.x * scale;
-        offset.y = offset.y * scale;
+        x_arc = x_arc * scale;
+        y_arc = y_arc * scale;
 
+        var offset = {x: 0, y: y_arc};
+        if (start.y < end.y) {
+            offset.y = - offset.y;
+        }
 
 
         tmp_start = start;
-        if (back) {
-            tmp_end = start;
-            offset.x = offset.x * 10.0;
-            offset.y = offset.y * 10.0;
-        }
-        else {
-            tmp_end = { x: start.x + offset.x, y: start.y + offset.y };
-            ctx.bezierCurveTo(
-                tmp_start.x + offset.x/2, tmp_start.y,
-                tmp_end.x, tmp_end.y - offset.y,
-                tmp_end.x, tmp_end.y
-            );
-
-        }
+        tmp_end = { x: start.x - offset.x, y: start.y - offset.y };
+        spt.pipeline.draw_arc(tmp_start, tmp_end, x_arc);
 
         tmp_start = tmp_end;
-        if (back) {
-            tmp_end = { x: end.x, y: end.y - offset.y};
-        }
-        else {
-            tmp_end = { x: end.x - offset.x, y: end.y - offset.y};
-        }
-        if (back) {
-            spt.pipeline.draw_curve(tmp_start, tmp_end);
-        }
-        else {
-            spt.pipeline.draw_curve_vertical(tmp_start, tmp_end);
-        }
+        tmp_end = { x: end.x + offset.x, y: end.y + offset.y};
+        spt.pipeline.draw_curve(tmp_start, tmp_end);
 
         // draw the arrow
         var halfway = { x:(tmp_end.x-tmp_start.x)/2+tmp_start.x, y:(tmp_end.y-tmp_start.y)/2+tmp_start.y };
 
         // fudge factor to make angle of arrow look better (rather than finding the
         // the true derivative of a bezier curve (this looks good enough)
-        var ff = 0.5;
+        var ff = 1.5;
         var len = Math.sqrt( (tmp_end.x-tmp_start.x)*(tmp_end.x-tmp_start.x)+(tmp_end.y-tmp_start.y)*(tmp_end.y-tmp_start.y)*ff*ff );
         var point0 = { x: (tmp_end.x-tmp_start.x)/len, y: (tmp_end.y-tmp_start.y)*ff/len };
 
 
         tmp_start = tmp_end;
         tmp_end = end;
-
-
-        if (back) {
-            ctx.bezierCurveTo(
-                tmp_start.x - offset.x, tmp_start.y,
-                tmp_end.x - offset.x, tmp_end.y,
-                tmp_end.x, tmp_end.y
-            );
-        }
-        else {
-            ctx.bezierCurveTo(
-                tmp_start.x, tmp_start.y + offset.y,
-                tmp_end.x - offset.x/2, tmp_end.y,
-                tmp_end.x, tmp_end.y
-            );
-        }
-
-
+        spt.pipeline.draw_arc(tmp_start, tmp_end, -x_arc);
 
         spt.pipeline.draw_arrow(halfway, point0, 8);
 
@@ -3851,7 +3197,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
     }
 
 
-    this.draw_spline = function(show_attr) {
+    this.draw_spline = function() {
         var canvas = spt.pipeline.get_canvas();
         var from_pos = spt.pipeline.get_position(this.from_node);
         var to_pos = spt.pipeline.get_position(this.to_node);
@@ -3860,25 +3206,17 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
+        //var scale = 1;
         var from_width = from_size.x;
         var from_height = from_size.y;
         var to_width = to_size.x;
         var to_height = to_size.y;
 
 
-        // HACKY offset for condition nodes.  This is because rotate square does
-        // not give the widget of the corners
-        if (spt.pipeline.get_node_type(this.from_node) == "condition") {
-            from_pos.x = from_pos.x + from_width*0.12;
-        }
-        if (spt.pipeline.get_node_type(this.to_node) == "condition") {
-            to_pos.x = to_pos.x - to_width*0.12;
-        }
-
-
         // offset by the size
         from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
         to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -3900,28 +3238,6 @@ spt.pipeline.Connector = function(from_node, to_node) {
         }
 
         spt.pipeline.draw_connector(from_pos, to_pos, this.color);
-
-        if (show_attr) {
-            var node = this.from_node;
-            attrs = this.get_attrs();
-            if (attrs) {
-                var scale = spt.pipeline.get_scale();
-
-                var from_attr = attrs['from_attr'] ? attrs['from_attr'] : 'output';
-                var to_attr = attrs['to_attr'] ? attrs['to_attr'] : 'input';
-
-                var from_dx =  5 * scale;
-                var from_dy = -15 * scale;
-                var to_dx = -30 * scale;
-                var to_dy = -15 * scale;
-
-                    
-                spt.pipeline.draw_text(from_attr, from_pos.x + from_dx, from_pos.y + from_dy);
-                spt.pipeline.draw_text(to_attr, to_pos.x + to_dx, to_pos.y + to_dy);
-            }
-        }
-
-
     }
 
 
@@ -4250,8 +3566,6 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     spt.pipeline.redraw_canvas();
-
-    spt.named_events.fire_event('pipeline|save', {});
 }
 
 
@@ -4365,15 +3679,11 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
 
 
         var node_type = xml_nodes[i].getAttribute("type");
-        if (node_type == "auto") {
-            node_type = "action";
-        }
 
         var options = {
             group: group,
             select_node: false,
-            node_type: node_type,
-            new: false,
+            node_type: node_type
         }
 
         // split the name
@@ -4595,7 +3905,7 @@ spt.pipeline.set_task_color = function(group_name) {
 
 // Export group
 spt.pipeline.export_group = function(group_name) {
-    
+
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
 
@@ -4695,20 +4005,14 @@ spt.pipeline.export_group = function(group_name) {
         var pos = spt.pipeline.get_position(node);
         pos = { x: pos.x-left+100, y: pos.y-top+100 };
 
-        console.log(name + ": " + node_type);
-        if (node_type != "node") {
-            xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
-        }
-        else {
-            xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
-        }
+        xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
 
         var properties = node.properties;
         for (var key in properties) {
            
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
+            if (['name','xpos','ypos','names','namedItem','item'].contains(key)) {
                 continue;
             }
             var value = properties[key];

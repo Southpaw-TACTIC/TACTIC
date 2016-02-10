@@ -15,7 +15,6 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 import string, types, re, sys
 import decimal
-import uuid
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -223,8 +222,7 @@ class Search(Base):
         my.select.set_database(my.db_resource)
         my.select.set_id_col(my.get_id_col())
 
-        assert DbResource.is_instance(my.db_resource)
-
+        assert isinstance(my.db_resource, DbResource)
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
@@ -388,7 +386,7 @@ class Search(Base):
 
     def get_regex_filter(name, regex, op='EQI', impl=None):
         if regex:
-            regex = re.sub(r"'", r"''", regex)
+            regex = re.sub(r"'", r"\'", regex)
         else:
             regex = ''
 
@@ -495,12 +493,6 @@ class Search(Base):
         '''add operator like begin, and, or. with an idx number, it will be inserted instead of appended'''
         my.select.add_op(op, idx=idx)
 
-    def is_expr(value):
-        '''return True if it is an expression based on starting chars'''
-        is_expr = re.search("^(@|\$\w|{@|{\$\w)", value)
-        return is_expr
-
-    is_expr = staticmethod(is_expr)
     def add_op_filters(my, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
@@ -526,7 +518,6 @@ class Search(Base):
 
             elif len(filter) == 2:
                 name, value = filter
-               
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
@@ -544,10 +535,8 @@ class Search(Base):
                         my.add_column(filter[1], distinct=True)
 
 
-                elif isinstance(value, basestring):
+                elif type(value) in types.StringTypes:
                     # <name> = '<value>'
-                    if my.is_expr(value):
-                        value = Search.eval(value, single=True)
                     my.add_filter(name, value, table=table)
                     #print 'name: [%s],[%s]' % (name, value)
                 elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
@@ -558,24 +547,15 @@ class Search(Base):
                     my.add_filters(name, value, table=table)
             elif len(filter) == 3:
                 name, op, value = filter
-               
+
                 op = op.replace("lt", "<")
                 op = op.replace("gt", ">")
-                if my.is_expr(value):
-                    value = Search.eval(value, single=True)
-
-
 
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
                     table = parts[0]
                     name = parts[1]
-
-
-                if value.startswith("{") and value.endswith("}"):
-                    value = Search.eval(value, single=True)
-
 
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
@@ -595,7 +575,7 @@ class Search(Base):
                         op = '>='
                     elif op == 'is before':
                         op = '<='
-                    
+
                     quoted = True
                     # special case for NULL
                     if value == 'NULL':
@@ -624,8 +604,7 @@ class Search(Base):
         '''convenience function to add a filter for the given sobject'''
         my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
 
-        if SearchType.column_exists(sobject.get_search_type(), "code") and \
-            SearchType.column_exists(my.get_search_type(), "%ssearch_code" % prefix):
+        if sobject.column_exists("code") and my.column_exists("%ssearch_code" % prefix):
             search_code = sobject.get_value("code")
             if not op:
                 op = '='
@@ -1026,11 +1005,9 @@ class Search(Base):
 
             # see if a multi database join can be made
             can_join = DatabaseImpl.can_search_types_join(full_search_type, full_related_type)
-            
             if can_join and use_multidb != None:
                 can_join = use_multidb
-            if Config.get_value('database','join') == 'false':
-                can_join = False 
+
             if can_join:
                 my.add_op('begin')
                 if my_is_from:
@@ -3302,11 +3279,6 @@ class SObject(object):
         will update the incorrect in the database.'''
         my.new_id = int(value)
 
-    def set_auto_code(my):
-        '''set a unique code automatically for certain internal sTypes'''
-        unique_id = uuid.uuid1()
-        unique_code = '%s_%s'%(my.get_code_key(), unique_id)
-        my.set_value('code', unique_code)
 
     def set_user(my, user=None):
         if user == None:
@@ -3613,20 +3585,18 @@ class SObject(object):
 
             # if this is a timestamp, then add the a time zone.
             # For SQLite, this should always be set to GMT
-            # For Postgres, if there is no time zone, then the value
+            # For Postgres, if there is no timestamp, then the value
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 if value and not SObject.is_day_column(key):
                     info = column_info.get(key)
                     if is_postgres and not info.get("time_zone"):
-                        # if it has no timezone, it assumes it is GMT
                         value = SPTDate.convert_to_local(value)
                     else:
                         value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S %z')
-           
                 changed = True
 
             if changed:
@@ -3805,7 +3775,6 @@ class SObject(object):
                 if log == None:
                     # create a virtual log
                     log = SearchType.create("sthpw/change_timestamp")
-                    log.set_auto_code()
                     log.set_value("search_type", search_type)
                     log.set_value("search_code", search_code)
                     transaction.change_timestamps[key] = log
@@ -3886,8 +3855,7 @@ class SObject(object):
                     'sthpw/sync_log',
                     'sthpw/sync_job',
                     'sthpw/message',
-            # enabled triggers from message_log so that inserts to this table can send out notifications
-            #        'sthpw/message_log',
+                    'sthpw/message_log',
                     'sthpw/change_timestamp',
                     'sthpw/sobject_list',
                     'sthpw/sobject_log'
@@ -4075,58 +4043,22 @@ class SObject(object):
             key = {'event': event}
             Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
-            if parent_type:
-                key = {'event': event}
-                key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
-
-
-
+            key = {'event': event}
             if process:
-                key = {'event': event}
                 key['process'] = process
                 Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
 
-            if process and parent_type:
-                key = {'event': event}
-                key['process'] = process
+            key = {'event': event}
+            if parent_type:
                 key['search_type'] = parent_type
                 Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
-
-            # process can be either the process name or the process code
-            if process and my.get_base_search_type() in [
-                    'sthpw/task',
-                    'sthpw/note',
-                    'sthpw/snapshot',
-                    'sthpw/work_hour'
-            ]:
-                # need to to get the parent
-                parent = my.get_parent()
-                pipeline_code = None
-                if parent:
-                    pipeline_code = parent.get_value("pipeline_code", no_exception=True)
-
-                if pipeline_code:
-                    search = Search("config/process")
-                    search.add_filter("process", process)
-                    search.add_filter("pipeline_code", pipeline_code)
-                    process_sobj = search.get_sobject()
-                    if process_sobj:
-                        process_code = process_sobj.get_code()
-
-                        key = {'event': event}
-                        key['process'] = process_code
-                        Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
-
-                        if parent_type:
-                            key = {'event': event}
-                            key['process'] = process_code
-                            key['search_type'] = parent_type
-                            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
-
-
+            key = {'event': event}
+            if process and parent_type:
+                key['process'] = process
+                key['search_type'] = parent_type
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
 
 
@@ -4177,21 +4109,18 @@ class SObject(object):
             if related_type == "*":
                 continue
 
-            print "Preparing to update [%s]" % related_type
+            print "Updating [%s] ... (not yet!!!)" % related_type
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
-
             if relationship == 'code':
-                # attrs is a dictionary of the relationship details between the two
-                # schema tables. We need to check if the related_type is the parent or the
-                # child. Depending on which, we then check if the connected column is 
-                # != "code". If it is, we can safely continue with the database operation, 
-                # if not, there are dependencies that need changing before moving safely
+                # if the search type is the "from", then no change needs
+                # to be made because the relationship is not by
+                # this code
                 if related_type == attrs.get("from"):
-                    if attrs.get("to_col") != "code":
+                    if attrs.get("from_col") != "code":
                         continue
                 else:
-                    if attrs.get("from_col") != "code":
+                    if attrs.get("to_col") != "code":
                         continue
                     
 
@@ -5202,9 +5131,8 @@ class SObject(object):
     def get_sobject_dict(my, columns=None, use_id=False, language='python'):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
-        if my.get_base_search_type() == "sthpw/virtual":
-            columns = my.data.keys()
-        elif not columns:
+
+        if not columns:
             columns = SearchType.get_columns(my.get_search_type())
 
         result = {}
@@ -5351,7 +5279,7 @@ class SearchType(SObject):
             if not num:
                 raise SqlException('setval needs a number larger than 0')
             if impl.get_database_type() == "SQLServer":
-                sql.do_update( impl.get_setval_select(sequence, num))
+                sql.execute( impl.get_setval_select(sequence, num))
                 id = sql.get_value( impl.get_currval_select(sequence))
             else:
                 id = sql.get_value( impl.get_setval_select(sequence, num))
@@ -5429,7 +5357,7 @@ class SearchType(SObject):
         #        columns.remove("s_status")
 
         for column in columns:
-            if column.startswith("_tmp"):
+            if column.startswith("_"):
                 columns.remove(column)
 
         return columns
@@ -6219,7 +6147,7 @@ class SObjectUndo:
                 "sthpw/queue",
 
                 'sthpw/message',
-                'sthpw/message_log'
+                'sthpw/message_log',
         ]:
             return
         if sobject.get_search_type() == "sthpw/transaction_log":
@@ -6335,12 +6263,6 @@ class SObjectUndo:
                 "sthpw/sync_server",
                 "sthpw/transaction_log",
                 "sthpw/ticket",
-                "sthpw/cache",
-                "sthpw/queue",
-
-                'sthpw/message',
-                'sthpw/message_log'
-
         ]:
             return
 
@@ -6366,16 +6288,12 @@ class SObjectUndo:
 
 
         Xml.set_attribute(sobject_node,"action","delete")
-        tmp_col_name = sobject.get_database_impl().get_temp_column_name()
-        if tmp_col_name and data.get(tmp_col_name):
-            del data[tmp_col_name]
-            
+
         for key,value in data.items():
             node = xml.create_element("column")
             Xml.set_attribute(node,"name",key)
             if value == None:
                 value = ""
-            
             Xml.set_attribute(node,"from",value)
             xml.append_child(sobject_node, node)
 
@@ -6431,15 +6349,12 @@ class SObjectUndo:
             sobject = SearchType.create(search_type)
 
             columns = Xml.xpath(node,"column")
-           
-            tmp_col_name = sobject.get_database_impl().get_temp_column_name()
-          
             for column in columns:
                 name = Xml.get_attribute(column,"name")
                 # id and code are set outside of the columns.  They
                 # recorded only for information purposes.  Should they
                 # even be recorded at all?
-                if name in ['code', 'id', tmp_col_name]:
+                if name in ['code', 'id']:
                     continue
 
                 value = Xml.get_attribute(column,"from")

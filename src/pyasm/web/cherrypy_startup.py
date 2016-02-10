@@ -87,7 +87,7 @@ def _cp_on_http_error(status, message):
 
         startup = cherrypy.startup
         config = startup.config
-        startup.register_project(project_code, config)
+        startup.register_site(project_code, config)
         #cherrypy.config.update( config )
         # give some time to refresh
         import time
@@ -146,9 +146,6 @@ class TacticIndex:
     def index(my):
         return "OK"
     index.exposed = True
-
-
-
 
 
 
@@ -334,7 +331,7 @@ class CherryPyStartup(object):
                          'log_debug_info_filter.on': False,
 
                          #'encoding_filter.on': True,
-                         #'decoding_filter.on': True,
+                         #'decoding_filter.on': True
                         },
             '/context': {'static_filter.on': True,
                          'static_filter.dir': context_path
@@ -356,7 +353,6 @@ class CherryPyStartup(object):
         from tactic_sites.default.context.TitlePage import TitlePage
         cherrypy.root.tactic = TitlePage()
         cherrypy.root.projects = TitlePage()
-
 
        
         sites = []
@@ -388,7 +384,7 @@ class CherryPyStartup(object):
                 sites.append(context_dir)
 
         for site in sites:
-            my.register_project(site, config)
+            my.register_site(site, config)
 
             # set up the images directory
             for subdir in ['images', 'doc']:
@@ -402,7 +398,7 @@ class CherryPyStartup(object):
 
 
 
-    def register_project(my, site, config):
+    def register_site(my, site, config):
         print "Registering project ... %s" % site
 
         # if there happend to be . in the site name, convert to _
@@ -481,9 +477,14 @@ class CherryPyStartup(object):
             if context in ["XMLRPC", "Api"]:
                 settings['xmlrpc_filter.on'] = True
 
+
             # NOTE: is this needed anymore?
             if context in ["UploadServer"]:
                 settings['flashwrapper.on'] = True
+
+
+
+
 
 
 

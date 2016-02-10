@@ -62,7 +62,7 @@ class WizardWdg(BaseRefreshWdg):
         my.height = my.kwargs.get("height")
         width = my.kwargs.get("width")
         if not width:
-            width = ""
+            width = "550px"
         my.width = width
 
         inner = DivWdg()
@@ -103,7 +103,6 @@ class WizardWdg(BaseRefreshWdg):
                 if i < len(my.titles):
                     title = my.titles[i]
                 else:
-                    title = widget.get_name()
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 
@@ -115,21 +114,15 @@ class WizardWdg(BaseRefreshWdg):
         header_wdg = my.get_header_wdg()
         inner.add(header_wdg)
         #header_wdg.add_color("background", "background", -5)
-        header_wdg.add_class("spt_popup_header")
 
         inner.add("<br/>")
 
         inner.add("<hr/>")
 
-        pages_div = DivWdg()
-        pages_div.add_class("spt_popup_body")
-        inner.add(pages_div)
-        pages_div.add_style("overflow-y: auto")
-
         for i, widget in enumerate(my.widgets):
             page_div = DivWdg()
             page_div.add_class("spt_wizard_page")
-            pages_div.add(page_div)
+            inner.add(page_div)
 
             page_div.add_style("padding: 10px")
 
@@ -147,9 +140,8 @@ class WizardWdg(BaseRefreshWdg):
             page_div.add(widget)
 
 
-        pages_div.add("<hr/>")
+        inner.add("<hr/>")
         bottom_wdg = my.get_bottom_wdg()
-        bottom_wdg.add_class("spt_popup_footer")
         inner.add(bottom_wdg)
 
         return top
@@ -230,11 +222,9 @@ class WizardWdg(BaseRefreshWdg):
                 title = title.replace(".", " ")
                 title = Common.get_display_title(title)
 
-            title = "%d %s" % (i+1, title)
+            title = "%d.%s" % (i+1, title)
             name_div.add(title)
             name_div.add_style("font-weight: bold")
-            name_div.add_style("width: 80px")
-            name_div.add_style("margin-left: -17px")
 
 
 
@@ -307,7 +297,6 @@ class WizardWdg(BaseRefreshWdg):
     def get_bottom_wdg(my):
         from tactic.ui.widget import ActionButtonWdg
         div = DivWdg()
-        div.add_style("margin-top: 10px")
 
 
         back = ActionButtonWdg(title="< Back", tip="Go back to last page")

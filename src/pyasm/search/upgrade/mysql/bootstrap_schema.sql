@@ -68,7 +68,6 @@ CREATE TABLE "login" (
     code character varying(512),
     "login" character varying(100) NOT NULL,
     "password" character varying(255),
-    "upn" character varying(100) NOT NULL,
     login_groups text,
     first_name character varying(100),
     last_name character varying(100),
@@ -82,9 +81,7 @@ CREATE TABLE "login" (
     project_code text,
     license_type character varying(256),
     hourly_wage float,
-    CONSTRAINT "login_code_idx" UNIQUE (code),
-    CONSTRAINT "login_upn_idx" UNIQUE (upn)
-
+    CONSTRAINT "login_code_idx" UNIQUE (code)
 );
 
 

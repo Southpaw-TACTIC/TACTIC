@@ -27,32 +27,20 @@ import os
 class SObjectCopyCmd(Command):
 
     def execute(my):
-        sobject = my.kwargs.get("sobject")
-        if sobject:
-            sobjects = [sobject]
 
+        search_keys = my.kwargs.get("search_keys")
+        if search_keys:
+            sobjects = []
+            for search_key in search_keys:
+                sobject = Search.get_by_search_key(search_key)
+                sobjects.append(sobject)
         else:
-
-            search_key = my.kwargs.get("search_key")
-            if search_key:
-                search_keys = [search_key]
-            else:
-                search_keys = my.kwargs.get("search_keys")
-
-            if search_keys:
-                sobjects = []
-                for search_key in search_keys:
-                    sobject = Search.get_by_search_key(search_key)
-                    sobjects.append(sobject)
-            else:
-                source = my.kwargs.get("source")
-                if source == 'clipboard':
-                    sobjects = Clipboard.get_selected()
+            source = my.kwargs.get("source")
+            if source == 'clipboard':
+                sobjects = Clipboard.get_selected()
 
 
         dst_search_type = my.kwargs.get("dst_search_type")
-        if not dst_search_type:
-            dst_search_type = sobjects[0].get_base_search_type()
 
 
 

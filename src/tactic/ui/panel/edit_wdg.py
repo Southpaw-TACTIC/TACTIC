@@ -23,7 +23,6 @@ from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckb
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg, Menu, MenuItem, SmartMenu
 from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
-from tactic.ui.input import TextInputWdg
 
 class EditException(Exception):
     pass
@@ -509,7 +508,6 @@ class EditWdg(BaseRefreshWdg):
 
         attrs = my.config.get_view_attributes()
 
-        #inner doesn't get styled. 
         inner = DivWdg()
         content_div.add(inner)
         menu = my.get_header_context_menu()
@@ -519,20 +517,13 @@ class EditWdg(BaseRefreshWdg):
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
-        #insert the header before body into inner
-        show_header = my.kwargs.get("show_header")
-        if show_header not in ['false', False]:
-            my.add_header(inner, sobj_title)
 
 
-        #insert table into a body container so styling gets applied
+
+
+
         table = Table()
-        body_container = DivWdg()
-        body_container.add_class("spt_popup_body")
-        body_container.add(table)
-        inner.add(body_container)
-
-
+        inner.add(table)
         if my.color_mode == "default":
             table.add_color("background", "background")
         elif my.color_mode == "transparent":
@@ -552,10 +543,15 @@ class EditWdg(BaseRefreshWdg):
             table.add_style("height: %s" % height)
 
 
+        show_header = my.kwargs.get("show_header")
+        if show_header not in ['false', False]:
+            my.add_header(table, sobj_title)
+
+
         tr = table.add_row()
 
         stype_type = search_type_obj.get_value("type", no_exception=True)
-        if my.mode != 'insert' and stype_type in ['media'] and my.sobjects:
+        if stype_type in ['media'] and my.sobjects:
 
             td = table.add_cell()
 
@@ -609,18 +605,17 @@ class EditWdg(BaseRefreshWdg):
         if single in ['false', False] and my.mode == 'insert':
             multi_div = DivWdg()
             multi_div.add_style("text-align: left")
-            multi_div.add_style("padding: 5px 10px")
+
+            multi_div.add("Specify the number of items that will be added with this form:<br/><br/>")
 
 
-            multi_div.add("<b>Specify number of new items to add: </b>")
+            multi_div.add("<b># of new items to add: </b>")
             multi_div.add("&nbsp;"*4)
 
 
             multi_text = TextWdg("multiplier")
-            multi_text.add_class("form-control")
+            multi_text.add_style("width: 30px")
             multi_div.add(multi_text)
-            multi_text.add_style("display: inline-block")
-            multi_text.add_style("width: 60px")
 
             tr, td = table.add_row_cell( multi_div )
 
@@ -786,8 +781,8 @@ class EditWdg(BaseRefreshWdg):
 
 
         if not my.is_disabled and not my.mode == 'view':
-            inner.add( my.get_action_html() )
-
+            tr, td = table.add_row_cell( my.get_action_html() )
+        
         if my.input_prefix:
             prefix = HiddenWdg("input_prefix", my.input_prefix)
             tr, td = table.add_row_cell()
@@ -896,8 +891,8 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-    def add_header(my, inner, sobj_title):
-        header_div = DivWdg()
+    def add_header(my, table, sobj_title):
+        tr, th = table.add_row_cell()
 
         title_str = my.kwargs.get("title")
 
@@ -914,28 +909,21 @@ class EditWdg(BaseRefreshWdg):
                 title_str = '%s (%s)' %(title_str, my.sobjects[0].get_code())
             
 
-        #header div text
         title_div = DivWdg()
         title_div.add_style("font-weight: bold")
-        title_div.add_style("padding: 7px")
-        title_div.add_style("text-align: center")
         title_div.set_attr('title', my.view)
+        th.add(title_div)
         title_div.add(title_str)
-
-        #actual header div
-        header_div.add(title_div)
-        header_div.add_class("spt_popup_header")
-        header_div.add_color("background", "background3", 10)
-
+        #th.add_color("background", "background3")
         if my.color_mode == "default":
-            header_div.add_color("border-color", "table_border", default="border")
-            header_div.add_style("border-width: 1px")
-            header_div.add_style("border-style: solid")
-        header_div.set_attr("colspan", "2")
-        header_div.add_style("height: 30px")
-        header_div.add_style("padding: 3px 10px")
+            th.add_color("border-color", "table_border", default="border")
+            th.add_style("border-width: 1px")
+            th.add_style("border-style: solid")
+        th.set_attr("colspan", "2")
+        th.add_style("height: 30px")
+        th.add_style("padding: 3px 10px")
 
-        inner.add(header_div)
+        th.add("<hr/>")
 
 
     def add_hidden_inputs(my, div):
@@ -1005,7 +993,6 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
-        div.add_color("background", "background3", 10)
         div.add_style("padding-top: 5px")
         div.add_style("padding-bottom: 30px")
 
@@ -1047,7 +1034,8 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-        div.add_style('height: 35px')
+ 
+        div.add_styles('height: 35px; margin-top: 5px;')
         div.add_named_listener('close_EditWdg', '''
             var popup = spt.popup.get_popup( $('edit_popup') );
             if (popup != null) {
@@ -1138,8 +1126,6 @@ class EditWdg(BaseRefreshWdg):
         table.add_cell(insert_button)
         table.add_cell(cancel_button)
         div.add(table)
-        div.add_class("spt_popup_footer")
-
 
 
         #div.add(SpanWdg(edit, css='med'))

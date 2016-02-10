@@ -134,12 +134,10 @@
     <element name="color">
         <display class="tactic.ui.input.ColorInputWdg"/>
     </element>
-    <!--
     <element name="pipeline" title='Pipeline Definition'>
         <display class="pyasm.widget.TextAreaWdg">
         </display>
     </element>
-    -->
 
 </insert>
 

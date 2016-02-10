@@ -496,8 +496,8 @@ class MainWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
-        title = "Manage Plugin"
-        image = IconWdg("Manage Plugin", IconWdg.PLUGIN_32)
+        title = "Plugin Manager"
+        image = IconWdg("Plugins Manager", IconWdg.PLUGIN_32)
         #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
         description = '''Upload, install, remove and create TACTIC plugins.'''
 
@@ -506,7 +506,7 @@ class MainWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var class_name = 'tactic.ui.app.PluginWdg';
         spt.tab.set_main_body_tab();
-        spt.tab.add_new("plugins", "Manage Plugin", class_name, kwargs);
+        spt.tab.add_new("plugins", "Plugin Manager", class_name, kwargs);
         '''
         }
         plugin_wdg = my.get_small_section_wdg(title, description, image, behavior)

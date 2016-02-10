@@ -678,7 +678,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         folder_header.add_style("opacity: 0.5")
                         folder_header.add_style("font-style: italic")
                     else:
-                        SmartMenu.assign_as_local_activator( folder_header, 'dir_layout_ctx' )
+                        SmartMenu.assign_as_local_activator( folder_header, 'DIR_LAYOUT_CTX' )
                         folder_header.add_attr("spt_folder", folder)
 
 

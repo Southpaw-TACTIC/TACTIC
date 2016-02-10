@@ -52,19 +52,12 @@ class TopContainerWdg(BaseRefreshWdg):
             if project_code == 'admin' and hash == '/index':
                 widget = my.get_default_wdg()
             else:
-                #print "HASH: ", hash
-                #print "project: ", project_code
-                #from pyasm.security import Site
-                #print "site: ", Site.get_site()
                 widget = HashPanelWdg.get_widget_from_hash(hash, return_none=True)
 
-            if not widget:
-                if hash == "/index":
-                    widget = my.get_default_wdg()
-                elif hash == '/admin':
-                    widget = my.get_default_wdg()
-                else:
-                    widget = HashPanelWdg.get_widget_from_hash("/index", return_none=True)
+            if hash == "/index" and not widget:
+                widget = my.get_default_wdg()
+            elif hash == '/admin' and not widget:
+                widget = my.get_default_wdg()
 
 
             top.add(widget)

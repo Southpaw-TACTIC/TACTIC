@@ -23,7 +23,6 @@
 
 
 spt.Environment = function() {
-    this.site = null;
     this.project_code = null;
     //this.url = null;
     this.user = null;
@@ -36,27 +35,13 @@ spt.Environment = function() {
     this.client_repo_dir = null;
     this.colors = {};
     this.libraries = {};
-    this.kiosk_mode = false;
 
     // by default, look at the browser
-    if (typeof(document) != 'undefined') {
-        var location = document.location;
-        var port = location.port;
-        this.server_url = location.protocol + "//" + location.hostname;
-        if (port)
-            this.server_url = this.server_url + ':' + port
-    }
-
-
-
-    this.set_site = function(site) {
-        if (site) {
-            this.site = site;
-        }
-    }
-    this.get_site = function() {
-        return this.site;
-    }
+    var location = document.location;
+    var port = location.port;
+    this.server_url = location.protocol + "//" + location.hostname;
+    if (port)
+        this.server_url = this.server_url + ':' + port
 
 
     this.set_project = function(project_code) {
@@ -139,14 +124,7 @@ spt.Environment = function() {
             return true;
         }
     }
-   
-    this.set_kiosk_mode = function(mode) {
-        if (mode == 'true' || mode == true) 
-            this.kiosk_mode = true;
-    }
-    this.get_kiosk_mode = function() {
-        return this.kiosk_mode;
-    }
+
 
 
 
@@ -202,11 +180,8 @@ spt.Environment = function() {
     }
 
     this.read_cookie = function(key) {
-        if (typeof(document) != 'undefined') {
-            var value = document.cookie.match('(?:^|;)\\s*' + key.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1') + '=([^;]*)');
-                    return (value) ? decodeURIComponent(value[1]) : null;
-        }
-        else return null;
+        var value = document.cookie.match('(?:^|;)\\s*' + key.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1') + '=([^;]*)');
+		return (value) ? decodeURIComponent(value[1]) : null;
     }
 
 }

@@ -16,7 +16,6 @@ TacticServerStub = function() {
     this.transaction_ticket = null;
     this.login_ticket = null;
     this.server_name = null;
-    this.site = null;
     this.project = null;
 
     this.set_transaction_ticket = function(ticket) {
@@ -41,18 +40,6 @@ TacticServerStub = function() {
     this.get_url = function() {
         return this.url;
     }
-
-
-
-    this.set_site = function(site) {
-        if (site) {
-            this.site = site;
-        }
-    }
-    this.get_site = function() {
-        return this.site;
-    }
-
 
     this.set_project = function(project) {
         this.project = project;
@@ -93,8 +80,6 @@ TacticServerStub = function() {
         if (column == null) {
             column = 'code';
         }
-        var temps = search_type.split("?project=");
-        search_type = temps[0];
         var search_key;
         if (search_type.test(/^sthpw\//))
             search_key = search_type +"?"+ column +"="+ code;
@@ -126,16 +111,10 @@ TacticServerStub = function() {
     }
 
 
-    this.get_ticket = function(login, password, kwargs) {
+    this.get_ticket = function(login, password) {
         var func_name = "get_ticket";
         var client = new AjaxService( this.url, '' );
-
-        var args = [login, password];
-        if (kwargs && kwargs.site)
-            args.push(kwargs.site);
-
-     
-        var ret_val = client.invoke( func_name, args );
+        var ret_val = client.invoke( func_name, arguments );
         ret_val = this._handle_ret_val(func_name, ret_val, 'string');
         ret_val = ret_val.replace(/(\r\n|\n|\r)/gm, '');
         return ret_val;
@@ -175,7 +154,6 @@ TacticServerStub = function() {
         var args = [];
         var ticket = {
             'ticket': this.login_ticket,
-            'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
             'language': 'javascript'
@@ -185,6 +163,7 @@ TacticServerStub = function() {
         args.push(this.project);
         args.push(kwargs);
         var ret_val = client.invoke( "start", args );
+
         this.transaction_ticket = this._parse_result(ret_val, "start");
 
         // put this transaction on the undo queue
@@ -257,9 +236,6 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
-    this.unsubscribe = function(key, kwargs) {
-        return this._delegate("unsubscribe", arguments, kwargs);
-    }
 
     /*
      * interaction logging
@@ -857,7 +833,7 @@ TacticServerStub = function() {
         try {
         for (var i = 0; i < paths.length; i++ ) {
             var path = paths[i];
-            var dst = sand_paths[i];
+	    var dst = sand_paths[i];
             var basename;
             if (filename_mode == 'repo') {
                 basename = spt.path.get_basename(dst);
@@ -899,7 +875,7 @@ TacticServerStub = function() {
             else if (kwargs.mode == 'browser'){
                 var download_el = document.createElement("a");
                 download_el.setAttribute("href",path);
-                download_el.setAttribute("download",basename);
+                download_el.setAttribute("download","");
                 document.body.appendChild(download_el);
                 download_el.click();
                 document.body.removeChild(download_el);
@@ -1019,11 +995,6 @@ TacticServerStub = function() {
         
     }
 
-    this.insert_multiple = function(search_type, data, kwargs) {
-        // server.insert(search_type, data, kwargs);
-        return this._delegate("insert_multiple", arguments, kwargs);
-        
-    }
 
     this.update = function(search_type, data, kwargs) {
         return this._delegate("update", arguments, kwargs);
@@ -1243,14 +1214,6 @@ TacticServerStub = function() {
     }
 
 
-    this.execute_js_script = function(script_path, script_kwargs, kwargs) {
-        if (kwargs) callback = kwargs.on_complete;
-        else callback = null;
-        return this._delegate("execute_js_script", arguments, kwargs, null, callback);
-    }
-
-
-
 
 
     this.execute = function(code) {
@@ -1346,6 +1309,18 @@ TacticServerStub = function() {
 
     // async functions
 
+    this.async_ping = function(kwargs) {
+        var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
+        var on_error = function(e) {
+            callback(e);
+        };
+
+        this._delegate("ping", arguments, kwargs, null, callback, on_error);
+        return;
+    }
     this.async_get_widget = function(class_name, kwargs) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
@@ -1386,12 +1361,6 @@ TacticServerStub = function() {
     //      This is used be get_async_widget() and others
     this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
 
-
-        if (spt._delegate) {
-            return spt._delegate(func_name, passed_args, kwargs);
-        }
-
-
         var client = new AjaxService( this.url, '' );
 
         var args = [];
@@ -1410,7 +1379,6 @@ TacticServerStub = function() {
 
         var ticket = {
             'ticket': this.transaction_ticket,
-            'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
             'language': 'javascript'
@@ -1594,8 +1562,7 @@ TacticServerStub = function() {
             // in IE a fault response has a non-null result, but also has no string nodes, and so goes into this
             // block of code ... so handle it here the same as fault response above
             ret_val = ret_val.responseText;
-            var patt = /faultCode/g;
-            if (patt.test(ret_val)) {
+            if( ret_val.contains("faultCode") ) {
                 spt.exception.handle_fault_response( ret_val );
             }
             return "";
@@ -1630,8 +1597,7 @@ TacticServerStub = function() {
             if (func_name != 'start') {
 
                 ret_val = ret_val.responseText;
-                var patt = /faultCode/g;
-                if(patt.test(ret_val)) {
+                if( ret_val.contains("faultCode") ) {
                     spt.exception.handle_fault_response( ret_val );
                 }
                 else{
@@ -1666,12 +1632,10 @@ TacticServerStub.get = function() {
         var env = spt.Environment.get();
         var login_ticket = env.get_ticket();
         var url = env.get_api_url();
-        var site = env.get_site();
         var project_code = env.get_project();
 
         this.server.set_url(url);
         this.server.set_ticket(login_ticket);
-        this.server.set_site(site);
         this.server.set_project(project_code);
     }
     return this.server;

@@ -272,7 +272,7 @@ class FrameRangeWdg(BaseTableElementWdg):
         duration_color = '#969353'
         div = DivWdg()
         div.add_tip('START -- END (TOTAL)')
-        wdg_width = 150
+        wdg_width = 100
         div.add_style('width', wdg_width)
         
         total = frame_range.frame_end - frame_range.frame_start + 1
@@ -283,11 +283,10 @@ class FrameRangeWdg(BaseTableElementWdg):
 
         duration_width = wdg_width * 0.2 - offset
 
-        #spacer_width = float('%.2f' %((duration_width + offset) * (frame_range.frame_start -1 ) /\
-        #        frame_range.frame_end))
+        spacer_width = float('%.2f' %((duration_width + offset) * (frame_range.frame_start -1 ) /\
+                frame_range.frame_end))
 
-        spacer_width = 0
-        start_div = FloatDivWdg(start_frame, width=label_width+spacer_width )
+        start_div = FloatDivWdg(start_frame, width= label_width+spacer_width )
         start_div.add_class('right_content')
         duration = FloatDivWdg( width=duration_width )
         duration.add_style("border: 1px dotted %s" % duration_color)
@@ -299,8 +298,8 @@ class FrameRangeWdg(BaseTableElementWdg):
         div.add(start_div)
         div.add(duration)
         div.add(end_div)
-        dur_text = FloatDivWdg('<i>(%s)</i>' %total)
-        dur_text.add_style("opacity", "0.3")
+        dur_text = FloatDivWdg('(%s)' %total)
+        dur_text.add_style("opacity", "0.5")
         div.add(dur_text)
         widget.add(div)
         widget.add(HtmlElement.br())
@@ -341,6 +340,7 @@ class FrameRangeWdg(BaseTableElementWdg):
             # IE needs that to draw a 1px wide div
             bar = FloatDivWdg('<!-- -->', width=1)
             bar.add_style("margin-top: 1px")
+            bar.add_style("height: 10px")
             bar.add_style("line-height: 10px")
             bar.add_style("background", duration_color)
             div.add(in_div)
@@ -350,8 +350,7 @@ class FrameRangeWdg(BaseTableElementWdg):
             div.add(out_div)
             
 
-            dur_text = SpanWdg('<i>(%s)</i>' %handle_total)
-            dur_text.add_style("opacity", "0.3")
+            dur_text = SpanWdg('(%s)' %handle_total)
             div.add(dur_text)
             widget.add(div)
       

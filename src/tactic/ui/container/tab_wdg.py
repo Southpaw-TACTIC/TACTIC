@@ -13,7 +13,7 @@
 __all__ = ['TabWdg', 'TabSaveStateCmd']
 
 from pyasm.common import TacticException, Xml, Common, Environment, Container
-from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer, WidgetSettings
+from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer
 from pyasm.search import Search
 from pyasm.widget import WidgetConfigView, WidgetConfig, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -38,11 +38,6 @@ class TabWdg(BaseRefreshWdg):
              'values': 'true|false',
             'category': 'Display'
         },
-        'save_state': {
-            'description': 'key which is used to save state [ie: "save_state|main_tab" is the default]',
-            'category': 'Display'
-        },
- 
     }
 
     def get_onload_js(my):
@@ -362,10 +357,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             mode: 'tab',
         }
         spt.hash.set_hash(state, title, hash);
-    }
-
-    if (top.hasClass("spt_tab_save_state") ) {
-        spt.tab.save_state();
     }
 
     return header;
@@ -709,8 +700,6 @@ spt.tab.get_last_selected_element_name = function() {
 
 spt.tab.save_state = function() {
     var top = spt.tab.top;
-    var save_state = top.getAttribute("spt_tab_save_state");
-
     var header_top = top.getElement(".spt_tab_header_top");
     var headers = header_top.getElements(".spt_tab_header");
 
@@ -748,8 +737,7 @@ spt.tab.save_state = function() {
     var kwargs = {
         class_names: class_names,
         attrs_list: attrs_list,
-        kwargs_list: kwargs_list,
-        save_state: save_state
+        kwargs_list: kwargs_list
     };
     server.execute_cmd(command, kwargs);
 
@@ -764,7 +752,7 @@ spt.tab.dragging = false;
 
 spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
-    spt.tab.header_pos = bvr.src_el.getPosition(spt.tab.top);
+    spt.tab.header_pos = bvr.src_el.getPosition();
     spt.tab.mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
     var header = bvr.src_el;
     var element_name = header.getAttribute("spt_element_name");
@@ -824,11 +812,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
     bvr.drag_el.setStyle("background", bvr.gradient);
 
-    var top = spt.tab.top;
-    if (top.hasClass("spt_tab_save_state") ) {
-        spt.tab.save_state();
-    }
-
 }
 
 spt.tab.close = function(src_el) {
@@ -863,52 +846,26 @@ spt.tab.close = function(src_el) {
     }
 
     
-    /* If there are changed elements in the current tab, changedParameters
-     * is a list with index 0 containing changed element, and index 1 containing
-     * change type class. Otherwise, changedParameters is false. 
-     */
-    function ok(changedParameters) {
-        //Remove unsaved changes flags
-        if (changedParameters) {
-            var changed_element = changedParameters[0];
-            var changed_type = changedParameters[1];
-            changed_element.removeClass(changed_type);
-        }
-        var opener = header.getAttribute("spt_tab_opener");
-        var element_name = header.getAttribute("spt_element_name");
-        header.destroy();
-        content.destroy();
-        var last_element_name = spt.tab.get_last_selected_element_name();
-        last_element_name = null;
-        // make the opener active
-        if (opener) {
-             spt.tab.select(opener);
-        }
-        else if (last_element_name) {
-            spt.tab.select(last_element_name);
-        }
-        else {
-            var last = headers[headers.length - 1].getAttribute("spt_element_name");
-            spt.tab.select(last);
-        }
+    var opener = header.getAttribute("spt_tab_opener");
+    var element_name = header.getAttribute("spt_element_name");
+    header.destroy();
 
-        if (top.hasClass("spt_tab_save_state") ) {
-            spt.tab.save_state();
-        }
+    content.destroy();
+
+    var last_element_name = spt.tab.get_last_selected_element_name();
+    last_element_name = null;
+
+    // make the opener active
+    if (opener) {
+        spt.tab.select(opener);
     }
-   
-    var changed_el = content.getElement(".spt_has_changes");
-    var changed_row = content.getElement(".spt_row_changed");
-    
-    if (changed_el) {
-        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null, {ok_args : [changed_el, "spt_has_changed"]});
-    }
-    else if (changed_row) {
-        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null, {ok_args: [changed_row, "spt_row_changed"]});
+    else if (last_element_name) {
+        spt.tab.select(last_element_name);
     }
     else {
-       ok(false);
-    } 
+        var last = headers[headers.length - 1].getAttribute("spt_element_name");
+        spt.tab.select(last);
+    }
 }
 
         '''
@@ -929,26 +886,11 @@ spt.tab.close = function(src_el) {
 
     def get_display(my):
 
-        top = my.top
-        top.add_class("spt_tab_top")
-
-
         my.search_type = None
 
         my.view = my.kwargs.get("view")
         config_xml = my.kwargs.get("config_xml")
         config = my.kwargs.get("config")
-
-        my.save_state = my.kwargs.get("save_state")
-        if my.save_state in [True, 'true']:
-            my.save_state = "save_state|main_tab"
-        if my.save_state:
-            saved_config_xml = WidgetSettings.get_value_by_key(my.save_state)
-            if saved_config_xml:
-                config_xml = saved_config_xml
-
-            top.add_class("spt_tab_save_state")
-            top.add_attr("spt_tab_save_state", my.save_state)
 
 
         my.mode = my.kwargs.get('mode')
@@ -985,6 +927,7 @@ spt.tab.close = function(src_el) {
                     config_xml = config_sobj.get_value("config")
                 config = WidgetConfig.get(view=my.view, xml=config_xml)
         else:
+            
 
             if config:
                 pass
@@ -1017,6 +960,8 @@ spt.tab.close = function(src_el) {
             element_names = []
 
 
+        top = my.top
+        top.add_class("spt_tab_top")
         #top.add_style("padding: 10px")
         my.unique_id = top.set_unique_id()
         top.set_attr("spt_tab_id", my.unique_id)
@@ -1785,20 +1730,9 @@ spt.tab.close = function(src_el) {
         palette = header.get_palette()
         hover_color = palette.color("background3")
         header.add_behavior( {
-            'type': 'mouseenter',
-            'color': hover_color,
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background", bvr.color);
-            '''
+        'type': 'hover',
+        'mod_styles': 'background: %s' % hover_color
         } )
-        header.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background", "");
-            '''
-        } )
-
-
 
 
         header.add_attr("spt_element_name", element_name)
@@ -1945,7 +1879,6 @@ class TabSaveStateCmd(Command):
         class_names = my.kwargs.get("class_names")
         attrs_list = my.kwargs.get("attrs_list")
         kwargs_list = my.kwargs.get("kwargs_list")
-        save_state = my.kwargs.get("save_state")
 
         xml = Xml()
         xml.create_doc("config")
@@ -1972,6 +1905,7 @@ class TabSaveStateCmd(Command):
 
         xml_string = xml.to_string()
 
-        WidgetSettings.set_value_by_key(save_state, xml_string)
+        from pyasm.web import WidgetSettings
+        WidgetSettings.set_value_by_key("main_body_tab", xml_string)
 
 

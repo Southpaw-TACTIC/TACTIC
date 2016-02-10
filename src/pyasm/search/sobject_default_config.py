@@ -167,10 +167,7 @@ class SObjectDefaultConfig(Base):
         # create the table
         # search is a special view for SearchWdg and it should not be created
         if my.view not in ['search','publish']:
-            if my.view.find('@') != -1:
-                table = my.xml.create_element('view', attrs={'name': my.view})
-            else:
-                table = my.xml.create_element(my.view)
+            table = my.xml.create_element(my.view)
             my.xml.append_child(root, table)
             for column in columns:
                 if column in ["_id", "id", "oid", "s_status"]:

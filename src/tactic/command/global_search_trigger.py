@@ -66,7 +66,7 @@ class GlobalSearchTrigger(Trigger):
 
         if not sobject:
             sobject = SearchType.create("sthpw/sobject_list")
-            sobject.set_auto_code()
+
 
         if not search_type.startswith("sthpw/"):
             project_code = Project.extract_project_code(search_type)
@@ -183,7 +183,6 @@ class FolderTrigger(Trigger):
 
         # create a file object
         file_obj = SearchType.create("sthpw/file")
-        file_obj.set_auto_code()
         file_obj.set_sobject_value(sobject)
         file_obj.set_value("file_name", "")
         file_obj.set_value("relative_dir", relative_dir)

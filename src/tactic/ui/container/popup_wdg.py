@@ -22,18 +22,6 @@ class PopupWdg(BaseRefreshWdg):
     '''Container widget which creates a popup on the screen.  This popup
     window current has a title widget and a content widget
 
-    Popup contains special functionality regarding the existence of a
-    "spt_popup_body" class in combination with a "spt_popup_header"
-    and/or "spt_popup_footer" class within an html body.
-
-    When "spt_popup_body" and one or both of "spt_popup_header"
-    "spt_popup_footer" exist, popup applies a scrollbar to the div
-    containing spt_popup_body as opposed to the container div. 
-
-    It should be noted that popup will not rearrange or separate the
-    header and footer, meaning that the order in which you add the 
-    elements still matters. 
-
     @usage
     popup = PopupWdg(id='name')
     popup.add("My Title", "title")
@@ -189,6 +177,12 @@ class PopupWdg(BaseRefreshWdg):
         if not width:
             width = 10
 
+        #widget.add_behavior( {
+        #    'type': 'load',
+        #    'cbjs_action': 'bvr.src_el.makeResizable({handle:bvr.src_el.getElement(".spt_popup_resize")})'
+        #} )
+
+
         web = WebContainer.get_web()
 
 
@@ -225,7 +219,7 @@ class PopupWdg(BaseRefreshWdg):
         //popup.setStyle("top", top);
 
         var content = popup.getElement(".spt_popup_content");
-        content.setStyle("max-height", window_size.y - 100);
+        content.setStyle("max-height", window_size.y - 200);
         content.setStyle("overflow-y", "auto");
 
         '''
@@ -295,7 +289,7 @@ class PopupWdg(BaseRefreshWdg):
 
         # create the 'close' button ...
         if my.allow_close:
-            close_wdg = SpanWdg(css='spt_popup_close')
+            close_wdg = SpanWdg()
             #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
             close_wdg.add( IconWdg("Close", "BS_REMOVE") )
             close_wdg.add_style("margin: 5px 1px 3px 1px")
@@ -311,7 +305,7 @@ class PopupWdg(BaseRefreshWdg):
 
 
             # create the 'minimize' button ...
-            minimize_wdg = SpanWdg(css='spt_popup_min')
+            minimize_wdg = SpanWdg()
             minimize_wdg.add_style("margin: 5px 1px 3px 1px")
             #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
             minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
@@ -345,7 +339,7 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 6px;")
+        drag_handle_div.add_style("padding: 12px;")
         #drag_handle_div.add_gradient("background", "background", +10)
         drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
@@ -452,13 +446,12 @@ class PopupWdg(BaseRefreshWdg):
         icon.add_style("z-index: 1000")
         icon.add_class("spt_popup_resize")
         icon.add_style("float: right")
-        #icon.add_style("margin-top: -15px")
+        icon.add_style("margin-top: -15px")
         icon.add_behavior( {
         'type': 'drag',
         "drag_el": '@',
         "cb_set_prefix": 'spt.popup.resize_drag'
         } )
-
         content_td.add(icon)
 
         #return widget
@@ -911,9 +904,7 @@ spt.popup.get_widget = function( evt, bvr )
     // get the title
     var width = options["width"];
     var height = options["height"];
-    var resize = options["resize"];
     var on_close = options["on_close"];
-    var allow_close = options["allow_close"];
 
     // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
     var popup = null;
@@ -936,8 +927,6 @@ spt.popup.get_widget = function( evt, bvr )
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
         var popup = spt.behavior.duplicate_element(popup_template);
 
-
-
         if( popup_id ) {
             popup.set("id", popup_id);
         } else {
@@ -959,16 +948,6 @@ spt.popup.get_widget = function( evt, bvr )
         spt.puw.process_new( popup.parentNode );
     }
 
-    var close_wdg = popup.getElement('.spt_popup_close');
-    var min_wdg = popup.getElement('.spt_popup_min');
-    if ([false, 'false'].contains(allow_close)) {
-        spt.hide(close_wdg);
-        spt.hide(min_wdg);
-    }
-    else {
-        spt.show(close_wdg);
-        spt.show(min_wdg);
-    }
     // display the popup clone, and bring it forward on top of other popups ...
     // but put it off screen first
     popup.setStyle("left", "-10000px");
@@ -992,20 +971,13 @@ spt.popup.get_widget = function( evt, bvr )
     var width_wdg = popup.getElement(".spt_popup_width");
     width_wdg.setStyle("min-width", "200px");
     if (width != null) {
-        //width_wdg.setStyle("width", width);
-        var content = popup.getElement(".spt_popup_content");
-        content.setStyle("width", width);
+        width_wdg.setStyle("width", width);
     }
     if (height != null) {
         width_wdg.setStyle("height", height);
         width_wdg.setStyle("overflow", "auto");
     }
-   
-    // If specified, turn off ability to resize
-    var resize_icon = popup.getElement(".spt_popup_resize");
-    if (resize == "false" || resize == false) {
-        resize_icon.setStyle("display", "none");
-    }
+
 
     // replace the title
     if (title != null) {
@@ -1072,36 +1044,10 @@ spt.popup.get_widget = function( evt, bvr )
     var kwargs = {'args': args, 'values': values};
 
 
-    //the following code deals with a specified header/footer + body
+
+    //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
     var widget_html = server.get_widget(class_name, kwargs);
-
     spt.behavior.replace_inner_html( content_wdg, widget_html );
-
-    var popup_header = content_wdg.getElement(".spt_popup_header");
-    var popup_body = content_wdg.getElement(".spt_popup_body");
-    var popup_footer = content_wdg.getElement(".spt_popup_footer");
-
-    var popup_header_height = 0;
-    var popup_footer_height = 0;
-
-    var window_size = $(window).getSize();
-
-    if (popup_body && (popup_header || popup_footer)) {
-        if (popup_header) {
-            popup_header_height = $(popup_header).getSize().y;
-        }
-        if (popup_footer) {
-            popup_footer_height = $(popup_footer).getSize().y;
-        }
-
-        var window_size = $(window).getSize();
-        content_wdg.setStyle("overflow-y","hidden");
-        content_wdg.setStyle("max-height", "auto");
-        popup_body.setStyle("overflow-y","auto");
-        popup_body.setStyle("overflow-x", "hidden");
-        var max_height = window_size.y - 200 - popup_header_height - popup_footer_height;
-        popup_body.setStyle("max-height", max_height);
-    }
 
     setTimeout(function(){callback()}, 10);
 
@@ -1346,6 +1292,5 @@ spt.popup.resize_drag_motion = function(evt, bvr, mouse_411) {
 
         '''
 
-
-
             
+

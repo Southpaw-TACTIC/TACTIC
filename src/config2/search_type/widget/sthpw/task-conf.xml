@@ -259,18 +259,6 @@
     <element name="actual_quantity"/>
 </table>
 
-<detail>
-    <element name="work"/>
-    <element name="process"/>
-    <element name="description"/>
-    <element name="milestone_code"/>
-    <element name="status"/>
-    <element name="assigned"/>
-    <element name="priority"/>
-    <element name="days_due"/>
-    <element name="schedule"/>
-</detail>
-
 
 <!-- This is shown in TaskDetailWdg -->
 <single_process>

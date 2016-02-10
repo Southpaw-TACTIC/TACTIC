@@ -207,7 +207,7 @@ Under the Admin Views section, go to Schema Views &gt; Global Config/Data and op
 Add an entry by selecting the "+" (plus) button in the shelf in the view.
 </li><li class="listitem"><p class="simpara">
 In this view there will be 4 columns you will need to fill in to define the watch folder:
-</p><p class="simpara"><span class="emphasis"><em>a)  Project Code - The name of the project you are working in i.e. sample_project</em></span></p><p class="simpara"><span class="emphasis"><em>b)  Base Dir - The name of the directory that will be "watched". This is where you drop the files to be checked in to TACTIC. i.e. /home/tactic/drop.</em></span></p><p class="simpara"><span class="emphasis"><em>c)  Search Type - The sType or table that the assets or files will be checked in to i.e. sample_project/media</em></span></p><p class="simpara"><span class="emphasis"><em>d)  Process (optional) - The pipeline process that the asset will be checked into. By default, the asset is checked into the "publish" process, if no process is specified. This is sufficient when no pipeline processes have been defined, or the asset doesn’t need to be checked into a certain process. Otherwise, the process needs to be specified i.e. publish</em></span></p></li><li class="listitem">
+</p><p class="simpara">a)  Project Code - The name of the project you are working in i.e. sample_project</p><p class="simpara">b)  Base Dir - The name of the directory that will be "watched". This is where you drop the files to be checked in to TACTIC. i.e. /home/tactic/drop.</p><p class="simpara">c)  Search Type - The sType or table that the assets or files will be checked in to i.e. sample_project/media</p><p class="simpara">d)  Process (optional) - The pipeline process that the asset will be checked into. By default, the asset is checked into the "publish" process, if no process is specified. This is sufficient when no pipeline processes have been defined, or the asset doesn’t need to be checked into a certain process. Otherwise, the process needs to be specified i.e. publish</p></li><li class="listitem">
 Save the entry by selecting the floppy disk icon in the shelf.
 </li><li class="listitem">
 If a new Watch Folder entry is added, restart the TACTIC service. To do this, if you SSH into the server and you are logged in as "root", navigate to the TACTIC install and type, "service tactic restart". This will restart the TACTIC service and the Watch Folder will be ready for use.
@@ -221,71 +221,71 @@ Command line usage</p><p>Usage: watch_drop_folder.py [options]</p><p>Options:</p
                         Define search_type.
   -P PROCESS, --process=PROCESS
                         Define process.</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_watch_folder_ingestion_to_different_directories"></a>1.6. Watch Folder Ingestion to Different Directories</h3></div></div></div><p>By default, the Watch Folder will drop assets into the “assets” folder of the TACTIC installation location or /home/tactic/assets on a Virtual Machine, where they are seen by TACTIC. The assets will be stored under the “assets” folder according to the defined directory and file naming conventions. However, there is a way to ingest the assets into a different directory location other than the “assets” folder. The instructions below will describe two required actions needed to set up the watch folders to ingest to different directories:
-<span class="emphasis"><em>1.  How to set up the Web Server Configuration and TACTIC Configuration so that the new directories can be seen by the Web Server and TACTIC and the assets can still be previewed in TACTIC</em></span>
-<span class="emphasis"><em>2.  How to set up the watch folder to ingest to different directory locations</em></span></p><p>Configuring the Web Server and TACTIC</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+1.  How to set up the Web Server Configuration and TACTIC Configuration so that the new directories can be seen by the Web Server and TACTIC and the assets can still be previewed in TACTIC
+2.  How to set up the watch folder to ingest to different directory locations</p><p>Configuring the Web Server and TACTIC</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Shell into the IP address of your TACTIC installation or Virtual Machine
 </li><li class="listitem">
 In the shell, type: cd /etc/httpd/conf.d/
 </li><li class="listitem">
 Type: vi tactic.conf
 This will open the Vim Editor in the shell to edit the tactic.conf file. This is the web server configuration file.
-</li><li class="listitem"><p class="simpara">
+</li><li class="listitem">
 Near the top of the file you will see that there is XML that looks similar to this:
-</p><pre class="programlisting">&lt;Directory "/home/tactic/assets" &gt;
+</li></ol></div><pre class="screen">&lt;Directory "/home/tactic/assets" &gt;
     Options FollowSymLinks
     AllowOverride None
     Order Allow,Deny
     Allow from All
     #If using Apache 2.4, include the following line
     #Require all granted
-&lt;/Directory&gt;</pre><pre class="literallayout">This configuration is to give the web server permission to view this directory. You will need to write entries for every other device you would like the web server to see. Continue to write these entries underneath the existing ones following the same structure and formatting like the following:</pre><pre class="programlisting">&lt;Directory "/example/directory/path/assets" &gt;
+&lt;/Directory&gt;</pre><p>This configuration is to give the web server permission to view this directory. You will need to write entries for every other device you would like the web server to see. Continue to write these entries underneath the existing ones following the same structure and formatting like the following:</p><pre class="screen">&lt;Directory "/example/directory/path/assets" &gt;
     Options FollowSymLinks
     AllowOverride None
     Order Allow,Deny
     Allow from All
     #If using Apache 2.4, include the following line
     #Require all granted
-&lt;/Directory&gt;</pre></li><li class="listitem"><p class="simpara">
+&lt;/Directory&gt;</pre><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Near the bottom of the file, there is a section that looks like the following:
-</p><pre class="literallayout"># This redirects to a common URL for centralized actions that will
+</li></ol></div><p># This redirects to a common URL for centralized actions that will
 # occur within tactic.
 Alias /context          /home/tactic/tactic/src/context
 Alias /assets           /home/tactic/assets
-Alias /doc/             /home/tactic/tactic/doc/</pre></li><li class="listitem"><p class="simpara">
-An alias and the absolute path for the device directory you added will need to be defined. It would be something like this:
-</p><pre class="literallayout"># This redirects to a common URL for centralized actions that will
-# occur within tactic.</pre><pre class="programlisting">Alias /context           /spt/tactic/tactic/src/context
+Alias /doc/             /home/tactic/tactic/doc/</p><p>An alias and the absolute path for the device directory you added will need to be defined. It would be something like this:</p><p># This redirects to a common URL for centralized actions that will
+# occur within tactic.</p><pre class="screen">Alias /context           /spt/tactic/tactic/src/context
 Alias /assets            /spt/tactic/assets
 Alias /doc/               /spt/tactic/tactic/doc/
-Alias /example      /example/directory/path/assets</pre><pre class="literallayout">NOTE: The alias does not need to be the last folder in the directory. It can be a generic alias that would clearly define this directory as a unique path.</pre></li><li class="listitem">
+Alias /example      /example/directory/path/assets</pre><p><span class="strong"><strong>NOTE</strong></span>: The alias does not need to be the last folder in the directory. It can be a generic alias that would clearly define this directory as a unique path.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Save and exit the changes to the file.
 </li><li class="listitem">
 Go to the /home/tactic/tactic_data/config directory (or TACTIC install directory where tactic_data/config is located).
 </li><li class="listitem">
 Type: vi tactic-conf.xml
 This will use the Vim Editor to open the tactic-conf.xml file.
-</li><li class="listitem"><p class="simpara">
+</li><li class="listitem">
 Under the &lt;checkin&gt; tag, there is a tag called &lt;asset_base_dir&gt; that needs to be set. To set the &lt;asset_base_dir&gt;, define an alias for the same full directory path you defined in the tactic.conf file:
-</p><pre class="programlisting">&lt;asset_base_dir&gt;{
+</li></ol></div><pre class="screen">&lt;asset_base_dir&gt;{
     "sample": "/example/directory/path/assets"
-}&lt;/asset_base_dir&gt;</pre></li><li class="listitem"><p class="simpara">
+}&lt;/asset_base_dir&gt;</pre><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 You will then need to set the &lt;web_base_dir&gt; under the &lt;checkin&gt; tag. The directory that you define for the &lt;web_base_dir&gt; is the directory as seen by the browser and is meant as TACTIC configuration to view the assets. The alias defined needs to be same alias defined in the &lt;asset_base_dir&gt;. The directory for the &lt;web_base_dir&gt; needs to be the same as the alias defined in the configuration for the web server (in the tactic.conf file):
-</p><pre class="programlisting">&lt;web_base_dir&gt;{
+</li></ol></div><pre class="screen">&lt;web_base_dir&gt;{
     "sample": "/example"
-}&lt;/web_base_dir&gt;</pre></li><li class="listitem">
+}&lt;/web_base_dir&gt;</pre><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Save the changes and close the file.
 </li><li class="listitem"><p class="simpara">
 Restart the web server and TACTIC to have the changes take effect. To do this, if using a shell, login as the “root” user, then type the following to restart the web server:
-</p><pre class="literallayout">service httpd restart (CentOS)</pre><pre class="literallayout">OR</pre><pre class="literallayout">service apache2 restart (Debian/Ubuntu Linux)</pre><pre class="literallayout">Then, to restart TACTIC:</pre><pre class="literallayout">service tactic restart</pre></li></ol></div><p>All of this setup will work with the watch folder for ingestion and check-in to a device and the device manager. It will allow the preview to work in TACTIC as well.</p><p><span class="emphasis"><em>Directory Setup with Watch Folder</em></span></p><p>Once the TACTIC and web server configuration is in place, the watch folder can be set up to ingest to a different directory. This setup requires the use of both the sthpw/watch_folder and sthpw/naming sTypes, which are both accessible in the Administrative layer of TACTIC under the Global Config/Data menu in the sidebar.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+</p><pre class="literallayout">service httpd restart (CentOS)</pre><pre class="literallayout">OR</pre><pre class="literallayout">service apache2 restart (Debian/Ubuntu Linux)</pre><pre class="literallayout">Then, to restart TACTIC:</pre><pre class="literallayout">service tactic restart</pre></li></ol></div><p>All of this setup will work with the watch folder for ingestion and check-in to a device and the device manager. It will allow the preview to work in TACTIC as well.</p><p>Directory Setup with Watch Folder</p><p>Once the TACTIC and web server configuration is in place, the watch folder can be set up to ingest to a different directory. This setup requires the use of both the sthpw/watch_folder and sthpw/naming sTypes, which are both accessible in the Administrative layer of TACTIC under the Global Config/Data menu in the sidebar.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Establish a Watch Folder for the directory you want to ingest assets into according to the steps described in the “TACTIC - Watch Folder Service”. However, the exception here is that a process will need to be defined in the “Process” column of the Watch Folder sType.
 </li><li class="listitem"><p class="simpara">
 The process set in the “Process” column of the Watch Folder sType is the same as the alias of the directory as defined in the tactic-conf.xml file. Refer to steps 8 - 12 in the “Configuring the Web Server and TACTIC” section.
 </p><pre class="literallayout">Example:
-In the tactic-conf.xml file,</pre><pre class="programlisting">&lt;asset_base_dir&gt;{
+In the tactic-conf.xml file,</pre></li></ol></div><pre class="screen">&lt;asset_base_dir&gt;{
     "sample": "/example/directory/path/assets"
-}&lt;/asset_base_dir&gt;</pre><pre class="programlisting">&lt;web_base_dir&gt;{
+}&lt;/asset_base_dir&gt;
+
+&lt;web_base_dir&gt;{
     "sample": "/example"
-}&lt;/web_base_dir&gt;</pre><pre class="literallayout">Therefore, in the Watch Folder sType table under the “Process” column, the alias “sample” would be entered.</pre></li><li class="listitem">
+}&lt;/web_base_dir&gt;</pre><p>Therefore, in the Watch Folder sType table under the “Process” column, the alias “sample” would be entered.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Save the entry by selecting the floppy disk icon in the shelf.
 </li><li class="listitem">
 Open the sidebar.
@@ -295,9 +295,9 @@ Under the Admin Views section, go to Project Essentials and open the "Naming" vi
 If not done already, for the same sType you are ingesting the assets into from the Watch Folder, create a naming entry for that same sType by defining a directory and file naming convention.
 </li><li class="listitem"><p class="simpara">
 For the already present or newly added sType naming entry, in the “Context” column of the “Naming” view for that entry, the same alias used in the &lt;asset_base_dir&gt; and &lt;web_base_dir&gt; must be set here in accordance with the following format: alias/*.
-</p><p class="simpara">Based on the example provided in step 2, the alias was “sample”. Therefore, this would be the context for the sType naming entry: sample/*</p></li><li class="listitem"><p class="simpara">
+</p><p class="simpara">Based on the example provided in step 2, the alias was “sample”. Therefore, this would be the context for the sType naming entry: sample/*</p></li><li class="listitem">
 For the same sType entry, in the “Base Dir” column of the “Naming” view, the same alias used in the &lt;asset_base_dir&gt;, &lt;web_base_dir&gt; and now context column must be set here in accordance with the following format: alias.
-</p><p class="simpara">Based on the example provided in step 2, the alias was “sample”. Therefore, this would be the base directory for the sType naming entry: sample</p></li><li class="listitem">
+</li></ol></div><p>Based on the example provided in step 2, the alias was “sample”. Therefore, this would be the base directory for the sType naming entry: sample</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Save the changes to the “Naming” view by pressing the floppy disk icon in the table shelf
 </li><li class="listitem">
 Restart TACTIC to have the changes take effect. To do this, if using a shell, login as the “root” user, then type the following to restart TACTIC: service tactic restart

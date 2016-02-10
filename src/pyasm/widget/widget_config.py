@@ -55,12 +55,6 @@ class WidgetConfig(Base):
             raise WidgetConfigException("Must supply either file_path or xml")
 
         my.view = view
-        if view and view.find('@') != -1:
-            my.view_as_attr = True
-            my.view_xpath = "view[@name='%s']"%view
-        else:
-            my.view_as_attr = False
-            my.view_xpath = view
 
         my.state = state
 
@@ -77,13 +71,11 @@ class WidgetConfig(Base):
             config_cache = {}
             Container.put("WidgetConfig:config_cache", config_cache)
 
-
         key = "%s:%s" % (view, file_path)
         config = config_cache.get(key)
         if config:
             return config
 
-        
         config = WidgetConfig(view, file_path, xml, __get__=True, use_cache=use_cache)
         config_cache[key] = config
 
@@ -103,11 +95,7 @@ class WidgetConfig(Base):
 
         if not view:
             view = my.view
-        if view.find('@') !=-1:
-            xpath = "config/view[@name='%s']"%view
-        else:
-            xpath = "config/%s"%view
-        node = my.xml.get_node(xpath)
+        node = my.xml.get_node("config/%s" % view)
         if node is not None:
             return True
         else:
@@ -115,13 +103,6 @@ class WidgetConfig(Base):
 
     def set_view(my, view):
         my.view = view
-        if view and view.find('@') != -1:
-            my.view_as_attr = True
-            my.view_xpath = "view[@name='%s']"%view
-        else:
-            my.view_as_attr = False
-            my.view_xpath = view
-
 
     def get_view(my):
         return my.view
@@ -147,19 +128,7 @@ class WidgetConfig(Base):
         if not view:
             view = my.view
 
-        if view.find('@') != -1:
-            return my.get_view_attr_node(view)
-
         xpath = "config/%s" % view
-
-        node = my.xml.get_node(xpath)
-        return node
-
-    def get_view_attr_node(my, view=None):
-        if not view:
-            view = my.view
-
-        xpath = "config/view[@name='%s']" %view 
         node = my.xml.get_node(xpath)
         return node
 
@@ -189,7 +158,7 @@ class WidgetConfig(Base):
 
 
     def get_element_node(my, element_name):
-        xpath = "config/%s/element[@name='%s']" % (my.view_xpath, element_name)
+        xpath = "config/%s/element[@name='%s']" % (my.view,element_name)
         node = my.xml.get_node(xpath)
         return node
 
@@ -230,7 +199,7 @@ class WidgetConfig(Base):
         '''get the name of each element in a list '''
         # NOTE: have to do this long winded logic because 4Suite doesn't
         # appear to support the != operator
-        xpath = "config/%s/element" % my.view_xpath
+        xpath = "config/%s/element" % my.view
         nodes = my.xml.get_nodes(xpath)
         ordered_names = []
 
@@ -251,7 +220,7 @@ class WidgetConfig(Base):
 
     def get_default_base(my):
         '''gets the default base that this view is based on'''
-        xpath = "config/%s/@default" % my.view_xpath;
+        xpath = "config/%s/@default" % my.view;
         default_base = my.xml.get_value(xpath)
         if default_base == "":
             # defining the main types of config snippet
@@ -269,10 +238,10 @@ class WidgetConfig(Base):
         assert type != None
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/%s/@class" % (my.view_xpath, element_name, type)
+        xpath = "config/%s/element[@name='%s']/%s/@class" % (my.view, element_name, type)
         value = my.xml.get_value(xpath)
         if not value:
-            xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view_xpath, element_name, type)
+            xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view, element_name, type)
             key = my.xml.get_value(xpath)
             if key:
                 from tactic.ui.common import WidgetClassHandler
@@ -285,7 +254,7 @@ class WidgetConfig(Base):
     def get_widget_key(my, element_name, type='display'):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view_xpath, element_name, type)
+        xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view, element_name, type)
         return my.xml.get_value(xpath)
 
 
@@ -294,26 +263,22 @@ class WidgetConfig(Base):
     def get_display_handler(my, element_name):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/display/@class" % (my.view_xpath, element_name)
+        xpath = "config/%s/element[@name='%s']/display/@class" % (my.view, element_name)
         value = my.xml.get_value(xpath)
         if not value:
-            xpath = "config/%s/element[@name='%s']/display/@widget" % (my.view_xpath, element_name)
-
-           
+            xpath = "config/%s/element[@name='%s']/display/@widget" % (my.view, element_name)
             key = my.xml.get_value(xpath)
-            
             if key:
                 from tactic.ui.common import WidgetClassHandler
                 handler = WidgetClassHandler()
                 value = handler.get_display_handler(key)
-                
+        
         return value
 
 
     def get_action_handler(my, element_name):
         assert element_name != None
-
-        xpath = "config/%s/element[@name='%s']/action/@class" % (my.view_xpath, element_name)
+        xpath = "config/%s/element[@name='%s']/action/@class" % (my.view,element_name)
         return my.xml.get_value(xpath)
 
 
@@ -331,7 +296,7 @@ class WidgetConfig(Base):
         assert element_name != None
 
         xpath = "config/%s/element[@name='%s']/%s" \
-                % (my.view_xpath,element_name, element_child_name)
+                % (my.view,element_name, element_child_name)
 
         node = my.xml.get_node(xpath)
         if node == None:
@@ -386,7 +351,7 @@ class WidgetConfig(Base):
     def get_action_options(my, element_name):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/action/*" % (my.view_xpath, element_name)
+        xpath = "config/%s/element[@name='%s']/action/*" % (my.view,element_name)
         option_nodes = my.xml.get_nodes(xpath)
         
         values = {}
@@ -402,10 +367,10 @@ class WidgetConfig(Base):
 
 
     def get_type(my, element_name):
-        xpath = "config/%s/element[@name='%s']/@type" % (my.view_xpath, element_name)
+        xpath = "config/%s/element[@name='%s']/@type" % (my.view,element_name)
         type = my.xml.get_value(xpath)
         if not type:
-            xpath = "config/%s/element[@name='%s']/@type" % ("definition", element_name)
+            xpath = "config/%s/element[@name='%s']/@type" % ("definition",element_name)
             type = my.xml.get_value(xpath)
 
         return type
@@ -1814,7 +1779,6 @@ class WidgetConfigView(Base):
             file_path="%s/src/tactic/ui/config/%s-conf.xml" % (base_dir, project_type)
             if os.path.exists(file_path):
                 widget_config = WidgetConfig.get(file_path=file_path, view=view)
-                
                 view_node = widget_config.get_view_node(view)
         return view_node
     get_default_view_node = staticmethod(get_default_view_node)

@@ -944,11 +944,6 @@ class Url(Base):
         state.add_state_to_url(my)
 
 
-    def get_protocol(my):
-        parts = my.base.split("://")
-        return parts[0]
-
-
 
     def get_url(my):
         return my.to_string()

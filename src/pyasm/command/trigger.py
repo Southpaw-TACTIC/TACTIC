@@ -186,12 +186,13 @@ class Trigger(Command):
             #in_transaction = trigger.is_in_transaction()
 
 
+
+
     call_all_triggers = staticmethod(call_all_triggers)
 
 
 
     def _get_triggers(cls, call_event, integral_only=False, project_code=None):
-
         if integral_only:
             trigger_key = "%s:integral" % cls.TRIGGER_EVENT_KEY
         else:
@@ -247,8 +248,6 @@ class Trigger(Command):
 
             for trigger_sobj in trigger_sobjs:
                 trigger_event = trigger_sobj.get_value("event")
-
-                # The value in the process column can also be the process_code.
                 trigger_process = trigger_sobj.get_value("process")
                 trigger_stype = trigger_sobj.get_value("search_type", no_exception=True)
 
@@ -342,14 +341,6 @@ class Trigger(Command):
     _get_triggers = classmethod(_get_triggers)
 
 
-    def clear_db_cache(cls):
-        Container.put(cls.KEY, None)
-
-        from pyasm.biz import Project
-        project_code = Project.get_project_code()
-        key = "%s:%s" % (cls.KEY, project_code)
-        Container.put(key, None)
-    clear_db_cache = classmethod(clear_db_cache)
 
     def get_db_triggers(cls):
 
@@ -412,8 +403,23 @@ class Trigger(Command):
         #call_event_key = jsondumps(call_event)
         triggers_sobjs = cls._get_triggers(call_event, project_code=project_code)
 
+
+
+        """
+        # get all the triggers for this event
+        triggers_sobjs = cls.get_by_event(event, process=process)
+        
+        # append all static triggers
+        static_trigger_sobjs = cls.get_static_triggers_by_event(event, process=process)
+        triggers_sobjs.extend(static_trigger_sobjs)
+
+        # append all notifications
+        notification_sobjs = cls.get_notifications_by_event(event, process=process)
+        triggers_sobjs.extend(notification_sobjs)
+        """
+
         if not triggers_sobjs:
-            return []
+            return
 
         return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode, project_code=project_code)
 
@@ -456,14 +462,15 @@ class Trigger(Command):
                         from tactic.command.python_cmd import PythonTrigger
                         trigger = PythonTrigger()
                         trigger.set_script_path(script_path)
-                    elif not isinstance(trigger_class,basestring):
-                        trigger = trigger_class()
                     else:
                         trigger = Common.create_from_class_path(trigger_class)
 
                 else:
                     if trigger_class == '':
                         script_path = trigger_sobj.get_value("script_path")
+                        #from tactic.command.python_cmd import PythonTrigger
+                        #trigger = PythonTrigger()
+                        #trigger.set_script_path(script_path)
 
                         trigger_class = "tactic.command.PythonTrigger"
                         kwargs = {

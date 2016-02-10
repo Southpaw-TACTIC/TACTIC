@@ -12,7 +12,6 @@
 from scheduler import *
 from create_project_cmd import *
 from python_cmd import *
-from js_cmd import *
 from plugin import *
 from naming_migrator_cmd import *
 
@@ -30,8 +29,6 @@ from queue import *
 from rsync import *
 from run_transaction_cmd import *
 from watch_handoff_folder import *
-
-from sobject_copy_cmd import *
 
 
 

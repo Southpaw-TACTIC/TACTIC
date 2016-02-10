@@ -105,18 +105,12 @@ class Batch(Environment):
 class XmlRpcInit(Environment):
     '''Used to authenticate using a ticket from an xmlrpc client'''
 
-    def __init__(my, ticket, site=None):
+    def __init__(my, ticket):
         super(XmlRpcInit,my).__init__()
-
-
-        if not site:
-            # if not explicitly set, keep the current site
-           site = Site.get_site() 
 
         my.set_app_server("xmlrpc")
 
         my.ticket = ticket
-
 
         # clear the main container
         #Container.clear()
@@ -126,10 +120,6 @@ class XmlRpcInit(Environment):
         # set up the security object
         security = Security()
         Environment.set_security(security)
-
-
-        if site:
-            Site.set_site(site)
 
         my._do_login()
 

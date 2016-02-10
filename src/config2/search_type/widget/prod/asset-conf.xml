@@ -139,7 +139,7 @@
     <element name="name"/>
     <element name="description"/>
     <element name="pipeline_code"/>
-    <!--<element name="submit"/>-->
+    <element name="submit"/>
 </table>
 
 
@@ -152,7 +152,7 @@
     <element name="name"/>
     <element name="description"/>
     <element name="pipeline_code"/>
-    <!--<element name="submit"/>-->
+    <element name="submit"/>
     <element name="task_edit"/>
 </manage>
 

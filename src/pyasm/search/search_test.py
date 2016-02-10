@@ -52,10 +52,6 @@ class SearchTest(unittest.TestCase):
         elif db_type == "Sqlite":
             my.prefix = ""
             my.sthpw_prefix = ""
-        elif db_type == "SQLServer":
-            my.prefix = '''"unittest"."dbo".'''
-            my.sthpw_prefix = '''"sthpw"."dbo".'''
-            
         else:
             my.prefix = '''"unittest".'''
             my.sthpw_prefix = '''"sthpw".'''
@@ -83,10 +79,11 @@ class SearchTest(unittest.TestCase):
             my._test_order_by()                               
             my._test_search_key()
             my._test_search()
+
             my._test_multi_db_subselect()
 
             # FIXME: this requires sample3d project
-            my._test_search_other_project()
+            #my._test_search_other_project()
             my._test_search_type()
             my._test_metadata()
             my._test_search_type_existence()
@@ -376,20 +373,12 @@ class SearchTest(unittest.TestCase):
         search3.add_regex_filter("pipeline_code", "model|cg_asset")
         search3.add_filter("code", "chr003")
         sobject = search3.get_sobject()
-        if sobject:
-            sobject.set_value('description','some char')
-            sobject.commit()
+        sobject.set_value('description','some char')
+        sobject.commit()
 
-            updated_sobject = search3.get_sobject(redo=True)
-            my.assertEquals("some char", updated_sobject.get_value('description'))
+        updated_sobject = search3.get_sobject(redo=True)
 
-        search4 = Search("prod/asset?project=sample3d")
-        search4.add_regex_filter("pipeline_code", "cg_asset's")
-        
-        sobject = search4.get_sobject()
-        my.assertEquals(sobject, None)
-
-        
+        my.assertEquals("some char", updated_sobject.get_value('description'))
 
     def _test_search(my):
 

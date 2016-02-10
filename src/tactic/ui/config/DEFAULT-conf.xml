@@ -196,6 +196,7 @@
         <show_insert>false</show_insert> 
         <show_gear>false</show_gear> 
         <show_search_limit>false</show_search_limit>
+        <show_save>false</show_save>
         <search_type>sthpw/pref_list</search_type>
         <view>user</view>
         <mode>simple</mode>

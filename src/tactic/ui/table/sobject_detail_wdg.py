@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['SObjectDetailElementWdg', 'SObjectTaskStatusElementWdg', 'TaskDetailPanelElementWdg']
+__all__ = ['SObjectDetailElementWdg']
 
 from pyasm.common import Environment
 from pyasm.search import SearchKey
@@ -95,14 +95,12 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
 
         tab_element_names = my.kwargs.get("tab_element_names") or ""
-        detail_view = my.kwargs.get("detail_view") or ""
 
         widget.add_behavior( {
         'type': 'click_up',
         'search_key': my.search_key,
         'use_parent': use_parent,
         'tab_element_names': tab_element_names,
-        'detail_view': detail_view,
         'show_task_process': my.show_task_process,
         'code': code,
         'name': name,
@@ -113,11 +111,11 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             search_key: bvr.search_key,
             use_parent: bvr.use_parent,
             tab_element_names: bvr.tab_element_names,
-            show_task_process: bvr.show_task_process,
-            detail_view: bvr.detail_view
+            show_task_process: bvr.show_task_process
         };
 
-        var mode = '';
+
+        var mode = 'xxx';
         var layout = bvr.src_el.getParent(".spt_tool_top");
         if (layout != null) {
             mode = 'tool'
@@ -146,146 +144,67 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         return div
 
 
-
-
-class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
-    '''The element widget that displays a button which when clicked will open up
-    a detail view of a task'''
-
-    ARGS_KEYS = {
-    }
- 
-
-    def get_display(my):
+    """
+    def get_link_wdg(my, target_id, title, widget=None):
 
         sobject = my.get_current_sobject()
 
-        my.search_key = SearchKey.get_by_sobject(sobject)
-    
-        div = DivWdg()
-        div.add_class("hand")
+        path = "/%s" % my.search_key
+        options = {
+            'path': path,
+            'class_name': 'tactic.ui.panel.SObjectPanelWdg',
+            #'class_name': 'tactic.ui.panel.SearchTypePanelWdg',
+            'search_key': my.search_key
+        }
 
-        title = "Show Item Details"
-        if my.widget:
-            widget = my.widget
+        security = Environment.get_security()
+        if not security.check_access("url", path, "view"):
+            return
+        options['path'] = path
+        
+
+        view_link_wdg = DivWdg(css="hand")
+        view_link_wdg.add_style( "padding-top: 5px" )
+
+        if widget:
+            view_link_wdg.add(widget)
         else:
-            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
+            view_link_wdg.add(title)
 
 
-        code = sobject.get_code()
-        name = sobject.get_value("name", no_exception=True)
-        if not name:
-            name = code
+        # put in a default class name
+        if not options.get('class_name'):
+            options['class_name'] = "tactic.ui.panel.ViewPanelWdg"
 
+        # put in a default search
+        if not options.get('filters'):
+            options['filters'] = '0';
 
-        tab_element_names = my.kwargs.get("tab_element_names") or ""
-        detail_view = my.kwargs.get("detail_view") or ""
-
-        widget.add_behavior( {
-        'type': 'click_up',
-        'search_key': my.search_key,
-        'code': code,
-        'name': name,
-        'cbjs_action': '''
-        spt.tab.set_main_body_tab();
-        var class_name = 'tactic.ui.tools.SObjectTaskStatusDetailWdg';
-        var kwargs = {
-            search_key: bvr.search_key,
-        };
-
-        var mode = '';
-        var layout = bvr.src_el.getParent(".spt_tool_top");
-        if (layout != null) {
-            mode = 'tool'
+        behavior = {
+            'type':         'click_up',
+            'cbfn_action':  'spt.side_bar.display_link_cbk',
+            'target_id':    target_id,
+            'is_popup':     'true',
+            'options':      options,
         }
+        view_link_wdg.add_behavior( behavior )
 
-        if (mode == 'tool') {
-            spt.app_busy.show("Loading ...");
-            var layout = bvr.src_el.getParent(".spt_tool_top");
-            var element = layout.getElement(".spt_tool_content");
-            spt.panel.load(element, class_name, kwargs);
-            spt.app_busy.hide();
+        # use shift click to open up in a popup
+        behavior = {
+            'type':         'click_up',
+            'mouse_btn':    'LMB',
+            'modkeys':      'SHIFT',
+            'cbfn_action':  'spt.side_bar.display_link_cbk',
+            'target_id':    target_id, # FIXME: has to be here for now
+            'title':        sobject.get_code(),
+            'is_popup':     'false',
+            'options':      options,
         }
-        else {
-            var element_name = "detail_"+bvr.code;
-            var title = "Detail ["+bvr.name+"]";
-            spt.tab.add_new(element_name, title, class_name, kwargs);
-        }
-        '''
-        } )
+        view_link_wdg.add_behavior( behavior )
 
-
-        div.add(widget)
-
-        return div
-
-
-class TaskDetailPanelElementWdg(SObjectDetailElementWdg):
-    '''The element widget that displays according to type'''
-
-    ARGS_KEYS = {
-    }
  
 
-    def get_display(my):
-
-        sobject = my.get_current_sobject()
-
-        my.search_key = SearchKey.get_by_sobject(sobject)
-    
-        div = DivWdg()
-        div.add_class("hand")
-
-        title = "Show Item Details"
-        if my.widget:
-            widget = my.widget
-        else:
-            widget = IconButtonWdg(title=title, icon=IconWdg.ZOOM)
-
-
-        code = sobject.get_code()
-        name = sobject.get_value("name", no_exception=True)
-        if not name:
-            name = code
-
-
-        widget.add_behavior( {
-        'type': 'click_up',
-        'search_key': my.search_key,
-        'code': code,
-        'name': name,
-        'cbjs_action': '''
-        spt.tab.set_main_body_tab();
-        var class_name = 'tactic.ui.tools.TaskDetailPanelWdg';
-        var kwargs = {
-            search_key: bvr.search_key,
-        };
-
-        var mode = '';
-        var layout = bvr.src_el.getParent(".spt_tool_top");
-        if (layout != null) {
-            mode = 'tool'
-        }
-
-        if (mode == 'tool') {
-            spt.app_busy.show("Loading ...");
-            var layout = bvr.src_el.getParent(".spt_tool_top");
-            var element = layout.getElement(".spt_tool_content");
-            spt.panel.load(element, class_name, kwargs);
-            spt.app_busy.hide();
-        }
-        else {
-            var element_name = "detail_"+bvr.code;
-            var title = "Detail ["+bvr.name+"]";
-            spt.tab.add_new(element_name, title, class_name, kwargs);
-        }
-        '''
-        } )
-
-
-        div.add(widget)
-
-        return div
-
+        return view_link_wdg
+    """
 
 

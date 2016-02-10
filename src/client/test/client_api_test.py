@@ -133,7 +133,6 @@ class ClientApiTest(unittest.TestCase):
             my._test_pipeline()
             my._test_eval()
             my._test_execute()
-            my._test_create_task()
         except Exception:
             my.server.abort()
             raise
@@ -142,7 +141,6 @@ class ClientApiTest(unittest.TestCase):
         #my.server.undo()
         my._test_local_protocol()
         my.server.abort()
-        my.server.set_ticket(test_ticket)
 
 
         # test database only abort
@@ -162,7 +160,6 @@ class ClientApiTest(unittest.TestCase):
                     os.unlink(path)
 
  
-        my.server.set_ticket(test_ticket)
         # test with an error
         my.server.start("Client Api Error Test")
         try:
@@ -171,7 +168,6 @@ class ClientApiTest(unittest.TestCase):
         except:
             my.server.abort()
  
-        my.server.set_ticket(test_ticket)
         # person or city table must be empty now after abort
         my.server.start("Client API Unittest query after abort")
         try:
@@ -1951,21 +1947,6 @@ class ClientApiTest(unittest.TestCase):
         my.assertEquals(Xml.get_attribute(node,'title'), 'MY User')
         config_str = my.server.get_config_definition(search_type, 'project_view', 'my_user')
         my.assertEquals(config_str, '')
-
-    def _test_create_task(my):
-        search_type = "unittest/person"
-
-        # insert the person
-        data = {
-            'code': 'wheat',
-            'name_first': 'Mr.',
-            'name_last': 'Wheat',
-            'pipeline_code': 'person_pipe'
-        }
-        result = my.server.insert(search_type, data)
-        person_sk = result.get('__search_key__')
-        task = my.server.create_task(person_sk, process='start', assigned='ben')
-        my.assertEquals(task.get('assigned'), 'ben')
 
     def _test_pipeline(my):
         search_type = "unittest/person"

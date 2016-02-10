@@ -371,33 +371,20 @@ class Common(Base):
 
 
 
-    def generate_alphanum_key(num_digits=10, mode="alpha", delimit=0):
+    def generate_alphanum_key(num_digits=10, mode="alpha"):
         if mode == "alpha":
             low = 65
             high = 90
-        elif mode == "hex":
-            low = 48
-            high = 71
-        elif mode == "numeric":
-            low = 48
-            high = 58
         else:
-            low = 48
+            log = 48
             high = 90
         # generate a random key
         key = ""
-
-        items = []
-        for idx in range(low, high):
-            if idx >= 58 and idx <= 64:
-                continue
-            items.append(chr(idx))
-
         for i in range(0, num_digits):
-            idx = random.randint(0, len(items)-1)
-            if i and delimit and i % delimit == 0:
-                key += "-"
-            key += items[idx]
+            idx = 58
+            while idx >= 58 and idx <= 64:
+                idx = random.randint(low, high)
+            key += chr(idx)
 
         return key
     generate_alphanum_key = staticmethod(generate_alphanum_key)
@@ -602,7 +589,7 @@ class Common(Base):
 
 
 
-    def get_dir_info(dir, skip_dir_details=False, file_range=None):
+    def get_dir_info(dir, skip_dir_details=False):
         '''Finds the disk size of a path'''
 
         info = {}
@@ -610,15 +597,9 @@ class Common(Base):
         count = 0
         dir_size = 0
 
-        if dir.find("###") != -1:
+        if dir.find("#") != -1:
             dir_size = 0
             file_type = 'sequence'
-            if file_range:
-                from pyasm.biz import FileGroup
-                file_paths = FileGroup.expand_paths(dir, file_range)
-                for file_path in file_paths:
-                    # gets total size of sequence
-                    dir_size += os.path.getsize(file_path)
         elif not os.path.exists(dir):
             dir_size = 0
             file_type = 'missing'
@@ -979,7 +960,7 @@ class Common(Base):
             elif char == "}":
                 token = "".join(token)
                 args_keys.append(token)
-                re_expression = re_expression.replace("{%s}"%token, "([\w/=\?@&\.-]+)")
+                re_expression = re_expression.replace("{%s}"%token, "([\w/=\?&\.-]+)")
                 token = []
             else:
                 token.append(char)

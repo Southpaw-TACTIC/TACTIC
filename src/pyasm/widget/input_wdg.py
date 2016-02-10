@@ -245,7 +245,7 @@ class BaseInputWdg(HtmlElement):
 
     def is_editable(my):
         return True
-
+    
     def check_persistent_values(my, cgi_values):
         web = WebContainer.get_web()
         if my.is_form_submitted() and web.has_form_key(my.get_input_name()):
@@ -895,10 +895,7 @@ class CheckboxWdg(BaseInputWdg):
 
         my.add_style("width", "16px", override=False)
         my.add_style("height", "16px", override=False)
-
-        if my.is_read_only():
-            my.set_attr('disabled', 'disabled')
-
+        
         if len(values) == 1:
             # skip boolean
             value = values[0]

@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg', 'NoteCollectionWdg']
+__all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'DiscussionAddNoteCmd', 'DiscussionEditWdg', 'NoteStatusEditWdg']
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
@@ -77,7 +77,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
     # FIXME: need a better name for this
     'show_context_notes': {
-        'description': '(DEPRECATED) Determine if the notes in the context are hidden',
+        'description': 'Determine if the notes in the context are hidden',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -374,8 +374,8 @@ class DiscussionEditWdg(BaseRefreshWdg):
 
             var cancel = function() {};
             var note_sum = note.note;
-            if (note.note.length > 30 ) 
-                note_sum =  note.note.substring(0,30) + '...';
+            if (note.note.length > 50 ) 
+                note_sum =  note.note.substring(0,50) + '...';
             
             spt.confirm('Delete this note?<br/><br/><div style="padding: 10px;border: 1px #aaa dotted">' + note_sum + '</div>' , ok, cancel);
 
@@ -825,8 +825,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.notes_dict[key] = notes_list
             notes_list.append(note)
 
-
-        """
         from pyasm.biz import Snapshot
         snapshots = Snapshot.get_by_sobjects(notes)
         my.attachments = {}
@@ -837,8 +835,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 xx = []
                 my.attachments[parent_key] = xx
             xx.append(snapshot)
-        """
-        my.attachments = {}
 
 
         return my.notes_dict
@@ -950,22 +946,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def get_menu_wdg(my, top):
-        '''Get the menu setup so the caller can place it outside this DiscussionWdg 
-           with the top element passed in'''
-        edit_wdg = DiscussionEditWdg()
-        my.menu = edit_wdg.get_menu()
 
-        # extra js_action on mouseover to assign the search key of the note to hidden input
-        js_action ='''
-           var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el;
-           sk_input.value = note_top.getAttribute('note_search_key');
-            '''
-
-        my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
-        my.menu.set_activator_out(top, 'spt_discussion_top')
-        return edit_wdg
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''
@@ -1052,31 +1033,6 @@ class DiscussionWdg(BaseRefreshWdg):
             my.default_contexts_open = []
 
 
-
-        notes = my.get_notes()
-
-        # group notes under contexts
-        contexts = []
-        context_notes = {}
-        last_context = None
-        for i, note in enumerate(notes):
-            context = note.get_value("context")
-            process = note.get_value("process")
-            if last_context == None or context != last_context:
-                contexts.append(context)
-            
-            note_list = context_notes.get(context)
-            if note_list == None:
-                note_list = []
-                context_notes[context] = note_list
-            note_list.append(note)
-
-            last_context = context
-
-
-
-
-
         if my.is_refresh =='true':
             top = Widget()
         else:
@@ -1093,13 +1049,13 @@ class DiscussionWdg(BaseRefreshWdg):
             my.set_as_panel(top)
             top.add_style("min-width: 300px")
 
-            context_str = ",".join(contexts)
 
             max_height = my.kwargs.get("max_height")
             if max_height:
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
+        notes = my.get_notes()
 
         if my.use_parent == 'true' and not notes and not my.parent:
             sobj = my.parent
@@ -1286,154 +1242,248 @@ class DiscussionWdg(BaseRefreshWdg):
             
 
         # determines if each note in the context group is hidden
-        #show_context_notes = my.kwargs.get("show_context_notes")
-        #if show_context_notes in [True, "true"]:
-        #    show_context_notes = True
-        #else:
-        #    show_context_notes = False
+        show_context_notes = my.kwargs.get("show_context_notes")
+        if show_context_notes in [True, "true"]:
+            show_context_notes = True
+        else:
+            show_context_notes = False
+
+        # go through every note and display
+        last_context = None
+        context_top = None
+        context_count = 0
+        note_content = None
+        
+        
+
+        for i, note in enumerate(notes):
+            context = note.get_value("context")
+            process = note.get_value("process")
+            if last_context == None or context != last_context:
+                # organize by context
+                context_top = DivWdg()
+                context_top.add_class("spt_discussion_context_top")
+                context_top.add_class("my_context")
+                #context_top.add_class("hand")
+                context_top.add_attr("my_context", context.encode('utf-8'))
+                top.add(context_top)
+
+                if show_context_notes or context in my.default_contexts_open:
+                    context_top.add_attr("spt_state", 'open')
+                else:
+                    context_top.add_attr("spt_state", 'closed')
+
+                context_wdg = my.get_context_wdg(process, context, show_context_notes=show_context_notes)
+                last_context = context
+                context_top.add(context_wdg)
+                context_top.add_style("min-width: 300px")
+                # prefer my.process. if not set, use context 
+                #process = my.process
+
+                # NOTE: this is fine if just adding shot level notes, but when dealing with task based notes, it
+                # may not be appropriate
+                #if not process:
+
+                #    process = context
+                
+                #add_note_wdg = DiscussionAddNoteWdg(parent=my.parent,context=my.contexts, process=process, use_parent=my.use_parent)
+                if my.contexts:
+                    context_choices = my.contexts
+                elif has_process and has_context:
+                    context_choices = [sobj.get_value('context')]
+                else:
+                    context_choices = []
+
+                process_choice = ''
+                if my.process:
+                    process_choice = my.process
+                elif has_process:
+                    process_choice = sobj.get_value('process')
+                           
+
+                context_count = 0
+
+                #if not my.contexts_checked or not my.show_context_header:
+                #    context_top.add_style('display: none')
+
+               
+                note_dialog = DialogWdg(display=False)
+                note_dialog.add_title("Notes for: %s" % context)
+                note_dialog.add_style("overflow-y: auto")
+                context_top.add(note_dialog)
+                note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
+
+
+                show_add = my.kwargs.get("show_add")
+                if show_add not in ['false', False]:
+
+                    shelf_wdg = DivWdg()
+                    note_dialog.add(shelf_wdg)
+                    shelf_wdg.add_style("height: 36px")
+                    shelf_wdg.add_color("background", "background3")
+
+                    add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
+                    shelf_wdg.add(add_wdg)
+                    add_wdg.add_style("float: right")
+                    shelf_wdg.add_style("padding-top: 3px")
+
+                    add_wdg.add_attr("spt_process", process)
+                    add_wdg.add_attr("spt_context", context)
+                    add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
+                    add_wdg.add_class(add_class)
+
+                    sk = my.parent.get_search_key(use_id=True)
+                    if isinstance(sk, unicode):
+                        sk = sk.encode('utf-8')
+                    kwargs = {
+                            'search_key': sk,
+                            'context': context_choices,
+                            'process': process_choice,
+                            'use_parent': my.use_parent,
+                            'append_process': my.append_processes
+                    }
+
+                    add_note_wdg = DivWdg()
+                    add_note_wdg.add_class("spt_add_note_container")
+                    add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
+                    note_dialog.add(add_note_wdg)
+
+                
+                note_content = DivWdg()
+                note_dialog.add(note_content)
+                note_content.add_style("max-height: 500px")
+                note_content.add_style("overflow-y: auto")
+                note_content.add_style("overflow-x: hidden")
+                """
+                note_content.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    var win_size = $(window).getSize();
+                    bvr.src_el.setStyle("max-height", win_size.y*0.75);
+                    '''
+                } )
+                """
 
 
 
 
 
-        # go through every context and display notes
-        for context in contexts:
-
-            context_top = DivWdg()
-            context_top.add_class("spt_discussion_context_top")
-            context_top.add_class("my_context")
-            #context_top.add_class("hand")
-            context_top.add_attr("my_context", context.encode('utf-8'))
-            top.add(context_top)
-
-            #if show_context_notes or context in my.default_contexts_open:
-            #    context_top.add_attr("spt_state", 'open')
-            #else:
-            #    context_top.add_attr("spt_state", 'closed')
-            if context not in my.default_contexts_open:
-                context_top.add_attr("spt_state", 'closed')
-
-            context_wdg = my.get_context_wdg(process, context)
-            context_top.add(context_wdg)
-            context_top.add_style("min-width: 300px")
-            if my.contexts:
-                context_choices = my.contexts
-            elif has_process and has_context:
-                context_choices = [sobj.get_value('context')]
+            if my.default_num_notes == -1:
+                note_hidden = True
+            elif context_count >= my.default_num_notes:
+                note_hidden = True
             else:
-                context_choices = []
+                note_hidden = False
 
-            process_choice = ''
-            if my.process:
-                process_choice = my.process
-            elif has_process:
-                process_choice = sobj.get_value('process')
-                       
+            note_wdg = my.get_note_wdg(note, show_context_notes=show_context_notes, note_hidden=note_hidden)
+            if i % 2 == 0:
+                note_wdg.add_color("background", "background", -3)
+            else:
+                note_wdg.add_color("background", "background", -6)
+            note_wdg.add_style("border-style: solid")
+            note_wdg.add_style("border-width: 0 0 1px 0")
+            note_wdg.add_style("border-color: %s" % note_wdg.get_color("table_border"))
 
-            context_count = 0
-           
-            note_dialog = DialogWdg(display=False)
-            context_top.add(note_dialog)
-            note_dialog.add_title("Notes for: %s" % context)
-            note_dialog.add_style("overflow-y: auto")
-            note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
+            note_content.add(note_wdg)
+            note_wdg.add_style("width: 395px")
 
+            #top.add(note_wdg)
 
-            show_add = my.kwargs.get("show_add")
-            if show_add not in ['false', False]:
+            context_count += 1
 
-                shelf_wdg = DivWdg()
-                note_dialog.add(shelf_wdg)
-                shelf_wdg.add_style("height: 36px")
-                shelf_wdg.add_color("background", "background3")
-
-                add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
-                shelf_wdg.add(add_wdg)
-                add_wdg.add_style("float: right")
-                shelf_wdg.add_style("padding-top: 3px")
-
-                add_wdg.add_attr("spt_process", process)
-                add_wdg.add_attr("spt_context", context)
-                add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
-                add_wdg.add_class(add_class)
-
-                sk = my.parent.get_search_key(use_id=True)
-                if isinstance(sk, unicode):
-                    sk = sk.encode('utf-8')
-                kwargs = {
-                        'search_key': sk,
-                        'context': context_choices,
-                        'process': process_choice,
-                        'use_parent': my.use_parent,
-                        'append_process': my.append_processes
-                }
-
-                add_note_wdg = DivWdg()
-                add_note_wdg.add_class("spt_add_note_container")
-                add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
-                note_dialog.add(add_note_wdg)
-
-
-            notes_list = context_notes.get(context)
-
-            note_keys = []
-            for note in notes_list:
-                note_key = note.get_search_key()
-                note_keys.append(note_key)
-
-            content = DivWdg()
-            note_dialog.add(content)
-            content.add_style("min-width: 300px")
-            content.add_style("min-height: 150px")
-            content.add_class("spt_discussion_content")
-            content.add_color("background", "background")
-
-            context_wdg.add_behavior( {
-                'type': 'click_up',
-                'note_keys': note_keys,
-                'default_num_notes': my.default_num_notes,
-                'note_expandable': my.note_expandable,
-                'note_format': my.note_format,
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_discussion_context_top");
-                if (top.getAttribute("spt_is_loaded") == "true") {
-                    return;
-                }
-
-                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                var kwargs = {
-                    note_keys: bvr.note_keys,
-                    default_num_notes: bvr.default_num_notes,
-                    note_expandable: bvr.note_expandable,
-                    note_format: bvr.note_format,
-                }
-
-                var el = top.getElement(".spt_discussion_content");
-                spt.panel.load(el, class_name, kwargs);
-
-                top.setAttribute("spt_is_loaded", "true");
-
-                '''
-            } )
-
-            notes_wdg = NoteCollectionWdg(
-                    notes=notes_list,
-                    default_num_notes=my.default_num_notes,
-
-                    note_expandable=my.note_expandable,
-                    show_note_status=my.show_note_status,
-                    note_format=my.note_format,
-                    attachments=my.attachments,
-            )
-
-
-            #note_dialog.add(notes_wdg)
 
         return top
 
 
 
-    def get_context_wdg(my, process, context):
+    def get_context_wdg(my, process, context, show_context_notes=True):
+        ''' this is drawn per process/context group of notes'''
+        div = DivWdg()
+        div.add_class("hand")
+
+        swap = SwapDisplayWdg()
+        div.add(swap)
+        swap.add_style("float: left")
+        swap.add_style("margin-top: -2")
+        swap.add_style("margin-left: -5")
+
+        if show_context_notes or context in my.default_contexts_open:
+            swap.set_off()
+
+        # this part doesn't need swap script 
+        js_action = '''
+                var context = '%s';
+                var top = bvr.src_el.getParent(".spt_discussion_top");
+                var notes = top.getElements(".spt_note");
+                for (var i = 0; i < notes.length; i++) {
+                    if (context != notes[i].getAttribute("my_context") ) {
+                        continue;
+                    }
+                    spt.toggle_show_hide(notes[i]);
+
+                }
+                
+                var context_el = bvr.src_el.getParent(".my_context");
+                var state = context_el.getAttribute("spt_state");
+                if (state == 'open')
+                    state = 'closed';
+                else
+                    state = 'open';
+                context_el.setAttribute("spt_state", state);
+                ''' %context
+
+        bvr = {
+                'type': 'click_up',
+                'cbjs_action':  '''
+                %s
+                %s
+                '''%(js_action, swap.get_swap_script())
+                }
+
+        swap.add_action_script(js_action)
+        
+        div.add_behavior(bvr)
+
+        show_add = my.kwargs.get("show_add")
+        if show_add not in ['false', False]:
+            add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
+            div.add(add_wdg)
+            add_wdg.add_style("float: right")
+            add_wdg.add_style("margin-top: -7px")
+            add_wdg.add_style("margin-right: -3px")
+            #dialog.set_as_activator(add_wdg)
+
+            add_wdg.add_attr("spt_process", process)
+            add_wdg.add_attr("spt_context", context)
+       
+
+        div.add_color("color", "color")
+        div.add_style("padding", "4px")
+        div.add_color("background", "background", -5, -5)
+        div.add_style("height", "15px")
+        div.add_style("font-weight", "bold")
+        #div.add_style("margin-bottom", "-1px")
+        div.add_style("border-width: 0px 0px 1px 0px")
+        div.add_style("border-style: solid")
+        div.add_color("border-color", "table_border")
+        if not context:
+            context = '<i>(no context)</i>'
+        div.add(context)
+
+        count_div = SpanWdg()
+        div.add(count_div)
+        count = my.context_counts.get(context)
+        count_div.add(" (%s)" % count)
+        count_div.add_style("font-weight: normal")
+        count_div.add_style("font-size: 1.0em")
+        count_div.add_style("font-style: italic")
+
+
+        return div
+
+
+
+    def get_context_wdg(my, process, context, show_context_notes=True):
         ''' this is drawn per process/context group of notes'''
         div = DivWdg()
         div.add_class("hand")
@@ -1473,159 +1523,34 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div = SpanWdg()
         div.add(count_div)
         count = my.context_counts.get(context)
-        count_div.add("(%s)" % count)
+        count_div.add(" (%s)" % count)
         count_div.add_style("font-weight: normal")
         count_div.add_style("font-size: 1.0em")
         count_div.add_style("font-style: italic")
-        count_div.add_style("margin-left: 3px")
 
         return div
 
 
 
 
-class NoteCollectionWdg(BaseRefreshWdg):
-
-    def get_display(my):
-        notes = my.kwargs.get("notes")
-        note_keys = my.kwargs.get("note_keys")
-        if note_keys:
-            notes = Search.get_by_search_keys(note_keys)
-
-        my.default_num_notes = my.kwargs.get("default_num_notes")
-        my.note_expandable = my.kwargs.get("note_expandable")
-        my.show_note_status = my.kwargs.get("show_note_status")
-
-        my.attachments = my.kwargs.get("attachments")
-
-
-        if my.attachments == None:
-            from pyasm.biz import Snapshot
-            snapshots = Snapshot.get_by_sobjects(notes)
-            my.attachments = {}
-            for snapshot in snapshots:
-                parent_key = snapshot.get_parent_search_key()
-                xx = my.attachments.get(parent_key)
-                if not xx:
-                    xx = []
-                    my.attachments[parent_key] = xx
-                xx.append(snapshot)
-
-
-        elif not my.attachments or my.attachments == "{}":
-            my.attachments = {}
 
 
 
 
-        if my.show_note_status:
-            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
-        else:
-            my.note_status_dict = {}
-
-        my.note_format = my.kwargs.get("note_format")
 
 
-        div = DivWdg()
-
-        context_count = 0
-
-        for i, note in enumerate(notes):
-
-            note_content = DivWdg()
-            div.add(note_content)
-            note_content.add_style("max-height: 500px")
-            note_content.add_style("overflow-y: auto")
-            note_content.add_style("overflow-x: hidden")
-
-            if my.default_num_notes == -1:
-                note_hidden = True
-            elif context_count >= my.default_num_notes:
-                note_hidden = True
-            else:
-                note_hidden = False
-
-            note_wdg = my.get_note_wdg(note, note_hidden=note_hidden)
-            if i % 2 == 0:
-                note_wdg.add_color("background", "background", -3)
-            else:
-                note_wdg.add_color("background", "background", -6)
-            note_wdg.add_style("border-style: solid")
-            note_wdg.add_style("border-width: 0 0 1px 0")
-            note_wdg.add_style("border-color: %s" % div.get_color("table_border"))
-
-            note_content.add(note_wdg)
-            note_wdg.add_style("width: 395px")
-
-            context_count += 1
-
-
-        return div
-
-
-
-    def get_note_wdg(my, note, note_hidden=False):
-        div = DivWdg()
-        widget = NoteWdg(
-            note=note,
-
-            note_hidden=note_hidden,
-
-            note_expandable=my.note_expandable,
-            show_note_status=my.show_note_status,
-            note_format=my.note_format,
-            attachments=my.attachments,
-
-        )
-
-        div.add(widget)
-        return div
-
-
-
-
-class NoteWdg(BaseRefreshWdg):
-    """Display of a single note.  Used by NoteCollectionWdg."""
-
-    def get_display(my):
-        note = my.kwargs.get("note")
-        note_key = my.kwargs.get("note_key")
-        if note_key:
-            note = Search.get_by_search_key(note_key)
-        my.kwargs['note_key'] = note.get_search_key()
-
-
-        note_hidden = my.kwargs.get("note_hidden")
-
-        my.note_expandable = my.kwargs.get("note_expandable")
-        my.show_note_status = my.kwargs.get("show_note_status")
-
-        my.attachments = my.kwargs.get("attachments")
-        if not my.attachments or my.attachments == "{}":
-            my.attachments = {}
-
-
-        if my.show_note_status:
-            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
-        else:
-            my.note_status_dict = {}
-
-        my.note_format = my.kwargs.get("note_format")
-
-
-        return my.get_note_wdg(note, note_hidden)
-
-
-    def get_note_wdg(my, note, note_hidden=False):
+    def get_note_wdg(my, note, show_context_notes=True, note_hidden=False):
         context = note.get_value("context")
 
         mode = "dialog"
 
         div = DivWdg()
-        my.set_as_panel(div)
         div.add_class("spt_note")
         div.add_attr('note_search_key', note.get_search_key())
 
+
+        if mode != 'dialog' and not show_context_notes and context not in my.default_contexts_open:
+            div.add_style("display: none")
 
         note_value = note.get_value("note") 
         login = note.get_value("login")
@@ -1635,8 +1560,7 @@ class NoteWdg(BaseRefreshWdg):
         div.add_attr("my_context", context.encode("UTF-8"))
 
 
-        #content = Table(css='minimal')
-        content = Table()
+        content = Table(css='minimal')
         content.add_style("width: 95%")
         content.add_color("color", "color")
         content.add_style("padding: 4px")
@@ -1663,7 +1587,7 @@ class NoteWdg(BaseRefreshWdg):
         if my.note_expandable in ['true', True]:
             title.add_class("hand")
             swap = SwapDisplayWdg.get_triangle_wdg()
-            if note_hidden in ['true', True]:
+            if note_hidden not in ['true', True]:
                 swap.set_off()
             SwapDisplayWdg.create_swap_title(title, swap, tbody)
             title.add(swap)
@@ -1678,8 +1602,8 @@ class NoteWdg(BaseRefreshWdg):
         display_date = date_obj.strftime("%b %d - %H:%M")
 
         if my.note_expandable in ['true', True]:
-            if len(note_value) > 30:
-                short_note = "%s ..." % note_value[:28]
+            if len(note_value) > 50:
+                short_note = "%s ..." % note_value[:48]
             else:    
                 short_note = note_value
                 
@@ -1707,7 +1631,6 @@ class NoteWdg(BaseRefreshWdg):
 
         td.add(title)
 
-        # Paper clip button code
         key = note.get_search_key()
         attachments = my.attachments.get(key)
         if attachments:
@@ -1747,7 +1670,7 @@ class NoteWdg(BaseRefreshWdg):
         if my.note_format == 'full':
             left = content.add_cell()
             left.add_style("padding: 10px")
-            left.add_style("width: 100px")
+            left.add_style("width: 150px")
             left.add_style("min-height: 100px")
             left.add_style("vertical-align: top")
 
@@ -1755,6 +1678,10 @@ class NoteWdg(BaseRefreshWdg):
                 login = "-- No User --"
                 left.add(login)
             else:
+                '''
+                from pyasm.security import Login
+                from pyasm.widget import ThumbWdg
+                '''
                 login_sobj = Login.get_by_code(login)
 
                 thumb = ThumbWdg()
@@ -1780,45 +1707,24 @@ class NoteWdg(BaseRefreshWdg):
         context = note.get_value("context")
 
         right.add( WikiUtil().convert(note_value) )
-        right.add_style("word-wrap: break-word")
-        right.add_style("max-width: 300px")
 
 
         attached_div = DivWdg()
         attached_div.add_style("margin-top: 10px")
         snapshots = attachments
-
-        # Snapshot thumbnail code
         if snapshots:
             attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
-            
-            attached_div.add_relay_behavior( {         
-            'type': 'click',
-            'mouse_btn': 'LMB',
-            'bvr_match_class': 'spt_open_thumbnail',
-            'cbjs_action': '''
-            
-            var src_el = bvr.src_el;
-            var thumb_href = src_el.getElement('.spt_thumb_href');
-            var thumb_path = thumb_href.getAttribute('href');
-            window.open(thumb_path);
-            '''
-            } )
 
             for snapshot in snapshots:
+                thumb_div = DivWdg()
+                attached_div.add(thumb_div)
+                thumb_div.add_style("float: left")
+
                 thumb = ThumbWdg()
                 thumb.set_option('detail','false')
-                thumb.set_option('image_link_order' , 'main|web|icon')
+                thumb_div.add(thumb)
                 thumb.set_icon_size(60)
                 thumb.set_sobject(snapshot)
-
-                thumb_div = DivWdg()
-                thumb_div.add_style("float: left")
-                thumb_div.add(thumb)
-                thumb_div.add_class("spt_open_thumbnail")
-                            
-                attached_div.add(thumb_div)
-
 
         right.add(attached_div)
 
@@ -1869,7 +1775,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
         content_div = my.top
-        content_div.add_style("min-width: 300px")
 
         my.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
@@ -1978,7 +1883,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         # this is a special case where we explicitly use processs/context for note
         #if use_parent =='true' and my.contexts:
         if my.contexts:
-            hidden = HiddenWdg("add_context")
+            hidden =HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
             content_div.add(hidden)
             if my.contexts[0] != my.process:
@@ -1990,7 +1895,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         content_div.add("<br/>Note:<br/>")
         text = TextAreaWdg("note")
-        text.add_class("form-control")
         text.add_style("width: 100%")
         text.add_style("height: 100px")
         content_div.add(text)
@@ -2123,27 +2027,21 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         table.add_color("color", "color")
         mail_div.add(table)
 
-        from tactic.ui.input import TextInputWdg
-
         # CC
         table.add_row()
         table.add_cell("Cc: ")
-        text = TextInputWdg(name="mail_cc")
+        text = TextWdg("mail_cc")
         text.add_style("width: 250px")
         table.add_cell(text)
 
-        tr, td = table.add_row_cell()
-        td.add("<br/>")
+        table.add_row_cell()
 
         # BCC 
         table.add_row()
         table.add_cell("Bcc: ")
-        text = TextInputWdg(name="mail_bcc")
+        text = TextWdg("mail_bcc")
         text.add_style("width: 250px")
         table.add_cell(text)
-
-        tr, td = table.add_row_cell()
-        td.add("<br/>")
 
         return content_div
 
@@ -2175,16 +2073,6 @@ class DiscussionAddNoteCmd(Command):
         context = my.kwargs.get("context")
         if not context:
             context = process
-        elif context.find("/"):
-            parts = context.split("/")
-            if parts:
-                try:
-                    # if the subcontext is a number, then ignore this
-                    subcontext = int(parts[1])
-                    context = parts[0]
-                except:
-                    pass
-
 
         from pyasm.biz import Note
         note = Note.create(sobject, note, context=context, process=process)

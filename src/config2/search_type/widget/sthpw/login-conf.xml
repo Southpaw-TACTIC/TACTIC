@@ -26,7 +26,6 @@
     <element name="license_type"/>
     <element name="password" type="password"/>
     <element name="hourly_wage"/>
-    <element name="upn" title="User Principal Name"/>
     <element name="activity">
        <display class="tactic.ui.table.ButtonElementWdg">
             <icon>CALENDAR</icon>
@@ -140,7 +139,6 @@
 <table>
     <element name="preview"/>
     <element name="login"/>
-    <element name="upn"/>
     <element name="first_name"/>
     <element name="last_name"/>
     <element name="display_name"/>
@@ -285,14 +283,10 @@
 
 
     <element name="login">
-        <display class="TextWdg">
-            <read_only>true</read_only>
-        </display>
+        <display class="TextWdg"/>
         <action class="LoginAction"/>
     </element>
  
-   <element name="upn">
-    </element>
 
     <element name="authentication">
         <display class="tactic.ui.panel.EditTitleWdg"/>
@@ -325,13 +319,14 @@
 
     <element name="department"/>
 
+    <!--
     <element name="license_type">
       <display class="SelectWdg">
         <empty>true</empty>
-        <values>disabled|user</values>
+        <values>disabled|user|float</values>
       </display>
     </element>
-
+    -->
 </edit>
 
 <edit_account layout="EditWdg">
@@ -382,24 +377,8 @@
     <element name="picture"/>
 
     <element name="login">
-        <action class="LoginAction">
-           <empty>false</empty>
-        </action>
+        <action class="LoginAction"/>
     </element>
-    <element name="upn" title="User Principal Name">
-        <display class="tactic.ui.input.TextInputWdg">
-            <hint_text>The email format version of a login. This can be changed after creation</hint_text>
-        </display>
-        <action class="DatabaseAction">
-            <default_col>login</default_col>
-        </action>
-    </element>
-   <element name="authentication">
-        <display class="tactic.ui.panel.EditTitleWdg"/>
-        <action class="NullAction"/>
-    </element>
-
-
     <element name="password">
         <display class="PasswordWdg"/>
         <action class="PasswordAction"/>
@@ -407,11 +386,6 @@
 
     <element name="password re-enter">
         <display class="PasswordWdg"/>
-        <action class="NullAction"/>
-    </element>
-
-    <element name="information">
-        <display class="tactic.ui.panel.EditTitleWdg"/>
         <action class="NullAction"/>
     </element>
 

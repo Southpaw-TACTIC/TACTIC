@@ -230,7 +230,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         
         from tactic.ui.container import WizardWdg
         #wizard = WizardWdg(title="Register a new sType", height="400px", width="550px")
-        wizard = WizardWdg(title="none", height="400px", width="600px")
+        wizard = WizardWdg(title="none", height="400px", width="550px")
         top.add(wizard)
 
 
@@ -445,7 +445,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         } )
 
 
-
         # add processes to the pipeline
         processes_div = DivWdg()
         pipeline_div.add(processes_div)
@@ -474,20 +473,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             text.add_attr("disabled", "disabled")
             process_wdg.add( text )
             dynamic_list.add_item(process_wdg)
-
-
-
-
-        pipeline_div.add("<br/>"*2)
-        pipeline_div.add("<hr/>")
-        pipeline_div.add("<br/>"*2)
-        pipeline_div.add("Items can be grouped into different collections to help searching and organizing.")
-        pipeline_div.add("<br/>"*2)
-        pipeline_div.add("&nbsp;&nbsp;&nbsp;<b>Support Collections?</b> ")
-        collection_checkbox = CheckboxWdg("sobject_collection")
-        pipeline_div.add(collection_checkbox)
-        pipeline_div.add("<br/>")
-
 
 
         #pipeline_div.add("<br/>"*2)
@@ -835,9 +820,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
           
           
             var filename = file.name;
-            
-            // allow any name for now
-            //filename = spt.path.get_filesystem_name(filename);
+            filename = spt.path.get_filesystem_name(filename);
             var kwargs = {
                 ticket: ticket,
                 filename: filename
@@ -1401,13 +1384,6 @@ class SearchTypeCreatorCmd(Command):
             my.has_pipeline = False
 
 
-        if my.get_value("sobject_collection"):
-            my.has_collection = True
-        else:
-            my.has_collection = False
-
-
-
         if my.get_value("sobject_preview"):
             my.has_preview = True
         else:
@@ -1713,8 +1689,6 @@ class SearchTypeCreatorCmd(Command):
         create.add("code", "varchar")
         if my.has_pipeline:
             create.add("pipeline_code", "varchar")
-        if my.has_collection:
-            create.add("_is_collection", "boolean")
 
 
         # add default columns
@@ -1724,7 +1698,6 @@ class SearchTypeCreatorCmd(Command):
         create.add("login", "varchar")
         create.add("timestamp", "timestamp")
         create.add("s_status", "varchar")
-        create.add_constraint(["code"], mode="UNIQUE")
 
 
         for column_name, column_type in zip(my.column_names, my.column_types):
@@ -1757,10 +1730,9 @@ class SearchTypeCreatorCmd(Command):
         else:
             create.commit(sql)
             TableUndo.log(my.search_type_obj.get_base_key(), database, table)
-        '''
+
             # add columns 
             db_resource = Project.get_db_resource_by_search_type(search_type)
-
             sql = DbContainer.get(db_resource)
 
             
@@ -1768,9 +1740,7 @@ class SearchTypeCreatorCmd(Command):
             statement = 'ALTER TABLE "%s" ADD CONSTRAINT "%s_code_unique" UNIQUE ("code")' % (table, table)
             #statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
             sql.do_update(statement)
-
-        '''
-
+        
 
     def add_sidebar_views(my):
 

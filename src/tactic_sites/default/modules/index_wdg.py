@@ -416,7 +416,7 @@ class IndexWdg2(Widget):
             action.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            document.location = "/tactic/admin/link/create_project";
+            document.location = "/tactic/admin/#/link/create_project";
             '''
             } )
 
