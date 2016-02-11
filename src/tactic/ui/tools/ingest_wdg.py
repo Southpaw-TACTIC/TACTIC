@@ -121,7 +121,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             process_names = []
 
-        process_names.append("---")
+        if process_names:
+            process_names.append("---")
         process_names.append("publish")
         process_names.append("icon")
 
@@ -139,9 +140,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             select = SelectWdg("process")
             div.add(select)
-            process_names.append("---")
-            process_names.append("publish")
-            process_names.append("icon")
             select.set_option("values", process_names)
             select.add_empty_option("- Select Ingest Process -")
             if selected_process:
