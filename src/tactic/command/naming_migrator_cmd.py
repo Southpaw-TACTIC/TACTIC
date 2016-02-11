@@ -119,11 +119,6 @@ class NamingMigratorCmd(Command):
                 print "new: ", path
 
 
-                if not os.path.exists(old_path):
-                    print '... old does not exist'
-                    continue
-                    
-
                 print "-"*20
 
 
@@ -147,6 +142,19 @@ class NamingMigratorCmd(Command):
                 dirname = os.path.dirname(path)
                 if not os.path.exists(dirname):
                     FileUndo.mkdir(dirname)
+
+
+
+                exists = False
+                if os.path.islink(old_path):
+                    exists = os.path.lexists(old_path)
+                else:
+                    exists = os.path.exists(old_path)
+
+                if not exists:
+                    print '... old does not exist'
+                    continue
+
 
                 FileUndo.move(old_path, path)
                 file.commit()

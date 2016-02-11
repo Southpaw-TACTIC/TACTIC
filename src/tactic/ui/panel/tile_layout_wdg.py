@@ -1734,6 +1734,18 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     var src_tile = bvr.src_el.getParent(".spt_tile_top");
     var has_inserted = false;
 
+    var has_drop_handler = dst_el.hasClass("spt_drop_handler");
+    var drop_handler = "";
+    if (!has_drop_handler) {
+        var drop_handler_el = dst_el.getParent(".spt_drop_handler");
+        if (drop_handler_el) {
+            drop_handler = drop_handler_el.getAttribute("spt_drop_handler");
+        }
+    }
+    else {
+        drop_handler = dst_el.getAttribute("spt_drop_handler");
+    }
+
     if (dst_top) {
         if( bvr._drag_copy_el ) {
             spt.mouse._delete_drag_copy( bvr._drag_copy_el );
@@ -1877,6 +1889,14 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 return;
             }
         }
+
+    }
+    else if (drop_handler) {
+        if( bvr._drag_copy_el ) {
+            spt.mouse._delete_drag_copy( bvr._drag_copy_el );
+            bvr._drag_copy_el = null;
+        };
+        eval(drop_handler+"(evt, bvr)");
 
     }
     else {
@@ -2220,8 +2240,8 @@ class ThumbWdg2(BaseRefreshWdg):
         if path and path.startswith("/context"):
             #img.add_style("padding: 15% 15%")
             img.add_style("width: auto")
-            img.add_style("height: 70%")
-            img.add_style("margin: 10%")
+            img.add_style("height: 80%")
+            img.add_style("margin-top: 15%")
 
             img = DivWdg(img)
             img.add_style("height: auto")

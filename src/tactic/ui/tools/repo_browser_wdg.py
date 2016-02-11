@@ -418,6 +418,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
+        my.search_types = my.kwargs.get("search_types")
 
 
         my.dynamic = my.kwargs.get("dynamic")
@@ -681,6 +682,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # add dirnames if they have sobject files in them
         #if not show_no_sobject_folders:
         my.counts = {}
+        print "base_dir: ", base_dir
         if True:
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
@@ -921,7 +923,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.behavior.destroy_element(bvr.src_el);
             }
 
-
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
                 snapshot_code: snapshot_code,
@@ -1011,6 +1012,44 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.panel.load(content, class_name, kwargs);
             spt.app_busy.hide();
         }
+
+
+        spt.repo_browser.drag_enter = function(event, el) {
+        }
+
+        spt.repo_browser.drag_leave = function(event, el) {
+            console.log("leave");
+        }
+
+        spt.repo_browser.drag_drop = function(evt, bvr) {
+            console.log(evt);
+            console.log(bvr);
+            var top = bvr.src_el.getParent(".spt_tile_top");
+            var search_key = top.getAttribute("spt_search_key");
+
+            var target = $(evt.target);
+            if (!target.hasClass("spt_dir")) {
+                target = target.getParent(".spt_dir");
+            }
+            var relative_dir = target.getAttribute("spt_relative_dir");
+
+
+
+            var server = TacticServerStub.get(); 
+            var cmd = 'tactic.ui.tools.RepoBrowserCbk';
+            var kwargs = {
+                search_key: search_key,
+                relative_dir: relative_dir
+            }
+            server.execute_cmd(cmd, kwargs); 
+
+            spt.behavior.destroy_element(top);
+
+            var dir_top = target.getParent(".spt_dir_list_handler_top");
+            spt.panel.refresh(dir_top);
+
+        }
+
 
         '''
         } )
@@ -1739,11 +1778,25 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+
+
     #def add_base_dir_behaviors(my, div, base_dir):
     #    SmartMenu.assign_as_local_activator( div, 'FREEFORM_DIR_ITEM_CTX' )
 
 
     def add_dir_behaviors(my, item_div, dirname, basename):
+
+        """ 
+        item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this)")
+        item_div.add_attr("ondragleave", "spt.repo_browser.drag_leave(event, this)")
+        item_div.add_attr("ondragover", "return false")
+        item_div.add_attr("ondrop", "spt.repo_browser.drag_drop(event, this)")
+        """
+        item_div.add_class("DROP_ROW")
+        item_div.add_class("spt_drop_handler")
+        item_div.add_attr("spt_drop_handler", "spt.repo_browser.drag_drop")
+
+
 
         asset_base_dir = Environment.get_asset_dir()
 
@@ -1752,7 +1805,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         relative_dir = path.replace(asset_base_dir, "")
         relative_dir = relative_dir.strip("/")
 
-        search_types = my.search_types_dict
 
         search_codes = my.search_codes
 
@@ -1772,6 +1824,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
 
 
+        search_types = my.search_types_dict
         search_type = search_types.get("%s/" % path)
 
         if not search_type:
@@ -1784,6 +1837,9 @@ class RepoBrowserDirListWdg(DirListWdg):
         if not search_type and search_types:
             search_type = search_types[search_types.keys()[0]]
 
+        if not search_type and my.search_types:
+            search_type = my.search_types[0]
+
 
         item_div.add_attr("spt_search_type", search_type)
 
@@ -1792,9 +1848,9 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
 
-        # TODO: make this inot a relay behavior
+        # TODO: make this into a relay behavior
         item_div.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
@@ -2107,7 +2163,6 @@ class RepoBrowserActionCmd(Command):
                     node = xml.get_node("snapshot/file[@name='%s']" % file_name)
                     Xml.set_attribute(node, "name", new_file_name)
 
-                print "snapshot: ", xml.to_string()
                 snapshot.set_value( "snapshot", xml.to_string() )
 
                 parts = context.split("/")
@@ -2133,27 +2188,45 @@ class RepoBrowserCbk(Command):
         relative_dir = my.kwargs.get("relative_dir")
         from_relative_dir = my.kwargs.get("from_relative_dir")
         snapshot_code = my.kwargs.get("snapshot_code")
+        search_key = my.kwargs.get("search_key")
+
 
         base_dir = Environment.get_asset_dir()
 
 
-        if not os.path.isdir("%s/%s" % (base_dir, relative_dir)):
-            raise Exception("relative_dir [%s] is not a directory" % relative_dir)
 
 
         if snapshot_code:
             snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
             version  = snapshot.get_value("version")
+            parent = snapshot.get_parent()
+
+            context = snapshot.get_value("context")
+
+            search = Search("sthpw/snapshot")
+            search.add_parent_filter(parent)
+            search.add_filter("context", context)
+            search.add_order_by("versoin")
+            snapshots = search.get_sobjects()
+
+        elif search_key:
+
+            parent = Search.get_by_search_key(search_key)
+            snapshots = Snapshot.get_by_sobject(parent)
+            # need to order by ascending version
+            snapshots.reverse()
+
 
         else:
-
-            if not os.path.isdir("%s/%s" % (base_dir, relative_dir)):
-                raise Exception("from_relative_dir [%s] is not a directory" % from_relative_dir)
 
             # find all the files with the relative dir
             file_search = Search("sthpw/file")
             file_search.add_filter("relative_dir", "%s%%" % from_relative_dir, op='like')
             files = file_search.get_sobjects()
+
+
+            if not os.path.isdir("%s/%s" % (base_dir, relative_dir)):
+                raise Exception("relative_dir [%s] is not a directory" % relative_dir)
 
 
             parents = {}
@@ -2201,18 +2274,7 @@ class RepoBrowserCbk(Command):
 
 
 
-        parent = snapshot.get_parent()
-
-        #if version == 1:
-        if False:
-            snapshots = [snapshot]
-        else:
-            context = snapshot.get_value("context")
-
-            search = Search("sthpw/snapshot")
-            search.add_parent_filter(parent)
-            search.add_filter("context", context)
-            snapshots = search.get_sobjects()
+        # handle single file moving
 
         all_files = []
         for snapshot in snapshots:
@@ -2248,6 +2310,21 @@ class RepoBrowserCbk(Command):
         cmd = NamingMigratorCmd( mode="file", search_keys=search_keys)
         cmd.execute()
 
+
+        # find hightest version
+        highest_snapshot = {}
+        highest_version = {}
+        for snapshot in snapshots:
+            context = snapshot.get("context")
+            version = snapshot.get_value("version")
+            if version == -1:
+                continue
+            if version > highest_version.get(context):
+                highest_version[context] = version
+                highest_snapshot[context] = snapshot
+
+        for snapshot in highest_snapshot.values():
+            snapshot.update_versionless("latest")
 
 
 
@@ -2522,7 +2599,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             # if browser default is browser, then like we don't want to see
             # a browser again.
             layout_mode = 'tile'
-
 
         layout_mode = "tile"
 
