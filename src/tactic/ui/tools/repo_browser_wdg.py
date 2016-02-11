@@ -14,7 +14,7 @@ __all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserContentWdg', 'R
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, Xml
+from pyasm.common import Environment, Xml, Common
 
 from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings
 from pyasm.biz import Snapshot, Project, File
@@ -1022,10 +1022,18 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.drag_drop = function(evt, bvr) {
-            console.log(evt);
-            console.log(bvr);
+
             var top = bvr.src_el.getParent(".spt_tile_top");
-            var search_key = top.getAttribute("spt_search_key");
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            var search_keys = spt.table.get_selected_search_keys();
+            if (search_keys) {
+                var search_key = null;
+            }
+            else {
+                var search_key = top.getAttribute("spt_search_key");
+            }
 
             var target = $(evt.target);
             if (!target.hasClass("spt_dir")) {
@@ -1039,6 +1047,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
                 search_key: search_key,
+                search_keys: search_keys,
                 relative_dir: relative_dir
             }
             server.execute_cmd(cmd, kwargs); 
@@ -2189,6 +2198,7 @@ class RepoBrowserCbk(Command):
         from_relative_dir = my.kwargs.get("from_relative_dir")
         snapshot_code = my.kwargs.get("snapshot_code")
         search_key = my.kwargs.get("search_key")
+        search_keys = my.kwargs.get("search_keys")
 
 
         base_dir = Environment.get_asset_dir()
@@ -2217,6 +2227,17 @@ class RepoBrowserCbk(Command):
             snapshots.reverse()
 
 
+        elif search_keys:
+            parents = Search.get_by_search_keys(search_keys)
+            snapshots = Snapshot.get_by_sobjects(parents)
+            snapshots.reverse()
+
+            for snapshot in snapshots:
+                print "vvv: ", snapshot.get_value("search_code"), snapshot.get_value("version")
+
+            dsaffdsafads
+
+
         else:
 
             # find all the files with the relative dir
@@ -2229,7 +2250,8 @@ class RepoBrowserCbk(Command):
                 raise Exception("relative_dir [%s] is not a directory" % relative_dir)
 
 
-            parents = {}
+            parent_keys = set()
+            relative_dirs = {}
             for file in files:
                 basename = os.path.basename(from_relative_dir)
 
@@ -2250,16 +2272,19 @@ class RepoBrowserCbk(Command):
                 parent_search_code = file.get_value("search_code")
                 parent_search_type = file.get_value("search_type")
 
-                search_key = "%s?code=%s" % (parent_search_type, parent_search_code)
-                parent = parents.get(search_key)
-                if not parent:
-                    parent = Search.get_by_search_key(parent)
+                parent_key = "%s&code=%s" % (parent_search_type, parent_search_code)
+                parent_keys.add(parent_key)
+                relative_dirs[parent_key] = new_relative_dir
 
-                if parent and parent.column_exists("relative_dir"):
+
+            # set the relative dirs of the parents
+            parents = Search.get_by_search_keys(list(parent_keys))
+            for parent in parents:
+                if parent.column_exists("relative_dir"):
+                    new_relative_dir = relative_dirs.get(parent.get_search_key())
                     parent.set_value("relative_dir", new_relative_dir)
+                    my.set_keywords(parent)
                     parent.commit()
-
-
 
             search_keys = [x.get_search_key() for x in files]
 
@@ -2283,6 +2308,7 @@ class RepoBrowserCbk(Command):
             for file in files:
                 file.set_value("relative_dir", relative_dir)
                 file.commit()
+
             all_files.extend(files)
 
 
@@ -2297,7 +2323,11 @@ class RepoBrowserCbk(Command):
             # used for some other purpose
             if parent.column_exists("relative_dir"):
                 parent.set_value("relative_dir", relative_dir)
-                parent.commit()
+
+                my.set_keywords(parent)
+
+            parent.commit()
+
 
         search_keys = [x.get_search_key() for x in all_files]
 
@@ -2327,6 +2357,32 @@ class RepoBrowserCbk(Command):
             snapshot.update_versionless("latest")
 
 
+
+
+    def set_keywords(my, parent):
+
+        if not parent.column_exists("keywords_data"):
+            return
+
+
+        keywords_data = parent.get_json_value("keywords_data", {})
+        name = parent.get_value("name")
+        relative_dir = parent.get_value("relative_dir")
+        if relative_dir and name:
+            path = "%s/%s" % (relative_dir, name)
+        else:
+            path = name
+
+        keywords_data['path'] = Common.extract_keywords_from_path(path)
+
+        parent.set_json_value("keywords_data", keywords_data)
+
+        keywords = set()
+        for values in keywords_data.values():
+            keywords.update(values)
+        keywords_list = list(keywords)
+        keywords_list.sort()
+        parent.set_value("keywords", " ".join(keywords_list))
 
 
 
