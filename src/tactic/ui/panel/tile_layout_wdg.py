@@ -1399,8 +1399,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add_style("height: auto")
         thumb_drag_div.add_behavior( {
             "type": "drag",
-            #'drag_el': 'drag_ghost_copy',
-            #//'use_copy': 'true',
             "drag_el": '@',
             'drop_code': 'DROP_ROW',
             'border_color': border_color,
@@ -1859,23 +1857,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         table.add_cell(title)
         title.add_style("padding: 0px 10px 0px 0px")
 
-        """
-        # TO BE DELETED
-        less_div = DivWdg()
-        less_div.add("<input type='button' value='&lt;&lt;'/>")
-        table.add_cell(less_div)
-
-        less_div.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.tile_layout.set_layout(bvr.src_el);
-            var scale = spt.tile_layout.get_scale();
-            scale = scale * 0.95;
-            scale = parseInt(scale);
-            spt.tile_layout.set_scale(scale);
-            '''
-        } )
-        """
 
         dark_color = div.get_color("background", -5)
         light_color = div.get_color('color')

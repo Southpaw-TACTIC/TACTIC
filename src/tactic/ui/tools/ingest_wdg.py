@@ -159,7 +159,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        desc_wdg = DivWdg("This extra metaadata will be added to each added item")
+        desc_wdg = DivWdg("This extra metaadata will be added to each new item")
         div.add(desc_wdg)
 
         from tactic.ui.panel import EditWdg
@@ -1491,7 +1491,7 @@ class IngestUploadCmd(Command):
 
             # extract keywords from filename
             file_keywords = my.get_keywords_from_path(path)
-            file_keywords.append(filename)
+            file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
             if SearchType.column_exists(search_type, "keywords"):

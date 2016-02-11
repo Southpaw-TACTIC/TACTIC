@@ -934,10 +934,15 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         spt.repo_browser.select = function(file_item) {
+            console.log("select")
             file_item.setStyle("background", "#CCC");
+            file_item.setStyle("box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
+            file_item.setStyle("border-radius", "3px");
             file_item.addClass("spt_selected")
         }
         spt.repo_browser.unselect = function(file_item) {
+            file_item.setStyle("box-shadow", "");
+            file_item.setStyle("border-radius", "");
             file_item.setStyle("background", "");
             file_item.removeClass("spt_selected")
         }
@@ -2517,6 +2522,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             # if browser default is browser, then like we don't want to see
             # a browser again.
             layout_mode = 'tile'
+
 
         layout_mode = "tile"
 
