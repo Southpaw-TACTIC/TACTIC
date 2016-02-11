@@ -144,10 +144,54 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         if process:
             select.set_option("default", process)
-    
+
+
+
 
         div.add("<br/>")
         div.add("<hr/>")
+
+
+        # Metadata
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add("Metadata")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
+
+        desc_wdg = DivWdg("This extra metaadata will be added to each added item")
+        div.add(desc_wdg)
+
+        from tactic.ui.panel import EditWdg
+
+        ingest_data_view = my.kwargs.get('ingest_data_view')
+
+        sobject = SearchType.create(my.search_type)
+        edit = EditWdg(
+                search_key=sobject.get_search_key(),
+                mode='view',
+                view=ingest_data_view,
+                show_header=False,
+                width="auto",
+        )
+        
+        div.add(edit)
+        hidden = HiddenWdg(name="parent_key")
+        div.add(hidden)
+        hidden.add_class("spt_parent_key")
+        parent_key = my.kwargs.get("parent_key") or ""
+        if parent_key:
+            hidden.set_value(parent_key)
+
+
+
+
+
+        div.add("<br/>")
+        div.add("<hr/>")
+
+
+        # options
 
 
         # update mode
@@ -216,41 +260,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(column_select)
 
 
-        div.add("<br/>")
-        div.add("<hr/>")
 
-
-        # Metadata
-        title_wdg = DivWdg()
-        div.add(title_wdg)
-        title_wdg.add("Metadata")
-        title_wdg.add_style("margin-top: 20px")
-        title_wdg.add_style("font-size: 16px")
-
-        desc_wdg = DivWdg("This extra metaadata will be added to each added item")
-        div.add(desc_wdg)
-
-        # edit
-        from tactic.ui.panel import EditWdg
-
-        ingest_data_view = my.kwargs.get('ingest_data_view')
-
-        sobject = SearchType.create(my.search_type)
-        edit = EditWdg(
-                search_key=sobject.get_search_key(),
-                mode='view',
-                view=ingest_data_view,
-                show_header=False,
-                width="auto",
-        )
-        
-        div.add(edit)
-        hidden = HiddenWdg(name="parent_key")
-        div.add(hidden)
-        hidden.add_class("spt_parent_key")
-        parent_key = my.kwargs.get("parent_key") or ""
-        if parent_key:
-            hidden.set_value(parent_key)
 
 
         extra_data = my.kwargs.get("extra_data")
@@ -713,7 +723,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         name_div.add_class("spt_name")
         info_div.add(name_div)
         name_div.add("image001.jpg")
-        name_div.add_style("width: 150px")
+        name_div.add_style("width: 225px")
+        name_div.add_style("overflow-x: hidden")
+        name_div.add_style("text-overflow: ellipsis")
 
 
 
@@ -1407,7 +1419,6 @@ class IngestUploadCmd(Command):
                 ZipUtil.extract(zip_path, base_dir=unzip_dir)
 
                 paths = ZipUtil.get_file_paths(zip_path)
-                print "paths: ", paths
 
 
                 new_kwargs = my.kwargs.copy()
@@ -1472,8 +1483,15 @@ class IngestUploadCmd(Command):
                     sobject.set_value("relative_dir", relative_dir)
 
 
+            relative_dir = my.kwargs.get("relative_dir")
+            if relative_dir:
+                path = "%s/%s" % (relative_dir, filename)
+            else:
+                path = filename
+
             # extract keywords from filename
-            file_keywords = my.get_keywords_from_path(filename)
+            file_keywords = my.get_keywords_from_path(path)
+            file_keywords.append(filename)
             file_keywords = " ".join(file_keywords)
 
             if SearchType.column_exists(search_type, "keywords"):
@@ -1482,6 +1500,12 @@ class IngestUploadCmd(Command):
 
                 if file_keywords:
                     sobject.set_value("keywords", file_keywords)
+
+
+            if sobject.column_exists("keywords_data"):
+                data = sobject.get_json_value("keywords_data", {})
+                data['path'] = file_keywords.split(" ")
+                sobject.set_json_value("keywords_data", data)
 
 
 

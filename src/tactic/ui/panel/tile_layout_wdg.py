@@ -1427,9 +1427,14 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add(thumb)
         thumb_div.add_border()
 
-        #bottom_view = my.kwargs.get("bottom_view")
-        #if bottom_view:
-        #    div.add( my.get_view_wdg(sobject, bottom_view) )
+
+        # FIXME: for some reason, the hidden overflow is not respected here
+        thumb.add_style("margin-top: 30%")
+        thumb.add_style("transform: translate(0%, -50%)")
+        #thumb.add_style("border: solid 2px blue")
+        #thumb_div.add_style("border: solid 2px red")
+
+
         if my.bottom:
             my.bottom.set_sobject(sobject)
             div.add(my.bottom.get_buffer_display())
@@ -2195,13 +2200,16 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        if height or my.show_name_hover in ["True","true",True]:
-            div.add_style("height: 100%")
+        #if height or my.show_name_hover in ["True","true",True]:
+        #    div.add_style("height: 100%")
 
+
+        # FIXE: what is this for???
         if my.show_name_hover in ["True","true",True]:
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
             name_hover.add(sobject.get('name'))
+
             name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
             name_hover.add_styles('opacity: 0; font-size: 16px; color: rgb(217, 217, 217); top: 0px; \

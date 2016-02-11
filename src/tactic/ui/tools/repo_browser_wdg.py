@@ -197,6 +197,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
         parent_search = my.kwargs.get("search")
+        if parent_search:
+            parent_search.set_limit(1000)
+            parent_search.set_offset(0)
+
+
 
         search_keys =  [x.get_search_key() for x in my.sobjects]
         dynamic = True
@@ -240,12 +245,12 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 dirname="%s/%s" % (project_dir, "asset"),
                 basename="",
             )
-            content.add(widget)
+            outer_div.add(widget)
 
         else:
             msg_div = DivWdg()
             msg_div.add("Search for content")
-            content.add(msg_div)
+            outer_div.add(msg_div)
             msg_div.add_style("margin: 100px auto")
             msg_div.add_style("width: 250px")
             msg_div.add_style("padding: 50px")
@@ -649,6 +654,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         # find any folders that match
+        """
         dirnames = os.listdir(base_dir)
         for dirname in dirnames:
 
@@ -668,7 +674,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             for keyword in keywords:
                 if keyword.lower() in parts:
                     paths.append("%s/" % subdir)
-
+        """
             
     
 
@@ -1248,8 +1254,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                     var server = TacticServerStub.get();
                     server.execute_cmd(class_name, kwargs);
 
-                    //var dir_top = span.getParent(".spt_dir_list_handler_top");
-                    //spt.panel.refresh(dir_top);
+                    var dir_top = span.getParent(".spt_dir_list_handler_top");
+                    spt.panel.refresh(dir_top);
                 };
                 input.onfocus = function() {
                     this.select();
@@ -1366,7 +1372,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
 
         """
-        menu_item = MenuItem(type='action', label='Check-in Files')
+        menu_item = MenuItem(type='action', label='Download Files')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -1770,8 +1776,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 tmp_dir = "%s/%s" % (my.base_dir, tmp_rel_dir)
                 search_type = search_types.get("%s/" % tmp_dir)
 
-        if not search_type:
-            return
+        if not search_type and search_types:
+            search_type = search_types[search_types.keys()[0]]
 
 
         item_div.add_attr("spt_search_type", search_type)
@@ -2528,15 +2534,14 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             view="table",
             element_names=element_names,
             show_shelf=False,
+            show_search_limit=False,
             layout=layout_mode,
-            scale='75',
+            scale='100',
             width='100%',
 
         )
-        #layout.set_sobjects(sobjects)
 
 
-        #top.add_border(size="1px 1px 0px 1px")
         top.add(layout)
 
         return top
