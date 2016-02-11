@@ -2270,7 +2270,6 @@ spt.checkin.html5_checkin = function(files) {
                     search_key = parts[0];
                     process = parts[1];
                 }
-                alert(process)
             }
 
 
