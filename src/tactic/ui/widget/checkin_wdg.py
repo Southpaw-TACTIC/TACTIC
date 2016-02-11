@@ -903,7 +903,8 @@ spt.checkin.get_checkin_data = function() {
     var deliver = top.getElement(".spt_checkin_deliver");
     deliver = deliver ? deliver.checked : false;
 
-    var deliver_process = top.getElement(".spt_deliver_process").value;
+    var deliver_process = top.getElement(".spt_deliver_process")
+    deliver_process = deliver_process ? deliver_process.value : '';
 
 
     var file_type = 'main';
