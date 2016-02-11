@@ -116,13 +116,15 @@ class CheckinDirListWdg(DirListWdg):
             my.subcontext_options = []
 
         my.preselected = my.kwargs.get("preselected")
-        my.use_applet = my.kwargs.get("use_applet")
+        my.use_applet = my.kwargs.get("use_applet") in ['true', True]
+
 
 
     def add_base_dir_behaviors(my, div, base_dir):
 
         # add tooltip
-        div.add_attr('title','This is the sandbox folder. Double-click to open and right-click for more options.')
+        if my.use_applet:
+            div.add_attr('title','This is the sandbox folder. Double-click to open and right-click for more options.')
         # add a top menu
         menu = Menu(width=180)
         menu_item = MenuItem(type='title', label='Actions')
@@ -136,7 +138,8 @@ class CheckinDirListWdg(DirListWdg):
             var applet = spt.Applet.get();
             var activator = spt.smenu.get_activator(bvr);
             var path = bvr.base_dir;
-            applet.open_file(path);
+            if (applet)
+                applet.open_file(path);
             '''
         } )
 
@@ -150,6 +153,8 @@ class CheckinDirListWdg(DirListWdg):
         'cbjs_action': '''
             var current_dir = bvr.base_dir;
             var applet = spt.Applet.get();
+            if (!applet) return;
+
             var file_paths = applet.open_file_browser(current_dir);
 
             // take the first one make sure it is a directory
@@ -184,6 +189,7 @@ class CheckinDirListWdg(DirListWdg):
         var items = server.eval(expr);
 
         var applet = spt.Applet.get();
+        if (!applet) return;
 
         var urls = [];
         for (var i = 0; i < items.length; i++) {
@@ -1264,7 +1270,6 @@ class CheckinDependencyWdg(BaseRefreshWdg):
 
 
         depend_keys = my.kwargs.get("depend_keys")
-        print "depend_keys: ", depend_keys
         if isinstance(depend_keys, basestring):
             depend_keys = depend_keys.split("|")
         if depend_keys:
@@ -1291,7 +1296,7 @@ class CheckinDependencyWdg(BaseRefreshWdg):
 
 
 
-        print "ref: ", ref_snapshots
+        #print "ref: ", ref_snapshots
 
         search_type = "jobs/media"
         search_type = "sthpw/snapshot"
