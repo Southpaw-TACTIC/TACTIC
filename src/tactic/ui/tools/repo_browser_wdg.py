@@ -598,6 +598,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
+        my.search_keys_dict = {}
+
 
         # Note this shold be used sparingly because it can find lots of
         # sobjects
@@ -641,6 +643,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search_type = file_object.get("search_type")
                 my.search_types_dict[path] = search_type
 
+                search_key = "%s&code=%s" % (search_type, search_code)
+                my.search_keys_dict[path] = search_key
+
                 if not file_name:
                     #print search_type, relative_dir
                     continue
@@ -677,13 +682,12 @@ class RepoBrowserDirListWdg(DirListWdg):
                     paths.append("%s/" % subdir)
         """
             
-    
+   
 
         # add dirnames if they have sobject files in them
         #if not show_no_sobject_folders:
         my.counts = {}
-        print "base_dir: ", base_dir
-        if True:
+        if os.path.exists(base_dir) and os.path.isdir(base_dir):
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
                 subdir = "%s/%s" % (base_dir, dirname)
@@ -1209,7 +1213,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         """
 
         """
-        menu_item = MenuItem(type='action', label='Delete Item')
+        menu_item = MenuItem(type='action', label='Delete Folder')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -1234,7 +1238,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             var kwargs = {
               search_key: search_key,
             }
-            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+            var popup = spt.panel.load_popup("Delete Folder", class_name, kwargs);
             '''
         } )
         """
@@ -1577,7 +1581,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             'type': 'click_up',
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
-            var value = activator.getAttribute("spt_basename");
+            var content = activator.getElement(".spt_basename_content");
+            var value = content.getAttribute("spt_src_basename");
+
             var relative_dir = activator.getAttribute("spt_relative_dir");
 
             var input = $(document.createElement("input"));
@@ -1645,18 +1651,35 @@ class RepoBrowserDirListWdg(DirListWdg):
             var activator = spt.smenu.get_activator(bvr);
             var relative_dir = activator.getAttribute("spt_relative_dir");
 
-            var snapshot_code = activator.getAttribute("spt_snapshot_code")
+            var snapshot_code = activator.getAttribute("spt_snapshot_code");
+            var search_key = activator.getAttribute("spt_search_key");
 
             var server = TacticServerStub.get();
 
+            /*
             var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
             var kwargs = {
                 action: 'delete_item',
-                snapshot_code,
+                snapshot_code: snapshot_code
             }
+            */
+
             try {
-                server.execute_cmd(class_name, kwargs);
-                activator.destroy();
+                //server.execute_cmd(class_name, kwargs);
+
+
+                var delete_on_complete = function() {
+                    var dir_top = target.getParent(".spt_dir_list_handler_top");
+                    spt.panel.refresh(dir_top);
+                }
+                
+                var class_name = 'tactic.ui.tools.DeleteToolWdg';
+                var kwargs = {
+                  search_key: search_key,
+                  on_complete: "delete_on_complete()"
+                }
+                var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+     
             }
             catch(e) {
                 alert("Could not delete file.");
@@ -1712,6 +1735,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         span.add_style("white-space: nowrap")
         span.add_attr("title", basename)
         span.add(src_basename)
+        span.add_attr("spt_src_basename", src_basename)
+        span.add_class("spt_basename_content")
 
         src_basename = span
 
@@ -1730,6 +1755,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_relative_dir", relative_dir)
 
         search_types = my.search_types_dict
+        search_keys = my.search_keys_dict
+
+        search_key = search_keys.get(path)
+        item_div.add_attr("spt_search_key", search_key)
 
 
         file_codes = my.file_codes
@@ -2114,21 +2143,25 @@ class RepoBrowserActionCmd(Command):
 
             context = snapshot.get_value("context")
 
-            # get all of the snapshots
+            # get all of the snapshots. Make sure versionless is the first one
             search = Search("sthpw/snapshot")
             search.add_sobject_filter(sobject)
             search.add_filter("context", context)
             search.add_order_by("version")
             snapshots = search.get_sobjects()
 
+            parents = {}
+
             for snapshot in snapshots:
 
                 xml = snapshot.get_xml_value("snapshot")
                 version = snapshot.get_value("version")
                 context = snapshot.get_value("context")
+                search_code = snapshot.get_value("search_code")
 
-                print "version: ", version
-
+                if not parents.get(search_code):
+                    parent = snapshot.get_parent()
+                    parents[search_code] = parent
 
                 # need to make some big assumptions about the file name
                 # find the main file and set the versions accoridngly
@@ -2148,7 +2181,7 @@ class RepoBrowserActionCmd(Command):
                 if version == -1:
                     new_base = new_value
                 else:
-                    new_base = "%s_v%0.3d" % (new_value, version)
+                    new_base = "%s_v%0.3d" % (new_base, version)
 
                 for file in files:
 
@@ -2186,6 +2219,40 @@ class RepoBrowserActionCmd(Command):
 
             sobject.set_value("name", new_value)
             sobject.commit()
+
+
+            for parent in parents.values():
+                my.set_keywords(parent)
+                parent.commit()
+
+
+
+
+    def set_keywords(my, parent):
+
+        if not parent.column_exists("keywords_data"):
+            return
+
+
+        keywords_data = parent.get_json_value("keywords_data", {})
+        name = parent.get_value("name")
+        relative_dir = parent.get_value("relative_dir")
+        if relative_dir and name:
+            path = "%s/%s" % (relative_dir, name)
+        else:
+            path = name
+
+        keywords_data['path'] = Common.extract_keywords_from_path(path)
+
+        parent.set_json_value("keywords_data", keywords_data)
+
+        keywords = set()
+        for values in keywords_data.values():
+            keywords.update(values)
+        keywords_list = list(keywords)
+        keywords_list.sort()
+        parent.set_value("keywords", " ".join(keywords_list))
+
 
 
 
@@ -2612,7 +2679,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
                 parent_search.select.loads(parent_search_str)
                 parent_search.add_column("code")
                 search2.add_search_filter("code", parent_search)
-
 
             sobjects = search2.get_sobjects()
 

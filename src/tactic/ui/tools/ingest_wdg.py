@@ -1515,7 +1515,7 @@ class IngestUploadCmd(Command):
                 path = filename
 
             # extract keywords from filename
-            file_keywords = Common.get_keywords_from_path(path)
+            file_keywords = Common.extract_keywords_from_path(path)
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
