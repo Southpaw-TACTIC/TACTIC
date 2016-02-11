@@ -87,14 +87,14 @@
 
 <!-- a simple less technical interface without using the drop -->
 <startup>
-    <element name="project_code"/>
-    <element name="login_group"/>
-    <element name="description"/>
-    <element name="access_level"/>
-    <element name="user_assign"/>
-    <element name="users"/>
-    <element name="global_rules"/>
-    <element name="access_rules_hidden"/>
+    <element name="project_code" width="114"/>
+    <element name="login_group" width="110"/>
+    <element name="description" width="280"/>
+    <element name="access_level" width="100"/>
+    <element name="user_assign" width="100"/>
+    <element name="users" width="140"/>
+    <element name="global_rules" width="80"/>
+    <element name="access_rules_hidden" width="80"/>
 </startup>
 
 

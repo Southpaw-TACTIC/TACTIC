@@ -744,6 +744,12 @@ class CalendarInputWdg(BaseInputWdg):
             'category': 'Display',
             'order': 9,
         },
+
+        "hint_text" : {
+            'description': "hint_text can be used to tell users why the calendar input is read only",
+            'type': 'TextWdg',
+            'category': 'Display',
+        },
         
 
         'default': {
@@ -906,7 +912,10 @@ class CalendarInputWdg(BaseInputWdg):
             text = input
         else:
             # TODO: add a kwarg - hint_text
-            input = TextInputWdg( name=name, read_only=read_only, required=required, icon=activator, width=width)
+            hint_text = my.get_option('hint_text')
+            if not hint_text:
+                hint_text = None
+            input = TextInputWdg( name=name, read_only=read_only, hint_text=hint_text, required=required, icon=activator, width=width)
             text = input.get_text()
 
 
@@ -1961,7 +1970,3 @@ class TimeInputWdg(BaseInputWdg):
         div.add(time_input)
  
         return top
-
-
-
-

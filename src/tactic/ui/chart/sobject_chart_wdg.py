@@ -645,7 +645,7 @@ class CalendarChartWdg(BaseChartWdg):
 
         # draw a legend
         legend = None
-        from chart2_wdg import ChartLegend
+        from chart_wdg import ChartLegend
         labels = my.kwargs.get("labels")
         if labels:
             legend = ChartLegend()
