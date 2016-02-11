@@ -900,7 +900,9 @@ spt.checkin.get_checkin_data = function() {
     data['context'] = context;
 
     var description = top.getElement(".spt_checkin_description").value;
-    var deliver = top.getElement(".spt_checkin_deliver").checked;
+    var deliver = top.getElement(".spt_checkin_deliver");
+    deliver = deliver ? deliver.checked : false;
+
     var deliver_process = top.getElement(".spt_deliver_process").value;
 
 
