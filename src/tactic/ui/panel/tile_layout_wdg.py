@@ -1842,7 +1842,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             // Do not show this message as long as there is one successful insert.
             if (src_codes.length == 1 && src_codes[0] == parent_code) {
                 // Additional check to see if its a tile
-				if (!dst_top.hasClass("spt_table_row")) {
+                if (!dst_top.hasClass("spt_table_row")) {
                     spt.notify.show_message("Collection [" + parent_name + " ] cannot be added to itself.");
                 }
                 return;
