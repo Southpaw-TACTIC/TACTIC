@@ -929,8 +929,9 @@ class DirListWdg(BaseRefreshWdg):
         location = my.kwargs.get("location")
         if location == 'server':
             base_dir = Environment.get_client_repo_dir()
-            
+        """    
         div.add_class("hand")
+        
         div.add_attr('title','Double click to open explorer')
         div.add_behavior( {
         'type': 'double_click',
@@ -942,7 +943,7 @@ class DirListWdg(BaseRefreshWdg):
         '''
         } )
 
-
+        """
 
     def add_dir_behaviors(my, item_div, dir, item):
 
