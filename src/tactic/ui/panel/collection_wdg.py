@@ -276,6 +276,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var is_checked = false;
             var added = [];
+            var collection_keys = [];
             
             var dialog_top = bvr.src_el.getParent(".spt_col_dialog_top");
             
@@ -294,22 +295,26 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                     // if there is at least one checkbox selected, set is_checked to 'true'
                     is_checked = true;
 
-                    var search_keys = spt.table.get_selected_search_keys(false);
-                    var kwargs = {
-                        collection_key: collection_key,
-                        search_keys: search_keys
-                    }
-                    var rtn = server.execute_cmd(cmd, kwargs);
-                    if ((rtn.info.message) != 'No insert')
-                        added.push(collection_name);
+                    // If the collection is not being added to itself, append to the list of collection keys
+                    collection_keys.push(collection_key);
                 }
             }
 
             if (is_checked == false) {
                 spt.notify.show_message("No collection selected.");
-                return;
             }
             else {
+                var kwargs = {
+                    collection_keys: collection_keys,
+                    search_keys: search_keys
+                }
+                var rtn = server.execute_cmd(cmd, kwargs);
+                var rtn_message = rtn.info.message;
+                for (var collection_name in rtn_message) {
+                    if (rtn_message[collection_name] != 'No insert')
+                        added.push(collection_name);
+                }
+
                 if (added.length == 0)
                     spt.notify.show_message("Items already added to Collection.");
                 else 
@@ -331,69 +336,76 @@ class CollectionAddCmd(Command):
 
     def execute(my):
 
-        collection_key = my.kwargs.get("collection_key")
+        collection_keys = my.kwargs.get("collection_keys")
         search_keys = my.kwargs.get("search_keys")
+        message = {} 
 
-        collection = Search.get_by_search_key(collection_key)
-        if not collection:
-            raise Exception("Collection does not exist")
+        if collection_keys == None:
+            collection_keys = []
+
+        for collection_key in collection_keys:
+            collection = Search.get_by_search_key(collection_key)
+            if not collection:
+                raise Exception("Collection does not exist")
+
+            collection_name = collection.get("name")
+            search_type = collection.get_base_search_type()
+            parts = search_type.split("/")
+            collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+            search = Search(collection_type)
+            search.add_filter("parent_code", collection.get_code())
+            items = search.get_sobjects()
 
 
-        search_type = collection.get_base_search_type()
-        parts = search_type.split("/")
-        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-        search = Search(collection_type)
-        search.add_filter("parent_code", collection.get_code())
-        items = search.get_sobjects()
-
-
-        search_codes = [x.get_value("search_code") for x in items]
-        search_codes = set(search_codes)
-
-
-
-        has_keywords = SearchType.column_exists(search_type, "keywords")
-
-        if has_keywords:
-            collection_keywords = collection.get_value("keywords", no_exception=True)
-            collection_keywords = collection_keywords.split(" ")
-            collection_keywords = set(collection_keywords)
+            search_codes = [x.get_value("search_code") for x in items]
+            search_codes = set(search_codes)
 
 
 
-        # create new items
-        has_inserted = False
+            has_keywords = SearchType.column_exists(search_type, "keywords")
 
-        sobjects = Search.get_by_search_keys(search_keys)
-        for sobject in sobjects:
-            if sobject.get_code() in search_codes:
-                continue
-
-            new_item = SearchType.create(collection_type)
-            new_item.set_value("parent_code", collection.get_code())
-            new_item.set_value("search_code", sobject.get_code())
-            new_item.commit()
-            has_inserted = True
-
-            # copy the metadata of the collection
             if has_keywords:
-                keywords = sobject.get_value("keywords")
+                collection_keywords = collection.get_value("keywords", no_exception=True)
+                collection_keywords = collection_keywords.split(" ")
+                collection_keywords = set(collection_keywords)
 
-                keywords = keywords.split(" ")
-                keywords = set(keywords)
 
-                keywords = keywords.union(collection_keywords)
-                keywords = " ".join(keywords)
 
-                sobject.set_value("keywords", keywords)
-                sobject.commit()
+            # create new items
+            has_inserted = False
 
+            sobjects = Search.get_by_search_keys(search_keys)
+            for sobject in sobjects:
+                if sobject.get_code() in search_codes:
+                    continue
+
+                new_item = SearchType.create(collection_type)
+                new_item.set_value("parent_code", collection.get_code())
+                new_item.set_value("search_code", sobject.get_code())
+                new_item.commit()
+                has_inserted = True
+
+                # copy the metadata of the collection
+                if has_keywords:
+                    keywords = sobject.get_value("keywords")
+
+                    keywords = keywords.split(" ")
+                    keywords = set(keywords)
+
+                    keywords = keywords.union(collection_keywords)
+                    keywords = " ".join(keywords)
+
+                    sobject.set_value("keywords", keywords)
+                    sobject.commit()
 
         
-        if not has_inserted:
-            my.info['message'] = "No insert"
-        else:
-            my.info['message'] = "Insert OK"
+            if not has_inserted:
+                message[collection_name] = "No insert"
+            else:
+                message[collection_name] = "Insert OK"
+
+        my.info['message'] = message
+        my.add_description("Add [%s] item(s) to [%s] collection(s)" % (len(search_keys), len(collection_keys)))
 
 
 class CollectionLayoutWdg(ToolLayoutWdg):
@@ -1043,6 +1055,7 @@ class CollectionRemoveCmd(Command):
         my.search_keys = my.kwargs.get("search_keys")
 
         collection = Search.get_by_search_key(my.collection_key)
+        collection_code = collection.get("code")
         sobjects = Search.get_by_search_keys(my.search_keys)
         search_codes = [x.get_code() for x in sobjects]
 
@@ -1060,6 +1073,8 @@ class CollectionRemoveCmd(Command):
         for item in items:
             item.delete()
 
+        my.add_description("Remove [%s] item(s) from Collection [%s]" % (len(my.search_keys), collection_code))
+
 
 class CollectionDeleteCmd(Command):
 
@@ -1068,6 +1083,7 @@ class CollectionDeleteCmd(Command):
         my.collection_key = my.kwargs.get("collection_key")
 
         collection = Search.get_by_search_key(my.collection_key)
+        collection_code = collection.get("code")
 
         search_type = collection.get_base_search_type()
         parts = search_type.split("/")
@@ -1089,6 +1105,8 @@ class CollectionDeleteCmd(Command):
             parent_item.delete()
 
         collection.delete()
+
+        my.add_description("Remove Collection [%s]" % collection_code)
 
 
 
