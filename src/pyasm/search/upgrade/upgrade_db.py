@@ -214,7 +214,7 @@ class Upgrade(object):
         ofile.close()
 
         if my.quiet:
-            print "Please refer to the upgrade_output.txt file for any upgrade messages."
+            print "Please refer to the file [%s] for any upgrade messages." %output_file
             print
         # handle sthpw database separately.  This ensures that the project entry
         # gets created if none exists.
