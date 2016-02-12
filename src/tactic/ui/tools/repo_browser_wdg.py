@@ -2330,7 +2330,7 @@ class RepoBrowserCbk(Command):
             search = Search("sthpw/snapshot")
             search.add_parent_filter(parent)
             search.add_filter("context", context)
-            search.add_order_by("versoin")
+            search.add_order_by("version")
             snapshots = search.get_sobjects()
 
         elif search_key:
@@ -2410,7 +2410,6 @@ class RepoBrowserCbk(Command):
             FileUndo.move("%s/%s" % (base_dir,from_relative_dir), "%s/%s" % (base_dir,relative_dir))
 
             return
-
 
 
         # handle single file moving
