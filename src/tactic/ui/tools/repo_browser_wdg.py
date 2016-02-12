@@ -2093,8 +2093,6 @@ class RepoBrowserActionCmd(Command):
             if not new_relative_dir:
                 return
 
-            old_dir = "%s/%s" % (base_dir, old_relative_dir)
-            new_dir = "%s/%s" % (base_dir, new_relative_dir)
 
             # find all of the files in this relative_dir
             search = Search("sthpw/file")
@@ -2105,7 +2103,11 @@ class RepoBrowserActionCmd(Command):
             files = search.get_sobjects()
 
             for file in files:
-                file.set_value("relative_dir", new_relative_dir)
+                file_sub_dir = file.get_value("relative_dir")
+                file_sub_dir = file_sub_dir.replace(old_relative_dir, "")
+                file_sub_dir = file_sub_dir.strip("/")
+
+                file.set_value("relative_dir", "%s/%s" %(new_relative_dir, file_sub_dir))
                 file.commit()
 
                 # get the parent
@@ -2117,6 +2119,9 @@ class RepoBrowserActionCmd(Command):
                     my.set_keywords(parent)
                     parent.commit()
 
+
+            old_dir = "%s/%s" % (base_dir, old_relative_dir)
+            new_dir = "%s/%s" % (base_dir, new_relative_dir)
 
             FileUndo.move(old_dir, new_dir)
 
