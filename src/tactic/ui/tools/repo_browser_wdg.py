@@ -841,6 +841,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         border = top.get_color("shadow")
+        top.add_class("spt_file_drag_top")
+        top.add_style("position: relative")
 
         top.add_behavior( {
         'type': 'load',
@@ -848,25 +850,34 @@ class RepoBrowserDirListWdg(DirListWdg):
         'cbjs_action': '''
 
         spt.repo_browser = {};
+        spt.repo_browser.start_x = null;
         spt.repo_browser.start_y = null;
-        spt.repo_browser.start_pos = null;
+        spt.repo_browser.top = null;
 
-        spt.repo_browser.drag_file_setup = function(evt, bvr, mouse_411) {
-            spt.repo_browser.start_y = mouse_411.curr_y
-            spt.repo_browser.start_pos = bvr.src_el.getPosition();
-        }
-        spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
-            var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
-            if (diff_y < 3 && diff_y > -3) {
-                return;
-            }
 
-            bvr.src_el.setStyle("border", "solid 1px " + bvr.border);
-            bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
-            bvr.src_el.setStyle("position", "absolute");
-            bvr.src_el.setStyle("padding", "5px");
-            bvr.src_el.position({x:mouse_411.curr_x+5, y:mouse_411.curr_y+5});
+         spt.repo_browser.drag_file_setup = function(evt, bvr, mouse_411) {
+             spt.repo_browser.top = bvr.src_el.getParent(".spt_repo_browser_list");
+             spt.repo_browser.start_x = mouse_411.curr_x;
+             spt.repo_browser.start_y = mouse_411.curr_y;
+         }
+
+         spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
+             var diff_x = mouse_411.curr_x - spt.repo_browser.start_x;
+             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
+             if (diff_y < 3 && diff_y > -3) {
+                 return;
+             }
+
+             var pos = spt.repo_browser.top.getPosition();
+
+             bvr.src_el.setStyle("border", "solid 1px " + bvr.border);
+             bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
+             bvr.src_el.setStyle("position", "absolute");
+             bvr.src_el.setStyle("padding", "5px");
+             bvr.src_el.position({x:mouse_411.curr_x+5 - pos.x, y:mouse_411.curr_y+5 - pos.y});
         }
+
+
         spt.repo_browser.drag_file_action = function(evt, bvr, mouse_411) {
 
             //bvr.src_el.position(spt.repo_browser.start_pos);
@@ -879,15 +890,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             bvr.src_el.setStyle("border", "");
             bvr.src_el.setStyle("box-shadow", "");
             bvr.src_el.setStyle("position", "relative");
+            bvr.src_el.setStyle("top", "0px");
+            bvr.src_el.setStyle("left", "0px");
             bvr.src_el.setStyle("padding", "2px 0px 2px 15px");
 
-            var pos = spt.repo_browser.start_pos;
-            new Fx.Tween(bvr.src_el,{duration:"short"}).start('top', pos.y);
-            new Fx.Tween(bvr.src_el,{duration:"short"}).start('left', pos.x);
-            bvr.src_el.setStyle("position", "");
 
             var drop_on_el = spt.get_event_target(evt);
-
             if (!drop_on_el.hasClass("spt_dir_item")) {
                 drop_on_el = drop_on_el.getParent(".spt_dir_item");
             }
@@ -895,6 +903,11 @@ class RepoBrowserDirListWdg(DirListWdg):
             if (! drop_on_el) {
                 return;
             }
+
+            var pos = spt.repo_browser.start_pos;
+            new Fx.Tween(bvr.src_el,{duration:"short"}).start('top', pos.y);
+            new Fx.Tween(bvr.src_el,{duration:"short"}).start('left', pos.x);
+            bvr.src_el.setStyle("position", "");
 
 
             var server = TacticServerStub.get(); 
@@ -1032,7 +1045,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.table.set_layout(layout);
 
             var search_keys = spt.table.get_selected_search_keys();
-            if (search_keys) {
+            if (search_keys.length != 0) {
                 var search_key = null;
             }
             else {
@@ -2294,7 +2307,7 @@ class RepoBrowserCbk(Command):
             snapshots.reverse()
 
 
-        elif search_keys:
+        elif search_keys != None:
             parents = Search.get_by_search_keys(search_keys)
             snapshots = Snapshot.get_by_sobjects(parents)
             snapshots.reverse()
@@ -2730,6 +2743,28 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             element_names = ['preview','code','name','general_checkin','file_list', 'history','description','notes']
 
 
+        shelf_wdg = DivWdg()
+        top.add(shelf_wdg)
+
+        button = ActionButtonWdg(title="Ingest")
+        shelf_wdg.add(button)
+        shelf_wdg.add_style("margin: 0px 20px")
+        button.add_behavior( {
+            'type': 'click_up',
+            'path': path,
+            'search_type': search_type,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.IngestUploadWdg';
+            var kwargs = {
+                search_type: bvr.search_type,
+                path: bvr.path,
+            }
+            spt.panel.load_popup("Ingest Files", class_name, kwargs);
+            '''
+        } )
+
+
+
 
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
@@ -2741,9 +2776,11 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             show_search_limit=False,
             layout=layout_mode,
             scale='100',
+            show_scale=True,
             width='100%',
 
         )
+
 
 
         top.add(layout)

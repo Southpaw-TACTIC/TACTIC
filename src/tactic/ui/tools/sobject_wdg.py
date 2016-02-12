@@ -642,6 +642,16 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 </element>
                 ''' % values)
 
+            elif tab == "file_detail":
+                config_xml.append('''
+                <element name="file_info" title="File Info">
+                  <display class='tactic.ui.tools.FileDetailWdg'>
+                    <search_key>%(search_key)s</search_key>
+                  </display>
+                </element>
+                ''' % values)
+
+
 
             elif tab == "snapshots":
                 config_xml.append('''
