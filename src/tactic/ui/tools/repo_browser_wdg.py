@@ -2106,8 +2106,10 @@ class RepoBrowserActionCmd(Command):
                 file_sub_dir = file.get_value("relative_dir")
                 file_sub_dir = file_sub_dir.replace(old_relative_dir, "")
                 file_sub_dir = file_sub_dir.strip("/")
-
-                file.set_value("relative_dir", "%s/%s" %(new_relative_dir, file_sub_dir))
+                if file_sub_dir:
+                    file.set_value("relative_dir", "%s/%s" %(new_relative_dir, file_sub_dir))
+                else:
+                    file.set_value("relative_dir", new_relative_dir)
                 file.commit()
 
                 # get the parent
