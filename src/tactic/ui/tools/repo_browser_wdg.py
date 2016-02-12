@@ -2420,8 +2420,22 @@ class RepoBrowserCbk(Command):
             # move all of the files from this snapshot
             files = snapshot.get_all_file_objects()
             for file in files:
+
+                # get the old relative_dir
+                file_relative_dir = file.get_value("relative_dir")
+                file_name = file.get_value("file_name")
+
+
                 file.set_value("relative_dir", relative_dir)
                 file.commit()
+
+
+                old_path = "%s/%s/%s" % (base_dir, file_relative_dir, file_name)
+                new_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
+                if not os.path.exists(old_path):
+                    continue
+
+                FileUndo.move(old_path, new_path)
 
             all_files.extend(files)
 
@@ -2443,6 +2457,7 @@ class RepoBrowserCbk(Command):
             parent.commit()
 
 
+        """
         search_keys = [x.get_search_key() for x in all_files]
 
         # move the files to what the naming now says.
@@ -2453,6 +2468,7 @@ class RepoBrowserCbk(Command):
         from tactic.command import NamingMigratorCmd
         cmd = NamingMigratorCmd( mode="file", search_keys=search_keys)
         cmd.execute()
+        """
 
 
         # find hightest version
