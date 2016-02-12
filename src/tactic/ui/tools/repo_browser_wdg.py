@@ -210,7 +210,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
                 location="server",
-                show_base_dir=True,
+                show_base_dir=False,
                 open_depth=open_depth,
                 search_types=search_types,
                 dynamic=dynamic,
@@ -658,35 +658,42 @@ class RepoBrowserDirListWdg(DirListWdg):
                     my.search_types_dict[tmp_dir] = search_type
 
 
+        my.counts = {}
 
         # find any folders that match
-        """
-        dirnames = os.listdir(base_dir)
-        for dirname in dirnames:
+        # FIXME: this is slow and need a way to pass keywords through
+        keywords = my.kwargs.get("keywords") or []
+        #keywords = ["oculus", "one"]
+        if keywords:
+            dirnames = os.listdir(base_dir)
+            for dirname in dirnames:
 
-            parts = dirname.strip().split("/")
-            parts = [x.lower() for x in parts]
-            parts.append(dirname)
-            parts = set(parts)
+                parts = Common.extract_keywords_from_path(dirname)
+                #parts = [x.lower() for x in parts]
+                parts.append(dirname.lower())
+                parts = set(parts)
 
-            for root, subdirnames, subbasenames in os.walk("%s/%s" % (base_dir, dirname)):
-                for subdirname in subdirnames:
-                    parts.add(subdirname.lower())
+                for root, subdirnames, subbasenames in os.walk("%s/%s" % (base_dir, dirname)):
+                    for subdirname in subdirnames:
+                        subparts = Common.extract_keywords_from_path(subdirname)
+                        parts.update(subparts)
+                        parts.add(subdirname.lower())
 
-            keywords = my.kwargs.get("keywords") or []
 
-            subdir = "%s/%s" % (base_dir, dirname)
+                subdir = "%s/%s" % (base_dir, dirname)
 
-            for keyword in keywords:
-                if keyword.lower() in parts:
+                match = True
+                for keyword in keywords:
+                    if not keyword.lower() in parts:
+                        match = False
+                        break
+
+                if match:
                     paths.append("%s/" % subdir)
-        """
-            
-   
+                    my.counts[subdir] = -1
 
         # add dirnames if they have sobject files in them
         #if not show_no_sobject_folders:
-        my.counts = {}
         if os.path.exists(base_dir) and os.path.isdir(base_dir):
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
@@ -694,18 +701,21 @@ class RepoBrowserDirListWdg(DirListWdg):
                 if not os.path.isdir(subdir):
                     continue
 
-                search = my.get_file_search(subdir, search_types, parent_ids, mode="count")
-                count = search.get_count()
-                my.counts[subdir] = count
-                if count:
-                    full = "%s/" % subdir
-                    # FIXME: this actually allows for the click-up behavior
-                    # however, it only currently works for a single stype
-                    my.search_types_dict[full] = search_types[0]
-                    paths.append(full)
-                else:
-                    full = "%s/" % subdir
-                    paths.append(full)
+
+                if my.counts.get(subdir) is None:
+                    search = my.get_file_search(subdir, search_types, parent_ids, mode="count")
+                    count = search.get_count()
+                    my.counts[subdir] = count
+
+                    if count:
+                        full = "%s/" % subdir
+                        # FIXME: this actually allows for the click-up behavior
+                        # however, it only currently works for a single stype
+                        my.search_types_dict[full] = search_types[0]
+                        paths.append(full)
+                    else:
+                        full = "%s/" % subdir
+                        paths.append(full)
 
 
             #return paths
@@ -864,7 +874,7 @@ class RepoBrowserDirListWdg(DirListWdg):
          spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
              var diff_x = mouse_411.curr_x - spt.repo_browser.start_x;
              var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
-             if (diff_y < 3 && diff_y > -3) {
+             if (diff_y < 5 && diff_y > -5) {
                  return;
              }
 
@@ -874,7 +884,7 @@ class RepoBrowserDirListWdg(DirListWdg):
              bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
              bvr.src_el.setStyle("position", "absolute");
              bvr.src_el.setStyle("padding", "5px");
-             bvr.src_el.position({x:mouse_411.curr_x+5 - pos.x, y:mouse_411.curr_y+5 - pos.y});
+             bvr.src_el.position({x:mouse_411.curr_x+10 - pos.x, y:mouse_411.curr_y+10 - pos.y});
         }
 
 
@@ -883,7 +893,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             //bvr.src_el.position(spt.repo_browser.start_pos);
 
             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
-            if (diff_y < 3 && diff_y > -3) {
+            if (diff_y < 5 && diff_y > -5) {
                 return;
             }
 
@@ -904,10 +914,10 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return;
             }
 
-            var pos = spt.repo_browser.start_pos;
-            new Fx.Tween(bvr.src_el,{duration:"short"}).start('top', pos.y);
-            new Fx.Tween(bvr.src_el,{duration:"short"}).start('left', pos.x);
-            bvr.src_el.setStyle("position", "");
+            //var pos = spt.repo_browser.start_pos;
+            //new Fx.Tween(bvr.src_el,{duration:"short"}).start('top', pos.y);
+            //new Fx.Tween(bvr.src_el,{duration:"short"}).start('left', pos.x);
+            //bvr.src_el.setStyle("position", "");
 
 
             var server = TacticServerStub.get(); 
@@ -1363,6 +1373,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 var el = activator.getElement(".spt_dir_value");
                 input.replaces(el);
+                input.focus();
+                input.select();
 
                 var parts = relative_dir.split("/");
                 input.value = parts[parts.length-1];
@@ -1390,13 +1402,20 @@ class RepoBrowserDirListWdg(DirListWdg):
                         action: 'rename_folder',
                         old_relative_dir: relative_dir,
                         new_relative_dir: new_relative_dir
-                    }
+                    };
+
                     var server = TacticServerStub.get();
-                    server.execute_cmd(class_name, kwargs);
 
-                    var dir_top = span.getParent(".spt_dir_list_handler_top");
-                    spt.panel.refresh(dir_top);
+                    div.setStyle("opacity", 0.3);
 
+                    server.execute_cmd(class_name, kwargs, null, {
+                        on_complete: function(ret_val) {
+                            div.setStyle("opacity", 1.0);
+                            spt.notify.show_message("Folder rename complete");
+                            var dir_top = span.getParent(".spt_dir_list_handler_top");
+                            spt.panel.refresh(dir_top);
+                        }
+                    });
 
                 };
 
@@ -1639,10 +1658,12 @@ class RepoBrowserDirListWdg(DirListWdg):
                     new_value: new_value
                 }
                 var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs);
-
-                var dir_top = span.getParent(".spt_dir_list_handler_top");
-                spt.panel.refresh(dir_top);
+                server.execute_cmd(class_name, kwargs, null, {
+                    on_complete: function(ret_val) {
+                        var dir_top = span.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                    }
+                } );
 
 
             };
@@ -1714,6 +1735,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         path = "%s/%s" % (dirname, basename)
         counts = my.counts.get(path)
+        if counts == -1:
+            return basename
         if counts:
             return "%s <i style='display: inline-block; font-size: 9px; opacity: 0.8'>(%s)</i>" % (basename, counts)
         else:
@@ -2073,8 +2096,12 @@ class RepoBrowserActionCmd(Command):
             old_dir = "%s/%s" % (base_dir, old_relative_dir)
             new_dir = "%s/%s" % (base_dir, new_relative_dir)
 
+            # find all of the files in this relative_dir
             search = Search("sthpw/file")
-            search.add_filter("relative_dir", old_relative_dir)
+            search.add_op("begin")
+            search.add_filter("relative_dir", "%s" % old_relative_dir)
+            search.add_filter("relative_dir", "%s/%%" % old_relative_dir, op='like')
+            search.add_op("or")
             files = search.get_sobjects()
 
             for file in files:
@@ -2086,7 +2113,9 @@ class RepoBrowserActionCmd(Command):
                     parent = Search.get_by_code( file.get("search_type"), file.get("search_code") )
                     if parent.column_exists("relative_dir"):
                         parent.set_value("relative_dir", new_relative_dir)
-                        parent.commit()
+
+                    my.set_keywords(parent)
+                    parent.commit()
 
 
             FileUndo.move(old_dir, new_dir)
@@ -2315,7 +2344,7 @@ class RepoBrowserCbk(Command):
             for snapshot in snapshots:
                 print "vvv: ", snapshot.get_value("search_code"), snapshot.get_value("version")
 
-            dsaffdsafads
+            raise Exception("Not Implemented")
 
 
         else:
@@ -2530,7 +2559,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
         path_div = DivWdg()
         top.add(path_div)
-        path_div.add("<b>Path:</b> %s" % path)
+        path_div.add("<b>Path:</b> %s" % reldir)
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
@@ -2711,9 +2740,13 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         top = my.top
 
         path = my.kwargs.get("dirname")
+        asset_dir = Environment.get_asset_dir()
+        reldir = path.replace(asset_dir, "").strip("/")
+
+
         path_div = DivWdg()
         top.add(path_div)
-        path_div.add("<b>Path:</b> %s" % path)
+        path_div.add("<b>Path:</b> %s" % reldir)
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
@@ -2743,6 +2776,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             element_names = ['preview','code','name','general_checkin','file_list', 'history','description','notes']
 
 
+
         shelf_wdg = DivWdg()
         top.add(shelf_wdg)
 
@@ -2757,7 +2791,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.tools.IngestUploadWdg';
             var kwargs = {
                 search_type: bvr.search_type,
-                path: bvr.path,
+                base_dir: bvr.path,
             }
             spt.panel.load_popup("Ingest Files", class_name, kwargs);
             '''

@@ -303,7 +303,18 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     def get_content_wdg(my):
 
-        relative_dir = my.kwargs.get("relative_dir")
+        asset_dir = Environment.get_asset_dir()
+
+        base_dir = my.kwargs.get("base_dir")
+        if base_dir:
+            if not base_dir.startswith(asset_dir):
+                raise Exception("Path needs to be in asset root")
+            else:
+                relative_dir = base_dir.replace(asset_dir, "")
+                relative_dir = relative_dir.strip("/")
+        else:
+            relative_dir = my.kwargs.get("relative_dir")
+
         my.relative_dir = relative_dir
 
         div = DivWdg()
