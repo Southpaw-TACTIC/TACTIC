@@ -1775,8 +1775,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     var rtn_message = rtn.info.message;
 
                     if (rtn_message['circular'] == 'True') {
-                        var parent_collection_name = rtn_message['parent_collection_name'];
-                        var msg = "The destination [" + parent_name + " ] is a child of the source Collection [" + parent_collection_name + " ]";
+                        console.log(rtn_message);
+                        var parent_collection_names = rtn_message['parent_collection_names'];
+                        var msg = "Collection [" + parent_name + " ] is a child of the source [" + parent_collection_names + "]";
                         spt.notify.show_message(msg)
 
                         return;
