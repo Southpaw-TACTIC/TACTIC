@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd"]
+__all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "CollectionItemWdg", "CollectionLayoutWdg", "CollectionContentWdg", "CollectionRemoveCmd", "CollectionDeleteCmd", "CollectionParentsSearchCmd"]
 
 
 
@@ -310,6 +310,12 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                 }
                 var rtn = server.execute_cmd(cmd, kwargs);
                 var rtn_message = rtn.info.message;
+
+                if (rtn_message['circular'] == 'True') {
+                    var parent_collection_name = rtn_message['parent_collection_name'];
+                    spt.notify.show_message("The destination [" + collection_name + " ] is a child of the source Collection [" + parent_collection_name + " ]");
+                    return;
+                }
                 for (var collection_name in rtn_message) {
                     if (rtn_message[collection_name] != 'No insert')
                         added.push(collection_name);
@@ -330,6 +336,76 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         return dialog
 
 
+class CollectionParentsSearchCmd(Command):
+
+    def execute(my):
+        from pyasm.biz import Project
+
+        project = Project.get()
+        sql = project.get_sql()
+        database = project.get_database_type()
+
+        collection_code = my.kwargs.get("collection_code")
+        parent_codes = []
+
+        if database == "SQLServer":
+            statement = '''
+            WITH res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."search_code" AS varchar(256)),
+             1
+            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2
+            WHERE p2."code" IN ('%s')
+            
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                  CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+
+            Select parent_code from res;
+            '''% collection_code
+        else:
+            statement = '''
+            WITH RECURSIVE res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."search_code"] AS TEXT),
+             1
+            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2
+            WHERE p2."code" IN ('%s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."search_code",
+             ng.depth + 1
+            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select parent_code from res;
+            '''% collection_code
+
+
+        results = sql.do_query(statement)
+        for result in results:
+            result = "".join(result)
+            parent_codes.append(result)
+        my.info['parent_codes'] = parent_codes
 
 
 class CollectionAddCmd(Command):
@@ -360,7 +436,41 @@ class CollectionAddCmd(Command):
             search_codes = [x.get_value("search_code") for x in items]
             search_codes = set(search_codes)
 
+            # Try to find all the parent codes of the destination, and see if there's any that
+            # matches the codes in "search_codes"
+            # Check for parent/child hierarchy in destination to prevent circular relationships        
+            src_collections_codes = []
+            for search_key in search_keys:
+                asset = Search.get_by_search_key(search_key)
+                is_collection = asset.get("_is_collection")
+                if is_collection:
+                    src_collection_code = asset.get("code")
+                    src_collections_codes.append(src_collection_code)
 
+            if src_collections_codes:
+                collection_code = collection.get("code")
+                kwargs = {
+                    'collection_code': collection_code
+                }
+
+                from tactic_client_lib import TacticServerStub
+                server = TacticServerStub.get()
+                # Run SQL to find all parent collections(and above) of the selected collections
+                # The all_parent_codes contain all parent codes up the relationship tree
+                # ie. parent collections' parents ...etc
+                all_parent_codes = server.execute_cmd("tactic.ui.panel.CollectionParentsSearchCmd", kwargs).get("info").get("parent_codes")
+                all_parent_codes.append(collection_code)
+
+                # Once retrieve the parent codes, use a for loop to check if the the codes in 
+                # src_collections_codes are in parent_codes
+                if all_parent_codes:
+                    for parent_code in all_parent_codes:
+                        if parent_code in src_collections_codes:
+                            message['circular'] = "True"
+                            parent_collection_name = Search.get_by_code(search_type, parent_code).get("name")
+                            message['parent_collection_name'] = parent_collection_name
+                            my.info['message'] = message
+                            return
 
             has_keywords = SearchType.column_exists(search_type, "keywords")
 
