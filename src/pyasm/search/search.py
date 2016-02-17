@@ -1767,8 +1767,9 @@ class Search(Base):
             # get the select statement and do the query
             if not statement:
                 statement = my.select.get_statement()
+
             #print "statement: ", statement
-           
+
             from pyasm.security import Site
             results = sql.do_query(statement)
 
@@ -5149,7 +5150,8 @@ class SObject(object):
             result = search.get_sobjects()
         else:
             result = search.get_sobject()
-        cls.cache_sobject(key, result)
+        
+        cls.cache_sobject(key, result, search_type=cls_search_type)
         return result
 
     get_by_search = classmethod(get_by_search)
@@ -5212,7 +5214,6 @@ class SObject(object):
             key = SObject._get_cached_key(search_type)
         else:
             key = SObject._get_cached_key(cls.SEARCH_TYPE)
-
         dict = Container.get(key)
         # this is needed since cache_sobject() can happen before get_cached_obj()
         if dict == None:
@@ -5223,14 +5224,13 @@ class SObject(object):
     get_cache_dict = classmethod(get_cache_dict)
 
 
-    def cache_sobject(cls, key, sobject):
+    def cache_sobject(cls, key, sobject, search_type=None):
         ''' cache any sobject for any SObject class'''
        
-        dict = cls.get_cache_dict(sobject=sobject)
+        dict = cls.get_cache_dict(sobject=sobject, search_type=search_type)
         cached_sobj = sobject
         if sobject == None or sobject == []:
             cached_sobj = '__NONE__'
-   
         dict[key] = cached_sobj
      
     cache_sobject = classmethod(cache_sobject)
@@ -5584,7 +5584,6 @@ class SearchType(SObject):
                 table = search_type_obj.get_table()
 
                 column_info = sql.get_column_info(table)
-                #print "INFO ", column_info
 
             Container.put("SearchType:column_info:%s" % search_type, column_info)
         return column_info

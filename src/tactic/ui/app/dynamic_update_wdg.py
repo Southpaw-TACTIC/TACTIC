@@ -471,7 +471,7 @@ class DynamicUpdateCmd(Command):
 
 
 
-
+        #print "Dyn Cmd duration", time.time()  - start
         return results
 
 

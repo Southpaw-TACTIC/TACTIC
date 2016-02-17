@@ -2358,6 +2358,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         "column": "status",
                     }
 
+                update['interval'] = '3'
                 update['cbjs_postaction'] = '''
                         var element = bvr.src_el;
                         if ("createEvent" in document) {
@@ -2427,7 +2428,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             "search_key": task.get_search_key(),
                             "column": "assigned",
                         }
-
+                    update['interval'] = '3'
                     update['cbjs_postaction'] = '''
                             var element = bvr.src_el;
                             if ("createEvent" in document) {
