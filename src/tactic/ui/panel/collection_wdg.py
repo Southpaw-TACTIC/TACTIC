@@ -310,6 +310,13 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                 }
                 var rtn = server.execute_cmd(cmd, kwargs);
                 var rtn_message = rtn.info.message;
+
+                if (rtn_message['circular'] == 'True') {
+                    var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
+                    spt.notify.show_message("Collection [" + collection_name + " ] is a child of the source [" + parent_collection_names + "]");
+                    
+                    return;
+                }
                 for (var collection_name in rtn_message) {
                     if (rtn_message[collection_name] != 'No insert')
                         added.push(collection_name);
@@ -328,8 +335,6 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         
 
         return dialog
-
-
 
 
 class CollectionAddCmd(Command):
@@ -360,7 +365,45 @@ class CollectionAddCmd(Command):
             search_codes = [x.get_value("search_code") for x in items]
             search_codes = set(search_codes)
 
+            # Try to find all the parent codes of the destination, and see if there's any that
+            # matches the codes in "search_codes"
+            # Check for parent/child hierarchy in destination to prevent circular relationships        
+            src_collections_codes = []
+            for search_key in search_keys:
+                asset = Search.get_by_search_key(search_key)
+                is_collection = asset.get("_is_collection")
+                if is_collection:
+                    src_collection_code = asset.get("code")
+                    src_collections_codes.append(src_collection_code)
 
+            if src_collections_codes:
+                collection_code = collection.get("code")
+
+                my.kwargs["collection_code"] = collection_code
+                my.kwargs["collection_type"] = collection_type
+                my.kwargs["search_type"] = search_type
+
+                # Run SQL to find all parent collections(and above) of the selected collections
+                # The all_parent_codes contain all parent codes up the relationship tree
+                # ie. parent collections' parents ...etc
+
+                all_parent_codes = my.get_parent_codes()
+
+                all_parent_codes.add(collection_code)
+                all_parent_codes = list(all_parent_codes)
+
+                # Once retrieve the parent codes, use a for loop to check if the the codes in 
+                # src_collections_codes are in parent_codes
+                parent_collection_names = []
+                for parent_code in all_parent_codes:
+                    if parent_code in src_collections_codes:
+                        message['circular'] = "True"
+                        parent_collection_name = Search.get_by_code(search_type, parent_code).get("name")
+                        parent_collection_names.append(parent_collection_name)
+                if parent_collection_names:
+                    message['parent_collection_names'] = parent_collection_names
+                    my.info['message'] = message
+                    return
 
             has_keywords = SearchType.column_exists(search_type, "keywords")
 
@@ -406,6 +449,84 @@ class CollectionAddCmd(Command):
 
         my.info['message'] = message
         my.add_description("Add [%s] item(s) to [%s] collection(s)" % (len(search_keys), len(collection_keys)))
+
+    def get_parent_codes(my):
+
+        from pyasm.biz import Project
+
+        project = Project.get()
+        sql = project.get_sql()
+        database = project.get_database_type()
+
+        collection_code = my.kwargs.get("collection_code")
+        collection_type = my.kwargs.get("collection_type").split("/")[1]
+        search_type = my.kwargs.get("search_type").split("/")[1]
+        var_dict = {
+            'collection_code': collection_code,
+            'collection_type': collection_type,
+            'search_type': search_type
+        }
+        parent_codes = set()
+
+        if database == "SQLServer":
+            statement = '''
+            WITH res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."search_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+            
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                  CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+
+            Select parent_code from res;
+            '''% var_dict
+        else:
+            statement = '''
+            WITH RECURSIVE res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."search_code"] AS TEXT),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."search_code",
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select parent_code from res;
+            '''% var_dict
+
+
+        results = sql.do_query(statement)
+        for result in results:
+            result = result[0]
+            parent_codes.add(result)
+
+        return parent_codes
 
 
 class CollectionLayoutWdg(ToolLayoutWdg):
