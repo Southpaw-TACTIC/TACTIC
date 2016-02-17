@@ -301,8 +301,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 title_wdg.add_style("font-weight: bold")
                 title_wdg.add_style("display: inline-block")
 
-                title_wdg.add("<div style='margin-top: 5px; opacity: 0.5; font-size: 0.8em; font-weight: normal'>This is a description</div>")
-
 
 
                 group_values[group_column] = group_value
