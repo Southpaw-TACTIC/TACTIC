@@ -4781,6 +4781,12 @@ spt.table.save_changes = function(kwargs) {
         search_dict = spt.table.get_search_values(search_top);
        
     }
+
+    var layout_top = table.getParent(".spt_layout_top");
+    var expand_on_load = true;
+    if (layout_top) {
+        expand_on_load = layout_top.getProperty("spt_expand_on_load");
+    }
     
     try {
         var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
@@ -4789,7 +4795,7 @@ spt.table.save_changes = function(kwargs) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
-                var kw = {refresh_bottom : true, json: search_dict};
+                var kw = {refresh_bottom : true, json: search_dict, expand_on_load: expand_on_load};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
         }
@@ -4944,8 +4950,9 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // default to update bottom row color
     if (kw['refresh_bottom'] == null) kw.refresh_bottom = true;
 
-    
-
+    var expand_on_load = kw.expand_on_load;
+    if (expand_on_load == null) expand_on_load = true;
+ 
     //var layout = spt.table.get_layout();
     // this is more reliable when multi table are drawn in the same page while
     // refresh is happening
@@ -4996,7 +5003,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         show_select: show_select,
         element_names: element_names,
         group_elements: group_elements,
-        config_xml: config_xml
+        config_xml: config_xml,
+        expand_on_load: expand_on_load
     }
 
     if (layout == "tile") {
@@ -5024,15 +5032,15 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
-
-            // transfer the widths to the new row
-            var widths = spt.table.get_column_widths();
-            for (var element_name in widths) {
-                var width = widths[element_name];
-                spt.table.set_column_width(element_name, width);
+         
+            if (['false', "False", false].indexOf(expand_on_load) > -1) {
+                // transfer the widths to the new row
+                var widths = spt.table.get_column_widths();
+                for (var element_name in widths) {
+                    var width = widths[element_name];
+                    spt.table.set_column_width(element_name, width);
+                }
             }
-
-
 
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
