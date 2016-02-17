@@ -1775,10 +1775,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     var rtn_message = rtn.info.message;
 
                     if (rtn_message['circular'] == 'True') {
-                        console.log(rtn_message);
-                        var parent_collection_names = rtn_message['parent_collection_names'];
+                        var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
                         var msg = "Collection [" + parent_name + " ] is a child of the source [" + parent_collection_names + "]";
-                        spt.notify.show_message(msg)
+                        spt.notify.show_message(msg);
 
                         return;
                     }
@@ -1826,7 +1825,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             else {
                 
                 var src_is_cols = [];
-                var final_codes = [];
                 var final_is_cols = [];
                 var src_keys = [];
                 var final_keys = [];
@@ -1844,7 +1842,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 // find the final codes that need to be added to collection
                 for (var k=0; k < src_codes.length; k++) {
                     if (!exist_cols.contains(src_codes[k])) {
-                        final_codes.push(src_codes[k]);
+
                         final_is_cols.push(src_is_cols[k]);
 
                         final_keys.push(src_keys[k]);
@@ -1858,7 +1856,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     }
                     return;
                 }
-                if (final_codes.length > 0) {
+                if (final_keys.length > 0) {
                     server.start({title: 'Add to collection', description: 'Add items to collection ' + parent_code } ); 
                     
                     var has_inserted = insert_collection(collection_type, parent_key, final_keys);

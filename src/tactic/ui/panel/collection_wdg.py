@@ -312,9 +312,9 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                 var rtn_message = rtn.info.message;
 
                 if (rtn_message['circular'] == 'True') {
-
-                    var parent_collection_names = rtn_message['parent_collection_names'];
-                    spt.notify.show_message("Collection [" + parent_name + " ] is a child of the source [" + parent_collection_names + "]";
+                    var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
+                    spt.notify.show_message("Collection [" + collection_name + " ] is a child of the source [" + parent_collection_names + "]");
+                    
                     return;
                 }
                 for (var collection_name in rtn_message) {
@@ -388,7 +388,9 @@ class CollectionAddCmd(Command):
                 # ie. parent collections' parents ...etc
 
                 all_parent_codes = my.get_parent_codes()
-                all_parent_codes.append(collection_code)
+
+                all_parent_codes.add(collection_code)
+                all_parent_codes = list(all_parent_codes)
 
                 # Once retrieve the parent codes, use a for loop to check if the the codes in 
                 # src_collections_codes are in parent_codes
@@ -401,7 +403,6 @@ class CollectionAddCmd(Command):
                 if parent_collection_names:
                     message['parent_collection_names'] = parent_collection_names
                     my.info['message'] = message
-
                     return
 
             has_keywords = SearchType.column_exists(search_type, "keywords")
@@ -465,7 +466,7 @@ class CollectionAddCmd(Command):
             'collection_type': collection_type,
             'search_type': search_type
         }
-        parent_codes = []
+        parent_codes = set()
 
         if database == "SQLServer":
             statement = '''
@@ -523,7 +524,7 @@ class CollectionAddCmd(Command):
         results = sql.do_query(statement)
         for result in results:
             result = result[0]
-            parent_codes.append(result)
+            parent_codes.add(result)
 
         return parent_codes
 
