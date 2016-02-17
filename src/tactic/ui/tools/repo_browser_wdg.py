@@ -889,7 +889,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         spt.repo_browser.drag_file_action = function(evt, bvr, mouse_411) {
-
+            console.log("hi from drag file action");
             //bvr.src_el.position(spt.repo_browser.start_pos);
 
             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
@@ -957,7 +957,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                 relative_dir: relative_dir
             }
             server.execute_cmd(cmd, kwargs); 
-
+            
+            //var dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
+            //spt.panel.refresh(dir_top);
         }
 
 
@@ -997,6 +999,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         spt.repo_browser.click_file_bvr = function(evt, bvr) {
+            console.log("Hi from click file bvr")
             if (!evt.control) {
                 spt.repo_browser.clear_selected();
             }
@@ -1049,7 +1052,9 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.drag_drop = function(evt, bvr) {
-
+            /* Drop action of tile on folder */
+            console.log("hi from drag tile");    
+            
             var top = bvr.src_el.getParent(".spt_tile_top");
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
@@ -1083,7 +1088,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             var dir_top = target.getParent(".spt_dir_list_handler_top");
             spt.panel.refresh(dir_top);
-
+            // TODO... needs to remember which ones are open.
+            console.log("hi");
         }
 
 
@@ -1922,10 +1928,13 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
 
-        # TODO: make this into a relay behavior
+        # TODO: make this into a relay behavior, make this more efficient.
+        # Toggle contents of folder when clicked.
         item_div.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
+        
+        
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
 
@@ -1968,7 +1977,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         spt.table.last_table = null;
         spt.panel.load(content, class_name, kwargs);
         spt.app_busy.hide();
-
+        // TODO: App busy should be oncomplete.
+        // make this more efficient
         '''
         } )
 
@@ -2310,52 +2320,47 @@ class RepoBrowserActionCmd(Command):
 class RepoBrowserCbk(Command):
 
     def execute(my):
+        
+        '''
+        Given input snapshots, assets or directory, move to relative_dir.
+
+        relative_dir - destination directory 
+
+        With this command, you can move different assortment of assets.
+
+        snapshot_code - move a single snapshot and sister snapshots sharing 
+            its context.
+        search_key - move a single asset
+        search_keys - move many assets
+        from_relative_dir - move an entire directory and all assets within it
+
+        '''
+
         relative_dir = my.kwargs.get("relative_dir")
-        from_relative_dir = my.kwargs.get("from_relative_dir")
+        
         snapshot_code = my.kwargs.get("snapshot_code")
         search_key = my.kwargs.get("search_key")
         search_keys = my.kwargs.get("search_keys")
+        from_relative_dir = my.kwargs.get("from_relative_dir")
 
-
-        base_dir = Environment.get_asset_dir()
-
-
-
-
+        # FIXME:
+        # Possible issue... moving an entire directory structure assumes
+        # that all snapshots are in relative directory or parent.
+        # but snapshot_code mode only moves sister snapshots in same context.
         if snapshot_code:
             snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
-            version  = snapshot.get_value("version")
             parent = snapshot.get_parent()
-
-            context = snapshot.get_value("context")
-
-            search = Search("sthpw/snapshot")
-            search.add_parent_filter(parent)
-            search.add_filter("context", context)
-            search.add_order_by("version")
-            snapshots = search.get_sobjects()
-
+            my.move_parent(parent, relative_dir, snapshot)
+            return 
         elif search_key:
-
             parent = Search.get_by_search_key(search_key)
-            snapshots = Snapshot.get_by_sobject(parent)
-            # need to order by ascending version
-            snapshots.reverse()
-
-
+            parents = [parent]
         elif search_keys != None:
             parents = Search.get_by_search_keys(search_keys)
-            snapshots = Snapshot.get_by_sobjects(parents)
-            snapshots.reverse()
-
-            for snapshot in snapshots:
-                print "vvv: ", snapshot.get_value("search_code"), snapshot.get_value("version")
-
-            raise Exception("Not Implemented")
-
-
         else:
-
+            # Move an entire directory
+            base_dir = Environment.get_asset_dir()
+            
             # find all the files with the relative dir
             file_search = Search("sthpw/file")
             file_search.add_filter("relative_dir", "%s%%" % from_relative_dir, op='like')
@@ -2414,7 +2419,42 @@ class RepoBrowserCbk(Command):
             return
 
 
-        # handle single file moving
+        for parent in parents:
+            my.move_parent(parent, relative_dir)
+        
+
+        """
+        search_keys = [x.get_search_key() for x in all_files]
+
+        # move the files to what the naming now says.
+        # NOTE: this may not be correct.  A possible operation is to
+        # move the file away from the naming conventions say.  In this
+        # case, the file will be moved right back to where the naming
+        # conventions says to move it.
+        from tactic.command import NamingMigratorCmd
+        cmd = NamingMigratorCmd( mode="file", search_keys=search_keys)
+        cmd.execute()
+        """
+
+
+
+    def move_parent(my, parent, relative_dir, snapshot=None):
+        '''Moves an asset and all related snapshots'''
+
+        base_dir = Environment.get_asset_dir()
+
+        search = Search("sthpw/snapshot")
+        search.add_parent_filter(parent)
+        
+        if snapshot:
+            version = snapshot.get_value("version")
+            context = snapshot.get_value("context")
+            search.add_filter("context", context)
+        else:
+            search.add_parent_filter(parent)
+        
+        search.add_order_by("version")
+        snapshots = search.get_sobjects()
 
         all_files = []
         for snapshot in snapshots:
@@ -2452,27 +2492,10 @@ class RepoBrowserCbk(Command):
             # used for some other purpose
             if parent.column_exists("relative_dir"):
                 parent.set_value("relative_dir", relative_dir)
-
                 my.set_keywords(parent)
-
             parent.commit()
 
-
-        """
-        search_keys = [x.get_search_key() for x in all_files]
-
-        # move the files to what the naming now says.
-        # NOTE: this may not be correct.  A possible operation is to
-        # move the file away from the naming conventions say.  In this
-        # case, the file will be moved right back to where the naming
-        # conventions says to move it.
-        from tactic.command import NamingMigratorCmd
-        cmd = NamingMigratorCmd( mode="file", search_keys=search_keys)
-        cmd.execute()
-        """
-
-
-        # find hightest version
+        # find highest version
         highest_snapshot = {}
         highest_version = {}
         for snapshot in snapshots:
@@ -2487,14 +2510,10 @@ class RepoBrowserCbk(Command):
         for snapshot in highest_snapshot.values():
             snapshot.update_versionless("latest")
 
-
-
-
     def set_keywords(my, parent):
 
         if not parent.column_exists("keywords_data"):
             return
-
 
         keywords_data = parent.get_json_value("keywords_data", {})
         name = parent.get_value("name")
@@ -2503,9 +2522,8 @@ class RepoBrowserCbk(Command):
             path = "%s/%s" % (relative_dir, name)
         else:
             path = name
-
+        
         keywords_data['path'] = Common.extract_keywords_from_path(path)
-
         parent.set_json_value("keywords_data", keywords_data)
 
         keywords = set()
