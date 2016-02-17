@@ -4785,7 +4785,7 @@ spt.table.save_changes = function(kwargs) {
     var layout_top = table.getParent(".spt_layout_top");
     var expand_on_load = true;
     if (layout_top) {
-        var expand_on_load = layout_top.getProperty("spt_expand_on_load");
+        expand_on_load = layout_top.getProperty("spt_expand_on_load");
     }
     
     try {
