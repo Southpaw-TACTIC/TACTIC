@@ -1285,11 +1285,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var search_type = activator.getAttribute("spt_search_type");
               
                 //TODO: If directory is not open, open it to edit new item.
-                /*if (!activator.hasClass("spt_open")) {
-                    var swap_top = activator.getElement(".spt_swap_top");
-                    var swap_child = swap_top.getLast();
-                    swap_child.click();
-                }*/
+                //if (!activator.hasClass("spt_open")) {
+                //    var swap_top = activator.getElement(".spt_swap_top");
+                //    var swap_child = swap_top.getLast();
+                //    var expand_bvrs = spt.behavior.get_bvrs_by_type("click_up", swap_child);
+                //    for (var i = 0; i < expand_bvrs.length; i++) {
+                //        spt.behavior.run_cbjs(expand_bvrs[i].cbjs_action, {src_el: swap_child});
+                //    }
+                //}
 
                 var div = document.createElement("div");
                 div = $(div);
@@ -1350,8 +1353,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                     div.setAttribute("spt_relative_dir", new_relative_dir);
                     div.addClass("spt_dir_item");
 
-                    var dir_top = span.getParent(".spt_dir_list_handler_top");
-                    spt.panel.refresh(dir_top);
+                    //var dir_top = span.getParent(".spt_dir_list_handler_top");
+                    //spt.panel.refresh(dir_top);
                 };
                 input.onfocus = function() {
                     this.select();
@@ -1443,13 +1446,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             menu_item.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
+                // This will only delete the folder if it is empty
                 var activator = spt.smenu.get_activator(bvr);
                 var relative_dir = activator.getAttribute("spt_relative_dir");
-
-                // This will only delete the folder if it is empty
-                //if (!confirm("Delete folder ["+relative_dir+"]?")) {
-                //    return;
-                //}
 
                 var server = TacticServerStub.get();
 
@@ -1463,8 +1462,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                     server.execute_cmd(class_name, kwargs);
                     activator.destroy();
                 }
-                catch(e) {
-                    alert("Folder is not empty.  Please delete all items in folder first");
+                catch(err) {
+                    spt.alert(spt.exception.handler(err));
                 }
 
 
