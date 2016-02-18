@@ -1091,7 +1091,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             try {
                 server.execute_cmd(cmd, kwargs); 
             } catch(err) {
-                spt.alert(spt.exception.hanlder(err));
+                spt.alert(spt.exception.handler(err));
                 return;
             }
 
@@ -1400,60 +1400,66 @@ class RepoBrowserDirListWdg(DirListWdg):
                 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var relative_dir = activator.getAttribute("spt_relative_dir");
+                var original_dir = activator.getAttribute("spt_reldir");
 
+                var original_el = activator.getElement(".spt_dir_value");
+                original_el.setStyle("display", "none");
+                
+                // Inject a input
                 var input = $(document.createElement("input"));
                 input.setAttribute("type", "text");
                 input.setStyle("width", "200px");
-
-                var div = activator;
-
-                var el = activator.getElement(".spt_dir_value");
-                input.replaces(el);
-                input.focus();
-                input.select();
-
+                input.inject(original_el, "after");
+                
                 var parts = relative_dir.split("/");
                 input.value = parts[parts.length-1];
                 var base_relative_dir = parts.slice(0, parts.length-1).join("/");
+                
                 input.onblur = function() {
                     var value = this.value;
-
-                    if (!value) {
-                        alert("no value");
+                    var valid_regex = /^[a-zA-Z0-9_\s-]+$/;
+                    if (!valid_regex.test(value)) {
+                        spt.alert("Please enter a valid file system name. may contain letters, underscores, hyphens or spaces.");
+                        this.value = original_dir;
+                        return; 
+                    } else if (value == original_dir) {
+                        input.destroy();
+                        original_el.setStyle("display", "");
                         return;
                     }
-
+                    
+                    var new_relative_dir = base_relative_dir + "/" + value;
+                    
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
                     span.replaces(input);
-                    span.addClass("spt_dir_value");
 
-                    var new_relative_dir = base_relative_dir + "/" + value;
-                    div.setAttribute("spt_relative_dir", new_relative_dir);
+                    try {
+                        var server = TacticServerStub.get();
+                        var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                        var kwargs = {
+                            search_type: bvr.search_type,
+                            action: 'rename_folder',
+                            old_relative_dir: relative_dir,
+                            new_relative_dir: new_relative_dir
+                        };
 
-
-                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                    var kwargs = {
-                        search_type: bvr.search_type,
-                        action: 'rename_folder',
-                        old_relative_dir: relative_dir,
-                        new_relative_dir: new_relative_dir
-                    };
-
-                    var server = TacticServerStub.get();
-
-                    div.setStyle("opacity", 0.3);
-
-                    server.execute_cmd(class_name, kwargs, null, {
-                        on_complete: function(ret_val) {
-                            div.setStyle("opacity", 1.0);
-                            spt.notify.show_message("Folder rename complete");
-                            var dir_top = span.getParent(".spt_dir_list_handler_top");
-                            spt.panel.refresh(dir_top);
-                        }
-                    });
+                        server.execute_cmd(class_name, kwargs)
+                    
+                        spt.notify.show_message("Folder rename complete");
+                        var dir_top = activator.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                        
+                    } catch(err) {
+                        spt.alert(spt.exception.handler(err));
+                        span.destroy();
+                        original_el.setStyle("display", "");
+                    }
 
                 };
+                
+                input.focus();
+                input.select();
 
                 '''
             } )
@@ -1646,65 +1652,62 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var content = activator.getElement(".spt_basename_content");
-            var value = content.getAttribute("spt_src_basename");
-
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-
-            var input = $(document.createElement("input"));
-            input.setAttribute("type", "text");
-
-            var div = activator;
-
-            var el = activator.getElement(".spt_item_value");
-            input.replaces(el);
-            input.setStyle("margin-top", "-1px");
-            input.setStyle("width", "200px");
-
-            input.value = value;
-            input.focus();
-            input.select();
-
-
-            input.onblur = function() {
-                var new_value = this.value;
-
-                if (!new_value) {
-                    alert("no value");
-                    return;
-                }
-
-
-                var span = $(document.createElement("span"));
-                span.innerHTML = " " + new_value;
-                span.replaces(input);
-                span.addClass("spt_item_value");
-
-                div.setAttribute("spt_basename", new_value);
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'rename_item',
-                    relative_dir: relative_dir,
-                    old_value: value,
-                    new_value: new_value
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs, null, {
-                    on_complete: function(ret_val) {
-                        var dir_top = span.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
+                var activator = spt.smenu.get_activator(bvr);
+                var content = activator.getElement(".spt_basename_content");
+                var original_name = content.getAttribute("spt_src_basename");
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+                
+                var original_el = activator.getElement(".spt_item_value");
+                original_el.setStyle("display", "none");
+                
+                // Inject a input
+                var input = $(document.createElement("input"));
+                input.setAttribute("type", "text");
+                input.setStyle("width", "200px");
+                input.inject(original_el, "after");
+                
+                input.onblur = function() {
+                    var value = this.value;
+                    var valid_regex = /^[a-zA-Z0-9_\s-]+$/;
+                    if (!valid_regex.test(value)) {
+                        spt.alert("Please enter a valid file system name. may contain letters, underscores, hyphens or spaces.");
+                        this.value = original_name;
+                        return; 
+                    } else if (value == original_name) {
+                        input.destroy();
+                        original_el.setStyle("display", "");
+                        return;
                     }
-                } );
+                    
+                    var span = $(document.createElement("span"));
+                    span.innerHTML = " " +value;
+                    span.replaces(input);
 
+                    try {
+                        var server = TacticServerStub.get();
+                        var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                        var kwargs = {
+                            search_type: bvr.search_type,
+                            action: 'rename_item',
+                            relative_dir: relative_dir,
+                            old_value: original_name,
+                            new_value: value
+                        };
+                        server.execute_cmd(class_name, kwargs)
+                    
+                        spt.notify.show_message("Folder rename complete");
+                        var dir_top = activator.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                    } catch(err) {
+                        spt.alert(spt.exception.handler(err));
+                        span.destroy();
+                        original_el.setStyle("display", "");
+                    }
 
-            };
-
-            input.onkeyup = function(evt) {
-                console.log(evt.key);
-            }
+                };
+                
+                input.focus();
+                input.select();
 
             '''
         } )
@@ -2029,7 +2032,6 @@ class RepoBrowserActionCmd(Command):
 
             full_dir = "%s/%s" % (base_dir, relative_dir)
 
-            # TODO: Append a (#) onto the new folder title
             if os.path.exists(full_dir):
                 raise Exception("Directory [%s] already exists" % relative_dir)
 
@@ -2054,8 +2056,18 @@ class RepoBrowserActionCmd(Command):
             new_relative_dir = my.kwargs.get("new_relative_dir")
             if not new_relative_dir:
                 return
+          
+            if old_relative_dir == new_relative_dir:
+                return
 
+            old_dir = "%s/%s" % (base_dir, old_relative_dir)
+            new_dir = "%s/%s" % (base_dir, new_relative_dir)
+        
+            if (os.path.exists(new_dir)):
+                raise Exception("Directory [%s] already exists." % new_dir) 
 
+            FileUndo.move(old_dir, new_dir)
+            
             # find all of the files in this relative_dir
             search = Search("sthpw/file")
             search.add_op("begin")
@@ -2084,10 +2096,6 @@ class RepoBrowserActionCmd(Command):
                     parent.commit()
 
 
-            old_dir = "%s/%s" % (base_dir, old_relative_dir)
-            new_dir = "%s/%s" % (base_dir, new_relative_dir)
-
-            FileUndo.move(old_dir, new_dir)
 
 
         elif action == "copy_clipboard":
