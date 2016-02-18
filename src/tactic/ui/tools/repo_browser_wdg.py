@@ -37,7 +37,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        search_type = my.kwargs.get("search_type")
         keywords = my.kwargs.get("keywords")
 
         top = my.top
@@ -50,16 +49,38 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #my.mode = 'folder'
 
 
-        #table = ResizableTableWdg()
         table = Table()
         top.add(table)
         table.add_color("color", "color")
-        #table.add_style("margin: -1px -1px -1px -1px")
         table.add_style("width: 100%")
 
         base_dir = Environment.get_asset_dir()
-        project_code = Project.get_project_code()
-        project_dir = "%s/%s" % (base_dir, project_code)
+
+        # single asset mode
+        parent_key = my.kwargs.get("search_key")
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            search_type = parent.get_search_type()
+
+            parent_code = parent.get_value("code")
+
+            relative_dir = my.kwargs.get("relative_dir")
+            relative_dir = "workflow/order/ORDER00002/deliverable/%s" % parent_code
+            project_dir = "%s/%s" % (base_dir, relative_dir)
+        else:
+            # otherwise use
+            project_code = Project.get_project_code()
+            project_dir = "%s/%s" % (base_dir, project_code)
+            search_type = my.kwargs.get("search_type")
+
+            #if search_type:
+            #    parts = search_type.split("/")
+            #    project_dir = "%s/%s" % (project_dir, parts[1])
+
+        show_base_dir = False
+        show_base_dir = True
+
+
 
         table.add_row()
 
@@ -70,38 +91,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         shelf_wdg = DivWdg()
         left.add(shelf_wdg)
-
-        # TODO: this doesn't work very well. Disabling for now until a
-        # better solution can be found.
-        """
-        custom_cbk = {
-        'enter': '''
-            var top = bvr.src_el.getParent(".spt_repo_browser_top");
-            var search_el = top.getElement(".spt_main_search");
-            var keywords = search_el.value;
-
-            var class_name = 'tactic.ui.tools.RepoBrowserWdg';
-            var kwargs = {
-                'keywords': keywords,
-            }
-            content = top.getElement(".spt_repo_browser_content")
-            spt.panel.load(top, class_name, kwargs);
-        '''
-        }
-
-        search_div = DivWdg()
-        shelf_wdg.add(search_div)
-        search_div.add("<b>File Filter: </b>")
-        search_div.add("&nbsp;"*2)
-        from tactic.ui.input import LookAheadTextInputWdg
-        text = LookAheadTextInputWdg(search_type='sthpw/file',column='metadata_search', custom_cbk=custom_cbk)
-        text.add_class("spt_main_search")
-        text.add_style("width: 250px")
-        if keywords:
-            text.set_value(keywords)
-        search_div.add(text)
-        search_div.add("<hr/")
-        """
 
 
         if not search_type:
@@ -196,27 +185,41 @@ class RepoBrowserWdg(BaseRefreshWdg):
             search_types = None
 
 
+        # put some limits on the parent search
         parent_search = my.kwargs.get("search")
         if parent_search:
             parent_search.set_limit(1000)
             parent_search.set_offset(0)
 
 
+        # TEST
+        parent_key = my.kwargs.get("search_key")
+        if parent_key:
+            # create a search
+            sobject = Search.get_by_search_key(parent_key)
+            parent_search = Search(sobject.get_search_type())
+            parent_search.add_filter("code", sobject.get_value("code") )
+            #my.sobjects = [sobject]
 
+
+        # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
+
+
         dynamic = True
 
 
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
                 location="server",
-                show_base_dir=False,
+                show_base_dir=show_base_dir,
                 open_depth=open_depth,
                 search_types=search_types,
                 dynamic=dynamic,
                 keywords=keywords,
                 search_keys=search_keys,
-                search=parent_search
+                search=parent_search,
+                parent_key=parent_key
         )
         content_div.add(dir_list)
 
@@ -237,7 +240,9 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div.add_style("min-width: 400px")
         outer_div.add(content_div)
 
-        count = parent_search.get_count()
+        count = 0
+        if parent_search:
+            count = parent_search.get_count()
         if count:
             widget = RepoBrowserDirContentWdg(
                 search_type=search_type,
@@ -454,8 +459,11 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         project_code = Project.get_project_code()
         search = Search("sthpw/file")
+
+        # add a search type filter ... ignore this is the search_type are snapshots
         if search_types:
-            search.add_filters("search_type", search_types)
+            if search_types[0] != "sthpw/snapshot":
+                search.add_filters("search_type", search_types)
 
         if relative_dir:
 
@@ -501,7 +509,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             search.add_sobjects_filter(my.sobjects)
 
 
+        # FIXME: this could be very slow for large folders
         search_type = search_types[0]
+
         key = "repo_browser:%s" % search_type
         parent_search_str = WidgetSettings.get_value_by_key(key)
         if parent_search_str:
@@ -510,7 +520,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             parents = parent_search.get_sobjects()
             parent_codes = [x.get_value("code") for x in parents]
 
-            search.add_filters("search_code", parent_codes)
+            if search_type == "sthpw/snapshot":
+                search.add_filters("snapshot_code", parent_codes)
+            else:
+                search.add_filter("search_type", search_type)
+                search.add_filters("search_code", parent_codes)
+
 
         return search
 
@@ -1007,7 +1022,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
-            spt.table.last_table = null;
+            //spt.table.last_table = null;
 
             spt.app_busy.show("Loading information");
 
@@ -1183,6 +1198,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_dir_context_menu(my, mode="freeform"):
+
+        parent_key = my.kwargs.get("parent_key")
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1497,6 +1514,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
+            'search_key': parent_key,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var search_type = activator.getAttribute("spt_search_type");
@@ -1505,7 +1523,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             var class_name = 'tactic.ui.tools.IngestUploadWdg';
             var kwargs = {
                 search_type: search_type,
-                relative_dir: relative_dir
+                relative_dir: relative_dir,
+                search_key: bvr.search_key
             };
             spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+search_type+")</i>", class_name, kwargs);
             '''
@@ -1860,6 +1879,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_dir_behaviors(my, item_div, dirname, basename):
 
+        parent_key = my.kwargs.get("parent_key")
         """ 
         item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this)")
         item_div.add_attr("ondragleave", "spt.repo_browser.drag_leave(event, this)")
@@ -1965,7 +1985,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             basename: basename,
             search_keys: search_keys
         };
-        spt.table.last_table = null;
+        //spt.table.last_table = null;
         spt.panel.load(content, class_name, kwargs);
         spt.app_busy.hide();
 

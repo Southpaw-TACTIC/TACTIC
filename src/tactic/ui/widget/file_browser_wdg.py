@@ -399,7 +399,10 @@ class DirListWdg(BaseRefreshWdg):
             icon_div.add(icon)
             icon_div.add_style("float: left")
 
-            title_div = FloatDivWdg("%s" % base_dir)
+            display_dir = base_dir
+            display_dir = os.path.basename(display_dir)
+
+            title_div = FloatDivWdg("%s" % display_dir)
             dir_title.add(title_div)
             title_div.add_style("padding-top: 2px")
             
