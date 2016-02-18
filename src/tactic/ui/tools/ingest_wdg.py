@@ -77,7 +77,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         right.add_style("vertical-align: top")
         right.add( my.get_settings_wdg() )
 
-        show_settings = my.kwargs.get("show_settings")
+        search_key = my.kwargs.get("search_key") or ""
+        if search_key:
+            show_settings = False
+        else:
+            show_settings = my.kwargs.get("show_settings")
+
         if show_settings in [False, 'false']:
             right.add_style("display: none")
 
@@ -175,7 +180,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         hidden = HiddenWdg(name="parent_key")
         div.add(hidden)
         hidden.add_class("spt_parent_key")
-        parent_key = my.kwargs.get("parent_key") or ""
+        parent_key = my.kwargs.get("search_key") or ""
         if parent_key:
             hidden.set_value(parent_key)
 
