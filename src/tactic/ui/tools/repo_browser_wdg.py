@@ -932,29 +932,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return;
             }
   
-            // Move the files
-            var server = TacticServerStub.get(); 
-
-            // Get the snapshot or dir moved
-            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
-            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
-            // Get the new relative_dir
-            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
-            
-            var cmd = 'tactic.ui.tools.RepoBrowserCbk';
-            var kwargs = {
-                snapshot_code: snapshot_code,
-                from_relative_dir: from_relative_dir,
-                relative_dir: relative_dir
-            }
-            try {
-                server.execute_cmd(cmd, kwargs); 
-            } catch(err) {
-                spt.alert(spt.exception.handler(err));
-                return;
-            }
-            
-
             if ( drop_on_el.hasClass("spt_open") == true) {
                 var sibling = drop_on_el.getNext();
                 var inner = sibling.getElement(".spt_dir_list_handler_content");
@@ -972,6 +949,31 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             else {
                 spt.behavior.destroy_element(bvr.src_el);
+            }
+            
+            // Move the files
+            var server = TacticServerStub.get(); 
+
+            // Get the snapshot or dir moved
+            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
+            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
+            // Get the new relative_dir
+            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
+            
+            var cmd = 'tactic.ui.tools.RepoBrowserCbk';
+            var kwargs = {
+                snapshot_code: snapshot_code,
+                from_relative_dir: from_relative_dir,
+                relative_dir: relative_dir
+            }
+            try {
+                server.execute_cmd(cmd, kwargs); 
+                
+                var dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
+                spt.panel.refresh(dir_top);
+            } catch(err) {
+                spt.alert(spt.exception.handler(err));
+                return;
             }
 
         }
@@ -1013,7 +1015,22 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         spt.repo_browser.click_file_bvr = function(evt, bvr) {
-            console.log("Hi from click file bvr")
+            // When an item is clicked in the directory, display 
+            // the file detail.
+  
+            if (bvr.src_el.hasClass("spt_item_value")) {
+                bvr.src_el = bvr.src_el.getParent(".spt_dir_list_item");
+            }
+        
+            // Search the DOM for the search type
+            var search_type = null;
+            var parent = bvr.src_el;
+            while (parent && search_type == null) {
+                search_type = parent.getAttribute("spt_search_type");
+                if (search_type) break;
+                parent = parent.getParent();
+            }
+
             if (!evt.control) {
                 spt.repo_browser.clear_selected();
             }
@@ -1035,7 +1052,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
                 var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
                 var kwargs = {
-                  search_type: bvr.search_type,
+                  search_type: search_type,
                   snapshot_codes: snapshot_codes
                 };
 
@@ -1047,7 +1064,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var basename = bvr.src_el.getAttribute("spt_basename");
 
                 var kwargs = {
-                  search_type: bvr.search_type,
+                  search_type: search_type,
                   dirname: dirname,
                   basename: basename
                 };
@@ -1097,7 +1114,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             try {
                 server.execute_cmd(cmd, kwargs); 
             } catch(err) {
-                spt.alert(spt.exception.hanlder(err));
+                spt.alert(spt.exception.handler(err));
                 return;
             }
 
@@ -1202,6 +1219,14 @@ class RepoBrowserDirListWdg(DirListWdg):
         '''
         } )
 
+
+        # File click-up
+        #FIXME:
+        top.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_item_value',
+            'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
+        } )
 
 
     def get_dir_context_menu(my, mode="freeform"):
@@ -1349,24 +1374,17 @@ class RepoBrowserDirListWdg(DirListWdg):
                 input.onblur = function() {
                     // Attempt to create new folder
                     var value = this.value;
+
                     if (!value) {
                         div.destroy();
                     }
-                    var new_relative_dir = relative_dir + "/" + value;
-                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                    var kwargs = {
-                        search_type: bvr.search_type,
-                        action: 'create_folder',
-                        relative_dir: new_relative_dir
-                    }
-                    var server = TacticServerStub.get();
-                    try {
-                        server.execute_cmd(class_name, kwargs);
-                    } catch(err) {
-                        spt.alert(spt.exception.handler(err));
+
+                    var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
+                    if (!valid_regex.test(value)) {
+                        spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
                         div.destroy();
-                        return;
-                    }
+                        return; 
+                    }     
                     
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
@@ -1375,13 +1393,32 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                     div.setAttribute("spt_relative_dir", new_relative_dir);
                     div.addClass("spt_dir_item");
+                    
+                    var new_relative_dir = relative_dir + "/" + value;
+                    
+                    var server = TacticServerStub.get();
+                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                    
+                    var kwargs = {
+                        search_type: bvr.search_type,
+                        action: 'create_folder',
+                        relative_dir: new_relative_dir
+                    }
+                    
+                    try {
+                        server.execute_cmd(class_name, kwargs);
+                        
+                        var dir_top = span.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                    } catch(err) {
+                        spt.alert(spt.exception.handler(err));
+                        div.destroy();
+                        return;
+                    }
+                    
 
-                    //var dir_top = span.getParent(".spt_dir_list_handler_top");
-                    //spt.panel.refresh(dir_top);
                 };
-                input.onfocus = function() {
-                    this.select();
-                };
+                
                 input.addEvent( "keyup", function(evt) {
                     var key = evt.key;
                     if (key == 'enter') {
@@ -1406,60 +1443,68 @@ class RepoBrowserDirListWdg(DirListWdg):
                 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var relative_dir = activator.getAttribute("spt_relative_dir");
+                var original_dir = activator.getAttribute("spt_reldir");
 
+                var original_el = activator.getElement(".spt_dir_value");
+                original_el.setStyle("display", "none");
+                
+                // Inject a input
                 var input = $(document.createElement("input"));
+                input.value = original_dir;
                 input.setAttribute("type", "text");
                 input.setStyle("width", "200px");
-
-                var div = activator;
-
-                var el = activator.getElement(".spt_dir_value");
-                input.replaces(el);
-                input.focus();
-                input.select();
-
+                input.inject(original_el, "after");
+                
                 var parts = relative_dir.split("/");
                 input.value = parts[parts.length-1];
                 var base_relative_dir = parts.slice(0, parts.length-1).join("/");
+                
                 input.onblur = function() {
                     var value = this.value;
-
-                    if (!value) {
-                        alert("no value");
+                    var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
+                    if (!valid_regex.test(value)) {
+                        spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
+                        this.value = original_dir;
+                        input.focus();
+                        return; 
+                    } else if (value == original_dir) {
+                        input.destroy();
+                        original_el.setStyle("display", "");
                         return;
                     }
-
+                    
+                    var new_relative_dir = base_relative_dir + "/" + value;
+                    
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
                     span.replaces(input);
-                    span.addClass("spt_dir_value");
 
-                    var new_relative_dir = base_relative_dir + "/" + value;
-                    div.setAttribute("spt_relative_dir", new_relative_dir);
+                    try {
+                        var server = TacticServerStub.get();
+                        var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                        var kwargs = {
+                            search_type: bvr.search_type,
+                            action: 'rename_folder',
+                            old_relative_dir: relative_dir,
+                            new_relative_dir: new_relative_dir
+                        };
 
-
-                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                    var kwargs = {
-                        search_type: bvr.search_type,
-                        action: 'rename_folder',
-                        old_relative_dir: relative_dir,
-                        new_relative_dir: new_relative_dir
-                    };
-
-                    var server = TacticServerStub.get();
-
-                    div.setStyle("opacity", 0.3);
-
-                    server.execute_cmd(class_name, kwargs, null, {
-                        on_complete: function(ret_val) {
-                            div.setStyle("opacity", 1.0);
-                            spt.notify.show_message("Folder rename complete");
-                            var dir_top = span.getParent(".spt_dir_list_handler_top");
-                            spt.panel.refresh(dir_top);
-                        }
-                    });
+                        server.execute_cmd(class_name, kwargs)
+                    
+                        spt.notify.show_message("Folder rename complete");
+                        var dir_top = activator.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                        
+                    } catch(err) {
+                        spt.alert(spt.exception.handler(err));
+                        span.destroy();
+                        original_el.setStyle("display", "");
+                    }
 
                 };
+                
+                input.focus();
+                input.select();
 
                 '''
             } )
@@ -1646,71 +1691,73 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-
+        # FIXME: Right now assume single asset mode.
+        # Ie. Update the asset as well.
         menu_item = MenuItem(type='action', label='Rename Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var content = activator.getElement(".spt_basename_content");
-            var value = content.getAttribute("spt_src_basename");
-
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-
-            var input = $(document.createElement("input"));
-            input.setAttribute("type", "text");
-
-            var div = activator;
-
-            var el = activator.getElement(".spt_item_value");
-            input.replaces(el);
-            input.setStyle("margin-top", "-1px");
-            input.setStyle("width", "200px");
-
-            input.value = value;
-            input.focus();
-            input.select();
-
-
-            input.onblur = function() {
-                var new_value = this.value;
-
-                if (!new_value) {
-                    alert("no value");
-                    return;
-                }
-
-
-                var span = $(document.createElement("span"));
-                span.innerHTML = " " + new_value;
-                span.replaces(input);
-                span.addClass("spt_item_value");
-
-                div.setAttribute("spt_basename", new_value);
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'rename_item',
-                    relative_dir: relative_dir,
-                    old_value: value,
-                    new_value: new_value
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs, null, {
-                    on_complete: function(ret_val) {
-                        var dir_top = span.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
+                var activator = spt.smenu.get_activator(bvr);
+                var content = activator.getElement(".spt_basename_content");
+                var file_name = content.getAttribute("spt_file_name");
+                var old_value = content.getAttribute("spt_src_basename");
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+                
+                var original_el = activator.getElement(".spt_item_value");
+                original_el.setStyle("display", "none");
+                
+                // Inject a input
+                var input = $(document.createElement("input"));
+                input.value = old_value;
+                input.setAttribute("type", "text");
+                input.setStyle("width", "200px");
+                input.inject(original_el, "after");
+                
+                input.onblur = function() {
+                    var new_value = this.value;
+                    var valid_regex = /^[a-zA-Z0-9_\s-\.]+$/;
+                    if (!valid_regex.test(new_value)) {
+                        spt.alert("Please enter a valid file system name containing letters, numbers, or characters: . - _");
+                        input.value = old_value;
+                        input.focus();
+                        return; 
+                    } else if (new_value == old_value) {
+                        input.destroy();
+                        original_el.setStyle("display", "");
+                        return;
                     }
-                } );
+                    
+                    var span = $(document.createElement("span"));
+                    span.innerHTML = " " +value;
+                    span.replaces(input);
 
+                    try {
+                        var server = TacticServerStub.get();
+                        var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                        var kwargs = {
+                            search_type: bvr.search_type,
+                            action: 'rename_item',
+                            relative_dir: relative_dir,
+                            file_name: file_name,
+                            old_value: old_value,
+                            new_value: new_value
+                        };
+                        server.execute_cmd(class_name, kwargs)
+                    
+                        spt.notify.show_message("Item rename complete");
+                        var dir_top = activator.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                    } catch(err) {
+                        spt.alert(spt.exception.handler(err));
+                        span.destroy();
+                        original_el.setStyle("display", "");
+                    }
 
-            };
-
-            input.onkeyup = function(evt) {
-                console.log(evt.key);
-            }
+                };
+                
+                input.focus();
+                input.select();
 
             '''
         } )
@@ -1724,41 +1771,22 @@ class RepoBrowserDirListWdg(DirListWdg):
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var relative_dir = activator.getAttribute("spt_relative_dir");
-
             var snapshot_code = activator.getAttribute("spt_snapshot_code");
             var search_key = activator.getAttribute("spt_search_key");
 
-            var server = TacticServerStub.get();
-
-            /*
-            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            activator.addClass("spt_browser_deleted");
+            var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
+            delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
+            delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
+            delete_on_complete += "if (grandparent_dir) {"
+            delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
+            delete_on_complete += "}"
+            var class_name = 'tactic.ui.tools.DeleteToolWdg';
             var kwargs = {
-                action: 'delete_item',
-                snapshot_code: snapshot_code
+              search_key: search_key,
+              on_complete: delete_on_complete
             }
-            */
-
-            try {
-                //server.execute_cmd(class_name, kwargs);
-
-
-                var delete_on_complete = function() {
-                    var dir_top = target.getParent(".spt_dir_list_handler_top");
-                    spt.panel.refresh(dir_top);
-                }
-                
-                var class_name = 'tactic.ui.tools.DeleteToolWdg';
-                var kwargs = {
-                  search_key: search_key,
-                  on_complete: "delete_on_complete()"
-                }
-                var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
-     
-            }
-            catch(e) {
-                alert("Could not delete file.");
-            }
-
+            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
             '''
         } )
@@ -1787,18 +1815,19 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_basename(my, dirname, basename):
-
+        
         path = "%s/%s" % (dirname, basename)
         file_object = my.file_objects.get(path)
 
         #src_path = file_object.get_value("source_path")
         src_path = file_object.get_value("file_name")
         src_basename = os.path.basename(src_path)
-
+        
+        # FIXME: In single asset mode, simply display the asset name or 
+        # atleast single context.
         # NOTE: pretty hacky
         # remove version
         src_basename = re.sub(r"_v\d+", "", src_basename)
-
 
         #if src_basename != basename:
         #    src_basename = "%s <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % (src_basename, basename)
@@ -1812,12 +1841,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         span.add_attr("title", basename)
         span.add(src_basename)
         span.add_attr("spt_src_basename", src_basename)
+        span.add_attr("spt_file_name", src_path)
         span.add_class("spt_basename_content")
 
-        src_basename = span
-
-
-        return src_basename
+        return span
 
 
     def add_file_behaviors(my, item_div, dirname, basename):
@@ -1864,7 +1891,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_file_code", file_code)
         item_div.add_attr("spt_snapshot_code", snapshot_code)
 
-
         item_div.add_behavior( {
             'type': 'drag',
             "mouse_btn": 'LMB',
@@ -1872,21 +1898,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             "cb_set_prefix": 'spt.repo_browser.drag_file'
 
         } )
-
-
-        # TODO: make this into a "smart" behavior
-        item_div.add_behavior( {
-        'type': 'click',
-        'search_type': search_type,
-        'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
-        } )
-        item_div.add_behavior( {
-        'type': 'click',
-        'modkeys': 'CTRL',
-        'search_type': search_type,
-        'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
-        } )
-
 
         SmartMenu.assign_as_local_activator( item_div, 'FILE_ITEM_CTX' )
 
@@ -2035,7 +2046,6 @@ class RepoBrowserActionCmd(Command):
 
             full_dir = "%s/%s" % (base_dir, relative_dir)
 
-            # TODO: Append a (#) onto the new folder title
             if os.path.exists(full_dir):
                 raise Exception("Directory [%s] already exists" % relative_dir)
 
@@ -2060,8 +2070,18 @@ class RepoBrowserActionCmd(Command):
             new_relative_dir = my.kwargs.get("new_relative_dir")
             if not new_relative_dir:
                 return
+          
+            if old_relative_dir == new_relative_dir:
+                return
 
+            old_dir = "%s/%s" % (base_dir, old_relative_dir)
+            new_dir = "%s/%s" % (base_dir, new_relative_dir)
+        
+            if (os.path.exists(new_dir)):
+                raise Exception("Directory [%s] already exists." % new_dir) 
 
+            FileUndo.move(old_dir, new_dir)
+            
             # find all of the files in this relative_dir
             search = Search("sthpw/file")
             search.add_op("begin")
@@ -2090,10 +2110,6 @@ class RepoBrowserActionCmd(Command):
                     parent.commit()
 
 
-            old_dir = "%s/%s" % (base_dir, old_relative_dir)
-            new_dir = "%s/%s" % (base_dir, new_relative_dir)
-
-            FileUndo.move(old_dir, new_dir)
 
 
         elif action == "copy_clipboard":
@@ -2133,31 +2149,54 @@ class RepoBrowserActionCmd(Command):
  
 
         elif action == "rename_item":
-
+            # Renaming an item is actually renaming a context
+ 
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
             relative_dir = relative_dir.strip("/")
 
+            file_name = my.kwargs.get("file_name")
             new_value = my.kwargs.get("new_value")
             old_value = my.kwargs.get("old_value")
 
             if not new_value:
-                return
+                raise "File renaming failed - New file name not given."
             if not old_value:
-                return
+                raise "File renaming failed - Original file not given."
             if old_value == new_value:
+                # Fail silently
                 return
 
+            # TODO.. renaming makes a conflict.
+
+            # Get the file sObject that was renamed
             search = Search("sthpw/file")
             search.add_filter("relative_dir", relative_dir)
-            search.add_filter("file_name", old_value)
+            search.add_filter("file_name", file_name)
             file = search.get_sobject()
+            if not file:
+                raise "File not found"
+         
+            # Check validity: This renaming allows spaces. Compare new name 
+            # with underscores replacing spaces to cleaned filename.
+            import re
+            match = re.match('^[a-zA-Z0-9\_\s\-\.]+$', new_value)
+            if not match:
+                raise "Invalid file name"
 
+            # For now, user cannot change an extensions.
+            # If the user has not entered a matching extension, 
+            # the original extension will be appended onto the new name.
+            new_base, new_ext = os.path.splitext(new_value)
+            old_base, old_ext = os.path.splitext(file_name)
+            if not new_ext or new_ext != old_ext:
+                new_base = new_value
+                new_ext = old_ext
+             
             # get the snapshot
             snapshot = file.get_parent()
             sobject = snapshot.get_parent()
-
             context = snapshot.get_value("context")
 
             # get all of the snapshots. Make sure versionless is the first one
@@ -2167,22 +2206,31 @@ class RepoBrowserActionCmd(Command):
             search.add_order_by("version")
             snapshots = search.get_sobjects()
 
+            # Build set of parent sObjects to update keywords
             parents = {}
-
+     
+            # For each snapshot, update its xml, files and context.
             for snapshot in snapshots:
-
+                # For each file in the snapshot, update the filename.
+                # Build a list of tuples - (old_path, new_path) for each
+                # file. If one of these has a naming conflict, fail on the 
+                # entire snapshot.
+                # Otherwise, commit database changes and move all files.
+                
                 xml = snapshot.get_xml_value("snapshot")
                 version = snapshot.get_value("version")
                 context = snapshot.get_value("context")
                 search_code = snapshot.get_value("search_code")
-
                 if not parents.get(search_code):
                     parent = snapshot.get_parent()
                     parents[search_code] = parent
 
-                # need to make some big assumptions about the file name
-                # find the main file and set the versions accoridngly
-
+                # NOTE: We are assuming that files having a naming convention
+                # as follows: {basepath}_v{ver#} where the base path is based offo
+                # of the main file in the snapshot.
+                
+                # Build new versioned base name
+                # FIXME: Why are we not using get main?
                 files = File.get_by_snapshot(snapshot)
                 main_file = ""
                 for file in files:
@@ -2190,40 +2238,36 @@ class RepoBrowserActionCmd(Command):
                         main_file = file.get_value("file_name")
                         break
 
-
-                base, ext = os.path.splitext(main_file)
-                new_base, new_ext = os.path.splitext(new_value)
-
-
+                unversioned_base, file_ext = os.path.splitext(main_file)
                 if version == -1:
-                    new_base = new_value
+                    new_versioned_base = new_base
                 else:
-                    new_base = "%s_v%0.3d" % (new_base, version)
+                    new_versioned_base = "%s_v%0.3d" % (new_base, version)
 
                 for file in files:
 
                     file_name = file.get_value("file_name")
                     print "file_name: ", file.get_code(), file_name
-                    new_file_name = file_name.replace(base, new_base)
-
-                    old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
-                    new_path = "%s/%s/%s" % (base_dir, relative_dir, new_file_name)
-
-                    print "new_path: ", new_path
-
-
+                    new_file_name = file_name.replace(unversioned_base, new_versioned_base)
                     file.set_value("file_name", new_file_name)
                     file.commit()
 
-                    if version != -1 and not os.path.exists(new_path):
+                    # TODO: If a single file rename fails, then do not abort entire command
+                    # Move the file
+                    old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
+                    new_path = "%s/%s/%s" % (base_dir, relative_dir, new_file_name)
+                    print "new_path: ", new_path
+                    if version != -1:
                         FileUndo.move(old_path, new_path)
 
                     # change the xml of the snapshot
                     node = xml.get_node("snapshot/file[@name='%s']" % file_name)
                     Xml.set_attribute(node, "name", new_file_name)
-
+ 
+                # Update entire snapshot XML
                 snapshot.set_value( "snapshot", xml.to_string() )
-
+ 
+                # Update context if it contains the filename
                 parts = context.split("/")
                 if len(parts) == 2:
                     new_subcontext, new_ext = os.path.splitext(new_value)
@@ -2234,15 +2278,26 @@ class RepoBrowserActionCmd(Command):
 
             snapshots[-1].update_versionless("latest")
 
-            sobject.set_value("name", new_value)
-            sobject.commit()
-
-
+            # Update original parent name if in single asset mode
+            # TODO: For deliverables, this will be false.
+            # rename_parent = my.kwargs.get("rename_parent")
+            rename_parent = True
+            if rename_parent:
+                # If sobject has an extension in it's name, then 
+                # make sure this extension is preserved.
+                original_name = sobject.get_value("name", no_exception=True)
+                base, ext = os.path.splitext(original_name)
+                if ext == old_ext:
+                    new_name = "%s%s" % (new_base, ext) 
+                else:
+                    new_name = new_base
+                sobject.set_value("name", new_name)
+                sobject.commit()
+ 
+            # Update any associated parents keywords
             for parent in parents.values():
                 my.set_keywords(parent)
                 parent.commit()
-
-
 
 
     def set_keywords(my, parent):
