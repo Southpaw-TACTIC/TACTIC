@@ -926,29 +926,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return;
             }
   
-            // Move the files
-            var server = TacticServerStub.get(); 
-
-            // Get the snapshot or dir moved
-            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
-            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
-            // Get the new relative_dir
-            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
-            
-            var cmd = 'tactic.ui.tools.RepoBrowserCbk';
-            var kwargs = {
-                snapshot_code: snapshot_code,
-                from_relative_dir: from_relative_dir,
-                relative_dir: relative_dir
-            }
-            try {
-                server.execute_cmd(cmd, kwargs); 
-            } catch(err) {
-                spt.alert(spt.exception.handler(err));
-                return;
-            }
-            
-
             if ( drop_on_el.hasClass("spt_open") == true) {
                 var sibling = drop_on_el.getNext();
                 var inner = sibling.getElement(".spt_dir_list_handler_content");
@@ -966,6 +943,31 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             else {
                 spt.behavior.destroy_element(bvr.src_el);
+            }
+            
+            // Move the files
+            var server = TacticServerStub.get(); 
+
+            // Get the snapshot or dir moved
+            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
+            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
+            // Get the new relative_dir
+            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
+            
+            var cmd = 'tactic.ui.tools.RepoBrowserCbk';
+            var kwargs = {
+                snapshot_code: snapshot_code,
+                from_relative_dir: from_relative_dir,
+                relative_dir: relative_dir
+            }
+            try {
+                server.execute_cmd(cmd, kwargs); 
+                
+                var dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
+                spt.panel.refresh(dir_top);
+            } catch(err) {
+                spt.alert(spt.exception.handler(err));
+                return;
             }
 
         }
@@ -1366,24 +1368,17 @@ class RepoBrowserDirListWdg(DirListWdg):
                 input.onblur = function() {
                     // Attempt to create new folder
                     var value = this.value;
+
                     if (!value) {
                         div.destroy();
                     }
-                    var new_relative_dir = relative_dir + "/" + value;
-                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                    var kwargs = {
-                        search_type: bvr.search_type,
-                        action: 'create_folder',
-                        relative_dir: new_relative_dir
-                    }
-                    var server = TacticServerStub.get();
-                    try {
-                        server.execute_cmd(class_name, kwargs);
-                    } catch(err) {
-                        spt.alert(spt.exception.handler(err));
+
+                    var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
+                    if (!valid_regex.test(value)) {
+                        spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
                         div.destroy();
-                        return;
-                    }
+                        return; 
+                    }     
                     
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
@@ -1392,13 +1387,32 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                     div.setAttribute("spt_relative_dir", new_relative_dir);
                     div.addClass("spt_dir_item");
+                    
+                    var new_relative_dir = relative_dir + "/" + value;
+                    
+                    var server = TacticServerStub.get();
+                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                    
+                    var kwargs = {
+                        search_type: bvr.search_type,
+                        action: 'create_folder',
+                        relative_dir: new_relative_dir
+                    }
+                    
+                    try {
+                        server.execute_cmd(class_name, kwargs);
+                        
+                        var dir_top = span.getParent(".spt_dir_list_handler_top");
+                        spt.panel.refresh(dir_top);
+                    } catch(err) {
+                        spt.alert(spt.exception.handler(err));
+                        div.destroy();
+                        return;
+                    }
+                    
 
-                    //var dir_top = span.getParent(".spt_dir_list_handler_top");
-                    //spt.panel.refresh(dir_top);
                 };
-                input.onfocus = function() {
-                    this.select();
-                };
+                
                 input.addEvent( "keyup", function(evt) {
                     var key = evt.key;
                     if (key == 'enter') {
