@@ -509,7 +509,7 @@ class HtmlElement(Widget):
         'type': 'load',
         'bvr': behavior,
         'bvr_match_class': match_class,
-        'cbjs_action': '''
+        'cbjs_action': r'''
             var orig_bvr = bvr.bvr;
             var event = orig_bvr.type;
             var match = bvr.bvr_match_class;
@@ -522,7 +522,8 @@ class HtmlElement(Widget):
             var func = function(evt, src_el) {
                 var bvr = orig_bvr;
                 bvr.src_el = src_el;
-                eval(bvr.cbjs_action);
+                eval( "var f = function() {\n"+bvr.cbjs_action+"\n};" )
+                f();
             };
             bvr.src_el.addEvent(event_key, func);
         '''

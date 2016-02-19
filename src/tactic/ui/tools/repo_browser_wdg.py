@@ -62,6 +62,12 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
             relative_dir = my.kwargs.get("relative_dir")
             relative_dir = "workflow/order/ORDER00002/deliverable/%s" % parent_code
+
+            #from tactic_client_lib import TacticServerStub
+            #server = TacticServerStub.get()
+            #xx = server.get_virtual_snapshot_path(parent_key)
+            #xx = os.path.dirname(xx)
+
             project_dir = "%s/%s" % (base_dir, relative_dir)
         else:
             # otherwise use
