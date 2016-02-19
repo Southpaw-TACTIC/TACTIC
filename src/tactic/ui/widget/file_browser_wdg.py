@@ -564,8 +564,9 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_dir", path)
         div.add_attr("spt_root_dir", my.root_dir)
 
+        # Dynamic loading of swap content
         dynamic = my.kwargs.get("dynamic")
-        if dynamic in ["true", True]:
+        if dynamic in ["true", "True", True]:
             dynamic = True
         else:
             dynamic = False
@@ -732,7 +733,7 @@ class DirListWdg(BaseRefreshWdg):
         else:
             info = {}
 
-
+        
         icon_div = my.get_dir_icon_wdg(dir, item)
         if not icon_div:
             if info.get("file_type") == 'missing':
@@ -748,7 +749,6 @@ class DirListWdg(BaseRefreshWdg):
         icon_div.add_style("float: left")
         icon_div.add_style("margin-left: 3px")
         icon_div.add_style("margin-top: -1px")
-
 
         location = my.kwargs.get("location")
         if location in ['server', 'scm']:
