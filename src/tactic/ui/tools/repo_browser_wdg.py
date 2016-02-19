@@ -1765,41 +1765,22 @@ class RepoBrowserDirListWdg(DirListWdg):
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var relative_dir = activator.getAttribute("spt_relative_dir");
-
             var snapshot_code = activator.getAttribute("spt_snapshot_code");
             var search_key = activator.getAttribute("spt_search_key");
 
-            var server = TacticServerStub.get();
-
-            /*
-            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            activator.addClass("spt_browser_deleted");
+            var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
+            delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
+            delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
+            delete_on_complete += "if (grandparent_dir) {"
+            delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
+            delete_on_complete += "}"
+            var class_name = 'tactic.ui.tools.DeleteToolWdg';
             var kwargs = {
-                action: 'delete_item',
-                snapshot_code: snapshot_code
+              search_key: search_key,
+              on_complete: delete_on_complete
             }
-            */
-
-            try {
-                //server.execute_cmd(class_name, kwargs);
-
-
-                var delete_on_complete = function() {
-                    var dir_top = target.getParent(".spt_dir_list_handler_top");
-                    spt.panel.refresh(dir_top);
-                }
-                
-                var class_name = 'tactic.ui.tools.DeleteToolWdg';
-                var kwargs = {
-                  search_key: search_key,
-                  on_complete: "delete_on_complete()"
-                }
-                var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
-     
-            }
-            catch(e) {
-                alert("Could not delete file.");
-            }
-
+            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
             '''
         } )
