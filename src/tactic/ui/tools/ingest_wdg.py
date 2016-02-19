@@ -35,6 +35,7 @@ __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 class IngestUploadWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
+        'base_dir': 'Base directory to check into',
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
         'process': 'The default process to ingest into',
@@ -44,7 +45,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'oncomplete_script_path': 'Script to be run on a finished ingest',
         'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.',
         'context_mode': 'Set or remove context case sensitivity.',
-        'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"'
+        'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
+        'title': 'The title to display at the top'
     }
 
 
@@ -237,24 +239,29 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         hidden_options = my.kwargs.get("hidden_options").split(',')
 
-        if "process" not in hidden_options:
-            title_wdg = DivWdg()
-            div.add(title_wdg)
-            title_wdg.add("Process")
-            title_wdg.add_style("margin-top: 20px")
-            title_wdg.add_style("font-size: 16px")
+        process_wdg = DivWdg()
+        div.add(process_wdg)
 
-            div.add("<br/>")
+        title_wdg = DivWdg()
+        process_wdg.add(title_wdg)
+        title_wdg.add("Process")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
 
-            select = SelectWdg("process")
-            div.add(select)
-            select.set_option("values", process_names)
-            select.add_empty_option("- Select Ingest Process -")
-            if selected_process:
-                select.set_option("default", selected_process)
+        process_wdg.add("<br/>")
 
-            div.add("<br/>")
-            div.add("<hr/>")
+        select = SelectWdg("process")
+        process_wdg.add(select)
+        select.set_option("values", process_names)
+        select.add_empty_option("- Select Ingest Process -")
+        if selected_process:
+            select.set_option("default", selected_process)
+
+        process_wdg.add("<br/>")
+        process_wdg.add("<hr/>")
+        if "process" in hidden_options:
+            process_wdg.set_style("display: none")
+
 
         # Metadata
         title_wdg = DivWdg()
@@ -433,12 +440,17 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         header_div = DivWdg()
         div.add(header_div)
+
+        title = my.kwargs.get("title")
+        if not title:
+            title = "Ingest Files"
+        title_description = "Drag files into the box or click 'Add Files'"
        
         title_wdg = DivWdg()
         header_div.add(title_wdg)
-        title_wdg.add("<span style='font-size: 25px'>Ingest Files</span>")
+        title_wdg.add("<span style='font-size: 25px'>%s</span>" % title)
         title_wdg.add("<br/>")
-        title_wdg.add("Drag files into the box or click 'Add Files'")
+        title_wdg.add(title_description)
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
