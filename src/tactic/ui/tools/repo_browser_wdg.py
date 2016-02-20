@@ -1729,7 +1729,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     }
                     
                     var span = $(document.createElement("span"));
-                    span.innerHTML = " " +value;
+                    span.innerHTML = " " + new_value;
                     span.replaces(input);
 
                     try {
