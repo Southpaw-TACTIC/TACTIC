@@ -2243,8 +2243,30 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if path:
-            path = urllib.pathname2url(path)
-            img = HtmlElement.img(src=path)
+            if path == "__DYNAMIC__":
+                base,ext = os.path.splitext(my.lib_path)
+                ext = ext.upper().lstrip(".")
+
+                #flat ui color
+                colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+                import random
+                color = colors[random.randint(0,7)]
+
+                img = DivWdg()
+                img.add("<div>%s</div>" % ext)
+                img.add_style("text-align: center")
+                img.add_style("width: 80px")
+                img.add_style("height: 50px")
+                img.add_style("margin: 20px auto")
+                img.add_style("padding-top: 30px")
+                img.add_style("font-size: 20px")
+                img.add_style("font-weight: bold")
+                img.add_style("color: #fff")
+                img.add_style("background: %s" % color)
+
+            else:
+                path = urllib.pathname2url(path)
+                img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
@@ -2267,14 +2289,13 @@ class ThumbWdg2(BaseRefreshWdg):
 
             img = DivWdg(img)
             img.add_style("height: auto")
-            #img.add_style("border: solid 1px blue")
             img.add_style("margin: auto")
 
 
 
             #div.add_style("height: 100%")
             div.add_style("text-align: center")
-        elif path:
+        elif path and path != "__DYNAMIC__":
             img.add_style("width: %s" % width)
             if height:
                 img.add_style("height: %s" % height)
