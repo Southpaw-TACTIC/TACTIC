@@ -2253,12 +2253,17 @@ class ThumbWdg2(BaseRefreshWdg):
                 color = colors[random.randint(0,7)]
 
                 img = DivWdg()
-                img.add("<div>%s</div>" % ext)
+                img.add("<div style='display: inline-block; vertical-align: middle; margin-top: 30%%; width: 50px; height: 30px;'>%s</div>" % ext)
                 img.add_style("text-align: center")
-                img.add_style("width: 80px")
-                img.add_style("height: 50px")
-                img.add_style("margin: 20px auto")
-                img.add_style("padding-top: 30px")
+                #img.add_style("width: 80px")
+                #img.add_style("height: 50px")
+                img.add_style("min-width: 80px")
+                img.add_style("min-height: 50px")
+                img.add_style("width: 50%")
+                img.add_style("height: 70%")
+
+                img.add_style("margin: 30px auto")
+                img.add_style("padding: 0px 10px")
                 img.add_style("font-size: 20px")
                 img.add_style("font-weight: bold")
                 img.add_style("color: #fff")
