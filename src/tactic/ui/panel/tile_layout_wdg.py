@@ -2071,7 +2071,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         bg_wdg.add(" ")
 
 
-        if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+        #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+        if True:
             detail_div = DivWdg()
             div.add(detail_div)
             detail_div.add_style("float: right")

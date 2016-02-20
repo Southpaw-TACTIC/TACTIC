@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
+__all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'SnapshotDetailWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -53,6 +53,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
         my.show_task_process = my.kwargs.get('show_task_process')
 
     def get_title_wdg(my):
+
+
+        from pyasm.widget import WidgetConfigView
+        config = WidgetConfigView.get_by_search_type(my.search_type, "detail_title")
+        if config:
+            element_names = config.get_element_names()
+            if "title" in element_names:
+                widget = config.get_display_widget("title")
+                if widget:
+                    widget.kwargs['parent'] = my.parent
+                    widget.kwargs['sobject'] = my.sobject
+                    return widget
+ 
+
 
         if my.parent:
             code = my.parent.get_value("code", no_exception=True)
@@ -313,6 +327,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         my.sobject = my.get_sobject()
 
+        if not my.__class__.__name__ == "SnapshotDetailWdg" and my.sobject.get_base_search_type() == "sthpw/snapshot":
+            widget = SnapshotDetailWdg(**my.kwargs)
+            return widget
+
         top = my.top
         top.add_class("spt_detail_top")
         top.add_color("background", "background")
@@ -505,6 +523,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
         return menu
 
 
+    def get_default_tabs(my):
+        tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
+        return tabs
+
+
 
     def get_config_xml(my):
         if my.kwargs.get("use_parent") in [True, 'true']:
@@ -549,7 +572,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         elif config:
             tabs = config.get_element_names()
         else:
-            tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
+            tabs = my.get_default_tabs()
         
         if "info" not in tabs:
             tabs.insert(0, "info")
@@ -786,6 +809,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+        my.append_to_config(config_xml)
+
         config_xml.append('''
         </tab>
         </config>
@@ -796,6 +821,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         return config_xml
+
+
+    def append_to_config(my, config_xml):
+        return
 
 
     def get_sobject(my):
@@ -1153,6 +1182,48 @@ class RelatedSObjectWdg(BaseRefreshWdg):
 
 
 
+class SnapshotDetailWdg(SObjectDetailWdg):
+
+    def get_title_wdg(my):
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: 20px")
+
+
+        my.sobject = my.get_sobject()
+
+        parent = my.sobject.get_parent()
+
+        snapshot_div = DivWdg()
+        title_wdg.add(snapshot_div)
+        snapshot_div.add_style("font-size: 25px")
+        snapshot_div.add(my.sobject.get_code())
+
+ 
+        context = my.sobject.get_value("context", no_exception=True)
+        process = my.sobject.get_value("process", no_exception=True)
+        version = my.sobject.get_value("version", no_exception=True)
+
+        context_wdg = DivWdg()
+        title_wdg.add(context_wdg)
+        context_wdg.add("Context: %s" % context)
+
+        version_wdg = DivWdg()
+        title_wdg.add(version_wdg)
+        version_wdg.add("Version: %0.3d" % version)
+
+
+        return title_wdg
+
+
+    def get_default_tabs(my):
+        tabs = ["history"]
+        return tabs
+
+
+    def append_to_config(my, config_xml):
+        return
+
 
 class TaskDetailWdg(SObjectDetailWdg):
 
@@ -1194,70 +1265,6 @@ class TaskDetailWdg(SObjectDetailWdg):
         exprs = []
         exprs.append( "@GET(parent.description)")
         return titles, exprs
-
-
-    """
-    def get_task_info(my):
-        process = my.sobject.get_value("process")
-        #titles = ['Process', 'Status', 'Assigned', 'Supervisor','Priority','Start Date', 'End Date', '# Notes', '# Snapshots']
-        titles = ['Process', 'Status', 'Assigned', 'Supervisor','Priority','Start Date', 'End Date']
-
-        exprs = []
-        exprs.append( "@GET(.process)")
-        exprs.append( "@GET(.status)")
-        exprs.append( "@GET(.assigned)")
-        exprs.append( "@GET(.supervisor)")
-        exprs.append( "@GET(.priority)")
-        exprs.append( "{@GET(.bid_start_date),%b %d, %Y}")
-        exprs.append( "{@GET(.bid_end_date),%b %d, %Y}")
-
-        #exprs.append( "@COUNT(parent.sthpw/note['process','%s'])" % process)
-        #exprs.append( "@COUNT(parent.sthpw/snapshot['process','%s'])" % process)
-        return titles, exprs
-
-
-    def get_sobject_info_wdg(my):
-
-        # DEPRECATED
-        div = DivWdg()
-        return div
-
-        attr_table = Table()
-        attr_table.add_color("color", "color")
-        #attr_table.add_color("background", "background", -5)
-        #attr_table.add_border()
-
-        sobject = my.get_sobject()
-
-        tr, td = attr_table.add_row_cell()
-        td.add("<b>Task Info<hr/></b>")
-        td.add_style("padding-top: 5px")
-        td.add_style("padding-left: 5px")
-
-
-        titles, exprs = my.get_task_info()
-        for title, expr in zip(titles, exprs):
-            try:
-                value = Search.eval(expr, sobject, single=True)
-            except Exception, e:
-                print "WARNING: ", e.message
-                continue
-
-            if value == '':
-                value = '<i>none</i>'
-            attr_table.add_row()
-            th = attr_table.add_cell("%s: " % title)
-            th.add_style("font-weight: bold")
-            th.add_style("text-align: left")
-            th.add_style("padding-right: 15px")
-            th.add_style("padding-left: 5px")
-            th.add_style("padding-top: 10px")
-            th.add_style("padding-bottom: 10px")
-            td = attr_table.add_cell(value)
-    
-
-        return attr_table
-    """
 
 
  
@@ -1377,19 +1384,6 @@ class TaskDetailWdg(SObjectDetailWdg):
         ''' % values)
 
 
-
-
-        """
-        config_xml.append( '''
-        <element name="%s" title="%s">
-          <display class='tactic.ui.tools.SObjectSingleProcessDetailWdg'>
-            <search_key>%s</search_key>
-            <process>%s</process>
-            <context>%s</context>
-          </display>
-        </element>
-        ''' % (process_name, process_title, parent_key, process, context) )
-        """
 
 
 
