@@ -136,7 +136,7 @@ class DirListWdg(BaseRefreshWdg):
 
         my.handler_kwargs = my.kwargs.get('handler_kwargs')
         my.preselected = {}
-
+        my.use_applet = True
         my.preprocess()
 
 
@@ -945,7 +945,7 @@ class DirListWdg(BaseRefreshWdg):
         location = my.kwargs.get("location")
         if location == 'server':
             base_dir = Environment.get_client_repo_dir()
-           
+
         div.add_class("hand")
         div.add_attr('title','Double click to open explorer')
         div.add_behavior( {
@@ -1039,10 +1039,11 @@ class DirListWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var applet = spt.Applet.get();
             var path = bvr.dirname + "/" + bvr.basename;
-            //applet.exec_shell('cmd.exe "' + path + '"', false);
-            spt.app_busy.show("Opening file", path);
-            applet.open_file(path);
-            spt.app_busy.hide();
+            if (applet) {
+                spt.app_busy.show("Opening file", path);
+                applet.open_file(path);
+                spt.app_busy.hide();
+            }
             '''
             } )
 
@@ -1448,7 +1449,8 @@ class DirInfoWdg(BaseRefreshWdg):
         'client_dir': client_dir,
         'cbjs_action': '''
             var applet = spt.Applet.get();
-            applet.open_explorer(bvr.client_dir);
+            if (applet)
+                applet.open_explorer(bvr.client_dir);
         '''
         } )
         top.add(explore)
@@ -2133,20 +2135,21 @@ class FileBrowserWdg(BaseRefreshWdg):
 
         if (location == 'local') {
             var applet = spt.Applet.get();
-            var paths = applet.list_dir(base_dir, 2);
-            var paths_el = nav.getElement(".spt_paths");
-            var js_paths = [];
-            for (var i = 0; i < paths.length; i++) {
-                var js_path = paths[i].replace(/\\\\/g,"/");
-                if (applet.is_dir(js_path) ) {
-                    js_path = js_path + '/';
-                    js_paths.push(js_path);
+            if (applet) {
+                var paths = applet.list_dir(base_dir, 2);
+                var paths_el = nav.getElement(".spt_paths");
+                var js_paths = [];
+                for (var i = 0; i < paths.length; i++) {
+                    var js_path = paths[i].replace(/\\\\/g,"/");
+                    if (applet.is_dir(js_path) ) {
+                        js_path = js_path + '/';
+                        js_paths.push(js_path);
+                    }
+                    //if (i > 100) break;
                 }
-                //if (i > 100) break;
+
+                paths_el.value = js_paths.join("|");
             }
-
-            paths_el.value = js_paths.join("|");
-
         }
 
         var nav_values = spt.api.Utility.get_input_values(nav,null,false);

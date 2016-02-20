@@ -1239,6 +1239,9 @@ class TaskDetailWdg(SObjectDetailWdg):
         title.add_style("font-size: 1.4em")
         title.add_border(color="#DDD")
 
+        if not my.parent:
+            title.add("Parent not found")
+            return title
 
         code = my.parent.get_value("code", no_exception=True)
         name = my.parent.get_value("name", no_exception=True)
@@ -1348,10 +1351,22 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         #from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
         #edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
+           
+
+        
+        if not my.parent:
+            config_xml.append( '''
+            </tab>
+            </config>
+            ''' )
+
+            config_xml = "".join(config_xml)
+            return config_xml
 
         values = my.parent.get_data()
         values['search_key'] = my.parent.get_search_key().replace("&", "&amp;")
         values['process'] = process
+
 
 
         config_xml.append('''
@@ -1432,7 +1447,7 @@ class TaskDetailWdg(SObjectDetailWdg):
         ''' % {"search_key": search_key} )
 
 
-
+    
 
         config_xml.append( '''
         </tab>

@@ -986,6 +986,10 @@ spt.Applet.get = function() {
 
             spt.alert('Java applet has not been properly initialized.');
         }
+        else if (e.message.test(/is not a function/)) {
+            this.applet = null;
+            log.critical("Java applet is not enabled or updated: "  + e.message);
+        }
         else
             spt.alert(spt.exception.handler(e));
     }
