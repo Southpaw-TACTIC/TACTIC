@@ -898,10 +898,12 @@ class CollectionContentWdg(BaseRefreshWdg):
         collection = Search.get_by_search_key(my.collection_key)
 
         top = my.top
+        top.add_style("min-height: 400px")
 
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
         my.kwargs["expand_mode"] = "plain"
+        my.kwargs["show_search_limit"] = False
 
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
