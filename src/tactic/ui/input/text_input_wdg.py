@@ -177,7 +177,7 @@ class TextInputWdg(BaseInputWdg):
             height = height.replace("px", "")
             height = int(height)
         else:
-            height = 40
+            height = 35
 
         my.height = height
 
@@ -395,7 +395,6 @@ class TextInputWdg(BaseInputWdg):
 
             edit_div.add(icon)
 
-        my.text.add_style("height: %s" % my.height)
 
 
         # BOOTSTRAP
@@ -410,13 +409,14 @@ class TextInputWdg(BaseInputWdg):
             label_wdg.add_attr("for", "inputSuccess1")
             label_wdg.add(my.name)
 
-        #text = TextWdg(my.name)
-        #text = HtmlElement.text()
-        #text.add_attr("name", my.name)
-        #text.add_class("form-control")
 
         input_group = DivWdg()
         div.add(input_group)
+
+        input_group.add_style("width: %s" % my.width)
+        input_group.add_style("height: %s" % my.height)
+        input_group.add_style("margin-right: 5px")
+        my.text.add_style("height: %s" % my.height)
 
         icon_styles = my.kwargs.get("icon_styles")
         icon_class = my.kwargs.get("icon_class")
@@ -524,7 +524,7 @@ class TextInputWdg(BaseInputWdg):
             default = my.kwargs.get("default")
         if default:
             my.text.set_value(default)
-        
+
         if not my.text.value:
             hint_text = my.kwargs.get("hint_text")
             color = my.text.get_color('color')
@@ -535,7 +535,13 @@ class TextInputWdg(BaseInputWdg):
                 color = Palette.modify_color(color, 50)
 
             if hint_text:
-                my.text.add_attr('title', hint_text)
+                #my.text.add_attr('title', hint_text)
+                my.text.add_attr('placeholder', hint_text)
+                my.text.add_style("text-overflow: ellipsis")
+                my.text.add_style("overflow: hidden")
+                my.text.add_style("white-space: nowrap")
+
+
                 # this prevents using this value for search
                 my.text.add_behavior({ 'type': 'load',
                     'cbjs_action': '''
@@ -549,10 +555,6 @@ class TextInputWdg(BaseInputWdg):
                     '''%color})
 
 		
-        my.text.add_style("padding: 5px")
-        my.text.add_style("height: %s" % (my.height-10))
-
-
 
 
 

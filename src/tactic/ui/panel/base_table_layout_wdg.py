@@ -764,24 +764,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_color("color", "color")
         
         border_color = div.get_color("table_border",  default="border")
-
-       
         div.add_color("background", "background",-3)
-
-        """
-        if not my.kwargs.get("__hidden__"):
-
-            #div.add_style("border-width: 1px 1px 0px 1px")
-            div.add_style("border-width: 1px 0px 1px 0px")
-            div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % border_color)
-
-        else:
-
-            div.add_style("border-width: 0px 0px 0px 0px")
-            div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % border_color)
-        """
 
 
         # the label on the commit button
@@ -887,7 +870,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     mode="keyword",
                     filter_search_type=my.search_type,
                     icon="",
-                    width="75",
+                    width="100",
                     show_partial=False,
                     show_toggle=True
             )
@@ -968,8 +951,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.show_search_limit:
             num_div = DivWdg()
             num_div.add_color("color", "color")
-            num_div.add_style("float: left")
-            num_div.add_style("margin-top: 0px")
+            #num_div.add_style("float: left")
+            num_div.add_style("margin: 0px 10px")
             num_div.add_style("font-size: 10px")
             num_div.add_style("padding: 5px")
             
@@ -1249,10 +1232,34 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
+
+        # add a custom layout widget
+        custom_shelf_view = my.kwargs.get("shelf_view")
+        if not custom_shelf_view:
+            custom_shelf_view = "_layout_shelf"
+        if custom_shelf_view:
+            config = WidgetConfigView.get_by_search_type(my.search_type, custom_shelf_view)
+            if config:
+                element_names = config.get_element_names()
+                if element_names:
+                    widget = config.get_display_widget(element_names[0])
+                    wdg_list.append( { 'wdg': widget } )
+ 
+
+
+
         
-        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         xx = DivWdg()
-        xx.add(horiz_wdg)
+
+        #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
+        #xx.add(horiz_wdg)
+
+        for widget in wdg_list:
+            widget = widget.get('wdg')
+            widget.add_style("display: inline-block")
+            widget.add_style("vertical-align: middle")
+            xx.add(widget)
+
         div.add(xx)
 
         if my.kwargs.get("__hidden__"):
@@ -1291,30 +1298,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         outer.add_style("min-width: 750px")
         div.add_style("height: %s" % height)
-        #div.add_style("margin: 0px -1px 0px -1px")
-
         
-        # This was included when our icons had color and we heavily used hidden row.
-        # The shelf lit everything up ... with the new glyph icons, I think this isn't
-        # necessary anymore. 
-        """
-        div.add_behavior( {
-            'type': 'mouseenter',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("opacity", 1.0);
-            '''
-        } )
-        div.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("opacity", 0.6);
-            '''
-        } )
-        """
-
-
-
-
         return outer
 
 

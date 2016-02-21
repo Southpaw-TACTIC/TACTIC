@@ -213,7 +213,8 @@ class BaseRefreshWdg(Widget):
                 value = str(value)
             # replace " with ' in case the kwargs is a dict
             value = value.replace('"', "'")
-            widget.add_attr("spt_%s" % name, value)
+            if value:
+                widget.add_attr("spt_%s" % name, value)
 
     def get_top_wdg(my):
         return my.top

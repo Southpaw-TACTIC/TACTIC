@@ -2803,7 +2803,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add("<b>Path:</b> %s" % reldir)
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
-        path_div.add_style("padding: 15px")
+        path_div.add_style("margin: 15px 0px 0px 15px")
         #path_div.add_style("margin: -1 -1 0 -1")
         #path_div.add_border()
 
@@ -2831,6 +2831,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
 
 
+        """
         shelf_wdg = DivWdg()
         top.add(shelf_wdg)
 
@@ -2850,6 +2851,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             spt.panel.load_popup("Ingest Files", class_name, kwargs);
             '''
         } )
+        """
 
 
 

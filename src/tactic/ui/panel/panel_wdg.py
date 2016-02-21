@@ -3229,6 +3229,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
+            #"shelf_view": my.kwargs.get("shelf_view"),
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,

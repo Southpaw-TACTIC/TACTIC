@@ -76,7 +76,6 @@ class FileDetailWdg(BaseRefreshWdg):
 
         content_div = DivWdg()
 
-
         if ext in ['.doc','.xls']:
             from pyasm.widget import ThumbWdg
             link = ThumbWdg.find_icon_link(src)
@@ -94,7 +93,7 @@ class FileDetailWdg(BaseRefreshWdg):
             } )
             href.add_class("hand")
 
-        elif ext in ['.txt','.html']:
+        elif ext in ['.txt','.html', '.ini']:
             f = open(lib_path, 'r')
             content = f.read(10000)
             f.close()
@@ -124,6 +123,8 @@ class FileDetailWdg(BaseRefreshWdg):
             content_div.add_style("margin", "20px")
 
 
+        elif thumb_path == "__DYNAMIC__":
+            td.add("No Preview")
         else:
             embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path)
             td.add(embed_wdg)

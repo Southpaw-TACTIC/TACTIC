@@ -945,6 +945,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
             img = DivWdg()
+            img.add_class("spt_image")
             div.add(img)
             img.add("<div style='padding-top: 30%%'>%s</div>" % ext)
             img.add_style("text-align: center")
