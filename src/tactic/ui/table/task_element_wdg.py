@@ -2348,8 +2348,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.set_value(status)
 
                 if task.is_insert():
+                    parent_sk =  task.get_parent_search_key()
+                    stype = SearchKey.extract_search_type(parent_sk)
                     update = {
-                        "parent_key": task.get_parent_search_key(),
+                        "search_type": stype, 
+                        "search_key": parent_sk,
                         "expression": "@GET(sthpw/task['process','%s'].status)" % process,
                     }
                 else:
@@ -2358,7 +2361,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         "column": "status",
                     }
 
-                update['interval'] = '3'
+                update['interval'] = '2'
                 update['cbjs_postaction'] = '''
                         var element = bvr.src_el;
                         if ("createEvent" in document) {
@@ -2419,16 +2422,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         select.add_style("width", my.width)
 
                     if task.is_insert():
+                        parent_sk =  task.get_parent_search_key()
+                        stype = SearchKey.extract_search_type(parent_sk)
                         update = {
-                            "parent_key": task.get_parent_search_key(),
-                            "expression": "@GET(sthpw/task['process','%s'].assigned)" % process,
+                        "search_type": stype, 
+                        "search_key": parent_sk,
+                        "expression": "@GET(sthpw/task['process','%s'].assigned)" % process,
                         }
                     else:
                         update = {
                             "search_key": task.get_search_key(),
                             "column": "assigned",
                         }
-                    update['interval'] = '3'
+                    update['interval'] = '2'
                     update['cbjs_postaction'] = '''
                             var element = bvr.src_el;
                             if ("createEvent" in document) {
