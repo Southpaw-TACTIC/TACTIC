@@ -586,14 +586,25 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             if tab == "tasks":
                 config_xml.append('''
-                <element name="tasks">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <search_type>sthpw/task</search_type>
-                    <view>detail</view>
-                    <parent_key>%(search_key)s</parent_key>
-                    <order_by>bid_start_date asc</order_by>
-                    <width>100%%</width>
-                    <show_shelf>false</show_shelf>
+                <element name="attachments" title="Attachments">
+                <display class='tactic.ui.panel.CustomLayoutWdg'>
+                  <html>
+                    <div style="padding: 20px">
+                    <div style="font-size: 25px">Tasks</div>
+                    <div>List of all of the tasks for this item</div>
+                    <hr/>
+                    <br/>
+                    <element name="tasks">
+                      <display class='tactic.ui.panel.ViewPanelWdg'>
+                        <search_type>sthpw/task</search_type>
+                        <view>detail</view>
+                        <parent_key>%(search_key)s</parent_key>
+                        <order_by>bid_start_date asc</order_by>
+                        <width>100%%</width>
+                        <show_shelf>false</show_shelf>
+                      </display>
+                    </element>
+                  </html>
                   </display>
                 </element>
                 ''' % values)
@@ -667,7 +678,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "file_detail":
                 config_xml.append('''
-                <element name="file_info" title="File Info">
+                <element name="file_detail" title="File Detail">
                   <display class='tactic.ui.tools.FileDetailWdg'>
                     <search_key>%(search_key)s</search_key>
                   </display>
@@ -676,7 +687,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-            elif tab == "snapshots":
+            elif tab == "snapshots" or tab == "checkin_history":
                 config_xml.append('''
                 <element name="snapshots" title="Check-in History">
                   <display class='tactic.ui.panel.CustomLayoutWdg'>

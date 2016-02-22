@@ -932,6 +932,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         for i in range(0, 6):
             spacing_div = DivWdg()
             spacing_divs.append(spacing_div)
+            spacing_div.add_class("spt_spacing")
             spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 7 0 7")
@@ -1254,11 +1255,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         #xx.add(horiz_wdg)
 
-        for widget in wdg_list:
-            widget = widget.get('wdg')
+        last_widget = None
+        for item in wdg_list:
+            widget = item.get('wdg')
+            if item == wdg_list[-1] and widget.has_class("spt_spacing"):
+                continue
+
+            if last_widget and last_widget.has_class("spt_spacing") and widget.has_class("spt_spacing"):
+                continue
+
             widget.add_style("display: inline-block")
             widget.add_style("vertical-align: middle")
             xx.add(widget)
+            last_widget = widget
 
         div.add(xx)
 

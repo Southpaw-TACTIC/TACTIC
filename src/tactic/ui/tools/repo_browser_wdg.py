@@ -2658,6 +2658,10 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             path_div.add_color("color", "color")
             path_div.add_color("background", "background")
             path_div.add_style("padding: 15px")
+            reldir = os.path.dirname(file_path)
+            path_div.add_class("spt_browser_relative_dir")
+            path_div.add_attr("spt_relative_dir", reldir)
+
 
             inner.add( my.get_content_wdg(good_file, display_sobject) )
         else:
@@ -2846,6 +2850,8 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
+        path_div.add_class("spt_browser_relative_dir")
+        path_div.add_attr("spt_relative_dir", reldir)
 
 
         """
