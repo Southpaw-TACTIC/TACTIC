@@ -2373,14 +2373,14 @@ class RepoBrowserCbk(Command):
             
             # Check if source path exists
             if not os.path.isdir("%s/%s" % (base_dir, relative_dir)):
-                raise Exception("relative_dir [%s] is not a directory" % relative_dir)
+                raise Exception("Source directory [%s] is not a directory" % relative_dir)
             
-            # Try moving the files in case there a naming conflict. 
-            try:
-                FileUndo.move("%s/%s" % (base_dir,from_relative_dir), "%s/%s" % (base_dir,relative_dir))
-            except Exception as e:
-                raise e
-            
+            # Check for naming conflict
+            old_path = "%s/%s" % (base_dir, from_relative_dir)
+            new_path = "%s/%s" % (base_dir, relative_dir)
+            if (os.path.exists(new_path)):
+                raise Exception("Directory [%s] already exists" % new_path)
+
             # find all the files with the relative dir
             file_search = Search("sthpw/file")
             file_search.add_filter("relative_dir", "%s%%" % from_relative_dir, op='like')
@@ -2390,17 +2390,17 @@ class RepoBrowserCbk(Command):
             parent_keys = set()
             relative_dirs = {}
             for file in files:
+                # Build the new relative dir
                 basename = os.path.basename(from_relative_dir)
 
                 file_relative_dir = file.get_value("relative_dir")
+                sub_relative_dir = os.path.relpath(file_relative_dir, from_relative_dir)
+                new_relative_dir = os.path.join([relative_dir, basename, sub_relative_dir])
 
-                sub_relative_dir = file_relative_dir.replace(from_relative_dir, "")
-                sub_relative_dir = sub_relative_dir.strip("/")
-
-                basename = os.path.basename(from_relative_dir)
-
-                new_relative_dir = "%s/%s/%s" % (relative_dir, basename, sub_relative_dir)
-                new_relative_dir = new_relative_dir.strip("/")
+                #sub_relative_dir = file_relative_dir.replace(from_relative_dir, "")
+                #sub_relative_dir = sub_relative_dir.strip("/")
+                #new_relative_dir = "%s/%s/%s" % (relative_dir, basename, sub_relative_dir)
+                #new_relative_dir = os.path.normpath(new_relative_dir.strip)
 
                 file.set_value("relative_dir", new_relative_dir)
                 file.commit()
@@ -2413,6 +2413,12 @@ class RepoBrowserCbk(Command):
                 parent_keys.add(parent_key)
                 relative_dirs[parent_key] = new_relative_dir
  
+            # Move all of the files 
+            try:
+                FileUndo.move("%s/%s" % (base_dir,from_relative_dir), "%s/%s" % (base_dir,relative_dir))
+            except Exception as e:
+                raise e
+            
             # set the relative dirs of the parents
             parents = Search.get_by_search_keys(list(parent_keys))
             for parent in parents:
