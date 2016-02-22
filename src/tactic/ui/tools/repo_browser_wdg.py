@@ -69,9 +69,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
             virtual_path = server.get_virtual_snapshot_path(parent_key)
             context_path, _ = os.path.split(virtual_path)
             parent_path, _ = os.path.split(context_path)
-            relative_dir, _ = os.path.split(parent_path)
-            
-            project_dir = "%s/%s" % (base_dir, relative_dir)
+            container_path, _ = os.path.split(parent_path)
+            #relative_dir = os.path.relpath(container_path, base_dir)
+            #project_dir = "%s/%s" % (base_dir, relative_dir)
+            project_dir = container_path 
         else:
             # otherwise use
             project_code = Project.get_project_code()
@@ -209,7 +210,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         dynamic = True
 
-        
+        print "project_dir", project_dir
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
                 location="server",
@@ -251,7 +252,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             widget = RepoBrowserDirContentWdg(
                 search_type=search_type,
                 view='table',
-                dirname="%s/%s" % (project_dir, "asset"),
+                dirname=project_dir,
                 basename="",
             )
             outer_div.add(widget)
@@ -451,7 +452,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_file_search(my, base_dir, search_types, parent_ids, mode="count"):
-
+        print "base_dir", base_dir, search_types, parent_ids
         show_main_only = True
         show_latest = True
         show_versionless = False
@@ -459,19 +460,21 @@ class RepoBrowserDirListWdg(DirListWdg):
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
         relative_dir = relative_dir.strip("/")
+        print "relative_dir:", relative_dir 
 
         keywords = my.kwargs.get("keywords")
 
         project_code = Project.get_project_code()
         search = Search("sthpw/file")
 
+        print "count", search.get_count()
         # add a search type filter ... ignore this is the search_type are snapshots
         if search_types:
             if search_types[0] != "sthpw/snapshot":
                 search.add_filters("search_type", search_types)
-
+        print "count", search.get_count()
+        print "mode", mode
         if relative_dir:
-
             # TODO: not very clean.  There are different ways that the
             # relative dir needs to be searched on depending on usage
             # For now, just use a simple mode
@@ -483,15 +486,20 @@ class RepoBrowserDirListWdg(DirListWdg):
             else:
                 search.add_op("begin")
                 search.add_filter("relative_dir", "%s" % relative_dir)
-                if not my.dynamic:
+                if True:
+                    #if not my.dynamic:
                     search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
                 search.add_op("or")
+        
+        print "count", search.get_count()
 
-
+        
         if parent_ids:
             search.add_filters("search_id", parent_ids)
+        print "count", search.get_count()
         if keywords:
             search.add_text_search_filter("metadata_search", keywords)
+        print "count", search.get_count()
 
         if show_latest or show_versionless:
             search.add_join("sthpw/snapshot")
@@ -505,13 +513,16 @@ class RepoBrowserDirListWdg(DirListWdg):
             search.add_op("or")
         else:
             pass
+        print "count", search.get_count()
 
         if show_main_only:
             search.add_filter("type", "main")
+        print "count", search.get_count()
 
 
         if my.sobjects:
             search.add_sobjects_filter(my.sobjects)
+        print "count", search.get_count()
 
 
         # FIXME: this could be very slow for large folders
@@ -530,8 +541,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             else:
                 search.add_filter("search_type", search_type)
                 search.add_filters("search_code", parent_codes)
-
-
+        print "count", search.get_count()
         return search
 
 
@@ -684,6 +694,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # FIXME: this is slow and need a way to pass keywords through
         keywords = my.kwargs.get("keywords") or []
         #keywords = ["oculus", "one"]
+        print "keywords", keywords
         if keywords:
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
@@ -739,7 +750,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
             #return paths
-
+        print "paths", paths
         return paths
 
 
@@ -867,8 +878,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             key = "repo_browser:%s" % search.get_search_type()
             dump = search.select.dumps()
             WidgetSettings.set_value_by_key(key, dump)
-
-
+        print "search is:", search
+   
 
         border = top.get_color("shadow")
         top.add_class("spt_file_drag_top")
@@ -975,6 +986,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
                 spt.panel.refresh(dir_top);
             } catch(err) {
+                //TODO: If move fails, then div should be moved back. Or refresh anyways.
                 spt.alert(spt.exception.handler(err));
                 return;
             }
@@ -1025,29 +1037,18 @@ class RepoBrowserDirListWdg(DirListWdg):
                 bvr.src_el = bvr.src_el.getParent(".spt_dir_list_item");
             }
         
-            // Search the DOM for the search type
-            var search_type = null;
-            var parent = bvr.src_el;
-            while (parent && search_type == null) {
-                search_type = parent.getAttribute("spt_search_type");
-                if (search_type) break;
-                parent = parent.getParent();
-            }
-
             if (!evt.control) {
                 spt.repo_browser.clear_selected();
             }
 
             spt.repo_browser.toggle_select(bvr.src_el);
             var selected = spt.repo_browser.get_selected();
-            //var selected = [];
 
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
-            //spt.table.last_table = null;
 
             spt.app_busy.show("Loading information");
-
+            
             if (selected.length > 1) {
                 var snapshot_codes = [];
                 for (var i = 0; i < selected.length; i++) {
@@ -1055,26 +1056,27 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
                 var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
                 var kwargs = {
-                  search_type: search_type,
+                  parent_type: bvr.parent_type,
+                  search_type: bvr.search_type,
                   snapshot_codes: snapshot_codes
                 };
-
             }
             else {
-                var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
-
                 var dirname = bvr.src_el.getAttribute("spt_dirname");
                 var basename = bvr.src_el.getAttribute("spt_basename");
-
+                
+                var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
                 var kwargs = {
-                  search_type: search_type,
+                  parent_type: bvr.parent_type,
+                  search_type: bvr.search_type,
                   dirname: dirname,
                   basename: basename
                 };
             }
-
+            
             spt.panel.load(content, class_name, kwargs);
             spt.app_busy.hide();
+
         }
 
 
@@ -1171,9 +1173,24 @@ class RepoBrowserDirListWdg(DirListWdg):
         html += '<input type="text" value="New Folder"/>';
         new_folder_div.add(html)
 
-        # Directory click up
+        # When the parent key is defined, clicking directory
+        # item displays sthpw/snapshots.
+        # Otherwise, it display the search type as defined.
+        parent_key = my.kwargs.get("parent_key")
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            parent_type = parent.get_search_type()
+
+            search_type = "sthpw/snapshot"
+        else:
+            parent_type = ""
+            search_type = my.kwargs.get("search_type")
+             
+        # Directory click up - display related sObjects
         top.add_relay_behavior( {
         'type': 'click',
+        'parent_type': parent_type,
+        'search_type': search_type,
         'bvr_match_class': 'spt_dir_value',
         'cbjs_action': '''
  
@@ -1181,52 +1198,40 @@ class RepoBrowserDirListWdg(DirListWdg):
         var content = top.getElement(".spt_repo_browser_content");
         var item_div = bvr.src_el.getParent(".spt_dir_item");
 
-        // Search the DOM for the search type
-        var search_type = null;
-        var parent = item_div;
-        while (parent && search_type == null) {
-            search_type = parent.getAttribute("spt_search_type");
-            if (search_type) break;
-            parent = parent.getParent();
-        }
-    
-        if (search_type) {
-            // Get parent search keys
-            var search_keys = top.getAttribute("spt_search_keys");
-            if (search_keys) {
-                search_keys = search_keys.split("|");
-            } else {
-                search_keys = null;
-            }
-
-            var dirname = item_div.getAttribute("spt_dirname");
-            var basename = "";
-
-            spt.app_busy.show("Loading ...");
-            var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
-            var kwargs = {
-                search_type: search_type,
-                view: 'table',
-                dirname: dirname,
-                basename: basename,
-                search_keys: search_keys
-            };
-            spt.table.last_table = null;
-            spt.panel.load(content, class_name, kwargs);
-            spt.app_busy.hide();
+        // Get parent search keys
+        var search_keys = top.getAttribute("spt_search_keys");
+        if (search_keys) {
+            search_keys = search_keys.split("|");
         } else {
-            spt.alert("No search type found.");
-        } 
+            search_keys = null;
+        }
 
+        var dirname = item_div.getAttribute("spt_dirname");
+        var basename = "";
+
+        spt.app_busy.show("Loading ...");
+        var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
+        var kwargs = {
+            parent_type = bvr.parent_type,
+            search_type: bvr.search_type,
+            view: 'table',
+            dirname: dirname,
+            basename: basename,
+            search_keys: search_keys
+        };
+        spt.table.last_table = null;
+        spt.panel.load(content, class_name, kwargs);
+        spt.app_busy.hide();
 
         '''
         } )
 
 
-        # File click-up
-        #FIXME:
+        # File click-up - display file detail
         top.add_relay_behavior( {
             'type': 'click',
+            'parent_type': parent_type,
+            'search_type': search_type,
             'bvr_match_class': 'spt_item_value',
             'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
@@ -2086,6 +2091,7 @@ class RepoBrowserActionCmd(Command):
             FileUndo.move(old_dir, new_dir)
             
             # find all of the files in this relative_dir
+            print "old_relative_dir:", old_relative_dir
             search = Search("sthpw/file")
             search.add_op("begin")
             search.add_filter("relative_dir", "%s" % old_relative_dir)
@@ -2559,30 +2565,42 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        '''
+        search_key - 
+
+        search_type -
+        parent_type -
+        dirname - 
+        basename -
+
+        '''
+        
         top = my.top
 
         search_key = my.kwargs.get("search_key")
+        search_type = my.kwargs.get("search_type")
+        parent_type = my.kwargs.get("parent_type")
+
         if search_key:
             sobject = Search.get_by_search_key(search_key)
             search_type = sobject.get_search_type()
             snapshot = Snapshot.get_latest_by_sobject(sobject)
             if not snapshot:
-                raise Excpetion("No snapshot found")
+                raise Exception("No snapshot found")
 
             path = snapshot.get_lib_path_by_type()
             dirname = os.path.dirname(path)
             basename = os.path.basename(path)
 
         else:
-            search_type = my.kwargs.get("search_type")
-            project_code = Project.get_project_code()
+            #project_code = Project.get_project_code()
             #search_type = "%s?project=%s" % (search_type, project_code)
-            search_type = Project.get_full_search_type(search_type, project_code=project_code)
+            #search_type = Project.get_full_search_type(search_type, project_code=project_code)
 
             dirname = my.kwargs.get("dirname")
             basename = my.kwargs.get("basename")
             path = "%s/%s" % (dirname, basename)
-
+            
 
         asset_dir = Environment.get_asset_dir()
         if not dirname.startswith(asset_dir):
@@ -2593,13 +2611,17 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         reldir = reldir.strip("/")
 
         search = Search("sthpw/file")
-        search.add_filter("search_type", search_type)
+        if search_key:
+            search.add_filter("search_type", search_type)
+        elif parent_type:
+            search.add_filter("search_type", parent_type) 
         search.add_filter("relative_dir", reldir)
         search.add_filter("file_name", basename)
 
-
         files = search.get_sobjects()
-
+       
+        # TODO: remove print statements 
+        # What is the point of this and the Divs?
         good_file = None
         for file in files:
             sobject_div = DivWdg()
@@ -2615,7 +2637,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
                     print "Dangling snapshot [%s]" % snapshot.get_code()
                 else:
                     good_file = file
-
 
         path_div = DivWdg()
         top.add(path_div)
@@ -2639,7 +2660,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         layout.set_sobjects([parent])
         top.add(layout)
         """
-
+        print "google_file:", good_file
         if good_file:
             top.add( my.get_content_wdg(good_file, snapshot, parent) )
 
@@ -2735,11 +2756,13 @@ class RepoBrowserSearchWrapper(object):
 class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
     def get_display(my):
+        
+        parent_type = m.kwargs.get("parent_type")
         search_type = my.kwargs.get("search_type")
-        project_code = Project.get_project_code()
 
-        search_type = Project.get_full_search_type(search_type, project_code=project_code)
-
+        # FIXME
+        #project_code = Project.get_project_code()
+        #search_type = Project.get_full_search_type(search_type, project_code=project_code)
 
         snapshot_codes = my.kwargs.get("snapshot_codes")
         if snapshot_codes:
@@ -2750,7 +2773,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             search2.add_relationship_search_filter(search)
             sobjects = search2.get_sobjects()
         else:
-
             dirname = my.kwargs.get("dirname")
             basename = my.kwargs.get("basename")
             path = dirname
@@ -2768,7 +2790,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             search = Search("sthpw/file")
             search.add_filter("relative_dir", "%s%%" % reldir, op='like')
             search.add_filter("search_type", search_type)
-
+            
             # use the above search to find all sobjects with files in this
             # relative_dir
             search2 = Search(search_type)
