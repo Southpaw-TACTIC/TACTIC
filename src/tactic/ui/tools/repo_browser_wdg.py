@@ -52,16 +52,25 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         base_dir = Environment.get_asset_dir()
 
-        # single asset mode
+        # Parent - snapshot mode
         parent_key = my.kwargs.get("search_key")
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search_type = parent.get_search_type()
 
             parent_code = parent.get_value("code")
-
-            relative_dir = my.kwargs.get("relative_dir")
-            relative_dir = "workflow/order/ORDER00002/deliverable/%s" % parent_code
+            
+            # FIXME: How can we generically determine the parent's base directory?
+            # For now, assume that all snapshots are stored under a relative directory 
+            # that is two levels up from a typical snapshot. 
+            # One possible solution is to build the search first, then display necessary files.
+            from tactic_client_lib import TacticServerStub
+            server = TacticServerStub.get()
+            virtual_path = server.get_virtual_snapshot_path(parent_key)
+            context_path, _ = os.path.split(virtual_path)
+            parent_path, _ = os.path.split(context_path)
+            relative_dir, _ = os.path.split(parent_path)
+            
             project_dir = "%s/%s" % (base_dir, relative_dir)
         else:
             # otherwise use
@@ -166,8 +175,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div.add_style("min-width: 400px")
         left_wdg.add(content_div)
 
-
-
         open_depth = my.kwargs.get("open_depth")
         if open_depth == None:
             open_depth = 0
@@ -187,7 +194,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
             parent_search.set_limit(1000)
             parent_search.set_offset(0)
 
-
         # TEST
         parent_key = my.kwargs.get("search_key")
         if parent_key:
@@ -195,16 +201,15 @@ class RepoBrowserWdg(BaseRefreshWdg):
             sobject = Search.get_by_search_key(parent_key)
             parent_search = Search(sobject.get_search_type())
             parent_search.add_filter("code", sobject.get_value("code") )
-            #my.sobjects = [sobject]
+            my.sobjects = [sobject]
 
-
+        
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
 
-
         dynamic = True
 
-
+        
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
                 location="server",
@@ -235,11 +240,14 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
         outer_div.add(content_div)
-
+ 
+        # TODO: We want RepoBrowserDirContentWdg to load sthpw/snapshot
+        # when in parent - snapshot mode.
         count = 0
         if parent_search:
             count = parent_search.get_count()
         if count:
+            search_type = "sthpw/snapshot"
             widget = RepoBrowserDirContentWdg(
                 search_type=search_type,
                 view='table',
@@ -431,6 +439,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         # find the sobjects
         search_keys = my.kwargs.get("search_keys")
+        print search_keys
         if search_keys:
             my.sobjects = Search.get_by_search_keys(search_keys)
         else:
@@ -1723,7 +1732,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     }
                     
                     var span = $(document.createElement("span"));
-                    span.innerHTML = " " +value;
+                    span.innerHTML = " " + new_value;
                     span.replaces(input);
 
                     try {
@@ -2370,14 +2379,16 @@ class RepoBrowserCbk(Command):
             # that are not in the file table (but these shouldn't be there
             # in the first place!)
             base_dir = Environment.get_asset_dir()
-            
-            # Check if source path exists
-            if not os.path.isdir("%s/%s" % (base_dir, relative_dir)):
-                raise Exception("Source directory [%s] is not a directory" % relative_dir)
+           
+            # Build new paths and check that new path is a directory
+            abs_relative_dir = os.path.join(base_dir, relative_dir)
+            abs_from_dir = os.path.join(base_dir, from_relative_dir)
+            if not os.path.isdir(abs_relative_dir):
+                raise Exception("Destination [%s] is not a directory" % relative_dir)
             
             # Check for naming conflict
-            old_path = "%s/%s" % (base_dir, from_relative_dir)
-            new_path = "%s/%s" % (base_dir, relative_dir)
+            from_basename = os.path.basename(from_relative_dir)
+            new_path = os.path.join(base_dir, relative_dir, from_basename)
             if (os.path.exists(new_path)):
                 raise Exception("Directory [%s] already exists" % new_path)
 
@@ -2394,28 +2405,23 @@ class RepoBrowserCbk(Command):
                 basename = os.path.basename(from_relative_dir)
 
                 file_relative_dir = file.get_value("relative_dir")
-                sub_relative_dir = os.path.relpath(file_relative_dir, from_relative_dir)
-                new_relative_dir = os.path.join([relative_dir, basename, sub_relative_dir])
-
-                #sub_relative_dir = file_relative_dir.replace(from_relative_dir, "")
-                #sub_relative_dir = sub_relative_dir.strip("/")
-                #new_relative_dir = "%s/%s/%s" % (relative_dir, basename, sub_relative_dir)
-                #new_relative_dir = os.path.normpath(new_relative_dir.strip)
+                sub_relative_dir = os.path.relpath(from_relative_dir, file_relative_dir)
+                new_relative_dir = os.path.normpath(os.path.join(relative_dir, basename, sub_relative_dir))
 
                 file.set_value("relative_dir", new_relative_dir)
                 file.commit()
 
-                # find the parent
+                # find the parent and store in dictionary for update later
                 parent_search_code = file.get_value("search_code")
                 parent_search_type = file.get_value("search_type")
-
+               
                 parent_key = "%s&code=%s" % (parent_search_type, parent_search_code)
                 parent_keys.add(parent_key)
                 relative_dirs[parent_key] = new_relative_dir
  
             # Move all of the files 
             try:
-                FileUndo.move("%s/%s" % (base_dir,from_relative_dir), "%s/%s" % (base_dir,relative_dir))
+                FileUndo.move(abs_from_dir, abs_relative_dir)
             except Exception as e:
                 raise e
             
