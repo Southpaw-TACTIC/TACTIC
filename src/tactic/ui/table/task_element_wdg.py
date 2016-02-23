@@ -2441,10 +2441,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         parent_sk =  task.get_parent_search_key()
                         stype = SearchKey.extract_search_type(parent_sk)
                         update = {
-                        "search_type": stype, 
-                        "search_key": parent_sk,
-                        "expression": "@GET(sthpw/task['process','%s'].id)" % process,
-                        "cbjs_action": ''' var el = bvr.src_el;
+                            "search_type": stype, 
+                            "search_key": parent_sk,
+                            "expression": "@GET(sthpw/task['process','%s'].id)" % process,
+                            "cbjs_action": ''' var el = bvr.src_el;
                                             var id = bvr.value;
                                             var s = TacticServerStub.get();
                                             var assigned = s.eval("@GET(sthpw/task['id','" + id + "'].assigned)", {single:true}); 
@@ -2457,7 +2457,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                                                 el.setAttribute('name', new_name);
                                             }
 
-                                        '''
+                                           '''
 
                                                                     
                         }

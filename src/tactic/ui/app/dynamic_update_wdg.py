@@ -421,12 +421,6 @@ class DynamicUpdateCmd(Command):
         intersect_keys = client_keys.intersection(changed_keys)
 
 
-        #for x in client_keys:
-        #    print x
-        #print "---"
-        #print "intersect_keys: ", intersect_keys
-        #print "---"
-
 
         from pyasm.web import HtmlElement
 
