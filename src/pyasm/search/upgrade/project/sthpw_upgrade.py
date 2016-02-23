@@ -1933,7 +1933,6 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         search = Search('sthpw/search_object')
         sobjects = search.get_sobjects()
         for i, sobj in enumerate(sobjects):
-            print i, sobj.get_data().keys()
             table_name = sobj.get_value('table_name')
             if table_name.find('{public}.') != -1:
                 table_name = table_name.replace('{public}.', '')

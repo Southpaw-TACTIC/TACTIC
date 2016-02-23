@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['SObjectDetailWdg', 'RelatedSObjectWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
+__all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'SnapshotDetailWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -54,17 +54,47 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
     def get_title_wdg(my):
 
+
+        from pyasm.widget import WidgetConfigView
+        config = WidgetConfigView.get_by_search_type(my.search_type, "detail_title")
+        if config:
+            element_names = config.get_element_names()
+            if "title" in element_names:
+                widget = config.get_display_widget("title")
+                if widget:
+                    widget.kwargs['parent'] = my.parent
+                    widget.kwargs['sobject'] = my.sobject
+                    return widget
+ 
+
+
         if my.parent:
             code = my.parent.get_value("code", no_exception=True)
             name = my.parent.get_value("name", no_exception=True)
+            desc = my.parent.get_value("description", no_exception=True)
+            status = my.parent.get_value("status", no_exception=True)
             search_type_obj = my.parent.get_search_type_obj()
         else:
             code = my.sobject.get_value("code", no_exception=True)
             name = my.sobject.get_value("name", no_exception=True)
+            desc = my.sobject.get_value("description", no_exception=True)
+            status = my.sobject.get_value("status", no_exception=True)
             search_type_obj = my.sobject.get_search_type_obj()
 
 
+
+        div = DivWdg()
+        div.add_style("padding: 10px 15px")
+
+
         title = DivWdg()
+        div.add(title)
+        title.add_style("text-overflow: ellipsis")
+        title.add_style("overflow-x: hidden")
+        title.add_style("white-space: nowrap")
+
+
+
         search = Search("sthpw/snapshot")
         search.add_filter("search_type", "sthpw/search_type")
         search.add_filter("search_code", search_type_obj.get_value("code"))
@@ -76,17 +106,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
             thumb.add_style("float: right")
 
 
-
-        #title.add_color("background", "background", -5)
-        #title.add_border(color="#DDD")
-        title.add_style("height: 23px")
-        title.add_style("padding: 10px")
-        title.add_style("font-weight: bold")
-        title.add_style("font-size: 1.4em")
+        title.add_style("font-size: 25px")
+        title.add_style("margin-bottom: 5px")
 
 
         stype_title = search_type_obj.get_value("title")
         if stype_title:
+            stype_title = _(stype_title)
             title.add("%s: " % stype_title)
 
         if name:
@@ -98,20 +124,44 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             title.add("(No name)")
 
-        title.add("<hr/>")
 
-        return title
+        if desc:
+            desc_div = DivWdg()
+            desc_div.add(desc)
+            desc_div.add_color("color", "color", 30)
+            desc_div.add_style("font-size: 1.2em")
+            div.add(desc_div)
+
+
+        if status:
+            status_div = DivWdg()
+            div.add(status_div)
+            status_div.add(status)
+            status_div.add_style("padding: 3px 10px")
+            status_div.add_style("margin: 8px 0px 3px 0px")
+            status_div.add_style("border-radius: 5px")
+
+            from pyasm.biz import Task
+            color = Task.get_default_color(status)
+            if not color:
+                color = "#DDD"
+            status_div.add_style("background: %s" % color)
+            status_div.add_style("display: inline-block")
+
+
+
+        return div
 
 
 
 
 
 
-    def get_display(my):
+    def get_displayX(my):
 
         my.sobject = my.get_sobject()
 
-        top = DivWdg()
+        top = my.top
         top.add_class("spt_detail_top")
         top.add_color("background", "background")
         top.add_color("color", "color")
@@ -153,6 +203,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         title_wdg = my.get_title_wdg()
         td.add(title_wdg)
 
+        td.add("<hr/>")
 
         table.add_row()
 
@@ -182,6 +233,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             thumb.set_sobject(my.sobject)
             search_key = my.sobject.get_search_key()
+
 
         gallery_div = DivWdg()
         div.add( gallery_div )
@@ -213,11 +265,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
         td.add_style("width: auto")
         td.add_style("padding: 15px")
 
-        sobject_info_wdg = my.get_sobject_info_wdg()
-        sobject_info_wdg.add_style("width: 100%")
-
-
-        td.add(sobject_info_wdg)
+        #sobject_info_wdg = my.get_sobject_info_wdg()
+        #sobject_info_wdg.add_style("width: 100%")
+        #td.add(sobject_info_wdg)
 
         if my.search_type == 'sthpw/task' and not my.parent:
             pass
@@ -261,19 +311,138 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+
+        # content
+        tr = table.add_row()
+        td = table.add_cell()
+        td.add_attr("colspan", "5")
+
+        td.add( my.get_tab_wdg() )
+
+        return top
+
+
+
+    def get_display(my):
+
+        my.sobject = my.get_sobject()
+
+        if not my.__class__.__name__ == "SnapshotDetailWdg" and my.sobject.get_base_search_type() == "sthpw/snapshot":
+            widget = SnapshotDetailWdg(**my.kwargs)
+            return widget
+
+        top = my.top
+        top.add_class("spt_detail_top")
+        top.add_color("background", "background")
+        top.add_color("color", "color")
+
+        if not my.sobject:
+            top.add("No SObject defined for this widget")
+            return top
+
+        if my.parent:
+            my.search_type = my.parent.get_base_search_type()
+            my.search_key = SearchKey.get_by_sobject(my.parent)
+            top.add_attr("spt_parent_key", my.search_key) 
+            my.pipeline_code = my.parent.get_value("pipeline_code", no_exception=True)
+            my.full_search_type = my.parent.get_search_type()
+        else:
+            my.pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
+            my.search_type = my.sobject.get_base_search_type()
+            my.search_key = SearchKey.get_by_sobject(my.sobject)
+            my.full_search_type = my.sobject.get_search_type()
+
+        if not my.pipeline_code:
+            my.pipeline_code = 'default'
+
+
+        my.set_as_panel(top)
+
+        title_wdg = my.get_title_wdg()
+        top.add(title_wdg)
+        title_wdg.add_style("display: inline-block")
+        title_wdg.add_style("vertical-align: top")
+        title_wdg.add_style("width: 500px")
+
+
+        from tactic.ui.panel import ThumbWdg2
+        thumb_table = DivWdg()
+        top.add(thumb_table)
+
+        thumb = ThumbWdg2()
+        thumb_table.add(thumb)
+        thumb_table.add_style("width: 200px")
+        thumb_table.add_style("height: 125px")
+        thumb_table.add_style("padding: 5px")
+        thumb_table.add_style("margin-left: 20px")
+        thumb_table.add_style("display: inline-block")
+        thumb_table.add_style("vertical-align: top")
+        thumb_table.add_style("overflow-y: hidden")
+        # use a larger version for clearer display
+        #thumb.set_icon_type('web')
+
+
+        top.add("<hr/>")
+
+        if my.parent:
+            thumb.set_sobject(my.parent)
+            search_key = my.parent.get_search_key()
+        else:
+            thumb.set_sobject(my.sobject)
+            search_key = my.sobject.get_search_key()
+
+        gallery_div = DivWdg()
+        top.add( gallery_div )
+        gallery_div.add_class("spt_tile_gallery")
+ 
+        thumb_table.add_behavior( {
+            'type': 'click_up',
+            'search_key': search_key,
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_sobject_detail_top");
+                var gallery_el = top.getElement(".spt_tile_gallery");
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_key: bvr.search_key,
+                    search_keys: [bvr.search_key],
+                };
+                spt.panel.load(gallery_el, class_name, kwargs);
+            ''' } )
+ 
+
+        # prefer to see the original image, then web
+        #thumb.set_option('image_link_order', 'main|web|icon')
+        #thumb.set_option("detail", "false")
+        #thumb.set_option("icon_size", "100%")
+
+
+
+        top.add("<br clear='all'/>")
+
+        top.add( my.get_tab_wdg() )
+
+        return top
+
+
+
+
+
+
+
+
+
+    def get_tab_wdg(my):
+
+        div = DivWdg()
+
+
         # get the process
         if my.parent:
             process = my.sobject.get_value("process")
         else:
             process = ''
 
-
-
-        # content
-        tr = table.add_row()
-        td = table.add_cell()
-        td.add_attr("colspan", "5")
-        #td.add_attr("colspan", "3")
 
         # create a state for tab.  The tab only passes a search key
         # parent key
@@ -312,12 +481,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         #menu = my.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
-        tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=5 )
+        tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10 )
         tab.add_style("margin: 0px -2px -2px -1px")
-        td.add(tab)
-        td.add_style("padding-top: 10px")
 
-        return top
+
+        div.add(tab)
+        div.add_style("padding-top: 10px")
+
+        return div
 
 
 
@@ -352,12 +523,22 @@ class SObjectDetailWdg(BaseRefreshWdg):
         return menu
 
 
+    def get_default_tabs(my):
+        tabs = ["info", "tasks","revisions","attachments","snapshots","checkin","edit"]
+        return tabs
+
+
 
     def get_config_xml(my):
         if my.kwargs.get("use_parent") in [True, 'true']:
             search_key = my.sobject.get_search_key()
         else:
             search_key = my.kwargs.get("search_key")
+
+            # convert to code=XYZ format
+
+            sobject = Search.get_by_search_key(search_key)
+            search_key = sobject.get_search_key()
         search_key = search_key.replace("&", "&amp;")
 
         title = my.search_type.split("/")[-1].title()
@@ -380,31 +561,66 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         tabs = my.kwargs.get("tab_element_names")
+
+        config_search = Search("config/widget_config")
+        config_search.add_filter("view", "tab_element_names")
+        config_search.add_filter("search_type", my.search_type)
+        config = config_search.get_sobject()
+
         if tabs:
-            tabs = tabs.split(",")
+            tabs = [x.strip() for x in tabs.split(',')] 
+        elif config:
+            tabs = config.get_element_names()
         else:
-            tabs = ["tasks","related","revisions","attachments","snapshots","checkin","edit"]
+            tabs = my.get_default_tabs()
+        
+        if "info" not in tabs:
+            tabs.insert(0, "info")
 
         if my.sobject.get_value("pipeline_code", no_exception=True):
             tabs.append("pipeline")
         if my.sobject.get_value("_is_collection", no_exception=True):
             tabs.append("collection")
 
+
         for tab in tabs:
 
             if tab == "tasks":
                 config_xml.append('''
-                <element name="tasks">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <search_type>sthpw/task</search_type>
-                    <view>detail</view>
-                    <parent_key>%(search_key)s</parent_key>
-                    <order_by>bid_start_date asc</order_by>
-                    <width>100%%</width>
-                    <show_shelf>false</show_shelf>
+                <element name="tasks" title="Tasks">
+                <display class='tactic.ui.panel.CustomLayoutWdg'>
+                  <html>
+                  <div style="padding: 20px">
+                    <div style="font-size: 25px">Tasks</div>
+                    <div>List of all of the tasks for this item</div>
+                    <hr/>
+                    <br/>
+                    <element name="tasks">
+                      <display class='tactic.ui.panel.ViewPanelWdg'>
+                        <search_type>sthpw/task</search_type>
+                        <view>detail</view>
+                        <parent_key>%(search_key)s</parent_key>
+                        <order_by>bid_start_date asc</order_by>
+                        <width>100%%</width>
+                        <show_shelf>false</show_shelf>
+                      </display>
+                    </element>
+                  </div>
+                  </html>
+                </display>
+                </element>
+                ''' % values)
+
+
+            elif tab == "info":
+                config_xml.append('''
+                <element name="info">
+                  <display class='tactic.ui.tools.SObjectDetailInfoWdg'>
+                    <search_key>%(search_key)s</search_key>
                   </display>
                 </element>
                 ''' % values)
+
 
 
 
@@ -462,15 +678,39 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 </element>
                 ''' % values)
 
+            elif tab == "file_detail":
+                config_xml.append('''
+                <element name="file_detail" title="File Detail">
+                  <display class='tactic.ui.tools.FileDetailWdg'>
+                    <search_key>%(search_key)s</search_key>
+                  </display>
+                </element>
+                ''' % values)
 
-            elif tab == "snapshots":
+
+
+            elif tab == "snapshots" or tab == "checkin_history":
                 config_xml.append('''
                 <element name="snapshots" title="Check-in History">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <search_type>sthpw/snapshot</search_type>
-                    <view>table</view>
-                    <parent_key>%(search_key)s</parent_key>
-                    <width>100%%</width>
+                  <display class='tactic.ui.panel.CustomLayoutWdg'>
+                  <html>
+                    <div style="padding: 20px">
+                    <div style="font-size: 25px">Check-in History</div>
+                    <div>List of all of the check-ins for this item</div>
+                    <hr/>
+                    <br/>
+                    <element>
+                      <display class='tactic.ui.panel.ViewPanelWdg'>
+                        <search_type>sthpw/snapshot</search_type>
+                        <view>table</view>
+                        <parent_key>%(search_key)s</parent_key>
+                        <show_shelf>false</show_shelf>
+                        <width>100%%</width>
+                        <use_last_search>false</use_last_search>
+                      </display>
+                    </element>
+                    </div>
+                  </html>
                   </display>
                 </element>
                 ''' % values)
@@ -489,10 +729,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
             elif tab == "edit":
                 config_xml.append('''
                 <element name="edit" title="Edit">
-                  <display class='tactic.ui.container.ContentBoxWdg'>
-                      <title>Edit</title>
-                      <content_height>auto</content_height>
-                      <config>
+                  <display class='tactic.ui.panel.CustomLayoutWdg'>
+                      <html>
+                      <div style="padding: 20px">
+                      <div style="font-size: 25px">Edit Metadata</div>
+                      <div>Edit the data associated with this item</div>
+                      <hr/>
+                      <br/>
                       <element name="content" style="margin: 0px auto; width: 800px">
                       <display class='tactic.ui.panel.EditWdg'>
                         <search_key>%(search_key)s</search_key>
@@ -501,7 +744,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                         <show_header>false</show_header>
                       </display>
                       </element>
-                      </config>
+                      </div>
+                      </html>
                   </display>
                 </element>
                 ''' % values)
@@ -578,6 +822,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+        my.append_to_config(config_xml)
+
         config_xml.append('''
         </tab>
         </config>
@@ -588,6 +834,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         return config_xml
+
+
+    def append_to_config(my, config_xml):
+        return
 
 
     def get_sobject(my):
@@ -722,27 +972,131 @@ class SObjectDetailWdg(BaseRefreshWdg):
             edit_div.add(edit)
 
 
-
-
-        # TEST extra data from a related sobject
-        """
-        related_search_type = "jobs/photo"
-        element_names = ['photographer']
-
-        related = Search.eval("@SOBJECT(%s)" % related_search_type, my.sobject, single=True)
-
-        if related:
-            related_key = related.get_search_key()
-
-            from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
-            edit = EditLayoutWdg(search_type=search_type, mode='view', view="detail", search_key=related_key, width=400, title=' ', element_names=element_names)
-            edit_div.add(edit)
-        """
-
- 
-
-
         return div
+
+
+
+class SObjectDetailInfoWdg(SObjectDetailWdg):
+
+    def get_display(my):
+
+        search_key = my.kwargs.get("search_key")
+        my.sobject = Search.get_by_search_key(search_key)
+        if my.sobject.get_base_search_type() == "sthpw/task":
+            my.parent = my.sobject
+        else:
+            my.parent = None
+
+
+        top = my.top
+
+        if not my.sobject:
+            top.add("No SObject defined for this widget")
+            return top
+
+        if my.parent:
+            my.search_type = my.parent.get_base_search_type()
+            my.search_key = SearchKey.get_by_sobject(my.parent)
+            top.add_attr("spt_parent_key", my.search_key) 
+            my.pipeline_code = my.parent.get_value("pipeline_code", no_exception=True)
+            my.full_search_type = my.parent.get_search_type()
+        else:
+            my.pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
+            my.search_type = my.sobject.get_base_search_type()
+            my.search_key = SearchKey.get_by_sobject(my.sobject)
+            my.full_search_type = my.sobject.get_search_type()
+
+        if not my.pipeline_code:
+            my.pipeline_code = 'default'
+
+
+        table = Table()
+        top.add(table)
+        table.set_max_width()
+
+        table.add_row()
+
+        td = table.add_cell()
+        td.add_style("padding: 20px")
+        td.add_style("width: 50%")
+
+        #sobject_info_wdg = my.get_sobject_info_wdg()
+        #sobject_info_wdg.add_style("width: 100%")
+        #td.add(sobject_info_wdg)
+
+        title_wdg = DivWdg()
+        td.add(title_wdg)
+        title_wdg.add("Summary")
+        title_wdg.add_style("font-size: 1.4em")
+        title_wdg.add_style("margin-bottom: 5px")
+
+        desc_wdg = DivWdg()
+        td.add(desc_wdg)
+        desc_wdg.add("Detailed information about this item.")
+        td.add("<hr/>")
+
+
+
+        if my.search_type == 'sthpw/task' and not my.parent:
+            pass
+        else:
+            sobject_info_wdg = my.get_sobject_detail_wdg()
+            td.add(sobject_info_wdg)
+            td.add_style("vertical-align: top")
+            td.add_style("overflow: hidden")
+            td.add_style("width: 30vw")
+
+
+        td = table.add_cell()
+        spacer_div = DivWdg()
+        td.add(spacer_div)
+        td.add_style("height: 1px")
+        td.add_style("padding: 20px 0px 20px 20px")
+        spacer_div.add_style("border-style: solid")
+        spacer_div.add_style("border-width: 0px 0px 0px 1px")
+        spacer_div.add_style("border-color: #DDD")
+        spacer_div.add(" ")
+        spacer_div.add_style("height: 100%")
+
+
+
+        # right
+        td = table.add_cell()
+        td.add_style("text-align: left")
+        td.add_style("vertical-align: top")
+        td.add_class("spt_notes_wrapper")
+        td.add_style("padding: 20px")
+
+        title_wdg = DivWdg()
+        td.add(title_wdg)
+        title_wdg.add_style("width: 100%")
+        title_wdg.add("Notes")
+        title_wdg.add_style("font-size: 1.4em")
+        title_wdg.add_style("margin-bottom: 5px")
+
+        desc_wdg = DivWdg()
+        td.add(desc_wdg)
+        desc_wdg.add("List of all the notes for this item.")
+        td.add("<hr/>")
+
+
+        notes_div = DivWdg()
+        td.add(notes_div)
+        from tactic.ui.widget.discussion_wdg import DiscussionWdg
+        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False,\
+            show_note_expand=False, show_task_process=my.show_task_process)
+        
+        notes_div.add(discussion_wdg)
+        #menu = discussion_wdg.get_menu_wdg(notes_div)
+        #notes_div.add(menu)
+
+        notes_div.add_style("min-width: 300px")
+        notes_div.add_style("height: 200")
+        notes_div.add_style("overflow-y: auto")
+        notes_div.add_class("spt_resizable")
+
+        return top
+
 
 
 
@@ -819,7 +1173,6 @@ class RelatedSObjectWdg(BaseRefreshWdg):
 
             related_sobj = SearchType.get(related_type)
             name = related_sobj.get_title()
-            print "attrs: ", related_type, attrs
 
 
             related_div = DivWdg()
@@ -842,6 +1195,48 @@ class RelatedSObjectWdg(BaseRefreshWdg):
 
 
 
+class SnapshotDetailWdg(SObjectDetailWdg):
+
+    def get_title_wdg(my):
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: 20px")
+
+
+        my.sobject = my.get_sobject()
+
+        parent = my.sobject.get_parent()
+
+        snapshot_div = DivWdg()
+        title_wdg.add(snapshot_div)
+        snapshot_div.add_style("font-size: 25px")
+        snapshot_div.add(my.sobject.get_code())
+
+ 
+        context = my.sobject.get_value("context", no_exception=True)
+        process = my.sobject.get_value("process", no_exception=True)
+        version = my.sobject.get_value("version", no_exception=True)
+
+        context_wdg = DivWdg()
+        title_wdg.add(context_wdg)
+        context_wdg.add("Context: %s" % context)
+
+        version_wdg = DivWdg()
+        title_wdg.add(version_wdg)
+        version_wdg.add("Version: %0.3d" % version)
+
+
+        return title_wdg
+
+
+    def get_default_tabs(my):
+        tabs = ["history"]
+        return tabs
+
+
+    def append_to_config(my, config_xml):
+        return
+
 
 class TaskDetailWdg(SObjectDetailWdg):
 
@@ -856,6 +1251,10 @@ class TaskDetailWdg(SObjectDetailWdg):
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
         title.add_border(color="#DDD")
+
+        if not my.parent:
+            title.add("Parent not found")
+            return title
 
         code = my.parent.get_value("code", no_exception=True)
         name = my.parent.get_value("name", no_exception=True)
@@ -882,70 +1281,6 @@ class TaskDetailWdg(SObjectDetailWdg):
         exprs = []
         exprs.append( "@GET(parent.description)")
         return titles, exprs
-
-
-    """
-    def get_task_info(my):
-        process = my.sobject.get_value("process")
-        #titles = ['Process', 'Status', 'Assigned', 'Supervisor','Priority','Start Date', 'End Date', '# Notes', '# Snapshots']
-        titles = ['Process', 'Status', 'Assigned', 'Supervisor','Priority','Start Date', 'End Date']
-
-        exprs = []
-        exprs.append( "@GET(.process)")
-        exprs.append( "@GET(.status)")
-        exprs.append( "@GET(.assigned)")
-        exprs.append( "@GET(.supervisor)")
-        exprs.append( "@GET(.priority)")
-        exprs.append( "{@GET(.bid_start_date),%b %d, %Y}")
-        exprs.append( "{@GET(.bid_end_date),%b %d, %Y}")
-
-        #exprs.append( "@COUNT(parent.sthpw/note['process','%s'])" % process)
-        #exprs.append( "@COUNT(parent.sthpw/snapshot['process','%s'])" % process)
-        return titles, exprs
-
-
-    def get_sobject_info_wdg(my):
-
-        # DEPRECATED
-        div = DivWdg()
-        return div
-
-        attr_table = Table()
-        attr_table.add_color("color", "color")
-        #attr_table.add_color("background", "background", -5)
-        #attr_table.add_border()
-
-        sobject = my.get_sobject()
-
-        tr, td = attr_table.add_row_cell()
-        td.add("<b>Task Info<hr/></b>")
-        td.add_style("padding-top: 5px")
-        td.add_style("padding-left: 5px")
-
-
-        titles, exprs = my.get_task_info()
-        for title, expr in zip(titles, exprs):
-            try:
-                value = Search.eval(expr, sobject, single=True)
-            except Exception, e:
-                print "WARNING: ", e.message
-                continue
-
-            if value == '':
-                value = '<i>none</i>'
-            attr_table.add_row()
-            th = attr_table.add_cell("%s: " % title)
-            th.add_style("font-weight: bold")
-            th.add_style("text-align: left")
-            th.add_style("padding-right: 15px")
-            th.add_style("padding-left: 5px")
-            th.add_style("padding-top: 10px")
-            th.add_style("padding-bottom: 10px")
-            td = attr_table.add_cell(value)
-    
-
-        return attr_table
-    """
 
 
  
@@ -1029,10 +1364,22 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         #from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
         #edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
+           
+
+        
+        if not my.parent:
+            config_xml.append( '''
+            </tab>
+            </config>
+            ''' )
+
+            config_xml = "".join(config_xml)
+            return config_xml
 
         values = my.parent.get_data()
         values['search_key'] = my.parent.get_search_key().replace("&", "&amp;")
         values['process'] = process
+
 
 
         config_xml.append('''
@@ -1065,19 +1412,6 @@ class TaskDetailWdg(SObjectDetailWdg):
         ''' % values)
 
 
-
-
-        """
-        config_xml.append( '''
-        <element name="%s" title="%s">
-          <display class='tactic.ui.tools.SObjectSingleProcessDetailWdg'>
-            <search_key>%s</search_key>
-            <process>%s</process>
-            <context>%s</context>
-          </display>
-        </element>
-        ''' % (process_name, process_title, parent_key, process, context) )
-        """
 
 
 
@@ -1126,7 +1460,7 @@ class TaskDetailWdg(SObjectDetailWdg):
         ''' % {"search_key": search_key} )
 
 
-
+    
 
         config_xml.append( '''
         </tab>
@@ -1185,7 +1519,7 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
         thumb = ThumbWdg2()
         title.add(thumb)
         thumb.set_sobject(my.sobject)
-        thumb.add_style("width: 80px")
+        thumb.add_style("width: px")
         thumb.add_style("float: left")
         thumb.add_style("margin: 0px 15px")
 

@@ -272,7 +272,6 @@ class TaskStatusSelectWdg(SelectWdg):
                         my.task_mapping[key] = task_pipeline
 
 
-            #my.task_mapping = "|".join(my.task_mapping)
 
         my.is_preprocess = True
 
@@ -307,42 +306,56 @@ class TaskStatusSelectWdg(SelectWdg):
          
             # if there is not task_pipeline_code, create a virtual one:
             if not pipeline:
-                process_names = ['Pending', 'In Progress', 'Approved']
+                status_names = ['Pending', 'In Progress', 'Complete']
             else:
-                process_names = pipeline.get_process_names()
+                status_names = pipeline.get_process_names()
 
 
-            allowed_processes = []
+            allowed_statuses = []
             security = Environment.get_security()
             cur_value = ''
             cur_sobject = my.get_current_sobject()
             if cur_sobject:
                 cur_value = cur_sobject.get_value('status')
 
-            for process in process_names:
-                # not all statuses can be shown, if there are access rules
-                # TODO: remove this process_select in 4.1
-                if cur_value == process or security.check_access("process_select", process, access='view', default='deny'):
-                    allowed_processes.append(process)
-                    continue
+            processes = ['Synopsis', 'First Draft', 'Second Draft', 'Final']
+            processes = [None]
+            for process in processes:
 
-                # use the new access rule process here
-                access_key = [
-                    {'process': '*' ,'pipeline':  pipeline.get_code()},
-                    {'process': '*' ,'pipeline':  '*'},
-                    {'process': process , 'pipeline':  pipeline.get_code()}
-                    ]
+                for status in status_names:
+                    # not all statuses can be shown, if there are access rules
+                    # TODO: remove this status in 4.1
+                    if cur_value == status or security.check_access("process_select", status, access='view', default='deny'):
+
+                        if process:
+                            allowed_statuses.append("%s / %s" % (process, status))
+                        else:
+                            allowed_statuses.append(status)
+                        continue
 
 
-                if security.check_access('process', access_key, "view", default="deny"):
-                    allowed_processes.append(process)
-                
+                    # use the new access rule process here
+                    access_key = [
+                        {'process': '*' ,'pipeline':  pipeline.get_code()},
+                        {'process': '*' ,'pipeline':  '*'},
+                        {'process': status , 'pipeline':  pipeline.get_code()}
+                        ]
+
+
+                    if security.check_access('status', access_key, "view", default="deny"):
+                        if process:
+                            allowed_statuses.append("%s / %s" % (process, status))
+                        else:
+                            allowed_statuses.append(status)
+
+                if process: 
+                    allowed_statuses.append("---")
 
             select = SelectWdg(my.get_input_name())
             select.add_empty_option('-- Select --')
-            if cur_value in allowed_processes:
+            if cur_value in allowed_statuses:
                 select.set_value( cur_value )
-            select.set_option("values", allowed_processes)
+            select.set_option("values", allowed_statuses)
             # only old table layout has behaviors at the widget level
             if my.behaviors:
                 from tactic.ui.panel import CellEditWdg

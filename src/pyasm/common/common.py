@@ -65,8 +65,6 @@ except ImportError:
 
 class Common(Base):
 
-
-
     def get_next_sobject_code(sobject, column):
         '''Get the next code. When given an sobject, and a column, it gets the value of that
         attribute of the sobject, and increments its value by 1.
@@ -425,6 +423,58 @@ class Common(Base):
     extract_keywords = staticmethod(extract_keywords)
 
 
+
+    def extract_keywords_from_path(cls, rel_path):
+
+        # delimiters
+        P_delimiters = re.compile("[- _\.]")
+        # special characters
+        P_special_chars = re.compile("[\[\]{}\(\)\,]")
+        # camel case
+        P_camel_case = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+
+
+        #parts = rel_path.split("/")
+        parts =  re.split(r'/|\\', rel_path)
+        keywords = set()
+
+        for item in parts:
+            keywords.add(item)
+
+            item = P_camel_case.sub(r'_\1', item)
+            parts2 = re.split(P_delimiters, item)
+            for item2 in parts2:
+                if not item2:
+                    continue
+
+                item2 = re.sub(P_special_chars, "", item2)
+
+                # skip 1 letter keywords
+                if len(item2) == 1:
+                    continue
+
+                try:
+                    int(item2)
+                    continue
+                except:
+                    pass
+
+
+                #print "item: ", item2
+                item2 = item2.lower()
+
+                keywords.add(item2)
+
+        keywords_list = list(keywords)
+        keywords_list.sort()
+        return keywords_list
+
+    extract_keywords_from_path = classmethod(extract_keywords_from_path)
+
+
+
+
+
     def is_ascii(value):
         '''check if a value is ASCII'''
         is_ascii = True   
@@ -759,51 +809,6 @@ class Common(Base):
 
 
 
-    def get_keywords_from_path(cls, rel_path):
-        # delimiters 
-        P_delimiters = re.compile("[- _\.]")
-        # special characters
-        P_special_chars = re.compile("[\[\]{}\(\)\,]")
-        # camel case
-        P_camel_case = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
-
-
-        parts = rel_path.split("/")
-        keywords = set()
-
-        for item in parts:
-            item = P_camel_case.sub(r'_\1', item)
-            parts2 = re.split(P_delimiters, item)
-            for item2 in parts2:
-                if not item2:
-                    continue
-
-                item2 = re.sub(P_special_chars, "", item2)
-
-                # skip 1 letter keywords
-                if len(item2) == 1:
-                    continue
-
-                try:
-                    int(item2)
-                    continue
-                except:
-                    pass
-
-
-                #print "item: ", item2
-                item2 = item2.lower()
-
-                keywords.add(item2)
-
-        keywords_list = list(keywords)
-        keywords_list.sort()
-        return keywords_list
-
-    get_keywords_from_path = classmethod(get_keywords_from_path)
-
-
-
     #
     # String manipulation functions
     #
@@ -1078,6 +1083,131 @@ class Common(Base):
         return sizeof(o)
 
     total_size = staticmethod(total_size)
+
+
+
+
+    ABERRANT_PLURAL_MAP = {
+        'appendix': 'appendices',
+        'barracks': 'barracks',
+        'cactus': 'cacti',
+        'child': 'children',
+        'corpora': 'corpus',
+        'criterion': 'criteria',
+        'deer': 'deer',
+        'echo': 'echoes',
+        'elf': 'elves',
+        'embargo': 'embargoes',
+        'focus': 'foci',
+        'foot': 'feet',
+        'fungus': 'fungi',
+        'goose': 'geese',
+        'half': 'halves',
+        'hero': 'heroes',
+        'hoof': 'hooves',
+        'index': 'indices',
+        'knife': 'knives',
+        'leaf': 'leaves',
+        'life': 'lives',
+        'loaf': 'loaves',
+        'man': 'men',
+        'matrix': 'matrices',
+        'mouse': 'mice',
+        'nucleus': 'nuclei',
+        'person': 'people',
+        'phenomenon': 'phenomena',
+        'potato': 'potatoes',
+        'radius': 'radii',
+        'self': 'selves',
+        'sky': 'skies',
+        'syllabus': 'syllabi',
+        'tomato': 'tomatoes',
+        'tooth': 'teeth',
+        'torpedo': 'torpedoes',
+        'veto': 'vetoes',
+        'wife': 'wives',
+        'wolf': 'wolves',
+        'woman': 'women',
+        }
+
+    VOWELS = set('aeiou')
+
+    def pluralize(cls, singular):
+        """Return plural form of given lowercase singular word (English only). Based on
+        ActiveState recipe http://code.activestate.com/recipes/413172/
+        
+        >>> pluralize('')
+        ''
+        >>> pluralize('goose')
+        'geese'
+        >>> pluralize('dolly')
+        'dollies'
+        >>> pluralize('genius')
+        'genii'
+        >>> pluralize('jones')
+        'joneses'
+        >>> pluralize('pass')
+        'passes'
+        >>> pluralize('zero')
+        'zeros'
+        >>> pluralize('casino')
+        'casinos'
+        >>> pluralize('hero')
+        'heroes'
+        >>> pluralize('church')
+        'churches'
+        >>> pluralize('x')
+        'xs'
+        >>> pluralize('car')
+        'cars'
+
+        """
+        if singular != singular.lower():
+            is_title = True
+        else:
+            is_title = False
+        singular = singular.lower()
+
+        if not singular:
+            return ''
+        plural = cls.ABERRANT_PLURAL_MAP.get(singular)
+        if plural:
+            if is_title:
+                return plural.title()
+            else:
+                return plural
+        root = singular
+        try:
+            if singular[-1] == 'y' and singular[-2] not in VOWELS:
+                root = singular[:-1]
+                suffix = 'ies'
+            elif singular[-1] == 's':
+                if singular[-2] in VOWELS:
+                    if singular[-3:] == 'ius':
+                        root = singular[:-2]
+                        suffix = 'i'
+                    else:
+                        root = singular[:-1]
+                        suffix = 'ses'
+                else:
+                    suffix = 'es'
+            elif singular[-2:] in ('ch', 'sh'):
+                suffix = 'es'
+            else:
+                suffix = 's'
+        except IndexError:
+            suffix = 's'
+        plural = root + suffix
+
+        if is_title:
+            plural = plural.title()
+
+        return plural
+
+    pluralize = classmethod(pluralize)
+
+
+
 
 
     # take from: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python

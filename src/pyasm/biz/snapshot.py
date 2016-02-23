@@ -456,7 +456,7 @@ class Snapshot(SObject):
         return expanded_names
 
 
-    def get_web_path_by_type(my, type):
+    def get_web_path_by_type(my, type='main'):
         ''' get the lib path by specifying a file type '''
         xml = my.get_snapshot_xml()
 
@@ -1671,6 +1671,11 @@ class Snapshot(SObject):
 
         if show_retired:
             raise Exception("ERROR: Unsupported show retired flag")
+
+        if not return_dict:
+            search.add_order_by("search_code")
+            search.add_order_by("version desc")
+
 
         snapshots = search.get_sobjects()
 

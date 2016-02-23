@@ -79,7 +79,7 @@ class SimpleUploadWdg(BaseInputWdg):
 
         ticket = spt.Environment.get().get_ticket();
         var html = "";
-        html += "Uploading: " + files.name;
+        html += "Uploaded: " + files.name;
         files_el.innerHTML = html;
         
         if (files) {

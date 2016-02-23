@@ -820,6 +820,8 @@ class ThumbWdg(BaseTableElementWdg):
         div.add_class("spt_thumb_top")
         div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
+        """
+        # This is taken care of in the TileLayoutWdg or CollectionLayoutWdg
         if sobject.get_value("_is_collection", no_exception=True):
             expr = "@COUNT(jobs/media_in_media)"
             num_items = Search.eval(expr, sobject)
@@ -832,7 +834,7 @@ class ThumbWdg(BaseTableElementWdg):
             num_div.add_style("position: absolute")
             div.add(num_div)
              
- 
+        """
       
         # if no link path is found, display the no icon image
         if link_path == None:
@@ -930,18 +932,51 @@ class ThumbWdg(BaseTableElementWdg):
             missing_div.add_style("position: absolute")
 
 
+        elif icon_link == "__DYNAMIC__":
 
-        img = HtmlElement.img(icon_link)
-        img.add_class("spt_image")
+            base, ext = os.path.splitext(repo_path)
+            ext = ext.upper().lstrip(".")
 
-        # TODO: make this a preference
-        img.add_style("background: #ccc")
+            #flat ui color
+            colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+            import random
+            color = colors[random.randint(0,7)]
 
-        if isinstance(icon_size, basestring):
-            icon_size, unit = my.split_icon_size(icon_size)
-            img.add_style("%s: 100%%" % my.aspect)
+
+
+            img = DivWdg()
+            img.add_class("spt_image")
+            div.add(img)
+            img.add("<div style='padding-top: 30%%'>%s</div>" % ext)
+            img.add_style("text-align: center")
+            img.add_style("color: #fff")
+            img.add_style("background: %s" % color)
+
+            img.add_style("min-width: 50px")
+            img.add_style("min-height: 30px")
+            #img.add_style("width: 95%")
+            img.add_style("padding-bottom: 40%")
+
+            img.add_style("padding: 0px")
+            img.add_style("font-size: 20px")
+            img.add_style("font-weight: bold")
+
+
+
+
         else:
-            img.add_style("%s: %s" % (my.aspect, icon_size) )
+
+            img = HtmlElement.img(icon_link)
+            img.add_class("spt_image")
+
+            # TODO: make this a preference
+            img.add_style("background: #ccc")
+
+            if isinstance(icon_size, basestring):
+                icon_size, unit = my.split_icon_size(icon_size)
+                img.add_style("%s: 100%%" % my.aspect)
+            else:
+                img.add_style("%s: %s" % (my.aspect, icon_size) )
 
 
         detail = my.get_option("detail")
@@ -1197,17 +1232,22 @@ class ThumbWdg(BaseTableElementWdg):
         ext = ext.lower()
 
         if ext in ["xls", "xlsx"]:
-            icon = "gnome-application-vnd.ms-excel.png"
+            #icon = "gnome-application-vnd.ms-excel.png"
+            icon = "microsoft/Excel-2013.png"
         elif ext in ["ppt", "pptx"]:
-            icon = "gnome-application-vnd.ms-excel.png"
+            #icon = "gnome-application-vnd.ms-excel.png"
+            icon = "microsoft/Powerpoint-2013.png"
+        elif ext in ["doc", "docx", "rtf"]:
+            icon = "microsoft/Word-2013.png"
         elif ext == "mp3" or ext == "wav":
             icon = "mp3_and_wav.jpg"
         elif ext == "aif" or ext == 'aiff':
-            icon = "gnome-audio-x-aiff.png"
+            #icon = "gnome-audio-x-aiff.png"
+            icon = "mp3_and_wav.jpg"
         elif ext == "mpg":
             icon = "gnome-video-mpeg.png"
         elif ext in ["mov"]:
-            icon = "quicktime-logo.png"    
+            icon = "icon_qt_big.jpg"
         elif ext == "ma" or ext == "mb" or ext == "anim":
             icon = "maya.png"
         elif ext == "lwo":
@@ -1227,36 +1267,73 @@ class ThumbWdg(BaseTableElementWdg):
         elif ext == "dae":
             icon = "collada.png"
         elif ext == "pdf":
-            icon = "pdficon_large.gif"
+            icon = "adobe-PDF-icon.jpg"
         elif ext == "shk":
             icon = "icon_shake_white.gif"
         elif ext == "comp":
             icon = "fusion.png"
         elif ext == "txt":
-            icon = "gnome-textfile.png"
+            icon = "txt-notes.png"
         elif ext in ["obj", "mtl"]:
             icon = "3d_obj.png"
         elif ext == "rdc":
             icon = "red_camera.png"
+        
+        #for adobe products
         elif ext == 'ps':
-            icon = "ps_icon.jpg"
+            icon = "adobe/Photoshop.png"
         elif ext == 'psd':
-            icon = "ps_icon.jpg"
+            icon = "adobe/Photoshop.png"
         elif ext == 'ai':
-            icon = "icon_illustrator_lg.png"
+            icon = "adobe/Illustrator.png"
+        elif ext == 'br':
+            icon = "adobe/Bridge.png"
+        elif ext == 'au':
+            icon = "adobe/Audition.png"
+        elif ext == 'ae':
+            icon = "adobe/After_Effects.png"
+        elif ext == 'dw':
+            icon = "adobe/Dreamweaver.png"
+        elif ext == 'en':
+            icon = "adobe/Encode.png"
+        elif ext == 'fw':
+            icon = "adobe/Fireworks.png"
+        elif ext == 'fi':
+            icon = "adobe/Fireworks.png"
+        elif ext == 'fb':
+            icon = "adobe/Flash_Builder.png"
+        elif ext == 'id':
+            icon = "adobe/InDesign.png"
+        elif ext == 'lr':
+            icon = "adobe/LightRoom.png"
+        elif ext == 'pl':
+            icon = "adobe/Prelude.png"
+        elif ext == 'pr':
+            icon = "adobe/Premiere_Pro.png"
+
+        #for web files
+        elif ext == "html":
+            icon = "html.png"
+        elif ext == "css":
+            icon = "css.png"
+        elif ext == "js":
+            icon = "javascript.png"
+
+        elif ext == 'fdx':
+            icon = "finaldraft.png"
         elif ext == 'unity3d':
             icon = "unity_icon.jpg"
         elif repo_path and os.path.isdir(repo_path):
-            icon = "folder.png"
+            icon = "folder2.jpg"
         elif ext in File.VIDEO_EXT:
             #icon = "general_video.png"
             icon = "indicator_snake.gif"
         elif ext in File.IMAGE_EXT:
             icon = "indicator_snake.gif"
         else:
-            icon = "default_doc.png"
+            icon = "__DYNAMIC__"
 
-        if base:
+        if base and icon != "__DYNAMIC__":
             path = "%s/%s" % ( base,icon)
         else:
             path = icon
@@ -1446,6 +1523,10 @@ class ThumbCmd(Command):
             server = TacticServerStub.get()
             snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
             """
+
+            if not os.path.exists(path):
+                print "WARNING: path [%s] does not exist" % path
+                return
 
             icon_creator = IconCreator(path)
             icon_creator.execute()

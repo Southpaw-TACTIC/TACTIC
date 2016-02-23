@@ -216,10 +216,12 @@ class DropElementWdg(SimpleTableElementWdg):
         div = DivWdg()
         div.add_class("spt_drop_element_top")
         div.add_style("width: 100%")
-        div.add_style("height: 100%")
+        div.add_style("min-height: 30px")
+        div.add_style("height: auto")
         div.add_style("min-width: 100px")
         div.add_style("max-height: 300px")
         div.add_style("overflow-y: auto")
+        div.add_style("overflow-x: hidden")
 
         my.value_wdg = HiddenWdg(my.get_name())
         my.value_wdg.add_class("spt_drop_element_value")
@@ -240,29 +242,20 @@ class DropElementWdg(SimpleTableElementWdg):
 
         # float left for the new icon beside it
         item_div = template_item.get_widget('item_div')
-        item_div.add_style('float: left')
+        #item_div.add_style('float: left')
 
         template_item.add_class("spt_drop_template")
-        #template_item.add_style('float: left')
         new_icon = IconWdg("New", IconWdg.NEW)
         new_icon.add_style('padding-left','3px')
         #TODO: insert the new_icon at add(new_icon, index=0) and make sure
         # the js-side sobject_drop_action cloning align the template div properly
-        #template_item.add(" - ")
-        template_item.add(new_icon)
+        #template_item.add(new_icon)
         template_div.add(template_item)
         div.add(template_div)
 
 
-        # list out the relationships
-        #sobject = my.get_current_sobject()
-        #search_type = sobject.get_base_search_type()
-
- 
         content_div = DivWdg()
         div.add(content_div)
-        # shrink wrapping for FF
-        content_div.add_style('float: left')
         content_div.add_class("spt_drop_content")
 
         if instance_type:
@@ -301,21 +294,35 @@ class DropElementWdg(SimpleTableElementWdg):
         ''' get the item div the sobject'''
         top = DivWdg()
         top.add_style("padding: 3px 2px")
-        top.add_attr('title','Click to remove')
-        # FIXME: put this here for now
-        top.add_behavior( {
+        top.add_class("spt_drop_item")
+        top.add_class("SPT_DROP_ITEM")
+
+
+        item_div = DivWdg()
+        top.add(item_div, "item_div")
+        item_div.add_style("text-overflow: ellipsis")
+        item_div.add_style("white-space: nowrap")
+        item_div.add_style("width: 80%")
+        item_div.add_attr('title','Click to remove')
+        item_div.add_style("display", "inline-block")
+        item_div.add_style("vertical-align", "top")
+        item_div.add_style("overflow", "hidden")
+
+
+        icon_div = DivWdg()
+        top.add(icon_div)
+        icon = IconWdg(icon="BS_REMOVE")
+        icon_div.add(icon)
+        icon_div.add_behavior( {
             'type': 'click_up',
             #'cbjs_action': '''spt.dg_table_action.sobject_drop_remove(evt,bvr)'''
             'cbjs_action': '''spt.drop.sobject_drop_remove(evt,bvr)'''
         } )
-
-        top.add_class("spt_drop_item")
-        top.add_class("SPT_DROP_ITEM")
-
-        item_div = DivWdg()
-        item_div.add_class("hand")
-        item_div.add_style("float: clear")
-        top.add(item_div, "item_div")
+        icon.add_style("opacity: 0.3")
+        icon_div.add_class("hand")
+        icon_div.add_style("display", "inline-block")
+        icon_div.add_style("vertical-align", "top")
+        #icon_div.add_border()
 
 
         #my.menu.set_over(item_div, event="mousein")
@@ -573,7 +580,7 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
         if (display_value == null) {
             display_value = search_key;
         }
-        src_display_values.push( display_value );
+        src_display_values.push( "+" + display_value );
     }
 
 
@@ -650,6 +657,10 @@ spt.drop.clone_src_to_droppable = function(top_el, src_search_keys, src_display_
 
 spt.drop.sobject_drop_remove = function( evt, bvr ) {
     var src_el = bvr.src_el;
+
+    if (!src_el.hasClass("spt_drop_item")) {
+        src_el = src_el.getParent(".spt_drop_item");
+    }
 
     src_el.setStyle("border", "solid 1px red");
 

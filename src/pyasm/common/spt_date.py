@@ -218,13 +218,26 @@ class SPTDate(object):
 
         diff = now - date
 
-        # less than a minue
+        # less than a minute
         if diff.seconds < 60:
             value = "%s seconds ago" % diff.seconds
 
         # less than an hour
         elif diff.seconds < 60 * 60:
-            value = "%s minutes ago" % (diff.seconds/60)
+            minutes = diff.seconds / 60
+            if minutes == 1:
+                value = "1 minute ago"
+            else:
+                value = "%s minutes ago" % minutes
+
+        # less than a day
+        elif diff.seconds < 60 * 60 * 24:
+            hours = diff.seconds / 60 /60
+            if hours == 1:
+                value = "1 hour ago"
+            else:
+                value = "%s hours ago" % hours
+
 
         else:
             value = date.strftime("%b %d at %I:%m %p")

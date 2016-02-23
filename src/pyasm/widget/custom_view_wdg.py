@@ -62,7 +62,7 @@ class CustomViewWdg(Widget):
 
         # see if there is an override
         search_type_obj = SearchType.get(my.search_type)  
-        config = WidgetConfig.get_by_search_type(my.search_type,"browser_list")
+        config = WidgetConfigView.get_by_search_type(my.search_type,"browser_list")
         if config:
             element_names = config.get_element_names()
 

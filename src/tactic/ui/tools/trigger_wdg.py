@@ -347,7 +347,11 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
             my.pipeline = Pipeline.get_by_code(my.pipeline_code)
 
-            my.process_obj = my.pipeline.get_process(my.process)
+            if my.process:
+                my.process_obj = my.pipeline.get_process(my.process)
+            else:
+                my.process_obj = None
+
             if my.process_obj:
                 process_type = my.process_obj.get_type()
             else:

@@ -364,7 +364,7 @@ class ButtonElementWdg(BaseTableElementWdg):
                 print "WARNING: ", str(e)
                 icon_link = IconWdg.ERROR
 
-            icon_wdg = IconButtonWdg(icon_tip, icon_link)
+            icon_wdg = IconButtonWdg(icon_tip, icon=icon_link)
             if not sobject.is_insert():
                 icon_wdg.add_class("hand")
                 #icon_wdg.add_behavior(my.behavior)
@@ -390,7 +390,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         display.add_style("height: 18px")
         display.add_style("min-width: 21px")
         display.add_style("overflow: hidden")
-        display.add_style("margin-top: 2px")
+        display.add_style("margin-top: 0px")
 
 
         expression = my.kwargs.get('expression')

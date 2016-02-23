@@ -53,12 +53,8 @@ class Html5UploadWdg(BaseRefreshWdg):
         input.set_attr("name", "file")
         input.add_class("spt_file")
         input.set_attr("type", "file")
-        #input.add_style("display: none")
-        #input.add_style("visibility: hidden")
         input.add_style("position: absolute")
         input.add_style("margin-left: -5000px")
-        #input.add_style("margin-left: 500px")
-        #input.add_style("margin-top: -50px")
 
         multiple = my.kwargs.get("multiple")
         if multiple in [True, 'true']:
@@ -346,8 +342,11 @@ class UploadButtonWdg(BaseRefreshWdg):
 
 
 
+        color = my.kwargs.get("color")
+        width = my.kwargs.get("width")
+
         from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title)
+        button = ActionButtonWdg(title=title, color=color, width=width)
 
 
         button_id = my.kwargs.get("id")
@@ -517,8 +516,11 @@ class TestHtml5UploadWdg(BaseRefreshWdg):
         top.add(upload)
         upload_id = upload.get_upload_id()
 
+        color = my.kwargs.get("color")
+        width = my.kwargs.get("width")
+
         from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title="Upload")
+        button = ActionButtonWdg(title="Upload", color=color, width=width)
         top.add(button)
         button.add_behavior( {
             'type': 'click_up',

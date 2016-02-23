@@ -81,8 +81,12 @@ class Login(SObject):
         return "%s %s" % (my.get_value("first_name"), my.get_value("last_name"))
 
     def get_full_email(my):
-        return "%s %s <%s>" % (my.get_value("first_name"), \
-            my.get_value("last_name"), my.get_value("email") )
+        email = my.get_value("email")
+        if email:
+            return "%s %s <%s>" % (my.get_value("first_name"), \
+                my.get_value("last_name"), my.get_value("email") )
+        else:
+            return ""
 
     def has_user_license(my):
         '''determines if this user has a user level license'''
@@ -771,7 +775,7 @@ class Site(object):
 
 
     def get_default_project(cls):
-        return
+        return Config.get_value("install", "default_project")
     get_default_project = classmethod(get_default_project)
 
 
@@ -783,7 +787,7 @@ class Site(object):
 
 
     def allow_guest(cls, url=None):
-        return True
+        return False
  
 
 
@@ -862,7 +866,8 @@ class Site(object):
         sites = Container.get("sites")
         if sites == None:
             return ""
-        site = sites.pop()
+        if sites:
+            return sites.pop()
     pop_site = classmethod(pop_site)
 
 
@@ -2155,7 +2160,7 @@ class License(object):
                     # software anways
                     current = 0
                    
-                print "current: ", current, license_users, current > license_users
+                #print "current: ", current, license_users, current > license_users
                 if current > license_users:
                     raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
         #print "License verified ... "

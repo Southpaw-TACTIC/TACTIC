@@ -46,10 +46,23 @@ class DirListWdg(BaseRefreshWdg):
         'category': 'Options'
     },
     }
+
+
+
  
 
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
+
+
+    def get_depth(my):
+        depth = my.kwargs.get("depth")
+        if depth == None:
+            depth = -1
+        elif isinstance(depth, basestring):
+            depth = int(depth)
+        return depth
+
 
 
     def get_relative_paths(my, base_dir):
@@ -60,6 +73,7 @@ class DirListWdg(BaseRefreshWdg):
             depth = -1
         elif isinstance(depth, basestring):
             depth = int(depth)
+
 
         location = my.kwargs.get("location")
         my.paths = my.kwargs.get("paths")
@@ -122,7 +136,7 @@ class DirListWdg(BaseRefreshWdg):
 
         my.handler_kwargs = my.kwargs.get('handler_kwargs')
         my.preselected = {}
-
+        my.use_applet = True
         my.preprocess()
 
 
@@ -385,7 +399,10 @@ class DirListWdg(BaseRefreshWdg):
             icon_div.add(icon)
             icon_div.add_style("float: left")
 
-            title_div = FloatDivWdg("%s" % base_dir)
+            display_dir = base_dir
+            display_dir = os.path.basename(display_dir)
+
+            title_div = FloatDivWdg("%s" % display_dir)
             dir_title.add(title_div)
             title_div.add_style("padding-top: 2px")
             
@@ -415,12 +432,6 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-        all_open = my.kwargs.get("all_open")
-        if all_open in [True, 'true']:
-            all_open = True
-        else:
-            all_open = False
-
         depth = my.kwargs.get("depth")
         if depth == None:
             depth = -1
@@ -438,20 +449,6 @@ class DirListWdg(BaseRefreshWdg):
 
         handler_class = Common.get_full_class_name(my)
 
-        """
-        var class_name = 'tactic.ui.widget.DirListPathHandler';
-        var kwargs = {
-            level: item_top.getAttribute("spt_level"),
-            base_dir: base_dir,
-            depth: 1,
-            all_open: false,
-            handler_class: item_top.getAttribute("spt_handler_class"),
-            handler_kwargs: {
-                base_dir: base_dir,
-            }
-
-        }
-        """
 
         search_keys = my.kwargs.get("search_keys")
         if not search_keys:
@@ -494,6 +491,12 @@ class DirListWdg(BaseRefreshWdg):
             )
             top.add(dir_list)
         else:
+            all_open = my.kwargs.get("all_open")
+            if all_open in [True, 'true']:
+                all_open = True
+            else:
+                all_open = False
+
             dir_list = DirListPathHandler(
                 location=location,
                 level=0,
@@ -540,9 +543,6 @@ class DirListWdg(BaseRefreshWdg):
 
         from pyasm.widget import SwapDisplayWdg
         swap = SwapDisplayWdg.get_triangle_wdg(is_open=is_open)
-        #swap = SwapDisplayWdg(title=path, icon='FILM')
-        #top.add(swap)
-        #swap.set_behavior_top(top)
         div.add(swap)
 
         swap.add_style("margin-right: -7px")
@@ -564,8 +564,9 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_dir", path)
         div.add_attr("spt_root_dir", my.root_dir)
 
+        # Dynamic loading of swap content
         dynamic = my.kwargs.get("dynamic")
-        if dynamic in ["true", True]:
+        if dynamic in ["true", "True", True]:
             dynamic = True
         else:
             dynamic = False
@@ -621,14 +622,12 @@ class DirListWdg(BaseRefreshWdg):
                     search_types = [];
                 }
 
-             
 
-                //FIXME: these root_dir and base_dir are really needed in this handler_kwargs?
+                //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
                 var handler_kwargs = {
                         root_dir: root_dir,
                         base_dir: base_dir,
-                        // FIXME: this causes files to disappear
-                        //search_keys: search_keys,
+                        search_keys: search_keys,
                         search_types: search_types
                        
                     } 
@@ -700,6 +699,17 @@ class DirListWdg(BaseRefreshWdg):
         swap.add_action_script(swap_action)
 
 
+        # open the first folder
+        if dynamic and my.get_depth() == 0:
+            swap.get_widget("div1").add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                bvr.src_el.click();
+                '''
+            } )
+
+
+
         background = my.kwargs.get("background")
         if not background:
             background = "background"
@@ -723,7 +733,7 @@ class DirListWdg(BaseRefreshWdg):
         else:
             info = {}
 
-
+        
         icon_div = my.get_dir_icon_wdg(dir, item)
         if not icon_div:
             if info.get("file_type") == 'missing':
@@ -739,7 +749,6 @@ class DirListWdg(BaseRefreshWdg):
         icon_div.add_style("float: left")
         icon_div.add_style("margin-left: 3px")
         icon_div.add_style("margin-top: -1px")
-
 
         location = my.kwargs.get("location")
         if location in ['server', 'scm']:
@@ -845,7 +854,7 @@ class DirListWdg(BaseRefreshWdg):
 
     def handle_dir_div(my, dir_div, dirname, basename):
         span = SpanWdg()
-        span.add(basename)
+        span.add(my.get_dirname(dirname, basename))
         span.add_class("spt_value")
         span.add_class("spt_dir_value")
         dir_div.add(span)
@@ -874,6 +883,7 @@ class DirListWdg(BaseRefreshWdg):
         filename_div.add(my.get_basename(dirname, basename) )
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
+        filename_div.add_class("spt_item_value")
 
 
         #from pyasm.widget import CheckboxWdg, TextWdg
@@ -886,6 +896,10 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def get_basename(my, dirname, basename):
+        return basename
+
+
+    def get_dirname(my, dirname, basename):
         return basename
 
 
@@ -926,10 +940,12 @@ class DirListWdg(BaseRefreshWdg):
 
     def add_base_dir_behaviors(my, div, base_dir):
 
+        pass
+        """
         location = my.kwargs.get("location")
         if location == 'server':
             base_dir = Environment.get_client_repo_dir()
-            
+
         div.add_class("hand")
         div.add_attr('title','Double click to open explorer')
         div.add_behavior( {
@@ -941,6 +957,7 @@ class DirListWdg(BaseRefreshWdg):
         applet.open_explorer(path); 
         '''
         } )
+        """
 
 
 
@@ -953,6 +970,7 @@ class DirListWdg(BaseRefreshWdg):
             dir = dir.replace(base_dir,'')
             dir = repo_dir + dir
 
+        """
         item_div.add_attr('title','Double click to open explorer')
         item_div.add_behavior( {
         'type': 'double_click',
@@ -964,6 +982,7 @@ class DirListWdg(BaseRefreshWdg):
         applet.open_explorer(path); 
         '''
         } )
+        """
 
 
 
@@ -1020,10 +1039,11 @@ class DirListWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var applet = spt.Applet.get();
             var path = bvr.dirname + "/" + bvr.basename;
-            //applet.exec_shell('cmd.exe "' + path + '"', false);
-            spt.app_busy.show("Opening file", path);
-            applet.open_file(path);
-            spt.app_busy.hide();
+            if (applet) {
+                spt.app_busy.show("Opening file", path);
+                applet.open_file(path);
+                spt.app_busy.hide();
+            }
             '''
             } )
 
@@ -1114,7 +1134,7 @@ class DirListPathHandler(BaseRefreshWdg):
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
 
-        inner = DivWdg()
+        inner = DivWdg(css="spt_dir_list_handler_content")
         top.add(inner)
 
 
@@ -1429,7 +1449,8 @@ class DirInfoWdg(BaseRefreshWdg):
         'client_dir': client_dir,
         'cbjs_action': '''
             var applet = spt.Applet.get();
-            applet.open_explorer(bvr.client_dir);
+            if (applet)
+                applet.open_explorer(bvr.client_dir);
         '''
         } )
         top.add(explore)
@@ -2114,20 +2135,21 @@ class FileBrowserWdg(BaseRefreshWdg):
 
         if (location == 'local') {
             var applet = spt.Applet.get();
-            var paths = applet.list_dir(base_dir, 2);
-            var paths_el = nav.getElement(".spt_paths");
-            var js_paths = [];
-            for (var i = 0; i < paths.length; i++) {
-                var js_path = paths[i].replace(/\\\\/g,"/");
-                if (applet.is_dir(js_path) ) {
-                    js_path = js_path + '/';
-                    js_paths.push(js_path);
+            if (applet) {
+                var paths = applet.list_dir(base_dir, 2);
+                var paths_el = nav.getElement(".spt_paths");
+                var js_paths = [];
+                for (var i = 0; i < paths.length; i++) {
+                    var js_path = paths[i].replace(/\\\\/g,"/");
+                    if (applet.is_dir(js_path) ) {
+                        js_path = js_path + '/';
+                        js_paths.push(js_path);
+                    }
+                    //if (i > 100) break;
                 }
-                //if (i > 100) break;
+
+                paths_el.value = js_paths.join("|");
             }
-
-            paths_el.value = js_paths.join("|");
-
         }
 
         var nav_values = spt.api.Utility.get_input_values(nav,null,false);

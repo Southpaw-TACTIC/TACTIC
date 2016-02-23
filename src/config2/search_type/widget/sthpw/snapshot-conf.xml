@@ -118,12 +118,19 @@
   </element>
 
 
-    <element edit='false' name='file_size' width="100px">
+    <element edit='false' name='file_size' width="50px">
       <display widget='expression'>
           <expression>@GET(sthpw/file.st_size)</expression>
           <display_format>KB</display_format>
       </display>
       <edit class='TextWdg'/>
+  </element>
+
+
+
+  <element edit='false' name='file'>
+       <display class="tactic.ui.table.SnapshotFileElementWdg">
+       </display>
   </element>
 
 
@@ -141,6 +148,11 @@
        </display>
   </element>
 
+
+  <element edit='false' name='history'>
+       <display class="tactic.ui.table.SnapshotFileElementWdg">
+       </display>
+  </element>
 
 
 

@@ -227,6 +227,21 @@ TacticServerStub = function() {
 
 
     /*
+     * Preferences
+     */
+    this.get_preference = function(key) {
+        return this._delegate("get_preference", arguments);
+    }
+
+
+
+    this.set_preference = function(key, value) {
+        return this._delegate("set_preference", arguments);
+    }
+
+
+
+    /*
      * Logging facilities
      */
     this.log = function(level, message, kwargs) {

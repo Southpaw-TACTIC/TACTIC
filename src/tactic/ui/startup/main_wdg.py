@@ -56,7 +56,7 @@ class SectionWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("text-align: center")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -5)
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
