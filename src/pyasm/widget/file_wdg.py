@@ -1240,32 +1240,67 @@ class ThumbWdg(BaseTableElementWdg):
         elif ext == "comp":
             icon = "fusion.png"
         elif ext == "txt":
-            icon = "gnome-textfile.png"
+            icon = "txt-notes.png"
         elif ext in ["obj", "mtl"]:
             icon = "3d_obj.png"
         elif ext == "rdc":
             icon = "red_camera.png"
+        
+        #for adobe products
         elif ext == 'ps':
-            icon = "ps_icon.jpg"
+            icon = "adobe/Photoshop.png"
         elif ext == 'psd':
-            icon = "ps_icon.jpg"
+            icon = "adobe/Photoshop.png"
         elif ext == 'ai':
-            icon = "icon_illustrator_lg.png"
+            icon = "adobe/Illustrator.png"
+        elif ext == 'br':
+            icon = "adobe/Bridge.png"
+        elif ext == 'au':
+            icon = "adobe/Audition.png"
+        elif ext == 'ae':
+            icon = "adobe/After_Effects.png"
+        elif ext == 'dw':
+            icon = "adobe/Dreamweaver.png"
+        elif ext == 'en':
+            icon = "adobe/Encode.png"
+        elif ext == 'fw':
+            icon = "adobe/Fireworks.png"
+        elif ext == 'fi':
+            icon = "adobe/Fireworks.png"
+        elif ext == 'fb':
+            icon = "adobe/Flash_Builder.png"
+        elif ext == 'id':
+            icon = "adobe/InDesign.png"
+        elif ext == 'lr':
+            icon = "adobe/LightRoom.png"
+        elif ext == 'pl':
+            icon = "adobe/Prelude.png"
+        elif ext == 'pr':
+            icon = "adobe/Premiere_Pro.png"
+
+        #for web files
+        elif ext == "html":
+            icon = "html.png"
+        elif ext == "css":
+            icon = "css.png"
+        elif ext == "js":
+            icon = "javascript.png"
+
         elif ext == 'fdx':
             icon = "finaldraft.png"
         elif ext == 'unity3d':
             icon = "unity_icon.jpg"
         elif repo_path and os.path.isdir(repo_path):
-            icon = "folder.png"
+            icon = "folder2.jpg"
         elif ext in File.VIDEO_EXT:
             #icon = "general_video.png"
             icon = "indicator_snake.gif"
         elif ext in File.IMAGE_EXT:
             icon = "indicator_snake.gif"
         else:
-            icon = "default_doc.png"
+            icon = "__DYNAMIC__"
 
-        if base:
+        if base and icon != "__DYNAMIC__":
             path = "%s/%s" % ( base,icon)
         else:
             path = icon
