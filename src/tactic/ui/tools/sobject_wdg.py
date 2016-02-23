@@ -582,14 +582,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if my.sobject.get_value("_is_collection", no_exception=True):
             tabs.append("collection")
 
+
         for tab in tabs:
 
             if tab == "tasks":
                 config_xml.append('''
-                <element name="attachments" title="Attachments">
+                <element name="tasks" title="Tasks">
                 <display class='tactic.ui.panel.CustomLayoutWdg'>
                   <html>
-                    <div style="padding: 20px">
+                  <div style="padding: 20px">
                     <div style="font-size: 25px">Tasks</div>
                     <div>List of all of the tasks for this item</div>
                     <hr/>
@@ -604,8 +605,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
                         <show_shelf>false</show_shelf>
                       </display>
                     </element>
+                  </div>
                   </html>
-                  </display>
+                </display>
                 </element>
                 ''' % values)
 

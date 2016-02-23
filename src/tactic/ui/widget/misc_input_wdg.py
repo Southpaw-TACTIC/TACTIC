@@ -323,7 +323,6 @@ class TaskStatusSelectWdg(SelectWdg):
             for process in processes:
 
                 for status in status_names:
-                    print "status: ", status
                     # not all statuses can be shown, if there are access rules
                     # TODO: remove this status in 4.1
                     if cur_value == status or security.check_access("process_select", status, access='view', default='deny'):

@@ -412,7 +412,7 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div = DivWdg()
 
 
-        button = ActionButtonWdg(title="+", tip="Add a new pipeline", size='small')
+        button = ActionButtonWdg(title="Add", tip="Add a new pipeline", size='small')
         button.add_style("position: absolute")
         button.add_style("top: 5px")
         button.add_style("right: 5px")
@@ -1754,10 +1754,10 @@ class BaseInfoWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         title_wdg.add("%s" % (process))
-        title_wdg.add_style("font-size: 1.2em")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px")
+        title_wdg.add_style("font-size: 16px")
+        #title_wdg.add_style("font-weight: bold")
+        #title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px 5px 10px")
 
 
         if not show_node_type_select:
@@ -1852,6 +1852,9 @@ class BaseInfoWdg(BaseRefreshWdg):
             select.add_style("float: right")
             select.add_style("margin-top: -5px")
 
+        title_wdg.add("<br clear='all'/>")
+        title_wdg.add("<hr/>")
+
         return title_wdg
 
 
@@ -1905,7 +1908,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         info_div = DivWdg()
         top.add(info_div)
         info_div.add("A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished")
-        info_div.add_style("margin: 20px 10px")
+        info_div.add_style("margin: 10px 10px 20px 10px")
 
 
         desc_div = my.get_description_wdg(process_sobj)
@@ -2546,7 +2549,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         info_div = DivWdg()
         top.add(info_div)
         info_div.add("An approval process is used a specific user will have the task to approve work down in the previous processes.")
-        info_div.add_style("margin: 20px 10px")
+        info_div.add_style("margin: 10px 10px 20px 10px")
 
 
 

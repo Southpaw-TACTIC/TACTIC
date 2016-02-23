@@ -3649,14 +3649,15 @@ class SObject(object):
 
 
 
-        # generate a code value for this sobject
+        # generate a code value for this sobject when triggers are set to "ingest".
+        # This is a special condition
         if is_insert and triggers == "ingest":
             if not my.update_data or not my.update_data.get("code"):
                 if SearchType.column_exists(my.full_search_type, "code"):
                     temp_search_code = Common.generate_random_key()
                     my.set_value("code", temp_search_code)
 
-        # if not update data is specified
+        # if no update data is specified
         if is_insert and not my.update_data:
             # if there is no update data, an error will result, so give
             # it a try with code as a random key ...
@@ -3823,42 +3824,7 @@ class SObject(object):
         search_code = None
         if sobject and column_info.get("code") != None:
             if not sobject.get_value("code", no_exception=True):
-
-                # generate the code
-
-                # TODO: make this configurable
-                search_type = my.get_base_search_type()
-                if search_type in ['sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log', 'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log']:
-                    padding = 8
-                else:
-                    padding = 5
-
-                parts = []
-
-                # scope by server
-                server = Config.get_value("install", "server")
-                if server:
-                    parts.append(server)
-
-
-                log_key = my.get_code_key()
-                parts.append( log_key )
-
-                try:
-                    int(id)
-                    number_expr = "%%0.%dd" % padding
-                    parts.append( number_expr % id )
-                except:
-                    parts.append(str(id))
-
-                delimiter = ""
-                reverse = False
-                if reverse:
-                    parts.reverse()
-
-                search_code = delimiter.join(parts)
-
-
+                search_code = my.generate_code(id)
             else:
                 search_code = sobject.get_value("code")
 
@@ -4035,6 +4001,57 @@ class SObject(object):
 
         if prev_code and triggers == "all":
             my._update_code_dependencies(prev_code)
+
+
+
+    def generate_code(my, id):
+        search_type = my.get_base_search_type()
+
+        if ProdSetting.get_value_by_key('code_format', search_type) == 'random':
+            # generate the code
+            log_key = my.get_code_key()
+            random_code = Common.generate_random_key()
+            search_code = '%s%s' % (log_key, random_code)
+            return search_code
+
+
+        # Generate more readable key
+        parts = []
+
+        # scope by server
+        server = Config.get_value("install", "server")
+        if server:
+            parts.append(server)
+
+        log_key = my.get_code_key()
+        parts.append( log_key )
+
+        try:
+            search_type = my.get_base_search_type()
+            if search_type in [
+                    'sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log',
+                    'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log'
+            ]:
+                padding = 8
+            else:
+                padding = 5
+
+
+            int(id)
+            number_expr = "%%0.%dd" % padding
+            parts.append( number_expr % id )
+        except:
+            parts.append(str(id))
+
+        delimiter = ""
+        #reverse = False
+        #if reverse:
+        #    parts.reverse()
+
+        search_code = delimiter.join(parts)
+
+        return search_code
+
 
 
 
