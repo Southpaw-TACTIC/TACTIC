@@ -589,7 +589,7 @@ class ThumbWdg(BaseTableElementWdg):
         if missing:
             img = HtmlElement.img(ThumbWdg.get_missing_image())
         elif sobject.get_value("_is_collection", no_exception=True):
-            img = HtmlElement.img("/context/icons/mime-types/folder.svg")
+            img = HtmlElement.img("/context/icons/mime-types/folder2.jpg")
         else:
             img = HtmlElement.img(ThumbWdg.get_no_image())
 
@@ -1291,7 +1291,7 @@ class ThumbWdg(BaseTableElementWdg):
         elif ext == 'unity3d':
             icon = "unity_icon.jpg"
         elif repo_path and os.path.isdir(repo_path):
-            icon = "folder.svg"
+            icon = "folder2.jpg"
         elif ext in File.VIDEO_EXT:
             #icon = "general_video.png"
             icon = "indicator_snake.gif"

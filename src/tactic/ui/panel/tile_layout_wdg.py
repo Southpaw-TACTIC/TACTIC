@@ -2307,7 +2307,7 @@ class ThumbWdg2(BaseRefreshWdg):
         if sobject.get_value("_is_collection", no_exception=True):
             from pyasm.common import Environment
             install_dir = Environment.get().get_install_dir()
-            path = "/context/icons/mime-types/folder.svg"
+            path = "/context/icons/mime-types/folder2.jpg"
 
             my.lib_path = "%s/src%s" % (install_dir, path)
             my.icon_path = "%s/src%s" % (install_dir, path)
