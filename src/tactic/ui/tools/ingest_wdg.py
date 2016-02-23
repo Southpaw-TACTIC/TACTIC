@@ -28,12 +28,14 @@ from tactic_client_lib import TacticServerStub
 import os
 import os.path
 import re
+import shutil
 __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 
 
 class IngestUploadWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
+        'base_dir': 'Base directory to check into',
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
         'process': 'The default process to ingest into',
@@ -43,11 +45,17 @@ class IngestUploadWdg(BaseRefreshWdg):
         'oncomplete_script_path': 'Script to be run on a finished ingest',
         'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.',
         'context_mode': 'Set or remove context case sensitivity.',
-        'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"'
+        'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
+        'title': 'The title to display at the top'
     }
 
 
     def get_display(my):
+
+        my.sobjects = my.kwargs.get("sobjects")
+        search_keys = my.kwargs.get("search_keys")
+        if search_keys:
+            my.sobjects = Search.get_by_search_keys(search_keys)
 
         top = my.top
         top.add_class("spt_ingest_top")
@@ -87,6 +95,103 @@ class IngestUploadWdg(BaseRefreshWdg):
             right.add_style("display: none")
 
         return top
+
+
+    def get_file_wdg(my, sobject=None):
+
+        # template for each file item
+        file_template = DivWdg()
+        if not sobject:
+            file_template.add_class("spt_upload_file_template")
+            file_template.add_style("display: none")
+        else:
+            file_template.add_class("spt_upload_file")
+
+
+        file_template.add_style("margin-bottom: 3px")
+        file_template.add_style("padding: 3px")
+        file_template.add_style("height: 40px")
+
+        thumb_div = DivWdg()
+        file_template.add(thumb_div)
+        thumb_div.add_style("float: left")
+        thumb_div.add_style("width: 60");
+        thumb_div.add_style("height: 40");
+        thumb_div.add_style("overflow: hidden");
+        thumb_div.add_style("margin: 3 10 3 0");
+        thumb_div.add_class("spt_thumb")
+
+
+
+        info_div = DivWdg()
+        file_template.add(info_div)
+        info_div.add_style("float: left")
+
+        name_div = DivWdg()
+        name_div.add_class("spt_name")
+        info_div.add(name_div)
+        name_div.add_style("width: 225px")
+        name_div.add_style("overflow-x: hidden")
+        name_div.add_style("text-overflow: ellipsis")
+
+
+
+        date_div = DivWdg()
+        date_div.add_class("spt_date_label")
+        info_div.add(date_div)
+        date_div.add("")
+        date_div.add_style("opacity: 0.5")
+        date_div.add_style("font-size: 0.8em")
+        date_div.add_style("font-style: italic")
+        date_div.add_style("margin-top: 3px")
+
+        hidden_date_div = HiddenWdg("date")
+        hidden_date_div.add_class("spt_date")
+        info_div.add(date_div)
+
+
+
+        size_div = DivWdg()
+        size_div.add_class("spt_size")
+        file_template.add(size_div)
+        size_div.add_style("float: left")
+        size_div.add_style("width: 150px")
+        size_div.add_style("text-align: right")
+
+        remove_div = DivWdg()
+        remove_div.add_class("spt_remove")
+        file_template.add(remove_div)
+        icon = IconButtonWdg(title="Remove", icon="BS_REMOVE")
+        icon.add_style("float: right")
+        remove_div.add(icon)
+        #remove_div.add_style("text-align: right")
+
+
+
+        if sobject:
+            from pyasm.common import FormatValue
+            from tactic.ui.panel import ThumbWdg2
+            thumb = ThumbWdg2()
+            thumb_div.add(thumb)
+            thumb.set_sobject(sobject)
+            lib_path = thumb.get_lib_path()
+
+            name = os.path.basename(lib_path)
+            name = re.sub(r"_v\d+", "", name)
+            name_div.add( name )
+
+            size = os.path.getsize(lib_path)
+            size = FormatValue().get_format_value(size, "KB")
+            size_div.add(size)
+
+            file_template.add_attr("spt_search_key", sobject.get_search_key())
+
+        else:
+            # example data
+            size_div.add("433Mb")
+            name_div.add("image001.jpg")
+
+        return file_template
 
 
 
@@ -134,24 +239,29 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         hidden_options = my.kwargs.get("hidden_options").split(',')
 
-        if "process" not in hidden_options:
-            title_wdg = DivWdg()
-            div.add(title_wdg)
-            title_wdg.add("Process")
-            title_wdg.add_style("margin-top: 20px")
-            title_wdg.add_style("font-size: 16px")
+        process_wdg = DivWdg()
+        div.add(process_wdg)
 
-            div.add("<br/>")
+        title_wdg = DivWdg()
+        process_wdg.add(title_wdg)
+        title_wdg.add("Process")
+        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("font-size: 16px")
 
-            select = SelectWdg("process")
-            div.add(select)
-            select.set_option("values", process_names)
-            select.add_empty_option("- Select Ingest Process -")
-            if selected_process:
-                select.set_option("default", selected_process)
+        process_wdg.add("<br/>")
 
-            div.add("<br/>")
-            div.add("<hr/>")
+        select = SelectWdg("process")
+        process_wdg.add(select)
+        select.set_option("values", process_names)
+        select.add_empty_option("- Select Ingest Process -")
+        if selected_process:
+            select.set_option("default", selected_process)
+
+        process_wdg.add("<br/>")
+        process_wdg.add("<hr/>")
+        if "process" in hidden_options:
+            process_wdg.set_style("display: none")
+
 
         # Metadata
         title_wdg = DivWdg()
@@ -330,12 +440,17 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         header_div = DivWdg()
         div.add(header_div)
+
+        title = my.kwargs.get("title")
+        if not title:
+            title = "Ingest Files"
+        title_description = "Drag files into the box or click 'Add Files'"
        
         title_wdg = DivWdg()
         header_div.add(title_wdg)
-        title_wdg.add("<span style='font-size: 25px'>Ingest Files</span>")
+        title_wdg.add("<span style='font-size: 25px'>%s</span>" % title)
         title_wdg.add("<br/>")
-        title_wdg.add("Drag files into the box or click 'Add Files'")
+        title_wdg.add(title_description)
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
@@ -495,6 +610,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         background = DivWdg()
         background.add_class("spt_files_background")
         files_div.add(background)
+        if my.sobjects:
+            background.add_style("display: none")
 
         background.add_style("text-align: center")
         background.add_style("margin-top: 75px")
@@ -505,7 +622,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         icon = "<i class='fa fa-cloud-upload' style='font-size: 150px'> </i>"
         background.add(icon)
-
 
         background_text = DivWdg("<p>Drag Files Here</p>")
 
@@ -727,88 +843,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         """
 
 
+        # add the passed in sobject files
+        for sobject in my.sobjects:
+            files_div.add( my.get_file_wdg(sobject) )
 
-        # template for each file item
-        file_template = DivWdg()
-        file_template.add_class("spt_upload_file_template")
-        files_div.add(file_template)
-        file_template.add_style("margin-bottom: 3px")
-        file_template.add_style("padding: 3px")
-        file_template.add_style("height: 40px")
-        file_template.add_style("display: none")
-
-        thumb_div = DivWdg()
-        file_template.add(thumb_div)
-        thumb_div.add_style("float: left")
-        thumb_div.add_style("width: 60");
-        thumb_div.add_style("height: 40");
-        thumb_div.add_style("overflow: hidden");
-        thumb_div.add_style("margin: 3 10 3 0");
-        thumb_div.add_class("spt_thumb")
-
-
-        info_div = DivWdg()
-        file_template.add(info_div)
-        info_div.add_style("float: left")
-
-        name_div = DivWdg()
-        name_div.add_class("spt_name")
-        info_div.add(name_div)
-        name_div.add("image001.jpg")
-        name_div.add_style("width: 225px")
-        name_div.add_style("overflow-x: hidden")
-        name_div.add_style("text-overflow: ellipsis")
-
-
-
-        """
-        dialog = DialogWdg(display="false", show_title=False)
-        info_div.add(dialog)
-        dialog.set_as_activator(info_div, offset={'x':0,'y':10})
-
-        dialog_data_div = DivWdg()
-        dialog_data_div.add_color("background", "background")
-        dialog_data_div.add_style("padding", "10px")
-
-        dialog.add(dialog_data_div)
-        dialog_data_div.add("Category: ")
-        text = TextInputWdg(name="category")
-        dialog_data_div.add(text)
-        text.add_class("spt_category")
-        text.add_style("padding: 1px")
-        """
-
-        date_div = DivWdg()
-        date_div.add_class("spt_date_label")
-        info_div.add(date_div)
-        date_div.add("")
-        date_div.add_style("opacity: 0.5")
-        date_div.add_style("font-size: 0.8em")
-        date_div.add_style("font-style: italic")
-        date_div.add_style("margin-top: 3px")
-
-        hidden_date_div = HiddenWdg("date")
-        hidden_date_div.add_class("spt_date")
-        info_div.add(date_div)
-
-
-
-
-        size_div = DivWdg()
-        size_div.add_class("spt_size")
-        file_template.add(size_div)
-        size_div.add("433Mb")
-        size_div.add_style("float: left")
-        size_div.add_style("width: 150px")
-        size_div.add_style("text-align: right")
-
-        remove_div = DivWdg()
-        remove_div.add_class("spt_remove")
-        file_template.add(remove_div)
-        icon = IconButtonWdg(title="Remove", icon="BS_REMOVE")
-        icon.add_style("float: right")
-        remove_div.add(icon)
-        #remove_div.add_style("text-align: right")
+        
+        # add the template
+        files_div.add( my.get_file_wdg() )
 
 
         div.add("<br/>")
@@ -945,7 +986,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
             var name = files[i].name;
-            filenames.push(name);
+            if (name) {
+                filenames.push(name);
+            }
+            else {
+                filenames.push(files[i]);
+            }
         }
 
         var key = spt.message.generate_key();
@@ -1085,7 +1131,14 @@ class IngestUploadWdg(BaseRefreshWdg):
             // retrieved the stored file handles
             var files = [];
             for (var i = 0; i < file_els.length; i++) {
-                files.push( file_els[i].file );
+                if (file_els[i].file) {
+                    files.push( file_els[i].file );
+                }
+                else {
+                    var search_key = file_els[i].getAttribute("spt_search_key");
+                    files.push("search_key:"+search_key);
+                }
+
             }
             if (files.length == 0) {
                 alert("Either click 'Add' or drag some files over to ingest.");
@@ -1366,6 +1419,7 @@ class IngestUploadCmd(Command):
     def execute(my):
 
         filenames = my.kwargs.get("filenames")
+        relative_dir = my.kwargs.get("relative_dir")
 
         base_dir = my.kwargs.get("base_dir")
         if not base_dir:
@@ -1391,8 +1445,7 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        key = my.kwargs.get("key")
-        relative_dir = my.kwargs.get("relative_dir")
+        #key = my.kwargs.get("key")
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
@@ -1448,6 +1501,22 @@ class IngestUploadCmd(Command):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
+
+            if filename.startswith("search_key:"):
+                mode = "single"
+                tmp, search_key = filename.split("search_key:")
+                snapshot = Search.get_by_search_key(search_key)
+                if snapshot.get_search_type() == "sthpw/snapshot":
+                    lib_path = snapshot.get_lib_path_by_type()
+                    filename = os.path.basename(lib_path)
+                    new_filename = re.sub(r"_v\d+", "", filename)
+                else:
+                    raise Exception("Must pass in snapshot search_key")
+
+            else:
+                mode = "multi"
+                new_filename = filename
+
 
             if filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
@@ -1512,9 +1581,9 @@ class IngestUploadCmd(Command):
                 sobject = SearchType.create(search_type)
 
                 if ignore_ext in ['true', True]:
-                    name, ext = os.path.splitext(filename)
+                    name, ext = os.path.splitext(new_filename)
                 else:
-                    name = filename
+                    name = new_filename
 
                 # if the name contains a path, the only take basename
                 name = os.path.basename(name)
@@ -1524,8 +1593,11 @@ class IngestUploadCmd(Command):
                     sobject.set_value("relative_dir", relative_dir)
 
 
-            relative_dir = my.kwargs.get("relative_dir")
-            if relative_dir:
+
+            if mode == "single":
+                path = lib_path
+
+            elif relative_dir:
                 path = "%s/%s" % (relative_dir, filename)
             else:
                 path = filename
@@ -1557,6 +1629,8 @@ class IngestUploadCmd(Command):
                 first_filename = non_seq_filenames_dict.get(filename)[0]
                 last_filename = non_seq_filenames_dict.get(filename)[-1]
                 file_path = "%s/%s" % (base_dir, first_filename)
+            elif mode == "single":
+                file_path = path
             else:
                 file_path = "%s/%s" % (base_dir, filename)
 
@@ -1691,8 +1765,16 @@ class IngestUploadCmd(Command):
                 file_path = "%s/%s" % (base_dir, filename)
                 server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
             else: 
-                if my.kwargs.get("base_dir"):
-                    from pyasm.checkin import FileCheckin
+                from pyasm.checkin import FileCheckin
+                if mode == "single":
+                    # copy the file to a temporary location
+                    tmp_dir = Environment.get_tmp_dir()
+                    tmp_path = "%s/%s" % (tmp_dir, new_filename)
+                    shutil.copy(file_path, tmp_path)
+
+                    checkin = FileCheckin(sobject, tmp_path, process=process)
+                    checkin.execute()
+                elif my.kwargs.get("base_dir"):
                     checkin = FileCheckin(sobject, file_path, context=context, process=process)
                     checkin.execute()
                 else:

@@ -418,11 +418,14 @@ class TextInputWdg(BaseInputWdg):
         input_group = DivWdg()
         div.add(input_group)
 
+        icon_styles = my.kwargs.get("icon_styles")
+        icon_class = my.kwargs.get("icon_class")
+
         if my.icon and my.icon_pos == "left":
             input_group.add_class("input-group")
             if isinstance(my.icon, basestring):
                 if len(my.icon) > 1:
-                    icon = IconWdg(title="", icon=my.icon, width=16)
+                    icon = IconWdg(title="", icon=my.icon, width=16, opacity=1.0)
                 else:
                     icon = my.icon
             else:
@@ -430,17 +433,24 @@ class TextInputWdg(BaseInputWdg):
             input_group.add(my.icon_wdg)
             my.icon_wdg.add_class("input-group-addon")
             my.icon_wdg.add(icon)
+            if icon_styles:
+                my.icon_wdg.add_styles(icon_styles)
+            if icon_class:
+                my.icon_wdg.add_class(icon_class)
 
 
         input_group.add(my.text)
         my.text.add_class("form-control")
         my.text.add_style('color', div.get_color('color')) 
+        text_class = my.kwargs.get("text_class")
+        if text_class:
+            my.text.add_class(text_class)
 
         if my.icon and my.icon_pos == "right":
             input_group.add_class("input-group")
             if isinstance(my.icon, basestring):
                 if len(my.icon) > 1:
-                    icon = IconWdg(title="", icon=my.icon, width=16)
+                    icon = IconWdg(title="", icon=my.icon, width=16, opacity=1.0)
                 else:
                     icon = my.icon
             else:
@@ -448,6 +458,10 @@ class TextInputWdg(BaseInputWdg):
             input_group.add(my.icon_wdg)
             my.icon_wdg.add_class("input-group-addon")
             my.icon_wdg.add(icon)
+            if icon_styles:
+                my.icon_wdg.add_styles(icon_styles)
+            if icon_class:
+                my.icon_wdg.add_class(icon_class)
 
             # Below is added only for collection search icon
             # Adding the same custom_cbk from Collections to icon click_up
@@ -855,8 +869,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         bgcolor = my.text.get_color("background3")
        
 
-        my.text.add_behavior( {
+        my.top.add_relay_behavior( {
             'type': 'keyup',
+            'bvr_match_class': "spt_text_input",
             'custom': custom_cbk,
             'do_search': do_search,
             'search_type': my.search_type,
@@ -1273,6 +1288,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             thumb.add_style("max-width: 45px")
             thumb.add_style("margin-right: 5px")
             thumb.add_style("display: inline-block")
+            thumb.add_style("vertical-align: middle")
             div.add(thumb)
 
             display = labels[i]
@@ -1281,14 +1297,18 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add(info_div)
             info_div.add(display)
             info_div.add_style("display: inline-block")
-            info_div.add_style("vertical-align: top")
+            info_div.add_style("overflow-x: hidden")
+            info_div.add_style("text-overflow: ellipsis")
+            info_div.add_style("white-space: nowrap")
+            #info_div.add_style("width: 250px")
+            info_div.add_style("vertical-align: middle")
 
 
 
             name = result.get_value("name")
             if name:
                 info_div.add("<br/>")
-                info_div.add("<span style='opacity: 0.5; font-size: 10px'>%s</span>" % name)
+                info_div.add("<span style='opacity: 0.5; font-size: 10px;'>%s</span>" % name)
 
 
             div.add_class("spt_input_text_result")
@@ -1632,6 +1652,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         filtered = filtered[0:10]
 
         for keywords in filtered:
+            print "keywords: ", keywords
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")

@@ -399,6 +399,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 kwargs = my.kwargs.copy()
                 tile = my.get_tile_wdg(sobject)
                 inner.add(tile)
+                #inner.add_style("text-align: center")
+                inner.add_style("text-align: left")
         else:
             table = Table()
             inner.add(table)
@@ -1362,6 +1364,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             if my.title_wdg:
                 my.title_wdg.set_sobject(sobject)
                 div.add(my.title_wdg.get_buffer_display())
+                title_wdg = my.title_wdg
             else:
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
@@ -1388,11 +1391,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.show_drop_shadow:
             div.set_box_shadow()
 
-        #div.add_color("background", "background", -3)
-        
         div.add_style("overflow: hidden")
+        #div.add_style("float: left")
+        div.add_style("display: inline-block")
 
-        div.add_style("float: left")
 
         border_color = div.get_color('border', modifier=20)
 
