@@ -866,7 +866,8 @@ class Site(object):
         sites = Container.get("sites")
         if sites == None:
             return ""
-        site = sites.pop()
+        if sites:
+            return sites.pop()
     pop_site = classmethod(pop_site)
 
 
