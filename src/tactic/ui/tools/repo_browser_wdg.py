@@ -864,7 +864,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             key = "repo_browser:%s" % search.get_search_type()
             dump = search.select.dumps()
             WidgetSettings.set_value_by_key(key, dump)
-        print "search is:", search
    
 
         border = top.get_color("shadow")
