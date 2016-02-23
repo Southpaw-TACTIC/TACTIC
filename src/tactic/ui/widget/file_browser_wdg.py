@@ -121,7 +121,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
         my.base_dir = my.kwargs.get("base_dir")
-
+        print "base_dir on 124", my.base_dir
         # root directory is starts at the first base_dir
         my.root_dir = my.kwargs.get("root_dir")
         if not my.root_dir:
@@ -374,7 +374,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
         base_dir = my.kwargs.get("base_dir")
-
+        print "base dir on 377:", base_dir
         location = my.kwargs.get("location")
         if not location:
             location = 'server'
@@ -1219,6 +1219,7 @@ class DirListPathHandler(BaseRefreshWdg):
 
     def handle_paths(my, paths, base_dir, div, depth=-1, all_open=False, open_depth=-1 ):
         '''assume path ending with / is a directory'''
+        print "base_dir in handle_paths:", base_dir
         new_paths = []
         last_parts = []
         for path in paths:
