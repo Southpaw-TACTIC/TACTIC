@@ -47,19 +47,29 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #my.mode = 'all'
         #my.mode = 'folder'
 
-
         keywords = my.kwargs.get("keywords")
         
+        
         search_type = my.kwargs.get("search_type")
-        search_type = SearchType.build_search_type(search_type)
+        if search_type:
+            search_types = [search_type]
+        else:
+            search_types = None
 
+        search = my.kwargs.get("search")
+        if search:
+            search.set_limit(1000)
+            search.set_offset(0)
+        else:
+            search = Search(search_type)
+        
+        # FIXME: Single asset mode needs to be passed through ViewPanelWdg
+        # so that the TACTIC shelf is available for search.
         single_asset_mode = my.kwargs.get("single_asset_mode")
-        
-        parent_key = my.kwargs.get("search_key")
-        
-        parent_search = my.kwargs.get("search")
-        
+        if "workflow/asset" in search_type:
+            single_asset_mode = True
 
+        parent_key = my.kwargs.get("search_key")
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             my.sobjects = [parent]
@@ -81,32 +91,17 @@ class RepoBrowserWdg(BaseRefreshWdg):
             search_type = parent.get_search_type()
             parent_code = parent.get_value("code", no_exception=True)
 
-            parent_search = Search(search_type)
             if parent_code:
-                parent_search.add_filter("code", parent_code)
-        elif parent_search:
-            #parent_search.set_limit(1000)
-            #parent_search.set_offset(0)
-            #TODO
-            pass
+                search.add_filter("code", parent_code)
         else:
             project_code = Project.get_project_code()
             base_dir = Environment.get_asset_dir()
             project_dir = "%s/%s" % (base_dir, project_code)
         
-        if single_asset_mode in ["True", "true", True]:
-            parent_search = Search(search_type)
-
-        if search_type:
-            search_types = [search_type]
-        else:
-            search_types = None
-
-
+        
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
         top.add_attr("spt_search_keys", "|".join(search_keys) )
-        
 
         table.add_row()
 
@@ -222,7 +217,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 dynamic=dynamic,
                 keywords=keywords,
                 search_keys=search_keys,
-                search=parent_search,
+                search=search,
                 parent_key=parent_key
         )
         content_div.add(dir_list)
@@ -242,8 +237,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         outer_div.add(content_div)
  
         count = 0
-        if parent_search:
-            count = parent_search.get_count()
+        if search:
+            count = search.get_count()
         if count:
             widget = RepoBrowserDirContentWdg(
                 single_asset_mode=single_asset_mode,
@@ -2739,20 +2734,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             sobjects = search2.get_sobjects()
            '''
 
-        expression = None
-        '''
-        # get the sobject codes to feed into the layout widget
-        # NOTE: this could be very very slow ... there could be a lot
-        # of sobjects in this search and will produce a massive
-        # number of search_codes
-        search_codes = [x.get_value("code") for x in sobjects]
-        search_codes_str = "|".join(search_codes)
-        expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
-        #print "expression: ", expression
-
-        search_keys = my.kwargs.get("search_keys") 
-        '''
-
         path = my.kwargs.get("dirname")
         asset_dir = Environment.get_asset_dir()
         reldir = path.replace(asset_dir, "").strip("/")
@@ -2813,7 +2794,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         layout = ViewPanelWdg(
             search_type=search_type,
             search=search,
-            expression=expression,
             view="table",
             element_names=element_names,
             show_shelf=False,
