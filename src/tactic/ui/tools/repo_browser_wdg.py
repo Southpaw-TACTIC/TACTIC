@@ -1579,6 +1579,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def get_file_context_menu(my):
 
+        single_asset_mode = my.kwargs.get("single_asset_mode")
+
         menu = Menu(width=180)
         menu.set_allow_icons(False)
 
@@ -1604,12 +1606,11 @@ class RepoBrowserDirListWdg(DirListWdg):
         """
 
 
-
-
         menu_item = MenuItem(type='action', label='Rename Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
+            'single_asset_mode': single_asset_mode,
             'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var content = activator.getElement(".spt_basename_content");
@@ -1617,6 +1618,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var old_value = content.getAttribute("spt_src_basename");
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 
+        
                 var original_el = activator.getElement(".spt_item_value");
                 original_el.setStyle("display", "none");
                 
@@ -1650,6 +1652,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
                         var kwargs = {
                             search_type: bvr.search_type,
+                            single_asset_mode: bvr.single_asset_mode,
                             action: 'rename_item',
                             relative_dir: relative_dir,
                             file_name: file_name,
@@ -1681,26 +1684,34 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
+            'single_asset_mode': single_asset_mode,
             'cbjs_action': '''
-            //TODO: If not in single asset mode, only delete snapshot.
-            var activator = spt.smenu.get_activator(bvr);
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-            var snapshot_code = activator.getAttribute("spt_snapshot_code");
-            var search_key = activator.getAttribute("spt_search_key");
+                var activator = spt.smenu.get_activator(bvr);
 
-            activator.addClass("spt_browser_deleted");
-            var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
-            delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
-            delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
-            delete_on_complete += "if (grandparent_dir) {"
-            delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
-            delete_on_complete += "}"
-            var class_name = 'tactic.ui.tools.DeleteToolWdg';
-            var kwargs = {
-              search_key: search_key,
-              on_complete: delete_on_complete
-            }
-            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+                if (["True", true, "true"].indexOf(bvr.single_asset_mode) > -1) {
+                    var search_key = activator.getAttribute("spt_search_key");
+                } else {
+                    var server = TacticServerStub.get();
+                    var snapshot_code = activator.getAttribute("spt_snapshot_code");
+                    var search_key = server.build_search_key("sthpw/snapshot", snapshot_code); 
+                }
+               
+                if (!search_key) return;
+                activator.addClass("spt_browser_deleted");
+
+                //TODO: Delete on complete should refresh content if deleted asset was in display.
+                var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
+                delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
+                delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
+                delete_on_complete += "if (grandparent_dir) {"
+                delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
+                delete_on_complete += "}"
+                var class_name = 'tactic.ui.tools.DeleteToolWdg';
+                var kwargs = {
+                  search_key: search_key,
+                  on_complete: delete_on_complete
+                }
+                var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
             '''
         } )
@@ -2077,9 +2088,9 @@ class RepoBrowserActionCmd(Command):
             old_value = my.kwargs.get("old_value")
 
             if not new_value:
-                raise "File renaming failed - New file name not given."
+                raise Exception("File renaming failed - New file name not given.")
             if not old_value:
-                raise "File renaming failed - Original file not given."
+                raise Exception("File renaming failed - Original file not given.")
             if old_value == new_value:
                 # Fail silently
                 return
@@ -2107,7 +2118,10 @@ class RepoBrowserActionCmd(Command):
             if not new_ext or new_ext != old_ext:
                 new_base = new_value
                 new_ext = old_ext
-             
+            
+            # TODO: If in single asset mode, asset in relative_dir
+            # must be unique.
+
             # get the snapshot
             snapshot = file.get_parent()
             sobject = snapshot.get_parent()
@@ -2140,7 +2154,7 @@ class RepoBrowserActionCmd(Command):
                     parents[search_code] = parent
 
                 # NOTE: We are assuming that files having a naming convention
-                # as follows: {basepath}_v{ver#} where the base path is based offo
+                # as follows: {basepath}_v{ver#} where the base path is based off
                 # of the main file in the snapshot.
                 
                 # Build new versioned base name
@@ -2159,16 +2173,17 @@ class RepoBrowserActionCmd(Command):
                     new_versioned_base = "%s_v%0.3d" % (new_base, version)
 
                 for file in files:
-
+                    # Build the new path and check if it exists
                     file_name = file.get_value("file_name")
                     new_file_name = file_name.replace(unversioned_base, new_versioned_base)
+                    new_path = "%s/%s/%s" % (base_dir, relative_dir, new_file_name)
+                    if (os.path.exists(new_path)):
+                        raise Exception("[%s] already exists in %s" % (new_file_name, relative_dir))
+
+                    # Move the file it is not versionaless
+                    old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                     file.set_value("file_name", new_file_name)
                     file.commit()
-
-                    # TODO: If a single file rename fails, then do not abort entire command
-                    # Move the file
-                    old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
-                    new_path = "%s/%s/%s" % (base_dir, relative_dir, new_file_name)
                     if version != -1:
                         FileUndo.move(old_path, new_path)
 
@@ -2192,7 +2207,6 @@ class RepoBrowserActionCmd(Command):
 
             # Update original parent name if in single asset mode
             single_asset_mode = my.kwargs.get("single_asset_mode")
-            singe_asset_mode = True
             if single_asset_mode in [True, "true", "True"]:
                 # If sobject has an extension in it's name, then 
                 # make sure this extension is preserved.
@@ -2543,12 +2557,11 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
         path_div = DivWdg()
         top.add(path_div)
-        path_div.add("<b>Path:</b> %s" % reldir)
+        file_path = os.path.join(reldir, basename)
+        path_div.add("<b>Path:</b> %s" % file_path)
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
-        path_div.add_style("margin-bottom: 15px")
-        #path_div.add_border()
 
         # display the info
         """
@@ -2745,9 +2758,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
-        #path_div.add_style("margin: -1 -1 0 -1")
-        #path_div.add_border()
-
 
         # Prefer tile layout
         search_type_obj = SearchType.get(search_type)
