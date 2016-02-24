@@ -204,7 +204,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # Display the basename of of the base_dir 
         # default is True.
         show_base_dir = my.kwargs.get("show_base_dir")
-
+        
         # The left contains a directory listing
         # starting at project_dir.
         dir_list = RepoBrowserDirListWdg(
@@ -900,7 +900,9 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         spt.repo_browser.drag_file_action = function(evt, bvr, mouse_411) {
             /* Drag and drop for file and directories within the DirList */
-            //bvr.src_el.position(spt.repo_browser.start_pos);
+            
+            // Remember the src_dir top for refresh later
+            var src_dir_top = bvr.src_el.getParent(".spt_dir_list_handler_top");
 
             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
             if (diff_y < 5 && diff_y > -5) {
@@ -922,6 +924,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             // If drop hasn't occured yet or no drop folder found
             if (! drop_on_el) {
+                spt.panel.refresh(src_dir_top);
                 return;
             }
   
@@ -931,8 +934,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 bvr.src_el.inject(inner, 'top');
                 var padding = drop_on_el.getStyle("padding-left");
 
-                //padding = parseInt(padding.replace("px", ""));
-                //padding += 25;
                 if (bvr.src_el.hasClass("spt_dir") ) {
                     bvr.src_el.setStyle("padding-left", "");
                 }
@@ -941,7 +942,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
             }
             else {
-                spt.behavior.destroy_element(bvr.src_el);
+                bvr.src_el.setStyle("display", "none");
             }
             
             // Move the files
@@ -961,15 +962,17 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
-                
-                var dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
-                spt.panel.refresh(dir_top);
             } catch(err) {
-                //TODO: If move fails, then div should be moved back. Or refresh anyways.
                 spt.alert(spt.exception.handler(err));
-                return;
             }
-
+       
+            // Refresh the source dir top and destination dir top 
+            spt.panel.refresh(src_dir_top);
+                
+            var dest_dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
+            spt.panel.refresh(dest_dir_top);
+ 
+            
         }
 
 
@@ -1957,6 +1960,12 @@ class RepoBrowserActionCmd(Command):
         # if the search_type is working in "single file" mode, then
         # we can make a lot of assumptions about moving and deleting files
         mode = "single_file"
+            
+        single_asset_mode = my.kwargs.get("single_asset_mode")
+        if single_asset_mode in [True, "true", "True"]:
+            single_asset_mode = True
+        else:
+            single_aset_mode = False
 
 
         search_type = my.kwargs.get("search_type")
@@ -1987,10 +1996,11 @@ class RepoBrowserActionCmd(Command):
             # this will give an error if the directory is not empty
             full_dir = "%s/%s" % (base_dir, relative_dir)
             os.rmdir(full_dir)
+            
 
 
         elif action == "rename_folder":
-
+            
             old_relative_dir = my.kwargs.get("old_relative_dir")
             if not old_relative_dir:
                 return
@@ -2003,12 +2013,12 @@ class RepoBrowserActionCmd(Command):
 
             old_dir = "%s/%s" % (base_dir, old_relative_dir)
             new_dir = "%s/%s" % (base_dir, new_relative_dir)
-        
+       
+            # We are assuming that as long as there is no naming conflict with
+            # the top dir, than none of the file names will create a conflict.
             if (os.path.exists(new_dir)):
                 raise Exception("Directory [%s] already exists." % new_dir) 
 
-            FileUndo.move(old_dir, new_dir)
-            
             # find all of the files in this relative_dir
             search = Search("sthpw/file")
             search.add_op("begin")
@@ -2016,7 +2026,9 @@ class RepoBrowserActionCmd(Command):
             search.add_filter("relative_dir", "%s/%%" % old_relative_dir, op='like')
             search.add_op("or")
             files = search.get_sobjects()
-
+                
+            parent_keys = set() 
+            relative_dirs = {}
             for file in files:
                 file_sub_dir = file.get_value("relative_dir")
                 file_sub_dir = file_sub_dir.replace(old_relative_dir, "")
@@ -2027,16 +2039,26 @@ class RepoBrowserActionCmd(Command):
                     file.set_value("relative_dir", new_relative_dir)
                 file.commit()
 
-                # get the parent
-                if mode == "single_file":
-                    parent = Search.get_by_code( file.get("search_type"), file.get("search_code") )
-                    if parent.column_exists("relative_dir"):
-                        parent.set_value("relative_dir", new_relative_dir)
+                # find the parent and store in dictionary for update later
+                parent_search_code = file.get_value("search_code")
+                parent_search_type = file.get_value("search_type")
 
+                parent_key = "%s&code=%s" % (parent_search_type, parent_search_code)
+                parent_keys.add(parent_key)
+                relative_dirs[parent_key] = new_relative_dir
+
+            # set the relative dirs of the parents
+            parents = Search.get_by_search_keys(list(parent_keys))
+            for parent in parents:
+                if parent.column_exists("relative_dir"):
+                    new_relative_dir = relative_dirs.get(parent.get_search_key())
+                    parent.set_value("relative_dir", new_relative_dir)
                     my.set_keywords(parent)
                     parent.commit()
 
-
+            # Finally, move the entire directory tree.
+            FileUndo.move(old_dir, new_dir)
+            
 
 
         elif action == "copy_clipboard":
@@ -2060,18 +2082,6 @@ class RepoBrowserActionCmd(Command):
             Clipboard.clear_selected()
             if search_keys:
                 Clipboard.add_to_selected(search_keys)
-
- 
-
-        elif action == "delete_item":
-
-            snapshot_code = my.kwargs.get("snapshot_code")
-
-            snapshot = Snapshot.get_by_code(snapshot_code)
-            #snapshot.delete()
-
-            parent = snapshot.get_parent()
-
 
  
 
@@ -2101,14 +2111,14 @@ class RepoBrowserActionCmd(Command):
             search.add_filter("file_name", file_name)
             file = search.get_sobject()
             if not file:
-                raise "File not found"
+                raise Exception("File not found")
          
             # Check validity: This renaming allows spaces. Compare new name 
             # with underscores replacing spaces to cleaned filename.
             import re
             match = re.match('^[a-zA-Z0-9\_\s\-\.]+$', new_value)
             if not match:
-                raise "Invalid file name"
+                raise Exception("Invalid file name")
 
             # For now, user cannot change an extensions.
             # If the user has not entered a matching extension, 
@@ -2217,6 +2227,8 @@ class RepoBrowserActionCmd(Command):
                 else:
                     new_name = new_base
                 sobject.set_value("name", new_name)
+                
+                # TODO: remove this commit statement
                 sobject.commit()
  
             # Update any associated parents keywords
@@ -2321,7 +2333,7 @@ class RepoBrowserCbk(Command):
 
             # Update each of the file relative_dir and build list of parents
             parent_keys = set()
-            relative_dirs = {}
+            relative_dirs = {}           
             for file in files:
                 # Build the new relative dir
                 basename = os.path.basename(from_relative_dir)
@@ -2423,19 +2435,17 @@ class RepoBrowserCbk(Command):
             all_files.extend(files)
 
 
-        mode = "relative_dir"
-        if mode == "relative_dir":
-            # Some assumed behavior for this mode:
-            # 1) all snapshots in this context exist in the same folder
-            #    and should remain so
-            # 2) all sobjects have a column called {relative_dir}
-            # This should all fail cleanly if these assumptions are not the
-            # case unless the sobject has a column called "relative_dir"
-            # used for some other purpose
-            if parent.column_exists("relative_dir"):
-                parent.set_value("relative_dir", relative_dir)
-                my.set_keywords(parent)
-            parent.commit()
+        # Some assumed behavior for this mode:
+        # 1) all snapshots in this context exist in the same folder
+        #    and should remain so
+        # 2) all sobjects have a column called {relative_dir}
+        # This should all fail cleanly if these assumptions are not the
+        # case unless the sobject has a column called "relative_dir"
+        # used for some other purpose
+        if parent.column_exists("relative_dir"):
+            parent.set_value("relative_dir", relative_dir)
+            my.set_keywords(parent)
+        parent.commit()
 
         # find highest version
         highest_snapshot = {}
