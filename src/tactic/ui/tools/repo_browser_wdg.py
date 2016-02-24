@@ -1702,13 +1702,16 @@ class RepoBrowserDirListWdg(DirListWdg):
                 if (!search_key) return;
                 activator.addClass("spt_browser_deleted");
 
-                //TODO: Delete on complete should refresh content if deleted asset was in display.
+                // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
+                // file in display was deleted.
                 var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
                 delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
                 delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
                 delete_on_complete += "if (grandparent_dir) {"
                 delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
                 delete_on_complete += "}"
+                delete_on_complete += "var detail_top = document.getElement('.spt_browser_detail_top');"
+                delete_on_complete += "spt.panel.refresh(detail_top);"
                 var class_name = 'tactic.ui.tools.DeleteToolWdg';
                 var kwargs = {
                   search_key: search_key,
@@ -2496,7 +2499,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         item (ie. "file", "snapshot", "asset")
         It checks if file item clicked has a parent before displaying
         detail.
-        TODO: If no valid file is available, show proper message.
 
         search_key - 
 
@@ -2509,6 +2511,11 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         '''
         
         top = my.top
+        my.set_as_panel(top)
+        top.add_class("spt_browser_detail_top")
+ 
+        inner = DivWdg()
+        top.add(inner)
 
         search_key = my.kwargs.get("search_key")
         search_type = my.kwargs.get("search_type")
@@ -2534,11 +2541,12 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             basename = my.kwargs.get("basename")
             path = "%s/%s" % (dirname, basename)
             
-
         asset_dir = Environment.get_asset_dir()
+        '''FIXME
         if not dirname.startswith(asset_dir):
-            top.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
+            inner.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
             return top
+        '''
 
         reldir = dirname.replace(asset_dir, "")
         reldir = reldir.strip("/")
@@ -2566,31 +2574,29 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
                     good_file = file
 
         path_div = DivWdg()
-        top.add(path_div)
+        inner.add(path_div)
         file_path = os.path.join(reldir, basename)
         path_div.add("<b>Path:</b> %s" % file_path)
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
 
-        # display the info
-        """
-        layout = FastTableLayoutWdg(
-            search_type=parent.get_search_type(),
-            view='table',
-            element_names=['small_preview','name','description'],
-            show_shelf=False,
-            show_select=False,
-            show_header=False
-        )
-        layout.set_sobjects([parent])
-        top.add(layout)
-        """
-        
         if good_file:
-            top.add( my.get_content_wdg(good_file, snapshot, parent) )
-       
-        return top
+            inner.add( my.get_content_wdg(good_file, snapshot, parent) )
+        else:
+            no_file_div = DivWdg()
+            no_file_div.add_style("padding", "15px")
+            icon = IconWdg("WARNING", IconWdg.WARNING)
+            no_file_div.add(icon)
+            no_file_div.add("<b>Invalid file</b>")
+            no_file_div.add("<br/>"*2)
+            inner.add(no_file_div)            
+ 
+        is_refresh = my.kwargs.get("is_refresh")
+        if is_refresh:
+            return inner
+        else:
+            return top
 
 
     def get_content_wdg(my, file, snapshot, parent):
