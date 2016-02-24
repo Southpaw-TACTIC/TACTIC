@@ -859,6 +859,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             dump = search.select.dumps()
             WidgetSettings.set_value_by_key(key, dump)
    
+        single_asset_mode = my.kwargs.get("single_asset_mode")
 
         border = top.get_color("shadow")
         top.add_class("spt_file_drag_top")
@@ -1071,7 +1072,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         spt.repo_browser.drag_drop = function(evt, bvr) {
             /* Drop action of tile on folder */
-            
+            console.log(bvr); 
             var top = bvr.src_el.getParent(".spt_tile_top");
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
@@ -1100,15 +1101,15 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
+                spt.behavior.destroy_element(top);
+            
+                var dir_top = target.getParent(".spt_dir_list_handler_top");
+                spt.panel.refresh(dir_top);
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
                 return;
             }
 
-            spt.behavior.destroy_element(top);
-
-            var dir_top = target.getParent(".spt_dir_list_handler_top");
-            spt.panel.refresh(dir_top);
         }
 
 
@@ -1229,6 +1230,8 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_dir_context_menu(my, mode="freeform"):
 
         parent_key = my.kwargs.get("parent_key")
+        single_asset_mode = my.kwargs.get("single_asset_mode")
+        search_types = my.kwargs.get("search_types")
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1236,9 +1239,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
 
-
         if mode == "freeform":
-
             menu_item = MenuItem(type='action', label='New Folder')
             menu.add(menu_item)
             menu_item.add_behavior( {
@@ -1451,7 +1452,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     spt.alert(spt.exception.handler(err));
                 }
 
-
+                //TODO refresh
                 '''
             } )
 
@@ -1491,31 +1492,37 @@ class RepoBrowserDirListWdg(DirListWdg):
         """
 
 
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            if parent:
+                search_type = parent.get_search_type()
+        elif single_asset_mode and len(search_types) == 1:
+            search_type = search_types[0]
+        if search_type:
+            menu_item = MenuItem(type='action', label='Ingest Files')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'search_type': search_type,
+                'search_key': parent_key,
+                'cbjs_action': '''
+                    var activator = spt.smenu.get_activator(bvr);
+                    var relative_dir = activator.getAttribute("spt_relative_dir");
+                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    var kwargs = {
+                        search_type: bvr.search_type,
+                        search_key: bvr.search_key,
+                        relative_dir: relative_dir
+                    };
 
-
-        menu_item = MenuItem(type='action', label='Ingest Files')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'search_key': parent_key,
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var search_type = activator.getAttribute("spt_search_type");
-
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-            var class_name = 'tactic.ui.tools.IngestUploadWdg';
-            var kwargs = {
-                search_type: search_type,
-                relative_dir: relative_dir,
-                search_key: bvr.search_key
-            };
-            spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+search_type+")</i>", class_name, kwargs);
-            '''
-        } )
+                    spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+bvr.search_type+")</i>", class_name, kwargs);
+                '''
+            } )
 
 
         menu_item = MenuItem(type='separator')
         #menu.add(menu_item)
+        
         menu_item = MenuItem(type='action', label='Copy To Clipboard')
         #menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1843,6 +1850,7 @@ class RepoBrowserDirListWdg(DirListWdg):
     def add_dir_behaviors(my, item_div, dirname, basename):
 
         parent_key = my.kwargs.get("parent_key")
+
         """ 
         item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this)")
         item_div.add_attr("ondragleave", "spt.repo_browser.drag_leave(event, this)")
@@ -1899,8 +1907,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         item_div.add_attr("spt_search_type", search_type)
-
-
         item_div.add_attr("spt_relative_dir", relative_dir)
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
@@ -2190,8 +2196,8 @@ class RepoBrowserActionCmd(Command):
                     file_name = file.get_value("file_name")
                     new_file_name = file_name.replace(unversioned_base, new_versioned_base)
                     new_path = "%s/%s/%s" % (base_dir, relative_dir, new_file_name)
-                    if (os.path.exists(new_path)):
-                        raise Exception("[%s] already exists in %s" % (new_file_name, relative_dir))
+                    # FIXME: if (os.path.exists(new_path)):
+                    #    raise Exception("[%s] already exists in %s" % (new_file_name, relative_dir))
 
                     # Move the file it is not versionaless
                     old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
@@ -2208,9 +2214,11 @@ class RepoBrowserActionCmd(Command):
                 snapshot.set_value( "snapshot", xml.to_string() )
  
                 # Update context if it contains the filename
+                # TODO: Handle more than one slash
+                # ie. If parts > 1
                 parts = context.split("/")
                 if len(parts) == 2:
-                    new_subcontext, new_ext = os.path.splitext(new_value)
+                    new_subcontext, new_ext = os.path.splitext(new_base)
                     context = "%s/%s" % (parts[0], new_subcontext)
                     snapshot.set_value("context", context)
 
@@ -2431,8 +2439,9 @@ class RepoBrowserCbk(Command):
                 old_path = "%s/%s/%s" % (base_dir, file_relative_dir, file_name)
                 new_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                 if not os.path.exists(old_path):
-                    continue
-
+                     continue
+  
+                # TODO: Check
                 FileUndo.move(old_path, new_path)
 
             all_files.extend(files)
@@ -2798,6 +2807,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         shelf_wdg = DivWdg()
         top.add(shelf_wdg)
 
+        # TODO: Allow ingest into specific deliverable
         button = ActionButtonWdg(title="Ingest")
         shelf_wdg.add(button)
         shelf_wdg.add_style("margin: 0px 20px")
