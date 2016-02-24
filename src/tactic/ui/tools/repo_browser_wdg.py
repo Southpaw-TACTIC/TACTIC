@@ -206,13 +206,12 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # Where should dynamic be passed in?
         dynamic = True
         
-        # FIXME: What is this for?
-        show_base_dir = False
-        show_base_dir = True
+        # Display the basename of of the base_dir 
+        # default is True.
+        show_base_dir = my.kwargs.get("show_base_dir")
 
-        # The left contains a directory listing.
-        # TODO: Describe how and where directory
-        # list scope is determined.
+        # The left contains a directory listing
+        # starting at project_dir.
         dir_list = RepoBrowserDirListWdg(
                 single_asset_mode=single_asset_mode,
                 base_dir=project_dir,
@@ -265,8 +264,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             msg_div.add_border()
             msg_div.add_style("text-align: center")
  
-      
-        #TODO: What is this? 
+        '''
         table.add_row()
         bottom = table.add_cell()
         bottom.add_attr("colspan", "3")
@@ -274,6 +272,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         bottom.add(info_div)
 
         #info_div.add_style("height: 100px")
+        '''
 
         return top
 
@@ -1240,87 +1239,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
 
 
-        """
-        menu_item = MenuItem(type='action', label='Add New Item')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
-            var activator = spt.smenu.get_activator(bvr);
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-            var search_type = activator.getAttribute("spt_search_type");
-
-            var class_name = 'tactic.ui.panel.EditWdg';
-            var kwargs = {
-                relative_dir: relative_dir,
-                search_type: search_type,
-                mode: 'insert',
-                single: 'true',
-            };
-            spt.panel.load_popup('Add New Item', 'tactic.ui.panel.EditWdg', kwargs);
-            '''
-        } )
-        """
-
-        """ 
-        menu_item = MenuItem(type='action', label='Add Multiple Items')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
-            var activator = spt.smenu.get_activator(bvr);
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-            var search_type = activator.getAttribute("spt_search_type");
-
-            var class_name = 'tactic.ui.panel.EditWdg';
-            var kwargs = {
-                relative_dir: relative_dir,
-                search_type: search_type,
-                mode: 'insert',
-                single: 'false',
-            };
-            spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
-            '''
-        } )
-        """
-
-        """
-        menu_item = MenuItem(type='action', label='Delete Folder')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
-            var activator = spt.smenu.get_activator(bvr);
-            var search_type = activator.getAttribute("spt_search_type");
-            var search_codes = activator.getAttribute("spt_search_codes");
-            if (! search_codes ) {
-                alert( "No SObject associated with this folder" );
-                return;
-            }
-
-            search_codes = search_codes.split("|");
-            if (search_codes.length > 1) {
-                alert( "Too many sobjects associated with this folder");
-                return;
-            }
-
-            var search_key = search_type + "&code=" + search_codes[0];
-
-            var class_name = 'tactic.ui.tools.DeleteToolWdg';
-            var kwargs = {
-              search_key: search_key,
-            }
-            var popup = spt.panel.load_popup("Delete Folder", class_name, kwargs);
-            '''
-        } )
-        """
-
-
         if mode == "freeform":
-
-            #menu_item = MenuItem(type='separator')
-            #menu.add(menu_item)
-
 
             menu_item = MenuItem(type='action', label='New Folder')
             menu.add(menu_item)
@@ -1624,7 +1543,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         } )
 
 
-
+        """
+        TODO: This should not be exposed unless the applet is available.
         menu_item = MenuItem(type='action', label='Check-out Files')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1656,7 +1576,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             return;
             '''
         } )
-
+        """
 
 
         return menu
@@ -1691,8 +1611,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-        # FIXME: Right now assume single asset mode.
-        # Ie. Update the asset as well.
         menu_item = MenuItem(type='action', label='Rename Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1769,6 +1687,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
+            //TODO: If not in single asset mode, only delete snapshot.
             var activator = spt.smenu.get_activator(bvr);
             var relative_dir = activator.getAttribute("spt_relative_dir");
             var snapshot_code = activator.getAttribute("spt_snapshot_code");
@@ -2056,7 +1975,9 @@ class RepoBrowserActionCmd(Command):
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
-
+ 
+            # TODO: Users should be able to delete a folder with snapshots,
+            # FIXME: If there are dangling files, user should no that.
             # this will give an error if the directory is not empty
             full_dir = "%s/%s" % (base_dir, relative_dir)
             os.rmdir(full_dir)
@@ -2168,8 +2089,6 @@ class RepoBrowserActionCmd(Command):
                 # Fail silently
                 return
 
-            # TODO.. renaming makes a conflict.
-
             # Get the file sObject that was renamed
             search = Search("sthpw/file")
             search.add_filter("relative_dir", relative_dir)
@@ -2277,10 +2196,9 @@ class RepoBrowserActionCmd(Command):
             snapshots[-1].update_versionless("latest")
 
             # Update original parent name if in single asset mode
-            # TODO: For deliverables, this will be false.
-            # rename_parent = my.kwargs.get("rename_parent")
-            rename_parent = True
-            if rename_parent:
+            single_asset_mode = my.kwargs.get("single_asset_mode")
+            singe_asset_mode = True
+            if single_asset_mode in [True, "true", "True"]:
                 # If sobject has an extension in it's name, then 
                 # make sure this extension is preserved.
                 original_name = sobject.get_value("name", no_exception=True)
