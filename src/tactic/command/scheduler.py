@@ -193,13 +193,18 @@ class SchedulerTask(object):
         return my.kwargs.get("name")
 
     def _do_execute(my):
-        # restablish the site
+        # reestablish the site
         if my.site:
-            Site.set_site(my.site)
-
-        Environment.set_security(my.security)
-        my.execute()
-
+            try:
+                Site.set_site(my.site)
+            except:
+                return
+        try:
+            Environment.set_security(my.security)
+            my.execute()
+        finally:
+            if my.site:
+                Site.pop_site()
 
     def execute(my):
         print my.kwargs
