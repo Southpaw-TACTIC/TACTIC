@@ -2008,17 +2008,36 @@ class RepoBrowserActionCmd(Command):
             FileUndo.mkdir(full_dir)
 
         elif action == "delete_folder":
+         
+            do_not_check = my.kwargs.get("do_not_check")
 
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
- 
+            
+            search = Search("sthpw/file")
+            search.add_op("begin")
+            search.add_filter("relative_dir", "%s" % relative_dir)
+            search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+            search.add_op("or")
+             
+            snapshot_search = Search("sthpw/snapshot")
+            snapshot_search.add_relationship_search(search)
+          
+            if snapshot_search.get_count() == 0:
+                full_dir = "%s/%s" % (base_dir, relative_dir)
+                os.rmdir(full_dir)
+            else:
+                raise Exception("Folder not empty")
+            ''' 
+            if single_asset_mode == True:
+                # TODO: Get all parents
+            else:
+                
             # TODO: Users should be able to delete a folder with snapshots,
             # FIXME: If there are dangling files, user should no that.
             # this will give an error if the directory is not empty
-            full_dir = "%s/%s" % (base_dir, relative_dir)
-            os.rmdir(full_dir)
-            
+            '''
 
 
         elif action == "rename_folder":
@@ -2227,15 +2246,27 @@ class RepoBrowserActionCmd(Command):
                 # Update entire snapshot XML
                 snapshot.set_value( "snapshot", xml.to_string() )
  
-                # Update context if it contains the filename
-                # TODO: Handle more than one slash
-                # ie. If parts > 1
+                # Update context
+                # Note: This assumes the following structure
+                # process/filename/subcontext
+                # FIXME: preserve use of extension
                 parts = context.split("/")
+                if len(parts) > 1: 
+                    process = parts[0]
+                    context_file_name = parts[1]
+                    _, old_ext = os.path.splitext(context_file_name)
+                    if (old_ext):
+                        new_name = new_base
+                    else:
+                        new_name, _ = os.path.splitext(new_base)     
+                
                 if len(parts) == 2:
-                    new_subcontext, new_ext = os.path.splitext(new_base)
-                    context = "%s/%s" % (parts[0], new_subcontext)
-                    snapshot.set_value("context", context)
+                    context = "%s/%s" % (process, new_name)
+                elif len(parts) == 3:
+                    subcontext = parts[2]
+                    context = "%s/%s/%s" (process, new_name, subcontext)
 
+                snapshot.set_value("context", context)
                 snapshot.commit()
 
             snapshots[-1].update_versionless("latest")
