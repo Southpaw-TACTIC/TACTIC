@@ -56,6 +56,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
         else:
             search_types = None
 
+        #TODO: Support multiple sobjects
+        #TODO: Support multiple parent types
+        parent_type = my.kwargs.get("parent_type")
+
         search = my.kwargs.get("search")
         if search:
             search.set_limit(1000)
@@ -90,14 +94,15 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
             search_type = parent.get_search_type()
             parent_code = parent.get_value("code", no_exception=True)
-
+            
+            # TODO: Add parent search type filter
             if parent_code:
                 search.add_filter("code", parent_code)
+        
         else:
             project_code = Project.get_project_code()
             base_dir = Environment.get_asset_dir()
-            project_dir = "%s/%s" % (base_dir, project_code)
-        
+            project_dir = "%s/%s" % (base_dir, project_code) 
         
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -1018,20 +1023,20 @@ class RepoBrowserDirListWdg(DirListWdg):
   
             if (bvr.src_el.hasClass("spt_item_value")) {
                 bvr.src_el = bvr.src_el.getParent(".spt_dir_list_item");
-            }
+            } 
         
-            if (!evt.control) {
-                spt.repo_browser.clear_selected();
-            }
-
-            spt.repo_browser.toggle_select(bvr.src_el);
-            var selected = spt.repo_browser.get_selected();
-
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
 
             spt.app_busy.show("Loading information");
             
+            //TODO: Fix selected API
+            //var selected = spt.repo_browser.get_selected();
+            //if (!evt.control) {
+            //    spt.repo_browser.clear_selected();
+            //}
+            //spt.repo_browser.toggle_select(bvr.src_el);
+            var selected = [] 
             if (selected.length > 1) {
                 var snapshot_codes = [];
                 for (var i = 0; i < selected.length; i++) {
@@ -1043,14 +1048,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                   search_type: bvr.search_type,
                   snapshot_codes: snapshot_codes
                 };
-            }
-            else {
+            } else {
                 var dirname = bvr.src_el.getAttribute("spt_dirname");
                 var basename = bvr.src_el.getAttribute("spt_basename");
                 
                 var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
                 var kwargs = {
                   single_asset_mode: bvr.single_asset_mode,
+                  //TODO:parent_key: 
                   search_type: bvr.search_type,
                   dirname: dirname,
                   basename: basename
@@ -1178,8 +1183,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         
 
         # Directory click up - display related sObjects
+        # FIXME: How to we pass in the same search that was passed in RepoBrowserDirList?
         top.add_relay_behavior( {
         'type': 'click',
+        'parent_key': parent_key,
         'single_asset_mode': single_asset_mode,
         'search_type': search_type,
         'bvr_match_class': 'spt_dir_value',
@@ -1203,6 +1210,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             
             var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
             var kwargs = {
+                parent_key: bvr.parent_key,
                 single_asset_mode: bvr.single_asset_mode,
                 search_type: bvr.search_type,
                 view: 'table',
@@ -1514,7 +1522,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         search_key: bvr.search_key,
                         relative_dir: relative_dir
                     };
-
+                    
                     spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+bvr.search_type+")</i>", class_name, kwargs);
                 '''
             } )
@@ -2509,13 +2517,16 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         It checks if file item clicked has a parent before displaying
         detail.
 
-        search_key - 
-
-        search_type - parent search type
-        single_asset_mode -
+        Find file to display using kwarg(s):
+            search_key - snapshot or single context asset to display 
+            single_asset_mode -
+            
+            OR 
         
-        dirname - 
-        basename -
+            single_asset_mode -  
+            search_type - parent search type
+            dirname - 
+            basename -
 
         '''
         
@@ -2527,35 +2538,42 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         top.add(inner)
 
         search_key = my.kwargs.get("search_key")
+        single_asset_mode = my.kwargs.get("single_asset_mode")
+        if single_asset_mode in ["True", "true", True]:
+            single_asset_mode = True
         search_type = my.kwargs.get("search_type")
-        search_type = SearchType.build_search_type(search_type)
 
         if search_key:
+            # search_key is either a snapshot search_key or 
+            # single context sobject key.
             sobject = Search.get_by_search_key(search_key)
-            search_type = sobject.get_search_type()
-            snapshot = Snapshot.get_latest_by_sobject(sobject)
+            if not sobject:
+                raise Exception("No snapshot found")
+            
+            snapshot = None
+
+            if single_asset_mode == True:
+                snapshot = Snapshot.get_latest_by_sobject(sobject)
+            else:
+                snapshot = sobject
+            
             if not snapshot:
                 raise Exception("No snapshot found")
-
+            
+            search_type = snapshot.get_value("search_type") 
             path = snapshot.get_lib_path_by_type()
             dirname = os.path.dirname(path)
             basename = os.path.basename(path)
-
-        else:
-            #project_code = Project.get_project_code()
-            #search_type = "%s?project=%s" % (search_type, project_code)
-            #search_type = Project.get_full_search_type(search_type, project_code=project_code)
-
+        elif search_type:
+            search_type = SearchType.build_search_type(search_type)
             dirname = my.kwargs.get("dirname")
             basename = my.kwargs.get("basename")
             path = "%s/%s" % (dirname, basename)
             
         asset_dir = Environment.get_asset_dir()
-        '''FIXME
         if not dirname.startswith(asset_dir):
             inner.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
-            return top
-        '''
+            return inner
 
         reldir = dirname.replace(asset_dir, "")
         reldir = reldir.strip("/")
@@ -2712,11 +2730,16 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         on parent search type.'''
         
         top = my.top
-            
+        my.set_as_panel(top)
+        top.add_class("spt_browser_detail_top")
+ 
+        inner = DivWdg()
+        top.add(inner)
 
         # The determination of search types important for IngestUploadWdg and ViewPanelWdg.
-        single_asset = my.kwargs.get("single_asset_mode")
-        if single_asset in ["True", "true", True]:
+        single_asset_mode = my.kwargs.get("single_asset_mode")
+        parent_key = my.kwargs.get("parent_key")
+        if single_asset_mode in ["True", "true", True]:
             parent_type = my.kwargs.get("search_type")
             search_type = parent_type
         else:
@@ -2732,8 +2755,9 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         dirname = my.kwargs.get("dirname")
         asset_dir = Environment.get_asset_dir()
         if not dirname.startswith(asset_dir):
-            top.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
-            return top
+            error_div = DivWdg()
+            error_div.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
+            return error_div
         reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
         if reldir == ".":
             reldir = ""
@@ -2745,7 +2769,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             search2 = Search(search_type)
             search2.add_relationship_search_filter(search)
             sobjects = search2.get_sobjects()
-        elif single_asset:
+        elif single_asset_mode:
             search = Search(search_type)
             search.add_filter("relative_dir", "%s%%" % reldir, op='like')
         else:
@@ -2772,19 +2796,47 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             sobjects = search2.get_sobjects()
            '''
 
+        # Display the path of the directory
         path = my.kwargs.get("dirname")
         asset_dir = Environment.get_asset_dir()
         reldir = path.replace(asset_dir, "").strip("/")
 
-
         path_div = DivWdg()
-        top.add(path_div)
+        inner.add(path_div)
         path_div.add("<b>Path:</b> %s" % reldir)
         path_div.add_color("color", "color")
         path_div.add_color("background", "background")
         path_div.add_style("padding: 15px")
 
-        # Prefer tile layout
+
+        shelf_wdg = DivWdg()
+        inner.add(shelf_wdg)
+
+        # Ingest into parent key or search type
+        # TODO: Add on complete script which updates UI
+        button = ActionButtonWdg(title="Ingest")
+        shelf_wdg.add(button)
+        shelf_wdg.add_style("margin: 0px 20px")
+        button.add_behavior( {
+            'type': 'click_up',
+            'path': path,
+            'search_key': parent_key,
+            'search_type': parent_type,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.IngestUploadWdg';
+            var kwargs = {
+                search_key: bvr.search_key,
+                search_type: bvr.search_type,
+                base_dir: bvr.path,
+            }
+            spt.panel.load_popup("Ingest Files", class_name, kwargs);
+            '''
+        } )
+
+        # Display directory content
+        
+        # Layout
+        '''
         search_type_obj = SearchType.get(search_type)
         layout_mode = search_type_obj.get_value("default_layout", no_exception=True)
         if layout_mode == '':
@@ -2794,43 +2846,39 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             # if browser default is browser, then like we don't want to see
             # a browser again.
             layout_mode = 'tile'
-
+        '''
         layout_mode = "tile"
-
-
+        
         element_names = None
         if layout_mode == "checkin":
             element_names = ['preview','code','name','general_checkin','file_list', 'history','description','notes']
-
-
-
-        shelf_wdg = DivWdg()
-        top.add(shelf_wdg)
-
-        # TODO: Allow ingest into specific deliverable
-        button = ActionButtonWdg(title="Ingest")
-        shelf_wdg.add(button)
-        shelf_wdg.add_style("margin: 0px 20px")
-        button.add_behavior( {
-            'type': 'click_up',
-            'path': path,
-            'search_type': parent_type,
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.tools.IngestUploadWdg';
+       
+        # Show file details when clicking on tile
+        expand_mode = "custom"
+        detail_script = r'''
+            var top = bvr.src_el.getParent(".spt_repo_browser_top");
+            var content = top.getElement(".spt_repo_browser_content");
+            
+            var row = bvr.src_el.getParent(".spt_table_row");
+            var search_key = row.getProperty("spt_search_key");
+            
+            var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
             var kwargs = {
-                search_type: bvr.search_type,
-                base_dir: bvr.path,
-            }
-            spt.panel.load_popup("Ingest Files", class_name, kwargs);
-            '''
-        } )
-
+                search_key: search_key,
+                single_asset_mode: "%s"
+            };
+            spt.panel.load(content, class_name, kwargs);
+        ''' % single_asset_mode
+        
+        #TODO: Drag and drop upload
+        # pass in parent key for deliverable
+        # "self" for single_asset_mode
+        upload_mode = False
 
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
             search=search,
-            view="table",
             element_names=element_names,
             show_shelf=False,
             show_search_limit=False,
@@ -2838,13 +2886,17 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             scale='100',
             show_scale=True,
             width='100%',
+            expand_mode=expand_mode,
+            script=detail_script,
+            upload_mode=upload_mode
         )
-
-
-
-        top.add(layout)
-
-        return top
+        inner.add(layout)
+ 
+        is_refresh = my.kwargs.get("is_refresh")
+        if is_refresh:
+            return inner
+        else:
+            return top
 
 
 

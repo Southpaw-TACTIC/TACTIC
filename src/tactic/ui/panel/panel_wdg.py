@@ -3290,6 +3290,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             kwargs['process'] = my.kwargs.get("process")
             kwargs['gallery_align'] = my.kwargs.get("gallery_align")
+            kwargs['script_path'] = my.kwargs.get("script_path")
+            kwargs['script'] = my.kwargs.get("script")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
