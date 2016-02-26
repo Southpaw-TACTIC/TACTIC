@@ -2348,9 +2348,27 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.set_value(status)
 
                 if task.is_insert():
+                    parent_sk =  task.get_parent_search_key()
+                    stype = SearchKey.extract_search_type(parent_sk)
                     update = {
-                        "parent_key": task.get_parent_search_key(),
-                        "expression": "@GET(sthpw/task['process','%s'].status)" % process,
+                        "search_type": stype, 
+                        "search_key": parent_sk,
+                        "expression": "@GET(sthpw/task['process','%s'].id)" % process,
+                        "cbjs_action": ''' var el = bvr.src_el;
+                                            var id = bvr.value;
+                                            var s = TacticServerStub.get();
+                                            var status = s.eval("@GET(sthpw/task['id','" + id + "'].status)", {single:true});                                                                              el.value = status;
+                                            var cur_name = el.getAttribute('name');
+                                            // update the select name
+                                            if (/NEW/.test(cur_name)) {
+                                                var parts = cur_name.split('|');
+                                                var new_name = parts[0] + '|EDIT|' + id;
+                                                el.setAttribute('name', new_name);
+                                            }
+
+                                        '''
+                                            
+
                     }
                 else:
                     update = {
@@ -2358,6 +2376,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         "column": "status",
                     }
 
+                update['interval'] = '2'
                 update['cbjs_postaction'] = '''
                         var element = bvr.src_el;
                         if ("createEvent" in document) {
@@ -2368,7 +2387,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         else {
                             element.fireEvent("onchange");
                         }
-                        var top = bvr.src_el.getParent(".spt_task_top");
+                        var top = element.getParent(".spt_task_top");
+
                         top.getParent().setStyle("opacity", 1.0);
 
                         '''
@@ -2418,15 +2438,35 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         select.add_style("width", my.width)
 
                     if task.is_insert():
+                        parent_sk =  task.get_parent_search_key()
+                        stype = SearchKey.extract_search_type(parent_sk)
                         update = {
-                            "parent_key": task.get_parent_search_key(),
-                            "expression": "@GET(sthpw/task['process','%s'].assigned)" % process,
+                            "search_type": stype, 
+                            "search_key": parent_sk,
+                            "expression": "@GET(sthpw/task['process','%s'].id)" % process,
+                            "cbjs_action": ''' var el = bvr.src_el;
+                                            var id = bvr.value;
+                                            var s = TacticServerStub.get();
+                                            var assigned = s.eval("@GET(sthpw/task['id','" + id + "'].assigned)", {single:true}); 
+                                            el.value = assigned;
+                                            var cur_name = el.getAttribute('name');
+                                            // update the select name
+                                            if (/NEW/.test(cur_name)) {
+                                                var parts = cur_name.split('|');
+                                                var new_name = parts[0] + '|EDIT|' + id;
+                                                el.setAttribute('name', new_name);
+                                            }
+
+                                           '''
+
+                                                                    
                         }
                     else:
                         update = {
                             "search_key": task.get_search_key(),
                             "column": "assigned",
                         }
+                    update['interval'] = '2'
 
                     update['cbjs_postaction'] = '''
                             var element = bvr.src_el;
@@ -2743,6 +2783,12 @@ class TaskElementCbk(DatabaseAction):
         if my.xx.get("add_initial_tasks"):
             Task.add_initial_tasks(my.sobject)
 
+    def check_missing(my, tasks, task_id_list):
+        '''Raise exception if task_id_list is more than the number of tasks found'''
+        if len(tasks) < len(task_id_list):
+            exist_task_id_set = set([str(x) for x in SObject.get_values(tasks, "id")])
+            intersect = set(task_id_list) - exist_task_id_set
+            raise TacticException("Task with id [%s] no longer exist. Please refresh your view." %",".join(str(x) for x in intersect))
 
 
     def execute(my):
@@ -2871,10 +2917,13 @@ class TaskElementCbk(DatabaseAction):
 
 
         # get the tasks
+
         if task_status_ids: 
             search = Search("sthpw/task")
             search.add_filters("id", task_status_ids)
             tasks = search.get_sobjects()
+
+            my.check_missing(tasks, task_status_ids)
 
             for task in tasks:
                 current_status = task.get_value("status")
@@ -2889,6 +2938,8 @@ class TaskElementCbk(DatabaseAction):
             search = Search("sthpw/task")
             search.add_filters("id", task_assigned_ids)
             tasks = search.get_sobjects()
+
+            my.check_missing(tasks, task_assigned_ids)
 
             for task in tasks:
                 current_assigned = task.get_value("assigned")
@@ -2905,6 +2956,8 @@ class TaskElementCbk(DatabaseAction):
             search = Search("sthpw/task")
             search.add_filters("id", task_bid_ids)
             tasks = search.get_sobjects()
+            
+            my.check_missing(tasks, task_bid_ids)
 
             for task in tasks:
                 new_bid = xx.get('bid|EDIT|%s'%task.get_id())

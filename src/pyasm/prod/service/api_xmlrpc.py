@@ -3478,9 +3478,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'checkin_type': checkin_type, 'version': version,
             'process': process
         }
-      
-
-        #checkin = FileCheckin(sobject, file_paths, file_types, context, snapshot_type=snapshot_type, description=description, is_current=is_current, source_paths=source_path, level_type=level_type, level_id=level_id, mode=mode, is_revision=is_revision)
 
         checkin = Common.create_from_class_path(checkin_cls, checkin_args, checkin_kwargs)
 

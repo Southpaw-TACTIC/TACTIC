@@ -367,6 +367,7 @@ class ExifMetadataParser(BaseMetadataParser):
 
         f = open(path)
         tags = exifread.process_file(f)
+        f.close()
 
         return tags
 

@@ -413,6 +413,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         if is_test:
             Container.put("CustomLayout::is_test", True)
+            my.top.add_style("margin: 0px 5px")
             my.handle_is_test(content)
 
 
@@ -448,8 +449,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
         content.add_behavior( {
             'type': 'mouseover',
             'cbjs_action': '''
-            bvr.src_el.setStyle("border", "solid 1px blue");
-            bvr.src_el.setStyle("margin", "-1px");
+            //bvr.src_el.setStyle("border", "solid 1px blue");
+            bvr.src_el.setStyle("box-shadow", "0px 0px 5px rgba(0, 0, 0, 0.5)");
+            //bvr.src_el.setStyle("margin", "-1px");
             var els = bvr.src_el.getElements(".spt_test");
             for (var i = 0; i < els.length; i++) {
                 els[i].setStyle("display", "");
@@ -464,8 +466,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
             'type': 'mouseleave',
             'cbjs_action': '''
 
-            bvr.src_el.setStyle("border", "none");
-            bvr.src_el.setStyle("margin", "0px");
+            bvr.src_el.setStyle("box-shadow", "");
+            //bvr.src_el.setStyle("margin", "0px");
             var els = bvr.src_el.getElements(".spt_test");
             for (var i = 0; i < els.length; i++) {
                 els[i].setStyle("display", "none");
@@ -478,12 +480,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
         div = DivWdg()
         content.add(div)
         div.add_style("position: absolute")
-        div.add(my.view)
+        div.add("View: %s" % my.view)
         div.add_class("spt_test")
         div.add_border()
-        div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         div.add_style("display: none")
         div.add_style("padding: 3px")
+        div.add_style("margin-left: 3px")
         div.add_style("left: 0px")
         div.add_style("top: -15px")
         #div.add_style("opacity: 0.5")
@@ -559,6 +562,32 @@ class CustomLayoutWdg(BaseRefreshWdg):
             }
             '''
         } )
+
+
+        menu_item = MenuItem(type='action', label='Open in Main Tab')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'view': my.view,
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var popup_top = activator.getParent(".spt_popup");
+            spt.popup.close(popup_top);
+
+            var top = activator.getParent(".spt_custom_top");
+            var class_name = top.getAttribute("spt_class_name");
+            var kwargs = spt.panel.get_element_options(top);
+            //kwargs['is_test'] = true;
+
+            var title = "Test: " + bvr.view;
+
+            spt.tab.set_main_body_tab();
+            spt.tab.add_new(title, title, class_name, kwargs);
+            '''
+        } )
+
+
+
 
         return menu
 
@@ -1175,7 +1204,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         if not element_name:
             import random
-            num = random.randint(0, 100000)
+            num = random.randint(0, 1000000)
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
 
@@ -1246,7 +1275,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-
+        """
         use_container = attrs.get('use_container') == 'true'
         if use_container:
             # DEPRECATED
@@ -1260,7 +1289,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if name == 'name':
                 continue
             container.add_style(name, value)
-
+        """
 
 
 
@@ -1331,84 +1360,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
             log = ExceptionWdg(e)
             element_wdg = log
 
+        return element_wdg
+
         container.add(element_wdg)
         return container
-
-
-    # DEPRECATED
-    """
-    def get_container(my, xml):
-        # handle the container
-
-        element_node = xml.get_node("config/tmp/element")
-        attrs = Xml.get_attributes(element_node)
-        element_name = attrs.get("name")
-
-        show_resize_scroll = attrs.get("show_resize_scroll")
-        if not show_resize_scroll:
-            show_resize_scroll = my.kwargs.get("show_resize_scroll")
-        if not show_resize_scroll:
-            show_resize_scroll = "false"
-
-
-        # look for attributes in the element tag for specifying a title action button to plug
-        # into the title bar of the custom section ...
-        #
-        title_action_icon = attrs.get("title_action_icon")
-        title_action_script = attrs.get("title_action_script")
-        title_action_label = attrs.get("title_action_label")
-        if title_action_script and not title_action_label:
-            title_action_label = '[action]'
-
-
-        # get the width and height for the element content ...
-        width = attrs.get("width")
-        height = attrs.get("height")
-
-
-        if width and height:
-            container = ContainerWdg( inner_width=width, inner_height=height, show_resize_scroll=show_resize_scroll )
-        else:
-            container = ContainerWdg(show_resize_scroll=show_resize_scroll)
-
-        # create the title
-        title = attrs.get("title")
-        if not title:
-            title = Common.get_display_title(element_name)
-        title_wdg = DivWdg()
-        SmartMenu.assign_as_local_activator( title_wdg, 'HEADER_CTX' )
-        title_wdg.add_style("margin: 0px 0px 5px 0px")
-        title_wdg.add_gradient("background", "background", 0)
-        title_wdg.add_color("color", "color")
-        title_wdg.add_style("padding", "5px")
-
-
-        if title_action_script:
-            # add an action button if an action script code was found in the attributes of the element
-            proj = Project.get_project_code()
-            script_search = Search("config/custom_script")
-            script_sobj = script_search.get_by_search_key( "config/custom_script?project=%s&code=%s" %
-                                                           (proj, title_action_script) )
-            script = script_sobj.get_value('script')
-            icon_str = "HELP"
-            if title_action_icon:
-                icon_str = title_action_icon
-            action_btn = HtmlElement.img( IconWdg.get_icon_path(icon_str) )
-            action_btn.set_attr('title',title_action_label)
-            # action_btn = IconWdg( title_action_label, icon=icon)
-            action_btn.add_behavior( {'type': 'click_up', 'cbjs_action':  script } )
-            action_btn.add_styles( "cursor: pointer; float: right;" )
-
-            title_wdg.add( action_btn )
-
-
-        title_wdg.add(title)
-        container.add(title_wdg)
-
-        return container
-    """
-
-
 
 
 

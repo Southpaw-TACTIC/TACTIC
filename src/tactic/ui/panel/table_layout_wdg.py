@@ -869,7 +869,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 table.add_style("font-size: %s" % font_size)
                 my.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
-            #my.handle_headers(table)
             if table_width:
                 table.add_style("width: %s" % table_width)
 
@@ -3423,6 +3422,15 @@ spt.table.get_selected_codes = function() {
         codes.push(tmps[1]);
     }
     return codes;
+}
+
+
+spt.table.hide_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    for ( var i = 0; i < rows.length; i++ ) {
+        rows[i].setStyle("display", "none");
+    }
+    spt.table.unselect_all();
 }
 
 

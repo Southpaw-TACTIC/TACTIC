@@ -824,6 +824,7 @@ class FileUndo:
                     os.makedirs(dirname)
 
                 shutil.move(dst,src)
+
             elif type == "copy":
                 # remove the dst tree of file
                 if os.path.exists(dst):

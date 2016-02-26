@@ -14,7 +14,7 @@ __all__ = ['NamingMigratorCmd']
 
 import tacticenv
 
-from pyasm.common import Xml, Config
+from pyasm.common import Xml, Config, Environment
 from pyasm.search import Search, FileUndo
 from pyasm.security import Batch
 from pyasm.biz import Snapshot, Project
@@ -52,7 +52,7 @@ class NamingMigratorCmd(Command):
         # set an arbitrary limit for now
         limit = 1000
 
-        base_dir = Config.get_value("checkin", "asset_base_dir")
+        base_dir = Environment.get_asset_dir()
 
         num_found = 0
         errors = []
@@ -114,13 +114,10 @@ class NamingMigratorCmd(Command):
 
                 num_found += 1
 
+                print "snapshot: ", snapshot.get_value("code")
                 print "old: ", old_path
                 print "new: ", path
 
-
-                if not os.path.exists(old_path):
-                    print '... old does not exist'
-                    
 
                 print "-"*20
 
@@ -146,9 +143,32 @@ class NamingMigratorCmd(Command):
                 if not os.path.exists(dirname):
                     FileUndo.mkdir(dirname)
 
+
+
+                exists = False
+                if os.path.islink(old_path):
+                    exists = os.path.lexists(old_path)
+                else:
+                    exists = os.path.exists(old_path)
+
+                if not exists:
+                    print '... old does not exist'
+                    continue
+
+
                 FileUndo.move(old_path, path)
                 file.commit()
                 snapshot.commit()
+
+
+                # try to remove the old folder (if it's empty, it will be removed)
+                dirname = os.path.dirname(old_path)
+                while 1:
+                    try:
+                        os.rmdir(dirname)
+                        dirname = os.path.dirname(dirname)
+                    except:
+                        break
 
         if errors:
             print "Errors:"

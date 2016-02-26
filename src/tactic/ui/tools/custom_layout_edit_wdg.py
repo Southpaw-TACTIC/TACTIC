@@ -921,7 +921,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             shelf_wdg.add(view_wdg)
 
             view_wdg.add("<div style='margin: 5px 5px 5px 20px; float: left'><b>View: &nbsp;</b></div>")
-            text = TextInputWdg(name="view")
+            text = TextInputWdg(name="view", height="30px")
             view_wdg.add(text)
             text.add_style("width: 350px")
             view_wdg.add_style("margin-top: 4px")

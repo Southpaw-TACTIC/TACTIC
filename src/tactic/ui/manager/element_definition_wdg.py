@@ -1940,8 +1940,8 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         if widget_key or not display_class:
             tr.add_style("display: none")
         tr.add_class("spt_widget_selector_class")
-        td = table.add_cell("&nbsp;"*5)
-        td.add(" &nbsp; Class Name: ")
+        td = table.add_cell()
+        td.add("Class Name: ")
         td.add_style("padding: 15px")
 
 
@@ -2549,7 +2549,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
             elif widget_type == 'SelectWdg':
                 edit_wdg = SelectWdg(name)
-                edit_wdg.add_style("width: 350px")
+                edit_wdg.add_style("width: 450px")
                 edit_wdg.add_empty_option('-- Select --')
                 values = option.get('values')
                 edit_wdg.set_option('values', values)
@@ -2587,7 +2587,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 if value:
                     select.set_value(value)
-                select.add_style("width: 350px")
+                select.add_style("width: 450px")
                 #select.add_style("float: right")
                 #edit_wdg.add("<br clear='all'/>")
 
@@ -2638,7 +2638,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             edit_div.add_style("padding-bottom: 5px")
             edit_div.add_style("padding-left: 15px")
 
-            title_wdg.add_style("float: left")
+            #title_wdg.add_style("float: left")
             current_div.add_style("padding-left: 10px")
             current_div.add_style("padding-bottom: 10px")
 
@@ -2705,11 +2705,12 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             value = display_options.get(display_key)
             td.add_style("vertical-align: top")
             td.add_style("padding: 5px 5px 5px 20px")
+            td.add_style("width: 150px")
 
             #hidden = HiddenWdg(name, value)
             td = table.add_cell()
-            hidden = TextWdg(name)
-            hidden.add_style("width: 250px")
+            hidden = TextInputWdg(name=name)
+            #hidden.add_style("width: 250px")
             hidden.set_value(value)
             td.add(hidden)
             td.add_style("padding: 5px 5px 5px 110px")

@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg']
 
 import re
 from tactic.ui.common import BaseRefreshWdg
@@ -121,7 +121,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         left.add_style("width: 200px")
         left.add_style("min-width: 200px")
         left.add_style("vertical-align: top")
-        left.add_border()
+        #left.add_border()
 
         pipeline_list = PipelineListWdg(save_event=my.save_event, save_new_event=save_new_event )
         left.add(pipeline_list)
@@ -195,15 +195,19 @@ class PipelineToolWdg(BaseRefreshWdg):
         """
 
 
-
         show_info_tab = my.kwargs.get("show_info_tab")
         show_info_tab = True
         if show_info_tab in ['false', False]:
             show_info_tab = False
         else:
             show_info_tab = True
+
+
+        # DEPRECATED: moved to a gear menu
+        show_info_tab = False
       
         if show_info_tab:
+
             tr = table.add_row()
             td = table.add_cell()
             td.add_attr("colspan", "3")
@@ -212,61 +216,77 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             bottom.add_style("min-height: 200px")
 
-            config_xml = '''
-            <config>
-            <tab>
-              <element name='pipelines'>
-                <display class='tactic.ui.panel.FastTableLayoutWdg'>
-                    <search_type>sthpw/pipeline</search_type>
-                    <view>tool</view>
-                    <expression>@SOBJECT(sthpw/pipeline['project_code',$PROJECT])</expression>
-                    <show_search>false</show_search>
-                </display>
-              </element>
-            </tab>
-            </config>
-            '''
-            tab = TabWdg(config_xml=config_xml, extra_menu=my.get_extra_tab_menu())
+            tab = PipelineTabWdg(search_type=my.search_type,search_key=my.search_key)
             bottom.add(tab)
 
-
-            # add onload action at the very end
-            if my.search_type:
-                load_cbjs_action = '''
-                var server = TacticServerStub.get();
-                var pipeline_codes = server.eval("@GET(sthpw/pipeline['search_type','%s'].code)");
-                
-                var src_el = spt.get_element(document, '.spt_pipeline_list');
-                var firing_el = src_el;
-                for (var k=0; k<pipeline_codes.length; k++)
-                    spt.named_events.fire_event('pipeline_' + pipeline_codes[k] + '|click', bvr);
-
-                '''%( my.search_type)
-
-
-                bottom.add_behavior({
-                          'type':'load',
-                          'cbjs_action':  load_cbjs_action})
-
-            elif my.search_key:
-                load_cbjs_action = '''
-                var server = TacticServerStub.get();
-                var so = server.get_by_search_key('%s');
-                if (so)
-                    spt.named_events.fire_event('pipeline_' + so.code + '|click', bvr);
-
-                '''%( my.search_key)
-
-
-                bottom.add_behavior({
-                          'type':'load',
-                          'cbjs_action':  load_cbjs_action})
 
 
         if my.kwargs.get("is_refresh"):
             return inner
         else:
             return top
+
+
+
+
+class PipelineTabWdg(BaseRefreshWdg):
+
+
+    def get_display(my):
+        my.search_type = my.kwargs.get('search_type')
+        my.search_key = my.kwargs.get('search_key')
+
+        config_xml = '''
+        <config>
+        <tab>
+          <element name='pipelines'>
+            <display class='tactic.ui.panel.FastTableLayoutWdg'>
+                <search_type>sthpw/pipeline</search_type>
+                <view>tool</view>
+                <expression>@SOBJECT(sthpw/pipeline['project_code',$PROJECT])</expression>
+                <show_search>false</show_search>
+            </display>
+          </element>
+        </tab>
+        </config>
+        '''
+        tab = TabWdg(config_xml=config_xml, extra_menu=my.get_extra_tab_menu())
+
+
+        # add onload action at the very end
+        if my.search_type:
+            load_cbjs_action = '''
+            var server = TacticServerStub.get();
+            var pipeline_codes = server.eval("@GET(sthpw/pipeline['search_type','%s'].code)");
+            
+            var src_el = spt.get_element(document, '.spt_pipeline_list');
+            var firing_el = src_el;
+            for (var k=0; k<pipeline_codes.length; k++)
+                spt.named_events.fire_event('pipeline_' + pipeline_codes[k] + '|click', bvr);
+
+            '''%( my.search_type)
+
+
+            tab.add_behavior({
+                      'type':'load',
+                      'cbjs_action':  load_cbjs_action})
+
+        elif my.search_key:
+            load_cbjs_action = '''
+            var server = TacticServerStub.get();
+            var so = server.get_by_search_key('%s');
+            if (so)
+                spt.named_events.fire_event('pipeline_' + so.code + '|click', bvr);
+
+            '''%( my.search_key)
+
+
+            tab.add_behavior({
+                      'type':'load',
+                      'cbjs_action':  load_cbjs_action})
+
+
+        return tab
 
 
 
@@ -369,8 +389,6 @@ class PipelineToolWdg(BaseRefreshWdg):
         menu.add(menu_item)
 
 
-
-
         return menu
 
 
@@ -389,11 +407,12 @@ class PipelineListWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_list")
         my.set_as_panel(top)
         top.add_style("position: relative")
+        top.add_style("padding: 0px 10px")
 
         title_div = DivWdg()
 
 
-        button = ActionButtonWdg(title="+", tip="Add a new pipeline", size='small')
+        button = ActionButtonWdg(title="Add", tip="Add a new pipeline", size='small')
         button.add_style("position: absolute")
         button.add_style("top: 5px")
         button.add_style("right: 5px")
@@ -422,8 +441,10 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div.add_style("height: 30px")
         title_div.add_style("padding-left: 5px")
         title_div.add_style("padding-top: 10px")
-        title_div.add_color("background", "background", -10)
-        title_div.add("<b>Pipeline</b>")
+        #title_div.add_color("background", "background", -10)
+        title_div.add("Pipelines")
+        title_div.add_style("font-size: 16px")
+        title_div.add("<hr/>")
 
 
 
@@ -617,51 +638,39 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
 
-        inner.add("<br clear='all'/>")
+        show_site_wide_pipelines = True
+
+        if show_site_wide_pipelines:
+            inner.add("<br clear='all'/>")
 
 
+            # site-wide  pipelines
+            search = Search("sthpw/pipeline")
+            search.add_filter("project_code", "NULL", op="is", quoted=False)
+            pipelines = search.get_sobjects()
 
-        # site-wide  pipelines
-        search = Search("sthpw/pipeline")
-        search.add_filter("project_code", "NULL", op="is", quoted=False)
-        pipelines = search.get_sobjects()
+            swap = SwapDisplayWdg()
 
-        swap = SwapDisplayWdg()
+            title = DivWdg()
+            inner.add(swap)
+            swap.add_style("margin-top: -2px")
+            inner.add(title)
+            swap.add_style("float: left")
+            title.add("<b>Site Wide Pipelines</b><br/>")
+          
+            site_wide_div = DivWdg()
+            site_wide_div.add_styles('padding-left: 8px; padding-top: 6px') 
+            SwapDisplayWdg.create_swap_title(title, swap, site_wide_div, is_open=False)
 
-        title = DivWdg()
-        inner.add(swap)
-        swap.add_style("margin-top: -2px")
-        inner.add(title)
-        swap.add_style("float: left")
-        title.add("<b>Site Wide Pipelines</b><br/>")
-      
-        site_wide_div = DivWdg()
-        site_wide_div.add_styles('padding-left: 8px; padding-top: 6px') 
-        SwapDisplayWdg.create_swap_title(title, swap, site_wide_div, is_open=False)
+            colors = {}
+            inner.add(site_wide_div)
+            site_wide_div.add_class("spt_pipeline_list_site")
 
-        colors = {}
-        inner.add(site_wide_div)
-        site_wide_div.add_class("spt_pipeline_list_site")
+            for pipeline in pipelines:
+                pipeline_div = my.get_pipeline_wdg(pipeline)
+                site_wide_div.add(pipeline_div)
+                colors[pipeline.get_code()] = pipeline.get_value("color")
 
-        for pipeline in pipelines:
-            pipeline_div = my.get_pipeline_wdg(pipeline)
-            site_wide_div.add(pipeline_div)
-            colors[pipeline.get_code()] = pipeline.get_value("color")
-
-        # this is done in spt.pipeline.first_init() already
-        """
-        inner.add_behavior( {
-        'type': 'load',
-        'colors': colors,
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        var data = spt.pipeline.get_data();
-        data.colors = bvr.colors;
-        '''
-        } )
-        """
 
         return top
 
@@ -744,21 +753,6 @@ class PipelineListWdg(BaseRefreshWdg):
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
 
-            // check if the group already exists
-            /*
-            var group_name = bvr.pipeline_code;
-            var group = spt.pipeline.get_group(bvr.pipeline_code);
-            if (group != null) {
-
-                // if it already exists, then select all from the group
-                spt.pipeline.select_nodes_by_group(group_name);
-                spt.pipeline.fit_to_canvas(group_name);
-                return;
-
-            }
-            */
-
-
             var start_el = top.getElement(".spt_pipeline_editor_start")
             start_el.setStyle("display", "none")
 
@@ -779,6 +773,18 @@ class PipelineListWdg(BaseRefreshWdg):
 
             spt.pipeline.set_current_group(value);
 
+
+
+            var info = top.getElement(".spt_pipeline_tool_info");
+            if (info) {
+                var group_name = spt.pipeline.get_current_group();
+
+                var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+                var kwargs = {
+                    pipeline_code: group_name,
+                }
+                spt.panel.load(info, class_name, kwargs);
+            }
 
         };
 
@@ -1154,7 +1160,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         } )
 
 
-        menu_item = MenuItem(type='action', label='Show Processes')
+        menu_item = MenuItem(type='action', label='Show Processes Data')
         menu.add(menu_item)
         menu_item.add_behavior( {
         'cbjs_action': '''
@@ -1173,8 +1179,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             expression: expr
         }
 
-        var top = node.getParent(".spt_pipeline_tool_top");
-        spt.tab.top = top.getElement(".spt_tab_top");
+        //var top = node.getParent(".spt_pipeline_tool_top");
+        //spt.tab.top = top.getElement(".spt_tab_top");
+        spt.tab.set_main_body_tab();
         spt.tab.add_new("processes", "Processes", class_name, kwargs);
         '''
         } )
@@ -1261,7 +1268,6 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 class PipelineInfoWdg(BaseRefreshWdg):
     def get_display(my):
 
-        process = my.kwargs.get("process")
         pipeline_code = my.kwargs.get("pipeline_code")
 
         top = my.top
@@ -1271,8 +1277,8 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
         pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
 
-        if not process:
-            return top
+        if not pipeline:
+            return "Pipeline not found"
 
 
         search_type = pipeline.get_value("search_type")
@@ -1285,11 +1291,19 @@ class PipelineInfoWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         top.add(title_wdg)
-        title_wdg.add("Pipeline: %s" % pipeline.get("name"))
-        title_wdg.add_style("font-size: 1.2em")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "background", -5)
+
+        name = pipeline.get("name")
+        if not name:
+            name = pipeline.get("code")
+        title_wdg.add(name)
+        title_wdg.add_style("font-size: 16px")
+        #title_wdg.add_style("font-weight: bold")
+        #title_wdg.add_color("background", "background", -5)
         title_wdg.add_style("padding: 15px 10px")
+        title_wdg.add("<hr/>")
+
+
+        top.add( my.get_description_wdg(pipeline) )
 
 
         # sobject count
@@ -1298,8 +1312,76 @@ class PipelineInfoWdg(BaseRefreshWdg):
             search.add_filter("pipeline_code", pipeline.get_code())
             sobject_count = search.get_count()
 
+            table = Table()
+            top.add(table)
+            table.add_style('width: auto')
+            table.add_style('margin: 0px 5px')
+
+            table.add_row()
+            td = table.add_cell("Item Count:")
+            td.add_style("text-align: right")
+            td.add_style("padding: 10px 10px")
+            td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % sobject_count)
+            td.add_style("width: 250px")
+            td.add_style("text-align: right")
+
+            button = ActionButtonWdg(title="View")
+            td.add(button)
+            button.add_style("float: right")
+            if not sobject_count:
+                button.add_style("display: none")
+
+            button.add_behavior( {
+                'type': 'click_up',
+                'search_type': search_type,
+                'pipeline_code': pipeline_code,
+                'name': name,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.tools.TableLayoutWdg';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                    op_filters: [['pipeline_code',bvr.pipeline_code]],
+                    show_shelf: false,
+                }
+                spt.tab.set_main_body_tab();
+                var title = "Items ["+bvr.name+"]";
+                spt.tab.add_new(title, title, class_name, kwargs);
+                //spt.panel.load_popup("Items ["+bvr.process+"]", class_name, kwargs);
+                '''
+            } )
+
+
+
 
         return top
+
+
+
+
+    def get_description_wdg(my, pipeline):
+        description = pipeline.get_value("description")
+        desc_div = DivWdg()
+        desc_div.add_style("margin: 10px 10px 20px 10px")
+        desc_div.add("<div><b>Details:</b></div>")
+        text = TextAreaWdg()
+        desc_div.add(text)
+        text.add_style("width: 100%")
+        text.add_style("height: 100px")
+        text.add_style("padding: 10px")
+        text.add(description)
+        text.add_behavior( {
+            'type': 'blur',
+            'search_key': pipeline.get_search_key(),
+            'cbjs_action': '''
+            var desc = bvr.src_el.value;
+            var server = TacticServerStub.get();
+            server.update(bvr.search_key, {description: desc} );
+            '''
+        } )
+
+        return desc_div
+
+
 
 
 
@@ -1407,7 +1489,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         left.add_style("width: 150px")
         left.add_class("spt_connect_column_top")
         left.add_class("spt_dts")
-        left.add_style("padding: 5px")
+        left.add_style("padding: px")
         #left.add_color("background", "background3")
 
 
@@ -1520,8 +1602,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
             var info_top = bvr.src_el.getParent(".spt_pipeline_connector_info");
             var input = spt.api.get_input_values(info_top, null, false);
 
-            console.log(input);
-
             // find the current connector
             var pipeline_code = spt.pipeline.get_current_group();
             var group = spt.pipeline.get_group(pipeline_code);
@@ -1618,6 +1698,32 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 class BaseInfoWdg(BaseRefreshWdg):
 
+    def get_description_wdg(my, process_sobj):
+        description = process_sobj.get_value("description")
+        desc_div = DivWdg()
+        desc_div.add_style("margin: 20px 10px")
+        desc_div.add("<div><b>Details:</b></div>")
+        text = TextAreaWdg()
+        desc_div.add(text)
+        text.add_style("width: 100%")
+        text.add_style("height: 100px")
+        text.add_style("padding: 10px")
+        text.add(description)
+        text.add_behavior( {
+            'type': 'blur',
+            'search_key': process_sobj.get_search_key(),
+            'cbjs_action': '''
+            var desc = bvr.src_el.value;
+            var server = TacticServerStub.get();
+            server.update(bvr.search_key, {description: desc} );
+            '''
+        } )
+
+        return desc_div
+
+
+
+
 
     def get_input_output_wdg(my, pipeline, process):
             
@@ -1648,10 +1754,10 @@ class BaseInfoWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         title_wdg.add("%s" % (process))
-        title_wdg.add_style("font-size: 1.2em")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px")
+        title_wdg.add_style("font-size: 16px")
+        #title_wdg.add_style("font-weight: bold")
+        #title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px 5px 10px")
 
 
         if not show_node_type_select:
@@ -1746,6 +1852,9 @@ class BaseInfoWdg(BaseRefreshWdg):
             select.add_style("float: right")
             select.add_style("margin-top: -5px")
 
+        title_wdg.add("<br clear='all'/>")
+        title_wdg.add("<hr/>")
+
         return title_wdg
 
 
@@ -1753,6 +1862,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 class DefaultInfoWdg(BaseInfoWdg):
+
 
 
     def get_display(my):
@@ -1790,6 +1900,19 @@ class DefaultInfoWdg(BaseInfoWdg):
         search.add_filter("pipeline_code", pipeline_code)
 
         process_sobj = search.get_sobject()
+        if not process_sobj:
+            top.add("No process found.  Please save")
+            return top
+
+
+        info_div = DivWdg()
+        top.add(info_div)
+        info_div.add("A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished")
+        info_div.add_style("margin: 10px 10px 20px 10px")
+
+
+        desc_div = my.get_description_wdg(process_sobj)
+        top.add(desc_div)
 
 
 
@@ -2423,6 +2546,18 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(title_wdg)
 
 
+        info_div = DivWdg()
+        top.add(info_div)
+        info_div.add("An approval process is used a specific user will have the task to approve work down in the previous processes.")
+        info_div.add_style("margin: 10px 10px 20px 10px")
+
+
+
+        desc_div = my.get_description_wdg(process_sobj)
+        top.add(desc_div)
+
+
+
 
 
         input_output_wdg = my.get_input_output_wdg(pipeline, process)
@@ -3043,7 +3178,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
 
 
-__all__.append("ProcessInfoCmd")
 class ProcessInfoCmd(Command):
 
     def execute(my):
@@ -3815,7 +3949,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
 
-        # TEST TEST TEST 
         expr = "@GET(sthpw/pipeline['code','like','%/__TEMPLATE__'].config/process.process)"
         processes = Search.eval(expr)
         processes.sort()
@@ -3892,6 +4025,36 @@ class PipelineEditorWdg(BaseRefreshWdg):
         }
         '''
         } )
+
+
+
+
+
+        button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
+        button_row.add(button)
+
+        menu = Menu(width=200)
+        
+        menu_item = MenuItem(type='action', label='TEST')
+        menu.add(menu_item)
+        # no project code here
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            alert("test");
+            '''
+        } )
+
+
+        tab = PipelineTabWdg()
+        menu = tab.get_extra_tab_menu()
+
+        menus = [menu.get_data()]
+        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
+        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
+ 
+
+
+
 
 
 

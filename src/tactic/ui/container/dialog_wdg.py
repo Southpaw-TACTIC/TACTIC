@@ -154,7 +154,7 @@ class DialogWdg(BaseRefreshWdg):
         else:
             my.content_wdg.add(widget, name)
 
-    def set_as_activator(my, widget, offset=None):
+    def set_as_activator(my, widget, offset=None, position=None):
 
         if isinstance(widget, BaseRefreshWdg):
             try:
@@ -167,10 +167,14 @@ class DialogWdg(BaseRefreshWdg):
         if offset:
             my.offset = offset
 
+
         dialog_id = my.get_id()
+
+
         widget.add_behavior( {
         'type': 'click_up',
         'dialog_id': dialog_id,
+        'position': position,
         'offset': my.offset,
         'cbjs_action': '''
             var pos = bvr.src_el.getPosition();
@@ -192,6 +196,7 @@ class DialogWdg(BaseRefreshWdg):
                 offset.y = offset.y - scroll_top; 
                 offset.x = offset.x - scroll_left; 
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
+
                 // avoid toggle when the dialog is a child of the activator
                 if (!in_dialog)
                     spt.toggle_show_hide(dialog);
@@ -200,6 +205,8 @@ class DialogWdg(BaseRefreshWdg):
                 var size = dialog.getSize();
                 var pos = dialog.getPosition();
                 var win_size = $(document.body).getSize();
+
+
               
                 var dx = pos.x + size.x - (win_size.x + scroll_left);
                 if (dx > 0) {
@@ -207,6 +214,19 @@ class DialogWdg(BaseRefreshWdg):
                     dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
                     //dialog.setStyle("left", win_size.x - size.x +scroll_left- 5);
                 }
+
+
+                // if the position is "right", then set on the right
+                if (bvr.position == "right") {
+                    width = 400
+                    dialog.setStyle("position", "fixed");
+                    dialog.setStyle("width", width);
+                    dialog.setStyle("height", win_size.y);
+                    dialog.setStyle("top", "0px");
+                    dialog.setStyle("left", win_size.x-width);
+                    dialog.setStyle("overflow-y", "auto");
+                }
+
 
                 // adjust the pointer
                 /*
@@ -243,6 +263,8 @@ class DialogWdg(BaseRefreshWdg):
         widget.add_class("spt_dialog_top")
         widget.add_class("spt_popup")
 
+        widget.add_color("background", "background")
+
 
 
         z_index = my.kwargs.get("z_index")
@@ -276,6 +298,8 @@ class DialogWdg(BaseRefreshWdg):
 
 
         show_header = True
+        #show_header = False
+
         show_resize = False
 
 
@@ -286,6 +310,9 @@ class DialogWdg(BaseRefreshWdg):
 
 
         show_pointer = my.kwargs.get("show_pointer")
+        if not show_header:
+            show_pointer = False
+
         if show_pointer not in [False, 'false']:
             from tactic.ui.container import ArrowWdg
             offset_x = 15 - offset.get('x')
@@ -315,28 +342,30 @@ class DialogWdg(BaseRefreshWdg):
         drag_div.add(close_wdg)
 
 
-        anchor_wdg = SpanWdg()
-        drag_div.add(anchor_wdg)
-        anchor_wdg.add_style("margin: 5px 5px 3px 1px")
-        anchor_wdg.add( IconWdg("Anchor Dialog", "BS_PUSHPIN") )
-        anchor_wdg.add_style("float: right")
-        anchor_wdg.add_class("hand")
+        show_anchor = my.kwargs.get("show_anchor")
+        if show_anchor in [True, 'true']:
+            anchor_wdg = SpanWdg()
+            drag_div.add(anchor_wdg)
+            anchor_wdg.add_style("margin: 5px 5px 3px 1px")
+            anchor_wdg.add( IconWdg("Anchor Dialog", "BS_PUSHPIN") )
+            anchor_wdg.add_style("float: right")
+            anchor_wdg.add_class("hand")
 
-        anchor_wdg.add_behavior({
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_dialog_top");
-            var position = top.getStyle("position");
-            if (position == 'fixed') {
-                top.setStyle("position", "absolute");
-                bvr.src_el.setStyle("opacity", "1.0");
-            }
-            else {
-                top.setStyle("position", "fixed");
-                bvr.src_el.setStyle("opacity", "0.5");
-            }
-            '''
-        })
+            anchor_wdg.add_behavior({
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_dialog_top");
+                var position = top.getStyle("position");
+                if (position == 'fixed') {
+                    top.setStyle("position", "absolute");
+                    bvr.src_el.setStyle("opacity", "1.0");
+                }
+                else {
+                    top.setStyle("position", "fixed");
+                    bvr.src_el.setStyle("opacity", "0.5");
+                }
+                '''
+            })
 
 
 
