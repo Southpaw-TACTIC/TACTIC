@@ -1439,7 +1439,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
             handler = WorkflowActionNodeHandler(input=my.input)
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=my.input)
-        elif node_type in ["manual", "node","progress"]:
+        elif node_type in ["manual", "node", "progress"]:
             handler = WorkflowManualNodeHandler(input=my.input)
         elif node_type == "hierarchy":
             handler = WorkflowHierarchyNodeHandler(input=my.input)

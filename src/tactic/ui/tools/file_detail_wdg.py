@@ -167,6 +167,11 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("max-height: 400px")
         metadata_div.add_style("overflow-y: auto")
         metadata_div.add_style("overflow-x: hidden")
+        metadata_div.add_style("margin: 20px 0px 20px 10px")
+
+        metadata_div.add("<div style='font-size: 16px'>File Metadata</div>")
+        metadata_div.add("<div>Metadata extracted directly from the file</div>")
+        metadata_div.add("<hr/>")
 
         parser = my.kwargs.get("parser")
         use_tactic_tags = my.kwargs.get("use_tactic_tags")

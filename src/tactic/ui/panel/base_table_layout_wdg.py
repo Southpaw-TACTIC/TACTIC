@@ -1156,7 +1156,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: -6px")
+            if show_keyword_search:
+                button_div.add_style("margin-left: -6px")
+            else:
+                button_div.add_style("margin-left: 6px")
             wdg_list.append({'wdg': button_div})
 
 
