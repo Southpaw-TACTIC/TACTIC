@@ -342,8 +342,11 @@ class UploadButtonWdg(BaseRefreshWdg):
 
 
 
+        color = my.kwargs.get("color")
+        width = my.kwargs.get("width")
+
         from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title)
+        button = ActionButtonWdg(title=title, color=color, width=width)
 
 
         button_id = my.kwargs.get("id")
@@ -513,8 +516,11 @@ class TestHtml5UploadWdg(BaseRefreshWdg):
         top.add(upload)
         upload_id = upload.get_upload_id()
 
+        color = my.kwargs.get("color")
+        width = my.kwargs.get("width")
+
         from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title="Upload")
+        button = ActionButtonWdg(title="Upload", color=color, width=width)
         top.add(button)
         button.add_behavior( {
             'type': 'click_up',

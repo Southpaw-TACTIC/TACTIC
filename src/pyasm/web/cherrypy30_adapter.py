@@ -91,8 +91,9 @@ class CherryPyAdapter(CherryPyAdapter20):
 
     def get_context_name(my):
         '''this includes all of the subdirectories as well as the main
-        context'''
+        context. Preferabbly it gets the project_code. if not, site_code '''
         path = my.get_request_path()
+        
         p = re.compile( r"/(tactic|projects)/?(\w+)/")
         m = p.search(path)
         if not m:
@@ -101,8 +102,13 @@ class CherryPyAdapter(CherryPyAdapter20):
         from pyasm.security import Site
         site_obj = Site.get()
         path_info = site_obj.break_up_request_path(path)
+        
         if path_info:
             context = path_info.get("project_code")
+            
+            if not context:
+                context = path_info.get("site")
+            
         else:
             context = m.groups()[1]
 

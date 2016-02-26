@@ -974,7 +974,7 @@ class SnapshotMetadataWdg(BaseRefreshWdg):
 
 
         tr = table.add_row()
-        tr.add_gradient("background", "background3")
+        tr.add_color("background", "background", -5)
         th = table.add_header("Property")
         th.add_style("min-width: 200px")
         th.add_style("padding: 5px")
@@ -1063,6 +1063,8 @@ class PathMetadataWdg(BaseRefreshWdg):
 
 
         from pyasm.checkin import PILMetadataParser, ImageMagickMetadataParser, ExifMetadataParser, BaseMetadataParser
+
+        #parser_str = "EXIF"
         if parser_str:
             parser = BaseMetadataParser.get_parser(parser_str, path)
         else:
@@ -1082,10 +1084,10 @@ class PathMetadataWdg(BaseRefreshWdg):
 
 
         table = Table()
-        table.set_max_width()
+        table.add_style("width: 100%")
+        table.add_style("table-layout: fixed")
         top.add(table)
         table.set_unique_id()
-        table.add_border()
 
         table.add_smart_styles("spt_cell", {
             'padding': '3px'
@@ -1094,12 +1096,12 @@ class PathMetadataWdg(BaseRefreshWdg):
 
 
         tr = table.add_row()
-        tr.add_gradient("background", "background3")
+        tr.add_color("background", "background", -5)
         th = table.add_header("Property")
         th.add_style("min-width: 200px")
         th.add_style("padding: 5px")
         th = table.add_header("Value")
-        th.add_style("min-width: 400px")
+        #th.add_style("min-width: 400px")
         th.add_style("padding: 5px")
 
         keys = metadata.get("__keys__")
@@ -1126,7 +1128,7 @@ class PathMetadataWdg(BaseRefreshWdg):
                 tr.add_color("background", "background")
                 tr.add_color("color", "color")
             else:
-                tr.add_color("background", "background", -8)
+                tr.add_color("background", "background", -2)
                 tr.add_color("color", "color")
 
             td = table.add_cell()

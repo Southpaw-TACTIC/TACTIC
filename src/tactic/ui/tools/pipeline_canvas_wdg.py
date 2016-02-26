@@ -171,7 +171,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # inner is used to scale
         inner = DivWdg()
         outer.add(inner)
-        outer.add_color("background", "background", -10)
+        outer.add_color("background", "background", -3)
         inner.add_class("spt_pipeline_scale")
         inner.add_style("z-index: 100")
         inner.add_style("position: relative")

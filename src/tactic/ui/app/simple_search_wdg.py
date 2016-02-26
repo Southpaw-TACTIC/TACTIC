@@ -74,7 +74,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
             my.prefix = 'simple_search'
 
         my.content = None
-        my.top = DivWdg()
 
         my.prefix = 'simple'
         my.search_type = my.kwargs.get("search_type")
@@ -167,11 +166,21 @@ class SimpleSearchWdg(BaseRefreshWdg):
         top.add_style("margin-bottom: -2px")
         top.add_class("spt_filter_top")
 
+
         table = Table()
         top.add(table)
 
+
+        title_div = DivWdg()
+        tr, td = table.add_row_cell()
+        td.add(title_div)
+        title_div.add("<div style='font-size: 16px'>Search Criteria</div>")
+        title_div.add("<div>Select filters to refine your search</div>")
+        title_div.add_style("padding: 20px 0px 0px 20px")
+
         table.add_style("margin-left: auto")
         table.add_style("margin-right: auto")
+        table.add_style("margin-bottom: 15px")
         table.add_style("width: 100%")
 
 
@@ -183,7 +192,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         td = table.add_cell()
         td.add(my.content)
-        my.content.add_style("margin: -2 -1 0 -1")
+        #my.content.add_style("margin: -2 -1 0 -1")
 
 
         show_search = my.kwargs.get("show_search")
@@ -191,6 +200,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             show_search = False
         else:
             show_search = True
+        show_search = False
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
@@ -317,7 +327,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             elements_wdg.add_style("border-width: 0px 0px 0px 0px" )
             elements_wdg.add_style("padding-right: 50px" )
         else:
-            elements_wdg.add_style("border-width: 0px 1px 0px 0px" )
+            elements_wdg.add_style("border-width: 0px 0px 0px 0px" )
 
         table = Table()
         table.add_color("color", "color")
@@ -423,7 +433,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 spacer = DivWdg()
                 spacer.add_class("spt_spacer")
                 spacer.add_style("border-style: solid")
-                spacer.add_style("border-width: 0 1 0 0")
+                spacer.add_style("border-width: 0 0 0 0")
                 #spacer.add_style("height: %spx" % (num_rows*20))
                 spacer.add_style("height: %spx" % (num_rows*20))
                 spacer.add_style("width: 10px")

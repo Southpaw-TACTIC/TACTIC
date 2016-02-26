@@ -11,13 +11,13 @@
 #
 
 
-__all__ = ['ProdSetting']
+__all__ = ['ProdSetting', 'ProjectSetting']
 
 from pyasm.common import Container, TacticException
 from pyasm.search import *
 from project import Project
 
-class ProdSetting(SObject):
+class ProjectSetting(SObject):
     '''Defines all of the settings for a given production'''
 
     SEARCH_TYPE = "config/prod_setting"
@@ -35,9 +35,9 @@ class ProdSetting(SObject):
 
     def _get_container_key(cls, key, search_type=None):
         if search_type:
-            key = "ProdSetting:%s:%s" % (key, search_type)
+            key = "ProjectSetting:%s:%s" % (key, search_type)
         else:
-            key = "ProdSetting:%s" % key
+            key = "ProjectSetting:%s" % key
         return key
 
     _get_container_key = classmethod(_get_container_key)
@@ -79,7 +79,7 @@ class ProdSetting(SObject):
 
         if Project.get_project_name() in ['admin', 'sthpw']:
             return None
-        prod_setting = ProdSetting.get_by_search(search, dict_key)
+        prod_setting = ProjectSetting.get_by_search(search, dict_key)
 
         return prod_setting
 
@@ -133,7 +133,7 @@ class ProdSetting(SObject):
                 key, value = item.split(':')
                 map.append((key, value))
             except Exception, e:
-                raise TacticException('ProdSettings should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
+                raise TacticException('ProjectSetting should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
         return map
     get_map_by_key = classmethod(get_map_by_key)
 
@@ -149,21 +149,21 @@ class ProdSetting(SObject):
                 key, value = item.split(':')
                 dict[key] = value
             except Exception, e:
-                raise TacticException('ProdSettings should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
+                raise TacticException('ProjectSetting should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
         return dict
     get_dict_by_key = classmethod(get_dict_by_key)
 
     
     def create(key, value, type, description='', search_type=''):
-        '''create a ProdSetting'''
+        '''create a ProjectSetting'''
 
         if Project.get_project_name() in ['admin', 'sthpw']:
             return None
 
-        ProdSetting.clear_cache()
-        setting = ProdSetting.get_by_key(key, search_type)
+        ProjectSetting.clear_cache()
+        setting = ProjectSetting.get_by_key(key, search_type)
         if not setting:
-            setting= SObjectFactory.create( ProdSetting.SEARCH_TYPE )
+            setting= SObjectFactory.create( ProjectSetting.SEARCH_TYPE )
             setting.set_value("key", key)
             setting.set_value("value", value)
             
@@ -179,4 +179,9 @@ class ProdSetting(SObject):
         return setting
     create = staticmethod(create)
 
+
+
+# DEPRECATED
+class ProdSetting(ProjectSetting):
+    pass
 

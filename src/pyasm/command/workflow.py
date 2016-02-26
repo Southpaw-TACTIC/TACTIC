@@ -689,7 +689,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
         if process_sobj:
-            workflow = process_sobj.get_json_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", {})
         else:
             workflow = {}
 
@@ -1417,7 +1417,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
             handler = WorkflowActionNodeHandler(input=my.input)
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=my.input)
-        elif node_type in ["manual", "node","progress"]:
+        elif node_type in ["manual", "node", "progress"]:
             handler = WorkflowManualNodeHandler(input=my.input)
         elif node_type == "hierarchy":
             handler = WorkflowHierarchyNodeHandler(input=my.input)

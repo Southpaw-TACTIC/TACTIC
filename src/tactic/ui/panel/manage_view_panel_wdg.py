@@ -823,7 +823,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         # put in the selection for simple or advanced
         detail_wdg.add("Mode: ")
         select = SelectWdg("config_mode")
-        select.add_style("width: 75px")
+        select.add_style("width: 125px")
         values = ['simple', 'advanced']
         select.set_option("values", values)
         
@@ -1177,9 +1177,9 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         input = TextAreaWdg("config_xml")
         input.set_id("config_xml")
         input.set_option("rows", "10")
-        input.set_option("cols", "70")
         input.set_value(my.config_string)
         advanced.add(input)
+        input.add_style("width: 100%")
 
         detail_wdg.add(advanced)
 

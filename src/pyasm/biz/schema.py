@@ -57,6 +57,8 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/notification"/>
     <search_type name="sthpw/sobject_list"/>
 
+    <search_type name="sthpw/translation"/>
+
     <search_type name="sthpw/transaction_log"/>
     <search_type name="sthpw/exception_log"/>
     <search_type name="sthpw/status_log"/>

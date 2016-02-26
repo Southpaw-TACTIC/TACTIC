@@ -18,14 +18,18 @@ import os
 import re
 import string
 import types
+import locale
+
+from dateutil import parser
 
 from event_container import *
 
 from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
-from pyasm.search import Search
+from pyasm.search import Search, SObject, SearchType
 from widget import Widget
 from web_container import WebContainer
-
+from pyasm.biz import PrefSetting
+from pyasm.common import SPTDate
 
 
 
@@ -505,7 +509,7 @@ class HtmlElement(Widget):
         'type': 'load',
         'bvr': behavior,
         'bvr_match_class': match_class,
-        'cbjs_action': '''
+        'cbjs_action': r'''
             var orig_bvr = bvr.bvr;
             var event = orig_bvr.type;
             var match = bvr.bvr_match_class;
@@ -518,7 +522,8 @@ class HtmlElement(Widget):
             var func = function(evt, src_el) {
                 var bvr = orig_bvr;
                 bvr.src_el = src_el;
-                eval(bvr.cbjs_action);
+                eval( "var f = function() {\n"+bvr.cbjs_action+"\n};" )
+                f();
             };
             bvr.src_el.addEvent(event_key, func);
         '''
@@ -851,7 +856,24 @@ class HtmlElement(Widget):
         } )
 
 
+    def get_timezone_value(cls, value, format="%b %d, %Y - %H:%M"):
+        '''given a datetime value, use the My Preferences time zone'''
+        timezone = PrefSetting.get_value_by_key('timezone')
+        
+        if timezone in ["local", '']:
+            value = SPTDate.convert_to_local(value)
+        else:
+            value = SPTDate.convert_to_timezone(value, timezone)
+       
+        try:
+            encoding = locale.getlocale()[1]		
+            value = value.strftime(format).decode(encoding)
+        except:
+            value = value.strftime(format)
 
+        return value
+    
+    get_timezone_value = classmethod(get_timezone_value)
 
 
     def eval_update(cls, update):
@@ -867,7 +889,7 @@ class HtmlElement(Widget):
             expression = handler.get_expression()
             compare = handler.get_compare()
             search_key = handler.get_search_key()
-            parent_key = handler.get_parent_key()
+            expr_key = handler.get_expr_key()
             site = handler.get_site()
 
 
@@ -880,9 +902,9 @@ class HtmlElement(Widget):
             # search key is used to determine whether a change has occured.
             # when it is None, the expression is always evaluated ... however,
             # sometimes a search key is needed for the expression. In this case,
-            # use "parent_key".
+            # use "expr_key".
             search_key = update.get("search_key")
-            parent_key = update.get("parent_key")
+            expr_key = update.get("expr_key")
 
             # NOTE: this is explicitly not supported.  This would allow a client
             # to set the site which is forbidden
@@ -902,8 +924,8 @@ class HtmlElement(Widget):
 
             if search_key:
                 sobject = Search.get_by_search_key(search_key)
-            elif parent_key:
-                sobject = Search.get_by_search_key(parent_key)
+            elif expr_key:
+                sobject = Search.get_by_search_key(expr_key)
             else:
                 sobject = None
 
@@ -913,9 +935,15 @@ class HtmlElement(Widget):
 
             if column:
                 value = sobject.get_value(column)
-                #print "column: ", column
-                #print "value: ", value
-                #print
+
+                data_type = SearchType.get_column_type(sobject.get_search_type(), column)
+                if data_type in ["timestamp","time"]: 
+                    # convert to user timezone
+                    if not SObject.is_day_column(column):
+                        # This date is assumed to be GMT
+                        date = parser.parse(value)
+                        value = cls.get_timezone_value(date)
+
 
             elif compare:
                 value = Search.eval(compare, sobject, single=True)

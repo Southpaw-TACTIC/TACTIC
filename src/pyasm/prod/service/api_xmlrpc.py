@@ -3469,9 +3469,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'checkin_type': checkin_type, 'version': version,
             'process': process
         }
-      
-
-        #checkin = FileCheckin(sobject, file_paths, file_types, context, snapshot_type=snapshot_type, description=description, is_current=is_current, source_paths=source_path, level_type=level_type, level_id=level_id, mode=mode, is_revision=is_revision)
 
         checkin = Common.create_from_class_path(checkin_cls, checkin_args, checkin_kwargs)
 
@@ -4937,8 +4934,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         # initialize the translation module
+        from pyasm.biz import ProdSetting
         from pyasm.biz import Translation
-        Translation.install()
+        language = ProdSetting.get_value_by_key("language")
+        Translation.install(language)
 
         # NOTE: this is deprecated.  The state is in the ticket passed
         # in, so restoration of transaction state is not really necessary

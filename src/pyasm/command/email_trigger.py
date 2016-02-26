@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["EmailTrigger","EmailTrigger2", "EmailTriggerThread", "EmailTriggerTest", "EmailTriggerTestCmd"]
+__all__ = ["EmailTrigger","EmailTrigger2", "EmailTriggerThread", "SendEmail", "EmailTriggerTest", "EmailTriggerTestCmd"]
 
 
 import re
@@ -361,6 +361,81 @@ class EmailTrigger(Trigger):
               
         
     send = classmethod(send)
+
+
+
+
+
+
+class SendEmail(Command):
+
+    '''Class to send an email in a separate thread. The kwargs are as follows:
+        sender_email - string
+        recipient_emails - list of strings
+        msg - string, email message
+        subject - string, email header
+        cc - list of cc in email header
+        bcc - list of strings, email header
+    '''
+    def execute(my):
+        
+        sender_email = my.kwargs.get('sender_email')
+        if not sender_email:
+            sender_email = Environment.get_login().get_full_email()
+            if not sender_email:
+                raise TacticException("Sender's email is empty. Please check the email \
+                    attribute of [%s]." %Environment.get_user_name())
+
+        recipient_emails = my.kwargs.get('recipient_emails')
+        message = my.kwargs.get('msg')
+
+        is_uni = False
+        st = 'plain'
+        charset = 'us-ascii'
+        subject = "Email Test"
+        new_subject = my.kwargs.get('subject')
+        if new_subject:
+            subject = new_subject
+
+
+        cc = my.kwargs.get('cc') or []
+        bcc = my.kwargs.get('bcc') or []
+
+        if type(message) == types.UnicodeType:
+            message = message.encode('utf-8')
+            subject = subject.encode('utf-8')
+            charset = 'utf-8'
+            is_uni = True
+
+        msg = MIMEText(message, _subtype=st, _charset=charset)
+        msg.add_header('Subject', subject)
+        msg.add_header('From', sender_email)
+        msg.add_header('Reply-To', sender_email)
+        msg.add_header('To',  ','.join(recipient_emails))
+        msg.add_header('Date', formatdate(localtime=True))
+        msg.add_header('Cc', ','.join(cc))
+        msg.add_header('Bcc', ','.join(bcc))
+       
+
+        if is_uni:
+            msg.add_header('html_encoding', 'base64')
+
+        recipient_emails = set(recipient_emails)
+        cc = set(cc)
+        bcc = set(bcc)
+
+        recipients =  cc|bcc|recipient_emails
+
+        email = EmailTriggerThread(sender_email, recipients, "%s" %msg.as_string())
+        email.start()
+
+    def is_undoable(cls):
+        return False
+    is_undoable = classmethod(is_undoable)
+
+
+
+
 
 
 class EmailTrigger2(EmailTrigger):

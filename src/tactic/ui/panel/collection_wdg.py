@@ -17,7 +17,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
-from pyasm.web import DivWdg, Table
+from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement, Widget
 from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -33,15 +33,9 @@ import re
 class CollectionAddWdg(BaseRefreshWdg):
 
     def get_display(my):
-        search_type = my.kwargs.get("search_type")
-
-        search = Search(search_type)
-        if not search.column_exists("_is_collection"):
-            return my.top
-
-        search.add_filter("_is_collection", True)
-        collections = search.get_sobjects()
-
+        
+        search_type = my.kwargs.get('search_type')
+        
         top = my.top
         top.add_class("spt_dialog")
         button = IconButtonWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
@@ -56,7 +50,35 @@ class CollectionAddWdg(BaseRefreshWdg):
         dialog.set_as_activator(button, offset={'x':-25,'y': 0})
         dialog.add_title("Collections")
 
-        dialog.add("<div style='margin: 10px'><b>Add selected items to a collection</b></div>")
+        dialog_content = CollectionAddDialogWdg(search_type= search_type)
+        dialog.add(dialog_content)
+        
+        return top
+
+
+class CollectionAddDialogWdg(BaseRefreshWdg):
+    ''' Contents of the dialog activated by CollectionAddWdg'''
+
+    def get_display(my):
+       
+        search_type = my.kwargs.get("search_type")
+
+        search = Search(search_type)
+        if not search.column_exists("_is_collection"):
+            return my.top
+
+        search.add_filter("_is_collection", True)
+        collections = search.get_sobjects()
+
+        
+        dialog = DivWdg()
+        my.set_as_panel(dialog)
+        dialog.add_class('spt_col_dialog_top')
+
+        title_div = DivWdg()
+        title_div.add_style('margin: 10px')
+        title_div.add(HtmlElement.b("Add selected items to collection(s)"))
+        dialog.add(title_div)
 
         add_div = DivWdg()
         dialog.add(add_div)
@@ -75,8 +97,17 @@ class CollectionAddWdg(BaseRefreshWdg):
         insert_view = "edit_collection"
 
         add_div.add_behavior( {
+            'type': 'listen',
+            'event_name': 'refresh_col_dialog',
+            'cbjs_action': '''
+                var dialog_content = bvr.src_el.getParent('.spt_col_dialog_top');
+                spt.panel.refresh(dialog_content);
+            '''})
+
+        add_div.add_behavior( {
             'type': 'click_up',
             'insert_view': insert_view,
+            'event_name': 'refresh_col_dialog',
             'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
@@ -97,7 +128,7 @@ class CollectionAddWdg(BaseRefreshWdg):
                     _is_collection: true
                   }
                 };
-                spt.panel.load_popup("Add New Collection", "tactic.ui.panel.EditWdg", kwargs);
+                spt.panel.load_popup("Create New Collection", "tactic.ui.panel.EditWdg", kwargs);
             '''
         } )
 
@@ -144,6 +175,7 @@ class CollectionAddWdg(BaseRefreshWdg):
             icon="BS_SEARCH",
             icon_pos="right",
             width="100%",
+            height="30px",
             hint_text="'Enter' to search for Colllection...",
             value_column="name",
             filters=filters,
@@ -179,9 +211,10 @@ class CollectionAddWdg(BaseRefreshWdg):
             go_wdg = DivWdg()
             collection_div.add(go_wdg)
             go_wdg.add_style("float: right")
-
-            icon = IconWdg(name="View Collection", icon="BS_CHEVRON_RIGHT")
-            go_wdg.add(icon)
+        
+            #TODO: add some interaction with this arrow
+            # icon = IconWdg(name="View Collection", icon="BS_CHEVRON_RIGHT")
+            # go_wdg.add(icon)
             #go_wdg.add_behavior( {
             #    'type': 'click_upX',
             #    'cbjs_action': '''
@@ -192,7 +225,7 @@ class CollectionAddWdg(BaseRefreshWdg):
 
             name = collection.get_value("name")
             # Adding Collection title (without the number count) as an attribute
-            collection_div.set_attr("collection_name", name)
+            #collection_div.set_attr("collection_name", name)
 
             if not name:
                 name = collection.get_value("code")
@@ -208,6 +241,8 @@ class CollectionAddWdg(BaseRefreshWdg):
             check_div.add_style("margin-top: -3px")
 
             check.add_attr("collection_key", collection.get_search_key() )
+            
+            check.add_attr("collection_name", collection.get_name() )
 
             info_div = DivWdg()
             collection_div.add(info_div)
@@ -232,7 +267,7 @@ class CollectionAddWdg(BaseRefreshWdg):
             var search_keys = spt.table.get_selected_search_keys(false);
 
             if (search_keys.length == 0) {
-                spt.notify.show_message("No assets selected.");
+                spt.notify.show_message("No items selected.");
                 return;
             }
 
@@ -241,37 +276,57 @@ class CollectionAddWdg(BaseRefreshWdg):
             var cmd = "tactic.ui.panel.CollectionAddCmd";
             var server = TacticServerStub.get();
             var is_checked = false;
-
-            var dialog_top = bvr.src_el.getParent(".spt_dialog_top");
-
+            var added = [];
+            var collection_keys = [];
+            
+            var dialog_top = bvr.src_el.getParent(".spt_col_dialog_top");
+            
             for (i = 0; i < checkboxes.length; i++) {
-                var checked_collection_attr = checkboxes[i].attributes;
-                var collection_key = checked_collection_attr[3].value;
-                // Preventing a collection being added to itself, check if search_keys contain collection_key.
-                if (search_keys.indexOf(collection_key) != -1) {
-                    spt.notify.show_message("Collection cannot be added to itself.");
-                    return;
-                }
 
                 if (checkboxes[i].checked == true) {
+                    var collection_key = checkboxes[i].getAttribute('collection_key');
+                    var collection_name = checkboxes[i].getAttribute('collection_name');
+                    
+                    
+                    // Preventing a collection being added to itself, check if search_keys contain collection_key.
+                    if (search_keys.indexOf(collection_key) != -1) {
+                        spt.notify.show_message("Collection [" + collection_name + " ] cannot be added to itself.");
+                        return;
+                    }
                     // if there is at least one checkbox selected, set is_checked to 'true'
                     is_checked = true;
 
-                    var search_keys = spt.table.get_selected_search_keys(false);
-                    var kwargs = {
-                        collection_key: collection_key,
-                        search_keys: search_keys
-                    }
-                    server.execute_cmd(cmd, kwargs);
+                    // If the collection is not being added to itself, append to the list of collection keys
+                    collection_keys.push(collection_key);
                 }
             }
 
             if (is_checked == false) {
                 spt.notify.show_message("No collection selected.");
-                return;
             }
             else {
-                spt.notify.show_message("Assets added to Collection.");
+                var kwargs = {
+                    collection_keys: collection_keys,
+                    search_keys: search_keys
+                }
+                var rtn = server.execute_cmd(cmd, kwargs);
+                var rtn_message = rtn.info.message;
+
+                if (rtn_message['circular'] == 'True') {
+                    var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
+                    spt.notify.show_message("Collection [" + collection_name + " ] is a child of the source [" + parent_collection_names + "]");
+                    
+                    return;
+                }
+                for (var collection_name in rtn_message) {
+                    if (rtn_message[collection_name] != 'No insert')
+                        added.push(collection_name);
+                }
+
+                if (added.length == 0)
+                    spt.notify.show_message("Items already added to Collection.");
+                else 
+                    spt.notify.show_message("Items added to Collection [ " + added.join(', ') + " ].");
                 // refresh dialog_top, so users can see the number change in Collections
                 spt.panel.refresh(dialog_top);
             }
@@ -280,73 +335,199 @@ class CollectionAddWdg(BaseRefreshWdg):
         } )
         
 
-        return top
-
-
+        return dialog
 
 
 class CollectionAddCmd(Command):
 
     def execute(my):
 
-        collection_key = my.kwargs.get("collection_key")
+        collection_keys = my.kwargs.get("collection_keys")
         search_keys = my.kwargs.get("search_keys")
+        message = {} 
 
-        collection = Search.get_by_search_key(collection_key)
-        if not collection:
-            raise Exception("Collection does not exist")
+        if collection_keys == None:
+            collection_keys = []
 
+        for collection_key in collection_keys:
+            collection = Search.get_by_search_key(collection_key)
+            if not collection:
+                raise Exception("Collection does not exist")
 
-        search_type = collection.get_base_search_type()
-        parts = search_type.split("/")
-        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-        search = Search(collection_type)
-        search.add_filter("parent_code", collection.get_code())
-        items = search.get_sobjects()
-
-
-        search_codes = [x.get_value("search_code") for x in items]
-        search_codes = set(search_codes)
-
-
-
-        has_keywords = SearchType.column_exists(search_type, "keywords")
-
-        if has_keywords:
-            collection_keywords = collection.get_value("keywords", no_exception=True)
-            collection_keywords = collection_keywords.split(" ")
-            collection_keywords = set(collection_keywords)
+            collection_name = collection.get("name")
+            search_type = collection.get_base_search_type()
+            parts = search_type.split("/")
+            collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+            search = Search(collection_type)
+            search.add_filter("parent_code", collection.get_code())
+            items = search.get_sobjects()
 
 
+            search_codes = [x.get_value("search_code") for x in items]
+            search_codes = set(search_codes)
 
-        # create new items
+            # Try to find all the parent codes of the destination, and see if there's any that
+            # matches the codes in "search_codes"
+            # Check for parent/child hierarchy in destination to prevent circular relationships        
+            src_collections_codes = []
+            for search_key in search_keys:
+                asset = Search.get_by_search_key(search_key)
+                is_collection = asset.get("_is_collection")
+                if is_collection:
+                    src_collection_code = asset.get("code")
+                    src_collections_codes.append(src_collection_code)
 
-        sobjects = Search.get_by_search_keys(search_keys)
-        for sobject in sobjects:
-            if sobject.get_code() in search_codes:
-                continue
+            if src_collections_codes:
+                collection_code = collection.get("code")
 
-            new_item = SearchType.create(collection_type)
-            new_item.set_value("parent_code", collection.get_code())
-            new_item.set_value("search_code", sobject.get_code())
-            new_item.commit()
+                my.kwargs["collection_code"] = collection_code
+                my.kwargs["collection_type"] = collection_type
+                my.kwargs["search_type"] = search_type
 
+                # Run SQL to find all parent collections(and above) of the selected collections
+                # The all_parent_codes contain all parent codes up the relationship tree
+                # ie. parent collections' parents ...etc
 
-            # copy the metadata of the collection
+                all_parent_codes = my.get_parent_codes()
+
+                all_parent_codes.add(collection_code)
+                all_parent_codes = list(all_parent_codes)
+
+                # Once retrieve the parent codes, use a for loop to check if the the codes in 
+                # src_collections_codes are in parent_codes
+                parent_collection_names = []
+                for parent_code in all_parent_codes:
+                    if parent_code in src_collections_codes:
+                        message['circular'] = "True"
+                        parent_collection_name = Search.get_by_code(search_type, parent_code).get("name")
+                        parent_collection_names.append(parent_collection_name)
+                if parent_collection_names:
+                    message['parent_collection_names'] = parent_collection_names
+                    my.info['message'] = message
+                    return
+
+            has_keywords = SearchType.column_exists(search_type, "keywords")
+
             if has_keywords:
-                keywords = sobject.get_value("keywords")
-
-                keywords = keywords.split(" ")
-                keywords = set(keywords)
-
-                keywords = keywords.union(collection_keywords)
-                keywords = " ".join(keywords)
-
-                sobject.set_value("keywords", keywords)
-                sobject.commit()
+                collection_keywords = collection.get_value("keywords", no_exception=True)
+                collection_keywords = collection_keywords.split(" ")
+                collection_keywords = set(collection_keywords)
 
 
 
+            # create new items
+            has_inserted = False
+
+            sobjects = Search.get_by_search_keys(search_keys)
+            for sobject in sobjects:
+                if sobject.get_code() in search_codes:
+                    continue
+
+                new_item = SearchType.create(collection_type)
+                new_item.set_value("parent_code", collection.get_code())
+                new_item.set_value("search_code", sobject.get_code())
+                new_item.commit()
+                has_inserted = True
+
+                # copy the metadata of the collection
+                if has_keywords:
+                    keywords = sobject.get_value("keywords")
+
+                    keywords = keywords.split(" ")
+                    keywords = set(keywords)
+
+                    keywords = keywords.union(collection_keywords)
+                    keywords = " ".join(keywords)
+
+                    sobject.set_value("keywords", keywords)
+                    sobject.commit()
+
+        
+            if not has_inserted:
+                message[collection_name] = "No insert"
+            else:
+                message[collection_name] = "Insert OK"
+
+        my.info['message'] = message
+        my.add_description("Add [%s] item(s) to [%s] collection(s)" % (len(search_keys), len(collection_keys)))
+
+    def get_parent_codes(my):
+
+        from pyasm.biz import Project
+
+        project = Project.get()
+        sql = project.get_sql()
+        database = project.get_database_type()
+
+        collection_code = my.kwargs.get("collection_code")
+        collection_type = my.kwargs.get("collection_type").split("/")[1]
+        search_type = my.kwargs.get("search_type").split("/")[1]
+        var_dict = {
+            'collection_code': collection_code,
+            'collection_type': collection_type,
+            'search_type': search_type
+        }
+        parent_codes = set()
+
+        if database == "SQLServer":
+            statement = '''
+            WITH res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."search_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+            
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                  CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+
+            Select parent_code from res;
+            '''% var_dict
+        else:
+            statement = '''
+            WITH RECURSIVE res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."search_code"] AS TEXT),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."search_code",
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select parent_code from res;
+            '''% var_dict
+
+
+        results = sql.do_query(statement)
+        for result in results:
+            result = result[0]
+            parent_codes.add(result)
+
+        return parent_codes
 
 
 class CollectionLayoutWdg(ToolLayoutWdg):
@@ -467,7 +648,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var num_result = 0;
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
-                var collection_title = collections[i].attributes[4].nodeValue.toLowerCase();
+                var collection_title = collections[i].attributes[0].value.toLowerCase();
 
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
@@ -493,6 +674,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             search_type = "workflow/asset",
             column="name",
             width="100%",
+            height="30px",
             hint_text="Enter terms to filter collections...",
             value_column="name",
             filters=filters,
@@ -505,16 +687,85 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         text_div.add_style("width: 270px")
         text_div.add_style("display: inline-block")
 
+        # Asset Library folder access
         div.add("<br clear='all'/>")
+        asset_lib_div = DivWdg()
+        div.add(asset_lib_div)
+        folder_icon = IconWdg(icon="FOLDER_2", width='30px')
 
-        # collection
+        asset_lib_div.add(folder_icon)
+        asset_lib_div.add_style("margin: 5px 0px 5px -5px")
+        asset_lib_div.add_style("height: 20px")
+        asset_lib_div.add_style("padding-top: 5px")
+        asset_lib_div.add_style("padding-bottom: 5px")
+        asset_lib_div.add_style("font-weight: bold")
+
+        asset_lib_div.add("Asset Library")
+        asset_lib_div.add_class("tactic_hover")
+        asset_lib_div.add_class("hand")
+        asset_lib_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_collection_top");             
+                var view_panel = top.getParent('.spt_view_panel');
+               
+                spt.panel.refresh(view_panel);
+                '''
+            } )
+
+        # Collections folder structure in the left panel
+        search_type = my.kwargs.get('search_type')
+        collections_div = CollectionFolderWdg(search_type=search_type)
+        div.add(collections_div)
+
+        return div
+
+
+    def get_right_content_wdg(my):
+
+        div = DivWdg()
+        div.add_style("width: 100%")
+        div.add_class("spt_collection_content")
+
+        #shelf_wdg = my.get_header_wdg()
+        #shelf_wdg.add_style("float: right")
+        #div.add(shelf_wdg)
+
+        tile = CollectionContentWdg(
+                search_type=my.search_type,
+                show_shelf=False,
+                show_search_limit=False,
+                sobjects=my.sobjects,
+                detail_element_names=my.kwargs.get("detail_element_names"),
+                do_search='false',
+                upload_mode=my.kwargs.get("upload_mode")
+        )
+        div.add(tile)
+
+        return div
+
+class CollectionFolderWdg(BaseRefreshWdg):
+    '''This is the collections folder structure in CollectionLayoutWdg's left panel. '''
+
+    def get_display(my):
+
+        my.search_type = my.kwargs.get("search_type")
         search = Search(my.search_type)
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
-
         collections_div = DivWdg()
-        collections_div.add_class("spt_collection_list")
+
+        is_refresh = my.kwargs.get("is_refresh")
+        if is_refresh:
+            div = Widget()
+        else:
+            div = DivWdg()
+            my.set_as_panel(div)
+            div.add_class("spt_collection_left_side")
+            
         div.add(collections_div)
+
+        collections_div.add_class("spt_collection_list")
         collections_div.add_style("margin: 5px 0px 5px -5px")
 
         from tactic.ui.panel import ThumbWdg2
@@ -533,21 +784,35 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var top = bvr.src_el.getParent(".spt_collection_top");
             var content = top.getElement(".spt_collection_content");
 
-            bvr.src_el.setStyle("border", "solid 3x blue");
+            
             var list = bvr.src_el.getParent(".spt_collection_list");
             var items = list.getElements(".spt_collection_item");
             for (var i = 0; i < items.length; i++) {
+                items[i].setStyle("background", "");
                 items[i].setStyle("box-shadow", "");
             }
-
-
-
+            bvr.src_el.setStyle("background", "#EEE");
             var collection_key = bvr.src_el.getAttribute("spt_collection_key");
             var collection_code = bvr.src_el.getAttribute("spt_collection_code");
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
 
+            var parent_dict = {};
+            var parent_collection = bvr.src_el.getParent(".spt_subcollection_wdg");
+            var path = collection_path.substring(0, collection_path.lastIndexOf("/"));
+            if (parent_collection) {
+                for (var i = 0; i < collection_path.split("/").length - 1; i++) {
+                    var n = path.lastIndexOf("/");
+                    var collection_name = path.substring(n+1);                
+                    path = path.substring(0, n);
+
+                    var parent_key = parent_collection.getAttribute("spt_parent_key");
+                    parent_dict[collection_name] = parent_key;
+                    parent_collection = parent_collection.getParent(".spt_subcollection_wdg");
+                    
+                }
+            }            
 
             var cls = "tactic.ui.panel.CollectionContentWdg";
             var kwargs = {
@@ -555,15 +820,20 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 path: collection_path,
                 search_type: bvr.search_type,
                 show_shelf: false,
-                show_search_limit: false,
+                show_search_limit: true,
                 expression: expr,
+                parent_dict: parent_dict
             }
             spt.panel.load(content, cls, kwargs);
 
             bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
 
-
-
+            // hide the bottom show_search_limit when clicking into a collection
+            var panel = bvr.src_el.getParent(".spt_panel");
+            var search_limit_div = panel.getElements(".spt_search_limit_top");
+            if (search_limit_div.length == 2){
+                search_limit_div[1].setStyle("visibility", "hidden");
+            }
             '''
         } )
 
@@ -616,30 +886,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             subcollection_wdg.add_class("spt_subcollection_wdg")
             subcollection_wdg.add_style("padding-left: 15px")
 
-
-        return div
-
-
-
-
-    def get_right_content_wdg(my):
-
-        div = DivWdg()
-        div.add_style("width: 100%")
-        div.add_class("spt_collection_content")
-
-        #shelf_wdg = my.get_header_wdg()
-        #shelf_wdg.add_style("float: right")
-        #div.add(shelf_wdg)
-
-        tile = CollectionContentWdg(
-                search_type=my.search_type,
-                show_shelf=False,
-                show_search_limit=False,
-                sobjects=my.sobjects
-        )
-        div.add(tile)
-
         return div
 
 
@@ -651,38 +897,129 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         collection = Search.get_by_search_key(my.collection_key)
 
-
         top = my.top
+        top.add_style("min-height: 400px")
 
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
-
+        my.kwargs["expand_mode"] = "plain"
+        my.kwargs["show_search_limit"] = False
 
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
             **my.kwargs
         )
+        parent_dict = my.kwargs.get("parent_dict")
+        has_parent=False
+        if parent_dict:
+            has_parent = True
 
         path = my.kwargs.get("path")
         if collection and path:
             title_div = DivWdg()
             top.add(title_div)
             title_div.add_style("float: left")
-            title_div.add_style("margin: 15px 0px")
+            title_div.add_style("margin: 15px 0px 15px 30px")
 
-            icon = IconWdg(name="View Collection", icon="BS_FOLDER_OPEN")
-            title_div.add(icon)
-            icon.add_style("margin-right: 10px")
+            asset_lib_span_div = SpanWdg()
+            title_div.add(asset_lib_span_div)
 
+            icon = IconWdg(name="Asset Library", icon="BS_FOLDER_OPEN")
+            
+            asset_lib_span_div.add(icon)
+
+            asset_lib_span_div.add(" <a><b>Asset Library</b></a> ")
+            
             path = path.strip("/")
             parts = path.split("/")
 
-            for part in parts:
+            for idx, part in enumerate(parts):
                 title_div.add(" / ")
-                title_div.add(" <a class='spt_colleciton_link'><b>%s</b></a> " % part)
+                # the last spt_collection_link does not need a search_key
+                if has_parent and (idx is not len(parts) - 1):
+                    search_key = parent_dict.get(part)
+                    title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
+                else:
+                    title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
                 title_div.add_style("margin-top: 10px")
-                title_div.add_style("margin-left: 20px")
-            #title_div.add("/ %s" % collection.get_value("name") )
+
+
+            # Adding behavior to collections link
+
+            parts = my.kwargs.get("search_type").split("/")
+            collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+            
+            exists = SearchType.get(collection_type, no_exception=True)
+            if not exists:
+                title_div.add("SearchType %s is not registered." % collection_type)
+                return top
+
+            # These behaviors are only activated if the view is within collection layout,
+            # "is_new_tab" is a kwargs set to true, if opening a new tab
+            if not my.kwargs.get("is_new_tab"):
+                icon.add_class("hand")
+                icon.add_behavior( {
+                    'type': 'mouseover',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 1.0);
+                    '''
+                } )
+                icon.add_behavior( {
+                    'type': 'mouseout',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle('opacity', 0.6);
+                    '''
+                } )
+                # make icon and All Assets title clickable to return to view all assets
+                asset_lib_span_div.add_class("hand")
+                asset_lib_span_div.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var view_panel = top.getParent(".spt_view_panel");
+
+                    spt.panel.refresh(view_panel);
+                    '''
+                } )
+
+                title_div.add_class("hand")
+                title_div.add_relay_behavior( {
+                    'type': 'mouseup',
+                    'search_type': my.kwargs.get("search_type"),
+                    'collection_type': collection_type,
+                    'bvr_match_class': 'spt_collection_link',
+                    'cbjs_action': '''
+
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var content = top.getElement(".spt_collection_content");
+
+                    var collection_key = bvr.src_el.getAttribute("search_key");
+                    if (!collection_key) {
+                        spt.notify.show_message("Already in the Collection.");
+                    } 
+                    else {
+                        var collection_code = collection_key.split("workflow/asset?project=workflow&code=")[1];
+                        var collection_path = bvr.src_el.innerText;
+                        var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+
+                        var cls = "tactic.ui.panel.CollectionContentWdg";
+                        var kwargs = {
+                            collection_key: collection_key,
+                            path: collection_path,
+                            search_type: bvr.search_type,
+                            show_shelf: false,
+                            show_search_limit: true,
+                            expression: expr
+                        }
+                        spt.panel.load(content, cls, kwargs);
+
+                        bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
+                    }
+
+                    '''
+                } )
+                    
+                #title_div.add("/ %s" % collection.get_value("name") )
 
         #scale_wdg = tile.get_scale_wdg()
         #top.add(scale_wdg)
@@ -712,11 +1049,25 @@ class CollectionContentWdg(BaseRefreshWdg):
                 'collection_key': my.collection_key,
                 'cbjs_action': '''
                 var search_keys = spt.table.get_selected_search_keys(false);
+                var server = TacticServerStub.get();
 
                 if (search_keys.length == 0) {
                     spt.notify.show_message("Nothing selected to remove");
                     return;
                 }
+                
+                // default to false, if there is at least one collection selected, change to true
+                var collection_selected = false;
+                
+                for (i=0; i<search_keys.length; i++){
+                    var sobject = server.get_by_search_key(search_keys[i]);
+
+                    if (sobject._is_collection){
+                        collection_selected = true;
+                        break;
+                    }
+                }
+
                 var ok = null;
                 var cancel = function() { return };
                 var msg = "Are you sure you wish to remove the selected Assets from the Collection?";
@@ -727,12 +1078,19 @@ class CollectionContentWdg(BaseRefreshWdg):
                         collection_key: bvr.collection_key,
                         search_keys: search_keys,
                     }
-                    var server = TacticServerStub.get();
+
                     try {
                         server.execute_cmd(cls, kwargs);
                         spt.table.remove_selected();
                     } catch(e) {
                         spt.alert(spt.exception.handler(e));
+                    }
+
+                    // Refresh left panel only if a collection is removed
+                    if (collection_selected) {
+                        var top = bvr.src_el.getParent(".spt_collection_top");
+                        var collection_left = top.getElement(".spt_collection_left_side");
+                        spt.panel.refresh(collection_left);
                     }
                 }
                 
@@ -822,6 +1180,7 @@ class CollectionRemoveCmd(Command):
         my.search_keys = my.kwargs.get("search_keys")
 
         collection = Search.get_by_search_key(my.collection_key)
+        collection_code = collection.get("code")
         sobjects = Search.get_by_search_keys(my.search_keys)
         search_codes = [x.get_code() for x in sobjects]
 
@@ -839,6 +1198,8 @@ class CollectionRemoveCmd(Command):
         for item in items:
             item.delete()
 
+        my.add_description("Remove [%s] item(s) from Collection [%s]" % (len(my.search_keys), collection_code))
+
 
 class CollectionDeleteCmd(Command):
 
@@ -847,6 +1208,7 @@ class CollectionDeleteCmd(Command):
         my.collection_key = my.kwargs.get("collection_key")
 
         collection = Search.get_by_search_key(my.collection_key)
+        collection_code = collection.get("code")
 
         search_type = collection.get_base_search_type()
         parts = search_type.split("/")
@@ -859,7 +1221,17 @@ class CollectionDeleteCmd(Command):
         for item in items:
             item.delete()
 
+        # Also need to delete the asset_in_asset relationships in its parent collections
+        parent_search = Search(collection_type)
+        parent_search.add_filter("search_code", collection.get_code())
+        parent_items = parent_search.get_sobjects()
+
+        for parent_item in parent_items:
+            parent_item.delete()
+
         collection.delete()
+
+        my.add_description("Remove Collection [%s]" % collection_code)
 
 
 
@@ -937,6 +1309,9 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_top.add_class("spt_collection_div_top")
         collection_div = DivWdg()
         
+        name = collection.get_value("name")
+        # Adding Collection title (without the number count) as an attribute
+        collection_top.set_attr("collection_name", name)
 
         collection_top.add(collection_div)
         collection_top.add_class("tactic_hover")
@@ -951,6 +1326,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_class("spt_tile_top")
         collection_div.add_attr("spt_search_key", collection.get_search_key())
         collection_div.add_attr("spt_search_code", collection.get_code())
+        collection_div.add_attr("spt_name", name)
 
         collection_div.add_style("height: 20px")
         collection_div.add_style("padding-top: 10px")
@@ -991,12 +1367,14 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("margin-left: 23px")
             count_div.add_style("margin-top: -8px")
             count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
-
+            
+            expression = "@COUNT(%s['parent_code','%s'])" % (collection_type, collection.get_code())
             count_div.add(count)
-            #count_div.add_update( {
-            #    'parent_key': collection.get_search_key(),
-            #    'expression': "@COUNT(%s)" % collection_type,
-            #} )
+            count_div.add_update( {
+                #'expr_key': collection.get_search_key(),
+                'expression': expression,
+                'interval': 2
+            } )
 
 
         name = collection.get_value("name")

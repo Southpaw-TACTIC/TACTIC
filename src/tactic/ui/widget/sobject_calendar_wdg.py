@@ -895,14 +895,21 @@ class SObjectCalendarWdg(CalendarWdg):
             div.add_behavior( {
                 'type': "click_up",
                 'sobject_view' : my.custom_sobject_view,
+                'search_type': my.search_type,
+                'day': str(day),
+                'st_title': st_title,
+                'expression': expression,
                 'cbjs_action': '''
-                var class_name = 'tactic.ui.panel.TableLayoutWdg';
-                var title = '%s: %s';
+                //var class_name = 'tactic.ui.panel.TableLayoutWdg';
+                var class_name = 'tactic.ui.widget.SObjectCalendarDayDetailWdg';
+                var title = bvr.st_title + ' ' + bvr.day;
                 var kwargs = {
-                    'search_type': '%s',
+                    'search_type': bvr.search_type,
+                    'day': bvr.day,
+                    'st_title': bvr.st_title,
                     'view': bvr.sobject_view,
                     'show_insert': 'false',
-                    'expression': "%s"
+                    'expression': bvr.expression
                 };
                 spt.app_busy.show("Loading...")
                 setTimeout(function() {
@@ -912,7 +919,7 @@ class SObjectCalendarWdg(CalendarWdg):
                     spt.app_busy.hide();
                 }, 200)
 
-                ''' % (st_title, str(day),my.search_type, expression ),
+                '''
             } )
 
 
@@ -983,6 +990,36 @@ class SObjectCalendarWdg(CalendarWdg):
         div.add_event("onmouseout", "$(this).setStyle('background-color','%s')" % color1)
 
         return div
+
+
+
+__all__.append("SObjectCalendarDayDetailWdg")
+class SObjectCalendarDayDetailWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        from tactic.ui.panel import ViewPanelWdg
+
+        top = my.top
+        top.add_style("margin: 20px")
+
+        day = my.kwargs.get("day")
+        title = my.kwargs.get("st_title")
+        title = Common.pluralize(title)
+
+        title_wdg = DivWdg()
+        top.add(title_wdg)
+        title_wdg.add("<div style='font-size: 25px'>%s for date: %s</div>" % (title, day))
+        title_wdg.add("List of %s that are due on this day." % title)
+        title_wdg.add("<hr/>")
+
+        my.kwargs['show_shelf'] = False
+
+        layout = ViewPanelWdg(**my.kwargs)
+        top.add(layout)
+
+
+        return top
 
 
 

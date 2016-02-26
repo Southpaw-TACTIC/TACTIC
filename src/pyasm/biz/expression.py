@@ -29,7 +29,7 @@ from project import Project
 
 
 def get_expression_key():
-    site = Site.get()
+    site = Site.get_site()
     if site:
         expression_key = "Expression:keys:%s" % site
     else:
@@ -1641,7 +1641,11 @@ class MethodMode(ExpressionParser):
         elif method == 'FORMAT':
             expression = args[0]
             mode = my.get_mode(expression)
+
             result = my.dive(mode, expression=expression)
+            if not result:
+                result = expression
+
 
             args_len = len(args)
             if args_len != 0:

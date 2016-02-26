@@ -17,6 +17,7 @@ from tactic.ui.common import BaseRefreshWdg
 from pyasm.web import DivWdg, WebContainer, Table, WebState, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey
 from pyasm.biz import Snapshot
+from pyasm.widget import TextAreaWdg
 from tactic.ui.panel import TableLayoutWdg
 
 from pyasm.widget import ThumbWdg
@@ -65,11 +66,15 @@ class FileDetailWdg(BaseRefreshWdg):
 
         file_type = "main"
         src = snapshot.get_web_path_by_type(file_type)
+        lib_path = snapshot.get_lib_path_by_type(file_type)
 
 
         parts = os.path.splitext(src)
         ext = parts[1]
         ext = ext.lower()
+
+
+        content_div = DivWdg()
 
         if ext in ['.doc','.xls']:
             from pyasm.widget import ThumbWdg
@@ -88,6 +93,38 @@ class FileDetailWdg(BaseRefreshWdg):
             } )
             href.add_class("hand")
 
+        elif ext in ['.txt','.html', '.ini']:
+            f = open(lib_path, 'r')
+            content = f.read(10000)
+            f.close()
+            if not content:
+                text = "No Content"
+            else:
+
+                size = os.path.getsize(lib_path)
+
+                from pyasm.common import FormatValue
+                value = FormatValue().get_format_value(size, "KB")
+
+                content_div.add("Showing first 10K of %s<hr/>" % value)
+
+                text = TextAreaWdg()
+                text.add(content)
+                text.add_style("width: 100%")
+                text.add_style("height: 300px")
+                text.add_style("padding: 10px")
+                text.add_style("border: none")
+                text.add_attr("readonly", "true")
+
+            content_div.add(text)
+            td.add(content_div)
+            content_div.add_style("color", "#000")
+            content_div.add_style("width", "auto")
+            content_div.add_style("margin", "20px")
+
+
+        elif thumb_path == "__DYNAMIC__":
+            td.add("No Preview")
         else:
             embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path)
             td.add(embed_wdg)
@@ -130,6 +167,11 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("max-height: 400px")
         metadata_div.add_style("overflow-y: auto")
         metadata_div.add_style("overflow-x: hidden")
+        metadata_div.add_style("margin: 20px 0px 20px 10px")
+
+        metadata_div.add("<div style='font-size: 16px'>File Metadata</div>")
+        metadata_div.add("<div>Metadata extracted directly from the file</div>")
+        metadata_div.add("<hr/>")
 
         parser = my.kwargs.get("parser")
         use_tactic_tags = my.kwargs.get("use_tactic_tags")

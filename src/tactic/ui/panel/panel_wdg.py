@@ -2796,6 +2796,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '20'
         }, 
 
+        "show_collection_tool" : {
+            'description': 'determines whether to show the collection button or not',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display',
+            'order': '21'
+        }, 
+
 
         "link": {
             'description': "Definition from a link",
@@ -3025,6 +3033,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         inline_search = "true"
         search = None
         use_last_search = my.kwargs.get('use_last_search')
+        if use_last_search in ['false', "False"]:
+            use_last_search = False
+        else:
+            use_last_search = True
         
         show_search = my.kwargs.get('show_search')
         if show_search in [False,'false']:
@@ -3162,6 +3174,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_insert = my.kwargs.get("show_insert")
         insert_view = my.kwargs.get("insert_view")
         edit_view = my.kwargs.get("edit_view")
+        show_border = my.kwargs.get("show_border")
         show_select = my.kwargs.get("show_select")
         show_refresh = my.kwargs.get("show_refresh")
         show_gear = my.kwargs.get("show_gear")
@@ -3180,6 +3193,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
+        show_collection_tool = my.kwargs.get("show_collection_tool")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3219,6 +3233,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
+            #"shelf_view": my.kwargs.get("shelf_view"),
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
@@ -3227,6 +3242,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "search_key": search_key,
             "parent_key": parent_key,
             "state": my.state,
+            "show_border": show_border,
             "search_class": search_class,
             "search_view": search_view,
             "search_limit": search_limit,
@@ -3253,6 +3269,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "expand_mode": expand_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
+            "show_collection_tool": show_collection_tool
             #"search_wdg": search_wdg
             
         }
@@ -3278,6 +3295,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             kwargs['process'] = my.kwargs.get("process")
             kwargs['gallery_align'] = my.kwargs.get("gallery_align")
+            kwargs['script_path'] = my.kwargs.get("script_path")
+            kwargs['script'] = my.kwargs.get("script")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3290,7 +3309,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
-            kwargs['show_border'] = my.kwargs.get("show_border")
             kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
@@ -3313,8 +3331,24 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
-            from collection_wdg import CardLayoutWdg
-            layout_table = CollectionWdg(**kwargs)
+            kwargs['top_view'] = my.kwargs.get("top_view")
+            kwargs['bottom_view'] = my.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
+            kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['show_scale'] = my.kwargs.get("show_scale")
+            kwargs['styles'] = my.kwargs.get("styles")
+            kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
+            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = my.kwargs.get("title_expr")
+            kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
+            kwargs['overlay_color'] = my.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
+            kwargs['process'] = my.kwargs.get("process")
+            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
+            from collection_wdg import CollectionLayoutWdg
+            layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
@@ -3436,7 +3470,15 @@ spt.view_panel = {}
 spt.view_panel.top = null;
 
 spt.view_panel.set_top = function(top_el) {
+    if (!top_el.hasClass("spt_view_panel_top")) {
+        top_el.getElement(".spt_view_panel_top"); 
+        if (!top_el) {
+            throw("Can't find view panel_top");
+        }
+    }
+
     spt.view_panel.top = top_el;
+
 }
 
 spt.view_panel.get_current_layout = function() {
@@ -3451,11 +3493,16 @@ spt.view_panel.switch_layout = function(layout) {
           
     var top = spt.view_panel.top;
     if (!top) {
-        alert("Error: spt_view_panel_top not found");
-        return;
+        throw("Error: spt_view_panel_top not found");
     }
 
-    var search_type = top.getAttribute("spt_search_type");
+    var layout_el = top.getElement(".spt_layout");
+
+    var search_type = layout_el.getAttribute("spt_search_type");
+
+    if (!search_type) {
+        throw("No search type found");
+    }
 
     var kwargs = {
         search_type: search_type,

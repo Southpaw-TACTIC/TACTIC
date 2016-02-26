@@ -727,6 +727,21 @@ class TacticServerStub(object):
 
 
 
+    def get_message(my, key):
+        '''API Function: gog_message(key)
+
+        Get the message with the appropriate key
+
+        @params
+        key - unique key for this message
+
+        @return
+        message
+        '''
+        return my.server.get_message(my.ticket, key)
+
+
+
     def log_message(my, key, message, status="", category="default"):
         '''API Function: log_message(key, message, status=None, category="default")
 
@@ -1905,7 +1920,7 @@ class TacticServerStub(object):
             checkin_cls='pyasm.checkin.FileCheckin',
             context_index_padding=None,
             checkin_type="", source_path=None,
-            version=None
+            version=None, process=None
     ):
         '''API Function: simple_checkin( search_key, context, file_path, snapshot_type="file", description="No description", use_handoff_dir=False, file_type="main", is_current=True, level_key=None, breadcrumb=False, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None )
 
@@ -1995,7 +2010,8 @@ class TacticServerStub(object):
                                             metadata, mode, is_revision, info,
                                             keep_file_name, create_icon,
                                             checkin_cls, context_index_padding,
-                                            checkin_type, source_path, version)
+                                            checkin_type, source_path,
+                                            version, process)
 
         if mode == 'local':
             # get the naming conventions and move the file to the local repo

@@ -24,6 +24,8 @@ from command import *
 
 class CsvImportCmd(Command):
 
+    ENTRY_ERROR_MSG = "Error creating new entry for row"
+
     def get_title(my):
         return "CSV Import"
 
@@ -46,6 +48,13 @@ class CsvImportCmd(Command):
         my.file_path = web.get_form_value("file_path")
         my.web_url = web.get_form_value("web_url")
         my.test_run = web.get_form_value("test_run")=='true'
+        
+        my.start_index = web.get_form_value("start_index")
+        if my.start_index:
+            try:
+                my.start_index = int(my.start_index)
+            except:
+                my.start_index = None
 
         my.triggers_mode = web.get_form_value("triggers_mode")
         if  my.triggers_mode in ['', 'True']:
@@ -80,6 +89,7 @@ class CsvImportCmd(Command):
         my.columns = []
         my.new_columns = []
         my.new_column_types = []
+        my.note_processes = []
 
 
         for i in range(0, num_columns):
@@ -87,15 +97,23 @@ class CsvImportCmd(Command):
             if enabled  in ['on','true']:
                 my.enabled_idx.append(i)
 
+            # Default column name or '' for new columns
             column =  web.get_form_value("column_%s" % i)
             my.columns.append(column)
-
+ 
+            # New column name if column==''
             new_column = web.get_form_value("new_column_%s" % i)
             if isinstance(new_column, unicode):
                 new_column = my.strip_punctuation(new_column)
-            new_column_type = web.get_form_value("new_column_type_%s" % i)
             my.new_columns.append(new_column)
+            
+            # New column type if column==''
+            new_column_type = web.get_form_value("column_type_%s" % i)
             my.new_column_types.append(new_column_type)
+
+            # New note process if column==('note')
+            new_note_process = web.get_form_value("note_process_%s" % i)
+            my.note_processes.append(new_note_process)
 
         # check for required columns
         sobj = SObjectFactory.create(my.search_type)
@@ -175,6 +193,9 @@ class CsvImportCmd(Command):
         
         # create entries or update values
         for row_count, row in enumerate(csv_data):
+            if my.start_index and row_count < my.start_index:
+                continue
+
             sobject = None
             # if id_col doesn't exist
             is_new_entry = False
@@ -246,21 +267,22 @@ class CsvImportCmd(Command):
 
             
             try:
-                #sobject.commit(triggers=False)
                 sobject.commit(triggers=my.triggers_mode)
 
                 if note:
                     note_obj = SearchType.create("sthpw/note")
                     note_obj.set_value("note", note)
-                    note_obj.set_value("process", "publish")
-                    note_obj.set_value("context", "publish")
+                    note_process = my.note_processes[i]
+                    if not note_process:
+                        note_process = "publish"
+                    note_obj.set_value("process", note_process)
+                    note_obj.set_value("context", note_process)
                     note_obj.set_user()
                     note_obj.set_parent(sobject)
                     note_obj.commit()
 
             except SqlException, e:
-                msg = "Error creating new entry for row [%s]: %s, %s" % (row_count, str(row), e.__str__() )
-                # (Maybe not neccessary) must raise SqlException or it would fail silently
+                msg = "%s [%s]: %s, %s" % (my.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
                 if my.test_run:
                     error = True
                     error_entries.append(sobject.get_code())
@@ -468,7 +490,6 @@ class SimpleCsvImportCmd(Command):
 
             except SqlException, e:
                 msg = "Error creating new entry for row [%s]: %s, %s" % (row_count, str(row), e.__str__() )
-                # (Maybe not neccessary) must raise SqlException or it would fail silently
                 if my.test_run:
                     error = True
                     error_entries.append(sobject.get_code())

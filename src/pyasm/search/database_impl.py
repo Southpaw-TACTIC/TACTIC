@@ -122,7 +122,7 @@ class DatabaseImpl(DatabaseImplInterface):
         return None
     
     def process_date(my, value):
-        '''process date str to work with db before commit. SQLServer needs it'''
+        '''DatabaseImpl process date str to work with db before commit. SQLServer needs it'''
         return value
 
 
@@ -451,14 +451,16 @@ class DatabaseImpl(DatabaseImplInterface):
         return stmt
 
  
-    def get_text_search_filter(cls, column, keywords, column_type, table=None):
+    def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''default impl works with Postgres'''
+
         if isinstance(keywords, basestring):
             def split_keywords(keywords):
                 keywords = keywords.strip()
                 keywords = keywords.replace("  ", "")
                 parts = keywords.split(" ")
-                value = ' | '.join(parts)
+                op_str = " %s " % op
+                value = op_str.join(parts)
                 return value
             
             if keywords.find("|") != -1 or keywords.find("&") != -1:
@@ -1683,6 +1685,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     # Type process methods
     #
     def process_value(my, name, value, column_type="varchar"):
+        '''Postgres process_value'''
         if column_type == 'timestamp':
             quoted = True
             if value == "NOW":

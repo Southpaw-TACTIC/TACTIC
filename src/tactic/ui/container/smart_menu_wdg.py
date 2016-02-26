@@ -92,6 +92,7 @@ class SmartMenuWdg(BaseRefreshWdg):
         smenu_div.add_color("background", "background")
         smenu_div.add_color("color", "color")
 
+
         smenu_div.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -131,28 +132,6 @@ class SmartMenuWdg(BaseRefreshWdg):
         if options and options[0].get('type') != 'title':
             my._add_spacer_row(menu_table, 3, icon_width, icon_col_width, label_width)
 
-
-        """
-        menu_table.add_relay_behavior( {
-            'type': 'mouseenter',
-            'bvr_match_class': 'SPT_SMENU_ENTRY',
-            'bgcolor': menu_table.get_color("side_bar_title", -15, default="background3"),
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background-color", bvr.bgcolor);
-            bvr.src_el.setStyle("color", bvr.bgcolor);
-            spt.smenu.entry_over( evt, bvr );
-            '''
-        } )
-
-        menu_table.add_relay_behavior( {
-            'type': 'mouseleave',
-            'bvr_match_class': 'SPT_SMENU_ENTRY',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background-color", "");
-            spt.smenu.entry_out( evt, bvr );
-            '''
-        } )
-        """
 
 
         for opt in options:
@@ -323,6 +302,7 @@ class SmartMenuSetWdg(BaseRefreshWdg):
         smenu_set_div = DivWdg()
         smenu_set_div.add_class("SPT_SMENU_SET")
         smenu_set_div.add_class("SPT_PUW")
+
 
         if my.match_subset:
             smenu_set_div.set_attr("SPT_SMENU_MATCH_SUBSET","true")

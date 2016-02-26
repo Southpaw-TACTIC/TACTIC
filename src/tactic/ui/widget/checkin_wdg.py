@@ -138,16 +138,18 @@ class CheckinWdg(BaseRefreshWdg):
         my.folder_state = my.get_value("folder_state")
  
         # get the pipeline
+
         my.pipeline = Pipeline.get_by_sobject(my.sobject)
         my.auto_process = False
         if not my.pipeline:
             my.processes = ['publish']
             my.auto_process = True
         else:
-            my.processes = my.pipeline.get_process_names(type=["node"])
+            my.processes = my.pipeline.get_process_names(type=["manual"])
             if not my.processes:
                 my.processes = ['publish']
                 my.auto_process = True
+
         if not my.process:
             # get the last process
             current_process = WidgetSettings.get_value_by_key("current_process")
@@ -898,6 +900,11 @@ spt.checkin.get_checkin_data = function() {
     data['context'] = context;
 
     var description = top.getElement(".spt_checkin_description").value;
+    var deliver = top.getElement(".spt_checkin_deliver");
+    deliver = deliver ? deliver.checked : false;
+
+    var deliver_process = top.getElement(".spt_deliver_process")
+    deliver_process = deliver_process ? deliver_process.value : '';
 
 
     var file_type = 'main';
@@ -912,6 +919,9 @@ spt.checkin.get_checkin_data = function() {
     data['description'] = description;
     data['file_type'] = file_type;
     data['transfer_mode'] = transfer_mode;
+   
+    data['deliver'] = deliver;
+    data['deliver_process'] = deliver_process;
 
     return data;
 
@@ -1152,8 +1162,10 @@ spt.checkin.drop_files = function(evt, el) {
     var search_key = el.getAttribute("spt_search_key");
     var process = el.getAttribute("spt_process");
     var subcontext_options = el.getAttribute("spt_subcontext_options");
-    if (subcontext_options) 
-        subcontext_options = subcontext_options.split('|');
+    // don't split the context or subcontext_options with |
+  
+    var context_options = el.getAttribute("spt_context_options");
+ 
     
     evt.stopPropagation();
     evt.preventDefault();
@@ -1165,7 +1177,7 @@ spt.checkin.drop_files = function(evt, el) {
     // If TEAM
     //var applet = spt.Applet.get();
 
-    var base_dir = 'Selected Files';
+    var base_dir = 'File List';
     var file_names = [];
     var sizes = {};
     var md5s = {};
@@ -1186,7 +1198,8 @@ spt.checkin.drop_files = function(evt, el) {
         md5s: md5s,
         use_applet: 'false',
         process: process,
-        subcontext_options: subcontext_options
+        subcontext_options: subcontext_options,
+        context_options: context_options
     }
 
     var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
@@ -1261,7 +1274,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         my.pipeline_code = my.kwargs.get('pipeline_code')
         my.pipeline = Pipeline.get_by_code(my.pipeline_code)
-
+      
         my.show_links = my.kwargs.get('show_links')
         my.options = my.kwargs.get('options')
 
@@ -1276,6 +1289,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         if not my.process:
             my.process = my.kwargs.get('process')
 
+        # my.process is supposed to be the same as the my.process_sobj process
+        # the publish wdg uses the my.process passed in here assuming sometimes
+        # my.process_sobj has not been updated/outdated or there is no pipeline
         my.context = web.get_form_value('context')
         subcontext = web.get_form_value('subcontext')
         
@@ -1331,7 +1347,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         if not my.mode and my.process_sobj:
             my.mode = my.process_sobj.get_value("checkin_mode", no_exception=True)
-
+       
         if my.process_sobj:
             # we are not passing in this thru kwargs
             my.context_options = my.process_sobj.get_value("context_options", no_exception=True)
@@ -1982,6 +1998,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             #delivery_div.add_style("opacity: 0.5")
 
             checkbox = CheckboxWdg("deliver")
+            checkbox.add_class("spt_checkin_deliver")
             checkbox.add_style("margin-right: 5px")
             delivery_div.add(checkbox)
             delivery_div.add_style("padding-top: 15px")
@@ -2172,7 +2189,9 @@ progress.setStyle("display", "");
 
 
 spt.checkin._get_context = function(process, context, subcontext, is_context, file_path, use_file_name) {
+    if (context == null) context = '';
     var this_context = context;
+    
     if (is_context)
         return this_context;
 
@@ -2210,6 +2229,7 @@ spt.checkin.html5_checkin = function(files) {
     var context = options.context;
     var description = options.description;
     var add_note = options.add_note;
+    var deliver = options.deliver;
 
     var is_current = true;
     var file_type = 'file';
@@ -2220,7 +2240,12 @@ spt.checkin.html5_checkin = function(files) {
     
     var is_context =  options.contexts ? true : false;
     var subcontexts = options.subcontexts;
-    
+   
+    if (is_context) {
+        contexts = spt.checkin.get_selected_contexts();
+        
+    }
+
     server.start({title: 'HTML5 Check-in', description: file_type + ' ' + search_key});
     var transaction_ticket = server.transaction_ticket;
 
@@ -2240,7 +2265,17 @@ spt.checkin.html5_checkin = function(files) {
                 bvr['script'] = script;
                 spt.CustomProject.exec_custom_script(evt, bvr);
             }
-            
+           
+            if (deliver == true) {
+                process = options.deliver_process;
+                if (process.indexOf("|") != -1) {
+                    var parts = process.split("|");
+                    search_key = parts[0];
+                    process = parts[1];
+                }
+            }
+
+
             var note = [];
             if (add_note) {
                 note.push('CHECK-IN');
@@ -2250,7 +2285,7 @@ spt.checkin.html5_checkin = function(files) {
                 var file_path = file.name;
                
                 var subcontext = subcontexts[i];
-                if (is_context)
+                if (is_context) 
                     context = contexts[i];
 
                 var use_file_name = false;
@@ -2465,7 +2500,7 @@ if (custom_options.deliver == "on") {
         search_key = parts[0];
         process = parts[1];
     }
-
+  
 }
 
 
@@ -3162,10 +3197,15 @@ class FileSelectorWdg(BaseRefreshWdg):
 
     def get_drag_files_wdg(my):
         div = DivWdg()
-
+        
         title = DivWdg()
+
+        border_color_light = div.get_color("background2", 18)
+
+        div.add_style("border: 3px dashed %s" % border_color_light)
+
         div.add(title)
-        title.add_style("width: 200px")
+        title.add_style("width: 220px")
         title.add_style("height: 100px")
         title.add_style("margin: 100px auto")
         title.add_style("opacity: 0.3")
@@ -3180,8 +3220,9 @@ class FileSelectorWdg(BaseRefreshWdg):
         div.add_attr("spt_process", my.process)
         context_options = my.kwargs.get("context_options")
         subcontext_options = my.kwargs.get("subcontext_options")
-
+      
         div.add_attr("spt_subcontext_options", '|'.join(subcontext_options))
+        div.add_attr("spt_context_options", '|'.join(context_options))
         div.add_attr("ondragenter", "return false")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.checkin.drop_files(event, this)")
