@@ -72,6 +72,7 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_progress()
             my._test_multi_input()
             my._test_custom_status()
             my._test_messaging()
@@ -91,7 +92,7 @@ class WorkflowCmd(Command):
             raise
 
 
-    def get_pipeline(my, pipeline_xml, add_tasks=False):
+    def get_pipeline(my, pipeline_xml, add_tasks=False, search_type=None):
 
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
@@ -100,6 +101,8 @@ class WorkflowCmd(Command):
         #pipeline.set_id(pipeline_id)
         #pipeline.set_value("id", pipeline_id)
         pipeline.set_value("pipeline", pipeline_xml)
+        if search_type:
+            pipeline.set_value("search_type", search_type)
         pipeline.commit()
 
         process_names = pipeline.get_process_names()
@@ -829,6 +832,101 @@ class WorkflowCmd(Command):
             my.assertEquals( "complete", person.get_value("z") )
 
         my.assertEquals( "complete", city.get_value("c") )
+
+
+
+    def _test_progress(my):
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="progress" name="b" search_type="unittest/person" process="x" status="pending"/>
+          <process type="progress" name="c" search_type="unittest/person" process="z" status="pending"/>
+          <process type="action" name="d"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+          <connect from="c" to="d"/>
+        </pipeline>
+        '''
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+
+        people = []
+
+        person_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="x"/>
+          <process type="action" name="y"/>
+          <process type="manual" name="z"/>
+          <connect from="x" to="y"/>
+          <connect from="y" to="z"/>
+        </pipeline>
+        '''
+        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
+
+        for name in ['Beth', 'Cindy', 'John']:
+            person = SearchType.create("unittest/person")
+            person.set_value("name_first", name)
+            person.set_value("pipeline_code", person_pipeline.get_code())
+            person.set_value("city_code", city.get_code())
+            person.commit()
+
+            person.set_value("x", "null")
+            person.set_value("y", "null")
+            person.set_value("z", "null")
+
+            people.append(person)
+
+
+        # Run the city pipeline
+        process = "a"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+        #person_task = Task.create(person, process="a", description="Test Task")
+        #person_task.set_value("status", "complete")
+        #person_task.commit()
+        for person in people:
+            my.assertEquals( "complete", person.get_value("x") )
+            my.assertEquals( "complete", person.get_value("y") )
+            my.assertEquals( "pending", person.get_value("z") )
+
+
+        my.assertEquals( "complete", city.get_value("a") )
+        my.assertEquals( "complete", city.get_value("b") )
+        my.assertEquals( "in_progress", city.get_value("c") )
+        my.assertEquals( "pending", city.get_value("d") )
+
+
+        # set the manual node
+        for person in people:
+            process = "z"
+            output = {
+                "pipeline": person_pipeline,
+                "sobject": person,
+                "process": process
+            }
+            Trigger.call(my, "process|complete", output)
+
+     
+        my.assertEquals( "complete", person.get_value("z") )
+
+
+
+
+
+
 
 
 

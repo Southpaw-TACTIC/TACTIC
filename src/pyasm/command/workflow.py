@@ -319,14 +319,16 @@ class BaseProcessTrigger(Trigger):
 
 
         # announce callback has been called for any listeners
+        """
         search_type = pipeline.get_value("search_type")
-        event = "workflow|%s" % search_type
-        process_code = process_sobj.get_code()
-        Trigger.call(my, event, kwargs, process=process_code)
+        if search_type:
+            event = "workflow|%s" % search_type
+            process_code = process_sobj.get_code()
+            Trigger.call(my, event, kwargs, process=process_code)
 
-        search_type = pipeline.get_value("search_type")
-        event = "workflow|%s" % search_type
-        Trigger.call(my, event, kwargs, process=process)
+            event = "workflow|%s" % search_type
+            Trigger.call(my, event, kwargs, process=process)
+        """
 
 
         return ret_val
@@ -384,7 +386,6 @@ class BaseProcessTrigger(Trigger):
             # for each process, we need to find the related sobjects
 
 
-
             # so what exactly does this do ...
             # shouldn't this use triggers?
             pipeline_code = process_sobj.get_value("pipeline_code")
@@ -417,6 +418,7 @@ class BaseProcessTrigger(Trigger):
 
 
     def check_complete_inputs(my):
+        # this checks all the dependent inputs to determine whether they are complete.
 
         # Check dependencies
         caller_sobject = my.input.get("related_sobject")
@@ -577,6 +579,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
     def __init__(my, **kwargs):
         super(BaseWorkflowNodeHandler, my).__init__(**kwargs)
+        my.kwargs = kwargs
         my.input = kwargs.get("input")
 
         my.pipeline = my.input.get("pipeline")
@@ -838,6 +841,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
 
+
+
 class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_action(my):
@@ -977,6 +982,10 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
 
 
+
+
+
+
 class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_revise(my):
@@ -1026,7 +1035,6 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             related_status = workflow.get("status")
             related_scope = workflow.get("scope")
             related_wait = workflow.get("wait")
-
 
 
         if not related_search_type:
@@ -1106,6 +1114,14 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         if status not in ['revise','reject'] and related_wait in [False, 'false', None]:
             event = "process|complete"
             Trigger.call(my, event, my.input)
+
+
+
+
+
+class WorkflowProgressNodeHandler(WorkflowDependencyNodeHandler):
+    pass
+
 
 
 
@@ -1308,7 +1324,7 @@ class ProcessPendingTrigger(BaseProcessTrigger):
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=my.input)
             return handler.handle_pending()
-        elif node_type in ["manual", "node", "progress"]:
+        elif node_type in ["manual", "node"]:
             handler = WorkflowManualNodeHandler(input=my.input)
             return handler.handle_pending()
         elif node_type == "hierarchy":
@@ -1325,6 +1341,9 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             return handler.handle_pending()
         elif node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=my.input)
+            return handler.handle_pending()
+        elif node_type == "progress":
+            handler = WorkflowProgressNodeHandler(input=my.input)
             return handler.handle_pending()
 
 
@@ -1358,7 +1377,7 @@ class ProcessActionTrigger(BaseProcessTrigger):
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=my.input)
             return handler.handle_action()
-        elif node_type in ["manual", "node","progress"]:
+        elif node_type in ["manual", "node"]:
             handler = WorkflowManualNodeHandler(input=my.input)
             return handler.handle_action()
         elif node_type == "hierarchy":
@@ -1376,7 +1395,11 @@ class ProcessActionTrigger(BaseProcessTrigger):
         elif node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=my.input)
             return handler.handle_action()
- 
+        elif node_type == "progress":
+            handler = WorkflowProgressNodeHandler(input=my.input)
+            return handler.handle_action()
+
+
 
 
         # Make sure the below is completely deprecated
@@ -1394,11 +1417,9 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
     def execute(my):
 
 
-
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
-
 
 
         if not my.check_complete_inputs():
@@ -1429,6 +1450,8 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
             handler = WorkflowConditionNodeHandler(input=my.input)
         elif node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=my.input)
+        elif node_type == "progress":
+            handler = WorkflowProgressNodeHandler(input=my.input)
 
 
         if handler:
@@ -1465,6 +1488,10 @@ class ProcessRejectTrigger(BaseProcessTrigger):
         if node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=my.input)
             return handler.handle_reject()
+        elif node_type == "progress":
+            handler = WorkflowProgressNodeHandler(input=my.input)
+            return handler.handle_reject()
+
 
 
         my.run_callback(pipeline, process, "reject")
@@ -1507,6 +1534,10 @@ class ProcessReviseTrigger(ProcessRejectTrigger):
         if node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=my.input)
             return handler.handle_revise()
+        elif node_type == "progress":
+            handler = WorkflowProgressNodeHandler(input=my.input)
+            return handler.handle_revise()
+
 
 
         process = my.input.get("process")
@@ -1646,7 +1677,7 @@ class ProcessCustomTrigger(BaseProcessTrigger):
                     'pipeline': pipeline,
                     'process': process_name,
                     'status': to_status,
-                    'data': my.data
+                    #'data': my.data
                 }
                 Trigger.call(my, event, output)
 

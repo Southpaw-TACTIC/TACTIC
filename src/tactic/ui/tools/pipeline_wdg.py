@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd']
 
 import re
 from tactic.ui.common import BaseRefreshWdg
@@ -2936,11 +2936,8 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
 
-        search_type = "vfx/shot"
-
-
         search = Search("sthpw/pipeline")
-        search.add_filter("search_type", search_type)
+        search.add_filter("search_type", related_search_type)
         related_pipelines = search.get_sobjects()
 
         values = set()
