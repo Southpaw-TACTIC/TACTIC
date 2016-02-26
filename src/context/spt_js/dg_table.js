@@ -2701,7 +2701,7 @@ spt.dg_table.search_cbk = function(evt, bvr){
         panel = bvr.panel;
     }
     else if (bvr.src_el.hasClass('spt_view_panel')) {
-        panel = element;
+        panel = bvr.src_el;
     }
     else {
         panel = spt.get_parent(bvr.src_el, ".spt_view_panel");
@@ -2817,7 +2817,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     // this is usually null
     if (search_top == null) {
-        search_top = spt.get_cousin(search_el, ".spt_view_panel", ".spt_search");
+        if (spt.has_class( search_el, "spt_view_panel")){ 
+            search_top = search_el.getElement('.spt_search');
+        } else {
+            search_top = spt.get_cousin(search_el, ".spt_view_panel", ".spt_search");
+        }
     }
     if (search_top == null) {
         spt.panel.refresh(panel);
@@ -2964,7 +2968,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var init_load_num = target.getAttribute("spt_init_load_num");
     var mode = target.getAttribute("spt_mode");
     var no_results_msg = target.getAttribute("spt_no_results_msg");
-
+    var show_border = target.getAttribute("spt_show_border");
+    var show_collection_tool = target.getAttribute("spt_show_collection_tool");
+     
     var height = target.getAttribute("spt_height");
     var element_names;
     var column_widths = [];
@@ -3038,20 +3044,20 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'init_load_num': init_load_num,
         'mode': mode,
         'no_results_msg': no_results_msg,
+        'show_border': show_border,
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
+        'show_collection_tool': show_collection_tool
     }
 
-    var pat = /TileLayoutWdg/;
-    if (pat.test(class_name)) {
-        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names'];
-        for (var k=0; k < attr_list.length; k++) {
-            var attr_val = target.getAttribute('spt_'+ attr_list[k]);
-            if (attr_val)
-                args[attr_list[k]] = attr_val;
-        }
-      
+    var pat = /TileLayoutWdg|CollectionLayoutWdg/;
+    //if (pat.test(class_name)) { }
+    var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names','hide_checkbox'];
+    for (var k=0; k < attr_list.length; k++) {
+        var attr_val = target.getAttribute('spt_'+ attr_list[k]);
+        if (attr_val)
+            args[attr_list[k]] = attr_val;
     }
 
     if (bvr.extra_args) {

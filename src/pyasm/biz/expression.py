@@ -29,7 +29,7 @@ from project import Project
 
 
 def get_expression_key():
-    site = Site.get()
+    site = Site.get_site()
     if site:
         expression_key = "Expression:keys:%s" % site
     else:

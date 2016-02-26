@@ -19,6 +19,11 @@ from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
 
+'''
+"node" and "manual" type nodes are synonymous, but the latter 
+is preferred as of 4.5
+'''
+
 
 PREDEFINED = [
         'pending',
@@ -707,7 +712,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
         if process_sobj:
-            workflow = process_sobj.get_json_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", {})
         else:
             workflow = {}
 

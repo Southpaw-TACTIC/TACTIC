@@ -22,7 +22,7 @@ from pyasm.command import Command, CommandExitException, DatabaseAction
 from pyasm.search import Search, SObjectFactory, SObject, Sql
 from pyasm.biz import Pipeline, Timecard, Project, Task
 from pyasm.web import *
-from pyasm.widget import IconSubmitWdg, HiddenWdg, WidgetConfig, HintWdg, ExpandableTextWdg, CalendarInputWdg
+from pyasm.widget import IconSubmitWdg, HiddenWdg, WidgetConfigView, HintWdg, ExpandableTextWdg, CalendarInputWdg
 from pyasm.common import *
 from input_wdg import TextWdg, CalendarWdg, SelectWdg, ActionSelectWdg, FilterSelectWdg
 from table_element_wdg import BaseTableElementWdg
@@ -668,7 +668,7 @@ class TimecardCreateCmd(DatabaseAction):
         my.web = WebContainer.get_web()
         search_type = my.sobject.get_search_type_obj()
         
-        config = WidgetConfig.get_by_search_type(search_type, "insert", local_search=True)
+        config = WidgetConfigView.get_by_search_type(search_type, "insert", local_search=True)
         columns = config.get_element_names()
 
         if len(columns) != 3:

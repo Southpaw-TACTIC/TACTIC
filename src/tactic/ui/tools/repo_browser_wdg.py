@@ -1759,14 +1759,28 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
         top = my.top
 
-        search_type = my.kwargs.get("search_type")
-        project_code = Project.get_project_code()
-        #search_type = "%s?project=%s" % (search_type, project_code)
-        search_type = Project.get_full_search_type(search_type, project_code=project_code)
+        search_key = my.kwargs.get("search_key")
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+            search_type = sobject.get_search_type()
+            snapshot = Snapshot.get_latest_by_sobject(sobject)
+            if not snapshot:
+                raise Excpetion("No snapshot found")
 
-        dirname = my.kwargs.get("dirname")
-        basename = my.kwargs.get("basename")
-        path = "%s/%s" % (dirname, basename)
+            path = snapshot.get_lib_path_by_type()
+            dirname = os.path.dirname(path)
+            basename = os.path.basename(path)
+
+        else:
+            search_type = my.kwargs.get("search_type")
+            project_code = Project.get_project_code()
+            #search_type = "%s?project=%s" % (search_type, project_code)
+            search_type = Project.get_full_search_type(search_type, project_code=project_code)
+
+            dirname = my.kwargs.get("dirname")
+            basename = my.kwargs.get("basename")
+            path = "%s/%s" % (dirname, basename)
+
 
         asset_dir = Environment.get_asset_dir()
         if not dirname.startswith(asset_dir):

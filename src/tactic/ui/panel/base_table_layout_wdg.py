@@ -9,6 +9,8 @@
 #
 #
 #
+
+
 __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
@@ -558,10 +560,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.search_wdg:
             my.search_wdg = my.kwargs.get("search_wdg")
         if not my.search_wdg:
+            search = my.kwargs.get("search")
+
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
+            my.search_wdg = SearchWdg(search=search, search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
         search = my.search_wdg.get_search()
@@ -589,6 +593,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if expr_search:
             search.add_relationship_search_filter(expr_search)
 
+        keywords = my.kwargs.get('keywords')
+        if keywords:
+            keywords_column = 'keywords'
+            search.add_text_search_filter(keywords_column, keywords)
 
         if my.connect_key == "__NONE__":
             search.set_null_filter()
@@ -756,27 +764,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_color("color", "color")
         
         border_color = div.get_color("table_border",  default="border")
-        
-        div.add_styles('border-top: solid 1px %s;' % border_color)
 
-        #div.add_gradient("background", "background")
+       
         div.add_color("background", "background",-3)
 
+        """
         if not my.kwargs.get("__hidden__"):
-            #div.add_style("margin-left: -1px")
-            #div.add_style("margin-right: -1px")
 
-            #div.add_border()
-            div.add_style("border-width: 1px 1px 0px 1px")
+            #div.add_style("border-width: 1px 1px 0px 1px")
+            div.add_style("border-width: 1px 0px 1px 0px")
             div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % div.get_color("border"))
-            div.add_style("border-color: #BBB")
+            div.add_style("border-color: %s" % border_color)
 
         else:
+
             div.add_style("border-width: 0px 0px 0px 0px")
             div.add_style("border-style: solid")
-            div.add_style("border-color: %s" % div.get_color("table_border"))
-        #div.add_color("background", "background3")
+            div.add_style("border-color: %s" % border_color)
+        """
 
 
         # the label on the commit button
@@ -1176,6 +1181,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
+        show_collection_tool = my.kwargs.get("show_collection_tool")
+
+        if show_collection_tool not in ["false", False] and SearchType.column_exists(my.search_type, "_is_collection"):
+            from collection_wdg import CollectionAddWdg
+            collection_div = CollectionAddWdg(search_type=my.search_type)
+            wdg_list.append( {'wdg': collection_div} )
+        
+
+
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
             wdg_list.append( { 'wdg': spacing_divs[0] } )
@@ -1262,11 +1276,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             xx.add_style("float: left")
             xx.add_style("margin-left: -25")
             xx.add_style("margin-top: -5")
-            div.add_style("opacity: 0.6")
+            #div.add_style("opacity: 0.6")
             height = "32px"
         else:
             height = "41px"
-            div.add_style("opacity: 0.6")
+            #div.add_style("opacity: 0.6")
 
 
         outer.add(div)
@@ -1276,17 +1290,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             outer.add(my.view_save_dialog)
 
         outer.add_style("min-width: 750px")
-        #outer.add_style("width: 300px")
-        #outer.add_style("overflow: hidden")
-        #outer.add_class("spt_resizable")
-
-        #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
-        div.add_style("margin: 0px -1px 0px -1px")
+        #div.add_style("margin: 0px -1px 0px -1px")
 
         
-        
-
+        # This was included when our icons had color and we heavily used hidden row.
+        # The shelf lit everything up ... with the new glyph icons, I think this isn't
+        # necessary anymore. 
+        """
         div.add_behavior( {
             'type': 'mouseenter',
             'cbjs_action': '''
@@ -1299,6 +1310,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             bvr.src_el.setStyle("opacity", 0.6);
             '''
         } )
+        """
 
 
 
@@ -1315,7 +1327,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_save_button(my):
         show_save = True
 
-        if my.edit_permission == False:
+        if my.edit_permission == False or not my.view_editable:
             show_save = False
 
         if not my.can_save():
@@ -1566,8 +1578,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
             # collection
-            #if SearchType.column_exists(my.search_type, "is_collection"):
-            if True:
+            if SearchType.column_exists(my.search_type, "_is_collection"):
                 menu_item = MenuItem(type='action', label='Add New Collection')
                 menu_item.add_behavior( {
                     'cbjs_action': '''
@@ -3052,3 +3063,109 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         return access_keys
 
 
+    def handle_no_results(my, table):
+        ''' This creates an empty html table when the TableLayout has no entries.
+        There are two helper functions, add_no_results_bvr and add_no_results_style
+        which can be overridden to support custom behaviors and appearances.'''
+
+        no_results_mode = my.kwargs.get('no_results_mode')
+
+        if no_results_mode == 'compact':
+
+            tr, td = table.add_row_cell()
+            tr.add_class("spt_table_no_items")
+            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
+            msg.add_style("text-align: center")
+            msg.add_style("padding: 5px")
+            msg.add_style("opacity: 0.5")
+            td.add(msg)
+            return
+
+        table.add_style("width: 100%")
+
+        tr, td = table.add_row_cell()
+
+        my.add_no_results_bvr(tr)
+
+        tr.add_class("spt_table_no_items")
+        td.add_style("border-style: solid")
+        td.add_style("border-width: 1px")
+        td.add_color("border-color", "table_border", default="border")
+        td.add_color("color", "color")
+        td.add_color("background", "background", -3)
+        td.add_style("min-height: 250px")
+        td.add_style("overflow: hidden")
+
+        my.add_no_results_style(td)
+
+        msg_div = DivWdg()
+        td.add(msg_div)
+        msg_div.add_style("text-align: center")
+        msg_div.add_style("float: center")
+        msg_div.add_style("margin-left: auto")
+        msg_div.add_style("margin-right: auto")
+        msg_div.add_style("margin-top: -260px")
+
+
+        if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
+            msg = DivWdg("<i>-- Initial search set to no results --</i>")
+        else:
+
+            no_results_msg = my.kwargs.get("no_results_msg")
+
+            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
+            #msg.set_box_shadow("0px 0px 5px")
+            if no_results_msg:
+                msg.add("<br/>"*2)
+                msg.add(no_results_msg)
+
+            elif my.get_show_insert():
+                msg.add("<br/><br/>Click on the &nbsp;")
+                icon = IconWdg("Add", "BS_PLUS")
+                msg.add(icon)
+                msg.add(" button to add new items")
+                msg.add("<br/>")
+                msg.add("or ")
+                msg.add("alter search criteria for new search.")
+            else:
+                msg.add("<br/>"*2)
+                msg.add("Alter search criteria for new search.")
+
+        msg_div.add(msg)
+
+        msg.add_style("padding-top: 20px")
+        msg.add_style("height: 100px")
+        msg.add_style("width: 400px")
+        msg.add_style("margin-left: auto")
+        msg.add_style("margin-right: auto")
+        msg.add_color("background", "background3")
+        msg.add_color("color", "color3")
+        msg.add_border()
+
+        msg_div.add("<br clear='all'/>")
+        td.add("<br clear='all'/>")
+
+    def add_no_results_bvr(my, tr):
+        ''' This adds a default drag and drop behavior to an empty table.
+        Override it in classes that extend BaseTableLayoutWdg to handle
+        custom drag/drop behaviors '''
+
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+    def add_no_results_style(my, td):
+        ''' This adds the default styling to an empty table.
+        Override it in classes that extend BaseTableLayoutWdg if you
+        want something different'''
+
+        for i in range(0, 10):
+            div = DivWdg()
+            td.add(div)
+            div.add_style("height: 30px")
+
+            if i % 2:
+                div.add_color("background", "background")
+            else:
+                div.add_color("background", "background", -3)

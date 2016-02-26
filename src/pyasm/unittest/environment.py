@@ -50,7 +50,7 @@ class UnittestEnvironment(object):
 
     def delete(my):
         print "Deleting existing Unittest project"
-        related_types = ["sthpw/schema", "sthpw/task"]
+        related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
         delete_cmd = DeleteProjectCmd(project_code=my.project_code, related_types=related_types)
         delete_cmd.execute()
 

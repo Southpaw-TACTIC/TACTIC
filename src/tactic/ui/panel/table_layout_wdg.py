@@ -36,7 +36,7 @@ from base_table_layout_wdg import BaseTableLayoutWdg
 
 
 class FastTableLayoutWdg(BaseTableLayoutWdg):
-    
+    SCROLLBAR_WIDTH = 17
     ARGS_KEYS = {
 
         "mode": {
@@ -146,6 +146,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false|none',
             'order': '08'
         },
+
         
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
@@ -183,7 +184,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         },
 
 
-
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '14',
+            'category': 'Display'
+        },
+ 
+ 
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
@@ -203,6 +212,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'default|compact',
             'category': 'Display',
             'order': '15'
+        },
+
+        "show_collection_tool": {
+            'description': 'determines whether to show the collection button or not',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display',
+            'order': '16'
         }
         
 
@@ -477,6 +494,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
 
+        elif my.kwargs.get("sobjects"):
+            my.sobjects = my.kwargs.get("sobjects")
 
 
 
@@ -521,49 +540,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # Make this into a function.  Former code is kept here for now.
         my._process_search_args()
-        """
-        # this is different name from the old table selected_search_keys
-        search_keys = my.kwargs.get("search_keys")
-      
-        # if a search key has been explicitly set without expression, use that
-        expression = my.kwargs.get('expression') 
-        matched_search_key = False
-        if my.search_key:
-            base_search_type = SearchKey.extract_base_search_type(my.search_key)
-        else:
-            base_search_type = ''
-
-        if my.search_type == base_search_type:
-            matched_search_key = True
-        if search_keys and search_keys != '[]':
-            if isinstance(search_keys, basestring):
-                if search_keys == "__NONE__":
-                    search_keys = []
-                else:
-                    search_keys = search_keys.split(",")
-
-            # keep the order for precise redrawing/ refresh_rows purpose
-            if not search_keys:
-
-                my.sobjects = []
-            else:
-                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-
-            my.items_found = len(my.sobjects)
-            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
-        elif my.search_key and matched_search_key and not expression:
-            sobject = Search.get_by_search_key(my.search_key)
-            if sobject: 
-                my.sobjects = [sobject]
-                my.items_found = len(my.sobjects)
-
-
-        elif my.kwargs.get("do_search") != "false":
-            my.handle_search()
-        """
-
-
-
 
         # set some grouping parameters
         my.process_groups()
@@ -601,8 +577,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
         inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px 1px 0px 0px")
-        inner.add_style("border-color", inner.get_color("border", -10))
+        inner.add_style("border-width: 0px")
+        inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -870,8 +846,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if height:
                 scroll.add_style("height: %s" % height)
 
+            # Always adding a scroll bar, but using margin-right to hide it
+            #scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
+            #scroll.add_style("overflow-y: scroll")
             scroll.add_style("overflow-y: auto")
-            scroll.add_style("overflow-x: hidden")
+            scroll.add_style("overflow-x: hidden")  
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -1723,20 +1702,36 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # set styles at the table level to be relayed down
         border_color = table.get_color("table_border", default="border")
-        table.add_smart_styles("spt_table_select", {
-            "border": "solid 1px %s" % border_color,
+
+
+                
+        select_styles = {
             "width": "30px",
             "min-width": "30px"
-        } )
+        }
 
 
-        table.add_smart_styles("spt_cell_edit", {
-            "border": "solid 1px %s" % border_color,
-            "padding": "3px",
+
+        cell_styles = {
+            "padding": "3px 8px",
+
             "vertical-align": "top",
             "background-repeat": "no-repeat",
             "background-position": "bottom right",
-        } )
+        }
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            cell_styles["border"] = "solid 1px %s" % border_color
+            cell_styles["padding"] = "3px"
+            select_styles["border"] = "solid 1px %s" % border_color
+
+
+
+
+        table.add_smart_styles("spt_table_select", select_styles)
+        table.add_smart_styles("spt_cell_edit", cell_styles)
 
         
         is_editable = my.kwargs.get("is_editable")
@@ -1842,6 +1837,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.edit_wdgs = {}
         table = Table()
         table.add_style("display: none")
+        table.add_class("spt_table_insert_table")
 
         insert_sobject = SearchType.create(my.search_type)
 
@@ -1895,13 +1891,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
 
+
         if my.kwargs.get("__hidden__") == True:
             tr.add_color("background", "background", -8)
             border_color = table.get_color("table_border", default="border")
-            tr.add_gradient("background", "background", -5, -10)
         else:
-            #tr.add_gradient("background", "background", -5, -10)
-            #border_color = table.get_color("table_border", -10, default="border")
             tr.add_color("background", "background", -5)
             border_color = table.get_color("table_border", 0, default="border")
        
@@ -1937,7 +1931,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th.add_class("spt_table_header")
             th.add_class("spt_table_header_%s" %my.table_id)
             th.add_attr("spt_element_name", name)
-            th.add_style("border: solid 1px %s" % border_color)
+
+
+            show_border = my.kwargs.get("show_border")
+            if show_border not in [False, "false"]:
+                th.add_style("border: solid 1px %s" % border_color)
 
             edit_wdg = my.edit_wdgs.get(name)
             if edit_wdg:
@@ -2440,107 +2438,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         tr.add_color("background", "background3", 5)
         tr.add_color("color", "color3")
-        
-
-
-
-    def handle_no_results(my, table):
-
-        no_results_mode = my.kwargs.get('no_results_mode')
-        if no_results_mode == 'compact':
-
-            tr, td = table.add_row_cell()
-            tr.add_class("spt_table_no_items")
-            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
-            msg.add_style("text-align: center")
-            msg.add_style("padding: 5px")
-            msg.add_style("opacity: 0.5")
-            td.add(msg)
-            return
-     
-
-        #table.add_attr("ondragenter", "return false")
-        #table.add_attr("ondragover", "return false")
-        #table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
-
-
-        table.add_style("width: 100%")
-
-
-        tr, td = table.add_row_cell()
-
-        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
-        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
-        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
-
-
-
-        tr.add_class("spt_table_no_items")
-        td.add_style("border-style: solid")
-        td.add_style("border-width: 1px")
-        td.add_color("border-color", "table_border", default="border")
-        #td.add_border()
-        td.add_color("color", "color")
-        td.add_color("background", "background", -7)
-        td.add_style("min-height: 250px")
-        td.add_style("overflow: hidden")
-
-        for i in range(0, 10):
-            div = DivWdg()
-            td.add(div)
-            div.add_style("height: 30px")
-            if i % 2:
-                div.add_color("background", "background")
-            else:
-                div.add_color("background", "background", -3)
-
-
-        msg_div = DivWdg()
-        td.add(msg_div)
-        msg_div.add_style("text-align: center")
-        msg_div.add_style("float: center")
-        msg_div.add_style("margin-left: auto")
-        msg_div.add_style("margin-right: auto")
-        msg_div.add_style("margin-top: -260px")
-
-
-        if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
-            msg = DivWdg("<i>-- Initial search set to no results --</i>")
-        else:
-
-            no_results_msg = my.kwargs.get("no_results_msg")
-
-            msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
-            #msg.set_box_shadow("0px 0px 5px")
-            if no_results_msg:
-                msg.add("<br/>"*2)
-                msg.add(no_results_msg)
-
-            elif my.get_show_insert():
-                msg.add("<br/><br/>Click on the &nbsp;")
-                icon = IconWdg("Add", "BS_PLUS")
-                msg.add(icon)
-                msg.add(" button to add new items")
-                msg.add("<br/>")
-                msg.add("or ")
-                msg.add("alter search criteria for new search.")
-            else:
-                msg.add("<br/>"*2)
-                msg.add("Alter search criteria for new search.")
-
-        msg_div.add(msg)
-
-        msg.add_style("padding-top: 20px")
-        msg.add_style("height: 100px")
-        msg.add_style("width: 400px")
-        msg.add_style("margin-left: auto")
-        msg.add_style("margin-right: auto")
-        msg.add_color("background", "background3")
-        msg.add_color("color", "color3")
-        msg.add_border()
-
-        msg_div.add("<br clear='all'/>")
-        td.add("<br clear='all'/>")
 
 
 
@@ -2876,7 +2773,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #th.add_gradient("background", "background", -10)
         if not border_color:
             border_color = table.get_color("table_border", 0, default="border")
-        th.add_style("border", "solid 1px %s" % border_color)
+
+
+
+        show_border = my.kwargs.get("show_border")
+        if show_border not in [False, "false"]:
+            th.add_style("border", "solid 1px %s" % border_color)
+
         th.add_looks( 'dg_row_select_box' )
         th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
@@ -3094,6 +2997,11 @@ spt.table.run_search = function(kwargs) {
     spt.dg_table.search_cbk( {}, bvr );
 }
 
+// Search methods
+spt.table.do_search = function(kwargs) {
+    return spt.table.run_search(kwargs);
+}
+
 
 // Preview methods
 
@@ -3114,7 +3022,8 @@ spt.table.dragleave_row = function(evt, el) {
 }
 
 
-
+// drop_row does NOT drop a row from the table
+// It refers to the action of DROPPING A ROW INTO the table
 spt.table.drop_row = function(evt, el) {
     evt.stopPropagation();
     evt.preventDefault();
@@ -3865,7 +3774,10 @@ spt.table.add_new_item = function(kwargs) {
         kwargs = {};
     }
 
-    var insert_row = spt.table.get_insert_row();
+    var layout = spt.table.get_layout();
+    var table = layout.getElement(".spt_table_insert_table")
+    var insert_row = table.getElement(".spt_table_insert_row");
+    //var insert_row = spt.table.get_insert_row();
 
     var row;
     var position;
@@ -4869,6 +4781,12 @@ spt.table.save_changes = function(kwargs) {
         search_dict = spt.table.get_search_values(search_top);
        
     }
+
+    var layout_top = table.getParent(".spt_layout_top");
+    var expand_on_load = true;
+    if (layout_top) {
+        expand_on_load = layout_top.getProperty("spt_expand_on_load");
+    }
     
     try {
         var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
@@ -4877,7 +4795,7 @@ spt.table.save_changes = function(kwargs) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
-                var kw = {refresh_bottom : true, json: search_dict};
+                var kw = {refresh_bottom : true, json: search_dict, expand_on_load: expand_on_load};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
         }
@@ -5032,8 +4950,9 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // default to update bottom row color
     if (kw['refresh_bottom'] == null) kw.refresh_bottom = true;
 
-    
-
+    var expand_on_load = kw.expand_on_load;
+    if (expand_on_load == null) expand_on_load = true;
+ 
     //var layout = spt.table.get_layout();
     // this is more reliable when multi table are drawn in the same page while
     // refresh is happening
@@ -5084,7 +5003,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         show_select: show_select,
         element_names: element_names,
         group_elements: group_elements,
-        config_xml: config_xml
+        config_xml: config_xml,
+        expand_on_load: expand_on_load
     }
 
     if (layout == "tile") {
@@ -5112,15 +5032,15 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
-
-            // transfer the widths to the new row
-            var widths = spt.table.get_column_widths();
-            for (var element_name in widths) {
-                var width = widths[element_name];
-                spt.table.set_column_width(element_name, width);
+         
+            if (['false', "False", false].indexOf(expand_on_load) > -1) {
+                // transfer the widths to the new row
+                var widths = spt.table.get_column_widths();
+                for (var element_name in widths) {
+                    var width = widths[element_name];
+                    spt.table.set_column_width(element_name, width);
+                }
             }
-
-
 
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
@@ -5640,8 +5560,9 @@ spt.table.set_column_width = function(element_name, width) {
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
-    insert_cell.setStyle("width", width);
-  
+    if (insert_cell)
+        insert_cell.setStyle("width", width);
+   
 }
 
 

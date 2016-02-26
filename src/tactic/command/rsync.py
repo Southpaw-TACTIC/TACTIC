@@ -39,11 +39,44 @@ class RSync(object):
 
     def execute(my):
         base_dir = my.kwargs.get("base_dir")
-        relative_dir = my.kwargs.get("relative_dir")
-        file_name = my.kwargs.get("file_name")
-        to_path = my.kwargs.get("to_path")
 
-        from_path = "%s/./%s/%s" % (base_dir, relative_dir, file_name)
+        relative_dir = my.kwargs.get("relative_dir")
+
+        # if not file_name is given, then the default is to recurse through
+        # relative_dir
+        file_name = my.kwargs.get("file_name")
+        if not file_name:
+            file_name = ""
+
+        from_paths = []
+
+        relative_paths = my.kwargs.get("relative_paths")
+        from_path = my.kwargs.get("from_path")
+
+
+        # support multiple relative paths
+        if relative_paths:
+            for relative_path in relative_paths:
+                from_path = "%s/./%s" % (base_dir, relative_path)
+                from_paths.append(from_path)
+
+        elif from_path:
+            from_paths.append(from_path)
+
+
+        else:
+            from_path = "%s/./%s/%s" % (base_dir, relative_dir, file_name)
+            from_paths.append(from_path)
+
+
+
+        # base to dir (should be to_dir, not to_path)
+        to_path = my.kwargs.get("to_path")
+        if not to_path:
+            to_path = my.kwargs.get("to_dir")
+
+
+
 
         tries = 1
         success = False
@@ -54,7 +87,7 @@ class RSync(object):
 
         while 1:
             try:
-                value = my.sync_paths(from_path, to_path)
+                value = my.sync_paths(from_paths, to_path)
                 success = True
                 break
             except RSyncConnectionException, e:
@@ -99,7 +132,7 @@ class RSync(object):
         return my.data
 
 
-    def sync_paths(my, from_path, to_path):
+    def sync_paths(my, from_paths, to_path):
 
         server = my.kwargs.get("server")
         login = my.kwargs.get("login")
@@ -124,10 +157,13 @@ class RSync(object):
                 # then this is a drive letter
                 drive_letter = to_path[0]
                 to_path = "/cygdrive/%s/%s" % (drive_letter, to_path[3:])
-            if from_path[1] == ":":
-                # then this is a drive letter
-                drive_letter = from_path[0]
-                from_path = "/cygdrive/%s/%s" % (drive_letter, from_path[3:])
+
+            for i, from_path in enumerate(from_paths):
+                if from_path[1] == ":":
+                    # then this is a drive letter
+                    drive_letter = from_path[0]
+                    from_path = "/cygdrive/%s/%s" % (drive_letter, from_path[3:])
+                from_paths[i] = from_path
 
             to_path = to_path.replace("\\", '/')
             from_path = from_path.replace("\\", '/')
@@ -167,7 +203,9 @@ class RSync(object):
             cmd_list.append("--partial")
 
 
-        cmd_list.append('%s' % from_path)
+        for from_path in from_paths:
+            cmd_list.append('%s' % from_path)
+
         cmd_list.append('%s' % to_path)
 
         print "exec: ", " ".join(cmd_list)

@@ -304,7 +304,7 @@ class EditAllCmd(Command):
 
 
     def _get_action_handlers(my):
-        from pyasm.widget.widget_config import WidgetConfig
+        from pyasm.widget.widget_config import WidgetConfig, WidgetConfigView
 
         
         # get all of the element names for this asset
@@ -314,7 +314,7 @@ class EditAllCmd(Command):
         default_config = WidgetConfig.get_default( \
             search_type_obj,my.view)
 
-        config = WidgetConfig.get_by_search_type(search_type_obj,my.view)
+        config = WidgetConfigView.get_by_search_type(search_type_obj,my.view)
         
         from pyasm.widget import EditAllWdg
         from pyasm.web import WebContainer

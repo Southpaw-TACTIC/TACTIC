@@ -54,6 +54,20 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'type': 'TextWdg',
             'order' : '4',
             'category': 'Display'
+        },
+        "show_border": {
+            'description': "determines whether or not to show borders on the table",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '5',
+            'category': 'Display'
+        },
+        "show_collection_tool": {
+            'description': "determines whether to show the collection button or not",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '6',
+            'category': 'Display'
         }
     } 
 
@@ -174,9 +188,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if info.get("count") == None:
             info["count"] = len(my.sobjects)
 
-        search_limit_mode = my.kwargs.get('search_limit_mode') 
-        if not search_limit_mode:
-            search_limit_mode = 'bottom'
+        show_search_limit = my.kwargs.get("show_search_limit")
+        if show_search_limit in ['false', False]:
+            search_limit_mode = None
+        else:
+            search_limit_mode = my.kwargs.get('search_limit_mode') 
+            if not search_limit_mode:
+                search_limit_mode = 'bottom'
+
+
 
         if search_limit_mode in ['top','both']:
             from tactic.ui.app import SearchLimitSimpleWdg
@@ -248,7 +268,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def add_layout_behaviors(my, layout_wdg):
 
 
-        my.tile_layout.add_layout_behaviors(layout_wdg)
+        #my.tile_layout.add_layout_behaviors(layout_wdg)
 
         """
         layout_wdg.add_relay_behavior( {
@@ -267,7 +287,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
-        """
+        
 
         main_bg1 = layout_wdg.get_color("background")
         main_bg2 = layout_wdg.get_color("background", 5)
@@ -297,6 +317,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             }
             ''' %(main_bg1, bg1)
         } )
+        """
 
 
 
@@ -333,6 +354,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         kwargs['show_shelf'] = False
         kwargs['show_search_limit'] = False
         kwargs['expand_on_load'] = False
+
         layout = FastTableLayoutWdg(**kwargs)
         layout_div.add(layout)
         layout.set_sobjects(my.sobjects)
@@ -490,8 +512,13 @@ class CardLayoutWdg(ToolLayoutWdg):
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
-        for sobject in my.sobjects:
-            inner.add(my.get_item_wdg(sobject))
+        if my.sobjects:
+            for sobject in my.sobjects:
+                inner.add(my.get_item_wdg(sobject))
+        else:
+            table = Table()
+            inner.add(table)
+            my.handle_no_results(table);
 
         return div
 

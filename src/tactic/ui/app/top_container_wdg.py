@@ -14,7 +14,7 @@ __all__ = ["TopContainerWdg"]
 
 import types
 
-from pyasm.common import Xml, Common, Config, Container
+from pyasm.common import Xml, Common, Config, Container, Environment
 from pyasm.biz import Project
 from pyasm.search import Search
 from pyasm.web import DivWdg, WebEnvironment
@@ -33,6 +33,10 @@ class TopContainerWdg(BaseRefreshWdg):
         hash = my.kwargs.get("hash")
         Container.put("url_hash", hash)
 
+        security = Environment.get_security()
+        is_admin = security.check_access("builtin", "view_site_admin", "allow")
+        if hash == "/admin" and not is_admin:
+            hash = "/index"
 
         if not hash:
             # NOTE: this really doesn't get call anymore because an empty
@@ -51,10 +55,11 @@ class TopContainerWdg(BaseRefreshWdg):
             project_code = Project.get_project_code()
             if project_code == 'admin' and hash == '/index':
                 widget = my.get_default_wdg()
+
             else:
                 #print "HASH: ", hash
                 #print "project: ", project_code
-                #from pyasm.security import Site
+                from pyasm.security import Site
                 #print "site: ", Site.get_site()
                 widget = HashPanelWdg.get_widget_from_hash(hash, return_none=True)
 

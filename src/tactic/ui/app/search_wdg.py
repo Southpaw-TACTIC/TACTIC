@@ -227,7 +227,10 @@ class SearchWdg(BaseRefreshWdg):
 
         # create a search for this search widget
         my.search_type = my.kwargs.get('search_type')
-        my.search = Search(my.search_type)
+
+        my.search = my.kwargs.get("search")
+        if not my.search:
+            my.search = Search(my.search_type)
         my.config = None
 
         # determine whether or not to use the last search.  If any kind of
@@ -235,7 +238,7 @@ class SearchWdg(BaseRefreshWdg):
         my.use_last_search = True
         parent_key = my.kwargs.get('parent_key')
         state = my.kwargs.get('state')
-        if parent_key or state or my.kwargs.get('use_last_search') == False:
+        if parent_key or state or my.kwargs.get('use_last_search') in [False, 'false']:
             my.use_last_search = False
        
         my.prefix_namespace = my.kwargs.get('prefix_namespace')

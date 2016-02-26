@@ -38,8 +38,11 @@ class TitleWdg(BaseRefreshWdg):
         title.add_style("margin: -10px -10px 10px -10px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 14px")
-        title.add_gradient("background", "background", -10)
+        #title.add_gradient("background", "background", -10)
+        title.add_color("background", "background", -3)
         title.add_color("color", "color", -10)
+        if my.help_alias:
+            title.add_style('height: 20px')
         title.add_border()
 
         from tactic.ui.app import HelpButtonWdg

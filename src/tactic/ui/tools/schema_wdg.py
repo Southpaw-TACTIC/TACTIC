@@ -2430,7 +2430,7 @@ class SchemaSaveCmd(Command):
 
 
         # find edit for photo
-        config = WidgetConfig.get_by_search_type(from_search_type, "edit")
+        config = WidgetConfigView.get_by_search_type(from_search_type, "edit")
         element_name = to_table
         drop_xml = '''
 <element name="%s">

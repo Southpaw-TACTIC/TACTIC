@@ -81,8 +81,12 @@ class Login(SObject):
         return "%s %s" % (my.get_value("first_name"), my.get_value("last_name"))
 
     def get_full_email(my):
-        return "%s %s <%s>" % (my.get_value("first_name"), \
-            my.get_value("last_name"), my.get_value("email") )
+        email = my.get_value("email")
+        if email:
+            return "%s %s <%s>" % (my.get_value("first_name"), \
+                my.get_value("last_name"), my.get_value("email") )
+        else:
+            return ""
 
     def has_user_license(my):
         '''determines if this user has a user level license'''
@@ -771,7 +775,7 @@ class Site(object):
 
 
     def get_default_project(cls):
-        return
+        return Config.get_value("install", "default_project")
     get_default_project = classmethod(get_default_project)
 
 
@@ -783,7 +787,7 @@ class Site(object):
 
 
     def allow_guest(cls, url=None):
-        return True
+        return False
  
 
 
@@ -803,7 +807,7 @@ class Site(object):
 
 
     def get_site(cls):
-        '''Set the global site for this "session"'''
+        '''Get the global site for this "session"'''
         sites = Container.get("sites")
         if sites == None or sites == []:
             return ""
@@ -841,9 +845,18 @@ class Site(object):
         try:
             sql = DbContainer.get("sthpw")
         except:
+            Site.pop_site()
             raise Exception("WARNING: site [%s] does not exist" % site)
-            
 
+
+        try:
+            # check if user is allowed to see the site
+            #from pyasm.search import Search
+            #search = Search("sthpw/login")
+            pass
+        except:
+            Site.pop_site()
+            raise Exception("WARNING: permission denied to set to site [%s]" % site)
 
     set_site = classmethod(set_site)
 
@@ -1082,9 +1095,13 @@ class Security(Base):
         return my._is_logged_in
 
     def is_admin(my):
+        
         return my._access_manager.is_admin()
 
     def set_admin(my, flag):
+        
+        if flag == my._access_manager.is_admin_flag:
+            return
         return my._access_manager.set_admin(flag)
 
     def get_license(my):
@@ -1107,7 +1124,10 @@ class Security(Base):
 
 
     def get_login(my):
+        
+        return my._login
         if my.is_admin():
+            """
             if not my._admin_login:
                 login = SearchType.create("sthpw/login")
                 login.set_value("login", "admin")
@@ -1117,6 +1137,7 @@ class Security(Base):
                 login.set_value("display_name", "Administrator")
                 my._admin_login = login
             return my._admin_login
+            """
         else:
             return my._login
 
@@ -1224,6 +1245,7 @@ class Security(Base):
             my._login = SearchType.create("sthpw/login")
             my._login.set_value("code", login_name)
             my._login.set_value("login", login_name)
+            my._login.set_value("upn", login_name)
             my._login.set_value("first_name", "Guest")
             my._login.set_value("last_name", "User")
             my._login.set_value("display_name", "Guest")
@@ -1253,16 +1275,7 @@ class Security(Base):
 
         my._do_login()
 
-        access_manager = my.get_access_manager()
-        xml = Xml()
-        xml.read_string('''
-        <rules>
-          <rule column="login" value="cow" search_type="sthpw/login" op="!=" group="search_filter"/>
-        </rules>
-        ''')
-        access_manager.add_xml_rules(xml)
-
-
+      
 
 
 
@@ -2146,7 +2159,7 @@ class License(object):
                     # software anways
                     current = 0
                    
-                print "current: ", current, license_users, current > license_users
+                #print "current: ", current, license_users, current > license_users
                 if current > license_users:
                     raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
         #print "License verified ... "

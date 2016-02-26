@@ -776,6 +776,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     elif bvr.get("type") == "smart_drag":
                         bvr['bvr_match_class'] = css_class
                         my.content.add_behavior(bvr)
+
+                    elif bvr.get("type") == "listen":
+                        bvr['event_name'] = Xml.get_attribute(behavior_node,'event_name')
+                        my.content.add_behavior(bvr)
+
                     else:
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
                         if not bvr.get("type"):
@@ -962,6 +967,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 continue
 
             try:
+
+                if Xml.get_value(xml, "config/tmp/element/@enabled") == "false":
+                    continue
+
+
                 element_wdg = my.get_element_wdg(xml, my.def_config)
                 if element_wdg:
                     element_html = element_wdg.get_buffer_display()

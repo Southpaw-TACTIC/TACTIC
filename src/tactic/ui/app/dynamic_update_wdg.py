@@ -13,11 +13,10 @@
 
 __all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
 
-
+import tacticenv
 from pyasm.common import jsonloads, Common
 from pyasm.search import Search
 from pyasm.command import Command
-
 import time
 
 from datetime import datetime, timedelta
@@ -55,13 +54,13 @@ class DynamicUpdateWdg(BaseRefreshWdg):
 
 
     def get_onload_js(my):
-
         return r'''
 
 spt.update = {};
 
 
 spt.update.add = function(el, update) {
+    // update is an dict object
     if (!update) {
         var expression = el.getAttribute("expression");
         var handler = el.getAttribute("handler");
@@ -90,10 +89,11 @@ spt.update.add = function(el, update) {
 
 
 
-spt.update.display = function(el) {
+spt.update.display = function(el, column, value) {
     var div = $(document.createElement("div"));
     $(document.body).appendChild(div);
-    div.innerHTML = "Update ...";
+    div.addClass("glyphicon glyphicon-refresh");
+    //div.innerHTML = "Update...";
 
     var pos = el.getPosition();
     var size = el.getSize();
@@ -104,10 +104,15 @@ spt.update.display = function(el) {
     div.setStyle("z-index", 1000);
     div.setStyle("background", "rgba(128,128,128,0.8");
     div.setStyle("color", "#FFF");
-    div.setStyle("padding", "3px 20px");
-    div.setStyle("border", "solid 1px rgba(128,128,128,1)");
+    div.setStyle("padding", "3px 5px");
+    //div.setStyle("border", "solid 1px rgba(128,128,128,1)");
     div.setStyle("box-shadow", "0px 0px 5px rgba(128,128,128,0.5)");
 
+    // check for parent spt_cell_edit
+    if (column) {
+        var cell_edit = el.getParent('.spt_cell_edit');
+        cell_edit.setAttribute('spt_input_value', value);
+    }
     setTimeout( function() {
         div.destroy();
     }, 500 );
@@ -145,7 +150,6 @@ top.spt_update_interval_id = setInterval( function() {
     // find out if there are any changes in the last interval
     //var expr = "@COUNT(sthpw/change_timestamp['timestamp','>','$PREV_HOUR'])";
     //count = server.eval(expr);
-    //console.log(count);
 
 
     cmd = "tactic.ui.app.DynamicUpdateCmd"
@@ -209,14 +213,15 @@ top.spt_update_interval_id = setInterval( function() {
     if (Object.keys(update).length > 0) {
 
         var on_complete = function(ret_val) {
-
-            var timestamp = ret_val.info.timestamp;
+            var timestamp = ret_val.info ? ret_val.info.timestamp : null;
+            if (!timestamp) 
+                return;
+            
             top.spt_update_timestamp = timestamp;
 
             for (var i = 0; i < visible_els.length; i++) {
                 update_els[i].spt_last_check = timestamp;
             }
-
             var server_data = ret_val.info.updates;
 
             for (var el_id in server_data) {
@@ -233,6 +238,7 @@ top.spt_update_interval_id = setInterval( function() {
                 var preaction = x.cbjs_preaction;
                 var action = x.cbjs_action;
                 var postaction = x.cbjs_postaction;
+                var column = x.column;
 
                 var preaction_cbk = null;
                 var action_cbk = null;
@@ -250,7 +256,7 @@ top.spt_update_interval_id = setInterval( function() {
                     preaction_cbk(cbk_bvr);
                 }
 
-
+               
                 if (action) {
                     action_cbk = function(bvr) {
                         eval(action);
@@ -267,7 +273,22 @@ top.spt_update_interval_id = setInterval( function() {
                     if (old_value != value) {
                         el.value = value;
 
-                        spt.update.display(el);
+                        spt.update.display(el, column, value);
+                    }
+                }
+                else if (typeof(value) == "boolean") {
+                    if (value) {
+                        value = 'true';
+                    }
+                    else {
+                        value = 'false';
+                    }
+
+                    var old_value = el.innerHTML;
+                    if (old_value != value) {
+                        el.innerHTML = value;
+
+                        spt.update.display(el, column, value);
                     }
                 }
                 else {
@@ -275,7 +296,7 @@ top.spt_update_interval_id = setInterval( function() {
                     if (old_value != value) {
                         el.innerHTML = value;
 
-                        spt.update.display(el);
+                        spt.update.display(el, column, value);
                     }
                 }
 
@@ -327,11 +348,9 @@ class DynamicUpdateCmd(Command):
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
 
-
         updates = my.kwargs.get("updates")
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
-
         last_timestamp = my.kwargs.get("last_timestamp")
         #assert last_timestamp
         if not last_timestamp:
@@ -358,12 +377,17 @@ class DynamicUpdateCmd(Command):
                 handler = values.get("handler")
                 if handler:
                     handler = Common.create_from_class_path(handler)
+                    # it could be a list
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
-
                 if search_key:
-                    client_keys.add(search_key)
+                    if isinstance(search_key, list):
+                        search_key_set = set(search_key)
+                    else:
+                        search_key_set = set()
+                        search_key_set.add(search_key)
+                    client_keys.update(search_key_set)
 
         # find all of the search that have changed
         changed_keys = set()
@@ -371,7 +395,6 @@ class DynamicUpdateCmd(Command):
             search = Search(check_type)
             search.add_filter("timestamp", last_timestamp, op=">")
             search.add_filters("search_type", ["sthpw/sobject_log", "sthpw/status_log"], op="not in")
-            #print search.get_statement()
             changed_sobjects = search.get_sobjects()
             for sobject in changed_sobjects:
                 search_type = sobject.get_value("search_type")
@@ -384,12 +407,13 @@ class DynamicUpdateCmd(Command):
 
         intersect_keys = client_keys.intersection(changed_keys)
 
+       
+
         #for x in client_keys:
         #    print x
         #print "---"
         #print "changed_keys: ", changed_keys
         #print "---"
-        #print "intersect_keys: ", intersect_keys
 
 
         from pyasm.web import HtmlElement
@@ -400,19 +424,25 @@ class DynamicUpdateCmd(Command):
             if isinstance(values_list, dict):
                 values_list = [values_list]
 
-
             for values in values_list:
 
                 handler = values.get("handler")
                 if handler:
                     handler = Common.create_from_class_path(handler)
+                    # handler can return a list of search_keys
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
-
-                if search_key and search_key not in intersect_keys:
-                    continue
-
+                if search_key:
+                    if isinstance(search_key, list):
+                        search_key_set = set(search_key)
+                    else:
+                        search_key_set = set()
+                        search_key_set.add(search_key)
+                    # check if any search_key is contained in intersect_keys, skip if not
+                    if len(intersect_keys  - search_key_set) == len(intersect_keys):
+                        continue
+                
                 # evaluate any compare expressions
                 compare = values.get("compare")
                 if compare:
@@ -425,7 +455,7 @@ class DynamicUpdateCmd(Command):
                     if cmp_result == True:
                         continue
 
-                    # some randome value
+                    # some value to display
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
@@ -440,8 +470,6 @@ class DynamicUpdateCmd(Command):
         }
 
 
-        #print "time: ", time.time() - start
-        #print results
 
 
         return results
@@ -462,12 +490,37 @@ def main():
     cmd = DynamicUpdateCmd(update=update)
     Command.execute_cmd(cmd)
 
+def test_time():
+
+    from pyasm.search import SearchType
+    sobj = SearchType.create('sthpw/note')
+    sobj.set_value('process','TEST')
+    sobj.set_value('note','123')
+    sobj.commit()
+
+
+    sobj.set_value('note', 'new note')
+    sobj.commit()
+
+    # check change_timestamp
+    change_t = Search.eval("@SOBJECT(sthpw/change_timestamp['search_type','sthpw/note']['search_code','%s'])"%sobj.get_code(), single=True)
+    if change_t:
+        change_t_timestamp = change_t.get('timestamp')
+        change_t_timestamp = parser.parse(change_t_timestamp)
+
+        from pyasm.common import SPTDate
+        now = SPTDate.now()
+
+        diff = now - change_t_timestamp
+        # should be roughly the same minute, not hours apart
+        print "Change timestamp diff is ", diff.seconds 
 
 if __name__ == '__main__':
     from pyasm.security import Batch
     Batch(site="vfx_test", project_code="vfx")
 
     main()
+    #test_time()
 
 
 

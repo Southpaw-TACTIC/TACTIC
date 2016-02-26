@@ -64,7 +64,6 @@ class BizTest(unittest.TestCase):
             my.search_code = my.person.get_value("code")
             my.context = "test"
             my.full_context = "test/subtest"
-
             my._test_instances()
 
             my._test_pipeline()
@@ -215,6 +214,28 @@ class BizTest(unittest.TestCase):
 
         # EST and GMT diff is 5 hours
         my.assertEquals(task.get_value('bid_start_date'), '2014-11-11 05:00:00')
+
+
+        # test NOW() auto conversion
+        sobj = SearchType.create('sthpw/note')
+        sobj.set_value('process','TEST')
+        sobj.set_value('note','123')
+        my.assertEquals(sobj.get_value('timestamp'), "")
+        sobj.commit()
+
+        # this is local commited time converted back to GMT
+        committed_time = sobj.get_value('timestamp')
+        
+        from dateutil import parser
+        committed_time = parser.parse(committed_time)
+
+        from pyasm.common import SPTDate
+        now = SPTDate.now()
+        diff = now - committed_time
+        # should be roughly the same minute, not hours apart
+        my.assertEquals(diff.seconds < 60, True)
+                
+
 
         #TODO: test with time zone aware columns
 
@@ -911,8 +932,9 @@ class BizTest(unittest.TestCase):
 
         test_instances = my.person.get_instances("unittest/car")
         my.assertEquals(len(instances), len(test_instances))
+        my.assertEquals(3, len(instances))
 
-
+      
         # test search instances
         for instance, test_instance in zip(instances, test_instances):
             search_key = instance.get_search_key()
@@ -928,19 +950,26 @@ class BizTest(unittest.TestCase):
 
 
         # test remove the first instance
+       
         my.person.remove_instance(cars[0])
 
         test_instances = my.person.get_instances("unittest/car")
+
+      
+        #FIXME: this may fail unless you restart startup_dev.py
         my.assertEquals(2, len(test_instances))
 
 
         # test remove the other way around
+        
         cars[1].remove_instance(my.person)
          
         # this doesn't return the expected result even after ExpressionParser.clear_cache() 
         #test_instances2 = my.person.get_instances("unittest/car")
+        
         test_instances2 = Search.eval('@SOBJECT(unittest/person_in_car)', my.person)
-      
+     
+
         my.assertEquals(1, len(test_instances2))
         test_instances2 = cars[2].get_instances("unittest/person")
         my.assertEquals(1, len(test_instances2))
