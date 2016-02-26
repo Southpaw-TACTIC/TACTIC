@@ -1463,7 +1463,7 @@ class DiscussionWdg(BaseRefreshWdg):
         div.add_style("height", "15px")
         div.add_style("font-weight", "bold")
         #div.add_style("margin-bottom", "-1px")
-        div.add_style("border-width: 0px 0px 1px 0px")
+        div.add_style("border-width: 0px 0px 0px 0px")
         div.add_style("border-style: solid")
         div.add_color("border-color", "table_border")
         if not context:

@@ -175,6 +175,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             icon="BS_SEARCH",
             icon_pos="right",
             width="100%",
+            height="30px",
             hint_text="'Enter' to search for Colllection...",
             value_column="name",
             filters=filters,
@@ -276,6 +277,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var is_checked = false;
             var added = [];
+            var collection_keys = [];
             
             var dialog_top = bvr.src_el.getParent(".spt_col_dialog_top");
             
@@ -294,22 +296,33 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                     // if there is at least one checkbox selected, set is_checked to 'true'
                     is_checked = true;
 
-                    var search_keys = spt.table.get_selected_search_keys(false);
-                    var kwargs = {
-                        collection_key: collection_key,
-                        search_keys: search_keys
-                    }
-                    var rtn = server.execute_cmd(cmd, kwargs);
-                    if ((rtn.info.message) != 'No insert')
-                        added.push(collection_name);
+                    // If the collection is not being added to itself, append to the list of collection keys
+                    collection_keys.push(collection_key);
                 }
             }
 
             if (is_checked == false) {
                 spt.notify.show_message("No collection selected.");
-                return;
             }
             else {
+                var kwargs = {
+                    collection_keys: collection_keys,
+                    search_keys: search_keys
+                }
+                var rtn = server.execute_cmd(cmd, kwargs);
+                var rtn_message = rtn.info.message;
+
+                if (rtn_message['circular'] == 'True') {
+                    var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
+                    spt.notify.show_message("Collection [" + collection_name + " ] is a child of the source [" + parent_collection_names + "]");
+                    
+                    return;
+                }
+                for (var collection_name in rtn_message) {
+                    if (rtn_message[collection_name] != 'No insert')
+                        added.push(collection_name);
+                }
+
                 if (added.length == 0)
                     spt.notify.show_message("Items already added to Collection.");
                 else 
@@ -325,75 +338,196 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         return dialog
 
 
-
-
 class CollectionAddCmd(Command):
 
     def execute(my):
 
-        collection_key = my.kwargs.get("collection_key")
+        collection_keys = my.kwargs.get("collection_keys")
         search_keys = my.kwargs.get("search_keys")
+        message = {} 
 
-        collection = Search.get_by_search_key(collection_key)
-        if not collection:
-            raise Exception("Collection does not exist")
+        if collection_keys == None:
+            collection_keys = []
 
+        for collection_key in collection_keys:
+            collection = Search.get_by_search_key(collection_key)
+            if not collection:
+                raise Exception("Collection does not exist")
 
-        search_type = collection.get_base_search_type()
-        parts = search_type.split("/")
-        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-        search = Search(collection_type)
-        search.add_filter("parent_code", collection.get_code())
-        items = search.get_sobjects()
-
-
-        search_codes = [x.get_value("search_code") for x in items]
-        search_codes = set(search_codes)
-
-
-
-        has_keywords = SearchType.column_exists(search_type, "keywords")
-
-        if has_keywords:
-            collection_keywords = collection.get_value("keywords", no_exception=True)
-            collection_keywords = collection_keywords.split(" ")
-            collection_keywords = set(collection_keywords)
+            collection_name = collection.get("name")
+            search_type = collection.get_base_search_type()
+            parts = search_type.split("/")
+            collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+            search = Search(collection_type)
+            search.add_filter("parent_code", collection.get_code())
+            items = search.get_sobjects()
 
 
+            search_codes = [x.get_value("search_code") for x in items]
+            search_codes = set(search_codes)
 
-        # create new items
-        has_inserted = False
+            # Try to find all the parent codes of the destination, and see if there's any that
+            # matches the codes in "search_codes"
+            # Check for parent/child hierarchy in destination to prevent circular relationships        
+            src_collections_codes = []
+            for search_key in search_keys:
+                asset = Search.get_by_search_key(search_key)
+                is_collection = asset.get("_is_collection")
+                if is_collection:
+                    src_collection_code = asset.get("code")
+                    src_collections_codes.append(src_collection_code)
 
-        sobjects = Search.get_by_search_keys(search_keys)
-        for sobject in sobjects:
-            if sobject.get_code() in search_codes:
-                continue
+            if src_collections_codes:
+                collection_code = collection.get("code")
 
-            new_item = SearchType.create(collection_type)
-            new_item.set_value("parent_code", collection.get_code())
-            new_item.set_value("search_code", sobject.get_code())
-            new_item.commit()
-            has_inserted = True
+                my.kwargs["collection_code"] = collection_code
+                my.kwargs["collection_type"] = collection_type
+                my.kwargs["search_type"] = search_type
 
-            # copy the metadata of the collection
+                # Run SQL to find all parent collections(and above) of the selected collections
+                # The all_parent_codes contain all parent codes up the relationship tree
+                # ie. parent collections' parents ...etc
+
+                all_parent_codes = my.get_parent_codes()
+
+                all_parent_codes.add(collection_code)
+                all_parent_codes = list(all_parent_codes)
+
+                # Once retrieve the parent codes, use a for loop to check if the the codes in 
+                # src_collections_codes are in parent_codes
+                parent_collection_names = []
+                for parent_code in all_parent_codes:
+                    if parent_code in src_collections_codes:
+                        message['circular'] = "True"
+                        parent_collection_name = Search.get_by_code(search_type, parent_code).get("name")
+                        parent_collection_names.append(parent_collection_name)
+                if parent_collection_names:
+                    message['parent_collection_names'] = parent_collection_names
+                    my.info['message'] = message
+                    return
+
+            has_keywords = SearchType.column_exists(search_type, "keywords")
+
             if has_keywords:
-                keywords = sobject.get_value("keywords")
+                collection_keywords = collection.get_value("keywords", no_exception=True)
+                collection_keywords = collection_keywords.split(" ")
+                collection_keywords = set(collection_keywords)
 
-                keywords = keywords.split(" ")
-                keywords = set(keywords)
 
-                keywords = keywords.union(collection_keywords)
-                keywords = " ".join(keywords)
 
-                sobject.set_value("keywords", keywords)
-                sobject.commit()
+            # create new items
+            has_inserted = False
 
+            sobjects = Search.get_by_search_keys(search_keys)
+            for sobject in sobjects:
+                if sobject.get_code() in search_codes:
+                    continue
+
+                new_item = SearchType.create(collection_type)
+                new_item.set_value("parent_code", collection.get_code())
+                new_item.set_value("search_code", sobject.get_code())
+                new_item.commit()
+                has_inserted = True
+
+                # copy the metadata of the collection
+                if has_keywords:
+                    keywords = sobject.get_value("keywords")
+
+                    keywords = keywords.split(" ")
+                    keywords = set(keywords)
+
+                    keywords = keywords.union(collection_keywords)
+                    keywords = " ".join(keywords)
+
+                    sobject.set_value("keywords", keywords)
+                    sobject.commit()
 
         
-        if not has_inserted:
-            my.info['message'] = "No insert"
+            if not has_inserted:
+                message[collection_name] = "No insert"
+            else:
+                message[collection_name] = "Insert OK"
+
+        my.info['message'] = message
+        my.add_description("Add [%s] item(s) to [%s] collection(s)" % (len(search_keys), len(collection_keys)))
+
+    def get_parent_codes(my):
+
+        from pyasm.biz import Project
+
+        project = Project.get()
+        sql = project.get_sql()
+        database = project.get_database_type()
+
+        collection_code = my.kwargs.get("collection_code")
+        collection_type = my.kwargs.get("collection_type").split("/")[1]
+        search_type = my.kwargs.get("search_type").split("/")[1]
+        var_dict = {
+            'collection_code': collection_code,
+            'collection_type': collection_type,
+            'search_type': search_type
+        }
+        parent_codes = set()
+
+        if database == "SQLServer":
+            statement = '''
+            WITH res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."search_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+            
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                  CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+
+            Select parent_code from res;
+            '''% var_dict
         else:
-            my.info['message'] = "Insert OK"
+            statement = '''
+            WITH RECURSIVE res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."search_code"] AS TEXT),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."search_code",
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select parent_code from res;
+            '''% var_dict
+
+
+        results = sql.do_query(statement)
+        for result in results:
+            result = result[0]
+            parent_codes.add(result)
+
+        return parent_codes
 
 
 class CollectionLayoutWdg(ToolLayoutWdg):
@@ -540,6 +674,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             search_type = "workflow/asset",
             column="name",
             width="100%",
+            height="30px",
             hint_text="Enter terms to filter collections...",
             value_column="name",
             filters=filters,
@@ -1043,6 +1178,7 @@ class CollectionRemoveCmd(Command):
         my.search_keys = my.kwargs.get("search_keys")
 
         collection = Search.get_by_search_key(my.collection_key)
+        collection_code = collection.get("code")
         sobjects = Search.get_by_search_keys(my.search_keys)
         search_codes = [x.get_code() for x in sobjects]
 
@@ -1060,6 +1196,8 @@ class CollectionRemoveCmd(Command):
         for item in items:
             item.delete()
 
+        my.add_description("Remove [%s] item(s) from Collection [%s]" % (len(my.search_keys), collection_code))
+
 
 class CollectionDeleteCmd(Command):
 
@@ -1068,6 +1206,7 @@ class CollectionDeleteCmd(Command):
         my.collection_key = my.kwargs.get("collection_key")
 
         collection = Search.get_by_search_key(my.collection_key)
+        collection_code = collection.get("code")
 
         search_type = collection.get_base_search_type()
         parts = search_type.split("/")
@@ -1089,6 +1228,8 @@ class CollectionDeleteCmd(Command):
             parent_item.delete()
 
         collection.delete()
+
+        my.add_description("Remove Collection [%s]" % collection_code)
 
 
 

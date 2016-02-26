@@ -2848,6 +2848,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add_style("padding: 15px")
 
 
+        """
         shelf_wdg = DivWdg()
         inner.add(shelf_wdg)
 
@@ -2871,6 +2872,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             spt.panel.load_popup("Ingest Files", class_name, kwargs);
             '''
         } )
+        """
 
         # Display directory content
         

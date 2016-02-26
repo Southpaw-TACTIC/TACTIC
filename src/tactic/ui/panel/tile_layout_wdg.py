@@ -301,8 +301,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 title_wdg.add_style("font-weight: bold")
                 title_wdg.add_style("display: inline-block")
 
-                title_wdg.add("<div style='margin-top: 5px; opacity: 0.5; font-size: 0.8em; font-weight: normal'>This is a description</div>")
-
 
 
                 group_values[group_column] = group_value
@@ -1778,16 +1776,29 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 return [];
         }
         
-        var insert_collection = function(collection_type, parent_code, src_code) {
-            if (parent_code != src_code){
-                var data = {
-                    parent_code: parent_code,
-                    search_code: src_code
-                };
+        var insert_collection = function(collection_type, parent_key, src_keys) {
+            // check and see if collection_key is in src_keys
+
+            if (src_keys.indexOf(parent_key) == -1){
+                var kwargs = {
+                    collection_keys: [parent_key],
+                    search_keys: src_keys
+                }
 
                 try {
-                    server.insert(collection_type, data);
-                    return true;
+                    var rtn = server.execute_cmd("tactic.ui.panel.CollectionAddCmd" , kwargs)
+                    var rtn_message = rtn.info.message;
+
+                    if (rtn_message['circular'] == 'True') {
+                        var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
+                        var msg = "Collection [" + parent_name + " ] is a child of the source [" + parent_collection_names + "]";
+                        spt.notify.show_message(msg);
+
+                        return;
+                    }
+                    else {
+                        return true;
+                    }
                 } catch(e) {
                     log.debug("Failed to add");
                     return false;
@@ -1805,12 +1816,23 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             // Regular single drag and drop
             if (selected_tiles.indexOf(row) == -1) {
                 var src_code = src_tile.getAttribute("spt_search_code");
+                var src_key = src_tile.getAttribute("spt_search_key");
                 src_codes.push(src_code);
+                if (src_codes.length == 1 && src_codes[0] == parent_code) {
+                    if (!dst_top.hasClass("spt_table_row")) {
+                        spt.notify.show_message("Collection [" + parent_name + " ] cannot be added to itself.");
+                    }
+
+                    return;
+                }
                 var exist_cols = get_exist(collection_type, parent_code, src_code);
                 if (exist_cols.length == 0) {
-                    has_inserted = insert_collection(collection_type, parent_code, src_code);
-                    collection_selected = src_tile.getAttribute("spt_is_collection") == 'True';
+                    var search_keys = [src_key];
 
+                    has_inserted = insert_collection(collection_type, parent_key, search_keys);
+                    if (has_inserted == null)
+                        return;
+                    collection_selected = src_tile.getAttribute("spt_is_collection") == 'True';
                 }
 
             }
@@ -1818,11 +1840,15 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             else {
                 
                 var src_is_cols = [];
-                var final_codes = [];
                 var final_is_cols = [];
+                var src_keys = [];
+                var final_keys = [];
                 for (i=0; i < selected_tiles.length; i++) {
                     var src_code = selected_tiles[i].getAttribute("spt_search_code");
+                    var src_key = selected_tiles[i].getAttribute("spt_search_key");
+                    
                     src_codes.push(src_code);
+                    src_keys.push(src_key);
                     var src_is_col = selected_tiles[i].getAttribute("spt_is_collection");
                     src_is_cols.push(src_is_col);
                 }
@@ -1831,54 +1857,47 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 // find the final codes that need to be added to collection
                 for (var k=0; k < src_codes.length; k++) {
                     if (!exist_cols.contains(src_codes[k])) {
-                        final_codes.push(src_codes[k]);
+
                         final_is_cols.push(src_is_cols[k]);
+
+                        final_keys.push(src_keys[k]);
                     }
                 }
-                if (final_codes.length > 0) {
-                    server.start({title: 'Add to collection', description: 'Add items to collection ' + parent_code } ); 
-                    for (var k=0; k < final_codes.length; k++) {
-                        var inserted = insert_collection(collection_type, parent_code, final_codes[k]);
-                       
-                        if (inserted) {
-                            has_inserted = inserted;
-                            // check if collection is selected only if it's false
-                            if (!collection_selected)
-                                collection_selected = final_is_cols[k] == 'True';
-                        }
+
+
+                if (src_codes.indexOf(parent_code) != -1) {
+                    if (!dst_top.hasClass("spt_table_row")) {
+                        spt.notify.show_message("Collection [" + parent_name + " ] cannot be added to itself.");
                     }
+                    return;
+                }
+                if (final_keys.length > 0) {
+                    server.start({title: 'Add to collection', description: 'Add items to collection ' + parent_code } ); 
                     
-                    if (has_inserted)
-                        server.finish();
-                    else
-                        server.abort();
+                    var has_inserted = insert_collection(collection_type, parent_key, final_keys);
+                    if (has_inserted == null)
+                        return;
+                    if (!collection_selected)
+                        collection_selected = final_is_cols[k] == 'True';
                     
                 }
                 
             }
-            // Do not show this message as long as there is one successful insert.
-            if (src_codes.length == 1 && src_codes[0] == parent_code) {
-                // Additional check to see if its a tile
-                if (!dst_top.hasClass("spt_table_row")) {
-                    spt.notify.show_message("Collection [" + parent_name + " ] cannot be added to itself.");
+
+            if (has_inserted) {
+                spt.notify.show_message("Added to Collection [ " + parent_name + " ].");
+                
+                // Refresh left panel if collection being dragged into other collection
+                if (collection_selected) {
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var collection_left = top.getElement(".spt_collection_left_side");
+                    spt.panel.refresh(collection_left);
                 }
-                return;
             }
             else {
-                if (has_inserted) {
-                    spt.notify.show_message("Added to Collection [ " + parent_name + " ].");
-                    
-                    // Refresh left panel if collection being dragged into other collection
-                    if (collection_selected) {
-                        var top = bvr.src_el.getParent(".spt_collection_top");
-                        var collection_left = top.getElement(".spt_collection_left_side");
-                        spt.panel.refresh(collection_left);
-                    }
-                }
-                else {
-                    spt.notify.show_message("Item(s) are already in the Collection [ " + parent_name + " ].");
-                }
+                spt.notify.show_message("Item(s) are already in the Collection [ " + parent_name + " ].");
             }
+            
             if (!dst_top.hasClass("spt_collection_item")) {
                 spt.table.refresh_rows([dst_top], null, null);
             } 
@@ -2071,7 +2090,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         bg_wdg.add(" ")
 
 
-        if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+        #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+        if True:
             detail_div = DivWdg()
             div.add(detail_div)
             detail_div.add_style("float: right")
@@ -2223,8 +2243,35 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if path:
-            path = urllib.pathname2url(path)
-            img = HtmlElement.img(src=path)
+            if path == "__DYNAMIC__":
+                base,ext = os.path.splitext(my.lib_path)
+                ext = ext.upper().lstrip(".")
+
+                #flat ui color
+                colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+                import random
+                color = colors[random.randint(0,7)]
+
+                img = DivWdg()
+                img.add("<div style='display: inline-block; vertical-align: middle; margin-top: 30%%; width: 50px; height: 30px;'>%s</div>" % ext)
+                img.add_style("text-align: center")
+                #img.add_style("width: 80px")
+                #img.add_style("height: 50px")
+                img.add_style("min-width: 80px")
+                img.add_style("min-height: 50px")
+                img.add_style("width: 50%")
+                img.add_style("height: 70%")
+
+                img.add_style("margin: 30px auto")
+                img.add_style("padding: 0px 10px")
+                img.add_style("font-size: 20px")
+                img.add_style("font-weight: bold")
+                img.add_style("color: #fff")
+                img.add_style("background: %s" % color)
+
+            else:
+                path = urllib.pathname2url(path)
+                img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
@@ -2247,14 +2294,13 @@ class ThumbWdg2(BaseRefreshWdg):
 
             img = DivWdg(img)
             img.add_style("height: auto")
-            #img.add_style("border: solid 1px blue")
             img.add_style("margin: auto")
 
 
 
             #div.add_style("height: 100%")
             div.add_style("text-align: center")
-        elif path:
+        elif path and path != "__DYNAMIC__":
             img.add_style("width: %s" % width)
             if height:
                 img.add_style("height: %s" % height)
