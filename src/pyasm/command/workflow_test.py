@@ -997,7 +997,7 @@ class WorkflowCmd(Command):
                 'sobject': 'sobject',
                 'process': 'fla',
                 'version': 'latest',
-            }
+            },
             'checkin': ['fla'],
         } )
         process.commit()
