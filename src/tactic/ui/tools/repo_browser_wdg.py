@@ -70,8 +70,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # FIXME: Single asset mode needs to be passed through ViewPanelWdg
         # so that the TACTIC shelf is available for search.
         single_asset_mode = my.kwargs.get("single_asset_mode")
-        if "workflow/asset" in search_type:
-            single_asset_mode = True
 
         parent_key = my.kwargs.get("search_key")
         if parent_key:
@@ -400,7 +398,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_repo_browser_options");
             var values = spt.api.get_input_values(top, null, false);
-            console.log(values);
 
 
 
@@ -1121,8 +1118,103 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
         }
+         
+        spt.repo_browser.delete_empty_folder = function(relative_dir) {
+            if (!relative_dir) return;
 
+            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var kwargs = {
+                action: 'delete_folder',
+                relative_dir: relative_dir
+            }
+            try {
+                server.execute_cmd(class_name, kwargs);
+            }
+            catch(err) {
+                var error = spt.exception.handler(err);
+                var message = "Selected snapshots deleted but an error occured when removing the directory ["+relative_dir+"]";
+                message = message + "Error: " + error;
+                spt.alert(message);
+            }
+        }
 
+        spt.repo_browser.delete_assets = function(bvr) {
+            var server = TacticServerStub.get();
+            var activator = spt.smenu.get_activator(bvr);
+            
+            if ([true, "True", "true"].indexOf(bvr.single_asset_mode) > -1) {
+                var single_asset_mode = true;
+            } else { 
+                var single_asset_mode = false;
+            }
+
+            if (activator.hasClass("spt_dir_item")) {
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+                expr = "@SOBJECT(sthpw/file['relative_dir', 'like', '"+relative_dir+"%'].sthpw/snapshot)";
+                sobjects = server.eval(expr);
+                if (sobjects.length == 0) {
+                    activator.addClass("spt_browser_deleted");
+                    spt.repo_browser.delete_refresh(relative_dir);
+                    return;
+                }
+                
+                var search_keys = [];
+                for (var i = 0; i < sobjects.length; i++) {
+                    var search_key = sobjects[i]['__search_key__'];
+                    if (single_asset_mode) {
+                        var search_type = sobjects[i]['search_type'];
+                        var search_code = sobjects[i]['search_code'];
+                        search_key = server.build_search_key(search_type, search_code);
+                    } 
+                    search_keys.push(search_key);
+                }
+            } else if (activator.hasClass("spt_dir_list_item")) {
+                var server = TacticServerStub.get();
+                var snapshot_code = activator.getAttribute("spt_snapshot_code");
+                var search_key = server.build_search_key("sthpw/snapshot", snapshot_code); 
+                if (single_asset_mode) {
+                    var parent = server.get_parent(search_key);
+                    search_key = parent['__search_key__']; 
+                } 
+                var search_keys = [search_key];
+                
+                var relative_dir = "";
+            } else {
+                return;
+            }
+
+            activator.addClass("spt_browser_deleted");
+            
+            // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
+            // file in display was deleted.
+            var delete_on_complete = "spt.repo_browser.delete_refresh('"+relative_dir+"');"
+
+            var class_name = 'tactic.ui.tools.DeleteToolWdg';
+            var kwargs = {
+              search_keys: search_keys,
+              on_complete: delete_on_complete
+            }
+            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+        }
+
+        spt.repo_browser.delete_refresh = function(dir_name) {
+            // If deleting a folder, delete the folder as well.
+            var relative_dir = dir_name;
+            spt.repo_browser.delete_empty_folder(relative_dir);
+
+            // Refresh target parent dir
+            var target = document.getElement('.spt_browser_deleted');
+            var parent_dir = target.getParent('.spt_dir_list_handler_top');
+            var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');
+            if (grandparent_dir) {
+                spt.panel.refresh(grandparent_dir);
+            }
+            
+            // Refresh detail top
+            var detail_top = document.getElement('.spt_browser_detail_top');
+            spt.panel.refresh(detail_top);
+        }
+        
         '''
         } )
 
@@ -1439,33 +1531,14 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 '''
             } )
-
+            
             menu_item = MenuItem(type='action', label='Delete Folder')
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
+                'single_asset_mode': single_asset_mode,
                 'cbjs_action': '''
-                // This will only delete the folder if it is empty
-                var activator = spt.smenu.get_activator(bvr);
-                var relative_dir = activator.getAttribute("spt_relative_dir");
-
-                var server = TacticServerStub.get();
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'delete_folder',
-                    relative_dir: relative_dir
-                }
-                try {
-                    server.execute_cmd(class_name, kwargs);
-                    activator.destroy();
-                }
-                catch(err) {
-                    spt.alert(spt.exception.handler(err));
-                }
-
-                //TODO bulk delete
+                    spt.repo_browser.delete_assets(bvr); 
                 '''
             } )
 
@@ -1709,36 +1782,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             'type': 'click_up',
             'single_asset_mode': single_asset_mode,
             'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-
-                if (["True", true, "true"].indexOf(bvr.single_asset_mode) > -1) {
-                    var search_key = activator.getAttribute("spt_search_key");
-                } else {
-                    var server = TacticServerStub.get();
-                    var snapshot_code = activator.getAttribute("spt_snapshot_code");
-                    var search_key = server.build_search_key("sthpw/snapshot", snapshot_code); 
-                }
-               
-                if (!search_key) return;
-                activator.addClass("spt_browser_deleted");
-
-                // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
-                // file in display was deleted.
-                var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
-                delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
-                delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
-                delete_on_complete += "if (grandparent_dir) {"
-                delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
-                delete_on_complete += "}"
-                delete_on_complete += "var detail_top = document.getElement('.spt_browser_detail_top');"
-                delete_on_complete += "spt.panel.refresh(detail_top);"
-                var class_name = 'tactic.ui.tools.DeleteToolWdg';
-                var kwargs = {
-                  search_key: search_key,
-                  on_complete: delete_on_complete
-                }
-                var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
-
+                 spt.repo_browser.delete_assets(bvr);
             '''
         } )
 
@@ -2009,35 +2053,12 @@ class RepoBrowserActionCmd(Command):
 
         elif action == "delete_folder":
          
-            do_not_check = my.kwargs.get("do_not_check")
-
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
             
-            search = Search("sthpw/file")
-            search.add_op("begin")
-            search.add_filter("relative_dir", "%s" % relative_dir)
-            search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-            search.add_op("or")
-             
-            snapshot_search = Search("sthpw/snapshot")
-            snapshot_search.add_relationship_search(search)
-          
-            if snapshot_search.get_count() == 0:
-                full_dir = "%s/%s" % (base_dir, relative_dir)
-                os.rmdir(full_dir)
-            else:
-                raise Exception("Folder not empty")
-            ''' 
-            if single_asset_mode == True:
-                # TODO: Get all parents
-            else:
-                
-            # TODO: Users should be able to delete a folder with snapshots,
-            # FIXME: If there are dangling files, user should no that.
-            # this will give an error if the directory is not empty
-            '''
+            full_dir = "%s/%s" % (base_dir, relative_dir)
+            os.rmdir(full_dir)
 
 
         elif action == "rename_folder":
