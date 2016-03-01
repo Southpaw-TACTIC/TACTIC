@@ -167,10 +167,9 @@ top.spt_update_interval_id = setInterval( function() {
     var visible_els = [];
     for (var i = 0; i < update_els.length; i++) {
         var update_el = update_els[i];
-        if (! update_el.isVisible()) {
+        if (!update_el.isVisible() || update_el.hasClass("spt_update_lock")) {
             continue;
-        }
-
+        } 
 
         sub_update = update_el.spt_update;
         if (!sub_update) {

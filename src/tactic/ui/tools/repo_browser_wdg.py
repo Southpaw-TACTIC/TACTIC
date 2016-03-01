@@ -537,7 +537,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         if show_main_only:
             search.add_filter("type", "main")
 
-
         if my.sobjects:
             search.add_sobjects_filter(my.sobjects)
 
@@ -884,6 +883,7 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_api(my):
 
         return r'''
+
             spt.repo_browser = {};
         
             spt.repo_browser.click_file_bvr = function(evt, bvr) {
@@ -936,12 +936,81 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.app_busy.hide();
 
             }
+    
+            // Update API
+            spt.repo_browser.getElement = function(el) {
+                var repo_top = document.getElement(".spt_repo_browser_top");
+                return repo_top.getElement(el);
+            }
+
+            spt.repo_browser.dynamic_lock;
+            
+            spt.repo_browser.update_available;
+          
+            spt.repo_browser.queued_update;
         
+            spt.repo_browser.wait;
+         
+            spt.repo_browser.set_lock = function(lock) {
+                // Lock the directory listing while user is editing
+                // When lock is removed, request updates.
+                spt.repo_browser.dynamic_lock = lock;
+                
+                var dir_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                
+                if (lock) {
+                    dir_top.addClass("spt_update_lock");
+                } else {
+                    dir_top.removeClass("spt_update_lock");  
+                }
+
+            }
+
+            spt.repo_browser.handle_update = function(bvr) {
+                // Handle server message of update
+                if (spt.repo_browser.dynamic_lock) {
+                    spt.repo_browser.update_available = true;
+                } else {
+                    spt.repo_browser.request_update();
+                }
+            }
+
+            spt.repo_browser.request_update = function() {
+                if (spt.repo_browser.wait) {
+                    spt.repo_browser.queued_update = true;
+                } else {
+                    spt.repo_browser.update();
+                }
+            }
+
+            spt.repo_browser.update = function() {
+                spt.repo_browser.refresh_directory_listing();
+                
+                spt.repo_browser.wait = true;
+ 
+                timeout = setTimeout(spt.repo_browser.update_on_complete, 20000);
+            }
+
+            spt.repo_browser.update_on_complete = function () {
+                if ((spt.repo_browser.update_available || spt.repo_browser.queued_update) && !spt.repo_browser.wait) {
+                    spt.repo_browser.update();
+                } else {
+                    spt.repo_browser.update_available = false;
+                    spt.repo_browser.queued_update = false;
+                    spt.repo_browser.wait = false;
+                }
+            }
+
+            spt.repo_browser.refresh_directory_listing = function() {
+                console.log("refresh");
+                var dir_list = spt.repo_browser.getElement(".spt_dir_list_handler_top");
+                spt.panel.refresh(dir_list);
+            }
+
         '''
     
     def get_system_edit_api(my):
         return r'''
-
         spt.repo_browser.start_x = null;
         spt.repo_browser.start_y = null;
         spt.repo_browser.top = null;
@@ -1280,8 +1349,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         search_types = my.kwargs.get("search_types")
         if search_types:
             search_type = search_types[0]
+            search_type = SearchType.build_search_type(search_type)
         else:
             search_type = my.kwargs.get("search_type") 
+            search_type = SearchType.build_search_type(search_type)
 
         # When the parent key is defined, clicking directory
         # item displays sthpw/snapshots based on related parent_type.
@@ -1344,6 +1415,13 @@ class RepoBrowserDirListWdg(DirListWdg):
             'bvr_match_class': 'spt_item_value',
             'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
+
+        update = {
+             'search_type': search_type,
+             'expression': "@COUNT(@SOBJECT(sthpw/file['search_type', '%s']))" % search_type,
+             'cbjs_action': '''spt.repo_browser.handle_update(bvr);'''
+        }
+        top.add_update(update)
 
 
     def get_dir_context_menu(my, mode="strict"):
@@ -1818,7 +1896,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_dirname(my, dirname, basename):
-
+        
         path = "%s/%s" % (dirname, basename)
         counts = my.counts.get(path)
         if counts == -1:
@@ -1876,10 +1954,21 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         search_types = my.search_types_dict
         search_keys = my.search_keys_dict
-
+        
         search_key = search_keys.get(path)
+         
         item_div.add_attr("spt_search_key", search_key)
-
+       
+        """
+        print search_key 
+        update = {
+            'search_key': search_key,
+            'expression':'@GET(workflow/asset.relative_dir)',
+            'cbjs_action':'''console.log(bvr.value);''',
+            'interval': 1
+        }
+        item_div.add_update(update);
+        """
 
         file_codes = my.file_codes
 
@@ -1929,7 +2018,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def add_dir_behaviors(my, item_div, dirname, basename):
-
+        
         parent_key = my.kwargs.get("parent_key")
 
         if my.file_system_edit == True:
@@ -1984,6 +2073,17 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_relative_dir", relative_dir)
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
+        """
+        FIXME: Dir updates
+        
+        update = {
+            "search_type": search_type, 
+            #"search_key": parent_sk,
+            #"compare": "@COUNT(@SOBJECT(sthpw/file['relative_dir', 'like', '%%%s%%'])) > 0" % relative_dir,
+            "cbjs_action": '''console.log("hi");'''
+        }
+        item_div.add_update(update)
+        """
 
     def get_file_icon(my, dir, item):
         path = "%s/%s" % (dir, item)
