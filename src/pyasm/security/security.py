@@ -908,7 +908,7 @@ class Site(object):
             if security:
                 Environment.set_security(security)
 
- 
+        return site
        
     pop_site = classmethod(pop_site)
 
