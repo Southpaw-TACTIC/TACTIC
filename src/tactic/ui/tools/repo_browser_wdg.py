@@ -56,7 +56,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
     def get_display(my):
-
+        
         top = my.top
         top.add_color("background", "background")
         top.add_class("spt_repo_browser_top")
@@ -72,40 +72,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #my.mode = 'folder'
 
         keywords = my.kwargs.get("keywords")
-        
-        #TODO: Support multiple sobjects
-        #TODO: Support multiple parent types
+            
         search_type = my.kwargs.get("search_type")
-        if search_type:
-            search_types = [search_type]
-        else:
-            search_types = None
-         
-        file_system_edit = my.kwargs.get("file_system_edit")
-        if search_type: 
-            key = "repo_browser_edit:%s" % search_type
-            if file_system_edit in [True, "true"]:
-                WidgetSettings.set_value_by_key(key, file_system_edit) 
-            else:
-                WidgetSettings.set_value_by_key(key, "false")
-
-        parent_mode = my.kwargs.get("parent_mode")
-        if search_type: 
-            key = "repo_browser_mode:%s" % search_type
-            if parent_mode in ["single_asset", "single_file", "single_search_type"]:
-                WidgetSettings.set_value_by_key(key, parent_mode) 
-            else:
-                WidgetSettings.set_value_by_key(key, "single_search_type")
- 
-        search = my.kwargs.get("search")
-        if search:
-            search.set_limit(1000)
-            search.set_offset(0)
-        else:
-            search = Search(search_type)
-        
-
         parent_key = my.kwargs.get("search_key")
+        
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             my.sobjects = [parent]
@@ -125,16 +95,42 @@ class RepoBrowserWdg(BaseRefreshWdg):
             project_dir = container_path 
 
             search_type = parent.get_search_type()
-            parent_code = parent.get_value("code", no_exception=True)
+            search = Search(search_type)
             
-            # TODO: Add parent search type filter
+            parent_code = parent.get_value("code", no_exception=True)
             if parent_code:
                 search.add_filter("code", parent_code)
-        
-        else:
+            
+            search_types = [search_type] 
+        elif search_type:
             project_code = Project.get_project_code()
             base_dir = Environment.get_asset_dir()
             project_dir = "%s/%s" % (base_dir, project_code) 
+        
+            search_types = [search_type]
+ 
+            search = my.kwargs.get("search")
+            if search:
+                search.set_limit(1000)
+                search.set_offset(0)
+            else:
+                search = Search(search_type)
+        
+        file_system_edit = my.kwargs.get("file_system_edit")
+        if search_type: 
+            key = "repo_browser_edit:%s" % search_type
+            if file_system_edit in [True, "true"]:
+                WidgetSettings.set_value_by_key(key, file_system_edit) 
+            else:
+                WidgetSettings.set_value_by_key(key, "false")
+
+        parent_mode = my.kwargs.get("parent_mode")
+        if search_type: 
+            key = "repo_browser_mode:%s" % search_type
+            if parent_mode in ["single_asset", "single_file", "single_search_type"]:
+                WidgetSettings.set_value_by_key(key, parent_mode) 
+            else:
+                WidgetSettings.set_value_by_key(key, "single_search_type")
         
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -149,7 +145,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         shelf_wdg = DivWdg()
         left.add(shelf_wdg)
-
 
         if not search_type:
             shelf_wdg.add_style("padding: 10px")
@@ -191,10 +186,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 
-
-
-
-
         stats_div = DivWdg()
         shelf_wdg.add(stats_div)
         stats_div.add_style("font-size: 10px")
@@ -221,9 +212,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left_wdg.add_style("width: 1000px")
 
 
-
-
-
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
         left_wdg.add(content_div)
@@ -234,13 +222,12 @@ class RepoBrowserWdg(BaseRefreshWdg):
         else:
             open_depth = int(open_depth)
 
-
-        # TODO: What does this do? 
-        dynamic = True
-        
         # Display the basename of of the base_dir 
         # default is True.
         show_base_dir = my.kwargs.get("show_base_dir")
+        
+        # Dynamically load the directory listing
+        dynamic = True
         
         # The left contains a directory listing
         # starting at project_dir.
