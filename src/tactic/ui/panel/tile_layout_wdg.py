@@ -2193,7 +2193,6 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
 
-
     def get_display(my):
 
         aspect_ratio = my.kwargs.get("aspect_ratio")
@@ -2301,10 +2300,13 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        if height or my.show_name_hover in ["True","true",True]:
-            div.add_style("height: 100%")
+        if height:
+            #div.add_style("height: %s" %height)
+            div.add_style("height: 100%" )
+
 
         if my.show_name_hover in ["True","true",True]:
+            div.add_style("height: 100%")
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
             name_hover.add(sobject.get('name'))
