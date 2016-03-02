@@ -932,18 +932,51 @@ class ThumbWdg(BaseTableElementWdg):
             missing_div.add_style("position: absolute")
 
 
+        elif icon_link == "__DYNAMIC__":
 
-        img = HtmlElement.img(icon_link)
-        img.add_class("spt_image")
+            base, ext = os.path.splitext(repo_path)
+            ext = ext.upper().lstrip(".")
 
-        # TODO: make this a preference
-        img.add_style("background: #ccc")
+            #flat ui color
+            colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+            import random
+            color = colors[random.randint(0,7)]
 
-        if isinstance(icon_size, basestring):
-            icon_size, unit = my.split_icon_size(icon_size)
-            img.add_style("%s: 100%%" % my.aspect)
+
+
+            img = DivWdg()
+            img.add_class("spt_image")
+            div.add(img)
+            img.add("<div style='padding-top: 30%%'>%s</div>" % ext)
+            img.add_style("text-align: center")
+            img.add_style("color: #fff")
+            img.add_style("background: %s" % color)
+
+            img.add_style("min-width: 50px")
+            img.add_style("min-height: 30px")
+            #img.add_style("width: 95%")
+            img.add_style("padding-bottom: 40%")
+
+            img.add_style("padding: 0px")
+            img.add_style("font-size: 20px")
+            img.add_style("font-weight: bold")
+
+
+
+
         else:
-            img.add_style("%s: %s" % (my.aspect, icon_size) )
+
+            img = HtmlElement.img(icon_link)
+            img.add_class("spt_image")
+
+            # TODO: make this a preference
+            img.add_style("background: #ccc")
+
+            if isinstance(icon_size, basestring):
+                icon_size, unit = my.split_icon_size(icon_size)
+                img.add_style("%s: 100%%" % my.aspect)
+            else:
+                img.add_style("%s: %s" % (my.aspect, icon_size) )
 
 
         detail = my.get_option("detail")

@@ -381,6 +381,24 @@ class GalleryWdg(BaseRefreshWdg):
             from tactic.ui.widget import EmbedWdg
             embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i)
             path_div.add(embed)
+            path_div.add_style("width: 100%")
+
+            #embed.add_style("position: absolute")
+            embed.add_style("margin-top: 25%")
+            embed.add_style("transform: translate(0%, -50%)")
+
+            """
+            path_div.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                var el = bvr.src_el.child();
+                alert(el);
+                var size = el.getSize();
+                bvr.src_el.setStyle("width", size.x);
+
+                '''
+            } )
+            """
             
 
             #img = HtmlElement.img(path)

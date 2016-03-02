@@ -115,6 +115,15 @@ class TopWdg(Widget):
                         break;
                     }
                 }
+
+
+                // if target is an smenu, then return
+                if (spt.has_class(target, 'SPT_SMENU')) {
+                    return;
+                }
+
+
+
                 target = target.parentNode;
                 if (count == 100) {
                     alert("Too many to close.");

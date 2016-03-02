@@ -40,7 +40,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_border()
-        top.add_style("width: 300px")
+        top.add_style("width: 400px")
         top.add_border()
 
 
@@ -54,7 +54,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             sobjects = Search.get_by_search_keys(search_keys)
             sobject = sobjects[0]
 
-        if not sobjects:
+        if not sobjects or not sobject:
             msg =  "%s not found" %search_key
             return msg
         search_type = sobject.get_base_search_type()
@@ -69,18 +69,24 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         title = DivWdg()
         top.add(title)
-        title.add_color("background", "background", -10)
-        if my.search_keys:
+
+        icon = IconWdg("WARNING", IconWdg.WARNING)
+        icon.add_style("float: left")
+        title.add(icon)
+
+        if len(my.search_keys) > 1:
             title.add("Delete %s Items" % len(my.search_keys))
         else:
             title.add("Delete Item [%s]" % (sobject.get_code()))
-        title.add_style("font-size: 14px")
+        title.add_style("font-size: 20px")
         title.add_style("font-weight: bold")
         title.add_style("padding: 10px")
 
+        title.add("<hr/>")
+
         content = DivWdg()
         top.add(content)
-        content.add_style("padding: 10px")
+        content.add_style("margin: 5px 10px 20px 10px")
 
 
         content.add("The item to be deleted has a number of dependencies as described below:<br/>", 'heading')
@@ -110,32 +116,41 @@ class DeleteToolWdg(BaseRefreshWdg):
         
 
         if valid_related_ctr > 0:
-            icon = IconWdg("WARNING", IconWdg.WARNING)
-            icon.add_style("float: left")
-            content.add( icon )
-            content.add("<div><b>WARNING: By selecting the related items above, you can delete them as well when deleting this sObject.</b></div>")
+            #icon = IconWdg("Note", "BS_NOTE")
+            #icon.add_style("float: left")
+            #content.add( icon )
+            content.add("<div><b>By selecting the above, the cooresponding related items will be deleted as well.</b></div>")
             content.add("<br/>"*2)
         else:
             # changed the heading to say no dependencies
             content.add("The item to be deleted has no dependencies.<br/>", 'heading')
 
 
-        content.add("There are %s items to be deleted" % len(my.search_keys))
+        num_items = len(my.search_keys)
+        if num_items == 1:
+            verb = "is 1 item"
+        else:
+            verb = "are %s items" % num_items
+        content.add("There %s to be deleted" % verb)
         content.add("<br/>"*2)
 
         content.add("Do you wish to continue deleting?")
-        content.add("<br/>"*2)
+        content.add("<br/>"*3)
 
         button_div = DivWdg()
-        button_div.add_styles('width: 300px; height: 75px')
-        button = ActionButtonWdg(title="Delete")
-        button_div.add(button)
         content.add(button_div)
-        button.add_style("float: left")
+        button_div.add_style('text-align: center')
+
+        button = ActionButtonWdg(title="Delete", width=100, color="danger")
+        button_div.add(button)
+        button.add_style("display: inline-block")
+
+        on_complete = my.kwargs.get("on_complete")
 
         button.add_behavior( {
         'type': 'click_up',
         'search_keys': my.search_keys,
+        'on_complete': on_complete,
         'cbjs_action': '''
         spt.app_busy.show("Deleting");
 
@@ -166,6 +181,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             server.execute_cmd(class_name, kwargs);
             server.finish();
 
+
             // run the post delete and destroy the popup
             var popup = bvr.src_el.getParent(".spt_popup");
             if (popup.spt_on_post_delete) {
@@ -175,6 +191,17 @@ class DeleteToolWdg(BaseRefreshWdg):
             del_trigger();
 
             spt.popup.destroy(popup);
+
+
+            if (bvr.on_complete) {
+               on_complete = function() {
+                   eval(bvr.on_complete);
+               }
+               on_complete();
+            }
+
+
+
 
 
         }
@@ -189,9 +216,9 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Cancel")
-        button.add_style("float: left")
+        button = ActionButtonWdg(title="Cancel", width=100)
         button_div.add(button)
+        button.add_style("display: inline-block")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''

@@ -3229,6 +3229,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
+            #"shelf_view": my.kwargs.get("shelf_view"),
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
@@ -3290,6 +3291,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             kwargs['process'] = my.kwargs.get("process")
             kwargs['gallery_align'] = my.kwargs.get("gallery_align")
+            kwargs['script_path'] = my.kwargs.get("script_path")
+            kwargs['script'] = my.kwargs.get("script")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':

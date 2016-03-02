@@ -1120,12 +1120,12 @@ class EditWdg(BaseRefreshWdg):
 
 
         # create the buttons
-        insert_button = ActionButtonWdg(title=ok_btn_label, tip=ok_btn_tip)
+        insert_button = ActionButtonWdg(title=ok_btn_label, tip=ok_btn_tip, width=150)
         insert_button.add_behavior(bvr)
 
 
 
-        cancel_button = ActionButtonWdg(title=cancel_btn_label, tip=cancel_btn_tip)
+        cancel_button = ActionButtonWdg(title=cancel_btn_label, tip=cancel_btn_tip, width=150)
         cancel_button.add_behavior({
         'type': 'click_up',
         'cbjs_action': cbjs_cancel

@@ -175,6 +175,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             icon="BS_SEARCH",
             icon_pos="right",
             width="100%",
+            height="30px",
             hint_text="'Enter' to search for Colllection...",
             value_column="name",
             filters=filters,
@@ -673,6 +674,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             search_type = "workflow/asset",
             column="name",
             width="100%",
+            height="30px",
             hint_text="Enter terms to filter collections...",
             value_column="name",
             filters=filters,
@@ -896,10 +898,12 @@ class CollectionContentWdg(BaseRefreshWdg):
         collection = Search.get_by_search_key(my.collection_key)
 
         top = my.top
+        top.add_style("min-height: 400px")
 
         my.kwargs["scale"] = 75;
         my.kwargs["show_scale"] = False;
         my.kwargs["expand_mode"] = "plain"
+        my.kwargs["show_search_limit"] = False
 
         from tile_layout_wdg import TileLayoutWdg
         tile = TileLayoutWdg(
