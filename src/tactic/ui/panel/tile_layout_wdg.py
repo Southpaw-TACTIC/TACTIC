@@ -397,6 +397,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 kwargs = my.kwargs.copy()
                 tile = my.get_tile_wdg(sobject)
                 inner.add(tile)
+                #inner.add_style("text-align: center")
+                inner.add_style("text-align: left")
         else:
             table = Table()
             inner.add(table)
@@ -1360,6 +1362,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             if my.title_wdg:
                 my.title_wdg.set_sobject(sobject)
                 div.add(my.title_wdg.get_buffer_display())
+                title_wdg = my.title_wdg
             else:
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
@@ -1386,11 +1389,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.show_drop_shadow:
             div.set_box_shadow()
 
-        #div.add_color("background", "background", -3)
-        
         div.add_style("overflow: hidden")
+        #div.add_style("float: left")
+        div.add_style("display: inline-block")
 
-        div.add_style("float: left")
 
         border_color = div.get_color('border', modifier=20)
 
@@ -1401,8 +1403,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add_style("height: auto")
         thumb_drag_div.add_behavior( {
             "type": "drag",
-            #'drag_el': 'drag_ghost_copy',
-            #//'use_copy': 'true',
             "drag_el": '@',
             'drop_code': 'DROP_ROW',
             'border_color': border_color,
@@ -1429,9 +1429,14 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add(thumb)
         thumb_div.add_border()
 
-        #bottom_view = my.kwargs.get("bottom_view")
-        #if bottom_view:
-        #    div.add( my.get_view_wdg(sobject, bottom_view) )
+
+        # FIXME: for some reason, the hidden overflow is not respected here
+        thumb.add_style("margin-top: 30%")
+        thumb.add_style("transform: translate(0%, -50%)")
+        #thumb.add_style("border: solid 2px blue")
+        #thumb_div.add_style("border: solid 2px red")
+
+
         if my.bottom:
             my.bottom.set_sobject(sobject)
             div.add(my.bottom.get_buffer_display())
@@ -1729,6 +1734,18 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     var src_tile = bvr.src_el.getParent(".spt_tile_top");
     var has_inserted = false;
 
+    var has_drop_handler = dst_el.hasClass("spt_drop_handler");
+    var drop_handler = "";
+    if (!has_drop_handler) {
+        var drop_handler_el = dst_el.getParent(".spt_drop_handler");
+        if (drop_handler_el) {
+            drop_handler = drop_handler_el.getAttribute("spt_drop_handler");
+        }
+    }
+    else {
+        drop_handler = dst_el.getAttribute("spt_drop_handler");
+    }
+
     if (dst_top) {
         if( bvr._drag_copy_el ) {
             spt.mouse._delete_drag_copy( bvr._drag_copy_el );
@@ -1895,6 +1912,14 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         }
 
     }
+    else if (drop_handler) {
+        if( bvr._drag_copy_el ) {
+            spt.mouse._delete_drag_copy( bvr._drag_copy_el );
+            bvr._drag_copy_el = null;
+        };
+        eval(drop_handler+"(evt, bvr)");
+
+    }
     else {
         if (spt.drop) {
             spt.drop.sobject_drop_action(evt, bvr);
@@ -1939,23 +1964,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         table.add_cell(title)
         title.add_style("padding: 0px 10px 0px 0px")
 
-        """
-        # TO BE DELETED
-        less_div = DivWdg()
-        less_div.add("<input type='button' value='&lt;&lt;'/>")
-        table.add_cell(less_div)
-
-        less_div.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.tile_layout.set_layout(bvr.src_el);
-            var scale = spt.tile_layout.get_scale();
-            scale = scale * 0.95;
-            scale = parseInt(scale);
-            spt.tile_layout.set_scale(scale);
-            '''
-        } )
-        """
 
         dark_color = div.get_color("background", -5)
         light_color = div.get_color('color')
@@ -2082,7 +2090,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         bg_wdg.add(" ")
 
 
-        if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+        #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+        if True:
             detail_div = DivWdg()
             div.add(detail_div)
             detail_div.add_style("float: right")
@@ -2244,12 +2253,17 @@ class ThumbWdg2(BaseRefreshWdg):
                 color = colors[random.randint(0,7)]
 
                 img = DivWdg()
-                img.add("<div>%s</div>" % ext)
+                img.add("<div style='display: inline-block; vertical-align: middle; margin-top: 30%%; width: 50px; height: 30px;'>%s</div>" % ext)
                 img.add_style("text-align: center")
-                img.add_style("width: 80px")
-                img.add_style("height: 50px")
-                img.add_style("margin: 20px auto")
-                img.add_style("padding-top: 30px")
+                #img.add_style("width: 80px")
+                #img.add_style("height: 50px")
+                img.add_style("min-width: 80px")
+                img.add_style("min-height: 50px")
+                img.add_style("width: 50%")
+                img.add_style("height: 70%")
+
+                img.add_style("margin: 30px auto")
+                img.add_style("padding: 0px 10px")
                 img.add_style("font-size: 20px")
                 img.add_style("font-weight: bold")
                 img.add_style("color: #fff")
@@ -2275,8 +2289,8 @@ class ThumbWdg2(BaseRefreshWdg):
         if path and path.startswith("/context"):
             #img.add_style("padding: 15% 15%")
             img.add_style("width: auto")
-            img.add_style("height: 70%")
-            img.add_style("margin: 10%")
+            img.add_style("height: 80%")
+            img.add_style("margin-top: 15%")
 
             img = DivWdg(img)
             img.add_style("height: auto")
@@ -2301,13 +2315,16 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        if height or my.show_name_hover in ["True","true",True]:
-            div.add_style("height: 100%")
+        #if height or my.show_name_hover in ["True","true",True]:
+        #    div.add_style("height: 100%")
 
+
+        # FIXE: what is this for???
         if my.show_name_hover in ["True","true",True]:
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
             name_hover.add(sobject.get('name'))
+
             name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
             name_hover.add_styles('opacity: 0; font-size: 16px; color: rgb(217, 217, 217); top: 0px; \

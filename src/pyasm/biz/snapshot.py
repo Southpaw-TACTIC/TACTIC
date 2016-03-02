@@ -1672,6 +1672,11 @@ class Snapshot(SObject):
         if show_retired:
             raise Exception("ERROR: Unsupported show retired flag")
 
+        if not return_dict:
+            search.add_order_by("search_code")
+            search.add_order_by("version desc")
+
+
         snapshots = search.get_sobjects()
 
         # sort them like timestamp desc if returning dict

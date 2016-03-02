@@ -1109,7 +1109,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             hint_text = ', '.join(hints)
 
 
-
             if len(hint_text) > 30:
                 hint_text = '%s...'%hint_text[0:29]
 
@@ -1145,6 +1144,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 column=my.look_ahead_columns,
                 relevant = my.relevant,
                 width = width,
+                height = "30px",
                 hint_text=hint_text,
                 case_sensitive = my.case_sensitive,
                 icon=icon,
