@@ -34,7 +34,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         "parent_mode": {
             'description': '''The relationship between a snapshot and parent sObject and which determine what views are exposed and   
                 functionality of tools. When mode is single_file, the parent sObject is updated, renamed, deleted and moved with 
-                child snapshots. When mode is single_asset with given search_key, the directory and tools are scoped to the parent.''',
+                child snapshots. Note, the single_file search_type must have relative_dir specified.  
+                When mode is single_asset with given search_key, the directory and tools are scoped to the parent.''',
             'type': 'SelectWdg',
             'values': 'single_asset|single_file|single_search_type',
             'default': 'single_search_type',
@@ -115,22 +116,23 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search.set_offset(0)
             else:
                 search = Search(search_type)
-        
-        file_system_edit = my.kwargs.get("file_system_edit")
-        if search_type: 
-            key = "repo_browser_edit:%s" % search_type
-            if file_system_edit in [True, "true"]:
-                WidgetSettings.set_value_by_key(key, file_system_edit) 
-            else:
-                WidgetSettings.set_value_by_key(key, "false")
-
-        parent_mode = my.kwargs.get("parent_mode")
-        if search_type: 
-            key = "repo_browser_mode:%s" % search_type
-            if parent_mode in ["single_asset", "single_file", "single_search_type"]:
-                WidgetSettings.set_value_by_key(key, parent_mode) 
-            else:
-                WidgetSettings.set_value_by_key(key, "single_search_type")
+       
+        is_refresh = my.kwargs.get("is_refresh")
+        edit_mode_key = "repo_browser_edit:%s" % search_type
+        parent_mode_key = "repo_browser_mode:%s" % search_type
+        if is_refresh in [True, "true"]:
+            file_system_edit = WidgetSettings.get_value_by_key(edit_mode_key) 
+            parent_mode = WidgetSettings.get_value_by_key(parent_mode_key) 
+        else:
+            file_system_edit = my.kwargs.get("file_system_edit")
+            if file_system_edit == None:
+                file_system_edit = "false"
+            WidgetSettings.set_value_by_key(edit_mode_key, file_system_edit) 
+            
+            parent_mode = my.kwargs.get("parent_mode")
+            if parent_mode == None:
+                parent_mode = "single_search_type"
+            WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
         
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -269,7 +271,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search_type=search_type,
                 view='table',
                 dirname=project_dir,
-                basename="",
+                basename=""
             )
             outer_div.add(widget)
         else:
@@ -974,6 +976,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                 
                 var dir_top = spt.repo_browser.getElement(".spt_dir_list_top");
                 
+                // Shut off requests update when the lock is on.
+                // TODO: This should be optimized so that the requests
+                // are only turned off once one update is found.
                 if (lock) {
                     dir_top.addClass("spt_update_lock");
                 } else {
@@ -1000,6 +1005,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
  
             spt.repo_browser.update_ready = function() {
+                // Indicates whether an update is in the queue or not.
                 if (spt.repo_browser.update_available || spt.repo_browser.queued_update) {
                     return true;
                 } else {
@@ -1157,9 +1163,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.alert(spt.exception.handler(err));
             }
 
-            if (spt.repo_browser.update_ready()) {
-                spt.repo_browser.set_lock(false);   
-            } else {
+            spt.repo_browser.set_lock(false);   
+            if (!spt.repo_browser.update_ready()) {
                 // Refresh the source dir top and destination dir top 
                 spt.panel.refresh(src_dir_top);
                     
@@ -1466,6 +1471,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
 
+        # Directory updates
         update = {
              'search_type': search_type,
              'expression': "@COUNT(@SOBJECT(sthpw/file['search_type', '%s']))" % search_type,
@@ -1495,8 +1501,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 'type': 'click_up',
                 'cbjs_action': r'''
                
-                //TODO:
-                //spt.repo_browser.set_lock(true, "context_menu_action");
+                spt.repo_browser.set_lock(true, "context_menu_action");
 
                 var activator = spt.smenu.get_activator(bvr);
                 var relative_dir = activator.getAttribute("spt_relative_dir");
@@ -1545,14 +1550,11 @@ class RepoBrowserDirListWdg(DirListWdg):
                     // Attempt to create new folder
                     var value = this.value;
 
-                    //if (!value) {
-                    //    div.destroy();
-                    //}
-
                     var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
                     if (!valid_regex.test(value)) {
                         spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
                         div.destroy();
+                        spt.repo_browser.set_lock(false);
                         return; 
                     }     
                     
@@ -1579,10 +1581,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                         server.execute_cmd(class_name, kwargs);
                         
                         var dir_top = span.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
+                        spt.repo_browser.set_lock(false);   
+                        if (!spt.repo_browser.update_ready()) {
+                            spt.panel.refresh(dir_top);
+                        }
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
                         div.destroy();
+                        spt.repo_browser.set_lock(false);
                         return;
                     }
                     
@@ -1667,11 +1673,10 @@ class RepoBrowserDirListWdg(DirListWdg):
                     
                         spt.notify.show_message("Folder rename complete");
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
-                        if (spt.repo_browser.update_ready()) {
-                            spt.repo_browser.set_lock(false);   
-                        } else {
+                        spt.repo_browser.set_lock(false);   
+                        if (!spt.repo_browser.update_ready()) {
                             spt.panel.refresh(dir_top);
-                        }
+                        } 
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
                         span.destroy();
@@ -1927,9 +1932,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                         // Refresh browser detail
                         var repo_top = document.getElement(".spt_repo_browser_top");
                         var detail_top = repo_top.getElement(".spt_browser_detail_top");
-                        if (spt.repo_browser.update_ready()) {
-                            spt.repo_browser.set_lock(false);   
-                        } else {
+                        spt.repo_browser.set_lock(false);   
+                        if (!spt.repo_browser.update_ready()) {
                             spt.panel.refresh(dir_top);
                         } 
                     } catch(err) {
@@ -3010,9 +3014,9 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         top.add(inner)
 
         # The determination of search types important for IngestUploadWdg and ViewPanelWdg.
-        # Also, if parent_mode is specified, then clicking 
+        # Also, if parent_mode is single_file, then clicking 
         # a file or directory will display information
-        # related to the single asset search type.
+        # related to the single file search type.
         parent_mode = my.kwargs.get("parent_mode")
         parent_key = my.kwargs.get("parent_key")
         if parent_mode == "single_file":
@@ -3024,7 +3028,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
         parent_type = SearchType.build_search_type(parent_type)
         search_type = SearchType.build_search_type(search_type)
-
+        
         # Input data - snapshots or a absolute directory path
         snapshot_codes = my.kwargs.get("snapshot_codes")
         
@@ -3038,39 +3042,44 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         if reldir == ".":
             reldir = ""
     
+        # If user has selected list of snapshots in directory
+        # display these. 
+        # TODO: Use of snapshot codes involves the unfinished  select API 
         if snapshot_codes:
             search = Search("sthpw/snapshot")
             search.add_filters("code", snapshot_codes)
 
-            search2 = Search(search_type)
+            """search2 = Search(search_type)
             search2.add_relationship_search_filter(search)
-            sobjects = search2.get_sobjects()
-        elif parent_mode == "single_file":
-            search = Search(search_type)
-            search.add_filter("relative_dir", "%s%%" % reldir, op='like')
+            sobjects = search2.get_sobjects()"""
         else:
-            # Search for all files that are in this relative_dir
-            file_search = Search("sthpw/file")
-            file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
-            file_search.add_filter("search_type", parent_type)
-            # Search for the snapshots related to these files and filter 
-            # on parent type.
-            search = Search(search_type)
-            search.add_relationship_search_filter(file_search)
-
-            '''
-            FIXME:
-            
-            key = "repo_browser:%s" % search_type
+            # Get search from widget settings
+            key = "repo_browser:%s" % parent_type
             parent_search_str = WidgetSettings.get_value_by_key(key)
             if parent_search_str:
-                parent_search = Search(search_type)
+                parent_search = Search(parent_type)
                 parent_search.select.loads(parent_search_str)
+            else:
+                parent_search = Search(parent_type)
+            
+            if parent_mode == "single_file":
+                # In single file mode, the parent sObjects are displayed, and filter
+                # is based on these sObjects relative_dir column.
+                parent_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
+                search = parent_search
+            else:
+                # Search for snapshots related to these files in relative_dir
+                # and filter based on  parent search.
+                search = Search(search_type)
+                
+                # Search for all files that are in this relative_dir
+                file_search = Search("sthpw/file")
+                file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
+                file_search.add_filter("search_type", parent_type)
+                search.add_relationship_search_filter(file_search)
+                
                 parent_search.add_column("code")
-                search2.add_search_filter("code", parent_search)
-
-            sobjects = search2.get_sobjects()
-           '''
+                search.add_search_filter("code", parent_search)
 
         # File system edit
         my.file_system_edit = my.kwargs.get("file_system_edit") 
@@ -3165,7 +3174,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         # pass in parent key for deliverable
         # "self" for parent_mode
         upload_mode = False
-
+ 
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
