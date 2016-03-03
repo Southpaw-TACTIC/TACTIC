@@ -479,90 +479,10 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-    def get_file_search(my, base_dir, search_types, parent_ids, mode="count"):
-        show_main_only = True
-        show_latest = True
-        show_versionless = False
-
-        asset_base_dir = Environment.get_asset_dir()
-        relative_dir = base_dir.replace(asset_base_dir, "")
-        relative_dir = relative_dir.strip("/")
-
-        keywords = my.kwargs.get("keywords")
-
-        project_code = Project.get_project_code()
-        search = Search("sthpw/file")
-
-        # add a search type filter ... ignore this is the search_type are snapshots
-        if search_types:
-            if search_types[0] != "sthpw/snapshot":
-                search.add_filters("search_type", search_types)
+    def get_file_search(my, base_dir, search_types, parent_ids, mode):
+   
+        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode)    
         
-        if relative_dir:
-            # TODO: not very clean.  There are different ways that the
-            # relative dir needs to be searched on depending on usage
-            # For now, just use a simple mode
-            if mode == "count":
-                search.add_op("begin")
-                search.add_filter("relative_dir", "%s" % relative_dir)
-                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-                search.add_op("or")
-            else:
-                search.add_op("begin")
-                search.add_filter("relative_dir", "%s" % relative_dir)
-                if True:
-                    #if not my.dynamic:
-                    search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-                search.add_op("or")
-        
-
-        
-        if parent_ids:
-            search.add_filters("search_id", parent_ids)
-        
-        if keywords:
-            search.add_text_search_filter("metadata_search", keywords)
-
-        if show_latest or show_versionless:
-            search.add_join("sthpw/snapshot")
-            search.add_op("begin")
-            if show_latest:
-                search.add_filter("is_latest", True, table="snapshot")
-            if show_versionless:
-                search.add_filter("version", -1, table="snapshot")
-            search.add_filter("file_name", "")
-            search.add_filter("file_name", "NULL", quoted=False, op="is")
-            search.add_op("or")
-        else:
-            pass
-
-        if show_main_only:
-            search.add_filter("type", "main")
-
-        if my.sobjects:
-            search.add_sobjects_filter(my.sobjects)
-
-        # FIXME:
-        search_type = search_types[0]
-
-        key = "repo_browser:%s" % search_type
-        parent_search_str = WidgetSettings.get_value_by_key(key)
-        if parent_search_str:
-            parent_search = Search(search_type)
-            parent_search.select.loads(parent_search_str)
-            parents = parent_search.get_sobjects()
-            parent_codes = [x.get_value("code") for x in parents]
-          
-            if search_type == "sthpw/snapshot":
-                search.add_filters("snapshot_code", parent_codes)
-            else:
-                search.add_filter("search_type", search_type)
-                search.add_filters("search_code", parent_codes)
-        
-        return search
-
-
-
 
     def get_relative_paths(my, base_dir):
 
@@ -653,6 +573,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         if my.show_files:
 
             search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder")
+            print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", search.get_statement()
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -2600,6 +2521,7 @@ class RepoBrowserCbk(Command):
 
             # find all the files with the relative dir
             file_search = Search("sthpw/file")
+            # FIXME: filter should not use like.
             file_search.add_filter("relative_dir", "%s%%" % from_relative_dir, op='like')
             files = file_search.get_sobjects()
 
@@ -2977,18 +2899,78 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
 class RepoBrowserSearchWrapper(object):
 
-    def alter_search(my, search):
 
-        search_type = search.get_full_search_type()
+    def get_file_search(base_dir, search_types, parent_ids, mode="count"):
 
-        # search for all files that are in this relative_dir
-        file_search = Search("sthpw/file")
-        file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
-        file_search.add_filter("search_type", search_type)
+        search = Search("sthpw/file")
 
-        # use the above search to find all sobjects with files in this
-        # relative_dir
-        search.add_relationship_search_filter(file_search)
+        # Add a search type filter ... ignore this is the search_type are snapshots
+        # FIXME Handle more than one search type
+        search_type = None
+        if search_types:
+            search_type = search_types[0]
+            if search_type != "sthpw/snapshot":
+                search.add_filter("search_type", search_type)
+        if parent_ids:
+            search.add_filters("search_id", parent_ids)
+        
+        asset_base_dir = Environment.get_asset_dir()
+        if (base_dir.startswith(asset_base_dir)):
+            relative_dir = os.path.relpath(base_dir, asset_base_dir)
+            if relative_dir == ".":
+                relative_dir = ""
+        else:
+            relative_dir = base_dir
+
+        if relative_dir:
+            # TODO: not very clean.  There are different ways that the
+            # relative dir needs to be searched on depending on usage
+            # For now, just use a simple mode
+            search.add_op("begin")
+            search.add_filter("relative_dir", "%s" % relative_dir)
+            if mode=="count":
+                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+            search.add_op("or")
+        
+        # TODO: 
+        # keywords = my.kwargs.get("keywords")
+        # if keywords:
+        #    search.add_text_search_filter("metadata_search", keywords)
+
+        # TODO: The repo browser has these settings forced
+        show_main_only = True
+        show_latest = True
+        show_versionless = False
+        if show_latest or show_versionless:
+            search.add_join("sthpw/snapshot")
+            search.add_op("begin")
+            if show_latest:
+                search.add_filter("is_latest", True, table="snapshot")
+            if show_versionless:
+                search.add_filter("version", -1, table="snapshot")
+            search.add_filter("file_name", "")
+            search.add_filter("file_name", "NULL", quoted=False, op="is")
+            search.add_op("or")
+
+        if show_main_only:
+            search.add_filter("type", "main")
+
+        key = "repo_browser:%s" % search_type
+        parent_search_str = WidgetSettings.get_value_by_key(key)
+        if parent_search_str:
+            parent_search = Search(search_type)
+            parent_search.select.loads(parent_search_str)
+            parents = parent_search.get_sobjects()
+            parent_codes = [x.get_value("code") for x in parents]
+          
+            if search_type == "sthpw/snapshot":
+                search.add_filters("snapshot_code", parent_codes)
+            else:
+                search.add_filter("search_type", search_type)
+                search.add_filters("search_code", parent_codes)
+        
+        return search
+    get_file_search = staticmethod(get_file_search)
 
 
 
@@ -3048,39 +3030,31 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         if snapshot_codes:
             search = Search("sthpw/snapshot")
             search.add_filters("code", snapshot_codes)
-
-            """search2 = Search(search_type)
-            search2.add_relationship_search_filter(search)
-            sobjects = search2.get_sobjects()"""
         else:
-            # Get search from widget settings
-            key = "repo_browser:%s" % parent_type
-            parent_search_str = WidgetSettings.get_value_by_key(key)
-            if parent_search_str:
-                parent_search = Search(parent_type)
-                parent_search.select.loads(parent_search_str)
-            else:
-                parent_search = Search(parent_type)
-            
+            # FIXME: Note, that this widget shows all files in the
+            # entire tree rooted at relative_dir. User may only want to
+            # see files within relative_dir.
             if parent_mode == "single_file":
+                # Get search from widget settings
+                key = "repo_browser:%s" % parent_type
+                parent_search_str = WidgetSettings.get_value_by_key(key)
+                if parent_search_str:
+                    parent_search = Search(parent_type)
+                    parent_search.select.loads(parent_search_str)
+                else:
+                    parent_search = Search(parent_type)
                 # In single file mode, the parent sObjects are displayed, and filter
                 # is based on these sObjects relative_dir column.
-                parent_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
+                parent_search.add_op("begin")
+                parent_search.add_filter("relative_dir", "%s" % reldir)
+                parent_search.add_filter("relative_dir", "%s/%%" % reldir, op='like')
+                parent_search.add_op("or")
                 search = parent_search
             else:
-                # Search for snapshots related to these files in relative_dir
-                # and filter based on  parent search.
+                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [])
                 search = Search(search_type)
-                
-                # Search for all files that are in this relative_dir
-                file_search = Search("sthpw/file")
-                file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
-                file_search.add_filter("search_type", parent_type)
                 search.add_relationship_search_filter(file_search)
-                
-                parent_search.add_column("code")
-                search.add_search_filter("code", parent_search)
-
+ 
         # File system edit
         my.file_system_edit = my.kwargs.get("file_system_edit") 
         if my.file_system_edit == "true":
@@ -3174,7 +3148,8 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         # pass in parent key for deliverable
         # "self" for parent_mode
         upload_mode = False
- 
+   
+        print search.get_statement()
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
@@ -3191,6 +3166,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             upload_mode=upload_mode,
             show_context_menu=show_context_menu,
             allow_drag=allow_drag,
+            no_results_msg="Alter search criteria or ingest files to this directory."
         )
         inner.add(layout)
      
