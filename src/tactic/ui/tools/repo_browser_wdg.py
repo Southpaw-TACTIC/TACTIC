@@ -75,6 +75,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         keywords = my.kwargs.get("keywords")
             
         search_type = my.kwargs.get("search_type")
+        search_type = SearchType.build_search_type(search_type)
+
         parent_key = my.kwargs.get("search_key")
         
         if parent_key:
@@ -120,9 +122,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
         is_refresh = my.kwargs.get("is_refresh")
         edit_mode_key = "repo_browser_edit:%s" % search_type
         parent_mode_key = "repo_browser_mode:%s" % search_type
+        view_dir_key = "repo_browser_view_dir:%s" % search_type
         if is_refresh in [True, "true"]:
             file_system_edit = WidgetSettings.get_value_by_key(edit_mode_key) 
-            parent_mode = WidgetSettings.get_value_by_key(parent_mode_key) 
+            parent_mode = WidgetSettings.get_value_by_key(parent_mode_key)
+            view_dir = WidgetSettings.get_value_by_key(view_dir_key)
         else:
             file_system_edit = my.kwargs.get("file_system_edit")
             if file_system_edit == None:
@@ -133,6 +137,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
             if parent_mode == None:
                 parent_mode = "single_search_type"
             WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
+
+            view_dir = my.kwargs.get("view_dir")
+            if view_dir == None:
+                view_dir = project_dir
+            WidgetSettings.set_value_by_key(view_dir_key, view_dir) 
         
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -270,7 +279,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 file_system_edit=file_system_edit,
                 search_type=search_type,
                 view='table',
-                dirname=project_dir,
+                dirname=view_dir,
                 basename=""
             )
             outer_div.add(widget)
@@ -573,7 +582,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         if my.show_files:
 
             search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder")
-            print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", search.get_statement()
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -3016,13 +3024,15 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         
         dirname = my.kwargs.get("dirname")
         asset_dir = Environment.get_asset_dir()
-        if not dirname.startswith(asset_dir):
-            error_div = DivWdg()
-            error_div.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
-            return error_div
-        reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
-        if reldir == ".":
-            reldir = ""
+        if dirname.startswith(asset_dir):
+            reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
+            if reldir == ".":
+                reldir = ""
+        else:
+            reldir = dirname
+
+        view_dir_key = "repo_browser_view_dir:%s" % parent_type
+        WidgetSettings.set_value_by_key(view_dir_key, reldir) 
     
         # If user has selected list of snapshots in directory
         # display these. 
