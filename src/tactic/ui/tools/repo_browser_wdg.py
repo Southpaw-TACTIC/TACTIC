@@ -17,7 +17,7 @@ from pyasm.common import Environment, Xml, Common
 from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings, SpanWdg
 from pyasm.biz import Snapshot, Project, File
 from pyasm.search import Search, SearchType, SearchKey, FileUndo
-from pyasm.widget import IconWdg, CheckboxWdg
+from pyasm.widget import IconWdg, CheckboxWdg, HiddenWdg
 from pyasm.command import Command
 
 from tactic.ui.panel import FastTableLayoutWdg
@@ -454,7 +454,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
-
+    
         my.dynamic = my.kwargs.get("dynamic")
         if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
@@ -472,6 +472,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             
             key = "repo_browser_mode:%s" % search_type
             my.parent_mode = WidgetSettings.get_value_by_key(key)
+        
+            # Set the folder state
+            folder_state = my.kwargs.get("folder_state")
+            if folder_state:
+                key = "repo_browser_folder_state:%s" % search_type
+                WidgetSettings.set_value_by_key(key, folder_state)
         else:
             my.file_system_edit = "false"
             my.parent_mode = "single_search_type"
@@ -814,7 +820,7 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_api(my):
 
         return r'''
-
+            
             spt.repo_browser = {};
         
             spt.repo_browser.click_file_bvr = function(evt, bvr) {
@@ -960,9 +966,19 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
             }
 
-            spt.repo_browser.refresh_directory_listing = function() {
-                console.log("refresh");
-                var dir_list = spt.repo_browser.getElement(".spt_dir_list_handler_top");
+            spt.repo_browser.refresh_directory_listing = function(dir_list) {
+                
+                if (!dir_list) {
+                    console.log("refresh of top");
+                    dir_list = spt.repo_browser.getElement(".spt_dir_list_handler_top");
+                }
+               
+                // Get the folder ates from the dir list top 
+                var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                var state_input = dir_list_top.getElement(".spt_folder_state");
+                var folder_state = state_input.value;
+                dir_list.setProperty("spt_folder_state", folder_state);
+
                 spt.panel.refresh(dir_list);
             }
  
@@ -1095,10 +1111,10 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.set_lock(false);   
             if (!spt.repo_browser.update_ready()) {
                 // Refresh the source dir top and destination dir top 
-                spt.panel.refresh(src_dir_top);
-                    
+                spt.repo_browser.refresh_directory_listing(src_dir_top);
+
                 var dest_dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
-                spt.panel.refresh(dest_dir_top);
+                spt.repo_browser.refresh_directory_listing(dest_dir_top);
             }
 
         }
@@ -1345,8 +1361,14 @@ class RepoBrowserDirListWdg(DirListWdg):
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search_type = parent.get_search_type()
+    
+        folder_state_key = "repo_browser_folder_state:%s" % search_type 
+        folder_state = WidgetSettings.get_value_by_key(folder_state_key) 
+        text_wdg = HiddenWdg("folder_state")
+        text_wdg.add_class("spt_folder_state")
+        top.add(text_wdg)
+        text_wdg.set_value(folder_state)
         
-  
         # Directory click up - display related sObjects
         top.add_relay_behavior( {
         'type': 'click',
@@ -1923,9 +1945,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         #src_path = file_object.get_value("source_path")
         src_path = file_object.get_value("file_name")
         src_basename = os.path.basename(src_path)
-        
-        # FIXME: In single asset mode, simply display the asset name or 
-        # atleast single context.
+
         # NOTE: pretty hacky
         # remove version
         src_basename = re.sub(r"_v\d+", "", src_basename)
@@ -3159,7 +3179,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         # "self" for parent_mode
         upload_mode = False
    
-        print search.get_statement()
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
@@ -3179,7 +3198,16 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             no_results_msg="Alter search criteria or ingest files to this directory."
         )
         inner.add(layout)
-     
+    
+        # TODO: Lock on drag of tile
+        """ 
+        inner.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_tile_top',
+            'cbjs_action':'''console.log("hi");'''
+        } )
+        """
+
         is_refresh = my.kwargs.get("is_refresh")
         if is_refresh:
             return inner

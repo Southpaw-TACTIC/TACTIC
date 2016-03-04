@@ -461,12 +461,10 @@ class DirListWdg(BaseRefreshWdg):
         top.add_attr("spt_search_types", "|".join(search_types) )
 
 
-
         # This is the package that gets passed around
         core_handler_kwargs = {
             'base_dir': my.base_dir,
             'root_dir': my.root_dir,
-
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
@@ -548,13 +546,13 @@ class DirListWdg(BaseRefreshWdg):
         swap.add_style("margin-right: -7px")
         swap.add_class("spt_dir_swap")
         swap.add_style("float: left")
-
+ 
         #if is_open:
         #    swap.set_off()
-
+        
+        # FIXME: my.base_dir = dir
         reldir = dir.replace(my.base_dir, "")
         reldir = reldir.lstrip("/")
-
         if reldir:
             reldir = reldir + "/" + item
         else:
@@ -584,6 +582,37 @@ class DirListWdg(BaseRefreshWdg):
         swap_action = '''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext(".spt_dir_content");
+        
+        // Get the folder state, add dir to state if necessary.
+        var top = item_top.getParent(".spt_dir_list_top");
+        var folder_state_el = top.getElement(".spt_folder_state");
+        if (folder_state_el) {
+            var folder_state = folder_state_el.value;
+            var items;
+            if (folder_state == '') {
+                items = [];
+            }
+            else {
+                items = folder_state.split("|");
+            }
+        
+            // Preferentially grab the absolute path
+            var dir = item_top.getAttribute("spt_dir");
+            if (!dir) {
+                dir = item_top.getAttribute("spt_reldir");
+
+            }
+
+            var exists = false;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i] == dir) {
+                    exists = true;
+                    break;
+                }
+            }
+            
+        }
+
 
         if (item_top.hasClass("spt_dynamic")) {
 
@@ -595,8 +624,18 @@ class DirListWdg(BaseRefreshWdg):
                 }
                 item_top.removeClass("spt_open");
                 sibling.setStyle("display", "none");
+            
+                // Remove this item from the folder states
+                if (exists) {
+                    items.splice(i, 1);
+                }
             }
             else {
+                // Add this item to the folder states
+                if (!exists) {
+                    items.push(dir);
+                }
+
                 item_top.addClass("spt_open");
                 sibling.setStyle("display", "");
 
@@ -604,8 +643,6 @@ class DirListWdg(BaseRefreshWdg):
                 var root_dir = item_top.getAttribute("spt_root_dir");
 
                 // get the search_keys, if any
-                var top = bvr.src_el.getParent(".spt_dir_list_top");
-
                 var search_keys = top.getAttribute("spt_search_keys");
                 if (search_keys) {
                     search_keys = search_keys.split("|");
@@ -645,49 +682,20 @@ class DirListWdg(BaseRefreshWdg):
                     all_open: false,
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
-                    handler_kwargs: handler_kwargs
-
+                    handler_kwargs: handler_kwargs,
+                    folder_state: folder_state
                 };
-               
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
         else {
             spt.toggle_show_hide(sibling);
-        }
-
-
-        var top = item_top.getParent(".spt_dir_list_top");
-        var folder_state_el = top.getElement(".spt_folder_state");
-        if (! folder_state_el) {
-            return;
-        }
-
-        var reldir = item_top.getAttribute("spt_reldir");
-
-        var folder_state = folder_state_el.value;
-
-        var items;
-        if (folder_state == '') {
-            items = [];
-        }
-        else {
-            items = folder_state.split("|");
-        }
-
-        //var index = items.indexOf(reldir);
-        var exists = false;
-        for (var i = 0; i < items.length; i++) {
-            if (items[i] == reldir) {
-                exists = true;
-                break;
+           
+            if (exists) {
+                items.splice(i, 1);
+            } else {
+                items.push(dir);
             }
-        }
-        if (exists) {
-            items.splice(i, 1);
-        }
-        else {
-            items.push(reldir);
         }
 
         folder_state = items.join("|");
@@ -699,8 +707,8 @@ class DirListWdg(BaseRefreshWdg):
         swap.add_action_script(swap_action)
 
 
-        # open the first folder
-        if dynamic and my.get_depth() == 0:
+        # Open if is_open or it is the first folder
+        if dynamic and (is_open or my.get_depth() == 0):
             swap.get_widget("div1").add_behavior( {
                 'type': 'load',
                 'cbjs_action': '''
@@ -1130,6 +1138,7 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
+
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
@@ -1171,7 +1180,9 @@ class DirListPathHandler(BaseRefreshWdg):
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
             #handler_kwargs['search_type'] = my.kwargs.get("search_type")
             handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
-
+            handler_kwargs['folder_states'] = my.kwargs.get("folder_states")
+            handler_kwargs['folder_state'] = my.kwargs.get("folder_state")
+            
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
 
 
@@ -1303,6 +1314,7 @@ class DirListPathHandler(BaseRefreshWdg):
                 if basename == '.versions':
                     xis_open = False
                 else:
+
                     web = WebContainer.get_web()
                     folder_state = web.get_form_value("folder_state")
                     if not folder_state:
@@ -1313,21 +1325,23 @@ class DirListPathHandler(BaseRefreshWdg):
                         folder_state = []
 
 
-
+                     
                     rel_dir = path.replace(base_dir + "/", "").rstrip("/")
                     if not folder_state:
                         if open_depth != -1 and level < open_depth:
                             xis_open = True
                         else:
                             xis_open = all_open
+                    elif os.path.normpath(path) in folder_state:
+                        xis_open = True
                     elif rel_dir in folder_state:
                         xis_open = True
                     else:
                         xis_open = False
-
+                    
+                    #xis_open = True
 
                 # get the level_div and add the directory to it
-
                 level_divs = level_divs[:level+1]
                 # put some protection here so that there is minimum level
                 if not level_divs:
@@ -2025,8 +2039,7 @@ class IngestCmd(Command):
         # set the snapshot code
         snapshot_code = snapshot.get_value("code")
         file.set_value("snapshot_code", snapshot_code)
-        file.commit()
-        
+        file.commit() 
 
 
 
