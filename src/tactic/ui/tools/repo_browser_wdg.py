@@ -969,11 +969,10 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.refresh_directory_listing = function(dir_list) {
                 
                 if (!dir_list) {
-                    console.log("refresh of top");
                     dir_list = spt.repo_browser.getElement(".spt_dir_list_handler_top");
                 }
                
-                // Get the folder ates from the dir list top 
+                // Get the folder states from the dir list top 
                 var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
                 var state_input = dir_list_top.getElement(".spt_folder_state");
                 var folder_state = state_input.value;
@@ -1101,8 +1100,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 server.execute_cmd(cmd, kwargs); 
             
                 // Refresh the content top
-                var repo_top = document.getElement(".spt_repo_browser_top");
-                var content_top = repo_top.getElement(".spt_browser_detail_top");
+                var content_top = spt.repo_browser.getElement(".spt_browser_detail_top");
                 spt.panel.refresh(content_top);
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
@@ -1166,7 +1164,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         spt.repo_browser.drag_drop = function(evt, bvr) {
             // Drop action of tile on folder
-            
+            // TODO: Directory listing should be locked on dragging of tile
+ 
             var tile_top = bvr.src_el.getParent(".spt_tile_top");
             tile_top.setStyle("display", "none");
             
@@ -1214,7 +1213,8 @@ class RepoBrowserDirListWdg(DirListWdg):
          
         spt.repo_browser.delete_empty_folder = function(relative_dir) {
             if (!relative_dir) return;
-
+            
+            var server = TacticServerStub.get()
             var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
             var kwargs = {
                 action: 'delete_folder',
@@ -1225,8 +1225,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             catch(err) {
                 var error = spt.exception.handler(err);
-                var message = "Selected snapshots deleted but an error occured when removing the directory ["+relative_dir+"]";
-                message = message + "Error: " + error;
+                var message = "Selected snapshots deleted but an error occured when removing the directory ["+relative_dir+"].";
+                message = message + " Error: " + error;
                 spt.alert(message);
             }
         }
@@ -1257,7 +1257,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                     search_keys.push(search_key);
                 }
             } else if (activator.hasClass("spt_dir_list_item")) {
-                var server = TacticServerStub.get();
                 var snapshot_code = activator.getAttribute("spt_snapshot_code");
                 var search_key = server.build_search_key("sthpw/snapshot", snapshot_code); 
                 if (bvr.parent_mode=="single_file") {
@@ -1292,17 +1291,24 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             var repo_top = document.getElement(".spt_repo_browser_top");
             
-            // Refresh target parent dir
-            var target = repo_top.getElement('.spt_browser_deleted');
-            var parent_dir = target.getParent('.spt_dir_list_handler_top');
-            var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');
+            // Refresh detail top
+            var detail_top = spt.repo_browser.getElement('.spt_browser_detail_top');
+            spt.panel.refresh(detail_top);
+            
+            // Refresh target parent dir - refresh may have occured 
+            var target = spt.repo_browser.getElement('.spt_browser_deleted');
+            var parent_dir;
+            if (target) {
+                parent_dir = target.getParent('.spt_dir_list_handler_top');
+            }
+            var grandparent_dir;
+            if (parent_dir) {
+                grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');
+            }
             if (grandparent_dir) {
-                spt.panel.refresh(grandparent_dir);
+                spt.repo_browser.refresh_directory_listing(grandparent_dir);
             }
             
-            // Refresh detail top
-            var detail_top = repo_top.getElement('.spt_browser_detail_top');
-            spt.panel.refresh(detail_top);
         }
        ''' 
 
@@ -1534,7 +1540,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         var dir_top = span.getParent(".spt_dir_list_handler_top");
                         spt.repo_browser.set_lock(false);   
                         if (!spt.repo_browser.update_ready()) {
-                            spt.panel.refresh(dir_top);
+                            spt.repo_browser.refresh_directory_listing(dir_top);
                         }
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
@@ -1552,9 +1558,11 @@ class RepoBrowserDirListWdg(DirListWdg):
                         evt.stop();
                         this.blur();
                     }
-                    else if (key == 'esc') {
-                        div.destroy();
-                    }
+                    // FIXME: This creates the new folder anyways.
+                    //else if (key == 'esc') {
+                    //    div.destroy();
+                    //    spt.repo_browser.set_lock(false);
+                    //}
                 } );
 
                 input.select();
@@ -1622,11 +1630,12 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                         server.execute_cmd(class_name, kwargs)
                     
-                        spt.notify.show_message("Folder rename complete");
+                        spt.notify.show_message("Folder renamed.");
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
                         spt.repo_browser.set_lock(false);   
                         if (!spt.repo_browser.update_ready()) {
-                            spt.panel.refresh(dir_top);
+                            //TODO: Must redo folderstates on rename
+                            spt.repo_browser.refresh_directory_listing(dir_top);
                         } 
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
@@ -1636,7 +1645,15 @@ class RepoBrowserDirListWdg(DirListWdg):
                     }
 
                 };
-                
+               
+                input.addEvent( "keyup", function(evt) {
+                    var key = evt.key;
+                    if (key == 'enter') {
+                        evt.stop();
+                        this.blur();
+                    }
+                } ); 
+               
                 input.focus();
                 input.select();
 
@@ -1878,15 +1895,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                     
                         // Refresh dir list
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
-                     
-                        // Refresh browser detail
-                        var repo_top = document.getElement(".spt_repo_browser_top");
-                        var detail_top = repo_top.getElement(".spt_browser_detail_top");
                         spt.repo_browser.set_lock(false);   
                         if (!spt.repo_browser.update_ready()) {
-                            spt.panel.refresh(dir_top);
+                            spt.repo_browser.refresh_directory_listing(dir_top);
                         } 
+                     
+                        // Refresh browser detail
+                        var detail_top = spt.repo_browser.getElement(".spt_browser_detail_top");
+                        spt.panel.refresh(detail_top);
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
                         span.destroy();
@@ -1896,6 +1912,14 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 };
                 
+                input.addEvent( "keyup", function(evt) {
+                    var key = evt.key;
+                    if (key == 'enter') {
+                        evt.stop();
+                        this.blur();
+                    }
+                } ); 
+
                 input.focus();
                 input.select();
 
