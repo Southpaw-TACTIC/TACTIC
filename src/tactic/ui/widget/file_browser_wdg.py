@@ -591,8 +591,7 @@ class DirListWdg(BaseRefreshWdg):
             var items;
             if (folder_state == '') {
                 items = [];
-            }
-            else {
+            } else {
                 items = folder_state.split("|");
             }
         
@@ -1138,7 +1137,6 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
-
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
@@ -1180,7 +1178,6 @@ class DirListPathHandler(BaseRefreshWdg):
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
             #handler_kwargs['search_type'] = my.kwargs.get("search_type")
             handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
-            handler_kwargs['folder_states'] = my.kwargs.get("folder_states")
             handler_kwargs['folder_state'] = my.kwargs.get("folder_state")
             
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
@@ -1339,8 +1336,6 @@ class DirListPathHandler(BaseRefreshWdg):
                     else:
                         xis_open = False
                     
-                    #xis_open = True
-
                 # get the level_div and add the directory to it
                 level_divs = level_divs[:level+1]
                 # put some protection here so that there is minimum level
