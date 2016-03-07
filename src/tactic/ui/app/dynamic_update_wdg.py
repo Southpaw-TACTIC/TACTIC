@@ -74,7 +74,8 @@ spt.update.add = function(el, update) {
         }
     }
 
-    var el_id = bvr.src_el.getAttribute("id");
+   
+    var el_id = el.getAttribute("id");
     if (!el_id) {
         el_id = "SPT__" + Math.random(1000000);
         el.setAttribute("id", el_id);
@@ -164,28 +165,32 @@ top.spt_update_interval_id = setInterval( function() {
 
     // get all of the updates below as well
     var update_els = top.getElements(".spt_update");
-    var visible_els = [];
+    var pass_els = [];
+
+    out_loop:
     for (var i = 0; i < update_els.length; i++) {
         var update_el = update_els[i];
-        if (!update_el.isVisible() || update_el.hasClass("spt_update_lock")) {
+        if (! update_el.isVisible()) {
             continue;
-        } 
+        }
+
 
         sub_update = update_el.spt_update;
+        
         if (!sub_update) {
             continue;
         }
 
-        visible_els.push(update_el);
-
         var last_check = update_el.spt_last_check;
+        // initial time set-up
         if (last_check && last_check < oldest_timestamp) {
             oldest_timestamp = last_check;
         }
 
         // merge with update
+        in_loop:
         for (var key in sub_update) {
-
+            
             // on elements that have intervals, set the counter
             var update_interval = sub_update[key].interval;
             if (update_interval) {
@@ -196,16 +201,17 @@ top.spt_update_interval_id = setInterval( function() {
                 counter += 1;
                 if (counter < update_interval) {
                     update_el.spt_update_count = counter;
-                    continue;
+                    continue out_loop;
+
                 }
 
                 update_el.spt_update_count = 0;
             }
 
 
-
             update[key] = sub_update[key];
         }
+        pass_els.push(update_el);
     }
 
 
@@ -218,8 +224,8 @@ top.spt_update_interval_id = setInterval( function() {
             
             top.spt_update_timestamp = timestamp;
 
-            for (var i = 0; i < visible_els.length; i++) {
-                update_els[i].spt_last_check = timestamp;
+            for (var i = 0; i < pass_els.length; i++) {
+                pass_els[i].spt_last_check = timestamp;
             }
             var server_data = ret_val.info.updates;
 
@@ -346,7 +352,7 @@ class DynamicUpdateCmd(Command):
         timestamp = SPTDate.convert_to_local(timestamp)
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
-
+        
         updates = my.kwargs.get("updates")
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
@@ -361,13 +367,14 @@ class DynamicUpdateCmd(Command):
 
         last_timestamp = parser.parse(last_timestamp)
         last_timestamp = SPTDate.add_gmt_timezone(last_timestamp)
-        #last_timestamp = last_timestamp - timedelta(hours=24)
+        
+        # give 2 seconds of extra room 
+        last_timestamp = last_timestamp - timedelta(seconds=2)
 
-
-        #print "last: ", last_timestamp
 
         # get out all of the search_keys
         client_keys = set()
+        client_stypes = set()
         for id, values_list in updates.items():
             if isinstance(values_list, dict):
                 values_list = [values_list]
@@ -380,6 +387,7 @@ class DynamicUpdateCmd(Command):
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
+
                 if search_key:
                     if isinstance(search_key, list):
                         search_key_set = set(search_key)
@@ -388,8 +396,13 @@ class DynamicUpdateCmd(Command):
                         search_key_set.add(search_key)
                     client_keys.update(search_key_set)
 
+                stype = values.get("search_type")
+                if stype:
+                    client_stypes.add(stype)
+
         # find all of the search that have changed
         changed_keys = set()
+        changed_types = set()
         for check_type in ['sthpw/change_timestamp', 'sthpw/sobject_log']:
             search = Search(check_type)
             search.add_filter("timestamp", last_timestamp, op=">")
@@ -403,23 +416,15 @@ class DynamicUpdateCmd(Command):
                 else:
                     search_key = "%s&code=%s" % (search_type, search_code)
                 changed_keys.add(u'%s'%search_key)
+                changed_types.add(search_type)
 
         intersect_keys = client_keys.intersection(changed_keys)
-
-       
-
-        #for x in client_keys:
-        #    print x
-        #print "---"
-        #print "changed_keys: ", changed_keys
-        #print "---"
-
+        intersect_types = client_stypes.intersection(changed_types)
 
         from pyasm.web import HtmlElement
 
         results = {}
         for id, values_list in updates.items():
-
             if isinstance(values_list, dict):
                 values_list = [values_list]
 
@@ -432,15 +437,25 @@ class DynamicUpdateCmd(Command):
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
+                
+                stype = values.get("search_type")
+                
+                search_key_set = set()
                 if search_key:
                     if isinstance(search_key, list):
                         search_key_set = set(search_key)
                     else:
                         search_key_set = set()
                         search_key_set.add(search_key)
-                    # check if any search_key is contained in intersect_keys, skip if not
-                    if len(intersect_keys  - search_key_set) == len(intersect_keys):
-                        continue
+
+                # filter for search_type first if it exists
+                # check if any search_key is contained in intersect_keys, skip if not 
+                if stype and stype in changed_types:
+                    if len(search_key_set) > 0:
+                        if len(intersect_keys  - search_key_set) == len(intersect_keys):
+                            continue
+                elif len(intersect_keys  - search_key_set) == len(intersect_keys):
+                    continue
                 
                 # evaluate any compare expressions
                 compare = values.get("compare")
@@ -453,14 +468,15 @@ class DynamicUpdateCmd(Command):
                     cmp_result = Search.eval(compare, sobject, single=True)
                     if cmp_result == True:
                         continue
-
+                    
                     # some value to display
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
-
+              
                 if value == None:
                     continue
+                
                 results[id] = value
 
         my.info = {
@@ -470,7 +486,7 @@ class DynamicUpdateCmd(Command):
 
 
 
-
+        #print "Dyn Cmd duration", time.time()  - start
         return results
 
 
