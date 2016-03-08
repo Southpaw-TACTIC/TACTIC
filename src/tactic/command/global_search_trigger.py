@@ -93,11 +93,28 @@ class GlobalSearchTrigger(Trigger):
         data.update( my.cleanup(caller.get_value("description", no_exception=True) ))
         data.update( my.cleanup(caller.get_value("keywords", no_exception=True) ))
 
+
         # Updates for adding changed user defined keywords into asset keywords_data column
         if sobj.column_exists("keywords_data"):
-            user_keywords = input.get("update_data").get("keywords")
-            if user_keywords not in ['none', None]:
-                my.update_user_keywords(sobj, user_keywords)
+
+            # On creating new Collections
+            if input.get("update_data").get("_is_collection") and input.get("is_insert"):
+                update_data = input.get("update_data")
+
+                collection_keywords = update_data.get("keywords")
+                collection_name = update_data.get("name")
+
+                keywords_data = sobject.get_json_value("keywords_data", {})
+                keywords_data['user'] = collection_name + " " + collection_keywords
+
+                sobj.set_json_value("keywords_data", keywords_data)
+                sobj.commit(triggers=False)
+
+            # when user defined keywords column is changed 
+            else:
+                user_keywords = input.get("update_data").get("keywords")
+                if user_keywords not in ['none', None]:
+                    my.update_user_keywords(sobj, user_keywords)
 
             my.set_searchable_keywords(sobj)
 
@@ -107,7 +124,7 @@ class GlobalSearchTrigger(Trigger):
 
             my.update_collection_keywords(mode, asset_in_asset_sobject)
 
-
+        
         # extra columns to add
         columns = []
         for column in columns:
