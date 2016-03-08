@@ -1075,6 +1075,8 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     }
 
     copy.setStyle( "position", "absolute" );
+    copy.setStyle( "z-index", "1000" );
+    copy.setStyle( "background", "#DDD" );
     spt.show_block( copy );
 
     var global_container = $("global_container");

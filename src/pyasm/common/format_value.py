@@ -482,6 +482,21 @@ class FormatValue(object):
             # HACK: remove $ and last decimal
             value = value[1:-1]
             value = "%s %s" % (value, ext)
+
+
+        elif format in ['ROOT']:
+            value, ext = os.path.splitext(value)
+
+        elif format in ['EXT']:
+            base, value = os.path.splitext(value)
+            value = value.lstrip(".")
+
+        elif format in ['BASENAME']:
+            value = os.path.basename(value)
+
+        elif format in ['DIRNAME']:
+            value = os.path.dirname(value)
+
        
         return value
 

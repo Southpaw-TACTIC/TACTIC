@@ -1673,6 +1673,78 @@ class Select(object):
         return select
 
 
+    def dumps(my):
+
+        select = {}
+
+        select['tables'] = my.tables[:]
+        select['id_col'] = my.id_col
+        select['columns'] = my.as_columns[:]
+        select['column_tables'] = my.column_tables[:]
+        select['wheres'] = my.wheres[:]
+        select['filters'] = my.filters.copy()
+        select['raw_filters'] = my.raw_filters[:]
+        select['filter_mode'] = my.filter_mode
+        select['group_bys'] = my.group_bys[:]
+        select['havings'] = my.havings[:]
+        select['order_bys'] = my.order_bys[:]
+        select['order_by_columns'] = my.order_by_columns[:]
+        select['limit'] = my.limit
+        select['offset'] = my.offset
+        select['distinct'] = my.distinct
+        select['distinct_col'] = my.distinct_col
+        select['joins'] = my.joins
+
+        # This is a set ... cannot be json
+        #select['join_tables'] = my.join_tables.copy()
+
+        select['schema'] = my.schema
+        #select['sql'] = my.sql
+        select['database'] = my.database
+        #select['db_resource'] = my.db_resource
+        #select['impl'] = my.impl
+        select['set_statement'] = my.set_statement
+
+        return jsondumps(select)
+
+
+
+    def loads(my, data):
+
+        data = jsonloads(data)
+
+        select = my
+
+        select.tables = data.get("tables") or []
+        select.id_col = data.get("id_col")
+        select.columns = data.get("as_columns") or []
+        select.column_tables = data.get("column_tables") or []
+        select.wheres = data.get("wheres") or []
+        select.filters = data.get("filters") or []
+        select.raw_filters = data.get("raw_filters") or []
+        select.filter_mode = data.get("filter_mode")
+        select.group_bys = data.get("group_bys") or []
+        select.havings = data.get("havings") or []
+        select.order_bys = data.get("order_bys") or []
+        select.order_by_column = data.get("order_by_columns") or []
+        select.limit = data.get("limit")
+        select.offset = data.get("offset")
+        select.distinct = data.get("distinct")
+        select.distinct_col = data.get("distinct_col")
+        select.joins = data.get("joins") or []
+
+        # This.s a set ... cannot be json
+        #select.join_tables = data.get("join_tables")
+
+        select.schema = data.get("schema")
+        #select.sql = data.sql
+        select.database = data.get("database")
+        #select.db_resource = data.db_resource
+        #select.impl = data.impl
+        select.set_statement = data.get("set_statement")
+
+
+
 
     def execute(my, sql=None):
         '''Actually execute the statement'''
@@ -2100,8 +2172,10 @@ class Select(object):
         assert op in ['in', 'not in']
         filter = ''
         if not values or values == ['']:
-            where = "%s is NULL" %my.id_col
-            #where = "NULL"
+            if table:
+                where = '"%s"."%s" is NULL' % (table, my.id_col)
+            else:
+                where = "%s is NULL" %my.id_col
         else:
             list = [ Sql.quote(value) for value in values ]
             if table:

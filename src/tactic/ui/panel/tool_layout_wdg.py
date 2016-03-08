@@ -484,11 +484,17 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
         return False
 
     def get_content_wdg(my):
+
+        sobjects = my.sobjects
+
         from tactic.ui.tools import RepoBrowserWdg
         kwargs = my.kwargs.copy()
+
+        kwargs['search'] = my.search
+
         kwargs['open_depth'] = 1
         layout = RepoBrowserWdg(**kwargs)
-        layout.set_sobjects(my.sobjects)
+        #layout.set_sobjects(my.sobjects)
         return layout
 
 

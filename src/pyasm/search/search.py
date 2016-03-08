@@ -1767,8 +1767,8 @@ class Search(Base):
             # get the select statement and do the query
             if not statement:
                 statement = my.select.get_statement()
-            #print "statement: ", statement
-           
+
+
             from pyasm.security import Site
             results = sql.do_query(statement)
 
@@ -3649,14 +3649,15 @@ class SObject(object):
 
 
 
-        # generate a code value for this sobject
+        # generate a code value for this sobject when triggers are set to "ingest".
+        # This is a special condition
         if is_insert and triggers == "ingest":
             if not my.update_data or not my.update_data.get("code"):
                 if SearchType.column_exists(my.full_search_type, "code"):
                     temp_search_code = Common.generate_random_key()
                     my.set_value("code", temp_search_code)
 
-        # if not update data is specified
+        # if no update data is specified
         if is_insert and not my.update_data:
             # if there is no update data, an error will result, so give
             # it a try with code as a random key ...
@@ -3823,42 +3824,7 @@ class SObject(object):
         search_code = None
         if sobject and column_info.get("code") != None:
             if not sobject.get_value("code", no_exception=True):
-
-                # generate the code
-
-                # TODO: make this configurable
-                search_type = my.get_base_search_type()
-                if search_type in ['sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log', 'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log']:
-                    padding = 8
-                else:
-                    padding = 5
-
-                parts = []
-
-                # scope by server
-                server = Config.get_value("install", "server")
-                if server:
-                    parts.append(server)
-
-
-                log_key = my.get_code_key()
-                parts.append( log_key )
-
-                try:
-                    int(id)
-                    number_expr = "%%0.%dd" % padding
-                    parts.append( number_expr % id )
-                except:
-                    parts.append(str(id))
-
-                delimiter = ""
-                reverse = False
-                if reverse:
-                    parts.reverse()
-
-                search_code = delimiter.join(parts)
-
-
+                search_code = my.generate_code(id)
             else:
                 search_code = sobject.get_value("code")
 
@@ -4035,6 +4001,58 @@ class SObject(object):
 
         if prev_code and triggers == "all":
             my._update_code_dependencies(prev_code)
+
+
+
+    def generate_code(my, id):
+        search_type = my.get_base_search_type()
+
+        from pyasm.biz import ProjectSetting
+        if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
+            # generate the code
+            log_key = my.get_code_key()
+            random_code = Common.generate_random_key()
+            search_code = '%s%s' % (log_key, random_code)
+            return search_code
+
+
+        # Generate more readable key
+        parts = []
+
+        # scope by server
+        server = Config.get_value("install", "server")
+        if server:
+            parts.append(server)
+
+        log_key = my.get_code_key()
+        parts.append( log_key )
+
+        try:
+            search_type = my.get_base_search_type()
+            if search_type in [
+                    'sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log',
+                    'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log'
+            ]:
+                padding = 8
+            else:
+                padding = 5
+
+
+            int(id)
+            number_expr = "%%0.%dd" % padding
+            parts.append( number_expr % id )
+        except:
+            parts.append(str(id))
+
+        delimiter = ""
+        #reverse = False
+        #if reverse:
+        #    parts.reverse()
+
+        search_code = delimiter.join(parts)
+
+        return search_code
+
 
 
 
@@ -4329,8 +4347,8 @@ class SObject(object):
         '''returns a dictionary of default name value pairs to be filled in
         whenver there is a commit'''
         defaults = {}
-        from pyasm.biz import ProdSetting
-        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
+        from pyasm.biz import ProjectSetting
+        if ProjectSetting.get_value_by_key('autofill_pipeline_code') != 'false':
             base_search_type = my.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
@@ -5149,7 +5167,8 @@ class SObject(object):
             result = search.get_sobjects()
         else:
             result = search.get_sobject()
-        cls.cache_sobject(key, result)
+        
+        cls.cache_sobject(key, result, search_type=cls_search_type)
         return result
 
     get_by_search = classmethod(get_by_search)
@@ -5212,7 +5231,6 @@ class SObject(object):
             key = SObject._get_cached_key(search_type)
         else:
             key = SObject._get_cached_key(cls.SEARCH_TYPE)
-
         dict = Container.get(key)
         # this is needed since cache_sobject() can happen before get_cached_obj()
         if dict == None:
@@ -5223,14 +5241,13 @@ class SObject(object):
     get_cache_dict = classmethod(get_cache_dict)
 
 
-    def cache_sobject(cls, key, sobject):
+    def cache_sobject(cls, key, sobject, search_type=None):
         ''' cache any sobject for any SObject class'''
        
-        dict = cls.get_cache_dict(sobject=sobject)
+        dict = cls.get_cache_dict(sobject=sobject, search_type=search_type)
         cached_sobj = sobject
         if sobject == None or sobject == []:
             cached_sobj = '__NONE__'
-   
         dict[key] = cached_sobj
      
     cache_sobject = classmethod(cache_sobject)
@@ -5584,7 +5601,6 @@ class SearchType(SObject):
                 table = search_type_obj.get_table()
 
                 column_info = sql.get_column_info(table)
-                #print "INFO ", column_info
 
             Container.put("SearchType:column_info:%s" % search_type, column_info)
         return column_info

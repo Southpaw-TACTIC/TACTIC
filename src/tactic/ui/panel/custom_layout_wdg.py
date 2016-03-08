@@ -1175,7 +1175,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         if not element_name:
             import random
-            num = random.randint(0, 100000)
+            num = random.randint(0, 1000000)
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
 
@@ -1246,7 +1246,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-
+        """
         use_container = attrs.get('use_container') == 'true'
         if use_container:
             # DEPRECATED
@@ -1260,7 +1260,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if name == 'name':
                 continue
             container.add_style(name, value)
-
+        """
 
 
 
@@ -1331,84 +1331,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
             log = ExceptionWdg(e)
             element_wdg = log
 
+        return element_wdg
+
         container.add(element_wdg)
         return container
-
-
-    # DEPRECATED
-    """
-    def get_container(my, xml):
-        # handle the container
-
-        element_node = xml.get_node("config/tmp/element")
-        attrs = Xml.get_attributes(element_node)
-        element_name = attrs.get("name")
-
-        show_resize_scroll = attrs.get("show_resize_scroll")
-        if not show_resize_scroll:
-            show_resize_scroll = my.kwargs.get("show_resize_scroll")
-        if not show_resize_scroll:
-            show_resize_scroll = "false"
-
-
-        # look for attributes in the element tag for specifying a title action button to plug
-        # into the title bar of the custom section ...
-        #
-        title_action_icon = attrs.get("title_action_icon")
-        title_action_script = attrs.get("title_action_script")
-        title_action_label = attrs.get("title_action_label")
-        if title_action_script and not title_action_label:
-            title_action_label = '[action]'
-
-
-        # get the width and height for the element content ...
-        width = attrs.get("width")
-        height = attrs.get("height")
-
-
-        if width and height:
-            container = ContainerWdg( inner_width=width, inner_height=height, show_resize_scroll=show_resize_scroll )
-        else:
-            container = ContainerWdg(show_resize_scroll=show_resize_scroll)
-
-        # create the title
-        title = attrs.get("title")
-        if not title:
-            title = Common.get_display_title(element_name)
-        title_wdg = DivWdg()
-        SmartMenu.assign_as_local_activator( title_wdg, 'HEADER_CTX' )
-        title_wdg.add_style("margin: 0px 0px 5px 0px")
-        title_wdg.add_gradient("background", "background", 0)
-        title_wdg.add_color("color", "color")
-        title_wdg.add_style("padding", "5px")
-
-
-        if title_action_script:
-            # add an action button if an action script code was found in the attributes of the element
-            proj = Project.get_project_code()
-            script_search = Search("config/custom_script")
-            script_sobj = script_search.get_by_search_key( "config/custom_script?project=%s&code=%s" %
-                                                           (proj, title_action_script) )
-            script = script_sobj.get_value('script')
-            icon_str = "HELP"
-            if title_action_icon:
-                icon_str = title_action_icon
-            action_btn = HtmlElement.img( IconWdg.get_icon_path(icon_str) )
-            action_btn.set_attr('title',title_action_label)
-            # action_btn = IconWdg( title_action_label, icon=icon)
-            action_btn.add_behavior( {'type': 'click_up', 'cbjs_action':  script } )
-            action_btn.add_styles( "cursor: pointer; float: right;" )
-
-            title_wdg.add( action_btn )
-
-
-        title_wdg.add(title)
-        container.add(title_wdg)
-
-        return container
-    """
-
-
 
 
 

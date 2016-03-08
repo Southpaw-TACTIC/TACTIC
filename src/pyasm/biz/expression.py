@@ -1641,7 +1641,11 @@ class MethodMode(ExpressionParser):
         elif method == 'FORMAT':
             expression = args[0]
             mode = my.get_mode(expression)
+
             result = my.dive(mode, expression=expression)
+            if result is None:
+                result = ""
+
 
             args_len = len(args)
             if args_len != 0:
