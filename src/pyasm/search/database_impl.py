@@ -514,7 +514,6 @@ class DatabaseImpl(DatabaseImplInterface):
         wheres.append("to_tsquery('%s', '%s')" % (config, value) )
 
         where = " ".join(wheres)
-        print "WHERTE ", where
         return where
 
     get_text_search_filter = classmethod(get_text_search_filter)
