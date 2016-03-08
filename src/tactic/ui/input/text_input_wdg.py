@@ -1654,7 +1654,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         filtered = filtered[0:10]
 
         for keywords in filtered:
-            print "keywords: ", keywords
+            #print "keywords: ", keywords
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")
