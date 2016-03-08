@@ -997,7 +997,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
-        //var keywords = values.keywords[0];
+        
+        var keywords = values["edit|keywords"][0];
 
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
@@ -1028,7 +1029,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             key: key,
             parent_key: parent_key,
             //category: category,
-            //keywords: keywords,
+            keywords: keywords,
             extra_data: extra_data,
             update_data: update_data,
             process: process,
@@ -1602,24 +1603,22 @@ class IngestUploadCmd(Command):
             else:
                 path = filename
 
-            # extract keywords from filename
-            file_keywords = Common.extract_keywords_from_path(path)
+            # Extracting keywords from filename only because all Assets will 
+            # have the keywords [project_name]/[search_type name]/[Ingest]
+            file_keywords = Common.extract_keywords_from_path(filename)
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
             if SearchType.column_exists(search_type, "keywords"):
-                if keywords:
-                    file_keywords = "%s %s " % (keywords, file_keywords)
-
                 if file_keywords:
                     sobject.set_value("keywords", file_keywords)
 
 
             if sobject.column_exists("keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
-                data['path'] = file_keywords.split(" ")
+                data['user'] = keywords
+                data['path'] = file_keywords
                 sobject.set_json_value("keywords_data", data)
-
 
 
 
