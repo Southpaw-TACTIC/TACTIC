@@ -470,7 +470,8 @@ class BaseAppServer(Base):
 
 
                     # guest views
-                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
+                    open_hashes = site_obj.get_guest_hashes()
+
                     if len(my.hash) >= 1 and my.hash[0] in open_hashes:
                         web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
                     else:

@@ -1643,8 +1643,8 @@ class MethodMode(ExpressionParser):
             mode = my.get_mode(expression)
 
             result = my.dive(mode, expression=expression)
-            if not result:
-                result = expression
+            if result is None:
+                result = ""
 
 
             args_len = len(args)
