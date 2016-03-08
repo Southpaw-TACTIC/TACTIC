@@ -4007,7 +4007,8 @@ class SObject(object):
     def generate_code(my, id):
         search_type = my.get_base_search_type()
 
-        if ProdSetting.get_value_by_key('code_format', search_type) == 'random':
+        from pyasm.biz import ProjectSetting
+        if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
             log_key = my.get_code_key()
             random_code = Common.generate_random_key()
@@ -4346,8 +4347,8 @@ class SObject(object):
         '''returns a dictionary of default name value pairs to be filled in
         whenver there is a commit'''
         defaults = {}
-        from pyasm.biz import ProdSetting
-        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
+        from pyasm.biz import ProjectSetting
+        if ProjectSetting.get_value_by_key('autofill_pipeline_code') != 'false':
             base_search_type = my.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
