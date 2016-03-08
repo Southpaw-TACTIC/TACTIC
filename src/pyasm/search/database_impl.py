@@ -891,7 +891,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return "%s %s %s" %(column, op, regex)
 
 
-    def get_text_search_filter(cls, column, keywords, column_type, table=None):
+    def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''When Full Text Index is created in the db for the table, it works with SQLServer 2008 and above'''
         if isinstance(keywords, basestring):
             value = keywords
@@ -919,6 +919,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
        
         """
         wheres = []
+
+        # op & will translate to AND, | to OR if we use CONTAINS() in the future
         # use FREETEXT() or CONTAINS(), CONTAINS() takes OR AND operator
         wheres.append("FREETEXT(%s, '%s')" % (column, value) )
 

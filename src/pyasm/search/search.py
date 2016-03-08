@@ -1429,9 +1429,9 @@ class Search(Base):
             my.select.add_op("or")
 
 
-    def add_text_search_filter(my, column, keywords, table=None):
+    def add_text_search_filter(my, column, keywords, table=None, op='&'):
 
-        my.select.add_text_search_filter(column, keywords, table=table)
+        my.select.add_text_search_filter(column, keywords, table=table, op=op)
 
 
 
