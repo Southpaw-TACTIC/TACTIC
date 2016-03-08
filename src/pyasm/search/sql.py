@@ -2252,7 +2252,7 @@ class Select(object):
     # NOTE: Only Postgres and SQLServer impl so far.  This likely will not work
     # on any other database
     #
-    def add_text_search_filter(my, column, keywords, table=None):
+    def add_text_search_filter(my, column, keywords, table=None, op='&'):
         '''This will do full text searching on any column.  It is pretty
         brute force as it will convert each row to a ts_vector.
         '''
@@ -2262,7 +2262,7 @@ class Select(object):
         column_types = my.impl.get_column_types(my.db_resource, table)
         column_type = column_types.get(column)
         
-        where = my.impl.get_text_search_filter(column, keywords, column_type, table=table)
+        where = my.impl.get_text_search_filter(column, keywords, column_type, table=table, op=op)
         my.add_where(where)
 
 
