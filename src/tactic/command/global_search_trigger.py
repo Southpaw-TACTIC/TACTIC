@@ -105,16 +105,17 @@ class GlobalSearchTrigger(Trigger):
                 collection_name = update_data.get("name")
 
                 keywords_data = sobject.get_json_value("keywords_data", {})
-                keywords_data['user'] = collection_name + " " + collection_keywords
-
+                keywords_data['user'] = collection_keywords
+                keywords_data['path'] = collection_name
                 sobj.set_json_value("keywords_data", keywords_data)
                 sobj.commit(triggers=False)
 
             # when user defined keywords column is changed 
             else:
                 user_keywords = input.get("update_data").get("keywords")
-                if user_keywords not in ['none', None]:
-                    my.update_user_keywords(sobj, user_keywords)
+                if not user_keywords:
+                    user_keywords = ""
+                my.update_user_keywords(sobj, user_keywords)
 
             my.set_searchable_keywords(sobj)
 
