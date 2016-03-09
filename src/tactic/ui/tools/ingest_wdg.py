@@ -1610,8 +1610,8 @@ class IngestUploadCmd(Command):
             file_keywords = " ".join(file_keywords)
 
             if SearchType.column_exists(search_type, "keywords"):
-                if file_keywords:
-                    sobject.set_value("keywords", file_keywords)
+                if keywords:
+                    sobject.set_value("keywords", keywords)
 
 
             if sobject.column_exists("keywords_data"):
