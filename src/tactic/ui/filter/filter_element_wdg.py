@@ -25,6 +25,7 @@ __all__ = [
         'ButtonFilterElementWdg',
         'CheckboxFilterElementWdg'
 ]
+import re
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -860,7 +861,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             # in keyword mode where there could be multi column
             # keywords is kept as a string to maintain OR full-text search
             value = value.replace(",", " ")
-            keywords = value
+            value = re.sub(' +', ' ', value)
+            keywords = value.strip()
+            if not keywords:
+                return
+
+            
             # keywords_list is used for add_keyword_filter()
             keywords_list = keywords.split(" ")
             
@@ -869,6 +875,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 multi_word_op = 'and'
             else:
                 multi_word_op = 'or'
+
+           
             for column in my.columns:
                 if my.cross_db:
                     search2 = None

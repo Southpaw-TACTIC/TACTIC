@@ -457,6 +457,7 @@ class DatabaseImpl(DatabaseImplInterface):
         if isinstance(keywords, basestring):
             def split_keywords(keywords):
                 keywords = keywords.strip()
+                # The input should be stripped and single spaced. This line seems redundant, to be removed
                 keywords = keywords.replace("  ", "")
                 parts = keywords.split(" ")
                 op_str = " %s " % op
