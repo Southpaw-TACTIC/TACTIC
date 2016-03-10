@@ -1098,7 +1098,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
-            
+             
+                // TODO: Update folder states
+
                 // Refresh the content top
                 var content_top = spt.repo_browser.getElement(".spt_browser_detail_top");
                 spt.panel.refresh(content_top);
@@ -1181,9 +1183,14 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
             var target = $(evt.target);
-            if (!target.hasClass("spt_dir")) {
+            if (target.hasClass("spt_dir_value")) {
                 target = target.getParent(".spt_dir");
             }
+
+            if (!target.hasClass("spt_dir")) {
+                console.log(target)
+            }
+
             var relative_dir = target.getAttribute("spt_relative_dir");
 
             var server = TacticServerStub.get(); 
@@ -1314,7 +1321,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def add_top_behaviors(my, top):
-        #TODO: Move this to the actual top of the class
  
         search = my.kwargs.get("search")
         if search:
@@ -1430,10 +1436,13 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         # Directory updates
         update = {
-             'search_type': search_type,
-             'expression': "@COUNT(@SOBJECT(sthpw/file['search_type', '%s']))" % search_type,
+             'value': True,
              'cbjs_action': '''spt.repo_browser.handle_update(bvr);'''
         }
+        if my.parent_mode == "single_asset" and parent_key:
+            update['search_key'] = parent_key    
+        else:
+            update['search_type'] = search_type
         top.add_update(update)
 
 
@@ -1632,9 +1641,11 @@ class RepoBrowserDirListWdg(DirListWdg):
                     
                         spt.notify.show_message("Folder renamed.");
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
+                        
+                        // TODO: Update folder states 
+
                         spt.repo_browser.set_lock(false);   
                         if (!spt.repo_browser.update_ready()) {
-                            //TODO: Must redo folderstates on rename
                             spt.repo_browser.refresh_directory_listing(dir_top);
                         } 
                     } catch(err) {

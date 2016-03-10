@@ -170,7 +170,7 @@ top.spt_update_interval_id = setInterval( function() {
     out_loop:
     for (var i = 0; i < update_els.length; i++) {
         var update_el = update_els[i];
-        if (! update_el.isVisible()) {
+        if (!update_el.isVisible() || update_el.hasClass("spt_update_lock")) {
             continue;
         }
 
@@ -450,10 +450,11 @@ class DynamicUpdateCmd(Command):
 
                 # filter for search_type first if it exists
                 # check if any search_key is contained in intersect_keys, skip if not 
-                if stype and stype in changed_types:
-                    if len(search_key_set) > 0:
-                        if len(intersect_keys  - search_key_set) == len(intersect_keys):
-                            continue
+                if stype and stype not in changed_types:
+                    continue  
+                elif stype and stype in changed_types:
+                    if search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
+                        continue
                 elif len(intersect_keys  - search_key_set) == len(intersect_keys):
                     continue
                 

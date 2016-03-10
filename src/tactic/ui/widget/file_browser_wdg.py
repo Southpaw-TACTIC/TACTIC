@@ -538,18 +538,31 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_basename", item)
 
         path = "%s/%s" % (dir, item)
+ 
+        # Dynamic loading of swap content
+        dynamic = my.kwargs.get("dynamic")
+        if dynamic in ["true", "True", True]:
+            dynamic = True
+        else:
+            dynamic = False
+ 
+        if dynamic:
+            div.add_class("spt_dynamic")
+        
+        # Swap display will be set off when opened
+        if dynamic:
+            swap_open = False
+        else:
+            swap_open = is_open
 
         from pyasm.widget import SwapDisplayWdg
-        swap = SwapDisplayWdg.get_triangle_wdg(is_open=is_open)
+        swap = SwapDisplayWdg.get_triangle_wdg(is_open=swap_open)
         div.add(swap)
 
         swap.add_style("margin-right: -7px")
         swap.add_class("spt_dir_swap")
         swap.add_style("float: left")
  
-        #if is_open:
-        #    swap.set_off()
-        
         # FIXME: my.base_dir = dir
         reldir = dir.replace(my.base_dir, "")
         reldir = reldir.lstrip("/")
@@ -562,15 +575,6 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_dir", path)
         div.add_attr("spt_root_dir", my.root_dir)
 
-        # Dynamic loading of swap content
-        dynamic = my.kwargs.get("dynamic")
-        if dynamic in ["true", "True", True]:
-            dynamic = True
-        else:
-            dynamic = False
-
-        if dynamic:
-            div.add_class("spt_dynamic")
         
 
 
