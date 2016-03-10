@@ -1392,6 +1392,8 @@ class ThumbWdg(BaseTableElementWdg):
             path = "%s/%s" % (web_dir, file_name)
 
             if protocol != "file":
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
                 path = urllib.pathname2url(path)
 
             if isinstance(info, dict):

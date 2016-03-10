@@ -1230,7 +1230,7 @@ class SnapshotDetailWdg(SObjectDetailWdg):
 
 
     def get_default_tabs(my):
-        tabs = ["history"]
+        tabs = ["checkin_history"]
         return tabs
 
 
