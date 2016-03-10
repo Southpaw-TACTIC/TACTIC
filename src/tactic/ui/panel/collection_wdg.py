@@ -141,15 +141,17 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         custom_cbk = {}
         custom_cbk['enter'] = '''
 
-            var top = bvr.src_el.getParent(".spt_dialog");
+            var top = bvr.src_el.getParent(".spt_dialog_top");
             var input = top.getElement(".spt_main_search");
             var search_value = input.value.toLowerCase();
             var collections = top.getElements(".spt_collection_div");
+
             var num_result = 0;
+            var no_results = top.getElement(".spt_no_results");
+
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
-                var collection_title = collections[i].attributes[0].value.toLowerCase();
-
+                var collection_title = collections[i].getElement(".spt_collection_checkbox").getAttribute("collection_name").toLowerCase();
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
                     num_result += 1;
@@ -158,11 +160,15 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                     collections[i].style.display = "none";
                 }
             }
-            // if no search results, display all
+            // if no search results, show "no_results_el"
             if (num_result == 0) {
                 for (i = 0; i < collections.length; i++) {
-                    collections[i].style.display = "block";
+                    collections[i].style.display = "none";
                 }
+                no_results.style.display = "block";
+            }
+            else {
+                no_results.style.display = "none";
             }
 
         '''
@@ -172,11 +178,10 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         text = LookAheadTextInputWdg(
             search_type = "workflow/asset",
             column="name",
-            icon="BS_SEARCH",
             icon_pos="right",
             width="100%",
             height="30px",
-            hint_text="'Enter' to search for Colllection...",
+            hint_text="'Enter terms to filter collections...",
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
@@ -192,6 +197,15 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
+
+        no_results_div = DivWdg()
+        content_div.add(no_results_div)
+
+        no_results_div.add_style("color: #7A7A7A")
+        no_results_div.add_style("font: normal bold 15px arial,serif")
+        no_results_div.add("No search results found.")
+        no_results_div.add_style("display: none")
+        no_results_div.add_class("spt_no_results")
 
         for collection in collections:
 
@@ -644,6 +658,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var input = top.getElement(".spt_main_search");
             var search_value = input.value.toLowerCase();
             var collections = top.getElements(".spt_collection_div");
+            var no_results_el = top.getElement(".spt_no_results");
 
             var num_result = 0;
             for (i = 0; i < collections.length; i++) {
@@ -658,11 +673,15 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                     collections[i].style.display = "none";
                 }
             }
-            // if no search results, display all
+            // if no search results, show "no_results_el"
             if (num_result == 0) {
                 for (i = 0; i < collections.length; i++) {
-                    collections[i].style.display = "block";
+                    collections[i].style.display = "none";
                 }
+                no_results_el.style.display = "block";
+            }
+            else {
+                no_results_el.style.display = "none";
             }
 
         '''
@@ -767,6 +786,15 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
         collections_div.add_class("spt_collection_list")
         collections_div.add_style("margin: 5px 0px 5px -5px")
+
+        no_results_div = DivWdg()
+        collections_div.add(no_results_div)
+
+        no_results_div.add_style("color: #7A7A7A")
+        no_results_div.add_style("font: normal bold 15px arial,serif")
+        no_results_div.add("No search results found.")
+        no_results_div.add_style("display: none")
+        no_results_div.add_class("spt_no_results")
 
         from tactic.ui.panel import ThumbWdg2
 
