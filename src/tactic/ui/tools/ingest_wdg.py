@@ -521,6 +521,20 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var button = top.getElement(".spt_upload_file_button");
             button.setStyle("display", "none");
+
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
          '''
          } )
 
@@ -1096,6 +1110,18 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
+
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
 
          '''
          } )
