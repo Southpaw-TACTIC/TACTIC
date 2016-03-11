@@ -141,13 +141,13 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         custom_cbk = {}
         custom_cbk['enter'] = '''
 
-            var top = bvr.src_el.getParent(".spt_dialog_top");
+            var top = bvr.src_el.getParent(".spt_dialog");
             var input = top.getElement(".spt_main_search");
             var search_value = input.value.toLowerCase();
             var collections = top.getElements(".spt_collection_div");
 
             var num_result = 0;
-            var no_results = top.getElement(".spt_no_results");
+            var no_results_el = top.getElement(".spt_no_results");
 
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
@@ -165,10 +165,10 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                 for (i = 0; i < collections.length; i++) {
                     collections[i].style.display = "none";
                 }
-                no_results.style.display = "block";
+                no_results_el.style.display = "block";
             }
             else {
-                no_results.style.display = "none";
+                no_results_el.style.display = "none";
             }
 
         '''
@@ -185,7 +185,8 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
-            is_collection=True
+            is_collection=True,
+            validate='false'
         )
         text.add_class("spt_main_search")
 
@@ -202,9 +203,10 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         content_div.add(no_results_div)
 
         no_results_div.add_style("color: #7A7A7A")
-        no_results_div.add_style("font: normal bold 15px arial,serif")
-        no_results_div.add("No search results found.")
+        no_results_div.add_style("font: normal bold 1.1em arial,serif")
+        no_results_div.add("No collections found.")
         no_results_div.add_style("display: none")
+        no_results_div.add_style("margin: 10px 0px 0px 10px")
         no_results_div.add_class("spt_no_results")
 
         for collection in collections:
@@ -698,7 +700,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
-            is_collection=True
+            is_collection=True,
+            validate='false'
         )
         text.add_class("spt_main_search")
 
@@ -791,9 +794,10 @@ class CollectionFolderWdg(BaseRefreshWdg):
         collections_div.add(no_results_div)
 
         no_results_div.add_style("color: #7A7A7A")
-        no_results_div.add_style("font: normal bold 15px arial,serif")
-        no_results_div.add("No search results found.")
+        no_results_div.add_style("font: normal bold 1.1em arial,serif")
+        no_results_div.add("No collections found.")
         no_results_div.add_style("display: none")
+        no_results_div.add_style("margin: 10px 0px 0px 10px")
         no_results_div.add_class("spt_no_results")
 
         from tactic.ui.panel import ThumbWdg2
