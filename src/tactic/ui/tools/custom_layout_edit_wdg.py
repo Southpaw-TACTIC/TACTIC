@@ -870,7 +870,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             
             html_div.set_name("HTML")
             html_div.add_style("height: 600px")
-
+            html_div.add_class("spt_html_tab")
 
             text = TextAreaWdg("html")
             content_id = text.set_unique_id()
@@ -1014,24 +1014,24 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             # Mako
             mako_div = DivWdg()
+            mako_div.add_class("spt_mako_tab")
             tab.add(mako_div)
             mako_div.set_name("python")
             # replace the placeholder
             
+            title_wdg = my.get_title_wdg("Python", content_id, is_on=True)
+            mako_div.add(title_wdg)
+
+            editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
+            my.mako_editor_id = editor.get_editor_id()
+            mako_div.add(editor)
+
+            """
             text = TextAreaWdg("mako")
             text.add_class("spt_mako")
             text.add_class("spt_python")
             content_id = text.set_unique_id()
-
-
-            title_wdg = my.get_title_wdg("Python", content_id, is_on=True)
-            mako_div.add(title_wdg)
-
-            #editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
-            #my.mako_editor_id = editor.get_editor_id()
-            #mako_div.add(editor)
-
-
+            
             mako_div.add(text)
             text.add_style("width: 100%")
             text.add_style("height: 400px")
@@ -1058,7 +1058,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 }
                 '''
             } )
-
+            """
 
 
             # styles
@@ -1306,15 +1306,20 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 spt.alert('There is no view to save. Please create a view or select an exixting view.');
                 return;
             }
-
-            spt.ace_editor.set_editor_top(top);
+ 
+            html_tab = top.getElement(".spt_html_tab");
+            spt.ace_editor.set_editor_top(html_tab);
             var html = spt.ace_editor.get_value();
 
+            mako_tab = top.getElement(".spt_mako_tab");
+            spt.ace_editor.set_editor_top(mako_tab);
+            var mako = spt.ace_editor.get_value();
+            
             var view = values.view;
             var widget_type = values.widget_type;
             var code = values.code;
             var style = values.style;
-            var mako = values.mako;
+            //var mako = values.mako;
             var kwargs = values.kwargs;
 
             var behavior = values.behavior;
@@ -1407,8 +1412,17 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
 
-            spt.ace_editor.set_editor_top(top);
+            //spt.ace_editor.set_editor_top(top);
+            //values.html = spt.ace_editor.get_value();
+            
+            html_tab = top.getElement(".spt_html_tab");
+            spt.ace_editor.set_editor_top(html_tab);
             values.html = spt.ace_editor.get_value();
+
+            mako_tab = top.getElement(".spt_mako_tab");
+            spt.ace_editor.set_editor_top(mako_tab);
+            values.mako = spt.ace_editor.get_value();
+
             values.is_test = true;
 
             if (!values.view && !values.html) {
