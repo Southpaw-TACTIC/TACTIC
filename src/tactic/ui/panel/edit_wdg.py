@@ -804,7 +804,7 @@ class EditWdg(BaseRefreshWdg):
         content_div = DivWdg()
 
         from tactic.ui.panel import CustomLayoutWdg
-        layout = CustomLayoutWdg(view=layout_view)
+        layout = CustomLayoutWdg(view=layout_view, search_key=my.search_key)
         content_div.add(layout)
 
         for widget in my.widgets:

@@ -456,9 +456,6 @@ class BaseProcessTrigger(Trigger):
         related_search_type = caller_sobject.get_base_search_type()
 
 
-        print "    rrrr: ", related_search_type, related_process
-
-
         # find related sobjects
         #related_sobjects = sobject.get_related_sobjects(related_search_type)
         related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
@@ -510,19 +507,16 @@ class BaseProcessTrigger(Trigger):
         # the caller is implied to be complete
         key = "%s|%s|status" % (caller_sobject.get_search_key(), related_process)
         complete[key] = True
-
-        is_complete = True
         #print "complete: ", complete
+
+        # check if there are conditions which make it not complete
+        is_complete = True
         for related_sobject in related_sobjects:
             key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
             if not complete.get(key):
-                print "    key not complete: ", key
                 is_complete = False
                 break
-            print "    key complete: ", key
 
-
-        print "    is complete: ", is_complete
 
         return is_complete
 
@@ -1457,7 +1451,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
-        print "complete: ", process, sobject.get_search_key()
+        #print "complete: ", process, sobject.get_search_key()
 
         # This checks all the dependent completes to see if they are complete
         # before declaring that this node is complete
@@ -1741,13 +1735,23 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
 
 
+
         listeners = Container.get("process_listeners")
         if listeners == None:
             # build up a data structure of listeners from the pipelines
             listeners = {}
             Container.put("process_listeners", listeners)
 
+
+            search_type = current_sobject.get_base_search_type()
+            from pyasm.biz import Schema
+            schema = Schema.get()
+            related_search_types = schema.get_related_search_types(search_type)
+            related_search_types.append(search_type)
+
+            # get all of the pipelines
             search = Search("sthpw/pipeline")
+            search.add_filters("search_type", related_search_types)
             listen_pipelines = search.get_sobjects()
 
             for listen_pipeline in listen_pipelines:
@@ -1758,10 +1762,38 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
                 for listen_process in listen_processes:
                     listen_stype = listen_process.get_attribute("search_type")
+
+
                     listen_status = listen_process.get_attribute("status")
+                    listen_pipeline_code = listen_process.get_attribute("pipeline_code")
                     listen_process_name = listen_process.get_attribute("process")
 
-                    listen_key = "%s:%s:%s" % (listen_stype, listen_process_name, listen_status)
+                    if not listen_stype:
+                        # get the process sobject
+                        search = Search("config/process")        
+                        search.add_filter("process", current_process_name)
+                        search.add_filter("pipeline_code", pipeline_code)
+                        process_sobj = search.get_sobject()
+                        if not process_sobj:
+                            continue
+
+                        workflow = process_sobj.get_json_value("workflow", {})
+                        if not workflow:
+                            continue
+
+                        listen_stype = workflow.get("search_type")
+                        listen_process_name = workflow.get("process")
+                        listen_pipeline_code = workflow.get("pipeline_code")
+                        listen_status = workflow.get("status")
+
+                    if not listen_stype:
+                        continue
+
+
+                    if listen_pipeline_code:
+                        listen_key = "%s:%s:%s:%s" % (listen_stype, listen_pipeline_code, listen_process_name, listen_status)
+                    else:
+                        listen_key = "%s:%s:%s" % (listen_stype, listen_process_name, listen_status)
 
                     items = listeners.get(listen_key)
                     if items == None:
@@ -1777,21 +1809,27 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
         # need to find any listeners for this status on this process
         search_type = current_sobject.get_base_search_type()
+        pipeline_code = current_pipeline.get_value("code")
+
         key = "%s:%s:%s" % (search_type, current_process, current_status)
-        items = listeners.get(key)
+        items = listeners.get(key) or []
+
+        key2 = "%s:%s:%s:%s" % (search_type, pipeline_code, current_process, current_status)
+        items2 = listeners.get(key2)
+
+        if items2:
+            items.extend(items2)
+
         if not items:
             return
 
 
-        print "---"
         for item in items:
-
-            # send complete
-            event = "process|complete"
 
             listen_pipeline = item.get("pipeline")
             listen_process = item.get("process")
 
+            # these process keys are actually process objects
             input = {
                 'pipeline': current_pipeline,
                 'sobject': current_sobject,
@@ -1800,12 +1838,9 @@ class ProcessListenTrigger(BaseProcessTrigger):
                 'related_process': listen_process,
             }
 
-            
 
+            # send a complete message to the related pipelines
             my._handle_dependency(input, "complete")
-
-        print "---"
-
 
 
     def _handle_dependency(my, input, status="complete"):
@@ -1821,20 +1856,13 @@ class ProcessListenTrigger(BaseProcessTrigger):
         related_process_name = related_process.get_name()
 
 
+        # TODO: this may need to be retrieved from workflow column
         related_scope = related_process.get_attribute("scope")
         related_wait = related_process.get_attribute("wait")
 
 
         # get the search type from the related pipeline
         related_search_type = related_pipeline.get_value("search_type")
-
-        print "sobject: ", sobject.get_code()
-        print "process_name: ", process_name
-        print "related_proces_name: ", related_process_name
-        print "related_search_type: ", related_search_type
-        print "related_scope: ", related_scope
-
-
 
         if not related_search_type:
             print "WARNING: no related search_type found"
@@ -1907,13 +1935,4 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
 
             Trigger.call(my, event, input)
-
-
-        """
-        if status not in ['revise','reject'] and related_wait in [False, 'false', None]:
-            event = "process|complete"
-            Trigger.call(my, event, my.input)
-        """
-
-
 

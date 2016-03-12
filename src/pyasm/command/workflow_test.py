@@ -840,24 +840,6 @@ class WorkflowCmd(Command):
         # create a dummy sobject
         city = SearchType.create("unittest/city")
 
-
-        city_pipeline_xml = '''
-        <pipeline>
-          <process type="action" name="c1"/>
-          <process type="progress" name="c2" search_type="unittest/person" process="p1" status="complete"/>
-          <process type="progress" name="c3" search_type="unittest/person" process="p3" status="complete"/>
-          <process type="action" name="c4"/>
-          <connect from="c1" to="c2"/>
-          <connect from="c2" to="c3"/>
-          <connect from="c3" to="c4"/>
-        </pipeline>
-        '''
-        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
-
-        city.set_value("pipeline_code", city_pipeline.get_code())
-        city.commit()
-
-
         people = []
 
         person_pipeline_xml = '''
@@ -870,6 +852,25 @@ class WorkflowCmd(Command):
         </pipeline>
         '''
         person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
+        person_pipeline_code = person_pipeline.get_value("code")
+
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="c1"/>
+          <process type="progress" name="c2" pipeline_code="%s" search_type="unittest/person" process="p1" status="complete"/>
+          <process type="progress" name="c3" search_type="unittest/person" process="p3" status="complete"/>
+          <process type="action" name="c4"/>
+          <connect from="c1" to="c2"/>
+          <connect from="c2" to="c3"/>
+          <connect from="c3" to="c4"/>
+        </pipeline>
+        ''' % person_pipeline_code
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
 
         for name in ['Beth', 'Cindy', 'John']:
             person = SearchType.create("unittest/person")

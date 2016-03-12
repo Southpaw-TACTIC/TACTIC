@@ -2872,6 +2872,7 @@ class ProgressInfoWdg(BaseInfoWdg):
             workflow = {}
 
         related_search_type = workflow.get("search_type")
+        related_pipeline_code = workflow.get("pipeline_code")
         related_process = workflow.get("process")
         related_status = workflow.get("status")
         related_scope = workflow.get("scope")
@@ -2938,7 +2939,32 @@ class ProgressInfoWdg(BaseInfoWdg):
 
         search = Search("sthpw/pipeline")
         search.add_filter("search_type", related_search_type)
+        search.add_project_filter()
         related_pipelines = search.get_sobjects()
+
+
+
+        labels = ["%s (%s)" % (x.get_value("name"), x.get_value("search_type")) for x in related_pipelines]
+        values = [x.get_value("code") for x in related_pipelines]
+
+
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Listen to Pipeline</b>")
+        select = SelectWdg("related_pipeline_code")
+        if related_pipeline_code:
+            select.set_value(related_pipeline_code)
+        settings_wdg.add(select)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- %s --" % "any")
+        settings_wdg.add("<span style='opacity: 0.6'>Determines which pipeline to track.</span>")
+
+
+        settings_wdg.add("<br/>"*2)
+
+
+
 
         values = set()
         for related_pipeline in related_pipelines:
@@ -3379,6 +3405,7 @@ class ProcessInfoCmd(Command):
 
 
         related_search_type = my.kwargs.get("related_search_type")
+        related_pipeline_code = my.kwargs.get("related_pipeline_code")
         related_process = my.kwargs.get("related_process")
         if not related_process:
             related_process = process
@@ -3392,6 +3419,8 @@ class ProcessInfoCmd(Command):
 
         if related_search_type:
             workflow['search_type'] = related_search_type
+        if related_pipeline_code:
+            workflow['pipeline_code'] = related_pipeline_code
         if related_process:
             workflow['process'] = related_process
         if related_scope:
