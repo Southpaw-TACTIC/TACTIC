@@ -843,13 +843,13 @@ class WorkflowCmd(Command):
 
         city_pipeline_xml = '''
         <pipeline>
-          <process type="action" name="a"/>
-          <process type="progress" name="b" search_type="unittest/person" process="x" status="pending"/>
-          <process type="progress" name="c" search_type="unittest/person" process="z" status="pending"/>
-          <process type="action" name="d"/>
-          <connect from="a" to="b"/>
-          <connect from="b" to="c"/>
-          <connect from="c" to="d"/>
+          <process type="action" name="c1"/>
+          <process type="progress" name="c2" search_type="unittest/person" process="p1" status="complete"/>
+          <process type="progress" name="c3" search_type="unittest/person" process="p3" status="complete"/>
+          <process type="action" name="c4"/>
+          <connect from="c1" to="c2"/>
+          <connect from="c2" to="c3"/>
+          <connect from="c3" to="c4"/>
         </pipeline>
         '''
         city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
@@ -862,11 +862,11 @@ class WorkflowCmd(Command):
 
         person_pipeline_xml = '''
         <pipeline>
-          <process type="action" name="x"/>
-          <process type="action" name="y"/>
-          <process type="manual" name="z"/>
-          <connect from="x" to="y"/>
-          <connect from="y" to="z"/>
+          <process type="action" name="p1"/>
+          <process type="action" name="p2"/>
+          <process type="manual" name="p3"/>
+          <connect from="p1" to="p2"/>
+          <connect from="p2" to="p3"/>
         </pipeline>
         '''
         person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
@@ -878,15 +878,15 @@ class WorkflowCmd(Command):
             person.set_value("city_code", city.get_code())
             person.commit()
 
-            person.set_value("x", "null")
-            person.set_value("y", "null")
-            person.set_value("z", "null")
+            person.set_value("p1", "null")
+            person.set_value("p2", "null")
+            person.set_value("p3", "null")
 
             people.append(person)
 
 
         # Run the city pipeline
-        process = "a"
+        process = "c1"
         output = {
             "pipeline": city_pipeline,
             "sobject": city,
@@ -894,24 +894,41 @@ class WorkflowCmd(Command):
         }
         Trigger.call(my, "process|pending", output)
 
-        #person_task = Task.create(person, process="a", description="Test Task")
-        #person_task.set_value("status", "complete")
-        #person_task.commit()
+
+        # it should have stopped at b
+        my.assertEquals( "complete", city.get_value("c1") )
+        my.assertEquals( "pending", city.get_value("c2") )
+
+        # run the people pipeline
         for person in people:
-            my.assertEquals( "complete", person.get_value("x") )
-            my.assertEquals( "complete", person.get_value("y") )
-            my.assertEquals( "pending", person.get_value("z") )
+            process = "p1"
+            output = {
+                "pipeline": person_pipeline,
+                "sobject": person,
+                "process": process
+            }
 
+            Trigger.call(my, "process|pending", output)
 
-        my.assertEquals( "complete", city.get_value("a") )
-        my.assertEquals( "complete", city.get_value("b") )
-        my.assertEquals( "in_progress", city.get_value("c") )
-        my.assertEquals( "pending", city.get_value("d") )
+            #my.assertEquals( "pending", city.get_value("c2") )
 
-
-        # set the manual node
+    
+        # it should have stopped at z
         for person in people:
-            process = "z"
+            my.assertEquals( "complete", person.get_value("p1") )
+            my.assertEquals( "complete", person.get_value("p2") )
+            my.assertEquals( "pending", person.get_value("p3") )
+
+
+        # however, because p1 is complete, c2 should have finished
+        my.assertEquals( "complete", city.get_value("c1") )
+        my.assertEquals( "complete", city.get_value("c2") )
+        my.assertEquals( "pending", city.get_value("c3") )
+
+
+        # run the manual p3 for all people
+        for person in people:
+            process = "p3"
             output = {
                 "pipeline": person_pipeline,
                 "sobject": person,
@@ -919,9 +936,17 @@ class WorkflowCmd(Command):
             }
             Trigger.call(my, "process|complete", output)
 
-     
-        my.assertEquals( "complete", person.get_value("z") )
+    
+        # this should complete c3 and c4
+        for person in people:
+            my.assertEquals( "complete", person.get_value("p1") )
+            my.assertEquals( "complete", person.get_value("p2") )
+            my.assertEquals( "complete", person.get_value("p3") )
 
+        my.assertEquals( "complete", city.get_value("c1") )
+        my.assertEquals( "complete", city.get_value("c2") )
+        my.assertEquals( "complete", city.get_value("c3") )
+        my.assertEquals( "complete", city.get_value("c4") )
 
 
 

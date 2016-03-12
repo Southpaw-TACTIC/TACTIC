@@ -14,7 +14,7 @@ __all__ = ['Workflow', 'BaseProcessTrigger', 'ProcessStatusTrigger']
 
 import tacticenv
 
-from pyasm.common import Common, Config, jsondumps, TacticException
+from pyasm.common import Common, Config, jsondumps, TacticException, Container
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
@@ -108,6 +108,25 @@ class Workflow(object):
         trigger.set_value("class_name", ProcessCustomTrigger)
         trigger.set_value("mode", "same process,same transaction")
         Trigger.append_static_trigger(trigger, startup=startup)
+
+
+
+        event = "workflow|listen"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessListenTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=startup)
+
+        """
+        class TestCmd(Command):
+            def execute(my):
+                Trigger.call(my, "workflow|listen")
+        cmd = TestCmd()
+        Command.execute_cmd(cmd)
+        """
+
+
 
 
 
@@ -420,19 +439,24 @@ class BaseProcessTrigger(Trigger):
     def check_complete_inputs(my):
         # this checks all the dependent inputs to determine whether they are complete.
 
-        # Check dependencies
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+        my.input['status'] = "complete"
+        Trigger.call(sobject, "workflow|listen", my.input)
+
+
         caller_sobject = my.input.get("related_sobject")
         if not caller_sobject:
             return True
-
 
         related_pipeline = my.input.get("related_pipeline")
         related_process = my.input.get("related_process")
         related_search_type = caller_sobject.get_base_search_type()
 
-        pipeline = my.input.get("pipeline")
-        process = my.input.get("process")
-        sobject = my.input.get("sobject")
+
+        print "    rrrr: ", related_search_type, related_process
 
 
         # find related sobjects
@@ -492,11 +516,13 @@ class BaseProcessTrigger(Trigger):
         for related_sobject in related_sobjects:
             key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
             if not complete.get(key):
+                print "    key not complete: ", key
                 is_complete = False
                 break
+            print "    key complete: ", key
 
 
-        #print "    is complete: ", is_complete
+        print "    is complete: ", is_complete
 
         return is_complete
 
@@ -989,32 +1015,36 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_revise(my):
-        return my._handle_dependency("revise")
+        status = "revise"
+        my.log_message(my.sobject, my.process, status)
+        my.set_all_tasks(my.sobject, my.process, status)
+        my.run_callback(my.pipeline, my.process, status)
+        return my._handle_dependency(status)
 
     def handle_reject(my):
-        return my._handle_dependency("reject")
+        status = "reject"
+        my.log_message(my.sobject, my.process, status)
+        my.set_all_tasks(my.sobject, my.process, status)
+        my.run_callback(my.pipeline, my.process, status)
+        return my._handle_dependency(status)
+
 
 
 
     def handle_action(my):
+        my.log_message(my.sobject, my.process, "in_prgress")
+        my.set_all_tasks(my.sobject, my.process, "in_progress")
+        my.run_callback(my.pipeline, my.process, "action")
         return my._handle_dependency()
 
 
     def _handle_dependency(my, status=None):
-        if status:
-            my.log_message(my.sobject, my.process, status)
-            my.set_all_tasks(my.sobject, my.process, status)
-            my.run_callback(my.pipeline, my.process, status)
-        else:
-            my.log_message(my.sobject, my.process, "in_prgress")
-            my.set_all_tasks(my.sobject, my.process, "in_progress")
-            my.run_callback(my.pipeline, my.process, "action")
-
 
         pipeline = my.input.get("pipeline")
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
+        # attributes for this process
         process_obj = pipeline.get_process(process)
         related_search_type = process_obj.get_attribute("search_type")
         related_status = process_obj.get_attribute("status")
@@ -1058,7 +1088,6 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         else:
             expression = "@SOBJECT(%s)" % related_search_type
 
-        #expression = '@SOBJECT(vfx/asset_in_shot.vfx/shot)'
 
         if related_scope == "global":
             related_sobjects = Search.eval(expression)
@@ -1120,7 +1149,15 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
 class WorkflowProgressNodeHandler(WorkflowDependencyNodeHandler):
-    pass
+
+    def handle_action(my):
+    
+        # does nothing
+        my.log_message(my.sobject, my.process, "in_progress")
+
+        # or starts the dependent processes
+        #return my._handle_dependency()
+
 
 
 
@@ -1416,12 +1453,14 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
     def execute(my):
 
-
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+        print "complete: ", process, sobject.get_search_key()
 
+        # This checks all the dependent completes to see if they are complete
+        # before declaring that this node is complete
         if not my.check_complete_inputs():
             my.log_message(sobject, process, "in_progress")
             return
@@ -1689,7 +1728,192 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
  
 
+class ProcessListenTrigger(BaseProcessTrigger):
+    '''class for listeners in the pipeline'''
 
+    def execute(my):
+
+        current_process_name = my.input.get("process")
+        current_pipeline = my.input.get("pipeline")
+        current_process = current_pipeline.get_process(current_process_name)
+        current_status = my.input.get("status")
+        current_sobject = my.input.get("sobject")
+
+
+
+        listeners = Container.get("process_listeners")
+        if listeners == None:
+            # build up a data structure of listeners from the pipelines
+            listeners = {}
+            Container.put("process_listeners", listeners)
+
+            search = Search("sthpw/pipeline")
+            listen_pipelines = search.get_sobjects()
+
+            for listen_pipeline in listen_pipelines:
+                pipeline_code = listen_pipeline.get_code()
+                listen_processes = listen_pipeline.get_processes()
+
+                pipeline_code = listen_pipeline.get_value("code")
+
+                for listen_process in listen_processes:
+                    listen_stype = listen_process.get_attribute("search_type")
+                    listen_status = listen_process.get_attribute("status")
+                    listen_process_name = listen_process.get_attribute("process")
+
+                    listen_key = "%s:%s:%s" % (listen_stype, listen_process_name, listen_status)
+
+                    items = listeners.get(listen_key)
+                    if items == None:
+                        items = []
+                        listeners[listen_key] = items
+
+                    items.append( {
+                        "pipeline": listen_pipeline,
+                        "process": listen_process,
+                    } )
+
+
+
+        # need to find any listeners for this status on this process
+        search_type = current_sobject.get_base_search_type()
+        key = "%s:%s:%s" % (search_type, current_process, current_status)
+        items = listeners.get(key)
+        if not items:
+            return
+
+
+        print "---"
+        for item in items:
+
+            # send complete
+            event = "process|complete"
+
+            listen_pipeline = item.get("pipeline")
+            listen_process = item.get("process")
+
+            input = {
+                'pipeline': current_pipeline,
+                'sobject': current_sobject,
+                'process': current_process,
+                'related_pipeline': listen_pipeline,
+                'related_process': listen_process,
+            }
+
+            
+
+            my._handle_dependency(input, "complete")
+
+        print "---"
+
+
+
+    def _handle_dependency(my, input, status="complete"):
+
+        pipeline = input.get("pipeline")
+        process_obj = input.get("process")
+        process_name = process_obj.get_name()
+        sobject = input.get("sobject")
+
+        # attributes for this process
+        related_pipeline = input.get("related_pipeline")
+        related_process = input.get("related_process")
+        related_process_name = related_process.get_name()
+
+
+        related_scope = related_process.get_attribute("scope")
+        related_wait = related_process.get_attribute("wait")
+
+
+        # get the search type from the related pipeline
+        related_search_type = related_pipeline.get_value("search_type")
+
+        print "sobject: ", sobject.get_code()
+        print "process_name: ", process_name
+        print "related_proces_name: ", related_process_name
+        print "related_search_type: ", related_search_type
+        print "related_scope: ", related_scope
+
+
+
+        if not related_search_type:
+            print "WARNING: no related search_type found"
+            return
+
+        if not related_process:
+            print "WARNING: no related process found"
+            return
+
+
+
+        # override related_status with status passed in
+        related_status = "complete"
+
+
+        if related_search_type.startswith("@"):
+            expression = related_search_type
+        else:
+            expression = "@SOBJECT(%s)" % related_search_type
+
+
+        if related_scope == "global":
+            related_sobjects = Search.eval(expression)
+        else:
+            related_sobjects = Search.eval(expression, sobjects=[sobject])
+
+        for related_sobject in related_sobjects:
+
+            # if the related_sobject is already complete, don't do anything
+            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+
+            message_sobj = Search.get_by_code("sthpw/message", key)
+            if message_sobj:
+                value = message_sobj.get_value("message")
+                if related_status.lower() in ["revise", "reject"]:
+                    pass
+                elif value == "complete" and value not in ['revise', 'reject']:
+                    continue
+
+
+
+            # This is for unittests which don't necessarily commit changes
+            related_sobject = Search.get_by_search_key(related_sobject.get_search_key())
+
+            related_pipeline = Pipeline.get_by_sobject(related_sobject)
+            if not related_process:
+                # get the first one
+                related_processes = related_pipeline.get_processes()
+                related_process = related_processes[0]
+
+
+            if related_status in ["in_progress", "In Progress"]:
+                event = "process|action"
+            else:
+                if related_status.lower() in PREDEFINED:
+                    event = "process|%s" % related_status.lower()
+                else:
+                    event = "process|%s" % related_status
+
+
+            # inputs are reversed as it sends the message
+            input = {
+                'sobject': related_sobject,
+                'pipeline': related_pipeline,
+                'process': related_process_name,
+                'related_sobject': sobject,
+                'related_pipeline': pipeline,
+                'related_process': process_name,
+            }
+
+
+            Trigger.call(my, event, input)
+
+
+        """
+        if status not in ['revise','reject'] and related_wait in [False, 'false', None]:
+            event = "process|complete"
+            Trigger.call(my, event, my.input)
+        """
 
 
 
