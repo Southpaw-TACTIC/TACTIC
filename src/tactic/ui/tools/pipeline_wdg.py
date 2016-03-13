@@ -538,10 +538,19 @@ class PipelineListWdg(BaseRefreshWdg):
             search.add_op("or")
             search.add_op("and")
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            search.add_order_by("search_type")
             pipelines = search.get_sobjects()
+
+            last_search_type = None
             for pipeline in pipelines:
                 if pipeline.get_value("parent_process"):
                     continue
+
+                search_type = pipeline.get_value("search_type")
+                if last_search_type and last_search_type != search_type:
+                    content_div.add("<hr/>")
+                last_search_type = search_type
+
 
                 # build each pipeline menu item
                 pipeline_div = my.get_pipeline_wdg(pipeline)
@@ -2879,6 +2888,14 @@ class ProgressInfoWdg(BaseInfoWdg):
         related_wait = workflow.get("wait")
 
 
+        # overrides
+        web = WebContainer.get_web()
+        if web.get_form_value("related_search_type"):
+            related_search_type = web.get_form_value("related_search_type")
+        if web.get_form_value("related_pipeline_code"):
+            related_pipeline_code = web.get_form_value("related_pipeline_code")
+
+
         project = Project.get()
         search_type_sobjs = project.get_search_types(include_multi_project=True)
 
@@ -2898,7 +2915,7 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Listen to events of search type:</b>")
+        settings_wdg.add("<b>Listen to events from:</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         if related_search_type:
@@ -2906,8 +2923,19 @@ class ProgressInfoWdg(BaseInfoWdg):
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
-        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the sobjects of the selected search type.</span>")
+        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the items of the selected search type.</span>")
         settings_wdg.add("<br/>")
+
+
+        select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var kwargs = {
+                related_search_type: bvr.src_el.value
+            }
+            spt.panel.refresh(bvr.src_el, kwargs);
+            '''
+        } )
 
 
         from pyasm.widget import RadioWdg
@@ -2960,6 +2988,18 @@ class ProgressInfoWdg(BaseInfoWdg):
         select.add_empty_option("-- %s --" % "any")
         settings_wdg.add("<span style='opacity: 0.6'>Determines which pipeline to track.</span>")
 
+        select.add_behavior( {
+            'type': 'change',
+            'related_search_type': related_search_type,
+            'cbjs_action': '''
+            var kwargs = {
+                related_search_type: bvr.related_search_type,
+                related_pipeline_code: bvr.src_el.value
+            }
+            spt.panel.refresh(bvr.src_el, kwargs);
+            '''
+        } )
+
 
         settings_wdg.add("<br/>"*2)
 
@@ -2968,6 +3008,10 @@ class ProgressInfoWdg(BaseInfoWdg):
 
         values = set()
         for related_pipeline in related_pipelines:
+            if related_pipeline_code:
+                if related_pipeline.get_code() not in related_pipeline_code:
+                    continue
+
             related_process_names = related_pipeline.get_process_names()
             for x in related_process_names:
                 values.add(x)

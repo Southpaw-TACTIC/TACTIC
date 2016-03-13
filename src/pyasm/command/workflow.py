@@ -443,8 +443,6 @@ class BaseProcessTrigger(Trigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
-        print "sobject: ", sobject.get_search_key()
-
         my.input['status'] = "complete"
         Trigger.call(sobject, "workflow|listen", my.input)
 
@@ -460,8 +458,15 @@ class BaseProcessTrigger(Trigger):
 
 
         # find related sobjects
+        search = Search(related_search_type)
+        if related_pipeline:
+            search.add_filter("pipeline_code", related_pipeline.get_value("code"))
+
+        search.add_relationship_filter(sobject)
+        related_sobjects = search.get_sobjects()
+
         #related_sobjects = sobject.get_related_sobjects(related_search_type)
-        related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
+        #related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
         if not related_sobjects:
             return True
 
@@ -768,7 +773,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process_obj = my.pipeline.get_process(my.process)
 
         # send revise single to previous processes
-        input_processes = pipeline.get_input_processes(my.process)
+        input_processes = my.pipeline.get_input_processes(my.process)
         for input_process in input_processes:
             input_process = input_process.get_name()
 
@@ -797,7 +802,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process_obj = my.pipeline.get_process(my.process)
 
         # send revise single to previous processes
-        input_processes = pipeline.get_input_processes(my.process)
+        input_processes = my.pipeline.get_input_processes(my.process)
         for input_process in input_processes:
             input_process = input_process.get_name()
 
@@ -1145,7 +1150,8 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
 
-class WorkflowProgressNodeHandler(WorkflowDependencyNodeHandler):
+#class WorkflowProgressNodeHandler(WorkflowDependencyNodeHandler):
+class WorkflowProgressNodeHandler(WorkflowManualNodeHandler):
 
     def handle_action(my):
     
@@ -1154,6 +1160,35 @@ class WorkflowProgressNodeHandler(WorkflowDependencyNodeHandler):
 
         # or starts the dependent processes
         #return my._handle_dependency()
+
+
+
+    def handle_revise(my):
+
+        my.log_message(my.sobject, my.process, "revise")
+        my.run_callback(my.pipeline, my.process, "revise")
+        # set all tasks in the process to revise
+        my.set_all_tasks(my.sobject, my.process, "revise")
+
+        process_obj = my.pipeline.get_process(my.process)
+
+        # send revise single to previous processes
+        input_processes = my.pipeline.get_input_processes(my.process)
+        for input_process in input_processes:
+            input_process = input_process.get_name()
+
+            if my.process_parts:
+                input_process = "%s.%s" % (my.process_parts[0], input_process)
+
+
+            input = {
+                'pipeline': my.pipeline,
+                'sobject': my.sobject,
+                'process': input_process
+            }
+
+            event = "process|revise"
+            Trigger.call(my, event, input)
 
 
 
@@ -1517,6 +1552,17 @@ class ProcessRejectTrigger(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
 
+
+        # This checks all the dependent completes to see if they are complete
+        # before declaring that this node is complete
+        if not my.check_complete_inputs():
+            my.log_message(sobject, process, "in_progress")
+            return
+
+
+        reject_processes = my.input.get("reject_process")
+        print "reject process: ", reject_processes
+
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
@@ -1537,6 +1583,10 @@ class ProcessRejectTrigger(BaseProcessTrigger):
         input_processes = pipeline.get_input_processes(process)
         for input_process in input_processes:
             input_process = input_process.get_name()
+
+            if reject_processes:
+                if input_process not in reject_processes:
+                    continue
 
             input = {
                 'pipeline': pipeline,
@@ -1563,6 +1613,11 @@ class ProcessReviseTrigger(ProcessRejectTrigger):
         if process.find(".") != -1:
             parts = process.split(".")
             process = parts[-1]
+
+        print "input: ", my.input
+        print "process: ", process
+        print "pipeline: ", pipeline.get_code(), pipeline.get_value("name")
+
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()

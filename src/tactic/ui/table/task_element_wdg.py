@@ -1830,13 +1830,64 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             color = Task.get_default_color(status)
 
 
+
+            complete = my.get_complete(sobject, related_type, related_process, related_scope, related_pipeline_code=related_pipeline_code)
+
+
+            num_complete = 0
+            complete_search_keys = []
+            for key, value in complete.items():
+                if value:
+                    num_complete += 1
+
+                    search_key, process, key = key.split("|")
+                    complete_search_keys.append(search_key)
+
+
+            count = num_complete
+            total = len(complete)
+
+
+
+            from spt.ui.widgets import RadialProgressWdg
+            progress_wdg = RadialProgressWdg(
+                total=total,
+                count=count,
+                color=color
+            )
+
+
             div.add_behavior( {
                 'type': 'click_up',
                 'code': code,
                 'scope': related_scope,
                 'search_type': search_type,
                 'related_type': related_type,
+                'search_keys': complete_search_keys,
                 'cbjs_action': '''
+
+                var class_name = 'tactic.ui.table.RelatedTaskWdg';
+                var kwargs = {
+                    related_type: bvr.related_type,
+                    search_keys: bvr.search_keys,
+                }
+
+                var server = TacticServerStub.get();
+                var sobject = server.get_by_code(bvr.search_type, bvr.code);
+                spt.tab.set_main_body_tab();
+                var name = sobject.name;
+                if (!name) {
+                    name = sobject.code;
+                }
+                name = "Related: " + name
+                var title = name;
+                spt.tab.add_new(name, title, class_name, kwargs);
+
+
+                return;
+ 
+
+
                 var class_name = 'tactic.ui.panel.ViewPanelWdg';
                 if (bvr.scope == "global") {
                     var expression = "@SOBJECT("+ bvr.related_type + ")";
@@ -1846,8 +1897,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 }
                 var kwargs = {
                     search_type: bvr.related_type,
-                    expression: expression,
+                    search_keys: bvr.search_keys,
+                    //expression: expression,
                     element_names: 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
+                    show_shelf: false,
                 }
                 var server = TacticServerStub.get();
                 var sobject = server.get_by_code(bvr.search_type, bvr.code);
@@ -1864,24 +1917,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            complete = my.get_complete(sobject, related_type, related_process, related_scope, related_pipeline_code=related_pipeline_code)
-
-            num_complete = 0
-            for key, value in complete.items():
-                if value:
-                    num_complete += 1
-
-            count = num_complete
-            total = len(complete)
-
-
-
-            from spt.ui.widgets import RadialProgressWdg
-            progress_wdg = RadialProgressWdg(
-                total=total,
-                count=count,
-                color=color
-            )
 
 
 
@@ -2749,6 +2784,50 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         return div
+
+
+
+__all__.append("RelatedTaskWdg")
+class RelatedTaskWdg(BaseTableElementWdg):
+
+    def get_display(my):
+
+        top = my.top
+        top.add_style("margin: 20px")
+
+        title_wdg = DivWdg()
+        top.add(title_wdg)
+
+        title_wdg.add("Related Tasks")
+        title_wdg.add_style("font-size: 25px")
+
+        desc_wdg = DivWdg()
+        desc_wdg.add("All the tasks related to !!!'")
+        top.add(desc_wdg)
+
+        top.add("<hr/>")
+
+
+        related_type = my.kwargs.get("related_type")
+        search_keys = my.kwargs.get("search_keys")
+
+
+        class_name = 'tactic.ui.table.RelatedTaskWdg'
+        kwargs = {
+            "search_type": related_type,
+            "search_keys": search_keys,
+            #"expression": expression,
+            "element_names": 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
+            "show_shelf": False,
+        }
+
+        from tactic.ui.panel import ViewPanelWdg
+        layout = ViewPanelWdg(**kwargs)
+        top.add(layout)
+
+
+
+        return top
 
 
 
