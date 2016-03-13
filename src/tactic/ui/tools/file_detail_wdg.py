@@ -126,12 +126,13 @@ class FileDetailWdg(BaseRefreshWdg):
         elif thumb_path == "__DYNAMIC__":
             td.add("No Preview")
         else:
-            embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path)
+          
+            # 100% width is default in EmbedWdg
+            embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, height='200')
             td.add(embed_wdg)
             embed_wdg.add_style("margin: auto auto")
             embed_wdg.add_class("spt_resizable")
-            embed_wdg.add_style("width: 100%")
-            embed_wdg.add_style("height: 240px")
+            #embed_wdg.add_style("width: 100%")
 
             embed_wdg.add_behavior( {
                 'type': 'load',

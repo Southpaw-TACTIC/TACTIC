@@ -1310,6 +1310,8 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "adobe/Prelude.png"
         elif ext == 'pr':
             icon = "adobe/Premiere_Pro.png"
+        elif ext == 'swf':
+            icon = "adobe/SWF.png"
 
         #for web files
         elif ext == "html":
@@ -1392,6 +1394,8 @@ class ThumbWdg(BaseTableElementWdg):
             path = "%s/%s" % (web_dir, file_name)
 
             if protocol != "file":
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
                 path = urllib.pathname2url(path)
 
             if isinstance(info, dict):

@@ -153,12 +153,11 @@ class ExpressionParser(object):
         for name in keys:
 
             value = my.vars.get(name)
-            #new_value = "'%s'" % str(value)
             new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
-            my.expression = my.expression.replace("'$%s'" % name, new_value)
-            my.expression = my.expression.replace("$%s" % name, new_value)
+            my.expression = re.sub("'\$%s'"%name, new_value, my.expression)
+            my.expression = re.sub("\$%s"%name, new_value, my.expression)
 
 
 
@@ -1643,8 +1642,8 @@ class MethodMode(ExpressionParser):
             mode = my.get_mode(expression)
 
             result = my.dive(mode, expression=expression)
-            if not result:
-                result = expression
+            if result is None:
+                result = ""
 
 
             args_len = len(args)

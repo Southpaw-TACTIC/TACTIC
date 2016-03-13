@@ -742,6 +742,9 @@ class Site(object):
         return
 
 
+    def get_guest_hashes(my):
+        return []
+
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)
@@ -837,10 +840,20 @@ class Site(object):
         if not site:
             return
         sites = Container.get("sites")
+        
+        is_redundant = False
         if sites == None:
             sites = []
             Container.put("sites", sites)
+        elif sites and sites[-1] == site:
+            is_redundant = True 
+        
         sites.append(site)
+         
+        security_list = Container.get("Environment:security_list")
+        if not security_list:
+            security_list = []
+
 
         try:
             sql = DbContainer.get("sthpw")
@@ -849,6 +862,27 @@ class Site(object):
             raise Exception("WARNING: site [%s] does not exist" % site)
 
 
+        # if site is different from current, renew security instance
+        cur_security = Environment.get_security()
+        if is_redundant:
+            security_list.append(cur_security)
+            return
+      
+     
+            
+        if cur_security and cur_security._login:
+            security = Security()
+            security._is_logged_in = True
+            security._login = cur_security._login
+            LoginInGroup.clear_cache()
+            security._find_all_login_groups()
+        
+            security.add_access_rules()
+            Environment.set_security(security)
+            security_list.append(security)
+
+     
+        
         try:
             # check if user is allowed to see the site
             #from pyasm.search import Search
@@ -867,7 +901,18 @@ class Site(object):
         if sites == None:
             return ""
         if sites:
-            return sites.pop()
+            site = sites.pop()
+        
+     
+        security_list = Container.get("Environment:security_list")
+        if security_list:
+            security = security_list.pop()
+            
+            if security:
+                Environment.set_security(security)
+
+        return site
+       
     pop_site = classmethod(pop_site)
 
 
@@ -1121,6 +1166,7 @@ class Security(Base):
         return group_names
 
     def is_in_group(my, group_name):
+        
         return group_name in my._group_names
 
 

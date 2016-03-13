@@ -25,6 +25,7 @@ __all__ = [
         'ButtonFilterElementWdg',
         'CheckboxFilterElementWdg'
 ]
+import re
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -854,20 +855,38 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             # db not supporting full text search
             single_col = len(my.columns) == 1
             partial_op = 'and'
+            op = '|'
+            if single_col:
+                op = '&'
+            # in keyword mode where there could be multi column
+            # keywords is kept as a string to maintain OR full-text search
+            value = value.replace(",", " ")
+            value = re.sub(' +', ' ', value)
+            keywords = value.strip()
+            if not keywords:
+                return
+
+            
+            # keywords_list is used for add_keyword_filter()
+            keywords_list = keywords.split(" ")
+            
+            # use AND if more than 1 word is typed in
+            if len(keywords_list) > 1:
+                multi_word_op = 'and'
+            else:
+                multi_word_op = 'or'
+
+           
             for column in my.columns:
                 if my.cross_db:
                     search2 = None
                     sub_search = None
                
-                # in keyword mode where there could be multi column
-                # keywords is kept as a string to maintain OR full-text search
-                value = value.replace(",", " ")
-                keywords = value
-                # keywords_list is used for add_keyword_filter()
-                keywords_list = keywords.split(" ")
-                #if single_col:
+                
+            
                 # AND logic in full text search will be adopted if keywords is a list as oopposed to string
-                keywords = keywords_list
+                if single_col:
+                    keywords = keywords_list
                 
                 if my.has_index and is_ascii:
                     
@@ -904,7 +923,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     if partial:
                         if my.cross_db:
                             search2.add_op("begin")
-                            search2.add_text_search_filter(column, keywords, table=table)
+                            search2.add_text_search_filter(column, keywords, table=table, op=op)
                             search2.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
                             search2.add_op("or")
 
@@ -915,7 +934,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
                         else:
                             search.add_op("begin")
-                            search.add_text_search_filter(column, keywords, table=table)
+                            search.add_text_search_filter(column, keywords, table=table, op=op)
                             search.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
                             search.add_op("or")
                             overall_search.add_relationship_search_filter(search, op="in")
@@ -924,18 +943,19 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             if not search2:
                                 raise TacticException('If cross_db is set to true, all the columns should be formatted in expression-like format with one or more sTypes: sthpw/task.description')
                             
-                            search2.add_text_search_filter(column, keywords, table=table)
+                            search2.add_text_search_filter(column, keywords, table=table, op=op)
                             if sub_search:
                                 sub_search.add_relationship_search_filter(search2, op="in")
                             else:
                                 sub_search = search2
                         else:
                             if local_table:
+                               
+                                overall_search.add_text_search_filter(column, keywords, table=table, op=op)
                                 
-                                overall_search.add_text_search_filter(column, keywords, table=table)
                             else:    
                                 
-                                search.add_text_search_filter(column, keywords, table=table)
+                                search.add_text_search_filter(column, keywords, table=table, op=op)
                                 overall_search.add_relationship_search_filter(search, op="in")
                 else:
                     #value = value.replace(",", " ")
@@ -1005,10 +1025,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 # if all the sub_search return false, set null filter
                 if not rtn_history:
                     overall_search.set_null_filter()
-                overall_search.add_op('or')
+                overall_search.add_op(multi_word_op)
 
             else:
-                overall_search.add_op('or')
+                overall_search.add_op(multi_word_op)
 
         else:
             raise TacticException('Mode [%s] in keyword search not support' % my.mode)

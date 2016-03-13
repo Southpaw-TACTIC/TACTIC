@@ -521,6 +521,20 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var button = top.getElement(".spt_upload_file_button");
             button.setStyle("display", "none");
+
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
          '''
          } )
 
@@ -874,6 +888,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_div.add(progress)
         progress.add_class("spt_upload_progress")
         progress.add_style("width: 0px")
+        progress.add_style("visibility: hidden")
         progress.add_style("height: 100%")
         progress.add_gradient("background", "background3", -10)
         progress.add_style("text-align: right")
@@ -894,6 +909,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
+
+        progress_el = top.getElement(".spt_upload_progress");
+        progress_el.setStyle("visibility", "visible");
+
         '''
 
         upload_progress = '''
@@ -919,6 +938,14 @@ class IngestUploadWdg(BaseRefreshWdg):
                 var file_els = top.getElements(".spt_upload_file");
                 for ( var i = 0; i < file_els.length; i++) {
                 spt.behavior.destroy( file_els[i] );
+
+                
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = ''; 
+                progress_el = top.getElement(".spt_upload_progress");
+                progress_el.setStyle("visibility", "hidden");
+
+
                 };''' + oncomplete_script_ret
                 script_found = True
             else:
@@ -946,6 +973,9 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var info_el = top.getElement(".spt_upload_info");
             info_el.innerHTML = ''; 
+            progress_el = top.getElement(".spt_upload_progress");
+            progress_el.setStyle("visibility", "hidden");
+
 
             if (spt.table)
             {
@@ -1080,6 +1110,18 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
+
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
 
          '''
          } )

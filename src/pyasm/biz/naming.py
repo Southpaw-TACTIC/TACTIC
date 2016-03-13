@@ -718,7 +718,7 @@ class NamingUtil(object):
             result = result.replace("{%s}" % part, value)
 
         # post process result so that it looks good
-        result = Common.get_filesystem_name(result)
+        result = Common.get_filesystem_dir(result)
 
         return result
 

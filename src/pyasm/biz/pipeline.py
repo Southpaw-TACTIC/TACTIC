@@ -131,8 +131,10 @@ class Process(Base):
         node_type = Xml.get_attribute(my.node, "type")
         if node_type == "approval":
             return "approval"
-        if node_type == "dependency":
+        elif node_type == "dependency":
             return "dependency"
+        elif node_type == "progress":
+            return "progress"
 
         if not task_pipeline_code and default:
             return "task"
@@ -894,40 +896,47 @@ class Pipeline(SObject):
         if not pipeline:
             pipeline = super(Pipeline,cls).get_by_code(code)
 
-        if not pipeline and code == 'task':
-            # Create a default task pipeline
-            pipeline = SearchType.create("sthpw/pipeline")
-            pipeline.set_value("code", "task")
-            from pyasm.biz import Task
-            xml = Task.get_default_task_xml()
-            pipeline.set_value("pipeline", xml)
-            pipeline.set_pipeline(xml)
-            pipeline.set_value("search_type", "sthpw/task")
-            #pipeline.commit()
+        if not pipeline:
+            if code == 'task':
+                # Create a default task pipeline
+                pipeline = SearchType.create("sthpw/pipeline")
+                pipeline.set_value("code", "task")
+                from pyasm.biz import Task
+                xml = Task.get_default_task_xml()
+                pipeline.set_value("pipeline", xml)
+                pipeline.set_pipeline(xml)
+                pipeline.set_value("search_type", "sthpw/task")
+                
 
 
-        if not pipeline and code == 'approval':
-            # Create a default task pipeline
-            pipeline = SearchType.create("sthpw/pipeline")
-            pipeline.set_value("code", "approval")
-            from pyasm.biz import Task
-            xml = Task.get_default_approval_xml()
-            pipeline.set_value("pipeline", xml)
-            pipeline.set_pipeline(xml)
-            pipeline.set_value("search_type", "sthpw/task")
-            #pipeline.commit()
+            elif code == 'approval':
+                # Create a default task approval pipeline
+                pipeline = SearchType.create("sthpw/pipeline")
+                pipeline.set_value("code", "approval")
+                from pyasm.biz import Task
+                xml = Task.get_default_approval_xml()
+                pipeline.set_value("pipeline", xml)
+                pipeline.set_pipeline(xml)
+                pipeline.set_value("search_type", "sthpw/task")
 
 
-        if not pipeline and code == 'dependency':
-            # Create a default task pipeline
-            pipeline = SearchType.create("sthpw/pipeline")
-            pipeline.set_value("code", "dependency")
-            from pyasm.biz import Task
-            xml = Task.get_default_dependency_xml()
-            pipeline.set_value("pipeline", xml)
-            pipeline.set_pipeline(xml)
-            pipeline.set_value("search_type", "sthpw/task")
-            #pipeline.commit()
+            elif code == 'dependency':
+                pipeline = SearchType.create("sthpw/pipeline")
+                pipeline.set_value("code", "dependency")
+                from pyasm.biz import Task
+                xml = Task.get_default_dependency_xml()
+                pipeline.set_value("pipeline", xml)
+                pipeline.set_pipeline(xml)
+                pipeline.set_value("search_type", "sthpw/task")
+            
+            elif code == 'progress':
+                pipeline = SearchType.create("sthpw/pipeline")
+                pipeline.set_value("code", "progress")
+                from pyasm.biz import Task
+                xml = Task.get_default_dependency_xml()
+                pipeline.set_value("pipeline", xml)
+                pipeline.set_pipeline(xml)
+                pipeline.set_value("search_type", "sthpw/task")
 
 
 
