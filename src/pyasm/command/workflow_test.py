@@ -913,7 +913,7 @@ class WorkflowCmd(Command):
 
             #my.assertEquals( "pending", city.get_value("c2") )
 
-    
+
         # it should have stopped at z
         for person in people:
             my.assertEquals( "complete", person.get_value("p1") )

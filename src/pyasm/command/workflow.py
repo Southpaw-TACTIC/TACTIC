@@ -443,6 +443,8 @@ class BaseProcessTrigger(Trigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
+        print "sobject: ", sobject.get_search_key()
+
         my.input['status'] = "complete"
         Trigger.call(sobject, "workflow|listen", my.input)
 
@@ -450,6 +452,7 @@ class BaseProcessTrigger(Trigger):
         caller_sobject = my.input.get("related_sobject")
         if not caller_sobject:
             return True
+
 
         related_pipeline = my.input.get("related_pipeline")
         related_process = my.input.get("related_process")
@@ -1735,7 +1738,6 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
 
 
-
         listeners = Container.get("process_listeners")
         if listeners == None:
             # build up a data structure of listeners from the pipelines
@@ -1771,7 +1773,7 @@ class ProcessListenTrigger(BaseProcessTrigger):
                     if not listen_stype:
                         # get the process sobject
                         search = Search("config/process")        
-                        search.add_filter("process", current_process_name)
+                        search.add_filter("process", listen_process.get_name())
                         search.add_filter("pipeline_code", pipeline_code)
                         process_sobj = search.get_sobject()
                         if not process_sobj:
@@ -1788,6 +1790,9 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
                     if not listen_stype:
                         continue
+
+                    if not listen_status:
+                        listen_status = current_status
 
 
                     if listen_pipeline_code:
@@ -1820,9 +1825,9 @@ class ProcessListenTrigger(BaseProcessTrigger):
         if items2:
             items.extend(items2)
 
+
         if not items:
             return
-
 
         for item in items:
 

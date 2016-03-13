@@ -1616,16 +1616,26 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-    def get_complete(my, sobject, related_search_type, related_process, scope):
+    def get_complete(my, sobject, related_search_type, related_process, scope, related_pipeline_code=None):
 
         has_pipeline = SearchType.column_exists(related_search_type, "pipeline_code")
 
+        search = Search(related_search_type)
+        if has_pipeline and related_pipeline_code:
+            search.add_filter("pipeline_code", related_pipeline_code)
+
+        if scope == "local":
+            search.add_relationship_filter(sobject)
+
+        related_sobjects = search.get_sobjects()
+
         # find related sobjects
-        #related_sobjects = sobject.get_related_sobjects(related_search_type)
+        """
         if scope == "global":
             related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type)
         else:
             related_sobjects = Search.eval("@SOBJECT(%s)" % related_search_type, sobject)
+        """
 
         if not related_sobjects:
             return {}
@@ -1682,9 +1692,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-    def get_num_complete(my, sobject, related_search_type, related_process, scope):
+    def get_num_complete(my, sobject, related_search_type, related_process, scope, related_pipeline_code=None):
 
-        complete = my.get_complete(sobject, related_search_type, related_process, scope)
+        complete = my.get_complete(sobject, related_search_type, related_process, scope, related_pipeline_code=None)
         if related_process == "asset":
             print "complete: ", complete
 
@@ -1741,6 +1751,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if node_type == "progress":
 
+            if my.show_processes_in_title != 'true':
+                title_wdg = DivWdg("<b>%s</b>" % process)
+                div.add(title_wdg)
+
+
             progress_div = DivWdg()
             div.add(progress_div)
             progress_div.add_class("hand")
@@ -1763,11 +1778,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            if my.show_processes_in_title != 'true':
-                title_wdg = DivWdg("<b>%s</b>" % process)
-                div.add(title_wdg)
-
             related_type = process_obj.get_attribute("search_type")
+            related_pipeline_code = process_obj.get_attribute("pipeline_code")
             related_process = process_obj.get_attribute("process")
             related_scope = process_obj.get_attribute("scope")
 
@@ -1780,6 +1792,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     workflow = process_sobj.get_json_value("workflow", {})
                     if workflow:
                         related_type = workflow.get("search_type")
+                        related_pipeline_code = workflow.get("pipeline_code")
                         related_process = workflow.get("process")
                         related_scope = workflow.get("scope")
 
@@ -1851,7 +1864,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            complete = my.get_complete(sobject, related_type, related_process, related_scope)
+            complete = my.get_complete(sobject, related_type, related_process, related_scope, related_pipeline_code=related_pipeline_code)
 
             num_complete = 0
             for key, value in complete.items():
@@ -1871,13 +1884,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             )
 
 
-            #if my.layout in ['horizontal',  'vertical']:
-            progress_div.add("<b>%s</b>" % display_status)
 
             progress_div.add(progress_wdg)
             progress_div.add_style("margin: 0px auto")
             progress_div.add_style("width: 70px")
             progress_div.add_style("text-align: center")
+
+            #progress_div.add("<div style='margin-top: -10px'>%s</div>" % display_status)
 
 
             return div
