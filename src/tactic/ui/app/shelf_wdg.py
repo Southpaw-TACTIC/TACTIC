@@ -1160,8 +1160,8 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
 }
     var js_files = [
-        "ace/ace-0.2.0/src/ace.js",
-        //"ace/ace-0.2.0/src/ace-uncompressed.js",
+        "ace/ace-1.2.3/src/ace.js",
+        //"ace/ace-1.2.3/src/ace-uncompressed.js",
     ];
 
 
@@ -1188,16 +1188,16 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         ace; require; define; 
 
         var core_js_files = [
-        "ace/ace-0.2.0/src/mode-javascript.js",
-         "ace/ace-0.2.0/src/mode-xml.js",
-            "ace/ace-0.2.0/src/mode-python.js",
-             "ace/ace-0.2.0/src/theme-twilight.js",
+            "ace/ace-1.2.3/src/mode-javascript.js",
+            "ace/ace-1.2.3/src/mode-xml.js",
+            "ace/ace-1.2.3/src/mode-python.js",
+             "ace/ace-1.2.3/src/theme-twilight.js",
                
-            "ace/ace-0.2.0/src/theme-textmate.js",
-            "ace/ace-0.2.0/src/theme-vibrant_ink.js",
-            "ace/ace-0.2.0/src/theme-merbivore.js",
-            "ace/ace-0.2.0/src/theme-clouds.js",
-            "ace/ace-0.2.0/src/theme-eclipse.js"
+            "ace/ace-1.2.3/src/theme-textmate.js",
+            "ace/ace-1.2.3/src/theme-vibrant_ink.js",
+            "ace/ace-1.2.3/src/theme-merbivore.js",
+            "ace/ace-1.2.3/src/theme-clouds.js",
+            "ace/ace-1.2.3/src/theme-eclipse.js"
         ];
         //var supp_js_files = [];
            
