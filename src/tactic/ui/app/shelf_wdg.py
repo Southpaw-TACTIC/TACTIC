@@ -203,11 +203,12 @@ class ScriptEditorWdg(BaseRefreshWdg):
             script_folder = ''
             script_name = ''
             script_value = ''
+            script_language = ''
 
 
 
 
-        editor = AceEditorWdg(custom_script=script_sobj)
+        editor = AceEditorWdg(custom_script=script_sobj, language=script_language)
         my.editor_id = editor.get_editor_id()
 
 
@@ -572,7 +573,10 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     if (script_text) {
         spt.ace_editor.set_value(script_text);
     }
-
+ 
+    if (script_language) {
+        spt.ace_editor.set_language(script_language);
+    }
     //editAreaLoader.setValue("shelf_script", script_text);
     //editAreaLoader.setSelectionRange("shelf_script", 0, 0);
     //$("shelf_script").value = script_text;

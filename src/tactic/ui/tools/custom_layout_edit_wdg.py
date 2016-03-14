@@ -1301,7 +1301,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             var cmd = 'tactic.ui.tools.CustomLayoutEditSaveCmd';
 
-            //var html = values.html;
             if (!bvr.editor_id) {
                 spt.alert('There is no view to save. Please create a view or select an exixting view.');
                 return;
@@ -1319,7 +1318,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var widget_type = values.widget_type;
             var code = values.code;
             var style = values.style;
-            //var mako = values.mako;
             var kwargs = values.kwargs;
 
             var behavior = values.behavior;
@@ -1412,9 +1410,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
 
-            //spt.ace_editor.set_editor_top(top);
-            //values.html = spt.ace_editor.get_value();
-            
             html_tab = top.getElement(".spt_html_tab");
             spt.ace_editor.set_editor_top(html_tab);
             values.html = spt.ace_editor.get_value();
