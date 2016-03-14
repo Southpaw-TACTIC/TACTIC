@@ -1342,13 +1342,10 @@ class WebLoginWdg(Widget):
         
 
         th = table.add_header( "<b> %s: </b>"%name_label)
-        if override_password:
-            th.add_style("")
-        else:
-            th.add_style("padding: 10px 5px")
+        th.add_style("padding: 5px")
 
         text_wdg = TextWdg("login")
-        if override_password:
+        if override_login:
             text_wdg.add_class("spt_login_textbox")
             text_wdg.add_class("form-control")
 
