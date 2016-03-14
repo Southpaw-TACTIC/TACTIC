@@ -733,11 +733,17 @@ class Common(Base):
     unzip_file = staticmethod(unzip_file)
 
 
+    def get_filesystem_dir(dirname):
+        '''Get a file system friendly dir without multiple adjacent slashes'''
+        return re.sub(r'//+', '/', dirname)
+    get_filesystem_dir = staticmethod(get_filesystem_dir)
+
     def get_filesystem_name(filename):
         # FIXME: for now, turn it off
         return filename
     get_filesystem_name = staticmethod(get_filesystem_name)
 
+    
 
     def clean_filesystem_name(filename):
         '''take a name and converts it to a name that can be saved in

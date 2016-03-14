@@ -2557,7 +2557,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         '''
         This class is displayed on click action of a single directory
         item (ie. "file", "snapshot", "asset"). It is an embedded TabWdg
-        displaying the FileDetailWdg and the sObjectDetailWdg.
+        displaying the FileDetailWdg and the SObjectDetailWdg.
 
         Choose file to display using kwarg(s):
             search_key - snapshot or single context asset to display 
