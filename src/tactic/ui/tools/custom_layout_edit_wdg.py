@@ -1313,7 +1313,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             mako_tab = top.getElement(".spt_mako_tab");
             spt.ace_editor.set_editor_top(mako_tab);
             var mako = spt.ace_editor.get_value();
-            
+            //FIXME: get_value appends newline onto beginning.
+            if (mako.startsWith("\n")) {
+                mako = mako.substring(1);
+            }
+
             var view = values.view;
             var widget_type = values.widget_type;
             var code = values.code;
@@ -1406,7 +1410,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row.add(button)
         button.add_behavior( {
             'type': 'click_up',
-            'cbjs_action': '''
+            'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
 
@@ -1416,7 +1420,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             mako_tab = top.getElement(".spt_mako_tab");
             spt.ace_editor.set_editor_top(mako_tab);
-            values.mako = spt.ace_editor.get_value();
+            mako = spt.ace_editor.get_value();
+            //FIXME: get_value appends newline onto beginning.
+            if (mako.startsWith("\n")) {
+                mako = mako.substring(1);
+            }
+            values.mako = mako;
 
             values.is_test = true;
 
