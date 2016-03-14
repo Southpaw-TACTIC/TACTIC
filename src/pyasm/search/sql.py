@@ -459,7 +459,11 @@ class Sql(Base):
         # pgdb connection code
         auth = None
         try:
-            tz_name = datetime.datetime.now(tzlocal()).tzname()
+            import tzlocal_olson
+            #tz_name = datetime.datetime.now(tzlocal()).tzname()
+            # get olson timezone name as opposed to abv. tz name 
+            tz_name = tzlocal_olson.get_localzone().zone
+            
             if my.vendor == "PostgreSQL":
                 # psycopg connection code
                 if my.password == "" or my.password == "none":
