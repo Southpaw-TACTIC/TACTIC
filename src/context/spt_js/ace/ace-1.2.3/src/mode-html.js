@@ -1841,6 +1841,7 @@ var tagMap = lang.createMap({
     label       : 'form',
     option      : 'form',
     script      : 'script',
+    behavior    : 'behavior',
     select      : 'form',
     textarea    : 'form',
     style       : 'style',
@@ -1895,6 +1896,7 @@ var HtmlHighlightRules = function() {
 
     this.embedTagRules(CssHighlightRules, "css-", "style");
     this.embedTagRules(new JavaScriptHighlightRules({noJSX: true}).getRules(), "js-", "script");
+    this.embedTagRules(new JavaScriptHighlightRules({noJSX: true}).getRules(), "js-", "behavior");
 
     if (this.constructor === HtmlHighlightRules)
         this.normalizeRules();

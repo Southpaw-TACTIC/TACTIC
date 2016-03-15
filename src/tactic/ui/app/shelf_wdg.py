@@ -1102,6 +1102,8 @@ spt.ace_editor.set_language = function(value) {
     }
     else if (value == 'expression') {
         mode = require("ace/mode/xml").Mode;
+    } else if (value == 'html') {
+        mode = require("ace/mode/html").Mode
     }
     else {
         mode = require("ace/mode/javascript").Mode;
@@ -1191,7 +1193,8 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
             "ace/ace-1.2.3/src/mode-javascript.js",
             "ace/ace-1.2.3/src/mode-xml.js",
             "ace/ace-1.2.3/src/mode-python.js",
-             "ace/ace-1.2.3/src/theme-twilight.js",
+            "ace/ace-1.2.3/src/mode-html.js",
+            "ace/ace-1.2.3/src/theme-twilight.js",
                
             "ace/ace-1.2.3/src/theme-textmate.js",
             "ace/ace-1.2.3/src/theme-vibrant_ink.js",
