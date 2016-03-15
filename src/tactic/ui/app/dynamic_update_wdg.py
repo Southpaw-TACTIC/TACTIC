@@ -170,7 +170,7 @@ top.spt_update_interval_id = setInterval( function() {
     out_loop:
     for (var i = 0; i < update_els.length; i++) {
         var update_el = update_els[i];
-        if (! update_el.isVisible()) {
+        if (!update_el.isVisible() || update_el.hasClass("spt_update_lock")) {
             continue;
         }
 
@@ -370,8 +370,7 @@ class DynamicUpdateCmd(Command):
         
         # give 2 seconds of extra room 
         last_timestamp = last_timestamp - timedelta(seconds=2)
-
-
+        
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
@@ -420,8 +419,6 @@ class DynamicUpdateCmd(Command):
 
         intersect_keys = client_keys.intersection(changed_keys)
 
-
-
         from pyasm.web import HtmlElement
 
         results = {}
@@ -438,23 +435,31 @@ class DynamicUpdateCmd(Command):
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
-
+                
                 stype = values.get("search_type")
+                
+                search_key_set = set()
                 if search_key:
                     if isinstance(search_key, list):
                         search_key_set = set(search_key)
                     else:
                         search_key_set = set()
                         search_key_set.add(search_key)
-                    
-                    # filter for search_type first if it exists
-                    # check if any search_key is contained in intersect_keys, skip if not 
-
-                    if stype and stype in changed_types:
-                        if len(intersect_keys  - search_key_set) == len(intersect_keys):
-                            continue
-                    elif len(intersect_keys  - search_key_set) == len(intersect_keys):
+                
+                # Usage to listen for specific events through DynamicUpdateCmd:
+                # 1. Specify a search_type for any change in that sType. Also specify
+                #    value=True.
+                # 2. Either by specifying a handler which generates a search_key OR 
+                #    search_key, listen for changes in that sObject. User can specify
+                #    parent search_type to improve efficiency. (ie. task sk and parent sType).
+                # 3. Specify a "compare" expression, which backs out if expression evals to True.
+                if stype and stype not in changed_types:
+                    continue  
+                elif stype and stype in changed_types:
+                    if search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                         continue
+                elif len(intersect_keys  - search_key_set) == len(intersect_keys):
+                    continue
                 
                 # evaluate any compare expressions
                 compare = values.get("compare")
@@ -467,12 +472,12 @@ class DynamicUpdateCmd(Command):
                     cmp_result = Search.eval(compare, sobject, single=True)
                     if cmp_result == True:
                         continue
-
+                    
                     # some value to display
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
-
+              
                 if value == None:
                     continue
                 
