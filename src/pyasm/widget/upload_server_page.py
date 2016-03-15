@@ -119,15 +119,16 @@ class UploadServerWdg(Widget):
 
         # set a default for now
         action = web.get_form_value("action")
+        html5_mode = False
         if not action:
+            html5_mode = True
             action = "create"
-
+ 
         # With some recent change done in cherrypy._cpreqbody line 294
         # we can use the field storage directly and just move the file
         # without using FileUpload
         path = field_storage.get_path()
-        if path and file_name and action != "append":
-
+        if html5_mode==True and path and file_name and action != "append":
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
@@ -205,9 +206,6 @@ class UploadServerWdg(Widget):
         upload.execute()
         files = upload.get_files()
         return files
-
-
-
 
 
 

@@ -176,7 +176,13 @@ class FileUpload(Base):
 
         System().makedirs(dirname)
 
-        data = my.field_storage.file
+        # Get temporary file path to read from
+        # Linux uses mkstemp, while Windows uses TemporaryFile
+        if os.name == 'nt':
+            data = my.field_storage.file
+        else:
+            path = my.field_storage.get_path()
+            data = open(path, 'rb')
 
         # write file to tmp directory
         f = open("%s" % tmp_file_path, my.write_mode)
