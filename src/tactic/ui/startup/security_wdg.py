@@ -971,6 +971,13 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         expression = my.kwargs.get("expression")
         insert_view = my.kwargs.get("custom_insert_view")
         edit_view = my.kwargs.get("custom_edit_view")
+        show_gear = my.kwargs.get("show_gear")
+        show_search_limit = my.kwargs.get("show_search_limit")
+        show_search = my.kwargs.get("show_search")
+        show_column_manager = my.kwargs.get("show_column_manager")
+        show_context_menu = my.kwargs.get("show_context_menu")
+        show_expand = my.kwargs.get("show_expand")
+        show_layout_switcher = my.kwargs.get("show_layout_switcher")
 
         if not view:
             view = "startup"
@@ -1000,7 +1007,14 @@ class SecurityGroupListWdg(BaseRefreshWdg):
             expand_on_load=True,
             expression=expression,
             insert_view=insert_view,
-            edit_view=edit_view
+            edit_view=edit_view,
+            show_gear=show_gear,
+            show_search_limit=show_search_limit,
+            show_search=show_search,
+            show_column_manager=show_column_manager,
+            show_context_menu=show_context_menu,
+            show_expand=show_expand,
+            show_layout_switcher=show_layout_switcher
         )
         top.add(layout)
 
