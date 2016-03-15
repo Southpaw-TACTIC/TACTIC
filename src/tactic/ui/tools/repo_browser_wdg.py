@@ -12,7 +12,7 @@
 
 __all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserContentWdg', 'RepoBrowserCbk', 'RepoBrowserDirContentWdg', 'RepoBrowserActionCmd']
 
-from pyasm.common import Environment, Xml, Common
+from pyasm.common import Environment, Xml, Common, jsonloads, jsondumps
 
 from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings, SpanWdg
 from pyasm.biz import Snapshot, Project, File
@@ -120,28 +120,24 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search = Search(search_type)
        
         is_refresh = my.kwargs.get("is_refresh")
+        
+        file_system_edit = my.kwargs.get("file_system_edit")
+        if file_system_edit == None:
+            file_system_edit = "false"
         edit_mode_key = "repo_browser_edit:%s" % search_type
+        WidgetSettings.set_value_by_key(edit_mode_key, file_system_edit) 
+        
+        parent_mode = my.kwargs.get("parent_mode")
+        if parent_mode == None:
+            parent_mode = "single_search_type"
         parent_mode_key = "repo_browser_mode:%s" % search_type
-        view_dir_key = "repo_browser_view_dir:%s" % search_type
-        if is_refresh in [True, "true"]:
-            file_system_edit = WidgetSettings.get_value_by_key(edit_mode_key) 
-            parent_mode = WidgetSettings.get_value_by_key(parent_mode_key)
-            view_dir = WidgetSettings.get_value_by_key(view_dir_key)
-        else:
-            file_system_edit = my.kwargs.get("file_system_edit")
-            if file_system_edit == None:
-                file_system_edit = "false"
-            WidgetSettings.set_value_by_key(edit_mode_key, file_system_edit) 
-            
-            parent_mode = my.kwargs.get("parent_mode")
-            if parent_mode == None:
-                parent_mode = "single_search_type"
-            WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
+        WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
 
-            view_dir = my.kwargs.get("view_dir")
-            if view_dir == None:
-                view_dir = project_dir
-            WidgetSettings.set_value_by_key(view_dir_key, view_dir) 
+        view_dir = my.kwargs.get("view_dir")
+        if view_dir == None:
+            view_dir = project_dir
+        view_dir_key = "repo_browser_view_dir:%s" % search_type
+        WidgetSettings.set_value_by_key(view_dir_key, view_dir) 
         
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -820,7 +816,6 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_api(my):
 
         return r'''
-            
             spt.repo_browser = {};
         
             spt.repo_browser.click_file_bvr = function(evt, bvr) {
@@ -873,7 +868,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.app_busy.hide();
 
             }
-    
+
             // Update API
             spt.repo_browser.getElement = function(el) {
                 var repo_top = document.getElement(".spt_repo_browser_top");
@@ -1158,6 +1153,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         spt.repo_browser.drag_enter = function(event, el) {
+            console.log("hi");
         }
 
         spt.repo_browser.drag_leave = function(event, el) {
@@ -1444,7 +1440,15 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def add_top_behaviors(my, top):
- 
+        
+        """
+        TODO: Add indicator file or folder being viewed.
+        selected_icon = IconWdg(icon="BS_EYE_OPEN")
+        selected_icon.add_class("spt_browser_view_item")
+        selected_icon.add_styles("display: none; position: relative;")
+        top.add(selected_icon)
+        """
+
         search = my.kwargs.get("search")
         if search:
             key = "repo_browser:%s" % search.get_search_type()
@@ -1503,7 +1507,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         text_wdg.add_class("spt_folder_state")
         top.add(text_wdg)
         text_wdg.set_value(folder_state)
-        
+      
         # Directory click up - display related sObjects
         top.add_relay_behavior( {
         'type': 'click',
@@ -1845,7 +1849,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             parent = Search.get_by_search_key(parent_key)
             if parent:
                 search_type = parent.get_search_type()
-        elif parent_mode in ["single_search_type", "single_file"] and len(search_types) == 1:
+        else:
             search_type = search_types[0]
         if search_type:
             menu_item = MenuItem(type='action', label='Ingest Files')
@@ -2205,13 +2209,17 @@ class RepoBrowserDirListWdg(DirListWdg):
         parent_key = my.kwargs.get("parent_key")
 
         if my.file_system_edit == True:
-            """ 
-            item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this)")
+             
+            
+            """
+            This will not work because dir and items already have a mouseenter and mouseleave. 
+            
+            item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this);")
             item_div.add_attr("ondragleave", "spt.repo_browser.drag_leave(event, this)")
-            item_div.add_attr("ondragover", "return false")
+            item_div.add_attr("ondragover", "console.log('hi');" 
             item_div.add_attr("ondrop", "spt.repo_browser.drag_drop(event, this)")
             """
-            
+
             item_div.add_class("DROP_ROW")
             item_div.add_class("spt_drop_handler")
             item_div.add_attr("spt_drop_handler", "spt.repo_browser.drag_drop")
@@ -2334,9 +2342,10 @@ class RepoBrowserActionCmd(Command):
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
+            
+            my.add_description("Creating new folder [%s]" % relative_dir)
 
             full_dir = "%s/%s" % (base_dir, relative_dir)
-
             if os.path.exists(full_dir):
                 raise Exception("Directory [%s] already exists" % relative_dir)
 
@@ -2347,7 +2356,9 @@ class RepoBrowserActionCmd(Command):
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
-            
+        
+            my.add_description("Deleting folder [%s]." % relative_dir)
+
             full_dir = "%s/%s" % (base_dir, relative_dir)
             
             file_exists = False 
@@ -2373,6 +2384,8 @@ class RepoBrowserActionCmd(Command):
           
             if old_relative_dir == new_relative_dir:
                 return
+
+            my.add_description("Renaming [%s] to [%s]." % (old_relative_dir, new_relative_dir))
 
             old_dir = "%s/%s" % (base_dir, old_relative_dir)
             new_dir = "%s/%s" % (base_dir, new_relative_dir)
@@ -2455,6 +2468,7 @@ class RepoBrowserActionCmd(Command):
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
+
             relative_dir = relative_dir.strip("/")
 
             file_name = my.kwargs.get("file_name")
@@ -2492,7 +2506,9 @@ class RepoBrowserActionCmd(Command):
             if not new_ext or new_ext != old_ext:
                 new_base = new_value
                 new_ext = old_ext
-            
+           
+            my.add_description("Renaming files sharing the same snapshot context as [%s]." % file_name)
+
             # TODO: If in single_file parent_mode, asset in relative_dir
             # must be unique.
 
@@ -2677,20 +2693,27 @@ class RepoBrowserCbk(Command):
         # that all snapshots are in relative directory or parent.
         # but snapshot_code mode only moves sister snapshots in same context.
         if snapshot_code:
+            my.add_description("Moving files associated with snapshot [%s]." % snapshot_code)
+
             snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
             parent = snapshot.get_parent()
             my.move_parent(parent, relative_dir, snapshot)
             return 
         elif search_key:
+            my.add_description("Moving files associated with [%s]." % search_key)
+
             parent = Search.get_by_search_key(search_key)
             parents = [parent]
         elif search_keys != None:
+            my.add_description("Moving files associated with sObjects: %s" % search_keys)
+
             parents = Search.get_by_search_keys(search_keys)
         else:
             # Move an entire directory
             # NOTE: this may be a bit too much brute force.  It may take files
             # that are not in the file table (but these shouldn't be there
             # in the first place!)
+
             base_dir = Environment.get_asset_dir()
            
             # Build new paths and check that new path is a directory
@@ -2704,6 +2727,8 @@ class RepoBrowserCbk(Command):
             new_path = os.path.join(base_dir, relative_dir, from_basename)
             if (os.path.exists(new_path)):
                 raise Exception("Directory [%s] already exists" % new_path)
+            
+            my.add_description("Moving directory and contents at [%s] to [%s]." % (abs_from_dir, new_path))
 
             # find all the files with the relative dir
             file_search = Search("sthpw/file")

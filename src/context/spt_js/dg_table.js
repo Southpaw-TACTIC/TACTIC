@@ -2970,7 +2970,10 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var no_results_msg = target.getAttribute("spt_no_results_msg");
     var show_border = target.getAttribute("spt_show_border");
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
-     
+    
+    var file_system_edit = target.getAttribute("spt_file_system_edit")
+    var parent_mode = target.getAttribute("spt_parent_mode")
+
     var height = target.getAttribute("spt_height");
     var element_names;
     var column_widths = [];
@@ -3048,7 +3051,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
-        'show_collection_tool': show_collection_tool
+        'show_collection_tool': show_collection_tool,
+        'file_system_edit': file_system_edit,
+        'parent_mode': parent_mode
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
