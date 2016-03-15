@@ -971,6 +971,10 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         expression = my.kwargs.get("expression")
         insert_view = my.kwargs.get("custom_insert_view")
         edit_view = my.kwargs.get("custom_edit_view")
+        show_refresh = my.kwargs.get("show_refresh")
+        show_keyword_search = my.kwargs.get("show_keyword_search")
+        show_save  = my.kwargs.get("show_save")
+        show_insert = my.kwargs.get("show_insert")
         show_gear = my.kwargs.get("show_gear")
         show_search_limit = my.kwargs.get("show_search_limit")
         show_search = my.kwargs.get("show_search")
@@ -1008,6 +1012,10 @@ class SecurityGroupListWdg(BaseRefreshWdg):
             expression=expression,
             insert_view=insert_view,
             edit_view=edit_view,
+            show_refresh=show_refresh,
+            show_keyword_search=show_keyword_search,
+            show_save=show_save,
+            show_insert=show_insert,
             show_gear=show_gear,
             show_search_limit=show_search_limit,
             show_search=show_search,
