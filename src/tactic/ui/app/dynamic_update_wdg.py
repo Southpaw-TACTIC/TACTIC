@@ -418,8 +418,6 @@ class DynamicUpdateCmd(Command):
                 changed_types.add(search_type)
 
         intersect_keys = client_keys.intersection(changed_keys)
-        # TODO: Is this necessary?
-        intersect_types = client_stypes.intersection(changed_types)
 
         from pyasm.web import HtmlElement
 
@@ -448,8 +446,13 @@ class DynamicUpdateCmd(Command):
                         search_key_set = set()
                         search_key_set.add(search_key)
                 
-                # filter for search_type first if it exists
-                # check if any search_key is contained in intersect_keys, skip if not 
+                # Usage to listen for specific events through DynamicUpdateCmd:
+                # 1. Specify a search_type for any change in that sType. Also specify
+                #    value=True.
+                # 2. Either by specifying a handler which generates a search_key OR 
+                #    search_key, listen for changes in that sObject. User can specify
+                #    parent search_type to improve efficiency. (ie. task sk and parent sType).
+                # 3. Specify a "compare" expression, which backs out if expression evals to True.
                 if stype and stype not in changed_types:
                     continue  
                 elif stype and stype in changed_types:
