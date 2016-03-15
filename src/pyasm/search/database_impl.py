@@ -450,7 +450,37 @@ class DatabaseImpl(DatabaseImplInterface):
 
         return stmt
 
- 
+    def get_child_code_cte(my, var_dict):
+        '''Postgres collection child codes CTE'''
+        
+        stmt = '''
+            WITH RECURSIVE res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."parent_code"] AS TEXT),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."parent_code",
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
+
+
+        return stmt
+        
     def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''default impl works with Postgres'''
 
@@ -988,6 +1018,36 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                 )
 
         Select * from res;'''%where
+
+        return stmt
+
+    def get_child_code_cte(my, var_dict):
+        '''SQLServer collection child codes CTE'''
+
+        stmt = '''
+            WITH res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."parent_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
 
         return stmt
 

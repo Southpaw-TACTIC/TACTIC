@@ -45,7 +45,10 @@ class GlobalSearchTrigger(Trigger):
             search_code = sobj_id
 
         search_type = SearchKey.extract_search_type(search_key)
-        
+
+        input_search_type = input.get("search_type")
+        base_search_type = input_search_type.split("?")[0]
+
         # find the old sobject
         if sobj_id != -1:
             search = Search("sthpw/sobject_list")
@@ -62,9 +65,12 @@ class GlobalSearchTrigger(Trigger):
         if input.get("is_delete") == True:
             if sobject:
                 mode = "delete"
-                if search_type.startswith("workflow/asset_in_asset"):
+                stype_obj = SearchType.get(base_search_type)
+                if stype_obj.get_value('type') == 'collection':
                     asset_in_asset_sobject = input.get("sobject")
-                    my.update_collection_keywords(mode, asset_in_asset_sobject)
+                    asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
+                    if asset_stypes:
+                        my.update_collection_keywords(mode, asset_stypes[0], asset_in_asset_sobject)
                 sobject.delete()
             return
 
@@ -83,7 +89,6 @@ class GlobalSearchTrigger(Trigger):
         sobject.set_value("project_code", project_code)
 
 
-
         caller = my.get_caller()
 
         data = set()
@@ -95,13 +100,12 @@ class GlobalSearchTrigger(Trigger):
 
 
         # Updates for adding changed user defined keywords into asset keywords_data column
-        if sobj.column_exists("keywords_data"):
-
+        if sobj.column_exists("keywords_data") and "user_keywords" in input.get("update_data"):
             # On creating new Collections
             if input.get("update_data").get("_is_collection") and input.get("is_insert"):
                 update_data = input.get("update_data")
 
-                collection_keywords = update_data.get("keywords")
+                collection_keywords = update_data.get("user_keywords")
                 collection_name = update_data.get("name")
 
                 keywords_data = sobject.get_json_value("keywords_data", {})
@@ -112,18 +116,21 @@ class GlobalSearchTrigger(Trigger):
 
             # when user defined keywords column is changed 
             else:
-                user_keywords = input.get("update_data").get("keywords")
+                user_keywords = input.get("update_data").get("user_keywords")
+
                 if not user_keywords:
                     user_keywords = ""
-                my.update_user_keywords(sobj, user_keywords)
+                my.update_user_keywords(sobj, user_keywords, base_search_type)
 
             my.set_searchable_keywords(sobj)
 
         # Collection relationships being created or added
-        if search_type.startswith("workflow/asset_in_asset"):
+        stype_obj = SearchType.get(base_search_type)
+        if stype_obj.get_value('type') == 'collection':
             asset_in_asset_sobject = input.get("sobject")
-
-            my.update_collection_keywords(mode, asset_in_asset_sobject)
+            asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
+            if asset_stypes:
+                my.update_collection_keywords(mode, asset_stypes[0], asset_in_asset_sobject)
 
         
         # extra columns to add
@@ -146,10 +153,10 @@ class GlobalSearchTrigger(Trigger):
      
     def set_searchable_keywords(my, sobj):
         '''
-        Used to set the searchable_keywords column. Reads from the keywords_data
+        Used to set the keywords column. Reads from the keywords_data
         column.
         '''
-        if not sobj.column_exists("searchable_keywords"):
+        if not sobj.column_exists("keywords"):
             return
 
         keywords_data = sobj.get_json_value("keywords_data", {})
@@ -157,25 +164,25 @@ class GlobalSearchTrigger(Trigger):
         if keywords_data:
             path = ""
             if 'path' in keywords_data:
-                path = keywords_data['path']
+                path = keywords_data.get('path')
 
-            user = ""
             if 'user' in keywords_data:
-                user = keywords_data['user']
+                user = keywords_data.get('user')
+                if not user:
+                    user = ""
 
-            collection = ""
+            collection_list = []
             if 'collection' in keywords_data:
-                
-                collection_keywords_data = keywords_data['collection']
+                collection_keywords_data = keywords_data.get('collection')
                 for collection_code in collection_keywords_data.keys():
-                    collection = collection + " " + collection_keywords_data[collection_code]
+                    collection_list.append(collection_keywords_data.get(collection_code))
+                    
+            searchable_keywords = "%s %s %s" %(path, user, " ".join(collection_list))
 
-            searchable_keywords = path + " " + user + " " + collection
-
-            sobj.set_value("searchable_keywords", searchable_keywords)
+            sobj.set_value("keywords", searchable_keywords)
             sobj.commit(triggers=False)
 
-    def update_user_keywords(my, sobj, user_keywords):
+    def update_user_keywords(my, sobj, user_keywords, search_type):
 
         search_key = sobj.get_search_key()
         keywords_data = sobj.get_json_value("keywords_data", {})
@@ -185,10 +192,12 @@ class GlobalSearchTrigger(Trigger):
         # If the collection's keywords column gets changed, all of its 
         # children's "collection" keywords_data needs to be updated
         if sobj.get('_is_collection'):
-            child_codes = my.get_child_codes(sobj.get_code())
+
+            child_codes = my.get_child_codes(sobj.get_code(), search_type)
+            
             if child_codes:
                 for child_code in child_codes:
-                    child_nest_sobject = Search.get_by_code("workflow/asset", child_code)
+                    child_nest_sobject = Search.get_by_code(search_type, child_code)
                     child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
                     child_nest_collection_keywords_data['collection'][sobj.get_code()] = user_keywords
 
@@ -199,76 +208,37 @@ class GlobalSearchTrigger(Trigger):
         sobj.set_json_value("keywords_data", keywords_data)
         sobj.commit(triggers=False)
 
-    def get_child_codes(my, parent_collection_code):
+    def get_child_codes(my, parent_collection_code, search_type):
 
         from pyasm.biz import Project
         project = Project.get()
         sql = project.get_sql()
-        database = project.get_database_type()
+        impl = project.get_database_impl()
         search_codes = []
 
-        if database == "SQLServer":
-            statement = '''
-            WITH res(parent_code, parent_key, search_code, search_key, path, depth) AS (
-            SELECT
-            r."parent_code", p1."name",
-            r."search_code", p2."name",
-                  CAST(r."parent_code" AS varchar(256)),
-             1
-            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2
-            WHERE p1."code" IN ('%s')
-            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
-            UNION ALL
-            SELECT
-             r."parent_code", p1."name",
-             r."search_code", p2."name",
-                   CAST((path + ' > ' + r."parent_code") AS varchar(256)),
-             ng.depth + 1
-            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2,
-             res AS ng
-            WHERE r."parent_code" = ng."search_code" and depth < 10
-            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
-            )
-            
-            Select search_code from res;
-            ''' % parent_collection_code
-        else:
-            statement = '''
-            WITH RECURSIVE res(parent_code, parent_key, search_code, search_key, path, depth) AS (
-            SELECT
-            r."parent_code", p1."name",
-            r."search_code", p2."name",
-                  CAST(ARRAY[r."parent_code"] AS TEXT),
-             1
-            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2
-            WHERE p1."code" IN ('%s')
-            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
-            UNION ALL
-            SELECT
-             r."parent_code", p1."name",
-             r."search_code", p2."name",
-                   path || r."parent_code",
-             ng.depth + 1
-            FROM "asset_in_asset" AS r, "asset" AS p1, "asset" AS p2,
-             res AS ng
-            WHERE r."parent_code" = ng."search_code" and depth < 10
-            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
-            )
-            
-            Select search_code from res;
-            ''' % parent_collection_code
+        parts = search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
+        # Check if connection between asset and asset_in_asset is in place
+        if collection_type not in SearchType.get_related_types(search_type):
+            return search_codes
 
-        results = sql.do_query(statement)
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+        stmt = impl.get_child_code_cte(var_dict)
+        
+
+        results = sql.do_query(stmt)
         for result in results:
             result = "".join(result)
             search_codes.append(result)
 
         return search_codes
 
-    def update_collection_keywords(my, mode, asset_in_asset_sobject):
-        
-        asset_stype = "workflow/asset"
+    def update_collection_keywords(my, mode, asset_stype, asset_in_asset_sobject):
         
         parent_code = asset_in_asset_sobject.get("parent_code")
         search_code = asset_in_asset_sobject.get("search_code")
@@ -277,7 +247,7 @@ class GlobalSearchTrigger(Trigger):
         child_sobject = Search.get_by_code(asset_stype, search_code)
         
         # keywords of parent
-        parent_collection_keywords = parent_sobject.get_value("keywords")
+        parent_collection_keywords = parent_sobject.get_value("user_keywords")
 
         collection_keywords_dict = {}
         parent_collection_keywords_dict = {}
@@ -289,10 +259,10 @@ class GlobalSearchTrigger(Trigger):
         parent_keywords_data = parent_sobject.get_json_value("keywords_data", {})
 
         if 'collection' in child_keywords_data:
-            collection_keywords_dict = child_keywords_data['collection']
+            collection_keywords_dict = child_keywords_data.get('collection')
 
         if 'collection' in parent_keywords_data:
-            parent_collection_keywords_dict = parent_keywords_data['collection']
+            parent_collection_keywords_dict = parent_keywords_data.get('collection')
 
         if mode == "insert":
             # Add parent's user defined keywords
@@ -303,7 +273,7 @@ class GlobalSearchTrigger(Trigger):
 
             # Find all children that has [search_code] in their collection's keys
             # and update
-            child_codes = my.get_child_codes(search_code)
+            child_codes = my.get_child_codes(search_code, asset_stype)
 
             if child_codes:
                 for child_code in child_codes:
@@ -324,7 +294,7 @@ class GlobalSearchTrigger(Trigger):
             for key in parent_collection_keywords_dict.keys():
                 del collection_keywords_dict[key]
 
-            child_codes = my.get_child_codes(search_code)
+            child_codes = my.get_child_codes(search_code, asset_stype)
             
             if child_codes:
                 for child_code in child_codes:
