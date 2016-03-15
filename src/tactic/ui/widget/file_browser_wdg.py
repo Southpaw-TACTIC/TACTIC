@@ -582,40 +582,11 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_handler_class", class_path)
         div.add_attr("spt_level", my.level+1)
 
-
-        swap_action = '''
+        swap_action = my.get_swap_action()
+        if not swap_action:
+            swap_action = r'''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext(".spt_dir_content");
-        
-        // Get the folder state, add dir to state if necessary.
-        var top = item_top.getParent(".spt_dir_list_top");
-        var folder_state_el = top.getElement(".spt_folder_state");
-        if (folder_state_el) {
-            var folder_state = folder_state_el.value;
-            var items;
-            if (folder_state == '') {
-                items = [];
-            } else {
-                items = folder_state.split("|");
-            }
-        
-            // Preferentially grab the absolute path
-            var dir = item_top.getAttribute("spt_dir");
-            if (!dir) {
-                dir = item_top.getAttribute("spt_reldir");
-
-            }
-
-            var exists = false;
-            for (var i = 0; i < items.length; i++) {
-                if (items[i] == dir) {
-                    exists = true;
-                    break;
-                }
-            }
-            
-        }
-
 
         if (item_top.hasClass("spt_dynamic")) {
 
@@ -627,18 +598,8 @@ class DirListWdg(BaseRefreshWdg):
                 }
                 item_top.removeClass("spt_open");
                 sibling.setStyle("display", "none");
-            
-                // Remove this item from the folder states
-                if (exists) {
-                    items.splice(i, 1);
-                }
             }
             else {
-                // Add this item to the folder states
-                if (!exists) {
-                    items.push(dir);
-                }
-
                 item_top.addClass("spt_open");
                 sibling.setStyle("display", "");
 
@@ -646,6 +607,8 @@ class DirListWdg(BaseRefreshWdg):
                 var root_dir = item_top.getAttribute("spt_root_dir");
 
                 // get the search_keys, if any
+                var top = bvr.src_el.getParent(".spt_dir_list_top");
+
                 var search_keys = top.getAttribute("spt_search_keys");
                 if (search_keys) {
                     search_keys = search_keys.split("|");
@@ -685,27 +648,55 @@ class DirListWdg(BaseRefreshWdg):
                     all_open: false,
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
-                    handler_kwargs: handler_kwargs,
-                    folder_state: folder_state
+                    handler_kwargs: handler_kwargs
+
                 };
+               
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
         else {
             spt.toggle_show_hide(sibling);
-           
-            if (exists) {
-                items.splice(i, 1);
-            } else {
-                items.push(dir);
+        }
+
+
+        var top = item_top.getParent(".spt_dir_list_top");
+        var folder_state_el = top.getElement(".spt_folder_state");
+        if (! folder_state_el) {
+            return;
+        }
+
+        var reldir = item_top.getAttribute("spt_reldir");
+
+        var folder_state = folder_state_el.value;
+
+        var items;
+        if (folder_state == '') {
+            items = [];
+        }
+        else {
+            items = folder_state.split("|");
+        }
+
+        //var index = items.indexOf(reldir);
+        var exists = false;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i] == reldir) {
+                exists = true;
+                break;
             }
+        }
+        if (exists) {
+            items.splice(i, 1);
+        }
+        else {
+            items.push(reldir);
         }
 
         folder_state = items.join("|");
         folder_state_el.value = folder_state;
 
-        '''%(jsondumps(my.handler_kwargs))
-
+        ''' % (jsondumps(my.handler_kwargs))
 
         swap.add_action_script(swap_action)
 
@@ -780,6 +771,8 @@ class DirListWdg(BaseRefreshWdg):
 
         return div
 
+    def get_swap_action(my):
+        return None
 
     def get_info(my, dirname, basename):
         location = my.kwargs.get("location")

@@ -1320,6 +1320,129 @@ class RepoBrowserDirListWdg(DirListWdg):
        ''' 
 
 
+    def get_swap_action(my):
+        return r'''
+        var item_top = bvr.src_el.getParent(".spt_dir_item");
+        var sibling = item_top.getNext(".spt_dir_content");
+        
+        // Get the folder state, add dir to state if necessary.
+        var top = item_top.getParent(".spt_dir_list_top");
+        var folder_state_el = top.getElement(".spt_folder_state");
+        if (folder_state_el) {
+            var folder_state = folder_state_el.value;
+            var items;
+            if (folder_state == '') {
+                items = [];
+            } else {
+                items = folder_state.split("|");
+            }
+        
+            // Preferentially grab the absolute path
+            var dir = item_top.getAttribute("spt_dir");
+            if (!dir) {
+                dir = item_top.getAttribute("spt_reldir");
+
+            }
+
+            var exists = false;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i] == dir) {
+                    exists = true;
+                    break;
+                }
+            }
+            
+        }
+        if (item_top.hasClass("spt_dynamic")) {
+
+            if (item_top.hasClass("spt_open")) {
+                //spt.hide(sibling);
+                var children = sibling.getChildren()
+                for (var i = 0; i < children.length; i++) {
+                    spt.behavior.destroy_element(children[i]);
+                }
+                item_top.removeClass("spt_open");
+                sibling.setStyle("display", "none");
+            
+                // Remove this item from the folder states
+                if (exists) {
+                    items.splice(i, 1);
+                }
+            }
+            else {
+                // Add this item to the folder states
+                if (!exists) {
+                    items.push(dir);
+                }
+
+                item_top.addClass("spt_open");
+                sibling.setStyle("display", "");
+
+                var base_dir = item_top.getAttribute("spt_dir");
+                var root_dir = item_top.getAttribute("spt_root_dir");
+
+                // get the search_keys, if any
+                var search_keys = top.getAttribute("spt_search_keys");
+                if (search_keys) {
+                    search_keys = search_keys.split("|");
+                }
+                else {
+                    search_keys = [];
+                }
+
+                var search_types = top.getAttribute("spt_search_types");
+                if (search_types) {
+                    search_types = search_types.split("|");
+                }
+                else {
+                    search_types = [];
+                }
+
+
+                //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
+                var handler_kwargs = {
+                        root_dir: root_dir,
+                        base_dir: base_dir,
+                        search_keys: search_keys,
+                        search_types: search_types
+                       
+                    } 
+                var extra_handler_kwargs = eval(%s);
+                
+                for (handler_kw in extra_handler_kwargs) {
+                    if (extra_handler_kwargs.hasOwnProperty(handler_kw))
+                        handler_kwargs[handler_kw] = extra_handler_kwargs[handler_kw];
+                }
+                var class_name = 'tactic.ui.widget.DirListPathHandler';
+                var kwargs = {
+                    level: item_top.getAttribute("spt_level"),
+                    base_dir: base_dir,
+                    depth: 1,
+                    all_open: false,
+                    dynamic: true,
+                    handler_class: item_top.getAttribute("spt_handler_class"),
+                    handler_kwargs: handler_kwargs,
+                    folder_state: folder_state
+                };
+                spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
+            }
+        }
+        else {
+            spt.toggle_show_hide(sibling);
+           
+            if (exists) {
+                items.splice(i, 1);
+            } else {
+                items.push(dir);
+            }
+        }
+
+        folder_state = items.join("|");
+        folder_state_el.value = folder_state;
+
+        ''' % (jsondumps(my.handler_kwargs))
+
+
     def add_top_behaviors(my, top):
  
         search = my.kwargs.get("search")
