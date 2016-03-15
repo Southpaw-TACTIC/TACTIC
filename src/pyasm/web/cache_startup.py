@@ -64,7 +64,7 @@ class CacheStartup(object):
 
         # cache sthpw tables definitions
         from pyasm.security import Site
-        site = Site()
+        site = Site.get_site()
         if site:
             key = "%s:sthpw_column_info" % site
         else:

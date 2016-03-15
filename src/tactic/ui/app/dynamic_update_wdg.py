@@ -370,8 +370,7 @@ class DynamicUpdateCmd(Command):
         
         # give 2 seconds of extra room 
         last_timestamp = last_timestamp - timedelta(seconds=2)
-
-
+        
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
@@ -419,6 +418,7 @@ class DynamicUpdateCmd(Command):
                 changed_types.add(search_type)
 
         intersect_keys = client_keys.intersection(changed_keys)
+        # TODO: Is this necessary?
         intersect_types = client_stypes.intersection(changed_types)
 
         from pyasm.web import HtmlElement
@@ -447,7 +447,7 @@ class DynamicUpdateCmd(Command):
                     else:
                         search_key_set = set()
                         search_key_set.add(search_key)
-
+                
                 # filter for search_type first if it exists
                 # check if any search_key is contained in intersect_keys, skip if not 
                 if stype and stype not in changed_types:

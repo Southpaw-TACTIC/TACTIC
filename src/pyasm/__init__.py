@@ -10,3 +10,8 @@
 #
 #
 
+import tacticenv
+import sys
+tactic_install_dir = tacticenv.get_install_dir()
+
+sys.path.insert(0, "%s/3rd_party/site-packages" %tactic_install_dir)

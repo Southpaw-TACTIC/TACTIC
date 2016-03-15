@@ -217,7 +217,7 @@ class TaskStatusSelectWdg(SelectWdg):
         # get the number of task pipelines needed for EditWdg, which is one
         # for the EDIT ROW , there could be more than 1
 
-        my.task_mapping = None
+        my.task_mapping = {}
         from tactic.ui.panel import EditWdg
         if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
             task = my.get_current_sobject()
@@ -242,21 +242,24 @@ class TaskStatusSelectWdg(SelectWdg):
             my.task_pipelines = search.get_sobjects()
 
             # get all of the pipelines for the current search_type
-            search_type = my.state.get("search_type");
+            search_type = my.state.get("search_type")
+            
             search = Search('sthpw/pipeline')
             if search_type:
                 search.add_filter('search_type', search_type)
             my.sobject_pipelines = search.get_sobjects()
-
             # insert the default task pipeline if not overridden in the db
-            default_task_found = False
+            #default_task_found = False
             pipeline_codes = SObject.get_values(my.task_pipelines, 'code')
-            if 'task' in pipeline_codes:
-                default_task_found = True
+           
             
-            if not default_task_found:
-                default_pipe = Pipeline.get_by_code('task')
-                my.task_pipelines.append(default_pipe)
+            #if not default_task_found:
+            default_pipe = Pipeline.get_by_code('task')
+            my.task_pipelines.append(default_pipe)
+            default_pipe = Pipeline.get_by_code('approval')
+            my.task_pipelines.append(default_pipe)
+            default_pipe = Pipeline.get_by_code('progress')
+            my.task_pipelines.append(default_pipe)
             
             
             my.task_mapping = {}
@@ -267,10 +270,12 @@ class TaskStatusSelectWdg(SelectWdg):
                 for process in processes:
                     attrs = pipeline.get_process_attrs(process)
                     task_pipeline = attrs.get('task_pipeline')
+                    
                     if task_pipeline:
                         key = '%s|%s' %(pipeline.get_code(), process)
                         my.task_mapping[key] = task_pipeline
 
+          
 
 
         my.is_preprocess = True
@@ -292,7 +297,7 @@ class TaskStatusSelectWdg(SelectWdg):
         #    "texture": "task_texture",
         #    "rig":  "task_rig"
         #}
-       
+        
         if my.task_mapping:
             json_str = HtmlElement.get_json_string(my.task_mapping)
             widget.add_attr('spt_task_pipeline_mapping', json_str)
@@ -318,12 +323,11 @@ class TaskStatusSelectWdg(SelectWdg):
             if cur_sobject:
                 cur_value = cur_sobject.get_value('status')
 
-            processes = ['Synopsis', 'First Draft', 'Second Draft', 'Final']
+            #processes = ['Synopsis', 'First Draft', 'Second Draft', 'Final']
             processes = [None]
             for process in processes:
 
                 for status in status_names:
-                    print "status: ", status
                     # not all statuses can be shown, if there are access rules
                     # TODO: remove this status in 4.1
                     if cur_value == status or security.check_access("process_select", status, access='view', default='deny'):
@@ -342,8 +346,7 @@ class TaskStatusSelectWdg(SelectWdg):
                         {'process': status , 'pipeline':  pipeline.get_code()}
                         ]
 
-
-                    if security.check_access('status', access_key, "view", default="deny"):
+                    if security.check_access('process', access_key, "view", default="deny"):
                         if process:
                             allowed_statuses.append("%s / %s" % (process, status))
                         else:

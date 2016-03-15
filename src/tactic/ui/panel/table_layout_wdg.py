@@ -869,7 +869,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 table.add_style("font-size: %s" % font_size)
                 my.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
-            #my.handle_headers(table)
             if table_width:
                 table.add_style("width: %s" % table_width)
 

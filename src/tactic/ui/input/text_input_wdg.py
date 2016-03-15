@@ -548,10 +548,13 @@ class TextInputWdg(BaseInputWdg):
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
                             offset: {x:5, y:10}}});
-                    over.text.setStyle('color','%s');
-                    over.text.setStyle('font-size','0.8em');
-                    over.text.setStyle('z-index','20');
-                    over.text.setStyle('font-family','Arial, Serif');
+                    if (over.text) {
+                        over.text.setStyle('color','%s');
+                        over.text.setStyle('font-size','0.8em');
+                        over.text.setStyle('z-index','20');
+                        over.text.setStyle('font-family','Arial, Serif');
+                    }
+                
                     '''%color})
 
 		
@@ -1654,7 +1657,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         filtered = filtered[0:10]
 
         for keywords in filtered:
-            print "keywords: ", keywords
+            #print "keywords: ", keywords
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")

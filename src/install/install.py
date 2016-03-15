@@ -409,7 +409,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         f = open('%s/VERSION' %current_dir,'r')
         version = f.readline()
         f.close()
-        return version
+        return version.strip()
 
     def in_directory(my, file, directory):
         #make both absolute    

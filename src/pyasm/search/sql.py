@@ -459,7 +459,11 @@ class Sql(Base):
         # pgdb connection code
         auth = None
         try:
-            tz_name = datetime.datetime.now(tzlocal()).tzname()
+            import tzlocal_olson
+            #tz_name = datetime.datetime.now(tzlocal()).tzname()
+            # get olson timezone name as opposed to abv. tz name 
+            tz_name = tzlocal_olson.get_localzone().zone
+            
             if my.vendor == "PostgreSQL":
                 # psycopg connection code
                 if my.password == "" or my.password == "none":
@@ -2252,7 +2256,7 @@ class Select(object):
     # NOTE: Only Postgres and SQLServer impl so far.  This likely will not work
     # on any other database
     #
-    def add_text_search_filter(my, column, keywords, table=None):
+    def add_text_search_filter(my, column, keywords, table=None, op='&'):
         '''This will do full text searching on any column.  It is pretty
         brute force as it will convert each row to a ts_vector.
         '''
@@ -2262,7 +2266,7 @@ class Select(object):
         column_types = my.impl.get_column_types(my.db_resource, table)
         column_type = column_types.get(column)
         
-        where = my.impl.get_text_search_filter(column, keywords, column_type, table=table)
+        where = my.impl.get_text_search_filter(column, keywords, column_type, table=table, op=op)
         my.add_where(where)
 
 

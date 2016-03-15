@@ -889,7 +889,7 @@ class HtmlElement(Widget):
             expression = handler.get_expression()
             compare = handler.get_compare()
             search_key = handler.get_search_key()
-            parent_key = handler.get_parent_key()
+            expr_key = handler.get_expr_key()
             site = handler.get_site()
 
 
@@ -902,9 +902,9 @@ class HtmlElement(Widget):
             # search key is used to determine whether a change has occured.
             # when it is None, the expression is always evaluated ... however,
             # sometimes a search key is needed for the expression. In this case,
-            # use "parent_key".
+            # use "expr_key".
             search_key = update.get("search_key")
-            parent_key = update.get("parent_key")
+            expr_key = update.get("expr_key")
 
             # NOTE: this is explicitly not supported.  This would allow a client
             # to set the site which is forbidden
@@ -924,8 +924,8 @@ class HtmlElement(Widget):
 
             if search_key:
                 sobject = Search.get_by_search_key(search_key)
-            elif parent_key:
-                sobject = Search.get_by_search_key(parent_key)
+            elif expr_key:
+                sobject = Search.get_by_search_key(expr_key)
             else:
                 sobject = None
 

@@ -29,6 +29,10 @@ import random
 
 class DeleteToolWdg(BaseRefreshWdg):
 
+    def init(my):
+        my.delete_group = my.kwargs.get('delete_group') or "admin"
+        
+
     def get_display(my):
         top = my.top
         my.set_as_panel(top)
@@ -728,27 +732,34 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
 
     def get_display(my):
-
+       
         top = my.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("width", "400px")
         top.add_border()
         top.add_class("spt_delete_project_tool_top")
+        site = my.kwargs.get("site")
+        
+        if site:
+            Site.set_site(site)
 
         login = Environment.get_user_name()
-        if login != 'admin':
+        
+        security = Environment.get_security()
+        
+        if not security.is_in_group(my.delete_group):
+
             top.add(IconWdg(icon=IconWdg.WARNING))
             top.add("Only Admin can delete projects")
             top.add_style("padding: 50px")
             top.add_style("text-align: center")
+            if site:
+                Site.pop_site()
             return top
 
 
 
-        site = my.kwargs.get("site")
-        if site:
-            Site.set_site(site)
 
 
 
@@ -1063,9 +1074,11 @@ class DeleteProjectCmd(DeleteCmd):
         from pyasm.search import DbContainer
         from pyasm.security import Security
 
+        delete_group = my.kwargs.get('delete_group') or "admin"
+        
         security = Environment.get_security()
-        if not security.is_in_group("admin"):
-            raise Exception("Only admin users can delete projects")
+        if not security.is_in_group(delete_group):
+            raise Exception("Only users in [%s] can delete projects"%delete_group)
 
 
         project_code = my.kwargs.get("project_code")
@@ -1143,12 +1156,27 @@ class DeleteProjectCmd(DeleteCmd):
                 pass
         # remove the project entry
         project.delete(triggers=False)
-
       
         schema = Schema.get_by_code(project_code)
         if schema:
             schema.delete()
 
+        # Delete project specific login group and login in group entries
+        expr = "@SOBJECT(sthpw/login_group['project_code','%s'])"%project_code
+        expr2 = "@SOBJECT(sthpw/login_group['project_code','%s'].sthpw/login_in_group)"%project_code
+
+        sobjs = Search.eval(expr2)
+        for sobj in sobjs:
+            print sobj
+            sobj.delete()
+
+        sobjs = Search.eval(expr)
+        for sobj in sobjs:
+            sobj.delete()
+
+
+
+ 
         return
 
 

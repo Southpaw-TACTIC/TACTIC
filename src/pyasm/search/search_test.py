@@ -884,7 +884,10 @@ class SearchTest(unittest.TestCase):
 
 
         update.impl = sql_impl
-        update.set_value('timestamp','2012-12-12')
+        value = '2012-12-12'
+        value = update.impl.process_date(value)
+
+        update.set_value('timestamp', value)
         my.assertEquals( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = convert(datetime2, \'2012-12-12\', 0)""".format(my.sthpw_prefix))
         update.set_value('timestamp','NOW')
         my.assertEquals( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = getdate()""".format(my.sthpw_prefix))
@@ -906,13 +909,16 @@ class SearchTest(unittest.TestCase):
                     'MySQL': "'2012-12-25'"}
                     #'Oracle':"TO_DATE('2012-12-25','YYYY-MM-DD'"}
         #TODO: test with cx_Oracle installed
+        #TODO: have another test with timezone considered
         for db_type in ['Sqlite','SQLServer','MySQL','PostgreSQL']:
             sql_impl = DatabaseImpl.get(db_type)
             update = Update()
             update.set_database('sthpw')
             update.set_table('task')
             update.impl = sql_impl
-            update.set_value('timestamp','2012-12-25')
+            value = '2012-12-25'
+            value = update.impl.process_date(value)
+            update.set_value('timestamp', value)
             update.set_value('description','')
             if db_type == 'SQLServer':
                 my.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (my.sthpw_prefix, time_dict.get(db_type)))
