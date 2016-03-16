@@ -450,9 +450,15 @@ class DatabaseImpl(DatabaseImplInterface):
 
         return stmt
 
-    def get_child_code_cte(my, var_dict):
+    def get_child_codes_cte(my, collection_type, search_type, parent_collection_code):
         '''Postgres collection child codes CTE'''
-        
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+
         stmt = '''
             WITH RECURSIVE res(parent_code, parent_key, search_code, search_key, path, depth) AS (
             SELECT
@@ -1021,8 +1027,14 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         return stmt
 
-    def get_child_code_cte(my, var_dict):
+    def get_child_codes_cte(my, collection_type, search_type, parent_collection_code):
         '''SQLServer collection child codes CTE'''
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
 
         stmt = '''
             WITH res(parent_code, parent_key, search_code, search_key, path, depth) AS (

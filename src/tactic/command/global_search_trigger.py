@@ -33,6 +33,7 @@ class GlobalSearchTrigger(Trigger):
 
         sobj_id = input.get('id')
         sobj = Search.get_by_search_key(search_key)
+        
         if not sobj_id:
             sobj_id = sobj.get_id()
 
@@ -48,6 +49,11 @@ class GlobalSearchTrigger(Trigger):
 
         input_search_type = input.get("search_type")
         base_search_type = input_search_type.split("?")[0]
+
+        if sobj:
+            has_keywords_data = sobj.column_exists("keywords_data")
+
+        is_collection = input.get("sobject").get("_is_collection")
 
         # find the old sobject
         if sobj_id != -1:
@@ -99,31 +105,67 @@ class GlobalSearchTrigger(Trigger):
         data.update( my.cleanup(caller.get_value("keywords", no_exception=True) ))
 
 
-        # Updates for adding changed user defined keywords into asset keywords_data column
-        if sobj.column_exists("keywords_data") and "user_keywords" in input.get("update_data"):
-            # On creating new Collections
-            if input.get("update_data").get("_is_collection") and input.get("is_insert"):
-                update_data = input.get("update_data")
-
-                collection_keywords = update_data.get("user_keywords")
-                collection_name = update_data.get("name")
-
-                keywords_data = sobject.get_json_value("keywords_data", {})
-                keywords_data['user'] = collection_keywords
-                keywords_data['path'] = collection_name
-                sobj.set_json_value("keywords_data", keywords_data)
-                sobj.commit(triggers=False)
-
-            # when user defined keywords column is changed 
+        # If keywords_data column exists and collection is being changed
+        if has_keywords_data:
+            
+            update_data = input.get("update_data")
+            if "user_keywords" in update_data:
+                has_user_keywords = True
             else:
-                user_keywords = input.get("update_data").get("user_keywords")
+                has_user_keywords = False
 
-                if not user_keywords:
-                    user_keywords = ""
-                my.update_user_keywords(sobj, user_keywords, base_search_type)
+            if is_collection:
+                if input.get("mode") == "update" and "name" in update_data:
+                    rename_collection = True
 
-            my.set_searchable_keywords(sobj)
+                # New Collection created
+                if input.get("is_insert"):
+                    collection_keywords = update_data.get("user_keywords")
+                    collection_name = update_data.get("name")
 
+                    keywords_data = sobj.get_json_value("keywords_data", {})
+                    keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
+
+                    sobj.set_json_value("keywords_data", keywords_data)
+                    sobj.commit(triggers=False)
+                    my.set_searchable_keywords(sobj)  
+
+                # If collection is renamed
+                elif rename_collection:
+                    collection_name = update_data.get("name")
+                    keywords_data = sobj.get_json_value("keywords_data", {})
+
+                    if 'user' in keywords_data:
+                        user = keywords_data.get('user')
+                        old_collection_name = input.get("prev_data").get("name")
+
+                        user = user.replace(old_collection_name, collection_name)
+                        keywords_data['user'] = user
+                        
+                        sobj.set_json_value("keywords_data", keywords_data)
+                        sobj.commit(triggers=False)
+
+                        my.update_user_keywords(sobj, user, base_search_type)
+                        my.set_searchable_keywords(sobj)
+
+                # If user defined keywords column is changed 
+                elif has_user_keywords:
+                    user_keywords = input.get("update_data").get("user_keywords")
+
+                    if not user_keywords:
+                        user_keywords = ""
+                    my.update_user_keywords(sobj, user_keywords, base_search_type)
+                    my.set_searchable_keywords(sobj)
+
+
+            # If regular asset keywords being changed
+            else:
+                if has_user_keywords:
+                    user_keywords = input.get("update_data").get("user_keywords")
+
+                    my.update_user_keywords(sobj, user_keywords, base_search_type)
+                    my.set_searchable_keywords(sobj)
+                
         # Collection relationships being created or added
         stype_obj = SearchType.get(base_search_type)
         if stype_obj.get_value('type') == 'collection':
@@ -223,13 +265,7 @@ class GlobalSearchTrigger(Trigger):
         if collection_type not in SearchType.get_related_types(search_type):
             return search_codes
 
-        var_dict = {
-            'parent_collection_code': parent_collection_code,
-            'collection_type': collection_type.split("/")[1],
-            'search_type': search_type.split("/")[1]
-        }
-        stmt = impl.get_child_code_cte(var_dict)
-        
+        stmt = impl.get_child_codes_cte(collection_type, search_type, parent_collection_code)
 
         results = sql.do_query(stmt)
         for result in results:

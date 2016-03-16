@@ -998,7 +998,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
         
-        var keywords = values["edit|keywords"][0];
+        var keywords = values["edit|user_keywords"][0];
 
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
@@ -1611,9 +1611,9 @@ class IngestUploadCmd(Command):
 
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
-                    file_keywords = "%s %s" % (keywords, file_keywords)
-                if file_keywords:
-                    sobject.set_value("keywords", file_keywords)
+                    new_file_keywords = "%s %s" % (keywords, file_keywords)
+                if new_file_keywords:
+                    sobject.set_value("keywords", new_file_keywords)
 
             if SearchType.column_exists(search_type, "user_keywords"):
                 if keywords:
