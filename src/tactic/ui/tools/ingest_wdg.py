@@ -206,8 +206,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Ingest Settings")
         title_wdg.add_style("font-size: 25px")
 
-        div.add("<hr/>")
-
         # Build list of process names
         process_names = set()
         from pyasm.biz import Pipeline
@@ -269,8 +267,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Metadata")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
+        title_wdg.add_style("margin-bottom: 5px")
 
-        desc_wdg = DivWdg("This extra metaadata will be added to each new item")
+        desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
+        desc_wdg.add_style("margin-bottom: 10px")
         div.add(desc_wdg)
 
         from tactic.ui.panel import EditWdg
@@ -311,13 +311,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
-        desc_wdg = DivWdg("Determines how the file name matches up to a particular entry")
 
-        #desc_wdg = DivWdg("When update mode is 'Update', if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
-        div.add(desc_wdg)
-
-        div.add("<br/>")
-
+        label_div = DivWdg()
+        label_div.add("Determine how the file maps to a particular item")
+        div.add(label_div)
+        label_div.add_style("margin-top: 10px")
+        label_div.add_style("margin-bottom: 8px")
 
         update_mode_option = my.kwargs.get("update_mode")
         if not update_mode_option:
@@ -336,7 +335,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         label_div.add("Ignore File Extension")
         div.add(label_div)
         label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 5px")
+        label_div.add_style("margin-bottom: 8px")
 
         ignore_ext_option = my.kwargs.get("ignore_ext")
         if not ignore_ext_option:
@@ -353,10 +352,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         label_div = DivWdg()
-        label_div.add("Map file name to column:")
+        label_div.add("Map file name to column")
         div.add(label_div)
         label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 5px")
+        label_div.add_style("margin-bottom: 8px")
 
         column_option = my.kwargs.get("column")
         if not column_option:
