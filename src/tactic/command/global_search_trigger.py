@@ -32,8 +32,9 @@ class GlobalSearchTrigger(Trigger):
         search_code = input.get('search_code')
 
         sobj_id = input.get('id')
+        sobj = Search.get_by_search_key(search_key)
+        
         if not sobj_id:
-            sobj = Search.get_by_search_key(search_key)
             sobj_id = sobj.get_id()
 
         assert(sobj_id != None)
@@ -45,7 +46,17 @@ class GlobalSearchTrigger(Trigger):
             search_code = sobj_id
 
         search_type = SearchKey.extract_search_type(search_key)
-        
+
+        input_search_type = input.get("search_type")
+        base_search_type = input_search_type.split("?")[0]
+
+        has_keywords_data = False
+        rename_collection = False
+        if sobj:
+            has_keywords_data = sobj.column_exists("keywords_data")
+
+        is_collection = input.get("sobject").get("_is_collection")
+
         # find the old sobject
         if sobj_id != -1:
             search = Search("sthpw/sobject_list")
@@ -61,8 +72,16 @@ class GlobalSearchTrigger(Trigger):
         
         if input.get("is_delete") == True:
             if sobject:
+                # Collection relationships being removed
+                mode = "delete"
+                my.update_collection_keywords(mode, base_search_type, input)
+
                 sobject.delete()
             return
+        # Collection relationships being created or added
+        elif input.get("is_insert"):
+            mode = "insert"
+            my.update_collection_keywords(mode, base_search_type, input)
 
         if not sobject:
             sobject = SearchType.create("sthpw/sobject_list")
@@ -76,7 +95,6 @@ class GlobalSearchTrigger(Trigger):
         sobject.set_value("project_code", project_code)
 
 
-
         caller = my.get_caller()
 
         data = set()
@@ -86,6 +104,67 @@ class GlobalSearchTrigger(Trigger):
         data.update( my.cleanup(caller.get_value("description", no_exception=True) ))
         data.update( my.cleanup(caller.get_value("keywords", no_exception=True) ))
 
+
+        # If keywords_data column exists and collection is being changed
+        if has_keywords_data:
+            
+            update_data = input.get("update_data")
+            if "user_keywords" in update_data:
+                has_user_keywords = True
+
+                user_keywords = input.get("update_data").get("user_keywords")
+
+                if not user_keywords:
+                    user_keywords = ""
+
+            else:
+                has_user_keywords = False
+
+            if is_collection:
+                if input.get("mode") == "update" and "name" in update_data:
+                    rename_collection = True
+
+                # New Collection created
+                if input.get("is_insert"):
+                    collection_keywords = update_data.get("user_keywords")
+                    collection_name = update_data.get("name")
+
+                    keywords_data = sobj.get_json_value("keywords_data", {})
+                    keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
+
+                    sobj.set_json_value("keywords_data", keywords_data)
+                    sobj.commit(triggers=False)
+                    my.set_searchable_keywords(sobj)  
+
+                # If collection is renamed
+                elif rename_collection:
+                    collection_name = update_data.get("name")
+                    keywords_data = sobj.get_json_value("keywords_data", {})
+
+                    if 'user' in keywords_data:
+                        user = keywords_data.get('user')
+                        old_collection_name = input.get("prev_data").get("name")
+
+                        user = user.replace(old_collection_name, "")
+                        keywords_data['user'] = user
+                        
+                        sobj.set_json_value("keywords_data", keywords_data)
+                        sobj.commit(triggers=False)
+
+                        my.update_user_keywords(sobj, user, base_search_type)
+
+                # If user_keywords column is changed 
+                elif has_user_keywords:
+                    
+                    my.update_user_keywords(sobj, user_keywords, base_search_type)
+
+            # If regular asset keywords being changed
+            else:
+                if has_user_keywords:
+
+                    my.update_user_keywords(sobj, user_keywords, base_search_type)
+
+        
         # extra columns to add
         columns = []
         for column in columns:
@@ -104,7 +183,207 @@ class GlobalSearchTrigger(Trigger):
         #is_ascii = my.is_ascii(data)
         return Common.extract_keywords(data)
      
+    def set_searchable_keywords(my, sobj):
+        '''
+        Used to set the keywords column. Reads from the keywords_data
+        column.
+        '''
+        if not sobj.column_exists("keywords"):
+            return
 
+        keywords_data = sobj.get_json_value("keywords_data", {})
+        searchable_keywords = ""
+
+        if keywords_data:
+            path = ""
+            if 'path' in keywords_data:
+                path = keywords_data.get('path')
+
+            user = ""
+            if 'user' in keywords_data:
+                user = keywords_data.get('user')
+
+            collection_keywords = ""
+            if 'collection' in keywords_data:
+                collection_keywords_data = keywords_data.get('collection')
+                collection_keywords = " ".join(collection_keywords_data.values())
+                collection_keywords = " ".join(set(collection_keywords.split(" ")))
+
+            if path:
+                searchable_keywords = "%s" %path
+
+            if user:
+                searchable_keywords = "%s %s" %(searchable_keywords, user)
+            
+            if collection_keywords:
+                searchable_keywords = "%s %s" %(searchable_keywords, collection_keywords)
+
+            sobj.set_value("keywords", searchable_keywords)
+            sobj.commit(triggers=False)
+
+    def update_user_keywords(my, sobj, user_keywords, search_type):
+        '''
+        When there is change in the user_keywords column of a collection, 
+        all of its child's "collection" data set in the keywords_data needs 
+        to be updated.
+        '''
+
+        search_key = sobj.get_search_key()
+        keywords_data = sobj.get_json_value("keywords_data", {})
+
+        
+        
+        # If the collection's keywords column gets changed, all of its 
+        # children's "collection" keywords_data needs to be updated
+        if sobj.get('_is_collection'):
+
+            # Always append collection name to keywords_data['user']
+            user_keywords = "%s %s" %(sobj.get("name"), user_keywords)
+            child_codes = my.get_child_codes(sobj.get_code(), search_type)
+            
+            if child_codes:
+                for child_code in child_codes:
+                    child_nest_sobject = Search.get_by_code(search_type, child_code)
+                    child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
+                    child_nest_collection_keywords_data['collection'][sobj.get_code()] = user_keywords
+
+                    child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
+                    child_nest_sobject.commit(triggers=False)
+                    my.set_searchable_keywords(child_nest_sobject)
+
+        keywords_data['user'] = user_keywords
+
+        sobj.set_json_value("keywords_data", keywords_data)
+        sobj.commit(triggers=False)
+
+        my.set_searchable_keywords(sobj)
+
+    def get_child_codes(my, parent_collection_code, search_type):
+        '''
+        All of the children's codes down the relationship tree of the collection 
+        will be returned.
+        '''
+
+        from pyasm.biz import Project
+        project = Project.get()
+        sql = project.get_sql()
+        impl = project.get_database_impl()
+        search_codes = []
+
+        parts = search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+        # Check if connection between asset and asset_in_asset is in place
+        if collection_type not in SearchType.get_related_types(search_type):
+            return search_codes
+
+        stmt = impl.get_child_codes_cte(collection_type, search_type, parent_collection_code)
+
+        results = sql.do_query(stmt)
+        for result in results:
+            result = "".join(result)
+            search_codes.append(result)
+
+        return search_codes
+
+    def update_collection_keywords(my, mode, base_search_type, input):
+        '''
+        When there is an entry being added or removed in the asset_in_asset table
+        (ie. adding asset to collection, removing asset from collection, or deleting 
+        a collection), the "collection" data set in the keywords_data needs to be
+        updated.
+        '''
+        
+        stype_obj = SearchType.get(base_search_type)
+        if stype_obj.get_value('type') == 'collection':
+            asset_in_asset_sobject = input.get("sobject")
+            asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
+            if not asset_stypes:
+                return
+            else:
+                asset_stype = asset_stypes[0]
+        else:
+            return
+
+        parent_code = asset_in_asset_sobject.get("parent_code")
+        search_code = asset_in_asset_sobject.get("search_code")
+        
+        parent_sobject = Search.get_by_code(asset_stype, parent_code)
+        child_sobject = Search.get_by_code(asset_stype, search_code)
+        
+        # keywords of parent
+        parent_collection_keywords = parent_sobject.get_value("user_keywords")
+
+        collection_keywords_dict = {}
+        parent_collection_keywords_dict = {}
+
+        # Existing "collection" keywords in child's keywords_data
+        child_keywords_data = child_sobject.get_json_value("keywords_data", {})
+
+        # Existing "collection" keywords in parent's keywords_data
+        parent_keywords_data = parent_sobject.get_json_value("keywords_data", {})
+
+        if 'collection' in child_keywords_data:
+            collection_keywords_dict = child_keywords_data.get('collection')
+
+        if 'collection' in parent_keywords_data:
+            parent_collection_keywords_dict = parent_keywords_data.get('collection')
+
+        if mode == "insert":
+            # Add parent's user defined keywords
+            collection_keywords_dict[parent_code] = parent_collection_keywords
+
+            # Also append parent's "collection" keywords_data
+            collection_keywords_dict.update(parent_collection_keywords_dict)
+
+            # Find all children that has [search_code] in their collection's keys
+            # and update
+            child_codes = my.get_child_codes(search_code, asset_stype)
+
+            if child_codes:
+                child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
+                for child_nest_sobject in child_nest_sobjects:
+                    
+                    child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
+                    child_nest_collection_keywords = child_nest_collection_keywords_data['collection']
+                    child_nest_collection_keywords.update(collection_keywords_dict)
+
+                    child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
+                    child_nest_sobject.commit(triggers=False)
+                    my.set_searchable_keywords(child_nest_sobject)
+        
+        elif mode == "delete":
+
+            if parent_code in collection_keywords_dict:
+                # Remove "collection" keywords_data from child with key matching parent_code
+                del collection_keywords_dict[parent_code]
+
+                # Also need to remove parent's "collection" keywords_data from child
+                for key in parent_collection_keywords_dict.keys():
+                    del collection_keywords_dict[key]
+
+                child_codes = my.get_child_codes(search_code, asset_stype)
+            
+            if child_codes:
+                child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
+                for child_nest_sobject in child_nest_sobjects:
+                    child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
+                    child_nest_collection_keywords = child_nest_collection_keywords_data['collection']
+
+                    if parent_code in child_nest_collection_keywords:
+                        del child_nest_collection_keywords[parent_code]
+
+                    child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
+                    child_nest_sobject.commit(triggers=False)
+                    my.set_searchable_keywords(child_nest_sobject)
+
+        child_keywords_data['collection'] = collection_keywords_dict
+
+        child_sobject.set_json_value("keywords_data", child_keywords_data)
+        child_sobject.commit(triggers=False)
+
+        my.set_searchable_keywords(child_sobject)
+        
 
 
 class FolderTrigger(Trigger):

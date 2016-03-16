@@ -200,7 +200,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             show_search = False
         else:
             show_search = True
-        show_search = False
+
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
@@ -416,7 +416,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             # show the title
             title_td.add_style("text-align: right")
             title_td.add_style("padding-right: 5px")
-            title_td.add_style("min-width: 100px")
+            title_td.add_style("min-width: 60px")
 
 
             element_wdg = DivWdg()
@@ -583,3 +583,17 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     get_search_col = classmethod(get_search_col)
 
+    def get_hint_text(cls, search_type, simple_search_view=''):
+        '''Get the hint text for keyword search col defined from widget_config'''
+        if simple_search_view:
+            from pyasm.widget import WidgetConfigView
+            config = WidgetConfigView.get_by_search_type(search_type, simple_search_view)
+            # assume the keyword filter is named "keyword"
+            options = config.get_display_options('keyword')
+            hint_text = options.get('hint_text')
+            if hint_text:
+                return hint_text
+        
+        return ""
+
+    get_hint_text = classmethod(get_hint_text)
