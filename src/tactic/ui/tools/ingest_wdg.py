@@ -311,9 +311,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
-        # desc_wdg = DivWdg("Determine how the file maps to a particular item")
-
-        div.add(desc_wdg)
 
         label_div = DivWdg()
         label_div.add("Determine how the file maps to a particular item")
