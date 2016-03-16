@@ -1840,8 +1840,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if value:
                     num_complete += 1
 
-                    search_key, process, key = key.split("|")
-                    complete_search_keys.append(search_key)
+                search_key, process, key = key.split("|")
+                complete_search_keys.append(search_key)
 
 
             count = num_complete

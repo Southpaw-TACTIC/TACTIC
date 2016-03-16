@@ -39,7 +39,7 @@ class ColumnEditWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 500px")
+        inner.add_style("width: 800px")
 
         #text = TextWdg("search_type")
         text = HiddenWdg("search_type")
@@ -62,8 +62,8 @@ class ColumnEditWdg(BaseRefreshWdg):
 
         shelf_wdg = DivWdg()
         inner.add(shelf_wdg)
-        shelf_wdg.add_style("height: 30px")
-        button = ActionButtonWdg(title='Create', icon=IconWdg.SAVE)
+        shelf_wdg.add_style("height: 35px")
+        button = ActionButtonWdg(title='Create', color="default", icon="BS_SAVE")
         shelf_wdg.add(button)
         shelf_wdg.add_style("float: right")
 
@@ -103,7 +103,9 @@ class ColumnEditWdg(BaseRefreshWdg):
                     names.push(name);
                 }
 
-                spt.table.add_columns(names)
+                // Unless there is a table here, we should not do this.
+                // Better handled with a callback
+                //spt.table.add_columns(names)
 
                 // prevent grabbing all values, pass in a dummy one
                 spt.panel.refresh(top, {'refresh': true});
@@ -121,13 +123,14 @@ class ColumnEditWdg(BaseRefreshWdg):
         inner.add(table)
         table.add_style("width: 100%")
         tr = table.add_row()
-        tr.add_gradient("background", "background3")
-        tr.add_style("padding", "3px")
+        tr.add_color("background", "background", -5)
         th = table.add_header("Column Name")
-        th.add_style("width: 170px")
+        th.add_style("width: 190px")
         th.add_style("text-align: left")
+        th.add_style("padding: 8px 0px")
         th = table.add_header("Format")
         th.add_style("text-align: left")
+        th.add_style("padding: 8px 0px")
 
 
         from tactic.ui.container import DynamicListWdg
@@ -152,7 +155,10 @@ class ColumnEditWdg(BaseRefreshWdg):
             column_div.add(table)
             table.add_row()
 
-            text_wdg = NewTextWdg("name")
+            from tactic.ui.input import TextInputWdg
+            text_wdg = TextInputWdg(name="name", height="30px", width="170px")
+            text_wdg.add_class("form-control")
+            text_wdg.add_class("display: inline-block")
             td = table.add_cell(text_wdg)
             text_wdg.add_behavior( {
                 'type': 'blur',
@@ -164,24 +170,25 @@ class ColumnEditWdg(BaseRefreshWdg):
             } )
 
             option = {
-            'name': 'xxx',
+            'name': '_dummy',
             'values': 'integer|float|percent|currency|date|time|scientific|boolean|text|timecode',
             }
             format_wdg = FormatDefinitionEditWdg(option=option)
 
             td = table.add_cell(format_wdg)
-            td.add_style("width: 260px")
-            td.add_style("padding-left: 40px")
+            td.add_style("width: 550px")
+            td.add_style("padding-left: 10px")
 
 
         # show the current columns
         title_wdg = DivWdg()
         inner.add(title_wdg)
-        title_wdg.add_style("margin-top: 20px")
+        title_wdg.add_style("margin-top: 25px")
         title_wdg.add("<b>Existing Columns</b>")
-        title_wdg.add_color("background", "background3")
         title_wdg.add_style("padding: 5px")
         title_wdg.add_style("margin: 20px -10px 10px -10px")
+
+        inner.add("<hr/>")
 
 
         config = WidgetConfigView.get_by_search_type(search_type, "definition")
@@ -192,15 +199,19 @@ class ColumnEditWdg(BaseRefreshWdg):
         table.add_style("width: 100%")
 
         tr = table.add_row()
-        tr.add_gradient("background", "background3")
+        tr.add_color("background", "background", -5)
         th = table.add_header("Column")
         th.add_style("text-align: left")
+        th.add_style("padding: 5px 0px")
         th = table.add_header("Data Type")
         th.add_style("text-align: left")
+        th.add_style("padding: 5px 0px")
         th = table.add_header("Format")
         th.add_style("text-align: left")
+        th.add_style("padding: 5px 0px")
         th = table.add_header("Edit")
         th.add_style("text-align: left")
+        th.add_style("padding: 5px 0px")
 
         count = 0
         for element_name in element_names:
@@ -222,7 +233,7 @@ class ColumnEditWdg(BaseRefreshWdg):
             table.add_cell(format)
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Edit Definition", icon=IconWdg.EDIT)
+            button = IconButtonWdg(title="Edit Definition", icon="BS_EDIT")
             td.add(button)
 
             button.add_behavior( {
@@ -247,11 +258,10 @@ class ColumnEditWdg(BaseRefreshWdg):
         if not count:
             table.add_row()
             td = table.add_cell()
-            td.add_style("height: 50px")
+            td.add_style("height: 80px")
             td.add("No existing columns found")
             td.add_style("text-align: center")
-            td.add_border()
-            td.add_color("background", "background", -5)
+            td.add_color("background", "background", -2)
 
 
 

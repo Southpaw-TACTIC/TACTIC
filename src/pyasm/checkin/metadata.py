@@ -559,7 +559,11 @@ class FFProbeMetadataParser(BaseMetadataParser):
             'height': 'video:height',
             'frames': 'video:nb_frames',
             'fps': 'video:r_frame_rate',
-            'codec': 'video:codec_name'
+            'codec': 'video:codec_name',
+            'video_codec': 'video:codec_name',
+            'video_bitrate': 'video:bit_rate',
+            'audio_codec': 'audio:codec_name',
+            'audio_bitrate': 'audio:bit_rate',
         }
 
 

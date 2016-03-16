@@ -17,7 +17,62 @@ table = CreateTable('unittest/car')
 table.add('id',                       'serial', primary_key=True)
 table.add('code',                     'varchar', length='256' )
 table.add('model',                    'varchar', length='256' )
+table.add('class',                    'varchar', length='256' )
 #-- End Entry --#
+
+
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """unitest/sports_car_data""")
+insert.set_value('description', """Unittest Sports Car Data""")
+insert.set_value('database', """unittest""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Unittest Sports Car Data""")
+insert.set_value('namespace', """unittest""")
+insert.set_value('search_type', """unittest/sports_car_data""")
+insert.set_value('table_name', """sports_car_data""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+
+#-- Start Entry --#
+table = CreateTable('unittest/sports_car_data')
+table.add('id',                       'serial', primary_key=True)
+table.add('code',                     'varchar', length='32' )
+table.add('top_speed',                'varchar', length='32' )
+table.add('acceleration',             'varchar', length='32' )
+table.add('horsepower',               'varchar', length='32' )
+#-- End Entry --#
+
+
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """unitest/sports_car""")
+insert.set_value('description', """Unittest Sports Car""")
+insert.set_value('database', """unittest""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Unittest Sports Car""")
+insert.set_value('namespace', """unittest""")
+insert.set_value('search_type', """unittest/sports_car""")
+insert.set_value('table_name', """sports_car""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+
+
+#-- Start Entry --#
+search = Search('unittest/car')
+search.add_join('unittest/sports_car_data')
+search.add_column('*', table='car')
+search.add_column('top_speed', table='sports_car_data')
+search.add_column('acceleration', table='sports_car_data')
+search.add_column('horsepower', table='sports_car_data')
+search.add_filter('class', 'sports_car')
+table = CreateView('unittest/sports_car', search=search )
+#-- End Entry --#
+
+
+
 
 
 
