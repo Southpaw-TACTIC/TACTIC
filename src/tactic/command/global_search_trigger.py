@@ -50,6 +50,8 @@ class GlobalSearchTrigger(Trigger):
         input_search_type = input.get("search_type")
         base_search_type = input_search_type.split("?")[0]
 
+        has_keywords_data = False
+        rename_collection = False
         if sobj:
             has_keywords_data = sobj.column_exists("keywords_data")
 
@@ -70,18 +72,16 @@ class GlobalSearchTrigger(Trigger):
         
         if input.get("is_delete") == True:
             if sobject:
+                # Collection relationships being removed
                 mode = "delete"
-                stype_obj = SearchType.get(base_search_type)
-                if stype_obj.get_value('type') == 'collection':
-                    asset_in_asset_sobject = input.get("sobject")
-                    asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
-                    if asset_stypes:
-                        my.update_collection_keywords(mode, asset_stypes[0], asset_in_asset_sobject)
+                my.update_collection_keywords(mode, base_search_type, input)
+
                 sobject.delete()
             return
-
+        # Collection relationships being created or added
         elif input.get("is_insert"):
             mode = "insert"
+            my.update_collection_keywords(mode, base_search_type, input)
 
         if not sobject:
             sobject = SearchType.create("sthpw/sobject_list")
@@ -111,6 +111,12 @@ class GlobalSearchTrigger(Trigger):
             update_data = input.get("update_data")
             if "user_keywords" in update_data:
                 has_user_keywords = True
+
+                user_keywords = input.get("update_data").get("user_keywords")
+
+                if not user_keywords:
+                    user_keywords = ""
+
             else:
                 has_user_keywords = False
 
@@ -146,33 +152,17 @@ class GlobalSearchTrigger(Trigger):
                         sobj.commit(triggers=False)
 
                         my.update_user_keywords(sobj, user, base_search_type)
-                        my.set_searchable_keywords(sobj)
 
-                # If user defined keywords column is changed 
+                # If user_keywords column is changed 
                 elif has_user_keywords:
-                    user_keywords = input.get("update_data").get("user_keywords")
-
-                    if not user_keywords:
-                        user_keywords = ""
+                    
                     my.update_user_keywords(sobj, user_keywords, base_search_type)
-                    my.set_searchable_keywords(sobj)
-
 
             # If regular asset keywords being changed
             else:
                 if has_user_keywords:
-                    user_keywords = input.get("update_data").get("user_keywords")
 
                     my.update_user_keywords(sobj, user_keywords, base_search_type)
-                    my.set_searchable_keywords(sobj)
-                
-        # Collection relationships being created or added
-        stype_obj = SearchType.get(base_search_type)
-        if stype_obj.get_value('type') == 'collection':
-            asset_in_asset_sobject = input.get("sobject")
-            asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
-            if asset_stypes:
-                my.update_collection_keywords(mode, asset_stypes[0], asset_in_asset_sobject)
 
         
         # extra columns to add
@@ -250,6 +240,8 @@ class GlobalSearchTrigger(Trigger):
         sobj.set_json_value("keywords_data", keywords_data)
         sobj.commit(triggers=False)
 
+        my.set_searchable_keywords(sobj)
+
     def get_child_codes(my, parent_collection_code, search_type):
 
         from pyasm.biz import Project
@@ -274,8 +266,19 @@ class GlobalSearchTrigger(Trigger):
 
         return search_codes
 
-    def update_collection_keywords(my, mode, asset_stype, asset_in_asset_sobject):
+    def update_collection_keywords(my, mode, base_search_type, input):
         
+        stype_obj = SearchType.get(base_search_type)
+        if stype_obj.get_value('type') == 'collection':
+            asset_in_asset_sobject = input.get("sobject")
+            asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
+            if not asset_stypes:
+                return
+            else:
+                asset_stype = asset_stypes[0]
+        else:
+            return
+
         parent_code = asset_in_asset_sobject.get("parent_code")
         search_code = asset_in_asset_sobject.get("search_code")
         
