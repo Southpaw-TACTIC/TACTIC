@@ -842,6 +842,7 @@ class AceEditorWdg(BaseRefreshWdg):
                 'cbjs_action': '''
                 spt.ace_editor.set_editor(bvr.editor_id);
                 var func = function() {
+                    spt.ace_editor.set_editor(bvr.editor_id);
                     var editor = spt.ace_editor.editor;
                     var document = editor.getSession().getDocument();
                     if (bvr.code) {
@@ -858,7 +859,7 @@ class AceEditorWdg(BaseRefreshWdg):
 
                 var editor = spt.ace_editor.editor;
                 if (!editor) {
-                    setTimeout( func, 1000);
+                    setTimeout( func, 2000);
                 }
                 else {
                     func();
@@ -1178,8 +1179,13 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         $(bvr.unique_id).editor = editor;
 
         editor.setTheme("ace/theme/" + spt.ace_editor.theme);
-        var JavaScriptMode = require("ace/mode/javascript").Mode;
-        editor.getSession().setMode(new JavaScriptMode())
+        
+        try {
+            var JavaScriptMode = require("ace/mode/javascript").Mode;
+            editor.getSession().setMode(new JavaScriptMode())
+        } catch(err) {
+            log.critical("Mode files not loaded");
+        }
     }
 
     
@@ -1195,21 +1201,19 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
             "ace/ace-1.2.3/src/mode-python.js",
             "ace/ace-1.2.3/src/mode-html.js",
             "ace/ace-1.2.3/src/theme-twilight.js",
-               
             "ace/ace-1.2.3/src/theme-textmate.js",
             "ace/ace-1.2.3/src/theme-vibrant_ink.js",
             "ace/ace-1.2.3/src/theme-merbivore.js",
             "ace/ace-1.2.3/src/theme-clouds.js",
             "ace/ace-1.2.3/src/theme-eclipse.js"
         ];
+        
         //var supp_js_files = [];
            
-         
-        
-
         spt.dom.load_js(core_js_files, ace_setup);
+        
         //spt.dom.load_js(supp_js_files);      
-        });
+    });
    
 
     
