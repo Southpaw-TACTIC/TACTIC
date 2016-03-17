@@ -215,6 +215,11 @@ class GlobalSearchTrigger(Trigger):
             sobj.commit(triggers=False)
 
     def update_user_keywords(my, sobj, user_keywords, search_type):
+        '''
+        When there is change in the user_keywords column of a collection, 
+        all of its child's "collection" data set in the keywords_data needs 
+        to be updated.
+        '''
 
         search_key = sobj.get_search_key()
         keywords_data = sobj.get_json_value("keywords_data", {})
@@ -243,6 +248,10 @@ class GlobalSearchTrigger(Trigger):
         my.set_searchable_keywords(sobj)
 
     def get_child_codes(my, parent_collection_code, search_type):
+        '''
+        All of the children's codes down the relationship tree of the collection 
+        will be returned.
+        '''
 
         from pyasm.biz import Project
         project = Project.get()
@@ -267,6 +276,12 @@ class GlobalSearchTrigger(Trigger):
         return search_codes
 
     def update_collection_keywords(my, mode, base_search_type, input):
+        '''
+        When there is an entry being added or removed in the asset_in_asset table
+        (ie. adding asset to collection, removing asset from collection, or deleting 
+        a collection), the "collection" data set in the keywords_data needs to be
+        updated.
+        '''
         
         stype_obj = SearchType.get(base_search_type)
         if stype_obj.get_value('type') == 'collection':
