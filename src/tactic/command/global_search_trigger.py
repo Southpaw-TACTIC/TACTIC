@@ -145,7 +145,7 @@ class GlobalSearchTrigger(Trigger):
                         user = keywords_data.get('user')
                         old_collection_name = input.get("prev_data").get("name")
 
-                        user = user.replace(old_collection_name, collection_name)
+                        user = user.replace(old_collection_name, "")
                         keywords_data['user'] = user
                         
                         sobj.set_json_value("keywords_data", keywords_data)
@@ -192,24 +192,31 @@ class GlobalSearchTrigger(Trigger):
             return
 
         keywords_data = sobj.get_json_value("keywords_data", {})
+        searchable_keywords = ""
 
         if keywords_data:
             path = ""
             if 'path' in keywords_data:
                 path = keywords_data.get('path')
 
+            user = ""
             if 'user' in keywords_data:
                 user = keywords_data.get('user')
-                if not user:
-                    user = ""
 
             collection_list = []
             if 'collection' in keywords_data:
                 collection_keywords_data = keywords_data.get('collection')
                 for collection_code in collection_keywords_data.keys():
                     collection_list.append(collection_keywords_data.get(collection_code))
-                    
-            searchable_keywords = "%s %s %s" %(path, user, " ".join(collection_list))
+
+            if path:
+                searchable_keywords = "%s" %path
+
+            if user:
+                searchable_keywords = "%s %s" %(searchable_keywords, user)
+            
+            if collection_list:
+                searchable_keywords = "%s %s" %(searchable_keywords, " ".join(collection_list))
 
             sobj.set_value("keywords", searchable_keywords)
             sobj.commit(triggers=False)
@@ -224,12 +231,14 @@ class GlobalSearchTrigger(Trigger):
         search_key = sobj.get_search_key()
         keywords_data = sobj.get_json_value("keywords_data", {})
 
-        keywords_data['user'] = user_keywords
+        
         
         # If the collection's keywords column gets changed, all of its 
         # children's "collection" keywords_data needs to be updated
         if sobj.get('_is_collection'):
 
+            # Always append collection name to keywords_data['user']
+            user_keywords = "%s %s" %(sobj.get("name"), user_keywords)
             child_codes = my.get_child_codes(sobj.get_code(), search_type)
             
             if child_codes:
@@ -241,6 +250,8 @@ class GlobalSearchTrigger(Trigger):
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
                     child_nest_sobject.commit(triggers=False)
                     my.set_searchable_keywords(child_nest_sobject)
+
+        keywords_data['user'] = user_keywords
 
         sobj.set_json_value("keywords_data", keywords_data)
         sobj.commit(triggers=False)
