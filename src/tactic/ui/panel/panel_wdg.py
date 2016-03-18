@@ -3129,7 +3129,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             
             # display search button when shelf is not shown
             if show_shelf in [True, 'true', ""]:
-                show_search = "false"
+                show_search = False
             
             else:
                 show_search = True
