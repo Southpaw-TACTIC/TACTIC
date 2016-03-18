@@ -479,7 +479,7 @@ class DynamicUpdateCmd(Command):
                 elif stype and stype in changed_types:
                     if search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                         continue
-                elif search_key and len(intersect_keys  - search_key_set) == len(intersect_keys):
+                elif search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                     continue
                
                 # evaluate any compare expressions
