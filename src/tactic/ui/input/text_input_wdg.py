@@ -535,7 +535,7 @@ class TextInputWdg(BaseInputWdg):
                 color = Palette.modify_color(color, 50)
 
             if hint_text:
-                #my.text.add_attr('title', hint_text)
+                my.text.add_attr('title', "")
                 my.text.add_attr('placeholder', hint_text)
                 my.text.add_style("text-overflow: ellipsis")
                 my.text.add_style("overflow: hidden")
