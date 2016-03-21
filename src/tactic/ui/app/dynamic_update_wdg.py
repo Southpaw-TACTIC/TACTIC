@@ -340,7 +340,57 @@ top.spt_update_interval_id = setInterval( function() {
 
 
 class DynamicUpdateCmd(Command):
+    
+    '''Determine client specified updates based on server change_timestamp
+        and sobject_log tables.
 
+        Parameters
+            last_timestamp - timestamp of the last update check (optional) 
+            updates - dictionary of update dictionaries by HTML el id
+
+        Return 
+            timestamp - the timestamp the command was last executed
+            updates - a dictionary of HTML el ids and update values.
+                The update value is determined by HtmlElement.eval_update
+                based on the client specified update dictionary for that el id. 
+                When the update dictionary does not match a server event, 
+                the command will take early exit and not return any value.
+        
+        The following is a list of example client update dictionaries for single DOM elements,
+        followed by the the general event required for the command to return a result for el id, 
+        and the returned value.
+
+        update = {'expression': "@COUNT(sthpw/task['status', 'NEQ', 'complete'])"}
+        expression is evaluated each interval and the inner HTML of task quantity indicator
+            is replaced with returned update value.
+        
+        update = {'search_key': 'sthpw/task?code=TASK00001709', 'column': 'status'}
+        When there a change to the specified task, it's status is returned.
+
+        update = {'search_key': 'vfx/shot?project=vfx&code=13', 'compare': '@COUNT(vfx/shot.sthpw/file) < 1',
+            cbjs_action: notification_script}
+        If there is a change to specified shot, compare is evaluated, and if shot has at least one associated 
+            file, then notification_script is executed.
+        
+        update = {'search_type': 'vfx/asset', 'value': True, cbjs_action: script}
+        script is executed when there is a change in vfx/asset sType. Value True is returned.
+       
+        update = {'expr_key': 'vfx/shot?project=vfx&code=13', 
+            'compare': '@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1', 
+            'expression': '@GET(sthpw/task.process['status', 'NEQ', 'complete'])'}
+        When shot specified has one or more incomplete tasks, the list of incomplete task processes for this 
+            shot is returned. 
+        
+        For each el id specified in the return dictionary, the following occurs based on the el update dictionary:
+        - js preaction is executed if specified
+        - js cbjs_action is executed if specified, if not:
+            Otherwise, if the value returned is "__REFRESH__", the el is refreshed.
+            Otherwise, if the el is a select or input field, the input value is updated.
+            Otherwise, if the value returned is boolean, then then true or false is placed in the el.
+            Otherwise, the inner HTML of the el is replaced with the returned value.
+        - js postaction will execute if specified
+        
+        '''
 
     def execute(my):
 
@@ -446,33 +496,6 @@ class DynamicUpdateCmd(Command):
                         search_key_set = set()
                         search_key_set.add(search_key)
                 
-                '''The following logic provides early exiting if the update event 
-                described in the values dictionary does not match any update.
-                If the iteration does not take early exit, then the compare, or expression 
-                will be evaluated, and any specified cbjs_action will be executed.
-                Below are examples of user specified update dictionaries and result.
-               
-                update = {'search_type': 'vfx/asset', value: True, cbjs_action: script}
-                script is executed when there is a change in vfx/asset sType.
-
-                update = {'search_type': 'vfx/asset', 'search_key': 'sthpw/task?code=TASK00001709',
-                    expression: '@GET(.status)'}
-                *expression is evaluated when there is a change to specified task and a change to vfx/asset sType.
-
-                update = {'search_key': 'vfx/shot?project=vfx&code=13', 'compare': '@COUNT(vfx/shot.sthpw/file) < 0',
-                    cbjs_action: notification_script}
-                *compare is evaluated when there a change to specied vfx/shot
-                
-                update = {'expression': "@COUNT(sthpw/task['status', 'NEQ', 'complete'])"}
-                expression is evaluated each inteval for a UI indicator which displays expression quantity.
-
-                update = {'compare': '@COUNT(vfx/shot.sthpw/file) < 0', 'cbjs_action': notification_script}
-                *notification_script is executed when compare does not evaluate to True. compare is evaluated
-                    each interval.
-                
-                *When search_key is specified, compare is evaluated with search_key. expression will evualated
-                   only when compare is not specified. 
-                '''
                 if stype and stype not in changed_types:
                     continue  
                 elif stype and stype in changed_types:
@@ -485,8 +508,11 @@ class DynamicUpdateCmd(Command):
                 compare = values.get("compare")
                 if compare:
                     search_key = values.get("search_key")
+                    expr_key = values.get("expr_key")
                     if search_key:
                         sobject = Search.get_by_search_key(search_key)
+                    elif expr_key:
+                        sobject = Search.get_by_search_key(expr_key)
                     else:
                         sobject = None
                     cmp_result = Search.eval(compare, sobject, single=True)
@@ -500,7 +526,7 @@ class DynamicUpdateCmd(Command):
               
                 if value == None:
                     continue
-                
+
                 results[id] = value
 
         my.info = {
@@ -529,6 +555,53 @@ def main():
     cmd = DynamicUpdateCmd(update=update)
     Command.execute_cmd(cmd)
 
+def test_values():
+    
+    # Create shot and tasks
+    from pyasm.search import SearchType
+    shot = SearchType.create("vfx/shot")
+    shot.commit()
+    search_key = shot.get_search_key()
+   
+    from pyasm.biz import Task
+    tasks = Task.add_initial_tasks(shot)
+     
+    script = '''console.log('hello world.')'''
+
+    updates = {}
+    
+    # Test expression by itself
+    updates["001"] = {'expression': '''@COUNT(sthpw/task['status', 'NEQ', 'complete'])'''}
+    
+    # Test Search_key and column
+    task_sk = tasks[0].get_search_key()
+    updates["002"] = {'search_key': task_sk, 'column': 'status'}
+   
+    # Test compare and search_key
+    updates["003"] = {'search_key': 'search_key', 'compare': '''@COUNT(vfx/shot.sthpw/file) < 1''',
+                'cbjs_action': script}
+    
+    # Test listen for search_type 
+    updates["004"] = {'search_type': 'vfx/shot', 'value': True, 'cbjs_action': script}
+  
+    # Test expression key, compare, and expression. 
+    updates["005"] = {
+            'expr_key': search_key, 
+            'compare': '''@COUNT(sthpw/task['status', 'NEQ', 'complete']) > 0''', 
+            'expression': '''@GET(sthpw/task.process['status', 'NEQ', 'complete'])'''
+    }
+  
+    from pyasm.command import Command
+    cmd = DynamicUpdateCmd()
+    Command.execute_cmd(cmd)
+    print cmd.info
+    timestamp = cmd.get_info("timestamp")
+   
+    cmd2 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
+    Command.execute_cmd(cmd2)
+    print cmd.info
+
+
 def test_time():
 
     from pyasm.search import SearchType
@@ -556,10 +629,10 @@ def test_time():
 
 if __name__ == '__main__':
     from pyasm.security import Batch
-    Batch(site="vfx_test", project_code="vfx")
+    Batch(site="demo", project_code="studio_7")
 
-    main()
+    #main()
     #test_time()
-
+    test_values()
 
 
