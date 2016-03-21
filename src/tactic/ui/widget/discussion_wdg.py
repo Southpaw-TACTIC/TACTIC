@@ -1115,14 +1115,31 @@ class DiscussionWdg(BaseRefreshWdg):
         context_str = ",".join(contexts)
         update_div = DivWdg()
         top.add(update_div)
+
+        search_key = my.kwargs.get("search_key")
+        # check for changes in the context_str
         update_div.add_update( {
-            'search_key': my.kwargs.get("search_key"),
-            'compare': "@jOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
+            'search_key': search_key,
+            'compare': "@JOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
             'cbjs_postaction': '''
             var top = bvr.src_el.getParent(".spt_discussion_top");
             spt.panel.refresh(top);
             '''
         } )
+
+        stype = 'sthpw/note'
+        update_div.add_update( {
+               "search_type": stype,
+               'compare': "@COUNT(sthpw/note) == %s" %len(notes),
+               'expr_key': search_key,
+               'interval': 2,
+               "cbjs_action": '''
+            var top = bvr.src_el.getParent(".spt_discussion_top");
+           
+            spt.panel.refresh(top);
+            '''
+        })
+
 
         if my.use_parent == 'true' and not notes and not my.parent:
             sobj = my.parent

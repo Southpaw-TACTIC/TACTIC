@@ -440,6 +440,8 @@ class DynamicUpdateCmd(Command):
                     search_key = values.get("search_key")
 
                 stype = values.get("search_type")
+                
+                search_key_set = set()
                 if search_key:
                     if isinstance(search_key, list):
                         search_key_set = set(search_key)
@@ -447,21 +449,27 @@ class DynamicUpdateCmd(Command):
                         search_key_set = set()
                         search_key_set.add(search_key)
                     
-                    # filter for search_type first if it exists
-                    # check if any search_key is contained in intersect_keys, skip if not 
+                # filter for search_type first if it exists
+                # check if any search_key is contained in intersect_keys, skip if not 
 
-                    if stype and stype in changed_types:
-                        if len(intersect_keys  - search_key_set) == len(intersect_keys):
-                            continue
-                    elif len(intersect_keys  - search_key_set) == len(intersect_keys):
+                if stype and stype not in changed_types:
+                    continue  
+                if stype and stype in changed_types:
+                    if search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                         continue
+                elif search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
+                    continue
                 
                 # evaluate any compare expressions
                 compare = values.get("compare")
                 if compare:
                     search_key = values.get("search_key")
+                    expr_key = values.get("expr_key")
                     if search_key:
                         sobject = Search.get_by_search_key(search_key)
+                    elif expr_key:
+                        sobject = Search.get_by_search_key(expr_key)
+
                     else:
                         sobject = None
                     cmp_result = Search.eval(compare, sobject, single=True)
