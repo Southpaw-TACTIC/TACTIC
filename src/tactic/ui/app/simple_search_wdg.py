@@ -200,7 +200,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             show_search = False
         else:
             show_search = True
-        show_search = False
+
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
@@ -416,7 +416,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             # show the title
             title_td.add_style("text-align: right")
             title_td.add_style("padding-right: 5px")
-            title_td.add_style("min-width: 100px")
+            title_td.add_style("min-width: 60px")
 
 
             element_wdg = DivWdg()

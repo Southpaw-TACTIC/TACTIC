@@ -495,7 +495,6 @@ class DynamicUpdateCmd(Command):
                     else:
                         search_key_set = set()
                         search_key_set.add(search_key)
-                
                 if stype and stype not in changed_types:
                     continue  
                 elif stype and stype in changed_types:
