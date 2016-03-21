@@ -1335,19 +1335,23 @@ class RepoBrowserDirListWdg(DirListWdg):
         
             // Preferentially grab the absolute path
             var dir = item_top.getAttribute("spt_dir");
-            if (!dir) {
-                dir = item_top.getAttribute("spt_reldir");
 
-            }
-
-            var exists = false;
+            // Get the folder, and view state.
+            var is_open = false;
+            var view  = false;
+            var is_open_view = false;
             for (var i = 0; i < items.length; i++) {
-                if (items[i] == dir) {
-                    exists = true;
+                if (items[i] == dir + "_view") {
+                    view = true;
+                    break;
+                } else if (items[i] == dir + "_is_open_view") {
+                    is_open_view = true;
+                    break;
+                } else if (items[i] == dir) {
+                    is_open = true;
                     break;
                 }
             }
-            
         }
         if (item_top.hasClass("spt_dynamic")) {
 
@@ -1361,13 +1365,16 @@ class RepoBrowserDirListWdg(DirListWdg):
                 sibling.setStyle("display", "none");
             
                 // Remove this item from the folder states
-                if (exists) {
+                if (is_open) {
                     items.splice(i, 1);
+                } else if (is_open_view) {
+                    items[i] = dir + "_view";
                 }
-            }
-            else {
+            } else {
                 // Add this item to the folder states
-                if (!exists) {
+                if (view) {
+                    items[i] = dir + "_is_open_view";
+                } else {
                     items.push(dir);
                 }
 
@@ -1389,11 +1396,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var search_types = top.getAttribute("spt_search_types");
                 if (search_types) {
                     search_types = search_types.split("|");
-                }
-                else {
+                } else {
                     search_types = [];
                 }
-
 
                 //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
                 var handler_kwargs = {
@@ -1402,7 +1407,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         search_keys: search_keys,
                         search_types: search_types
                        
-                    } 
+                } 
                 var extra_handler_kwargs = eval(%s);
                 
                 for (handler_kw in extra_handler_kwargs) {
@@ -1600,7 +1605,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 var search_type = activator.getAttribute("spt_search_type");
               
-                //TODO: If directory is not open, open it to edit new item.
+                //TODO: If direct ry is not open, open it to edit new item.
                 //if (!activator.hasClass("spt_open")) {
                 //    var swap_top = activator.getElement(".spt_swap_top");
                 //    var swap_child = swap_top.getLast();
