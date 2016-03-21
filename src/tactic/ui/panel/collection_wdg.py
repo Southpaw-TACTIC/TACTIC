@@ -661,7 +661,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var search_value = input.value.toLowerCase();
             var collections = top.getElements(".spt_collection_div");
             var no_results_el = top.getElement(".spt_no_results");
-
+            var subcollections = top.getElements(".spt_subcollection_wdg");
+            
             var num_result = 0;
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
@@ -669,10 +670,12 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
+                    subcollections[i].style.display = "block";
                     num_result += 1;
                 }
                 else {
                     collections[i].style.display = "none";
+                    subcollections[i].style.display = "none";
                 }
             }
             // if no search results, show "no_results_el"
