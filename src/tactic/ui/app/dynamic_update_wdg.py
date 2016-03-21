@@ -450,29 +450,28 @@ class DynamicUpdateCmd(Command):
                 described in the values dictionary does not match any update.
                 If the iteration does not take early exit, then the compare, or expression 
                 will be evaluated, and any specified cbjs_action will be executed.
-                Below are examples of user specified values dictionaries and result.
+                Below are examples of user specified update dictionaries and result.
                
-                values = {'search_type': 'vfx/asset', value: True, cbjs_action: script}
+                update = {'search_type': 'vfx/asset', value: True, cbjs_action: script}
                 script is executed when there is a change in vfx/asset sType.
 
-                values = {'search_type': 'vfx/asset', 'search_key': 'sthpw/task?code=TASK00001709',
+                update = {'search_type': 'vfx/asset', 'search_key': 'sthpw/task?code=TASK00001709',
                     expression: '@GET(.status)'}
                 *expression is evaluated when there is a change to specified task and a change to vfx/asset sType.
 
-                values = {'search_key': 'vfx/shot?project=vfx&code=13', 'compare': '@COUNT(vfx/shot.sthpw/file) > 0'}
+                update = {'search_key': 'vfx/shot?project=vfx&code=13', 'compare': '@COUNT(vfx/shot.sthpw/file) < 0',
+                    cbjs_action: notification_script}
                 *compare is evaluated when there a change to specied vfx/shot
                 
-                values = {'expression': "@COUNT(sthpw/task['status', 'NEQ', 'complete'])"}
-                expression is evaluated
+                update = {'expression': "@COUNT(sthpw/task['status', 'NEQ', 'complete'])"}
+                expression is evaluated each inteval for a UI indicator which displays expression quantity.
 
-                values = {'compare': '@COUNT(vfx/shot.sthpw/file) > 0', 'cbjs_action': script}
-                *script is executed when compare does not  evaluate to True 
+                update = {'compare': '@COUNT(vfx/shot.sthpw/file) < 0', 'cbjs_action': notification_script}
+                *notification_script is executed when compare does not evaluate to True. compare is evaluated
+                    each interval.
                 
-                values = {'compare': '@COUNT(vfx/shot.sthpw/file) > 0', 
-                    'expression': "@COUNT(sthpw/task['status', 'NEQ', 'complete']"}
-                *compare is evaluated, expression is ignored  
-
-                *When search_key is specified, compare, then expression is no compare, is evaluated with search_key.
+                *When search_key is specified, compare is evaluated with search_key. expression will evualated
+                   only when compare is not specified. 
                 '''
                 if stype and stype not in changed_types:
                     continue  
