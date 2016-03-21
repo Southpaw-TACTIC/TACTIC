@@ -203,11 +203,11 @@ class GlobalSearchTrigger(Trigger):
             if 'user' in keywords_data:
                 user = keywords_data.get('user')
 
-            collection_list = []
+            collection_keywords = ""
             if 'collection' in keywords_data:
                 collection_keywords_data = keywords_data.get('collection')
-                for collection_code in collection_keywords_data.keys():
-                    collection_list.append(collection_keywords_data.get(collection_code))
+                collection_keywords = " ".join(collection_keywords_data.values())
+                collection_keywords = " ".join(set(collection_keywords.split(" ")))
 
             if path:
                 searchable_keywords = "%s" %path
@@ -215,8 +215,8 @@ class GlobalSearchTrigger(Trigger):
             if user:
                 searchable_keywords = "%s %s" %(searchable_keywords, user)
             
-            if collection_list:
-                searchable_keywords = "%s %s" %(searchable_keywords, " ".join(collection_list))
+            if collection_keywords:
+                searchable_keywords = "%s %s" %(searchable_keywords, collection_keywords)
 
             sobj.set_value("keywords", searchable_keywords)
             sobj.commit(triggers=False)
@@ -341,8 +341,9 @@ class GlobalSearchTrigger(Trigger):
             child_codes = my.get_child_codes(search_code, asset_stype)
 
             if child_codes:
-                for child_code in child_codes:
-                    child_nest_sobject = Search.get_by_code(asset_stype, child_code)
+                child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
+                for child_nest_sobject in child_nest_sobjects:
+                    
                     child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
                     child_nest_collection_keywords = child_nest_collection_keywords_data['collection']
                     child_nest_collection_keywords.update(collection_keywords_dict)
@@ -350,24 +351,27 @@ class GlobalSearchTrigger(Trigger):
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
                     child_nest_sobject.commit(triggers=False)
                     my.set_searchable_keywords(child_nest_sobject)
+        
         elif mode == "delete":
 
-            # Remove "collection" keywords_data from child with key matching parent_code
-            del collection_keywords_dict[parent_code]
+            if parent_code in collection_keywords_dict:
+                # Remove "collection" keywords_data from child with key matching parent_code
+                del collection_keywords_dict[parent_code]
 
-            # Also need to remove parent's "collection" keywords_data from child
-            for key in parent_collection_keywords_dict.keys():
-                del collection_keywords_dict[key]
+                # Also need to remove parent's "collection" keywords_data from child
+                for key in parent_collection_keywords_dict.keys():
+                    del collection_keywords_dict[key]
 
-            child_codes = my.get_child_codes(search_code, asset_stype)
+                child_codes = my.get_child_codes(search_code, asset_stype)
             
             if child_codes:
-                for child_code in child_codes:
-                    child_nest_sobject = Search.get_by_code(asset_stype, child_code)
+                child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
+                for child_nest_sobject in child_nest_sobjects:
                     child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
                     child_nest_collection_keywords = child_nest_collection_keywords_data['collection']
-                    
-                    del child_nest_collection_keywords[parent_code]
+
+                    if parent_code in child_nest_collection_keywords:
+                        del child_nest_collection_keywords[parent_code]
 
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
                     child_nest_sobject.commit(triggers=False)
