@@ -181,7 +181,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             icon_pos="right",
             width="100%",
             height="30px",
-            hint_text="'Enter terms to filter collections...",
+            hint_text="Enter terms to filter collections...",
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
