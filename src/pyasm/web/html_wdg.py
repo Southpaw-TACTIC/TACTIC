@@ -897,7 +897,6 @@ class HtmlElement(Widget):
 
             column = update.get("column")
             expression = update.get("expression")
-            compare = update.get("compare")
 
             # search key is used to determine whether a change has occured.
             # when it is None, the expression is always evaluated ... however,
@@ -943,12 +942,6 @@ class HtmlElement(Widget):
                         # This date is assumed to be GMT
                         date = parser.parse(value)
                         value = cls.get_timezone_value(date)
-
-
-            elif compare:
-                value = Search.eval(compare, sobject, single=True)
-                print "compare: ", compare
-                print "value: ", value
 
             elif expression:
                 value = Search.eval(expression, sobject, single=True)
