@@ -583,3 +583,17 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     get_search_col = classmethod(get_search_col)
 
+    def get_hint_text(cls, search_type, simple_search_view=''):
+        '''Get the hint text for keyword search col defined from widget_config'''
+        if simple_search_view:
+            from pyasm.widget import WidgetConfigView
+            config = WidgetConfigView.get_by_search_type(search_type, simple_search_view)
+            # assume the keyword filter is named "keyword"
+            options = config.get_display_options('keyword')
+            hint_text = options.get('hint_text')
+            if hint_text:
+                return hint_text
+        
+        return ""
+
+    get_hint_text = classmethod(get_hint_text)

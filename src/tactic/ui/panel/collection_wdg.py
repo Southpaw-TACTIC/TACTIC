@@ -405,14 +405,14 @@ class CollectionAddCmd(Command):
                     message['parent_collection_names'] = parent_collection_names
                     my.info['message'] = message
                     return
-
+            '''
             has_keywords = SearchType.column_exists(search_type, "keywords")
 
             if has_keywords:
                 collection_keywords = collection.get_value("keywords", no_exception=True)
                 collection_keywords = collection_keywords.split(" ")
                 collection_keywords = set(collection_keywords)
-
+            '''
 
 
             # create new items
@@ -428,7 +428,7 @@ class CollectionAddCmd(Command):
                 new_item.set_value("search_code", sobject.get_code())
                 new_item.commit()
                 has_inserted = True
-
+                '''
                 # copy the metadata of the collection
                 if has_keywords:
                     keywords = sobject.get_value("keywords")
@@ -441,7 +441,7 @@ class CollectionAddCmd(Command):
 
                     sobject.set_value("keywords", keywords)
                     sobject.commit()
-
+                '''
         
             if not has_inserted:
                 message[collection_name] = "No insert"
