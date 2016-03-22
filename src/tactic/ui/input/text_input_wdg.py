@@ -119,7 +119,7 @@ class TextInputWdg(BaseInputWdg):
         my.readonly = kwargs.get("read_only")
         if my.readonly in [True, 'true']:
             my.set_readonly(True)
-            bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
+            bgcolor = my.text.add_color("background", "background", [-10, -10, -10])
         else:
             my.readonly = False
             bgcolor = my.text.get_color("background")
@@ -528,38 +528,12 @@ class TextInputWdg(BaseInputWdg):
         if not my.text.value:
             hint_text = my.kwargs.get("hint_text")
             color = my.text.get_color('color')
-            # lower the visibility of the hint text according to color of palette
-            if color > '#999':
-                color = Palette.modify_color(color, -40)
-            elif color < '#222':
-                color = Palette.modify_color(color, 50)
 
             if hint_text:
-                my.text.add_attr('title', "")
                 my.text.add_attr('placeholder', hint_text)
                 my.text.add_style("text-overflow: ellipsis")
                 my.text.add_style("overflow: hidden")
                 my.text.add_style("white-space: nowrap")
-
-
-                # this prevents using this value for search
-                my.text.add_behavior({ 'type': 'load',
-                    'cbjs_action': '''
-                    var over = new OverText(bvr.src_el, {
-                        positionOptions: {
-                            offset: {x:5, y:10}}});
-                    if (over.text) {
-                        over.text.setStyle('color','%s');
-                        over.text.setStyle('font-size','0.8em');
-                        over.text.setStyle('z-index','20');
-                        over.text.setStyle('font-family','Arial, Serif');
-                    }
-                
-                    '''%color})
-
-		
-
-
 
         if not my.readonly:
             # DISABLE for now

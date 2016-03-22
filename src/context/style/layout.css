@@ -1132,4 +1132,35 @@ div.slide_panel_cont {
     background-color: #434343;
 }
 
+/* Placeholder text styling */
+::-webkit-input-placeholder {
+    padding: 3px 0 0 0 !important;
+    font-size: 12px;
+    font-style: italic;
+}
 
+::-moz-placeholder {
+    padding: 3px 0 0 0 !important;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* firefox 19+ */
+:-ms-input-placeholder {
+    padding: 3px 0 0 0 !important;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* ie */
+input:-moz-placeholder {
+    padding: 3px 0 0 0 !important;
+    font-size: 12px;
+    font-style: italic;
+}
+
+input:placeholder-shown {
+    padding: 3px 0 0 0 !important;
+    font-size: 12px;
+    font-style: italic;
+}
