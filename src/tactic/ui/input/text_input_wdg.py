@@ -531,11 +531,13 @@ class TextInputWdg(BaseInputWdg):
             # lower the visibility of the hint text according to color of palette
             if color > '#999': 
                 # case where background too dark
-                new_color = Palette.modify_color(color, 10)
+                new_color = Palette.modify_color(color, -10)
             elif color < '#222':
                 # case where background too bright
                 new_color = Palette.modify_color(color, 50)
-
+            else: 
+                new_color = color
+                
             if hint_text:
                 if new_color:
                     from pyasm.web import HtmlElement
