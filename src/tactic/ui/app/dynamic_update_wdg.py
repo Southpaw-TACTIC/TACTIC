@@ -376,10 +376,8 @@ class DynamicUpdateCmd(Command):
         script is executed when there is a change in vfx/asset sType. Value True is returned.
        
         update = {'expr_key': 'vfx/shot?project=vfx&code=13', 
-            'compare': '@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1', 
-            'expression': '@GET(sthpw/task.process['status', 'NEQ', 'complete'])'}
-        When shot specified has one or more incomplete tasks, the list of incomplete task processes for this 
-            shot is returned. 
+            'compare': '@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1', cbjs_action: script} 
+        When shot specified has one or more incomplete tasks, the script is executed. 
         
         For each el id specified in the return dictionary, the following occurs based on the el update dictionary:
         - js preaction is executed if specified
@@ -404,6 +402,7 @@ class DynamicUpdateCmd(Command):
         timestamp = timestamp.strftime(format)
         
         updates = my.kwargs.get("updates")
+        
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
         last_timestamp = my.kwargs.get("last_timestamp")
@@ -420,7 +419,7 @@ class DynamicUpdateCmd(Command):
         
         # give 2 seconds of extra room 
         last_timestamp = last_timestamp - timedelta(seconds=2)
-        
+        print "last timestamp:", last_timestamp 
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
@@ -448,7 +447,7 @@ class DynamicUpdateCmd(Command):
                 stype = values.get("search_type")
                 if stype:
                     client_stypes.add(stype)
-
+ 
         # find all of the search that have changed
         changed_keys = set()
         changed_types = set()
@@ -467,15 +466,18 @@ class DynamicUpdateCmd(Command):
                 changed_keys.add(u'%s'%search_key)
                 changed_types.add(search_type)
 
+        print "changed_types", changed_types 
+        print "changed keys:", changed_keys
+        
         intersect_keys = client_keys.intersection(changed_keys)
-
+        
         from pyasm.web import HtmlElement
 
         results = {}
         for id, values_list in updates.items():
             if isinstance(values_list, dict):
                 values_list = [values_list]
-
+            
             for values in values_list:
 
                 handler = values.get("handler")
@@ -561,7 +563,8 @@ def test_values():
     shot = SearchType.create("vfx/shot")
     shot.commit()
     search_key = shot.get_search_key()
-   
+    search_type = shot.get_search_type()
+    
     from pyasm.biz import Task
     tasks = Task.add_initial_tasks(shot)
      
@@ -573,33 +576,70 @@ def test_values():
     updates["001"] = {'expression': '''@COUNT(sthpw/task['status', 'NEQ', 'complete'])'''}
     
     # Test Search_key and column
-    task_sk = tasks[0].get_search_key()
+    first_task = tasks[0]
+    task_sk = first_task.get_search_key()
     updates["002"] = {'search_key': task_sk, 'column': 'status'}
-   
+    status = first_task.get_value("status")
+
     # Test compare and search_key
-    updates["003"] = {'search_key': 'search_key', 'compare': '''@COUNT(vfx/shot.sthpw/file) < 1''',
+    updates["003"] = {'search_key': search_key, 'compare': '''@COUNT(vfx/shot.sthpw/file) < 1''',
                 'cbjs_action': script}
     
     # Test listen for search_type 
-    updates["004"] = {'search_type': 'vfx/shot', 'value': True, 'cbjs_action': script}
+    updates["004"] = {'search_type': search_type, 'value': True, 'cbjs_action': script}
   
     # Test expression key, compare, and expression. 
     updates["005"] = {
             'expr_key': search_key, 
-            'compare': '''@COUNT(sthpw/task['status', 'NEQ', 'complete']) > 0''', 
-            'expression': '''@GET(sthpw/task.process['status', 'NEQ', 'complete'])'''
+            'compare': '''@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1''', 
     }
   
+    # Set the initial timestamp
     from pyasm.command import Command
     cmd = DynamicUpdateCmd()
     Command.execute_cmd(cmd)
-    print cmd.info
     timestamp = cmd.get_info("timestamp")
-   
+    
+    time.sleep(2)
+    
+    # Test initial insert of shot and tasks
     cmd2 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
     Command.execute_cmd(cmd2)
-    print cmd.info
+    timestamp = cmd2.get_info("timestamp")
+    updates_1 = cmd2.get_info("updates")  
+    
+    assert updates_1["001"] > len(tasks)
+    try:
+        assert updates_1["002"] == status
+    except Exception as e:
+        print "**", e
+    assert updates_1["003"] == "Loading ..."
+    assert updates_1["004"] == True
+    assert updates_1["005"] == "Loading ..."
+    
+    # Test no changes
+    time.sleep(2)
+    
+    cmd3 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
+    Command.execute_cmd(cmd3)
+    timestamp = cmd3.get_info("timestamp")
+    updates_2 = cmd3.get_info("updates")
+    
+    assert updates_2["001"] > len(tasks)
+    assert updates_2.get("002") == None
+    assert updates_2.get("003") == None
+    assert updates_2.get("004") == None
+    assert updates_2["005"] == "Loading ..." 
 
+    # Test change to task
+    first_task.set_value("status", "complete")
+    first_task.commit()
+    
+    cmd4 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
+    Command.execute_cmd(cmd4)
+    timestamp = cmd4.get_info("timestamp")
+    updates_3 = cmd4.get_info("updates")
+    print updates_3 
 
 def test_time():
 
@@ -629,7 +669,7 @@ def test_time():
 if __name__ == '__main__':
     from pyasm.security import Batch
     Batch(site="demo", project_code="studio_7")
-
+  
     #main()
     #test_time()
     test_values()
