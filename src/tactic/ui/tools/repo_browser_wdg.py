@@ -821,13 +821,15 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.click_file_bvr = function(evt, bvr) {
                 // When an item is clicked in the directory, display 
                 // the file detail.
-      
+             
                 if (bvr.src_el.hasClass("spt_item_value")) {
                     bvr.src_el = bvr.src_el.getParent(".spt_dir_list_item");
                 } 
             
                 var top = bvr.src_el.getParent(".spt_repo_browser_top");
                 var content = top.getElement(".spt_repo_browser_content");
+                
+                spt.repo_browser.move_view_indicator(bvr.src_el);
 
                 spt.app_busy.show("Loading information");
                 
@@ -974,6 +976,84 @@ class RepoBrowserDirListWdg(DirListWdg):
                 dir_list.setProperty("spt_folder_state", folder_state);
 
                 spt.panel.refresh(dir_list);
+            }
+ 
+            // Folder state manipulation
+            spt.repo_browser.get_folder_state = function() {
+                var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                var state_input = dir_list_top.getElement(".spt_folder_state");
+                var folder_state = state_input.value;
+                return folder_state;
+            } 
+
+            spt.repo_browser.set_folder_state = function() {
+
+            }
+
+            // View state and indicator manipulation
+            spt.repo_browser.move_view_indicator = function(new_item) {
+                
+                // Get the folder state list
+                var folder_state = spt.repo_browser.get_folder_state(); 
+                var items;
+                if (folder_state == '') {
+                    items = [];
+                } else {
+                    items = folder_state.split("|");
+                }
+            
+                var eye = spt.repo_browser.get_view_indicator();
+                 
+                // Get the current parent of the indicator - item, dir or neither 
+                var old_item = eye.getParent(".spt_dir_list_item");
+                if (!old_item) {
+                    old_item = eye.getParent(".spt_dir_item");
+                } 
+                 
+                // If there is a parent, update the view state.
+                if (old_item) {
+                    var old_path = old_item.getProperty("spt_path");
+                }
+
+                // Finally, add the new path to the folder state, and 
+                // move the indicator.
+                var new_path = new_item.getProperty("spt_path");
+                var new_label;    
+                if (new_item.hasClass("spt_dir_item")) {
+                    new_label = new_item.getElement(".spt_dir_value");
+                } else {
+                    new_label = new_item.getElement(".spt_item_value");
+                }
+
+                if (new_path && new_label) {
+                    eye.setStyle("display", "inline");
+                    eye.inject(new_label, "after");
+                }
+                
+                // Remove the old view path and add the new view path
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i] == new_path + "_is_open") {
+                    } else if (items[i] == dir + "_is_open_view") {
+                        is_open_view = true;
+                        break;
+                    } else if (items[i] == dir) {
+                        is_open = true;
+                        break;
+                    }
+                }
+
+            }
+ 
+            spt.repo_browser.get_view_indicator = function() {
+                // Look for already created view indicator
+                // If cannot find eye, create from template
+                var eye = spt.repo_browser.getElement(".spt_browser_view_indicator"); 
+                if (!eye) {
+                    eye = spt.repo_browser.getElement(".spt_browser_view_template").clone(); 
+                    eye.removeClass("spt_browser_view_template");
+                    eye.addClass("spt_browser_view_indicator"); 
+                }
+                return eye;
             }
  
             // Add mouse enter and mouse leave behaviors for the dir and file context menus
@@ -1333,7 +1413,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 items = folder_state.split("|");
             }
         
-            // Preferentially grab the absolute path
             var dir = item_top.getAttribute("spt_dir");
 
             // Get the folder, and view state.
@@ -1374,7 +1453,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 // Add this item to the folder states
                 if (view) {
                     items[i] = dir + "_is_open_view";
-                } else {
+                } else if (!is_open || !is_open_view) {
                     items.push(dir);
                 }
 
@@ -1446,13 +1525,12 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_top_behaviors(my, top):
         
-        """
-        TODO: Add indicator file or folder being viewed.
+        #TODO: Add indicator file or folder being viewed.
         selected_icon = IconWdg(icon="BS_EYE_OPEN")
-        selected_icon.add_class("spt_browser_view_item")
+        selected_icon.add_class("spt_browser_view_template")
         selected_icon.add_styles("display: none; position: relative;")
+        selected_icon.add_styles("height: 0px; left: 5px;")
         top.add(selected_icon)
-        """
 
         search = my.kwargs.get("search")
         if search:
@@ -1525,6 +1603,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
             var item_div = bvr.src_el.getParent(".spt_dir_item");
+
+            // Move view indicator - this updates the folder states
+            spt.repo_browser.move_view_indicator(item_div);
 
             // Get parent search keys
             var search_keys = top.getAttribute("spt_search_keys");
