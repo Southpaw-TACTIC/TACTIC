@@ -528,8 +528,40 @@ class TextInputWdg(BaseInputWdg):
         if not my.text.value:
             hint_text = my.kwargs.get("hint_text")
             color = my.text.get_color('color')
+            # lower the visibility of the hint text according to color of palette
+            if color > '#999': 
+                # case where background too dark
+                new_color = Palette.modify_color(color, 10)
+            elif color < '#222':
+                # case where background too bright
+                new_color = Palette.modify_color(color, 50)
 
             if hint_text:
+                if new_color:
+                    from pyasm.web import HtmlElement
+                    style = HtmlElement.style()
+                    top.add(style)
+                    style.add('''
+                        ::-webkit-input-placeholder {
+                            color: %s !important;
+                        }
+
+                        ::-moz-placeholder {
+                            color: %s !important;
+                        }
+
+                        /* firefox 19+ */
+                        :-ms-input-placeholder {
+                            color: %s !important;
+                        }
+
+                        /* ie */
+                        input:-moz-placeholder {
+                            color: %s !important;
+                        }
+
+                    ''' % (new_color,new_color,new_color,new_color))
+
                 my.text.add_attr('placeholder', hint_text)
                 my.text.add_style("text-overflow: ellipsis")
                 my.text.add_style("overflow: hidden")
