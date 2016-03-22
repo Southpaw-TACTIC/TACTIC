@@ -202,7 +202,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         no_results_div = DivWdg()
         content_div.add(no_results_div)
 
-        no_results_div.add_style("color: #7A7A7A")
+        no_results_div.add_color("color", "color", 50)
         no_results_div.add_style("font: normal bold 1.1em arial,serif")
         no_results_div.add("No collections found.")
         no_results_div.add_style("display: none")
@@ -662,7 +662,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var collections = top.getElements(".spt_collection_div");
             var no_results_el = top.getElement(".spt_no_results");
             var num_result = 0;
-            
+
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
                 var collection_title = collections[i].attributes[0].value.toLowerCase();
@@ -796,7 +796,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
         no_results_div = DivWdg()
         collections_div.add(no_results_div)
 
-        no_results_div.add_style("color: #7A7A7A")
+        no_results_div.add_color("color", "color", 50)
         no_results_div.add_style("font: normal bold 1.1em arial,serif")
         no_results_div.add("No collections found.")
         no_results_div.add_style("display: none")
