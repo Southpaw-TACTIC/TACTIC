@@ -6267,7 +6267,7 @@ class SearchType(SObject):
 
 
 
-        if parent_type in related_types:
+        if direction == "children" and parent_type in related_types:
             related_types.remove(parent_type)
 
         related_types.append('sthpw/note')
