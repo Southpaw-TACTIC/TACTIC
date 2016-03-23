@@ -1382,8 +1382,6 @@ class Security(Base):
             </rules>
             ''')
             access_manager.add_xml_rules(xml)
-        print "Login with ticket finished, was_admin is:", my._access_manager.was_admin
-        #my.setup_access_manager()
 
         return my._login
 
