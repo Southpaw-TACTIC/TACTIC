@@ -1123,11 +1123,8 @@ class Security(Base):
     def _set_my_login(my, login):
         my._login_var = login
         if my._login_var and my._login_var.get_value("login") == 'admin':
-            pass
-        else:
-            my._access_manager.set_admin(False)
+            my._access_manager.set_admin(True)
     _login = property(_get_my_login, _set_my_login)
-
 
 
 
@@ -1247,11 +1244,12 @@ class Security(Base):
             #my.login_cache.set_attr("%s:group_names" % login, my._group_names)
 
 
-
-        # go through all of the group names and add their respective
-        # rules to the access manager
-        if my.add_access_rules_flag:
+        # Setup the access manager and access rules
+        # Admin and admin group do not get access rules
+        admin_rules = my.setup_access_manager()
+        if not admin_rules and my.add_access_rules_flag:
             my.add_access_rules()
+
         # record that the login is logged in
         my._is_logged_in = 1
 
@@ -1793,19 +1791,7 @@ class Security(Base):
         #    print x.get_login_group()
         
 
-
-
     def add_access_rules(my):
-        if my._login and my._login.get_value("login") == 'admin':
-            my._access_manager.set_admin(True)
-            return
-        
-        for group in my._groups:
-            login_group = group.get_value("login_group")
-            if login_group == "admin":
-                my._access_manager.set_admin(True)
-                return
-
         # go through all of the groups and add access rules
         for group in my._groups:
             my._access_manager.add_xml_rules(group)
@@ -1814,13 +1800,17 @@ class Security(Base):
     def setup_access_manager(my):
         if my._login and my._login.get_value("login") == 'admin':
             my._access_manager.set_admin(True)
-            return
+            return True
 
         for group in my._groups:
             login_group = group.get_value("login_group")
             if login_group == "admin":
                 my._access_manager.set_admin(True)
-                return
+                return True
+
+        return False
+
+
 
 import pickle, os, base64
 from Crypto.PublicKey import RSA
