@@ -1026,8 +1026,15 @@ class IngestUploadWdg(BaseRefreshWdg):
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
-        
-        var keywords = values["edit|user_keywords"][0];
+
+        var keywords = values["edit|user_keywords"];
+
+        if (keywords) {
+            keywords = keywords[0];
+        }
+        else {
+            keywords = "";
+        }
 
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
