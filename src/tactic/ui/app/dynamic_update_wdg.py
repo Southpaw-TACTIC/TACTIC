@@ -17,13 +17,14 @@ import tacticenv
 from pyasm.common import jsonloads, Common
 from pyasm.security import Batch
 from pyasm.common import Environment
-from pyasm.search import Search
+from pyasm.search import Search, Transaction
 from pyasm.command import Command
+from pyasm.biz import Project
+
 import time
 
 from datetime import datetime, timedelta
 from dateutil import parser
-
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -394,8 +395,6 @@ class DynamicUpdateCmd(Command):
 
     def execute(my):
   
-        print "395:", Environment.get_security().is_admin()
-
         start = time.time()
 
         from pyasm.common import SPTDate
@@ -423,7 +422,6 @@ class DynamicUpdateCmd(Command):
         
         # give 2 seconds of extra room 
         last_timestamp = last_timestamp - timedelta(seconds=2)
-        print "last timestamp:", last_timestamp 
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
@@ -546,6 +544,7 @@ class DynamicUpdateCmd(Command):
 
 
 
+"""
 def main():
     update = {
         "X123": {
@@ -559,26 +558,65 @@ def main():
     }
     cmd = DynamicUpdateCmd(update=update)
     Command.execute_cmd(cmd)
-
 """
-class UpdateTest(unittest.TestCase):
 
-    def setUp(my):
-        batch = Batch()
-        Project.set_project("unittest")        
-    
-    def test_values():
+from pyasm.unittest import *
+import unittest
+
+
+class UpdateTest(unittest.TestCase, Command):
+
+    def __init__(my, *args):
+        unittest.TestCase.__init__(my, *args)
+        Command.__init__(my)
+
+        #my.updates =  
+
+    def test_all(my):
+        '''entry point function'''
+        my.description = "Checkin unit test"
+        my.errors = []
+
+        Batch(site="demo")
+
+        # FIXME: this is needed for the triggers to be registerd. These
+        # triggers have nothing to do with the web
+        from pyasm.web import WebInit
+        WebInit().execute()
+
+        test_env = Sample3dEnvironment(project_code='sample3d')
+        Project.set_project("sample3d")
+        test_env.create()
+
+       
+        try:
+            my.execute()
+        finally:
+            test_env.delete()
+ 
+    def execute(my):
+        #my._setup()
+
+        my._test_values()        
+ 
+    def _test_values(my):
         
         # Create shot and tasks
+        transaction = Transaction.get(create=True)
+        
         from pyasm.search import SearchType
-        shot = SearchType.create("vfx/shot")
+        shot = SearchType.create("prod/asset")
+        shot.set_defaults()
         shot.commit()
         search_key = shot.get_search_key()
         search_type = shot.get_search_type()
         
         from pyasm.biz import Task
-        tasks = Task.add_initial_tasks(shot)
-         
+        tasks = Task.add_initial_tasks(shot, pipeline_code='__default__')
+        
+        transaction.commit()
+        transaction.update_change_timestamps()
+
         script = '''console.log('hello world.')'''
 
         updates = {}
@@ -618,7 +656,9 @@ class UpdateTest(unittest.TestCase):
         Command.execute_cmd(cmd2)
         timestamp = cmd2.get_info("timestamp")
         updates_1 = cmd2.get_info("updates")  
+        print updates_1
         
+        """
         assert updates_1["001"] > len(tasks)
         try:
             assert updates_1["002"] == status
@@ -627,7 +667,12 @@ class UpdateTest(unittest.TestCase):
         assert updates_1["003"] == "Loading ..."
         assert updates_1["004"] == True
         assert updates_1["005"] == "Loading ..."
+        """
         
+        # Test change to task
+        first_task.set_value("status", "complete")
+        first_task.commit()
+
         # Test no changes
         time.sleep(2)
         
@@ -635,17 +680,16 @@ class UpdateTest(unittest.TestCase):
         Command.execute_cmd(cmd3)
         timestamp = cmd3.get_info("timestamp")
         updates_2 = cmd3.get_info("updates")
-        
+        print updates_2
+
+        """
         assert updates_2["001"] > len(tasks)
         assert updates_2.get("002") == None
         assert updates_2.get("003") == None
         assert updates_2.get("004") == None
         assert updates_2["005"] == "Loading ..." 
+        """
 
-        # Test change to task
-        first_task.set_value("status", "complete")
-        first_task.commit()
-     
         cmd4 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
         Command.execute_cmd(cmd4)
         timestamp = cmd4.get_info("timestamp")
@@ -653,12 +697,11 @@ class UpdateTest(unittest.TestCase):
         print updates_3 
 
 """
-
-"""
 if __name__ == "__main__":
         unittest.main()
 """
 
+"""
 def test_values():
     
     # Create shot and tasks
@@ -697,21 +740,12 @@ def test_values():
             'compare': '''@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1''', 
     }
  
-
-    print "is admin in duw:", Environment.get_security().is_admin()
-    print "was_admin:", Environment.get_security()._access_manager.was_admin
-    print "in group admn", Environment.get_security().is_in_group("admin")
-
     # Set the initial timestamp
     from pyasm.command import Command
     cmd = DynamicUpdateCmd()
     
-    print "712", Environment.get_security().is_admin()
-    
     Command.execute_cmd(cmd)
     timestamp = cmd.get_info("timestamp")
-    
-    print "714", Environment.get_security().is_admin()
     
     time.sleep(2)
     
@@ -754,10 +788,6 @@ def test_values():
     updates_3 = cmd4.get_info("updates")
     print updates_3 
 
-"""
-if __name__ == "__main__":
-        unittest.main()
-"""
 
 
 def test_time():
@@ -785,14 +815,10 @@ def test_time():
         # should be roughly the same minute, not hours apart
         print "Change timestamp diff is ", diff.seconds 
 
+"""
+
 if __name__ == '__main__':
-    Batch(site="demo", project_code="studio_7", login_code="admin")
-    print "User is", Environment.get_user_name()
-    print "was admin:", Environment.get_security()._access_manager.was_admin
-    #Environment.get_security()._access_manager.was_admin = True
-     
-    #main()
-    #test_time()
-    #test_values()
+    unittest.main()
+
 
 
