@@ -15,6 +15,8 @@ __all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
 
 import tacticenv
 from pyasm.common import jsonloads, Common
+from pyasm.security import Batch
+from pyasm.common import Environment
 from pyasm.search import Search
 from pyasm.command import Command
 import time
@@ -391,6 +393,8 @@ class DynamicUpdateCmd(Command):
         '''
 
     def execute(my):
+  
+        print "395:", Environment.get_security().is_admin()
 
         start = time.time()
 
@@ -447,7 +451,7 @@ class DynamicUpdateCmd(Command):
                 stype = values.get("search_type")
                 if stype:
                     client_stypes.add(stype)
- 
+    
         # find all of the search that have changed
         changed_keys = set()
         changed_types = set()
@@ -556,6 +560,105 @@ def main():
     cmd = DynamicUpdateCmd(update=update)
     Command.execute_cmd(cmd)
 
+"""
+class UpdateTest(unittest.TestCase):
+
+    def setUp(my):
+        batch = Batch()
+        Project.set_project("unittest")        
+    
+    def test_values():
+        
+        # Create shot and tasks
+        from pyasm.search import SearchType
+        shot = SearchType.create("vfx/shot")
+        shot.commit()
+        search_key = shot.get_search_key()
+        search_type = shot.get_search_type()
+        
+        from pyasm.biz import Task
+        tasks = Task.add_initial_tasks(shot)
+         
+        script = '''console.log('hello world.')'''
+
+        updates = {}
+        
+        # Test expression by itself
+        updates["001"] = {'expression': '''@COUNT(sthpw/task['status', 'NEQ', 'complete'])'''}
+        
+        # Test Search_key and column
+        first_task = tasks[0]
+        task_sk = first_task.get_search_key()
+        updates["002"] = {'search_key': task_sk, 'column': 'status'}
+        status = first_task.get_value("status")
+
+        # Test compare and search_key
+        updates["003"] = {'search_key': search_key, 'compare': '''@COUNT(vfx/shot.sthpw/file) < 1''',
+                    'cbjs_action': script}
+        
+        # Test listen for search_type 
+        updates["004"] = {'search_type': search_type, 'value': True, 'cbjs_action': script}
+      
+        # Test expression key, compare, and expression. 
+        updates["005"] = {
+                'expr_key': search_key, 
+                'compare': '''@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1''', 
+        }
+      
+        # Set the initial timestamp
+        from pyasm.command import Command
+        cmd = DynamicUpdateCmd()
+        Command.execute_cmd(cmd)
+        timestamp = cmd.get_info("timestamp")
+        
+        time.sleep(2)
+        
+        # Test initial insert of shot and tasks
+        cmd2 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
+        Command.execute_cmd(cmd2)
+        timestamp = cmd2.get_info("timestamp")
+        updates_1 = cmd2.get_info("updates")  
+        
+        assert updates_1["001"] > len(tasks)
+        try:
+            assert updates_1["002"] == status
+        except Exception as e:
+            print "**", e
+        assert updates_1["003"] == "Loading ..."
+        assert updates_1["004"] == True
+        assert updates_1["005"] == "Loading ..."
+        
+        # Test no changes
+        time.sleep(2)
+        
+        cmd3 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
+        Command.execute_cmd(cmd3)
+        timestamp = cmd3.get_info("timestamp")
+        updates_2 = cmd3.get_info("updates")
+        
+        assert updates_2["001"] > len(tasks)
+        assert updates_2.get("002") == None
+        assert updates_2.get("003") == None
+        assert updates_2.get("004") == None
+        assert updates_2["005"] == "Loading ..." 
+
+        # Test change to task
+        first_task.set_value("status", "complete")
+        first_task.commit()
+     
+        cmd4 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
+        Command.execute_cmd(cmd4)
+        timestamp = cmd4.get_info("timestamp")
+        updates_3 = cmd4.get_info("updates")
+        print updates_3 
+
+"""
+
+"""
+if __name__ == "__main__":
+        unittest.main()
+"""
+
 def test_values():
     
     # Create shot and tasks
@@ -593,12 +696,22 @@ def test_values():
             'expr_key': search_key, 
             'compare': '''@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1''', 
     }
-  
+ 
+
+    print "is admin in duw:", Environment.get_security().is_admin()
+    print "was_admin:", Environment.get_security()._access_manager.was_admin
+    print "in group admn", Environment.get_security().is_in_group("admin")
+
     # Set the initial timestamp
     from pyasm.command import Command
     cmd = DynamicUpdateCmd()
+    
+    print "712", Environment.get_security().is_admin()
+    
     Command.execute_cmd(cmd)
     timestamp = cmd.get_info("timestamp")
+    
+    print "714", Environment.get_security().is_admin()
     
     time.sleep(2)
     
@@ -634,12 +747,18 @@ def test_values():
     # Test change to task
     first_task.set_value("status", "complete")
     first_task.commit()
-    
+ 
     cmd4 = DynamicUpdateCmd(last_timestamp=timestamp, updates=updates)
     Command.execute_cmd(cmd4)
     timestamp = cmd4.get_info("timestamp")
     updates_3 = cmd4.get_info("updates")
     print updates_3 
+
+"""
+if __name__ == "__main__":
+        unittest.main()
+"""
+
 
 def test_time():
 
@@ -667,11 +786,13 @@ def test_time():
         print "Change timestamp diff is ", diff.seconds 
 
 if __name__ == '__main__':
-    from pyasm.security import Batch
-    Batch(site="demo", project_code="studio_7")
-  
+    Batch(site="demo", project_code="studio_7", login_code="admin")
+    print "User is", Environment.get_user_name()
+    print "was admin:", Environment.get_security()._access_manager.was_admin
+    #Environment.get_security()._access_manager.was_admin = True
+     
     #main()
     #test_time()
-    test_values()
+    #test_values()
 
 
