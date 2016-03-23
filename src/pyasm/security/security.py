@@ -1123,10 +1123,9 @@ class Security(Base):
     def _set_my_login(my, login):
         my._login_var = login
         if my._login_var and my._login_var.get_value("login") == 'admin':
-            my._access_manager.set_admin(True)
+            pass
         else:
             my._access_manager.set_admin(False)
-
     _login = property(_get_my_login, _set_my_login)
 
 
@@ -1231,7 +1230,6 @@ class Security(Base):
 
     def _do_login(my):
         '''function to actually log in the user'''
-
         # get from cache 
         #from pyasm.biz import LoginCache
         #my.login_cache = LoginCache.get("logins")
@@ -1273,6 +1271,8 @@ class Security(Base):
         # create a new ticket for the user
         my._ticket = my._generate_ticket(login_name)
 
+        my.add_access_rules_flag = True
+       
         my._do_login()
 
 
@@ -1329,7 +1329,7 @@ class Security(Base):
     def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
-
+        
         if key == "":
             return None
 
@@ -1382,9 +1382,8 @@ class Security(Base):
             </rules>
             ''')
             access_manager.add_xml_rules(xml)
-        elif my._login.get("login") == "admin":
-            access_manager = my.get_access_manager()
-            access_manager.set_admin(True)
+        print "Login with ticket finished, was_admin is:", my._access_manager.was_admin
+        #my.setup_access_manager()
 
         return my._login
 
@@ -1760,7 +1759,6 @@ class Security(Base):
 
     def _find_all_login_groups(my, group=None):
 
-
         if not group:
             groups = my._login.get_sub_groups()
             for group in groups:
@@ -1795,6 +1793,7 @@ class Security(Base):
 
         #for x  in my._groups:
         #    print x.get_login_group()
+        
 
 
 
@@ -1812,8 +1811,18 @@ class Security(Base):
         # go through all of the groups and add access rules
         for group in my._groups:
             my._access_manager.add_xml_rules(group)
+        
 
+    def setup_access_manager(my):
+        if my._login and my._login.get_value("login") == 'admin':
+            my._access_manager.set_admin(True)
+            return
 
+        for group in my._groups:
+            login_group = group.get_value("login_group")
+            if login_group == "admin":
+                my._access_manager.set_admin(True)
+                return
 
 import pickle, os, base64
 from Crypto.PublicKey import RSA
