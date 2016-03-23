@@ -588,9 +588,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
             if "checkin_history" in tabs:
                 tabs.remove("checkin_history")
 
-            if "workflow.assets.metadata" in tabs:
-                tabs.remove("workflow.assets.metadata")
-
         for tab in tabs:
 
             if tab == "tasks":
