@@ -1650,6 +1650,8 @@ class IngestUploadCmd(Command):
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
+            new_file_keywords = ""
+
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
                     new_file_keywords = "%s %s" % (keywords, file_keywords)
