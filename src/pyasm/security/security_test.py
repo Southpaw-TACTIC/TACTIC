@@ -132,10 +132,10 @@ class SecurityTest(unittest.TestCase):
             my._test_all()
 
         finally:
-            #Project.set_project("unittest")
+            # Reset access manager for tear down 
             Environment.get_security()._access_manager =  my.access_manager
-            my._tear_down()
             Environment.get_security().reset_access_manager() 
+            my._tear_down()
             Environment.get_security().set_admin(True)
             test_env.delete()
             Environment.get_security().set_admin(True)
