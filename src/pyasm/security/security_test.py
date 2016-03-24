@@ -132,8 +132,9 @@ class SecurityTest(unittest.TestCase):
             my._test_all()
 
         finally:
-            #Project.set_project("unittest")
+            # Reset access manager for tear down 
             Environment.get_security()._access_manager =  my.access_manager
+            Environment.get_security().reset_access_manager() 
             my._tear_down()
             Environment.get_security().set_admin(True)
             test_env.delete()
@@ -211,7 +212,6 @@ class SecurityTest(unittest.TestCase):
 
         # set this user as admin
         my.security.set_admin(True)
-
 
         my.assertEquals('unittest_guy',  Environment.get_user_name())
         my.assertEquals( False, fail )

@@ -15,13 +15,16 @@ __all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
 
 import tacticenv
 from pyasm.common import jsonloads, Common
-from pyasm.search import Search
+from pyasm.security import Batch
+from pyasm.common import Environment
+from pyasm.search import Search, Transaction
 from pyasm.command import Command
+from pyasm.biz import Project, Task, ExpressionParser
+
 import time
 
 from datetime import datetime, timedelta
 from dateutil import parser
-
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -170,7 +173,7 @@ top.spt_update_interval_id = setInterval( function() {
     out_loop:
     for (var i = 0; i < update_els.length; i++) {
         var update_el = update_els[i];
-        if (! update_el.isVisible()) {
+        if (!update_el.isVisible() || update_el.hasClass("spt_update_lock")) {
             continue;
         }
 
@@ -340,10 +343,58 @@ top.spt_update_interval_id = setInterval( function() {
 
 
 class DynamicUpdateCmd(Command):
+    
+    '''Determine client specified updates based on server change_timestamp
+        and sobject_log tables.
 
+        Parameters
+            last_timestamp - timestamp of the last update check (optional) 
+            updates - dictionary of update dictionaries by HTML el id
+
+        Return 
+            timestamp - the timestamp the command was last executed
+            updates - a dictionary of HTML el ids and update values.
+                The update value is determined by HtmlElement.eval_update
+                based on the client specified update dictionary for that el id. 
+                When the update dictionary does not match a server event, 
+                the command will take early exit and not return any value.
+        
+        The following is a list of example client update dictionaries for single DOM elements,
+        followed by the the general event required for the command to return a result for el id, 
+        and the returned value.
+
+        update = {'expression': "@COUNT(sthpw/task['status', 'NEQ', 'complete'])"}
+        expression is evaluated each interval and the inner HTML of task quantity indicator
+            is replaced with returned update value.
+        
+        update = {'search_key': 'sthpw/task?code=TASK00001709', 'column': 'status'}
+        When there a change to the specified task, it's status is returned.
+
+        update = {'search_key': 'vfx/shot?project=vfx&code=13', 'compare': '@COUNT(vfx/shot.sthpw/file) < 1',
+            cbjs_action: notification_script}
+        If there is a change to specified shot, compare is evaluated, and if shot has at least one associated 
+            file, then notification_script is executed.
+        
+        update = {'search_type': 'vfx/asset', 'value': True, cbjs_action: script}
+        script is executed when there is a change in vfx/asset sType. Value True is returned.
+       
+        update = {'expr_key': 'vfx/shot?project=vfx&code=13', 
+            'compare': '@COUNT(sthpw/task['status', 'NEQ', 'complete']) < 1', cbjs_action: script} 
+        When shot specified has one or more incomplete tasks, the script is executed. 
+        
+        For each el id specified in the return dictionary, the following occurs based on the el update dictionary:
+        - js preaction is executed if specified
+        - js cbjs_action is executed if specified, if not:
+            Otherwise, if the value returned is "__REFRESH__", the el is refreshed.
+            Otherwise, if the el is a select or input field, the input value is updated.
+            Otherwise, if the value returned is boolean, then then true or false is placed in the el.
+            Otherwise, the inner HTML of the el is replaced with the returned value.
+        - js postaction will execute if specified
+        
+        '''
 
     def execute(my):
-
+  
         start = time.time()
 
         from pyasm.common import SPTDate
@@ -354,6 +405,7 @@ class DynamicUpdateCmd(Command):
         timestamp = timestamp.strftime(format)
         
         updates = my.kwargs.get("updates")
+        
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
         last_timestamp = my.kwargs.get("last_timestamp")
@@ -370,8 +422,6 @@ class DynamicUpdateCmd(Command):
         
         # give 2 seconds of extra room 
         last_timestamp = last_timestamp - timedelta(seconds=2)
-
-
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
@@ -399,7 +449,7 @@ class DynamicUpdateCmd(Command):
                 stype = values.get("search_type")
                 if stype:
                     client_stypes.add(stype)
-
+    
         # find all of the search that have changed
         changed_keys = set()
         changed_types = set()
@@ -419,16 +469,14 @@ class DynamicUpdateCmd(Command):
                 changed_types.add(search_type)
 
         intersect_keys = client_keys.intersection(changed_keys)
-
-
-
+        
         from pyasm.web import HtmlElement
 
         results = {}
         for id, values_list in updates.items():
             if isinstance(values_list, dict):
                 values_list = [values_list]
-
+            
             for values in values_list:
 
                 handler = values.get("handler")
@@ -438,7 +486,7 @@ class DynamicUpdateCmd(Command):
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
-
+                
                 stype = values.get("search_type")
                 
                 search_key_set = set()
@@ -448,10 +496,6 @@ class DynamicUpdateCmd(Command):
                     else:
                         search_key_set = set()
                         search_key_set.add(search_key)
-                    
-                # filter for search_type first if it exists
-                # check if any search_key is contained in intersect_keys, skip if not 
-
                 if stype and stype not in changed_types:
                     continue  
                 if stype and stype in changed_types:
@@ -459,7 +503,7 @@ class DynamicUpdateCmd(Command):
                         continue
                 elif search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                     continue
-                
+               
                 # evaluate any compare expressions
                 compare = values.get("compare")
                 if compare:
@@ -469,9 +513,9 @@ class DynamicUpdateCmd(Command):
                         sobject = Search.get_by_search_key(search_key)
                     elif expr_key:
                         sobject = Search.get_by_search_key(expr_key)
-
                     else:
                         sobject = None
+                   
                     cmp_result = Search.eval(compare, sobject, single=True)
                     if cmp_result == True:
                         continue
@@ -480,10 +524,10 @@ class DynamicUpdateCmd(Command):
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
-
+              
                 if value == None:
                     continue
-                
+
                 results[id] = value
 
         my.info = {
@@ -498,51 +542,247 @@ class DynamicUpdateCmd(Command):
 
 
 
-def main():
-    update = {
-        "X123": {
-            "search_key": "vfx/asset?project=vfx&code=chr001",
-            "column": "name"
-        },
-        "X124": {
-            "search_key": "sthpw/login?code=admin",
-            "expression": "@GET(.first_name) + ' ' + @GET(.last_name)"
-        }
-    }
-    cmd = DynamicUpdateCmd(update=update)
-    Command.execute_cmd(cmd)
 
-def test_time():
-
-    from pyasm.search import SearchType
-    sobj = SearchType.create('sthpw/note')
-    sobj.set_value('process','TEST')
-    sobj.set_value('note','123')
-    sobj.commit()
+from pyasm.unittest import *
+import unittest
 
 
-    sobj.set_value('note', 'new note')
-    sobj.commit()
+class UpdateTest(unittest.TestCase):
 
-    # check change_timestamp
-    change_t = Search.eval("@SOBJECT(sthpw/change_timestamp['search_type','sthpw/note']['search_code','%s'])"%sobj.get_code(), single=True)
-    if change_t:
-        change_t_timestamp = change_t.get('timestamp')
-        change_t_timestamp = parser.parse(change_t_timestamp)
+    def __init__(my, *args):
+        unittest.TestCase.__init__(my, *args)
+   
+        my.updates = None
+        my.last_timestamp = None
 
-        from pyasm.common import SPTDate
-        now = SPTDate.now()
+        my.search_key = None
+        my.task_sk = None
 
-        diff = now - change_t_timestamp
-        # should be roughly the same minute, not hours apart
-        print "Change timestamp diff is ", diff.seconds 
+    def test_all(my):
+        '''entry point function'''
+
+        Batch(site="demo")
+
+        # Allows for triggers
+        from pyasm.web import WebInit
+        WebInit().execute()
+
+        # Set up test environment
+        test_env = Sample3dEnvironment(project_code='sample3d')
+        Project.set_project("sample3d")
+        test_env.create()
+        
+        # Commit environment setup transaction 
+        #transaction = Transaction.get()
+        #transaction.commit()
+   
+        # Get updates - creates shots and tasks
+        my.updates = my._get_updates()
+        
+        try:
+            my._test_no_updates()
+            my._test_insert()
+            my._test_status_change()
+            my._test_compare()
+            my._test_empty_update()
+            #my._test_time()
+        finally:
+            test_env.delete()
+   
+    def _get_updates(my):
+        '''Create sObject and tasks that we will test to receive updates on.
+        Current transaction is commited in _test_insert.'''
+       
+        Transaction.get(create=True) 
+ 
+        from pyasm.search import SearchType
+        sobj = SearchType.create("prod/asset")
+        sobj.set_defaults()
+        sobj.commit()
+        search_key = sobj.get_search_key()
+        my.search_key = search_key
+        search_type = sobj.get_search_type()
+        search_code = sobj.get_value('code')
+
+        tasks = Task.add_initial_tasks(sobj, pipeline_code='__default__')
+        first_task = tasks[0]
+        task_sk = first_task.get_search_key()
+        my.task_sk = task_sk
+
+        script = '''console.log('hello world.')'''
+        
+        updates = {}
+       
+        # Expression counts the number of incomplete tasks for sobject 
+        expr = '''@COUNT(@SOBJECT(prod/asset['code', '%s'].sthpw/task['status', 'NEQ', 'complete']))''' % search_code
+        # Compare is True iff all tasks are all complete.
+        compare = '''@COUNT(@SOBJECT(sthpw/task['status', 'NEQ', 'complete'])) < 1'''
+
+        # Test expression by itself
+        updates["001"] = {'expression': expr}
+        
+        # Test search_key and column
+        updates["002"] = {'search_key': task_sk, 'column': 'status'}
+        
+        # Test compare and search_key
+        updates["003"] = {'search_key': search_key, 'compare': compare, 'cbjs_action': script}
+        
+        # Test listen for search_type 
+        updates["004"] = {'search_type': search_type, 'value': True, 'cbjs_action': script}
+      
+        # Test expr_key and compare 
+        updates["005"] = {'expr_key': search_key, 'compare': compare}
+    
+        # Test search_key and expression
+        expression = '''@COUNT(@SOBJECT(sthpw/task['status', 'NEQ', 'complete']))'''
+        updates["006"] = {'search_key': search_key, 'expression': expression}
+
+        return updates
+
+    def _test_no_updates(my): 
+        '''Test no updates and set the initial timestamp'''
+        transaction = Transaction.get(create=True)
+        transaction.commit()
+        
+        from pyasm.command import Command
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        Command.execute_cmd(cmd)
+        my.last_timestamp = cmd.get_info("timestamp")
+        updates = cmd.get_info("updates") 
+
+        my.assertEquals(updates, {})
+
+    def _test_insert(my):
+        '''Test insertion of tasks and shots.'''
+
+        # Commit creation of asset and tasks
+        transaction = Transaction.get()
+        transaction.commit()
+        time.sleep(3)
+        
+        # Test initial insert of shot and tasks
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        Command.execute_cmd(cmd)
+        my.last_timestamp = cmd.get_info("timestamp")
+        updates = cmd.get_info("updates")  
+       
+        sobject = Search.get_by_search_key(my.search_key)
+        num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
+        my.assertEquals(updates["001"], num_tasks)
+        
+        task = Search.get_by_search_key(my.task_sk)
+        status = task.get_value("status")
+        my.assertEquals(updates["002"], status)
+        
+        my.assertEquals(updates["003"], "Loading ...")
+        my.assertEquals(updates["004"], True)
+        my.assertEquals(updates["005"], "Loading ...")
+        my.assertEquals(updates["006"], num_tasks)
+  
+  
+    def _test_status_change(my):
+        '''Test a change to a single task.'''
+        
+        # Clear expression cache
+        ExpressionParser.clear_cache()
+        
+        transaction = Transaction.get(create=True)
+        task = Search.get_by_search_key(my.task_sk) 
+        new_status = 'pending'
+        task.set_value("status", new_status)
+        task.commit()
+        transaction.commit()
+        
+        time.sleep(3)
+
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        Command.execute_cmd(cmd)
+        my.last_timestamp = cmd.get_info("timestamp")
+        updates = cmd.get_info("updates")
+        
+        sobject = Search.get_by_search_key(my.search_key)
+        num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
+        my.assertEquals(updates["001"], num_tasks)
+        my.assertEquals(updates["002"], new_status)
+        my.assertEquals(updates["003"], "Loading ...")
+        my.assertEquals(updates["004"], True)
+        my.assertEquals(updates["005"], "Loading ...")
+        my.assertEquals(updates["006"], num_tasks)
+
+    def _test_compare(my):
+        '''Test early exiting of compare statements.'''
+ 
+        # Clear expression cache
+        ExpressionParser.clear_cache()
+
+        transaction = Transaction.get(create=True)
+
+        sobject = Search.get_by_search_key(my.search_key)
+        tasks = Search.eval("@SOBJECT(sthpw/task)", sobject)
+        new_status = 'complete'
+        for task in tasks:
+            task.set_value("status", new_status)
+            task.commit()
+
+        transaction.commit()
+        
+        time.sleep(3)
+
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        Command.execute_cmd(cmd)
+        my.last_timestamp = cmd.get_info("timestamp")
+        updates = cmd.get_info("updates")
+ 
+        my.assertEquals(updates["001"], 0)
+        my.assertEquals(updates["002"], new_status)
+        my.assertEquals(updates.get("003"), None)
+        my.assertEquals(updates["004"], True)
+        my.assertEquals(updates.get("005"), None)
+        my.assertEquals(updates["006"], 0)
+
+
+    def _test_empty_update(my):
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        Command.execute_cmd(cmd)
+        my.last_timestamp = cmd.get_info("timestamp")
+        updates = cmd.get_info("updates")
+
+        my.assertEquals(updates["001"], 0)
+        my.assertEquals(updates.get("002"), None)
+        my.assertEquals(updates.get("003"), None)
+        my.assertEquals(updates.get("004"), None)
+        my.assertEquals(updates.get("005"), None)
+        my.assertEquals(updates.get("006"), None)
+
+
+    def _test_time():
+
+        from pyasm.search import SearchType
+        sobj = SearchType.create('sthpw/note')
+        sobj.set_value('process','TEST')
+        sobj.set_value('note','123')
+        sobj.commit()
+
+
+        sobj.set_value('note', 'new note')
+        sobj.commit()
+
+        # check change_timestamp
+        change_t = Search.eval("@SOBJECT(sthpw/change_timestamp['search_type','sthpw/note']['search_code','%s'])"%sobj.get_code(), single=True)
+        if change_t:
+            change_t_timestamp = change_t.get('timestamp')
+            change_t_timestamp = parser.parse(change_t_timestamp)
+
+            from pyasm.common import SPTDate
+            now = SPTDate.now()
+
+            diff = now - change_t_timestamp
+            # should be roughly the same minute, not hours apart
+            print "Change timestamp diff is ", diff.seconds 
+
 
 if __name__ == '__main__':
-    from pyasm.security import Batch
-    Batch(site="vfx_test", project_code="vfx")
-
-    main()
-    #test_time()
+    unittest.main()
 
 
 
