@@ -770,7 +770,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 search_type = values['search_type']
                 parts = search_type.split("/")
                 values['collection_type'] = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-                values['expression'] = "@SOBJECT(parent_code_to_code:%(collection_type)s.%(search_type)s)" % values
+                values['expression'] = "@SOBJECT(collection:%(collection_type)s.%(search_type)s)" % values
 
                 config_xml.append('''
                 <element name="collection" title="Collection">
