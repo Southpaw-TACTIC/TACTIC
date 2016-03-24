@@ -762,6 +762,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
             elif tab == "collection":
+                search_type = values['search_type']
+                parts = search_type.split("/")
+                values['collection_type'] = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
                 config_xml.append('''
                 <element name="collection" title="Collection">
                   <display class='tactic.ui.panel.ViewPanelWdg'>
@@ -769,7 +772,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <layout>tile</layout>
                     <show_shelf>false</show_shelf>
                     <search_key>%(search_key)s</search_key>
-                    <search_type>jobs/media_in_media</search_type>
+                    <search_type>%(collection_type)s</search_type>
                     <element_names>preview,search_code</element_names>
                   </display>
                 </element>
