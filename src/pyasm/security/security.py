@@ -1246,8 +1246,8 @@ class Security(Base):
 
         # Setup the access manager and access rules
         # Admin and admin group do not get access rules
-        admin_rules = my.setup_access_manager()
-        if not admin_rules and my.add_access_rules_flag:
+        is_admin = my.setup_access_manager()
+        if not is_admin and my.add_access_rules_flag:
             my.add_access_rules()
 
         # record that the login is logged in
@@ -1792,12 +1792,13 @@ class Security(Base):
         
 
     def add_access_rules(my):
-        # go through all of the groups and add access rules
+        '''Add access rules for each group to the access manager.'''
         for group in my._groups:
             my._access_manager.add_xml_rules(group)
         
 
     def setup_access_manager(my):
+        '''Setup access manager for admin access.'''
         if my._login and my._login.get_value("login") == 'admin':
             my._access_manager.set_admin(True)
             return True
