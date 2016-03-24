@@ -986,8 +986,12 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return folder_state;
             } 
 
-            spt.repo_browser.set_folder_state = function() {
-
+            spt.repo_browser.set_folder_state = function(folder_list) {
+               var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+               var state_input = dir_list_top.getElement(".spt_folder_state");
+             
+               var folder_state = folder_list.join("|");
+               state_input.value = folder_state; 
             }
 
             // View state and indicator manipulation
@@ -1031,17 +1035,29 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
                 
                 // Remove the old view path and add the new view path
+                var new_path_index;
+                var old_path_index;
                 for (var i = 0; i < items.length; i++) {
-                    if (items[i] == new_path + "_is_open") {
-                    } else if (items[i] == dir + "_is_open_view") {
-                        is_open_view = true;
-                        break;
-                    } else if (items[i] == dir) {
-                        is_open = true;
+                    if (items[i] == new_path) {
+                        items[i] == new_path + "_is_open_view";
+                        new_path_index = i;
+                    } else if (items[i] == old_path + "_is_open_view") {
+                        items[i] = old_path + "is_open"
+                        old_path_index = i;
+                    } else if (items[i] == old_path + "_view") {
+                        items.splice(i, 1); 
+                        old_path_index = i;
+                    }
+
+                    if (new_path_index && old_path_index) {
                         break;
                     }
                 }
-
+                if (!new_path_index) {
+                    items.push(new_path + "_view");
+                }
+            
+                spt.repo_browser.set_folder_state(items);
             }
  
             spt.repo_browser.get_view_indicator = function() {
