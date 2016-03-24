@@ -46,7 +46,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.',
         'context_mode': 'Set or remove context case sensitivity.',
         'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
-        'title': 'The title to display at the top'
+        'title': 'The title to display at the top',
+        'library_mode': 'Mode to determine if Ingest should handle huge amounts of files'
     }
 
 
@@ -894,6 +895,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress.add_style("overflow: hidden")
         progress.add_style("padding-right: 3px")
 
+        library_mode = my.kwargs.get("library_mode")
+        if not library_mode:
+            library_mode = False
+ 
         from tactic.ui.app import MessageWdg
         progress.add_behavior( {
             'type': 'load',
@@ -998,6 +1003,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
 
+        var library_mode = bvr.kwargs.library_mode;
+
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
         var context_mode = context_mode_select ? context_mode_select.value : bvr.kwargs.context_mode;
@@ -1074,6 +1081,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode: update_mode,
             ignore_ext: ignore_ext,
             column: column,
+            library_mode: library_mode,
             context_mode: context_mode
         }
         on_complete = function(rtn_data) {
@@ -1151,7 +1159,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         context = my.kwargs.get("context")
         context_mode = my.kwargs.get("context_mode")
- 
+
         button.add_behavior( {
             'type': 'click_up',
             'action_handler': action_handler,
@@ -1160,6 +1168,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'relative_dir': relative_dir,
                 'script_found': script_found,
                 'context': context,
+                'library_mode': library_mode,
                 'context_mode': context_mode
             },
             'cbjs_action': '''
@@ -1467,6 +1476,10 @@ class IngestUploadCmd(Command):
 
     def execute(my):
 
+        FOLDER_LIMIT = 500
+        library_mode = my.kwargs.get("library_mode")
+        current_folder = 0
+        
         filenames = my.kwargs.get("filenames")
         relative_dir = my.kwargs.get("relative_dir")
 
@@ -1546,10 +1559,14 @@ class IngestUploadCmd(Command):
             if filenames == []:
                 raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
+        if library_mode:
+            relative_dir = relative_dir + "/000"
+
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
+
 
             if filename.startswith("search_key:"):
                 mode = "single"
@@ -1565,6 +1582,16 @@ class IngestUploadCmd(Command):
             else:
                 mode = "multi"
                 new_filename = filename
+
+            if library_mode:
+                
+                # get count of number of files in the current asset ingest dir
+                import glob
+                abs_path = Environment.get_asset_dir() + "/" + relative_dir + "/*"
+
+                if len(glob.glob(abs_path)) > FOLDER_LIMIT:
+                    current_folder = current_folder + 1
+                    relative_dir = relative_dir[:-4] + "/%03d" % current_folder
 
 
             if filename.endswith(".zip"):
@@ -1641,8 +1668,6 @@ class IngestUploadCmd(Command):
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
 
-
-
             if mode == "single":
                 path = lib_path
 
@@ -1689,7 +1714,6 @@ class IngestUploadCmd(Command):
                 file_path = path
             else:
                 file_path = "%s/%s" % (base_dir, filename)
-
 
             """
             # TEST: convert on upload
