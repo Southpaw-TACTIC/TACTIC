@@ -631,6 +631,10 @@ class UpdateTest(unittest.TestCase):
       
         # Test expr_key and compare 
         updates["005"] = {'expr_key': search_key, 'compare': compare}
+    
+        # Test search_key and expression
+        expression = '''@COUNT(@SOBJECT(sthpw/task['status', 'NEQ', 'complete']))'''
+        updates["006"] = {'search_key': search_key, 'expression': expression}
 
         return updates
 
@@ -672,7 +676,9 @@ class UpdateTest(unittest.TestCase):
         my.assertEquals(updates["003"], "Loading ...")
         my.assertEquals(updates["004"], True)
         my.assertEquals(updates["005"], "Loading ...")
-
+        my.assertEquals(updates["006"], num_tasks)
+  
+  
     def _test_status_change(my):
         '''Test a change to a single task.'''
         
@@ -700,6 +706,7 @@ class UpdateTest(unittest.TestCase):
         my.assertEquals(updates["003"], "Loading ...")
         my.assertEquals(updates["004"], True)
         my.assertEquals(updates["005"], "Loading ...")
+        my.assertEquals(updates["006"], num_tasks)
 
     def _test_compare(my):
         '''Test early exiting of compare statements.'''
@@ -730,6 +737,7 @@ class UpdateTest(unittest.TestCase):
         my.assertEquals(updates.get("003"), None)
         my.assertEquals(updates["004"], True)
         my.assertEquals(updates.get("005"), None)
+        my.assertEquals(updates["006"], 0)
 
     def _test_time():
 
