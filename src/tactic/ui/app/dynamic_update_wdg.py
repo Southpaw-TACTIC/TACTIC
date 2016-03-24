@@ -498,7 +498,7 @@ class DynamicUpdateCmd(Command):
                         search_key_set.add(search_key)
                 if stype and stype not in changed_types:
                     continue  
-                elif stype and stype in changed_types:
+                if stype and stype in changed_types:
                     if search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                         continue
                 elif search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
@@ -542,21 +542,6 @@ class DynamicUpdateCmd(Command):
 
 
 
-"""
-def main():
-    update = {
-        "X123": {
-            "search_key": "vfx/asset?project=vfx&code=chr001",
-            "column": "name"
-        },
-        "X124": {
-            "search_key": "sthpw/login?code=admin",
-            "expression": "@GET(.first_name) + ' ' + @GET(.last_name)"
-        }
-    }
-    cmd = DynamicUpdateCmd(update=update)
-    Command.execute_cmd(cmd)
-"""
 
 from pyasm.unittest import *
 import unittest
@@ -711,7 +696,6 @@ class UpdateTest(unittest.TestCase):
         sobject = Search.get_by_search_key(my.search_key)
         num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
         my.assertEquals(updates["001"], num_tasks)
-        
         my.assertEquals(updates["002"], new_status)
         my.assertEquals(updates["003"], "Loading ...")
         my.assertEquals(updates["004"], True)
