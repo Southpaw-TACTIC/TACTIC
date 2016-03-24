@@ -584,6 +584,7 @@ class UpdateTest(unittest.TestCase):
             my._test_insert()
             my._test_status_change()
             my._test_compare()
+            my._test_empty_update()
             #my._test_time()
         finally:
             test_env.delete()
@@ -644,7 +645,7 @@ class UpdateTest(unittest.TestCase):
         transaction.commit()
         
         from pyasm.command import Command
-        cmd = DynamicUpdateCmd()
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
         Command.execute_cmd(cmd)
         my.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates") 
@@ -738,6 +739,21 @@ class UpdateTest(unittest.TestCase):
         my.assertEquals(updates["004"], True)
         my.assertEquals(updates.get("005"), None)
         my.assertEquals(updates["006"], 0)
+
+
+    def _test_empty_update(my):
+        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        Command.execute_cmd(cmd)
+        my.last_timestamp = cmd.get_info("timestamp")
+        updates = cmd.get_info("updates")
+
+        my.assertEquals(updates["001"], 0)
+        my.assertEquals(updates.get("002"), None)
+        my.assertEquals(updates.get("003"), None)
+        my.assertEquals(updates.get("004"), None)
+        my.assertEquals(updates.get("005"), None)
+        my.assertEquals(updates.get("006"), None)
+
 
     def _test_time():
 
