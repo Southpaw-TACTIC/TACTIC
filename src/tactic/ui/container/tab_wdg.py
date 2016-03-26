@@ -435,14 +435,13 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             var last_content = content_boxes[content_boxes.length -1];
             content_box.inject(last_content, "after");
 
-            //return;
-
 
         }
 
     }
 
 
+    // This does nothing?
     //else {
     /*
     if (true) {
@@ -705,17 +704,6 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     }
 
 
-    // get the real header
-    // Not sure about this ... this remaps the subheader to the header
-    // thereby loading the subheader contents into the header
-    /*
-    if (header.hasClass("spt_tab_subheader_item")) {
-        var subheader_top = header.getParent(".spt_tab_subheader");
-        header_id = subheader_top.getAttribute("spt_header_id");
-        header = $(header_id);
-    }
-    */
-
 
     var top = spt.tab.top;
     var header_top = top.getElement(".spt_tab_header_top");
@@ -737,11 +725,22 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
 
 
         // select the header
-        header.setStyle("opacity", "1.0");
-        header.addClass("spt_is_selected");
-        header.addClass("spt_tab_selected");
-        header.removeClass("spt_tab_unselected");
-        header.setStyle("z-index", "200");
+        if (header.hasClass("spt_tab_subheader_item")) {
+            var subheader_top = header.getParent(".spt_tab_subheader");
+            header_id = subheader_top.getAttribute("spt_header_id");
+            select_header = $(header_id);
+        }
+        else {
+            select_header = header;
+        }
+
+        // select the header
+        select_header.setStyle("opacity", "1.0");
+        select_header.addClass("spt_is_selected");
+        select_header.addClass("spt_tab_selected");
+        select_header.removeClass("spt_tab_unselected");
+        select_header.setStyle("z-index", "200");
+
 
 
 
