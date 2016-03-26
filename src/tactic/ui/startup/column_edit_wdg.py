@@ -293,6 +293,17 @@ class ColumnEditCbk(Command):
             config.commit()
             config._init()
 
+
+        # add to the edit definition 
+        edit_config = WidgetDbConfig.get_by_search_type(search_type, "edit_definition")
+        if not edit_config:
+            edit_config = SearchType.create("config/widget_config")
+            edit_config.set_value("search_type", search_type)
+            edit_config.set_value("view", "edit_definition")
+            edit_config.commit()
+            edit_config._init()
+
+
         for data in values:
 
             name = data.get("name")
@@ -330,7 +341,23 @@ class ColumnEditCbk(Command):
             # add a new widget to the definition
             config.append_display_element(name, class_name, options=options)
 
+
+
+            edit_class_name = 'TextWdg'
+            edit_options = {}
+
+
+            # add a new widget to the definition
+            edit_config.append_display_element(name, edit_class_name, options=edit_options)
+
         config.commit_config()
+        edit_config.commit_config()
+
+
+        # views to add it to
+        table_views = []
+        edit_views = []
+
 
 
 

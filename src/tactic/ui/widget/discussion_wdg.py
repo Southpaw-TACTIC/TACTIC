@@ -1394,6 +1394,14 @@ class DiscussionWdg(BaseRefreshWdg):
                 add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                 note_dialog.add(add_note_wdg)
 
+                from tactic.ui.panel import ThumbWdg2
+                thumb_wdg = ThumbWdg2()
+                thumb_wdg.set_sobject(my.sobject)
+                thumb_wdg.add_style("width: 60px")
+                thumb_wdg.add_style("margin: 0px 5px")
+                shelf_wdg.add(thumb_wdg)
+
+
 
             notes_list = context_notes.get(context)
 
