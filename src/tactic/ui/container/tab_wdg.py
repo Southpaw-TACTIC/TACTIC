@@ -290,7 +290,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     var headers = spt.tab.get_headers();
     var header;
     var found = false;
-    var force = false;
     for (var k=0; k < headers.length; k++){
         var existing_header = headers[k];
         if (existing_header.getAttribute('spt_element_name')==element_name){
@@ -445,6 +444,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
 
     //else {
+    /*
     if (true) {
         var content_top = top.getElement(".spt_tab_content_top");
         var content_boxes = content_top.getElements(".spt_tab_content");
@@ -457,15 +457,18 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             }
         }
     }
+    */
 
 
-    if (typeof(class_name) == 'undefined') {
+    if (! class_name) {
         spt.tab.select(element_name);
     }
     else if (subelement_name) {
+        var force = true;
         spt.tab.load_class(subheader, class_name, kwargs, values, force);
     }
     else {
+        var force = true;
         spt.tab.load_class(header, class_name, kwargs, values, force);
     }
 
@@ -997,7 +1000,11 @@ spt.tab.close = function(src_el) {
     var element_name;
     // check if it's a header child
     var header = src_el.getParent(".spt_tab_header");
+    var subheader = src_el.getParent(".spt_tab_subheader");
     if (header) {
+        element_name = header.getAttribute("spt_element_name");
+        content = spt.tab.get_content(element_name);
+    } else if (subheader) {
         element_name = header.getAttribute("spt_element_name");
         content = spt.tab.get_content(element_name);
     } else if (content) {
@@ -1024,8 +1031,26 @@ spt.tab.close = function(src_el) {
         }
         var opener = header.getAttribute("spt_tab_opener");
         var element_name = header.getAttribute("spt_element_name");
-        header.destroy();
-        content.destroy();
+
+        if (header) {
+            var subheader = $(header.getAttribute("spt_subheader_id"));
+            var items = subheader.getElements(".spt_tab_subheader_item");
+            for (var i = 0; i < items.length; i++) {
+                var subheader_element_name = items[i].getAttribute("spt_element_name");
+                var subheader_content = spt.tab.get_content(subheader_element_name);
+                spt.behavior.destroy_element(subheader_content);
+
+            }
+            spt.behavior.destroy_element(subheader);
+        }
+
+        //header.destroy();
+        //content.destroy();
+        spt.behavior.destroy_element(header);
+        spt.behavior.destroy_element(content);
+
+
+
         var last_element_name = spt.tab.get_last_selected_element_name();
         last_element_name = null;
         // make the opener active
