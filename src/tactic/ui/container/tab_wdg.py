@@ -1214,6 +1214,7 @@ spt.tab.close = function(src_el) {
         subheader_div.add_class("spt_tab_subheader_top")
         inner.add(subheader_div)
         my.add_subheader_behaviors(subheader_div)
+        subheader_div.add_style("display: none")
  
 
 
@@ -1299,36 +1300,6 @@ spt.tab.close = function(src_el) {
 
             header = my.get_tab_header(element_name, title, display_class, display_options, is_selected=is_selected, is_loaded=is_loaded, is_template=False)
             header_div.add(header)
-
-
-
-
-
-            # subheader test
-            """
-            subheader = my.get_tab_subheader(element_name, title, display_class, display_options, is_selected=is_selected, is_loaded=is_loaded, is_template=False, config=config)
-            inner.add(subheader)
-            subheader.add_style("z-index: 1")
-            subheader.add_style("display: none")
-            subheader_id = subheader.set_unique_id()
-
-            header.add_behavior( {
-                'type': 'click',
-                'subheader_id': subheader_id,
-                'cbjs_action': '''
-                var el = $(bvr.subheader_id);
-                var size = bvr.src_el.getSize();
-
-                el.setStyle("display", "");
-                spt.body.add_focus_element(el);
-
-                el.position({x: 5, y: 0+size.y-1}, el);
-
-                '''
-            } )
-            """
-
-
 
 
 
