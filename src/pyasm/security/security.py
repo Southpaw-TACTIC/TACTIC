@@ -742,6 +742,9 @@ class Site(object):
         return
 
 
+    def get_guest_hashes(my):
+        return []
+
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)
@@ -837,10 +840,20 @@ class Site(object):
         if not site:
             return
         sites = Container.get("sites")
+        
+        is_redundant = False
         if sites == None:
             sites = []
             Container.put("sites", sites)
+        elif sites and sites[-1] == site:
+            is_redundant = True 
+        
         sites.append(site)
+         
+        security_list = Container.get("Environment:security_list")
+        if not security_list:
+            security_list = []
+
 
         try:
             sql = DbContainer.get("sthpw")
@@ -849,6 +862,27 @@ class Site(object):
             raise Exception("WARNING: site [%s] does not exist" % site)
 
 
+        # if site is different from current, renew security instance
+        cur_security = Environment.get_security()
+        if is_redundant:
+            security_list.append(cur_security)
+            return
+      
+     
+            
+        if cur_security and cur_security._login:
+            security = Security()
+            security._is_logged_in = True
+            security._login = cur_security._login
+            LoginInGroup.clear_cache()
+            security._find_all_login_groups()
+        
+            security.add_access_rules()
+            Environment.set_security(security)
+            security_list.append(security)
+
+     
+        
         try:
             # check if user is allowed to see the site
             #from pyasm.search import Search
@@ -867,7 +901,18 @@ class Site(object):
         if sites == None:
             return ""
         if sites:
-            return sites.pop()
+            site = sites.pop()
+        
+     
+        security_list = Container.get("Environment:security_list")
+        if security_list:
+            security = security_list.pop()
+            
+            if security:
+                Environment.set_security(security)
+
+        return site
+       
     pop_site = classmethod(pop_site)
 
 
@@ -1079,11 +1124,7 @@ class Security(Base):
         my._login_var = login
         if my._login_var and my._login_var.get_value("login") == 'admin':
             my._access_manager.set_admin(True)
-        else:
-            my._access_manager.set_admin(False)
-
     _login = property(_get_my_login, _set_my_login)
-
 
 
 
@@ -1121,6 +1162,7 @@ class Security(Base):
         return group_names
 
     def is_in_group(my, group_name):
+        
         return group_name in my._group_names
 
 
@@ -1185,7 +1227,6 @@ class Security(Base):
 
     def _do_login(my):
         '''function to actually log in the user'''
-
         # get from cache 
         #from pyasm.biz import LoginCache
         #my.login_cache = LoginCache.get("logins")
@@ -1203,11 +1244,12 @@ class Security(Base):
             #my.login_cache.set_attr("%s:group_names" % login, my._group_names)
 
 
-
-        # go through all of the group names and add their respective
-        # rules to the access manager
-        if my.add_access_rules_flag:
+        # Setup the access manager and access rules
+        # Admin and admin group do not get access rules
+        is_admin = my.setup_access_manager()
+        if not is_admin and my.add_access_rules_flag:
             my.add_access_rules()
+
         # record that the login is logged in
         my._is_logged_in = 1
 
@@ -1227,6 +1269,8 @@ class Security(Base):
         # create a new ticket for the user
         my._ticket = my._generate_ticket(login_name)
 
+        my.add_access_rules_flag = True
+       
         my._do_login()
 
 
@@ -1283,7 +1327,7 @@ class Security(Base):
     def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
-
+        
         if key == "":
             return None
 
@@ -1336,9 +1380,6 @@ class Security(Base):
             </rules>
             ''')
             access_manager.add_xml_rules(xml)
-        elif my._login.get("login") == "admin":
-            access_manager = my.get_access_manager()
-            access_manager.set_admin(True)
 
         return my._login
 
@@ -1714,7 +1755,6 @@ class Security(Base):
 
     def _find_all_login_groups(my, group=None):
 
-
         if not group:
             groups = my._login.get_sub_groups()
             for group in groups:
@@ -1749,23 +1789,27 @@ class Security(Base):
 
         #for x  in my._groups:
         #    print x.get_login_group()
-
-
+        
 
     def add_access_rules(my):
+        '''Add access rules for each group to the access manager.'''
+        for group in my._groups:
+            my._access_manager.add_xml_rules(group)
+        
+
+    def setup_access_manager(my):
+        '''Setup access manager for admin access.'''
         if my._login and my._login.get_value("login") == 'admin':
             my._access_manager.set_admin(True)
-            return
-        
+            return True
+
         for group in my._groups:
             login_group = group.get_value("login_group")
             if login_group == "admin":
                 my._access_manager.set_admin(True)
-                return
+                return True
 
-        # go through all of the groups and add access rules
-        for group in my._groups:
-            my._access_manager.add_xml_rules(group)
+        return False
 
 
 

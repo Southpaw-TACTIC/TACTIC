@@ -3130,15 +3130,13 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             show_shelf = my.kwargs.get("show_shelf")
-            """
-            if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
-                show_search = "false"
-            elif show_shelf in [False, 'false']:
-                show_search = "true"
             
+            # display search button when shelf is not shown
+            if show_shelf in [True, 'true', ""]:
+                show_search = False
             else:
                 show_search = True
-            """
+            
             kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)

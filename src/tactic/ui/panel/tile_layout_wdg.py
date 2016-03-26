@@ -2207,7 +2207,6 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
 
-
     def get_display(my):
 
         aspect_ratio = my.kwargs.get("aspect_ratio")
@@ -2275,12 +2274,17 @@ class ThumbWdg2(BaseRefreshWdg):
                 img.add_style("background: %s" % color)
 
             else:
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
+
                 path = urllib.pathname2url(path)
                 img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
             if path:
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
                 path = urllib.pathname2url(path)
 
                 img = DivWdg()

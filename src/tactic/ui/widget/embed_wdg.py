@@ -18,7 +18,7 @@ from pyasm.web import DivWdg, HtmlElement, SpanWdg
 from tactic.ui.common import BaseRefreshWdg
 
 import os
-
+import urllib
 
 class EmbedWdg(BaseRefreshWdg):
 
@@ -59,8 +59,9 @@ class EmbedWdg(BaseRefreshWdg):
         if not width:
             width = "100%"
 
-        width = "100%"
-        height = "auto"
+        # don't hard code width and height
+        #width = "100%"
+        #height = "auto"
 
 
         #div = DivWdg()
@@ -96,6 +97,10 @@ class EmbedWdg(BaseRefreshWdg):
 
         ext = ext.lstrip(".")
         if ext in File.IMAGE_EXT:
+            if isinstance(src, unicode):
+                src = src.encode("utf-8")
+            src = urllib.pathname2url(src)
+
             embed = HtmlElement.img(src)
             embed.add_style("width: 100%")
             embed.add_style("height: auto")

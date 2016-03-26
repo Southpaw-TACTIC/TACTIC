@@ -450,13 +450,50 @@ class DatabaseImpl(DatabaseImplInterface):
 
         return stmt
 
- 
+    def get_child_codes_cte(my, collection_type, search_type, parent_collection_code):
+        '''Postgres collection child codes CTE'''
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+
+        stmt = '''
+            WITH RECURSIVE res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."parent_code"] AS TEXT),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."parent_code",
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
+
+
+        return stmt
+        
     def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''default impl works with Postgres'''
 
         if isinstance(keywords, basestring):
             def split_keywords(keywords):
                 keywords = keywords.strip()
+                # The input should be stripped and single spaced. This line seems redundant, to be removed
                 keywords = keywords.replace("  ", "")
                 parts = keywords.split(" ")
                 op_str = " %s " % op
@@ -891,7 +928,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return "%s %s %s" %(column, op, regex)
 
 
-    def get_text_search_filter(cls, column, keywords, column_type, table=None):
+    def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''When Full Text Index is created in the db for the table, it works with SQLServer 2008 and above'''
         if isinstance(keywords, basestring):
             value = keywords
@@ -919,6 +956,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
        
         """
         wheres = []
+
+        # op & will translate to AND, | to OR if we use CONTAINS() in the future
         # use FREETEXT() or CONTAINS(), CONTAINS() takes OR AND operator
         wheres.append("FREETEXT(%s, '%s')" % (column, value) )
 
@@ -988,6 +1027,42 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                 )
 
         Select * from res;'''%where
+
+        return stmt
+
+    def get_child_codes_cte(my, collection_type, search_type, parent_collection_code):
+        '''SQLServer collection child codes CTE'''
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+
+        stmt = '''
+            WITH res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."parent_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
 
         return stmt
 

@@ -206,8 +206,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Ingest Settings")
         title_wdg.add_style("font-size: 25px")
 
-        div.add("<hr/>")
-
         # Build list of process names
         process_names = set()
         from pyasm.biz import Pipeline
@@ -269,8 +267,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Metadata")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
+        title_wdg.add_style("margin-bottom: 5px")
 
-        desc_wdg = DivWdg("This extra metaadata will be added to each new item")
+        desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
+        desc_wdg.add_style("margin-bottom: 10px")
         div.add(desc_wdg)
 
         from tactic.ui.panel import EditWdg
@@ -311,13 +311,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
-        desc_wdg = DivWdg("Determines how the file name matches up to a particular entry")
 
-        #desc_wdg = DivWdg("When update mode is 'Update', if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
-        div.add(desc_wdg)
-
-        div.add("<br/>")
-
+        label_div = DivWdg()
+        label_div.add("Determine how the file maps to a particular item")
+        div.add(label_div)
+        label_div.add_style("margin-top: 10px")
+        label_div.add_style("margin-bottom: 8px")
 
         update_mode_option = my.kwargs.get("update_mode")
         if not update_mode_option:
@@ -336,7 +335,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         label_div.add("Ignore File Extension")
         div.add(label_div)
         label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 5px")
+        label_div.add_style("margin-bottom: 8px")
 
         ignore_ext_option = my.kwargs.get("ignore_ext")
         if not ignore_ext_option:
@@ -353,10 +352,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         label_div = DivWdg()
-        label_div.add("Map file name to column:")
+        label_div.add("Map file name to column")
         div.add(label_div)
         label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 5px")
+        label_div.add_style("margin-bottom: 8px")
 
         column_option = my.kwargs.get("column")
         if not column_option:
@@ -521,6 +520,20 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var button = top.getElement(".spt_upload_file_button");
             button.setStyle("display", "none");
+
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
          '''
          } )
 
@@ -874,6 +887,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_div.add(progress)
         progress.add_class("spt_upload_progress")
         progress.add_style("width: 0px")
+        progress.add_style("visibility: hidden")
         progress.add_style("height: 100%")
         progress.add_gradient("background", "background3", -10)
         progress.add_style("text-align: right")
@@ -894,6 +908,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
+
+        progress_el = top.getElement(".spt_upload_progress");
+        progress_el.setStyle("visibility", "visible");
+
         '''
 
         upload_progress = '''
@@ -919,6 +937,14 @@ class IngestUploadWdg(BaseRefreshWdg):
                 var file_els = top.getElements(".spt_upload_file");
                 for ( var i = 0; i < file_els.length; i++) {
                 spt.behavior.destroy( file_els[i] );
+
+                
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = ''; 
+                progress_el = top.getElement(".spt_upload_progress");
+                progress_el.setStyle("visibility", "hidden");
+
+
                 };''' + oncomplete_script_ret
                 script_found = True
             else:
@@ -946,6 +972,9 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var info_el = top.getElement(".spt_upload_info");
             info_el.innerHTML = ''; 
+            progress_el = top.getElement(".spt_upload_progress");
+            progress_el.setStyle("visibility", "hidden");
+
 
             if (spt.table)
             {
@@ -997,7 +1026,15 @@ class IngestUploadWdg(BaseRefreshWdg):
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
-        //var keywords = values.keywords[0];
+
+        var keywords = values["edit|user_keywords"];
+
+        if (keywords) {
+            keywords = keywords[0];
+        }
+        else {
+            keywords = "";
+        }
 
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
@@ -1028,7 +1065,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             key: key,
             parent_key: parent_key,
             //category: category,
-            //keywords: keywords,
+            keywords: keywords,
             extra_data: extra_data,
             update_data: update_data,
             process: process,
@@ -1080,6 +1117,18 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
+
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
 
          '''
          } )
@@ -1602,24 +1651,31 @@ class IngestUploadCmd(Command):
             else:
                 path = filename
 
-            # extract keywords from filename
-            file_keywords = Common.extract_keywords_from_path(path)
+            # Extracting keywords from filename only because all Assets will 
+            # have the keywords [project_name]/[search_type name]/[Ingest]
+            file_keywords = Common.extract_keywords_from_path(filename)
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
+            new_file_keywords = ""
+
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
-                    file_keywords = "%s %s " % (keywords, file_keywords)
+                    new_file_keywords = "%s %s" % (keywords, file_keywords)
+                else:
+                    new_file_keywords = file_keywords
 
-                if file_keywords:
-                    sobject.set_value("keywords", file_keywords)
+                sobject.set_value("keywords", new_file_keywords)
 
+            if SearchType.column_exists(search_type, "user_keywords"):
+                if keywords:
+                    sobject.set_value("user_keywords", keywords)
 
-            if sobject.column_exists("keywords_data"):
+            if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
-                data['path'] = file_keywords.split(" ")
+                data['user'] = keywords
+                data['path'] = file_keywords
                 sobject.set_json_value("keywords_data", data)
-
 
 
 
