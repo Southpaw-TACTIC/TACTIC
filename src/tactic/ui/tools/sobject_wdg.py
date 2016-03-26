@@ -582,6 +582,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if my.sobject.get_value("_is_collection", no_exception=True):
             tabs.append("collection")
 
+            if "file_detail" in tabs:
+                tabs.remove("file_detail")
+
+            if "checkin_history" in tabs:
+                tabs.remove("checkin_history")
 
         for tab in tabs:
 
@@ -762,15 +767,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
             elif tab == "collection":
+                search_type = values['search_type']
+                parts = search_type.split("/")
+                values['collection_type'] = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+                values['expression'] = "@SOBJECT(collection:%(collection_type)s.%(search_type)s)" % values
+
                 config_xml.append('''
                 <element name="collection" title="Collection">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <view>table</view>
+                  <display class='tactic.ui.panel.TileLayoutWdg'>
                     <layout>tile</layout>
                     <show_shelf>false</show_shelf>
+                    <width>100%%</width>
                     <search_key>%(search_key)s</search_key>
-                    <search_type>jobs/media_in_media</search_type>
-                    <element_names>preview,search_code</element_names>
+                    <search_type>%(search_type)s</search_type>
+                    <expression>%(expression)s</expression>
                   </display>
                 </element>
                 ''' % values)
