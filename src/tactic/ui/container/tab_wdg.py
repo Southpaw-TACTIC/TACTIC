@@ -274,6 +274,17 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var subelement_name = "";
     }
 
+    if (title.indexOf("/") != -1) {
+        var full_title = title;
+        var parts = title.split("/");
+        title = parts[0];
+        subelement_title = parts[1];
+    }
+    else {
+        var full_title = title;
+        var subelement_title = title;
+    }
+
    
     //var headers = header_top.getElements(".spt_tab_header");
     var headers = spt.tab.get_headers();
@@ -296,21 +307,28 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
         // clone the header template
         var header = spt.behavior.clone(header_template);
+        var header_id = Math.floor(Math.random()*10000000+1);
+        header.setAttribute("id", header_id);
 
 
         // add a subheader template for each header
         var subheader_template = template_top.getElement(".spt_tab_subheader");
         if (subheader_template) {
             var subheader = spt.behavior.clone(subheader_template);
+
             var subheader_id = Math.floor(Math.random()*10000000+1);
             header.setAttribute("spt_subheader_id", subheader_id);
+
             subheader.setAttribute("id", subheader_id);
             subheader.setStyle("display", "none");
+
+            subheader.setAttribute("spt_header_id", header_id);
 
             subheader_top = top.getElement(".spt_tab_subheader_top")
             subheader.inject(subheader_top);
         }
-        
+       
+
         var last_header = headers[headers.length -1];
 
         // set the new label
@@ -364,12 +382,14 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var subheaders = subheader_top.getElements(".spt_tab_subheader_item");
 
         var subheader_exists = false;
+        var subheader = null;
         for (var i = 0; i < subheaders.length; i++) {
             var box_name = subheaders[i].getAttribute("spt_element_name");
             if (full_element_name == box_name) {
                 subheader_exists = true;
+                subheader = subheaders[i];
+                break;
             }
-            
         }
 
         if (subheader_exists == false) {
@@ -383,13 +403,13 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
             // set the new label
             var label = subheader.getElement(".spt_tab_header_label");
-            var display_title = title;
+            var display_title = subelement_title;
             if (display_title.length > 20) {
-                display_title = title.substr(0,18) + "...";
+                display_title = subelement_title.substr(0,18) + "...";
             }
             title = subelement_name;
 
-            label.setAttribute("title", title);
+            label.setAttribute("title", subelement_title);
             label.innerHTML = display_title;
 
             subheader.setAttribute("spt_class_name", class_name);
@@ -397,7 +417,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             kwargs_str = kwargs_str.replace(/\"/,"&quote;");
             subheader.setAttribute("spt_kwargs", kwargs_str);
             subheader.setAttribute("spt_element_name", full_element_name);
-            subheader.setAttribute("spt_title", title);
+            subheader.setAttribute("spt_title", full_title);
             subheader.setAttribute("spt_tab_id", top_id);
             subheader.removeClass("spt_content_loaded");
 
@@ -409,7 +429,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             var content_box = spt.behavior.clone(content_template);
 
             content_box.setAttribute("spt_element_name", full_element_name);
-            content_box.setAttribute("spt_title", title);
+            content_box.setAttribute("spt_title", full_title);
             content_box.setAttribute("spt_tab_id", top_id);
 
             var content_boxes = spt.tab.get_contents();
@@ -417,6 +437,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             content_box.inject(last_content, "after");
 
             //return;
+
+
         }
 
     }
@@ -439,6 +461,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
     if (typeof(class_name) == 'undefined') {
         spt.tab.select(element_name);
+    }
+    else if (subelement_name) {
+        spt.tab.load_class(subheader, class_name, kwargs, values, force);
     }
     else {
         spt.tab.load_class(header, class_name, kwargs, values, force);
@@ -506,7 +531,11 @@ spt.tab.load_selected = function(element_name, title, class_name, kwargs, values
     header.setAttribute("spt_kwargs", kwargs_str);
 
     var label = header.getElement(".spt_tab_header_label");
-    label.innerHTML = title;
+    var display_title = title;
+    if (display_title.length > 20) {
+        display_title = title.substr(0,18) + "...";
+    }
+    label.innerHTML = display_title;
 
     var content_top = top.getElement(".spt_tab_content_top");
     var content_boxes = content_top.getElements(".spt_tab_content");
@@ -588,7 +617,7 @@ spt.tab.select = function(element_name) {
     header.addClass("spt_is_selected");
     header.addClass("spt_tab_selected");
     header.removeClass("spt_tab_unselected");
-    header.setStyle("font-weight", "bold");
+    //header.setStyle("font-weight", "bold");
     header.setStyle("z-index", "200");
 
 
@@ -673,6 +702,18 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     }
 
 
+    // get the real header
+    // Not sure about this ... this remaps the subheader to the header
+    // thereby loading the subheader contents into the header
+    /*
+    if (header.hasClass("spt_tab_subheader_item")) {
+        var subheader_top = header.getParent(".spt_tab_subheader");
+        header_id = subheader_top.getAttribute("spt_header_id");
+        header = $(header_id);
+    }
+    */
+
+
     var top = spt.tab.top;
     var header_top = top.getElement(".spt_tab_header_top");
     var top_id = top.getAttribute("id");
@@ -692,13 +733,14 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
         }
 
 
+        // select the header
         header.setStyle("opacity", "1.0");
         header.addClass("spt_is_selected");
         header.addClass("spt_tab_selected");
         header.removeClass("spt_tab_unselected");
-
-        //header.setStyle("font-weight", "bold");
         header.setStyle("z-index", "200");
+
+
 
         var content_top = top.getElement(".spt_tab_content_top");
         var content_boxes = spt.tab.get_contents();
@@ -2252,6 +2294,7 @@ spt.tab.close = function(src_el) {
             }
 
             spt.tab.load_selected(element_name, title, display_class, kwargs);
+
             '''
         } )
         subheader_top.add_relay_behavior( {
