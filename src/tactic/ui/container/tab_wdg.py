@@ -256,7 +256,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         if (header) {
             var num = Math.floor((Math.random()*10000)+1); 
             element_name = element_name + num;
-            //title = title + num;
         }
     }
 
@@ -265,11 +264,13 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
 
     if (element_name.indexOf("/") != -1) {
+        var full_element_name = element_name;
         var parts = element_name.split("/");
         element_name = parts[0];
         var subelement_name = parts[1];
     }
     else {
+        var full_element_name = element_name;
         var subelement_name = "";
     }
 
@@ -287,12 +288,13 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             break;
         }
     }
-    
-    if (!found) {
 
+    // add a new tab
+    if (!found) {
         var template_top = top.getElement(".spt_tab_template_top");
-        //var header_top = top.getElement(".spt_tab_header_top");
         var header_template = template_top.getElement(".spt_tab_header");
+
+        // clone the header template
         var header = spt.behavior.clone(header_template);
 
 
@@ -300,10 +302,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var subheader_template = template_top.getElement(".spt_tab_subheader");
         if (subheader_template) {
             var subheader = spt.behavior.clone(subheader_template);
-            var subheader_id = Math.floor(Math.random()*1000000+1);
+            var subheader_id = Math.floor(Math.random()*10000000+1);
             header.setAttribute("spt_subheader_id", subheader_id);
             subheader.setAttribute("id", subheader_id);
-            //subheader.setStyle("display", "none");
+            subheader.setStyle("display", "none");
 
             subheader_top = top.getElement(".spt_tab_subheader_top")
             subheader.inject(subheader_top);
@@ -352,7 +354,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         content_box.inject(last_content, "after");
 
     }
-    else if (subelement_name) {
+
+
+    // if a subtab is needed, create that
+    if (subelement_name) {
         // find out if the subheader exists
         var subheader_id = header.getAttribute("spt_subheader_id");
         var subheader_top = $(subheader_id);
@@ -361,7 +366,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var subheader_exists = false;
         for (var i = 0; i < subheaders.length; i++) {
             var box_name = subheaders[i].getAttribute("spt_element_name");
-            if (subelement_name == box_name) {
+            if (full_element_name == box_name) {
                 subheader_exists = true;
             }
             
@@ -369,11 +374,11 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
         if (subheader_exists == false) {
 
-
             // create a new one
             var subheader = $(document.createElement("div"));
-            subheader.innerHTML = "<div class='spt_tab_subheader_item' style='padding: 3px 5px'><div class='spt_tab_header_label'>"+subelement_name+"</div></div>";
+            subheader.innerHTML = "<div style='padding: 5px 5px'><div class='spt_tab_header_label'>"+subelement_name+"</div></div>";
             subheader_top.appendChild(subheader);
+            subheader.addClass("spt_tab_subheader_item");
 
 
             // set the new label
@@ -391,7 +396,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             var kwargs_str = JSON.stringify(kwargs);
             kwargs_str = kwargs_str.replace(/\"/,"&quote;");
             subheader.setAttribute("spt_kwargs", kwargs_str);
-            subheader.setAttribute("spt_element_name", element_name);
+            subheader.setAttribute("spt_element_name", full_element_name);
             subheader.setAttribute("spt_title", title);
             subheader.setAttribute("spt_tab_id", top_id);
             subheader.removeClass("spt_content_loaded");
@@ -402,9 +407,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             var content_top = top.getElement(".spt_tab_content_top");
             var content_template = template_top.getElement(".spt_tab_content");
             var content_box = spt.behavior.clone(content_template);
-            alert(content_box);
 
-            content_box.setAttribute("spt_element_name", element_name);
+            content_box.setAttribute("spt_element_name", full_element_name);
             content_box.setAttribute("spt_title", title);
             content_box.setAttribute("spt_tab_id", top_id);
 
@@ -412,18 +416,14 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             var last_content = content_boxes[content_boxes.length -1];
             content_box.inject(last_content, "after");
 
-            return;
-        }
-
-        else {
-            alert("RELOAD");
-
+            //return;
         }
 
     }
 
 
-    else {
+    //else {
+    if (true) {
         var content_top = top.getElement(".spt_tab_content_top");
         var content_boxes = content_top.getElements(".spt_tab_content");
         for (var i=0; i < content_boxes.length; i++) {
@@ -435,6 +435,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             }
         }
     }
+
+
     if (typeof(class_name) == 'undefined') {
         spt.tab.select(element_name);
     }
@@ -482,8 +484,7 @@ spt.tab.getY = function(oElement)
 
 spt.tab.load_selected = function(element_name, title, class_name, kwargs, values) {
     var top = spt.tab.top;
-    //var content_top = top.getElement(".spt_tab_content_top");
-    //var content_boxes = content_top.getElements(".spt_tab_content");
+
 
     var header = spt.tab.get_selected_header();
     // if none are selected, use the last one
@@ -1214,7 +1215,7 @@ spt.tab.close = function(src_el) {
         subheader_div.add_class("spt_tab_subheader_top")
         inner.add(subheader_div)
         my.add_subheader_behaviors(subheader_div)
-        subheader_div.add_style("display: none")
+        #subheader_div.add_style("display: none")
  
 
 
@@ -1249,7 +1250,10 @@ spt.tab.close = function(src_el) {
         header_defs = {}
 
         title_dict = {}
+
         my.add_context_menu( header_div )
+
+
         loaded_dict = {}
         for element_name in element_names:
             attrs = config.get_element_attributes(element_name)
@@ -1526,7 +1530,7 @@ spt.tab.close = function(src_el) {
         # subheader test
         subheader = my.get_tab_subheader(name, title, None, None, is_selected=is_selected, is_template=True, config=config)
         template_div.add(subheader)
-        subheader.add_style("z-index: 1")
+        subheader.add_style("z-index: 3")
 
         header.add_behavior( {
             'type': 'click',
@@ -1545,6 +1549,11 @@ spt.tab.close = function(src_el) {
             }
 
             var el = $(subheader_id);
+            var items = el.getElements(".spt_tab_subheader_item");
+            if (items.length == 0) {
+                return;
+            }
+
             var size = bvr.src_el.getSize();
             var pos = bvr.src_el.getPosition(header_top);
 
@@ -2070,6 +2079,7 @@ spt.tab.close = function(src_el) {
         title_div.add_attr("nowrap", "nowrap")
         title_div.add_style("float: left")
         title_div.add_class("spt_tab_header_label");
+        #title_div.add_style("text-overflow: ellipsis")
         if len(title) > 20:
             display_title = "%s..." % title[:18]
         else:
@@ -2163,7 +2173,9 @@ spt.tab.close = function(src_el) {
         subheader_div.add_style("top: 28px")
         subheader_div.add_style("padding: 10px 5px")
 
-        for element_name in ['my_tasks','all_orders','all_deliverables']:
+        #element_names = ['my_tasks','all_orders','all_deliverables']
+        element_names = []
+        for element_name in element_names:
             attrs = config.get_element_attributes(element_name)
             title = attrs.get("title")
             if not title:
@@ -2219,15 +2231,27 @@ spt.tab.close = function(src_el) {
 
     def add_subheader_behaviors(my, subheader_top):
 
+        subheader_top.set_unique_id()
+        subheader_top.add_smart_style("spt_tab_subheader_item", "pointer", "cursor")
+
         subheader_top.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_tab_subheader_item',
             'cbjs_action': '''
+            var element_name = bvr.src_el.getAttribute("spt_element_name");
             var title = bvr.src_el.getAttribute("spt_title");
-            var display_class = = bvr.src_el.getAttribute("spt_class_name")
-            var display_options = = bvr.src_el.getAttribute("spt_kwargs")
+            var display_class = bvr.src_el.getAttribute("spt_class_name");
+            var kwargs_str = bvr.src_el.getAttribute("spt_kwargs");
 
-            spt.panel.load_popup(bvr.title, bvr.display_class, bvr.display_options);
+            if (!kwargs_str) {
+                kwargs = {}
+            }
+            else {
+                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs = JSON.parse(kwargs_str);
+            }
+
+            spt.tab.load_selected(element_name, title, display_class, kwargs);
             '''
         } )
         subheader_top.add_relay_behavior( {
@@ -2246,6 +2270,13 @@ spt.tab.close = function(src_el) {
         } )
 
 
+        subheader_top.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_tab_subheader',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("display", "none");
+            '''
+        } )
 
 
 

@@ -600,7 +600,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                 search_key: search_key,
                 tab_element_names: bvr.detail_element_names
             };
-            spt.tab.add_new(search_code, name, class_name, kwargs);
+
+            var element_name = "Asset/"+search_code;
+            spt.tab.add_new(element_name, name, class_name, kwargs);
             '''
         } )
 
