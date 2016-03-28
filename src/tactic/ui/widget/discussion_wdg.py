@@ -20,7 +20,7 @@ from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
 from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import SwapDisplayWdg, CheckboxWdg, IconButtonWdg, IconWdg, TextWdg, TextAreaWdg, SelectWdg, ProdIconButtonWdg, HiddenWdg
-from pyasm.prod.biz import ProdSetting
+from pyasm.biz import ProjectSetting
 #from tactic.ui.panel import TableLayoutWdg
 from tactic.ui.container import DialogWdg, MenuWdg, MenuItem, SmartMenu, Menu
 from pyasm.security import Login
@@ -501,7 +501,48 @@ class DiscussionWdg(BaseRefreshWdg):
                         default_contexts_open.push(context);
                 }
             }
-            spt.panel.refresh(discussion_top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
+
+            var top = discussion_top;
+           
+            var dialog_content = top.getElement(".spt_discussion_content");
+            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_context_top") : null;
+
+            // refresh the dialog and the note count for this context
+            if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                var parent_key = dialog_content.getAttribute('spt_parent_key');
+                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                var kwargs = {
+                    parent_key: parent_key,
+                    context: dialog_content.getAttribute('spt_context'),
+                    default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                    note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                    note_format: dialog_content.getAttribute('spt_note_format')
+                }
+
+                // clear textarea and toggle add widget
+                var text = top.getElement('textarea[@name=note]');
+                if (text)
+                    text.value = '';
+                var add_note = top.getElement(".spt_discussion_add_note");
+                if (add_note)
+                    spt.toggle_show_hide(add_note);
+
+                // update dialog
+                
+                spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
+               
+                // update note count
+                var note_count_div = group_top.getElement('.spt_note_count');
+
+                var s = TacticServerStub.get();
+                var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
+                note_count_div.innerHTML = '(' + note_count + ')';
+
+            }
+            else {
+                spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
+            }
+
         }'''
 
 
@@ -1049,7 +1090,7 @@ class DiscussionWdg(BaseRefreshWdg):
         my.show_note_status = my.kwargs.get("show_note_status")
         if my.show_note_status in ['true', True]:
             my.show_note_status = True
-            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
+            my.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
             my.show_note_status = False
 
@@ -1127,16 +1168,49 @@ class DiscussionWdg(BaseRefreshWdg):
             '''
         } )
 
+        
         stype = 'sthpw/note'
+        
+        if my.use_parent == 'true':
+            expr_key = my.parent.get_search_key()
+        else:
+            expr_key = search_key
+
         update_div.add_update( {
                "search_type": stype,
                'compare': "@COUNT(sthpw/note) == %s" %len(notes),
-               'expr_key': search_key,
+               'expr_key': expr_key,
                'interval': 2,
                "cbjs_action": '''
             var top = bvr.src_el.getParent(".spt_discussion_top");
-           
-            spt.panel.refresh(top);
+            var dialog_content = top.getElement(".spt_discussion_content");
+
+            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_context_top") : null;
+            
+            // update dialog and the count if dialog is visible 
+            if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                var parent_key = dialog_content.getAttribute('spt_parent_key');
+                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                var kwargs = {
+                    parent_key: parent_key,
+                    context: dialog_content.getAttribute('spt_context'),
+                    default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                    note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                    note_format: dialog_content.getAttribute('spt_note_format')
+                }
+                spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
+                var note_count_div = group_top.getElement('.spt_note_count');
+                
+                var s = TacticServerStub.get();
+                var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
+                note_count_div.innerHTML = '(' + note_count + ')';
+
+            }
+            else {
+                spt.panel.refresh(top);
+            }
+
+
             '''
         })
 
@@ -1408,13 +1482,16 @@ class DiscussionWdg(BaseRefreshWdg):
             content.add_style("min-height: 150px")
             content.add_class("spt_discussion_content")
             content.add_color("background", "background")
-
+            
+            # context and parent_key are for dynamic update
             context_wdg.add_behavior( {
                 'type': 'click_up',
                 'note_keys': note_keys,
                 'default_num_notes': my.default_num_notes,
                 'note_expandable': my.note_expandable,
                 'note_format': my.note_format,
+                'context': context,
+                'parent_key': my.parent.get_search_key(),
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_discussion_context_top");
                 if (top.getAttribute("spt_is_loaded") == "true") {
@@ -1427,6 +1504,8 @@ class DiscussionWdg(BaseRefreshWdg):
                     default_num_notes: bvr.default_num_notes,
                     note_expandable: bvr.note_expandable,
                     note_format: bvr.note_format,
+                    context: bvr.context,
+                    parent_key: bvr.parent_key
                 }
 
                 var el = top.getElement(".spt_discussion_content");
@@ -1437,6 +1516,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 '''
             } )
 
+            """
             notes_wdg = NoteCollectionWdg(
                     notes=notes_list,
                     default_num_notes=my.default_num_notes,
@@ -1446,9 +1526,9 @@ class DiscussionWdg(BaseRefreshWdg):
                     note_format=my.note_format,
                     attachments=my.attachments,
             )
-
+            
             #note_dialog.add(notes_wdg)
-
+            """
         return top
 
 
@@ -1491,7 +1571,7 @@ class DiscussionWdg(BaseRefreshWdg):
             display_context = context
         div.add(display_context)
 
-        count_div = SpanWdg()
+        count_div = SpanWdg(css="spt_note_count")
         div.add(count_div)
         count = my.context_counts.get(context)
         count_div.add("(%s)" % count)
@@ -1515,8 +1595,19 @@ class NoteCollectionWdg(BaseRefreshWdg):
     def get_display(my):
         notes = my.kwargs.get("notes")
         note_keys = my.kwargs.get("note_keys")
+        parent_key = my.kwargs.get("parent_key")
+        context = my.kwargs.get("context")
+        
+        
         if note_keys:
             notes = Search.get_by_search_keys(note_keys)
+        elif parent_key:
+            # during dynamic update, parent_key and context are used
+            parent = Search.get_by_search_key(parent_key)
+            notes = Search.eval("@SOBJECT(sthpw/note['context','%s'])"%context, sobjects=[parent])
+            
+        if not notes:
+            return my.top
 
         my.default_num_notes = my.kwargs.get("default_num_notes")
         my.note_expandable = my.kwargs.get("note_expandable")
@@ -1545,7 +1636,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
         if my.show_note_status:
-            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
+            my.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
             my.note_status_dict = {}
 
@@ -1553,7 +1644,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
         div = my.top
-
+        
         context_count = 0
 
 
@@ -1602,9 +1693,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         div = DivWdg()
         widget = NoteWdg(
             note=note,
-
             note_hidden=note_hidden,
-
             note_expandable=my.note_expandable,
             show_note_status=my.show_note_status,
             note_format=my.note_format,
@@ -1615,18 +1704,13 @@ class NoteCollectionWdg(BaseRefreshWdg):
         div.add(widget)
         return div
 
-        """
-        if my.show_note_status:
-            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
-        else:
-            my.note_status_dict = {}
-
-        my.note_format = my.kwargs.get("note_format")
-        """
+     
 
 
 class NoteWdg(BaseRefreshWdg):
     """Display of a single note.  Used by NoteCollectionWdg."""
+
+ 
 
     def get_display(my):
         note = my.kwargs.get("note")
@@ -1647,7 +1731,7 @@ class NoteWdg(BaseRefreshWdg):
 
 
         if my.show_note_status:
-            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
+            my.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
             my.note_status_dict = {}
 
@@ -1660,7 +1744,7 @@ class NoteWdg(BaseRefreshWdg):
     def get_note_menu(my):
  
         menu = Menu(width=120)
-        menu_item = MenuItem(type='title', label='Actions ...')
+        menu_item = MenuItem(type='title', label='Actions...')
         menu.add(menu_item)
 
         menu_item = MenuItem(type='action', label='Edit Note')
@@ -1725,6 +1809,55 @@ class NoteWdg(BaseRefreshWdg):
             '''
         } )
 
+        menu_item = MenuItem(type='action', label='Edit Status')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_note_top");
+            var search_key = top.getAttribute("note_search_key");
+            
+           
+            var server = TacticServerStub.get();
+            var wdg = '';
+            try {
+                var class_name = 'tactic.ui.widget.NoteStatusEditWdg';
+                var kwargs = {args: {search_key: search_key}};
+                var wdg = server.get_widget(class_name, kwargs);
+            }
+            catch(e) {
+                spt.alert(spt.exception.handler(e));
+            }
+            
+            var ok = function(button) {
+            
+                var server = TacticServerStub.get();
+                var status_sel  = button.getParent('.content').getElement("[name='note_status']");
+                if (status_sel) {
+                    var status = status_sel.value;
+                    try{
+                        var title = 'Saving Note Status';
+                        server.update(search_key, {status: status});
+                        spt.discussion.refresh(top);
+                    }
+                    catch(e) {
+                        spt.alert(spt.exception.handler(e));
+                    }
+                }
+                    
+            };
+            
+            spt.prompt('Edit note status:', ok, 
+                {title: 'Edit Note Status',
+                 okText: 'Save',
+                custom_html: wdg
+                });
+
+            
+            
+            '''
+        } )
 
         return menu
 
@@ -1736,7 +1869,8 @@ class NoteWdg(BaseRefreshWdg):
         mode = "dialog"
 
         div = DivWdg()
-        my.set_as_panel(div)
+        # this is not meant to be refreshed
+        #my.set_as_panel(div)
         div.add_class("spt_note")
         div.add_attr('note_search_key', note.get_search_key())
         div.add_class("spt_note_top")
@@ -1789,7 +1923,7 @@ class NoteWdg(BaseRefreshWdg):
         current_login = Environment.get_user_name()
         if current_login == login:
 
-            icon = IconButtonWdg(title="Options", icon="BS_CHEVRON_DOWN")
+            icon = IconButtonWdg(title="Options", icon="BS_LIST")
             title.add(icon)
             icon.add_style("float: right")
             icon.add_style("margin-top: -3px");
@@ -1840,12 +1974,19 @@ class NoteWdg(BaseRefreshWdg):
             
            
         if short_note:
-            title.add("%s - %s" % (display_name, short_note) )
+            title.add("<div style='float: left'> %s - %s</div>" % (display_name, short_note) )
         else:
-            title.add("<b style='font-size: 1.1em'>%s</b>" % (display_name) )
+            title.add("<b style='float: left; font-size: 1.1em'>%s</b>" % (display_name) )
 
+        note_status = note.get('status')
+        if note_status:
+            status_div = DivWdg(note_status[0].upper())
+            status_div.add_attr('title', note_status)
+            status_div.add_styles('float: left; font-weight: 800; width: 12px; padding: 0 6 0 6; margin-bottom: 2px')
+            title.add(status_div)
 
-        title.add("<div style='float: right'>%s</div>" % display_date)
+        
+        title.add("<div style='float: right; padding-right: 2px'>%s</div>" % display_date)
         title.add_attr("title", display_date_full)
 
         if my.show_note_status:
@@ -2424,11 +2565,12 @@ class NoteStatusEditWdg(BaseRefreshWdg):
     ''' Custom widget used in the prompt for changing note status'''
 
     def get_display(my):
-        values_map = ProdSetting.get_map_by_key('note_status')
+        values_map = ProjectSetting.get_map_by_key('note_status')
         if not values_map:
             # put in a default
-            ProdSetting.create('note_status', 'new:N|read:R|old:O|:', 'map',\
+            ProjectSetting.create('note_status', 'new:N|read:R|old:O|:', 'map',\
                 description='Note Statuses', search_type='sthpw/note')
+            values_map = ProjectSetting.get_map_by_key('note_status')
 
         labels = []
         values = []
