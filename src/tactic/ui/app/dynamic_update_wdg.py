@@ -542,10 +542,7 @@ class DynamicUpdateCmd(Command):
 
 
 
-
-from pyasm.unittest import *
 import unittest
-
 
 class UpdateTest(unittest.TestCase):
 
@@ -568,6 +565,7 @@ class UpdateTest(unittest.TestCase):
         WebInit().execute()
 
         # Set up test environment
+        from pyasm.unittest import Sample3dEnvironment
         test_env = Sample3dEnvironment(project_code='sample3d')
         Project.set_project("sample3d")
         test_env.create()
@@ -783,6 +781,5 @@ class UpdateTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 
