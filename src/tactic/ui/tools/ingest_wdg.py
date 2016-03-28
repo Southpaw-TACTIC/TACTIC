@@ -1662,14 +1662,16 @@ class IngestUploadCmd(Command):
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
                     new_file_keywords = "%s %s" % (keywords, file_keywords)
-                if new_file_keywords:
-                    sobject.set_value("keywords", new_file_keywords)
+                else:
+                    new_file_keywords = file_keywords
+
+                sobject.set_value("keywords", new_file_keywords)
 
             if SearchType.column_exists(search_type, "user_keywords"):
                 if keywords:
                     sobject.set_value("user_keywords", keywords)
 
-            if sobject.column_exists("keywords_data"):
+            if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
                 data['user'] = keywords
                 data['path'] = file_keywords
