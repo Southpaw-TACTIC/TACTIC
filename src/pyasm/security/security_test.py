@@ -27,7 +27,6 @@ from access_manager import *
 from batch import *
 from crypto_key import *
 
-
 import unittest
 
 class SecurityTest(unittest.TestCase):
@@ -181,6 +180,8 @@ class SecurityTest(unittest.TestCase):
             my._test_search_filter()
             my._test_access_level()
             my._test_access_manager()
+        
+            my._test_guest_allow()
         except Exception, e:
             print "Error: ", e
             raise
@@ -742,7 +743,46 @@ class SecurityTest(unittest.TestCase):
             raise SecurityException('Please test with security version 2. Set it in your config file')
 
 
-      
+
+    def _test_guest_allow(my):
+        '''test Config tag allow_guest in security tag.
+        Note: Since it is hard to emulate AppServer class, 
+        this is based on logic which handles in _get_display 
+        of BaseAppServer.
+        
+        1. If allow_guest is false, then it is necessary that 
+        Sudo is instantiated.
+
+        2. If allow_guest is true, then it is necessary that 
+        guest login rules are added and login_as_guest is
+        executed.
+        '''
+
+        security = Security()
+        Environment.set_security(security)
+        
+        #1. allow_guest is false
+        sudo = Sudo()
+        sudo.exit()
+
+        #2. allow_guest is true
+        Site.set_site("default")
+        try:
+            security.login_as_guest()
+            ticket_key = security.get_ticket_key()
+            access_manager = security.get_access_manager()
+            xml = Xml()
+            xml.read_string('''
+            <rules>
+              <rule column="login" value="{$LOGIN}" search_type="sthpw/login" access="deny" op="!=" group="search_filter"/>
+            </rules>
+            ''')
+            access_manager.add_xml_rules(xml)
+        finally:
+            Site.pop_site()
+
+       
+         
 
 if __name__ == "__main__":
     unittest.main()
