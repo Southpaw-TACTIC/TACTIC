@@ -850,11 +850,6 @@ class AceEditorWdg(BaseRefreshWdg):
                     }
                     spt.ace_editor.set_language(bvr.language);
                     editor.setReadOnly(bvr.readonly);
-
-
-                    var session = editor.getSession();
-                    //session.setUseWrapMode(true);
-                    //session.setWrapLimitRange(120, 120);
                 };
 
                 var editor = spt.ace_editor.editor;
@@ -1110,6 +1105,15 @@ spt.ace_editor.set_language = function(value) {
         mode = require("ace/mode/javascript").Mode;
     }
     session.setMode( new mode() );
+
+    // Extra features
+    if (value == "python") {
+        session.setUseWrapMode(true);
+        session.setWrapLimitRange(80, 80);
+    } else {
+        session.setUseWrapMode(false);
+    }
+
 }
 
 spt.ace_editor.drag_start_x;

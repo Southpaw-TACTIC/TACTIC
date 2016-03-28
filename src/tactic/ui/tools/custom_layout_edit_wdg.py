@@ -1013,11 +1013,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             tab.add(html_div)
 
             # Mako
+            if mako.startswith('\n'):
+                mako = mako[1:]
+            
             mako_div = DivWdg()
             mako_div.add_class("spt_mako_tab")
             tab.add(mako_div)
             mako_div.set_name("python")
-            # replace the placeholder
             
             title_wdg = my.get_title_wdg("Python", content_id, is_on=True)
             mako_div.add(title_wdg)
