@@ -762,9 +762,18 @@ class SecurityTest(unittest.TestCase):
         Environment.set_security(security)
         
         #1. allow_guest is false
-        sudo = Sudo()
+        fail = False
+        try:
+            sudo = Sudo()
+        except Exception as e:
+            fail = True
+        my.assertEquals( False, fail ) 
         sudo.exit()
-
+        
+        key = [{'code': "*"}]
+        project_access = security.check_access("project", key, "allow")
+        my.assertEquals(project_access, False)
+        
         #2. allow_guest is true
         Site.set_site("default")
         try:
@@ -775,11 +784,22 @@ class SecurityTest(unittest.TestCase):
             xml.read_string('''
             <rules>
               <rule column="login" value="{$LOGIN}" search_type="sthpw/login" access="deny" op="!=" group="search_filter"/>
+              <rule group="project" code="default" access="allow"/>
             </rules>
             ''')
             access_manager.add_xml_rules(xml)
         finally:
             Site.pop_site()
+       
+        
+        default_key = [{'code': "default"}]
+        project_access = security.check_access("project", default_key, "allow")
+        my.assertEquals(project_access, True)  
+        
+        unittest_key = [{'code', "sample3d"}]
+        project_access = security.check_access("project", unittest_key, "allow")
+        my.assertEquals(project_access, False)  
+        
 
        
          
