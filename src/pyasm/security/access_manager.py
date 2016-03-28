@@ -81,7 +81,7 @@ class AccessManager(Base):
     def set_up(my):
         if my.was_admin == None:
             security = Environment.get_security()
-            if not security._is_logged_in:
+            if security._login and not security._is_logged_in:
                 security._groups = []
                 security._group_names = []
                 security._find_all_login_groups()
