@@ -3664,6 +3664,12 @@ class TacticServerStub(object):
 
         @return:
             boolean - True or False
+
+        @usage:
+
+            # check if one is allowed to view the project called workflow1
+            server.check_access('project', [{'code','workflow1'},{'code','*}], 'allow')
+
         '''
         return my.server.check_access(my.ticket, access_group, key, access, value, is_match, default)
 
