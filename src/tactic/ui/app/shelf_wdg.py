@@ -203,11 +203,12 @@ class ScriptEditorWdg(BaseRefreshWdg):
             script_folder = ''
             script_name = ''
             script_value = ''
+            script_language = ''
 
 
 
 
-        editor = AceEditorWdg(custom_script=script_sobj)
+        editor = AceEditorWdg(custom_script=script_sobj, language=script_language)
         my.editor_id = editor.get_editor_id()
 
 
@@ -310,6 +311,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
         div.add( "<br clear='all'/><br/>")
 
         save_wdg = DivWdg()
+        save_wdg.add_class("spt_script_path")
         div.add(save_wdg)
         save_wdg.add_style("padding: 2px 5px 6px 5px")
         #save_wdg.add_color("background", "background", -5)
@@ -572,6 +574,10 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     if (script_text) {
         spt.ace_editor.set_value(script_text);
     }
+ 
+    if (script_language) {
+        spt.ace_editor.set_language(script_language);
+    }
 
     //editAreaLoader.setValue("shelf_script", script_text);
     //editAreaLoader.setSelectionRange("shelf_script", 0, 0);
@@ -778,10 +784,10 @@ class AceEditorWdg(BaseRefreshWdg):
         select.add_style("display: inline")
         options_div.add(select)
         select.set_option("labels", "8 pt|9 pt|10 pt|11 pt|12 pt|14 pt|16 pt")
-        select.set_option("values", "8 pt|9pt|10pt|11pt|12pt|14pt|16pt")
+        select.set_option("values", "8pt|9pt|10pt|11pt|12pt|14pt|16pt")
         select.set_value("10pt")
         select.add_behavior( {
-            'type': 'click_up',
+            'type': 'change',
             'editor_id': my.get_editor_id(),
             'cbjs_action': '''
             spt.ace_editor.set_editor(bvr.editor_id);
@@ -837,7 +843,9 @@ class AceEditorWdg(BaseRefreshWdg):
                 'readonly': readonly,
                 'cbjs_action': '''
                 spt.ace_editor.set_editor(bvr.editor_id);
+                
                 var func = function() {
+                    spt.ace_editor.set_editor(bvr.editor_id);
                     var editor = spt.ace_editor.editor;
                     var document = editor.getSession().getDocument();
                     if (bvr.code) {
@@ -845,16 +853,11 @@ class AceEditorWdg(BaseRefreshWdg):
                     }
                     spt.ace_editor.set_language(bvr.language);
                     editor.setReadOnly(bvr.readonly);
-
-
-                    var session = editor.getSession();
-                    //session.setUseWrapMode(true);
-                    //session.setWrapLimitRange(120, 120);
                 };
 
                 var editor = spt.ace_editor.editor;
                 if (!editor) {
-                    setTimeout( func, 1000);
+                    setTimeout( func, 2000);
                 }
                 else {
                     func();
@@ -896,7 +899,6 @@ class AceEditorWdg(BaseRefreshWdg):
 
         my.text_area.add_style("margin-top: -1px")
         my.text_area.add_style("margin-bottom: 0px")
-        my.text_area.add_color("background", "background")
         my.text_area.add_style("font-family: courier new")
         my.text_area.add_border()
         editor_div.add(my.text_area)
@@ -955,8 +957,6 @@ class AceEditorWdg(BaseRefreshWdg):
             theme = 'twilight'
         else:
             theme = 'eclipse'
-
-        print "theme: ", theme
 
         top.add_behavior( {
             'type': 'load',
@@ -1098,11 +1098,23 @@ spt.ace_editor.set_language = function(value) {
     }
     else if (value == 'expression') {
         mode = require("ace/mode/xml").Mode;
+    } else if (value == 'html') {
+        mode = require("ace/mode/html").Mode
     }
     else {
         mode = require("ace/mode/javascript").Mode;
     }
     session.setMode( new mode() );
+
+    // Extra features
+    if (value == "python") {
+        session.setUseWrapMode(true);
+        session.setWrapLimitRange(80, 80);
+    } else {
+        session.setUseWrapMode(false);
+    }
+    editor.setShowPrintMargin(false);
+
 }
 
 spt.ace_editor.drag_start_x;
@@ -1156,8 +1168,8 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
 }
     var js_files = [
-        "ace/ace-0.2.0/src/ace.js",
-        //"ace/ace-0.2.0/src/ace-uncompressed.js",
+        "ace/ace-1.2.3/src/ace.js",
+        //"ace/ace-1.2.3/src/ace-uncompressed.js",
     ];
 
 
@@ -1172,8 +1184,13 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         $(bvr.unique_id).editor = editor;
 
         editor.setTheme("ace/theme/" + spt.ace_editor.theme);
-        var JavaScriptMode = require("ace/mode/javascript").Mode;
-        editor.getSession().setMode(new JavaScriptMode())
+        
+        try {
+            var JavaScriptMode = require("ace/mode/javascript").Mode;
+            editor.getSession().setMode(new JavaScriptMode())
+        } catch(err) {
+            log.critical("Mode files not loaded");
+        }
     }
 
     
@@ -1184,25 +1201,24 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         ace; require; define; 
 
         var core_js_files = [
-        "ace/ace-0.2.0/src/mode-javascript.js",
-         "ace/ace-0.2.0/src/mode-xml.js",
-            "ace/ace-0.2.0/src/mode-python.js",
-             "ace/ace-0.2.0/src/theme-twilight.js",
-               
-            "ace/ace-0.2.0/src/theme-textmate.js",
-            "ace/ace-0.2.0/src/theme-vibrant_ink.js",
-            "ace/ace-0.2.0/src/theme-merbivore.js",
-            "ace/ace-0.2.0/src/theme-clouds.js",
-            "ace/ace-0.2.0/src/theme-eclipse.js"
+            "ace/ace-1.2.3/src/mode-javascript.js",
+            "ace/ace-1.2.3/src/mode-xml.js",
+            "ace/ace-1.2.3/src/mode-python.js",
+            "ace/ace-1.2.3/src/mode-html.js",
+            "ace/ace-1.2.3/src/theme-twilight.js",
+            "ace/ace-1.2.3/src/theme-textmate.js",
+            "ace/ace-1.2.3/src/theme-vibrant_ink.js",
+            "ace/ace-1.2.3/src/theme-merbivore.js",
+            "ace/ace-1.2.3/src/theme-clouds.js",
+            "ace/ace-1.2.3/src/theme-eclipse.js"
         ];
+        
         //var supp_js_files = [];
            
-         
-        
-
         spt.dom.load_js(core_js_files, ace_setup);
+        
         //spt.dom.load_js(supp_js_files);      
-        });
+    });
    
 
     
@@ -1328,9 +1344,13 @@ else {
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.api.Utility.clear_inputs( bvr.src_el.getParent('.spt_js_editor') );
-
             var top = bvr.src_el.getParent(".spt_script_editor_top");
+           
+            // Clear script path
+            var path_inputs = top.getElement(".spt_script_path");
+            spt.api.Utility.clear_inputs(path_inputs);
+
+            // Clear ace editor
             spt.ace_editor.set_editor_top(top);
             var editor = spt.ace_editor.editor;
             var document = editor.getSession().getDocument()
