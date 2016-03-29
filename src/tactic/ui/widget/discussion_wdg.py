@@ -599,7 +599,11 @@ class DiscussionWdg(BaseRefreshWdg):
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
             }
-            spt.toggle_show_hide(add_note);
+            
+            if (bvr.src_el.getAttribute('force_show') == 'true')
+                spt.show(add_note);
+            else
+                spt.toggle_show_hide(add_note);
 
             //new Fx.Tween(add_note,{duration:"short"}).start('margin-top', 0);
 
@@ -1281,7 +1285,8 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_div.add_class("hand")
 
             no_notes_msg.add_class(add_class)
-
+            # force the add textarea to show in js
+            no_notes_msg.add_attr("force_show", "true")
           
             # only pass in the context choices if has_process is true e.g. for Task and Snapshot notes
             if my.contexts:

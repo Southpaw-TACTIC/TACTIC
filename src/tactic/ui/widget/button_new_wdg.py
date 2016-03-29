@@ -1200,7 +1200,7 @@ class ActionButtonWdg(DivWdg):
             tip = title
         my.add_attr("title", tip)
 
-
+        
         title2 = my.kwargs.get("title2")
         if title2:
             td.add_behavior( {
@@ -1209,13 +1209,13 @@ class ActionButtonWdg(DivWdg):
             'title2': title2,
             'cbjs_action': '''
             var label_el = bvr.src_el.getElement(".spt_label");
-            var label1 = "<b>" + bvr.title1 + "</b>";
-            var label2 = "<b>" + bvr.title2 + "</b>";
-            if (label_el.innerHTML == label1) {
-                label_el.innerHTML = label2;
+            var label1 = bvr.title1;
+            var label2 = bvr.title2;
+            if (label_el.value == label1) {
+                label_el.value = label2;
             }
             else {
-                label_el.innerHTML = label1;
+                label_el.value = label1;
             }
             '''
             } )
