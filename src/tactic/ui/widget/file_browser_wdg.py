@@ -767,9 +767,20 @@ class DirListWdg(BaseRefreshWdg):
         else:
             div.add_class("spt_dir")
             my.handle_dir_div(div, dir, item)
+       
+
+        view_indicator = my.get_view_indicator(dir, item)
+        if view_indicator:
+            div.add(view_indicator)
+
+
         div.add("<br clear='all'/>")
 
         return div
+
+    def get_view_indicator(my, dir, basename):
+        '''Indicator used in tactic.ui.tools.RepoBrowserWdg'''
+        return None
 
     def get_swap_action(my):
         return None
@@ -865,6 +876,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def handle_item_div(my, item_div, dirname, basename):
+ 
         path = "%s/%s" % (dirname, basename)
         if my.info.get("file_type") == 'missing':
             icon_string = IconWdg.DELETE
@@ -895,6 +907,12 @@ class DirListWdg(BaseRefreshWdg):
         #checkbox.add_class("spt_select")
         #checkbox.add_style("float: right")
         #item_div.add(checkbox)
+
+
+        view_indicator = my.get_view_indicator(dirname, basename)
+        if view_indicator:
+            item_div.add(view_indicator)
+
 
         item_div.add("<br clear='all'/>")
 

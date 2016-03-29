@@ -979,14 +979,28 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
  
             // Folder state manipulation
-            spt.repo_browser.get_folder_state = function() {
+            spt.repo_browser.get_raw_folder_state = function() {
+                // Returns folder states as string - list join with "|"
                 var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
                 var state_input = dir_list_top.getElement(".spt_folder_state");
                 var folder_state = state_input.value;
                 return folder_state;
+            }
+            
+            spt.repo_browser.get_folder_state = function() {
+                // Returns list of folder state items
+                var folder_state = spt.repo_browser.get_raw_folder_state();
+                var items;
+                if (folder_state == '') {
+                    items = [];
+                } else {
+                    items = folder_state.split("|");
+                } 
+                return items;
             } 
 
             spt.repo_browser.set_folder_state = function(folder_list) {
+               // Given list of folder state items, sets the folder state
                var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
                var state_input = dir_list_top.getElement(".spt_folder_state");
              
@@ -994,34 +1008,50 @@ class RepoBrowserDirListWdg(DirListWdg):
                state_input.value = folder_state; 
             }
 
+            spt.repo_browser.update_folder_state = function(old_path, new_path) {
+                // Updates paths in the folder state
+                // If new_path is specified, then replace references to this path
+
+                // Get the folder state list
+                var items = spt.repo_browser.get_folder_state(); 
+               
+                updated_items = []
+                for (var i = 0; i < items.length; i++) {
+                    var path = items[i]
+                    if (path.startsWith(old_path)) {
+                        if (new_path) {
+                            path = path.replace(old_path, new_path);
+                        } else {
+                            continue;
+                        }
+                    }
+
+                    updated_items.push(path);
+                }
+            
+                spt.repo_browser.set_folder_state(updated_items);
+            }
+
             // View state and indicator manipulation
             spt.repo_browser.move_view_indicator = function(new_item) {
                 
                 // Get the folder state list
-                var folder_state = spt.repo_browser.get_folder_state(); 
-                var items;
-                if (folder_state == '') {
-                    items = [];
-                } else {
-                    items = folder_state.split("|");
-                }
-            
+                var items = spt.repo_browser.get_folder_state(); 
+               
+                // Get the eye (or create a new one)
                 var eye = spt.repo_browser.get_view_indicator();
                  
-                // Get the current parent of the indicator - item, dir or neither 
-                var old_item = eye.getParent(".spt_dir_list_item");
-                if (!old_item) {
-                    old_item = eye.getParent(".spt_dir_item");
-                } 
+                // Get the current parent of the indicator 
+                var old_item = eye.getParent();
                  
-                // If there is a parent, update the view state.
+                // If there is a parent, remove this from the view state.
                 if (old_item) {
-                    var old_path = old_item.getProperty("spt_path");
+                    var old_path = spt.repo_browser.get_relative_path(old_item);
                 }
 
                 // Finally, add the new path to the folder state, and 
                 // move the indicator.
-                var new_path = new_item.getProperty("spt_path");
+                var new_path = spt.repo_browser.get_relative_path(new_item);
                 var new_label;    
                 if (new_item.hasClass("spt_dir_item")) {
                     new_label = new_item.getElement(".spt_dir_value");
@@ -1042,10 +1072,10 @@ class RepoBrowserDirListWdg(DirListWdg):
                         items[i] == new_path + "_is_open_view";
                         new_path_index = i;
                     } else if (items[i] == old_path + "_is_open_view") {
-                        items[i] = old_path + "is_open"
+                        items[i] = old_path + "is_open";
                         old_path_index = i;
                     } else if (items[i] == old_path + "_view") {
-                        items.splice(i, 1); 
+                        // Splice later
                         old_path_index = i;
                     }
 
@@ -1053,16 +1083,23 @@ class RepoBrowserDirListWdg(DirListWdg):
                         break;
                     }
                 }
+                
+                // Add new path if necessary
                 if (!new_path_index) {
                     items.push(new_path + "_view");
                 }
-            
+
+                // Remove old path if necessary
+                if (items[old_path_index] == old_path + "_view") {
+                    items.splice(old_path_index, 1);
+                }
+
                 spt.repo_browser.set_folder_state(items);
             }
  
             spt.repo_browser.get_view_indicator = function() {
-                // Look for already created view indicator
-                // If cannot find eye, create from template
+                // Return view indicator (eye) in DOM
+                // If cannot find eye, create from template.
                 var eye = spt.repo_browser.getElement(".spt_browser_view_indicator"); 
                 if (!eye) {
                     eye = spt.repo_browser.getElement(".spt_browser_view_template").clone(); 
@@ -1071,7 +1108,22 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
                 return eye;
             }
- 
+          
+            // File path building
+            spt.repo_browser.get_relative_path = function(item) {
+                // Given element with class spt_dir_item or spt_file_item, 
+                // return the relative path.
+                if (item.hasClass("spt_dir_item")) {
+                    var relative_path = item.getProperty("spt_relative_dir"); 
+                } else {
+                    var relative_dir = item.getProperty("spt_relative_dir");
+                    var base_name = item.getProperty("spt_basename");
+                    var relative_path = relative_dir + base_name;
+                }
+                // TODO: Add checks for extra slashes
+                return relative_path;
+            }
+
             // Add mouse enter and mouse leave behaviors for the dir and file context menus
             // that lock the directory.
             var file_menu = document.getElement(".SPT_SMENU_SUBSET__FILE_ITEM_CTX");
@@ -1180,7 +1232,10 @@ class RepoBrowserDirListWdg(DirListWdg):
             var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
             // Get the new relative_dir
             var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
-            
+           
+            // Get path to update folder states
+            var old_path = bvr.src_el.getProperty("spt_path");
+
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
                 snapshot_code: snapshot_code,
@@ -1189,8 +1244,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
-             
-                // TODO: Update folder states
+            
+                //TODO: Build new path and add to folder state.
+                spt.repo_browser.update_folder_state(old_path);
 
                 // Refresh the content top
                 var content_top = spt.repo_browser.getElement(".spt_browser_detail_top");
@@ -1198,6 +1254,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
             }
+
 
             spt.repo_browser.set_lock(false);   
             if (!spt.repo_browser.update_ready()) {
@@ -1260,6 +1317,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             // Drop action of tile on folder
             // TODO: Directory listing should be locked on dragging of tile
  
+            // TODO: Tile should not disappear on drag.
+            // Suggested fix: Change opacity
             var tile_top = bvr.src_el.getParent(".spt_tile_top");
             tile_top.setStyle("display", "none");
             
@@ -1269,8 +1328,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             var search_keys = spt.table.get_selected_search_keys();
             if (search_keys.length != 0) {
                 var search_key = null;
-            }
-            else {
+            } else {
                 var search_key = tile_top.getAttribute("spt_search_key");
             }
 
@@ -1280,7 +1338,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
             if (!target.hasClass("spt_dir")) {
-                console.log(target)
+                tile_top.setStyle("display", "");
+                return;
             }
 
             var relative_dir = target.getAttribute("spt_relative_dir");
@@ -1294,7 +1353,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
-             
+              
+                //TODO. Update folder states if necessary.
+
                 // Refresh the dropped top
                 var dir_top = target.getParent(".spt_dir_list_handler_top");
                 spt.panel.refresh(dir_top);
@@ -1321,8 +1382,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             try {
                 server.execute_cmd(class_name, kwargs);
-            }
-            catch(err) {
+            } catch(err) {
                 var error = spt.exception.handler(err);
                 var message = "Selected snapshots deleted but an error occured when removing the directory ["+relative_dir+"].";
                 message = message + " Error: " + error;
@@ -1334,6 +1394,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             var server = TacticServerStub.get();
             var activator = spt.smenu.get_activator(bvr);
             
+            // Get path for updating folder state
+            var path = activator.getProperty("spt_path"); 
+            
             // TODO: This should delete all snapshots sharing a context.
             if (activator.hasClass("spt_dir_item")) {
                 var relative_dir = activator.getAttribute("spt_relative_dir");
@@ -1341,7 +1404,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 sobjects = server.eval(expr);
                 if (sobjects.length == 0) {
                     activator.addClass("spt_browser_deleted");
-                    spt.repo_browser.delete_refresh(relative_dir);
+                    spt.repo_browser.delete_refresh(path, relative_dir);
                     return;
                 }
                 
@@ -1368,12 +1431,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             } else {
                 return;
             }
-
+ 
             activator.addClass("spt_browser_deleted");
             
             // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
             // file in display was deleted.
-            var delete_on_complete = "spt.repo_browser.delete_refresh('"+relative_dir+"');"
+            var delete_on_complete = "spt.repo_browser.delete_refresh('"+path+"', '"+relative_dir+"');"
 
             var class_name = 'tactic.ui.tools.DeleteToolWdg';
             var kwargs = {
@@ -1383,9 +1446,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
         }
 
-        spt.repo_browser.delete_refresh = function(dir_name) {
+        spt.repo_browser.delete_refresh = function(path, relative_dir) {
             // If deleting a folder, delete the folder as well.
-            var relative_dir = dir_name;
             spt.repo_browser.delete_empty_folder(relative_dir);
 
             var repo_top = document.getElement(".spt_repo_browser_top");
@@ -1394,6 +1456,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             var detail_top = spt.repo_browser.getElement('.spt_browser_detail_top');
             spt.panel.refresh(detail_top);
             
+            // Update the folder state.
+            spt.repo_browser.update_folder_state(path);  
+
             // Refresh target parent dir - refresh may have occured 
             var target = spt.repo_browser.getElement('.spt_browser_deleted');
             var parent_dir;
@@ -1409,9 +1474,44 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             
         }
+
        ''' 
 
 
+    def get_view_indicator(my, dir, basename):
+        # TODO: Add variable that indicates whther or not 
+        # indicator has been added.
+        # TODO: view item should always be added onto the end of 
+        # the list.
+        
+        web = WebContainer.get_web()
+        folder_state = web.get_form_value("folder_state")
+        if not folder_state:
+            folder_state = my.kwargs.get("folder_state")
+        if folder_state:
+            state_list = folder_state.split("|")
+        else:
+            return False
+
+        view = False
+        path = os.path.join(dir, basename)
+        for state in state_list:
+            if state == "%s_is_open_view" % path:
+                view = True
+                break
+            elif state == "%s_view" % path:
+                view = True
+                break
+ 
+        if view:
+            selected_icon = IconWdg(icon="BS_EYE_OPEN")
+            selected_icon.add_class("spt_browser_view_indicator")
+            selected_icon.add_styles("position: relative;")
+            selected_icon.add_styles("height: 0px; left: 5px;")
+            return selected_icon
+        else:
+            return False
+ 
     def get_swap_action(my):
         return r'''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
@@ -1419,42 +1519,33 @@ class RepoBrowserDirListWdg(DirListWdg):
         
         // Get the folder state, add dir to state if necessary.
         var top = item_top.getParent(".spt_dir_list_top");
-        var folder_state_el = top.getElement(".spt_folder_state");
-        if (folder_state_el) {
-            var folder_state = folder_state_el.value;
-            var items;
-            if (folder_state == '') {
-                items = [];
-            } else {
-                items = folder_state.split("|");
-            }
-        
-            var dir = item_top.getAttribute("spt_dir");
+        var items = spt.repo_browser.get_folder_state();
+        var dir = item_top.getAttribute("spt_dir");
 
-            // Get the folder, and view state.
-            var is_open = false;
-            var view  = false;
-            var is_open_view = false;
-            for (var i = 0; i < items.length; i++) {
-                if (items[i] == dir + "_view") {
-                    view = true;
-                    break;
-                } else if (items[i] == dir + "_is_open_view") {
-                    is_open_view = true;
-                    break;
-                } else if (items[i] == dir) {
-                    is_open = true;
-                    break;
-                }
+        // Get the folder, and view state.
+        var is_open = false;
+        var view  = false;
+        var is_open_view = false;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i] == dir + "_view") {
+                view = true;
+                break;
+            } else if (items[i] == dir + "_is_open_view") {
+                is_open_view = true;
+                break;
+            } else if (items[i] == dir) {
+                is_open = true;
+                break;
             }
         }
+
         if (item_top.hasClass("spt_dynamic")) {
 
             if (item_top.hasClass("spt_open")) {
                 //spt.hide(sibling);
                 var children = sibling.getChildren()
-                for (var i = 0; i < children.length; i++) {
-                    spt.behavior.destroy_element(children[i]);
+                for (var j = 0; j < children.length; j++) {
+                    spt.behavior.destroy_element(children[j]);
                 }
                 item_top.removeClass("spt_open");
                 sibling.setStyle("display", "none");
@@ -1469,7 +1560,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 // Add this item to the folder states
                 if (view) {
                     items[i] = dir + "_is_open_view";
-                } else if (!is_open || !is_open_view) {
+                } else if (!is_open && !is_open_view) {
                     items.push(dir);
                 }
 
@@ -1494,6 +1585,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 } else {
                     search_types = [];
                 }
+
+                var folder_state = spt.repo_browser.get_raw_folder_state();
 
                 //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
                 var handler_kwargs = {
@@ -1532,9 +1625,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 items.push(dir);
             }
         }
-
-        folder_state = items.join("|");
-        folder_state_el.value = folder_state;
+ 
+        spt.repo_browser.set_folder_state(items);
 
         ''' % (jsondumps(my.handler_kwargs))
 
@@ -1871,8 +1963,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                         spt.notify.show_message("Folder renamed.");
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
                         
-                        // TODO: Update folder states 
-
+                        spt.repo_browser.update_folder_state(relative_dir, new_relative_dir);
+                        
                         spt.repo_browser.set_lock(false);   
                         if (!spt.repo_browser.update_ready()) {
                             spt.repo_browser.refresh_directory_listing(dir_top);
@@ -2133,6 +2225,10 @@ class RepoBrowserDirListWdg(DirListWdg):
                     
                         spt.notify.show_message("Item rename complete");
                     
+                        // FIXME: Add new name to folder view state
+                        // For now, removes old name.
+                        spt.repo_browser.update_folder_state(file_name);
+
                         // Refresh dir list
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
                         spt.repo_browser.set_lock(false);   
