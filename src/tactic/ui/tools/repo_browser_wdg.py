@@ -1143,7 +1143,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 } else if (item.hasClass("spt_file_item")) {
                     var relative_dir = item.getProperty("spt_relative_dir");
                     var base_name = item.getProperty("spt_basename");
-                    var relative_path = relative_dir + base_name;
+                    // FIXME: This is incorrect path building.
+                    var relative_path = relative_dir + "/" + base_name;
                 } else {
                     log.critical(item);
                 }
