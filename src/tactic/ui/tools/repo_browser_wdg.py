@@ -1487,7 +1487,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             return False
 
         base_dir = Environment.get_asset_dir()
-        relative_dir = os.path.relpath(base_dir, dir)
+        relative_dir = os.path.relpath(dir, base_dir)
         relative_path = os.path.join(relative_dir, basename)
         
         view = False
@@ -1513,7 +1513,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         // Get the folder state, add dir to state if necessary.
         var top = item_top.getParent(".spt_dir_list_top");
         var items = spt.repo_browser.get_folder_state();
-        var dir = item_top.getAttribute("spt_dir");
+        var dir = spt.repo_browser.get_relative_path(item_top);
 
         // Get the folder, and view state.
         var is_open = false;
@@ -2317,8 +2317,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         asset_base_dir = Environment.get_asset_dir()
 
-        path = "%s/%s" % (dirname, basename)
-        relative_dir = path.replace(asset_base_dir, "")
+        path = os.path.join(dirname, basename)
+        relative_dir = os.path.relpath(path, asset_base_dir)
         relative_dir = os.path.dirname(relative_dir)
         item_div.add_attr("spt_relative_dir", relative_dir)
 
