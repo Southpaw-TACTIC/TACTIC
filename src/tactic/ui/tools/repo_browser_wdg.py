@@ -133,12 +133,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         parent_mode_key = "repo_browser_mode:%s" % search_type
         WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
 
-        view_dir = my.kwargs.get("view_dir")
-        if view_dir == None:
-            view_dir = project_dir
-        view_dir_key = "repo_browser_view_dir:%s" % search_type
-        WidgetSettings.set_value_by_key(view_dir_key, view_dir) 
         
+
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
         top.add_attr("spt_search_keys", "|".join(search_keys) )
@@ -265,7 +261,19 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
         outer_div.add(content_div)
- 
+        
+        view_dir = my.kwargs.get("view_dir")
+        if view_dir == None:
+            folder_state_key = "repo_browser_folder_state:%s" % search_type
+            folder_state = WidgetSettings.get_value_by_key(folder_state_key)
+            if folder_state:
+                states = folder_state.split("|")
+                if states and states[-1].startswith("view:"):
+                    view_dir = states[-1][5:]
+        
+        if view_dir == None:
+            view_dir = project_dir
+         
         count = 0
         if search:
             count = search.get_count()
@@ -1018,25 +1026,50 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.update_folder_state = function(old_path, new_path) {
                 // Updates paths in the folder state
                 // If new_path is specified, then replace references to this path
-                // FIXME: This is wrong. startsWith(old_path) is too general.
+                // Otherwise, these paths are removed from folder_state.
+                // Attempts to update directory trees. 
 
                 // Get the folder state list
                 var items = spt.repo_browser.get_folder_state(); 
                
                 updated_items = []
+                
+                // Update folder state
                 for (var i = 0; i < items.length; i++) {
-                    var path = items[i]
-                    if (path.startsWith(old_path)) {
-                        if (new_path) {
-                            path = path.replace(old_path, new_path);
-                        } else {
-                            continue;
-                        }
+                    
+                    var path;
+ 
+                    // Check if this is a view state
+                    var handle_view_state = false;
+                    if (i == items.length -1) {
+                        path = spt.repo_browser.get_view_path(items);
+                        if (path) {
+                            handle_view_state = true;
+                        } 
+                    } 
+                    
+                    if (!handle_view_state) {
+                        path = items[i];
                     }
 
-                    updated_items.push(path);
+                    if (path == old_path || path.startsWith(old_path + "/")) {
+                        if (new_path) {
+                            // This works since replace only replaces first occurence.
+                            path = path.replace(old_path, new_path);
+                        } else {
+                            path = null;
+                        }
+                    }
+                    
+                    if (path) {
+                        if (handle_view_state) {
+                            updated_items.push("view:" + path)
+                        } else {
+                            updated_items.push(path);
+                        }
+                    }
                 }
-            
+
                 spt.repo_browser.set_folder_state(updated_items);
             }
 
@@ -1509,7 +1542,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         return r'''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext(".spt_dir_content");
-        
+
         // Get the folder state, add dir to state if necessary.
         var top = item_top.getParent(".spt_dir_list_top");
         var items = spt.repo_browser.get_folder_state();
@@ -1527,7 +1560,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 break;
             }
         }
-
+        
         if (item_top.hasClass("spt_dynamic")) {
 
             if (item_top.hasClass("spt_open")) {
@@ -1550,29 +1583,36 @@ class RepoBrowserDirListWdg(DirListWdg):
                     spt.repo_browser.add_folder_state(dir);
                 }
                 var folder_state = spt.repo_browser.get_raw_folder_state();
-
+                
+              
+               
                 item_top.addClass("spt_open");
                 sibling.setStyle("display", "");
 
                 var base_dir = item_top.getAttribute("spt_dir");
                 var root_dir = item_top.getAttribute("spt_root_dir");
-
+                
                 // get the search_keys, if any
-                var search_keys = top.getAttribute("spt_search_keys");
+                var search_keys = null;
+                if (top) {
+                    search_keys = top.getAttribute("spt_search_keys");
+                }
                 if (search_keys) {
                     search_keys = search_keys.split("|");
-                }
-                else {
+                } else {
                     search_keys = [];
                 }
-
-                var search_types = top.getAttribute("spt_search_types");
+                
+                var search_types;
+                if (top) {
+                    search_types = top.getAttribute("spt_search_types");
+                }
                 if (search_types) {
                     search_types = search_types.split("|");
                 } else {
                     search_types = [];
                 }
- 
+                
                 //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
                 var handler_kwargs = {
                     root_dir: root_dir,
@@ -1675,10 +1715,42 @@ class RepoBrowserDirListWdg(DirListWdg):
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search_type = parent.get_search_type()
-    
+   
+        # Get and clean folder_states
         folder_state_key = "repo_browser_folder_state:%s" % search_type 
         folder_state = WidgetSettings.get_value_by_key(folder_state_key) 
-        text_wdg = HiddenWdg("folder_state")
+        if folder_state:
+            states = folder_state.split("|")
+        else:
+            states = []
+        
+        updated_states = []
+        asset_base_dir = Environment.get_asset_dir()
+        
+        # Clean folder states
+        view_exists = False
+        for i, state in enumerate(states):
+            if (i == len(states)-1 and state.startswith("view:")):
+                view_exists = True
+                continue
+            elif (i == len(states)-1):
+                view_exists = False
+            
+            path = os.path.join(asset_base_dir, state)
+            if os.path.exists(path):
+                updated_states.append(state)            
+
+        # Clean view states
+        if view_exists and states:
+            view_state = states[-1]
+            relative_view_path = view_state[5:]
+            view_path = os.path.join(asset_base_dir, relative_view_path)
+            if os.path.exists(view_path):
+                updated_states.append(view_state)
+
+        folder_state = ("|").join(updated_states)
+        
+        text_wdg = HiddenWdg("folder_state")        
         text_wdg.add_class("spt_folder_state")
         top.add(text_wdg)
         text_wdg.set_value(folder_state)
@@ -3421,9 +3493,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         else:
             reldir = dirname
 
-        view_dir_key = "repo_browser_view_dir:%s" % parent_type
-        WidgetSettings.set_value_by_key(view_dir_key, reldir) 
-    
         # If user has selected list of snapshots in directory
         # display these. 
         # TODO: Use of snapshot codes involves the unfinished  select API 
