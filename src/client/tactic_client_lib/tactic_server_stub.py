@@ -3649,11 +3649,11 @@ class TacticServerStub(object):
 
     def check_access(my, access_group, key, access, value=None, is_match=False, default="edit"):
         '''API Function: check_access(access_group, key, access, value, is_match, default="edit")
-        check the access for a specified access_group name like search_type, sobject, project, 
+        check the access for a specified access_group name like search_type, sobject, project, or builtin. 
         It can also be custom-defined.
 
         @param:
-            access_group - it can be custom_defined or built-in like search_type, sobjcet, or project
+            access_group - it can be custom-defined or predefined like search_type, sobject, project, or builtin
             key - usually in a dictionary or list of dictionary that maps to the parameters in the xml access rule
             access - allow, delete, retire, insert, edit, view, deny
         @keyparam:
@@ -3669,6 +3669,18 @@ class TacticServerStub(object):
 
             # check if one is allowed to view the project called workflow1
             server.check_access('project', [{'code','workflow1'},{'code','*}], 'allow')
+
+            # check if one has retire_delete access
+            access_key1 = {
+            'key': 'retire_delete',
+            'project': project_code
+            }
+
+            access_key2 = {
+                'key': 'retire_delete'
+            }
+            access_keys = [access_key1, access_key2]
+            server.check_access('builtin', access_keys, 'allow')    
 
         '''
         return my.server.check_access(my.ticket, access_group, key, access, value, is_match, default)
