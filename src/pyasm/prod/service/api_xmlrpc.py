@@ -5391,6 +5391,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
+    @xmlrpc_decorator
+    def check_access(my, ticket, access_group, key, access, value=None, is_match=False, default="edit"):
+        '''check the access for a specified access_group name like search_type, sobject, project, 
+            or custom-defined '''
+        security = Environment.get_security()
+        return security.check_access(access_group, key, access, value, is_match, default = default)
+
 
     @xmlrpc_decorator
     def get_column_widgets(my, ticket, search_type, search_keys, element_name):
