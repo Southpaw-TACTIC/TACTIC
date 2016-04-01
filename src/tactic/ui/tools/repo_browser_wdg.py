@@ -927,7 +927,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             }
 
-            spt.repo_browser.handle_update = function(bvr) {
+            spt.repo_browser.handle_update = function() {
                 // Handle server message of update
                 if (spt.repo_browser.dynamic_lock) {
                     spt.repo_browser.update_available = true;
@@ -1815,7 +1815,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # Directory updates
         update = {
              'value': True,
-             'cbjs_action': '''spt.repo_browser.handle_update(bvr);'''
+             'cbjs_action': '''spt.repo_browser.handle_update();'''
         }
         if my.parent_mode == "single_asset" and parent_key:
             update['search_key'] = parent_key    
