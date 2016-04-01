@@ -2791,8 +2791,13 @@ class RepoBrowserActionCmd(Command):
                 # entire snapshot.
                 # Otherwise, commit database changes and move all files.
                 
-                xml = snapshot.get_xml_value("snapshot")
                 version = snapshot.get_value("version")
+                if version == -1:
+                    file_types = snapshot.get_all_file_types()
+                    for file_type in file_types:
+                        snapshot.remove_file(file_type)
+
+                xml = snapshot.get_xml_value("snapshot")
                 context = snapshot.get_value("context")
                 search_code = snapshot.get_value("search_code")
                 if not parents.get(search_code):
@@ -2863,9 +2868,8 @@ class RepoBrowserActionCmd(Command):
 
                 snapshot.set_value("context", context)
                 snapshot.commit()
-
-            snapshots[-1].update_versionless("latest")
-
+            
+            
             # Update original parent name if in single_file parent_mode
             if parent_mode == "single_file":
                 # If sobject has an extension in it's name, then 
@@ -2881,7 +2885,9 @@ class RepoBrowserActionCmd(Command):
                 # TODO: remove this commit statement because 
                 # there should only be one parent.
                 sobject.commit()
- 
+            
+            snapshots[-1].update_versionless("latest")
+            
             # Update any associated parents keywords
             for parent in parents.values():
                 my.set_keywords(parent)
@@ -3072,7 +3078,7 @@ class RepoBrowserCbk(Command):
         snapshots = search.get_sobjects()
 
         # For each snapshot, update all files relative_dir.
-        # Also record version to update latest after fafter for-loopp
+        # Also record versionless to update latest after for-loop
         all_files = []
         # find highest version
         highest_snapshot = {}
@@ -3083,6 +3089,9 @@ class RepoBrowserCbk(Command):
             context = snapshot.get("context")
             version = snapshot.get_value("version")
             if version == -1:
+                file_types = snapshot.get_all_file_types()
+                for file_type in file_types:
+                    snapshot.remove_file(file_type)
                 continue
             if version > highest_version.get(context):
                 highest_version[context] = version
@@ -3098,7 +3107,7 @@ class RepoBrowserCbk(Command):
                 # Build the paths and check if new path already exists
                 old_path = "%s/%s/%s" % (base_dir, file_relative_dir, file_name)
                 if not os.path.exists(old_path):
-                     continue
+                    continue
                 
                 new_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                 if os.path.exists(new_path):
@@ -3110,11 +3119,8 @@ class RepoBrowserCbk(Command):
                 FileUndo.move(old_path, new_path)
 
             all_files.extend(files)
+       
         
-        # Update the versionless snapshot
-        for snapshot in highest_snapshot.values():
-            snapshot.update_versionless("latest")
-
         # Some assumed behavior for this mode:
         # 1) all snapshots in this context exist in the same folder
         #    and should remain so
@@ -3125,8 +3131,11 @@ class RepoBrowserCbk(Command):
         if parent.column_exists("relative_dir"):
             parent.set_value("relative_dir", relative_dir)
             my.set_keywords(parent)
-        
         parent.commit()
+        
+        # Update the versionless snapshot
+        for snapshot in highest_snapshot.values():
+            snapshot.update_versionless("latest")
 
 
 
