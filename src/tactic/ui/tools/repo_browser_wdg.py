@@ -3533,7 +3533,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
                 parent_search.add_op("or")
                 search = parent_search
             else:
-                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [], parent_mode=my.parent_mode)
+                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [])
                 search = Search(search_type)
                 search.add_relationship_search_filter(file_search)
  
