@@ -835,20 +835,20 @@ class UserPanelWdg(BaseRefreshWdg):
             button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_panel_user_top");
-                var table_top = top.getElement(".spt_table_top");
-                var table_id = table_top.getAttribute("spt_table_id"); 
-                var save_event = 'search_table_' + table_id;
-                
+
                 var class_name = 'tactic.ui.panel.EditWdg';
                 
                 var kwargs = {
                     search_type: "sthpw/login",
                     view: "insert",
-                    show_header: false,
-                    save_event: save_event
+                    show_header: false
                 }
                 var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
+                var tab_top = bvr.src_el.getParent(".spt_tab_top");
+                popup.on_save_cbk = function(){
+                    spt.tab.set_tab_top(tab_top);
+                    spt.tab.reload_selected();
+                }
 
                 '''
             } )

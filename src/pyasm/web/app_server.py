@@ -439,6 +439,8 @@ class BaseAppServer(Base):
             # get the project from the url because we are still 
             # in the admin project at this stage
             current_project = web.get_context_name()
+            
+            sudo = Sudo()
             try:
                 if current_project != "default":
                     project = Project.get_by_code(current_project)
@@ -485,6 +487,8 @@ class BaseAppServer(Base):
                         top.add(web_wdg)
                 else:
                     web_wdg = None
+            finally:
+                sudo.exit()
 
             if not web_wdg:
                 msg = "No default page defined for guest user. Please set up /guest in Custom URL."
@@ -659,14 +663,27 @@ class BaseAppServer(Base):
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
+
                 ticket_key = security.get_ticket_key()
+              
+                if not ticket_key:
+                    if site:
+                        site_obj.pop_site()
+                    return security
+
 
         elif ticket_key:
-
+          
             if site:
                 site_obj.set_site(site)
 
             login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
+           
+            # In the midst of logging out, login is None
+            if not login:
+                if site:
+                    site_obj.pop_site()
+                return security
 
 
         if not security.is_logged_in():
@@ -714,20 +731,23 @@ class BaseAppServer(Base):
 
         # for now apply the access rules after
         security.add_access_rules()
-
+        
         return security
 
 
     def handle_guest_security(my, security):
-
-        Site.set_site("default")
+       
+        # skip storing current security since it failed
+        Site.set_site("default", store_security=False)
         try:
 
             WebContainer.set_security(security)
+            
             security.login_as_guest()
-
+            
             ticket_key = security.get_ticket_key()
 
+            
             web = WebContainer.get_web()
             web.set_cookie("login_ticket", ticket_key)
 
@@ -740,9 +760,8 @@ class BaseAppServer(Base):
             ''')
             access_manager.add_xml_rules(xml)
         finally:
-            Site.pop_site()
-
-
+            Site.pop_site(pop_security=False)
+           
 
 
     def init_web_container(my):

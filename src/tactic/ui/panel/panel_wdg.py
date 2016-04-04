@@ -3101,13 +3101,18 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_config = my.kwargs.get('simple_search_config')
         simple_search_mode = my.kwargs.get("mode")
+        custom_simple_search_view = None
+
         if not simple_search_mode:
             simple_search_mode = my.kwargs.get("simple_search_mode")
 
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             custom_simple_search_view = simple_search_view
+        elif simple_search_config:
+            search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
         else:
             # add a custom search class
             search_class = my.kwargs.get('search_class')
@@ -3123,6 +3128,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             if my.kwargs.get("keywords"):
                 kwargs['keywords'] = my.kwargs.get("keywords")
+
+            if simple_search_config:
+                kwargs['search_config'] = simple_search_config
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
             kwargs['columns'] = my.kwargs.get("simple_search_columns")
@@ -3250,6 +3258,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "element_names":  my.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
+            "simple_search_config": simple_search_config,
             "simple_search_mode": simple_search_mode,
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,

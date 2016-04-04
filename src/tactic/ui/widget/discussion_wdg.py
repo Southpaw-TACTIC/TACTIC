@@ -1030,7 +1030,7 @@ class DiscussionWdg(BaseRefreshWdg):
         my._load_js = True
 
     def get_display(my):
-       
+        
         my.is_refresh = my.kwargs.get("is_refresh")
 
         my.hidden = my.kwargs.get('hidden') == True 
@@ -1174,49 +1174,53 @@ class DiscussionWdg(BaseRefreshWdg):
 
         
         stype = 'sthpw/note'
-        
+        expr_key = None
         if my.use_parent == 'true':
-            expr_key = my.parent.get_search_key()
+            idx = my.get_current_index()
+            # when the sobject is in insert mode, it doesn't have parent
+            if my.parent:
+                expr_key = my.parent.get_search_key()
         else:
             expr_key = search_key
 
-        update_div.add_update( {
-               "search_type": stype,
-               'compare': "@COUNT(sthpw/note) == %s" %len(notes),
-               'expr_key': expr_key,
-               'interval': 2,
-               "cbjs_action": '''
-            var top = bvr.src_el.getParent(".spt_discussion_top");
-            var dialog_content = top.getElement(".spt_discussion_content");
+        if expr_key:
+            update_div.add_update( {
+                   "search_type": stype,
+                   'compare': "@COUNT(sthpw/note) == %s" %len(notes),
+                   'expr_key': expr_key,
+                   'interval': 2,
+                   "cbjs_action": '''
+                var top = bvr.src_el.getParent(".spt_discussion_top");
+                var dialog_content = top.getElement(".spt_discussion_content");
 
-            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_context_top") : null;
-            
-            // update dialog and the count if dialog is visible 
-            if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
-                var parent_key = dialog_content.getAttribute('spt_parent_key');
-                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                var kwargs = {
-                    parent_key: parent_key,
-                    context: dialog_content.getAttribute('spt_context'),
-                    default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
-                    note_expandable: dialog_content.getAttribute('spt_note_expandable'),
-                    note_format: dialog_content.getAttribute('spt_note_format')
-                }
-                spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
-                var note_count_div = group_top.getElement('.spt_note_count');
+                var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_context_top") : null;
                 
-                var s = TacticServerStub.get();
-                var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
-                note_count_div.innerHTML = '(' + note_count + ')';
+                // update dialog and the count if dialog is visible 
+                if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                    var parent_key = dialog_content.getAttribute('spt_parent_key');
+                    var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                    var kwargs = {
+                        parent_key: parent_key,
+                        context: dialog_content.getAttribute('spt_context'),
+                        default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                        note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                        note_format: dialog_content.getAttribute('spt_note_format')
+                    }
+                    spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
+                    var note_count_div = group_top.getElement('.spt_note_count');
+                    
+                    var s = TacticServerStub.get();
+                    var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
+                    note_count_div.innerHTML = '(' + note_count + ')';
 
-            }
-            else {
-                spt.panel.refresh(top);
-            }
+                }
+                else {
+                    spt.panel.refresh(top);
+                }
 
 
-            '''
-        })
+                '''
+            })
 
 
         if my.use_parent == 'true' and not notes and not my.parent:

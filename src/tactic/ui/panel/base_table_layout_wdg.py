@@ -612,8 +612,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_config = my.kwargs.get('simple_search_config')
         if simple_search_view:
             my.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
+        elif simple_search_config:
+            my.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
+            simple_search_view = None
         else:
             # add a custom search class
             my.search_class = my.kwargs.get('search_class')
@@ -627,6 +631,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "search_view": simple_search_view,
                 "keywords": my.kwargs.get("keywords")
             }
+
+            if simple_search_config:
+                kwargs['search_config'] = simple_search_config
+
             simple_search_wdg = Common.create_from_class_path(my.search_class, kwargs=kwargs)
             simple_search_wdg.alter_search(search)
 

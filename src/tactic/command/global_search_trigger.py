@@ -71,13 +71,13 @@ class GlobalSearchTrigger(Trigger):
         
         
         if input.get("is_delete") == True:
+            # Collection relationships being removed
+            mode = "delete"
+            my.update_collection_keywords(mode, base_search_type, input)
             if sobject:
-                # Collection relationships being removed
-                mode = "delete"
-                my.update_collection_keywords(mode, base_search_type, input)
-
                 sobject.delete()
             return
+
         # Collection relationships being created or added
         elif input.get("is_insert"):
             mode = "insert"
@@ -130,8 +130,11 @@ class GlobalSearchTrigger(Trigger):
                     collection_name = update_data.get("name")
 
                     keywords_data = sobj.get_json_value("keywords_data", {})
-                    keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
-
+                    if collection_keywords:
+                        keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
+                    else:
+                        keywords_data['user'] = "%s" % collection_name
+                        
                     sobj.set_json_value("keywords_data", keywords_data)
                     sobj.commit(triggers=False)
                     my.set_searchable_keywords(sobj)  
@@ -311,8 +314,6 @@ class GlobalSearchTrigger(Trigger):
         parent_sobject = Search.get_by_code(asset_stype, parent_code)
         child_sobject = Search.get_by_code(asset_stype, search_code)
         
-        # keywords of parent
-        parent_collection_keywords = parent_sobject.get_value("user_keywords")
 
         collection_keywords_dict = {}
         parent_collection_keywords_dict = {}
@@ -323,6 +324,9 @@ class GlobalSearchTrigger(Trigger):
         # Existing "collection" keywords in parent's keywords_data
         parent_keywords_data = parent_sobject.get_json_value("keywords_data", {})
 
+        # keywords of parent
+        parent_collection_keywords = parent_keywords_data.get('user')
+        
         if 'collection' in child_keywords_data:
             collection_keywords_dict = child_keywords_data.get('collection')
 
