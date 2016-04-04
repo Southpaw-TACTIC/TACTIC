@@ -3291,6 +3291,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['gallery_align'] = my.kwargs.get("gallery_align")
             kwargs['script_path'] = my.kwargs.get("script_path")
             kwargs['script'] = my.kwargs.get("script")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['hide_checkbox'] = my.kwargs.get("hide_checkbox")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3316,6 +3318,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'browser':
             from tool_layout_wdg import RepoBrowserLayoutWdg
+            kwargs['parent_mode'] = my.kwargs.get('parent_mode')
+            kwargs['file_system_edit'] = my.kwargs.get('file_system_edit')
             layout_table = RepoBrowserLayoutWdg(**kwargs)
 
         elif layout == 'card':

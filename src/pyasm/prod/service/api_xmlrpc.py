@@ -2711,11 +2711,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_base_dirs(my, ticket):
-        '''get all of the base directories defined on the server'''
-        data = Config.get_section_values("checkin")
+        '''get all of the base directories defined on the server.'''
+        
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site == "" or site == "default":
+            data = Config.get_section_values("checkin")
+        else:
+            site_obj = Site.get()
+            data = {}
+            data['asset_base_dir'] = site_obj.get_asset_dir(alias="default")
+            data['web_base_dir'] = site_obj.get_web_dir(alias="default")
+        
         for key, value in data.items():
             if value.strip().startswith('{'):
-                
                 try:
                     sub_value = eval(value.strip())
                     value = sub_value
