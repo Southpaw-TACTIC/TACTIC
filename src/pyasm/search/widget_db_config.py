@@ -317,7 +317,7 @@ class WidgetDbConfig(SObject):
         if not display_handler:
             raise Exception("No display handler found for [%s]" % element_name)
 
-        for name, value in display_options.items():
+        for name, value in extra_options.items():
             display_options[name] = value
 
         try:

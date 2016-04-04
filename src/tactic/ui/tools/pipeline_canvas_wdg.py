@@ -353,19 +353,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add_class("spt_pipeline_template")
         inner.add(template_div)
 
-        node = my.get_node("XXXXX")
+        node = my.get_node("node", node_type="node")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
         template_div.add(node)
 
-        node = my.get_node("XXXXX", node_type="manual")
+        node = my.get_node("manual", node_type="manual")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
         template_div.add(node)
 
 
         # add an unknown type
-        node = my.get_node("XXXXX", node_type="unknown")
+        node = my.get_node("unknown", node_type="unknown")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
         template_div.add(node)
@@ -373,47 +373,49 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         # add folder group node
-        folder = my.get_folder("XXXXX")
+        folder = my.get_folder("folder")
         template_div.add(folder)
 
         # add approval node
-        approval = my.get_approval_node("XXXXX")
+        approval = my.get_approval_node("approval")
         template_div.add(approval)
 
-        approval = my.get_condition_node("XXXXX")
+        approval = my.get_condition_node("condition")
         template_div.add(approval)
 
-        action = my.get_node("XXXXX", node_type="action")
+        action = my.get_node("action", node_type="action")
         template_div.add(action)
 
-        heirarchy = my.get_node("XXXXX", node_type="hierarchy")
+        heirarchy = my.get_node("heirarcy", node_type="hierarchy")
         template_div.add(heirarchy)
 
-        dependency = my.get_node("XXXXX", node_type="dependency")
+        dependency = my.get_node("dependency", node_type="dependency")
         template_div.add(dependency)
 
 
-        progress = my.get_node("XXXXX", node_type="progress")
+        progress = my.get_node("progress", node_type="progress")
         template_div.add(progress)
 
 
-        endpoint = my.get_endpoint_node("XXXXX", node_type="output")
+        endpoint = my.get_endpoint_node("output", node_type="output")
         template_div.add(endpoint)
 
-        endpoint = my.get_endpoint_node("XXXXX", node_type="input")
+        endpoint = my.get_endpoint_node("input", node_type="input")
         template_div.add(endpoint)
-
-
-
-        # add custom node
-        custom = my.get_custom_node("custom", "email")
-        template_div.add(custom)
 
 
         # add trigger node
         trigger = my.get_trigger_node()
         template_div.add(trigger)
 
+
+        search = Search("config/widget_config")
+        search.add_filter("category", "workflow")
+        configs = search.get_sobjects()
+        for config in configs:
+            node_type = config.get_value("view")
+            template = my.get_custom_node(node_type, node_type=node_type)
+            template_div.add(template)
 
 
         # resize test
@@ -645,6 +647,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node = DivWdg()
 
         width, height = my.get_node_size()
+
 
         if node_type == "action":
             border_radius = 20 
@@ -1308,96 +1311,63 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-
-
     def get_custom_node(my, name, node_type ):
 
         node = DivWdg()
-        node.add_class("spt_pipeline_custom")
+
+        node.add_class("spt_pipeline_%s" % node_type)
         node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "custom")
+        node.add_attr("spt_node_type", node_type)
+
+        node.add_class("spt_custom_top")
+
+
+        from pyasm.command import CustomProcessConfig
+        custom_wdg = CustomProcessConfig.get_node_handler(node_type)
+        node.add(custom_wdg)
 
 
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-
         node.add_style("z-index", "200");
         node.add_style("position: absolute")
 
-        node.add_style("width: auto")
-        node.add_style("height: auto")
+        width = custom_wdg.get_width()
+        height = custom_wdg.get_height()
 
+        from tactic.ui.container.smart_menu_wdg import SmartMenu
+        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
-        class NotificationNodeWdg(BaseRefreshWdg):
-            def get_width(my):
-                return 50 
-            def get_height(my):
-                return 50 
-
-            def get_node_behaviors(my):
-                return []
-
-            def get_node_type(my):
-                return "email"
-
-            def get_handler_class(my):
-                return CustomWorkflowHandler
-
-            def get_display(my):
-                top = my.top
-                #top.add_style("width: %s" % my.get_width())
-                #top.add_style("height: %s" % my.get_height())
-                top.add_style("border-radius: 50px")
-                top.add_style("text-align: center")
-
-                icon_div = DivWdg()
-                top.add(icon_div)
-                icon = IconWdg(name="notification", icon="BS_ENVELOPE")
-                icon_div.add(icon)
-                icon_div.add_style("margin: -20px auto 0px auto")
-                return top
-
-        from pyasm.command import BaseProcessTrigger
-        class NotificationNodeHandler(BaseProcessTrigger):
-            def execute(my):
-                pipeline = my.input.get("pipeline")
-                process = my.input.get("process")
-                sobject = my.input.get("sobject")
-
-                # send email
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-                print "sending email!!!!!"
-
-
-
-        custom_node_wdg = NotificationNodeWdg()
-
-        width = custom_node_wdg.get_width()
-        height = custom_node_wdg.get_height()
-
-
-
-        # add custom node behaviors
-        node_behaviors = custom_node_wdg.get_node_behaviors()
+ 
+        node_behaviors = my.get_node_behaviors()
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
 
-        my.add_nobs(node, height, 5)
+
+ 
+        # add custom node behaviors
+        node_behaviors = custom_wdg.get_node_behaviors()
+        for node_behavior in node_behaviors:
+            node.add_behavior( node_behavior )
 
 
-        node.add(custom_node_wdg)
-        custom_node_wdg.add_class("spt_content")
+        nobs_offset = 0
+        my.add_nobs(node, height, nobs_offset)
 
-        custom_node_wdg.add_style("width: %spx" % width)
-        custom_node_wdg.add_style("height: %spx" % height)
-        custom_node_wdg.add_style("border: solid 1px black")
+
+        #content = DivWdg()
+        #node.add(content)
+        #content.add_class("spt_content")
+        #content.add_style("overflow: hidden")
+        #content.add_style("width: %spx" % width)
+        #content.add_style("height: %spx" % height)
+        #content.add_style("border-radius: %spx" % (width/2))
+        #content.add_style("border: solid 1px black")
+        #content.add( custom_node_wdg )
+
+
 
 
         label = Table()
@@ -1415,14 +1385,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         td.add_style("text-align: center")
         label.add_style("overflow: hidden")
 
+
         text = TextWdg()
         node.add(text)
         text.add_style("position: absolute")
         text.add_style("display: none")
         text.add_style("top: %spx" % (height/4+5) )
-        text.add_style("left: 0px")
+        text.add_style("left: %spx" % (height/4+5) )
         text.add_style("width: 65px")
         text.set_value(name)
+
 
         active = DivWdg()
         node.add(active)
@@ -1431,6 +1403,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         my.add_default_node_behaviors(node, text)
 
         return node
+
 
 
 
@@ -2266,12 +2239,16 @@ spt.pipeline.clear_selected = function(item) {
 spt.pipeline.select_node = function(node) {
     node.setStyle("z-index", "200");
     node.spt_is_selected = true;
-    //var active = node.getElement(".spt_active");
-    //active.setStyle("display", "");
-    var content = node.getElement(".spt_content");
-    content.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
-    content.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
-    content.setStyle("opacity", "0.8");
+
+    if (node.hasClass("spt_custom_top")) {
+        var outer = node.getElement(".spt_custom_node");
+    }
+    else {
+        var outer = node.getElement(".spt_content");
+    }
+    outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
+    outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
+    outer.setStyle("opacity", "0.8");
 
     
     var group = spt.pipeline.get_group(node.spt_group);
@@ -2288,10 +2265,16 @@ spt.pipeline.unselect_node = function(node) {
     node.spt_is_selected = false;
     //var active = node.getElement(".spt_active");
     //active.setStyle("display", "none");
-    var content = node.getElement(".spt_content");
-    content.setStyle("box-shadow", "");
-    content.setStyle("border", "solid 1px black");
-    content.setStyle("opacity", "1.0");
+
+    if (node.hasClass("spt_custom_top")) {
+        var outer = node.getElement(".spt_custom_node");
+    }
+    else {
+        var outer = node.getElement(".spt_content");
+    }
+    outer.setStyle("box-shadow", "");
+    outer.setStyle("border", "solid 1px black");
+    outer.setStyle("opacity", "1.0");
 }
 
 
@@ -2624,7 +2607,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
     var new_node = spt.behavior.clone(template);
     if (is_unknown) {
-        // change it from "unknonw"
+        // change it from "unknown"
         new_node.setAttribute("spt_node_type", node_type);
     }
     new_node.spt_node_type = node_type;
@@ -2666,7 +2649,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     */
     if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
-    else // for schema {
+    else // for schema
         color = spt.pipeline.get_group_color(name);
 
     if (is_unknown) {
