@@ -10,11 +10,11 @@
 #
 #
 
-__all__ = ['PipelineCanvasWdg']
+__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Container
+from pyasm.common import Container, Common
 from pyasm.web import DivWdg, WebContainer, Table, Widget
 from pyasm.search import Search, SearchType
 
@@ -22,6 +22,157 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+
+
+
+class BaseNodeWdg(BaseRefreshWdg):
+
+    def get_node_type(my):
+        return my.kwargs.get("node_type")
+
+    def get_title(my):
+        node_type = my.get_node_type()
+        title = Common.get_display_title(node_type)
+        return title
+
+    def get_width(my):
+        return 120
+
+    def get_height(my):
+        return 40
+
+    def get_border_radius(my):
+        return 0
+
+    def get_nob_offset(my):
+        return 0
+
+    def get_node_behaviors(my):
+        return []
+
+    def get_content(my):
+        return DivWdg()
+
+    def get_shape(my):
+        return ""
+
+
+    def get_content(my):
+        node_type = my.get_node_type()
+        div = DivWdg()
+
+        title = my.get_title()
+        if not title:
+            return div
+
+        inner = DivWdg()
+        div.add(inner)
+
+
+        inner.add(title)
+
+        inner.add_style("font-size: 8px")
+        inner.add_style("background: rgba(0,0,0,0.5)")
+        inner.add_style("color: #FFF")
+        inner.add_style("text-align: center")
+
+        return div
+
+
+    def get_display(my):
+
+        top = my.top
+        top.add_style("overflow: hidden")
+        top.add_class("spt_custom_node")
+
+        width = my.get_width()
+        height = my.get_height()
+
+
+        border_radius = my.get_border_radius()
+        top.add_style("width", width)
+        top.add_style("height", height)
+
+        shape = my.get_shape()
+        if shape == "star":
+            my.set_star_shape()
+
+        elif shape == "parallelogram":
+            my.set_parallelogram_shape()
+
+        elif shape == "circle":
+            top.add_style("border-radius: %spx" % (height/2))
+
+        elif shape == "elipse":
+            top.add_style("width", height)
+            top.add_style("border-radius: %spx" % border_radius)
+
+        else:
+            top.add_style("border-radius: %spx" % border_radius)
+
+        top.add_style("border: solid 1px black")
+
+
+        content_div = DivWdg()
+        content_div.add_style("overflow: hidden")
+        top.add(content_div)
+
+        content = my.get_content()
+        content_div.add(content)
+        content.add_class("spt_content")
+        content.add_style("width", "100%")
+        content.add_style("height", "100%")
+
+
+        for widget in my.widgets:
+            top.add(widget)
+
+        return top
+
+
+    def set_parallelogram_shape(my):
+        div = my.top
+        div.add_style("-webkit-transform: skew(20deg)")
+        div.add_style("-moz-transform: skew(20deg)")
+        div.add_style("-o-transform: skew(20deg)")
+        div.add_border()
+
+
+    def set_star_shape(my):
+
+        # FIXME: this doesn't work too well yet
+
+        div = my.top
+
+        star = DivWdg()
+        div.add(star)
+        star.add_class("star-six")
+
+        from pyasm.web import HtmlElement
+        style = HtmlElement.style()
+        div.add(style)
+        style.add('''
+        .star-six {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 100px solid red;
+            position: relative;
+        }
+        .star-six:after {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-top: 100px solid red;
+            position: absolute;
+            content: "";
+            top: 30px;
+            left: -50px;
+        }
+        ''')
+
 
 
 class PipelineCanvasWdg(BaseRefreshWdg):

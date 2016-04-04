@@ -1772,6 +1772,7 @@ class CustomProcessConfig(object):
 
     def get_node_handler(cls, node_type, extra_options={}):
         config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
         handler = config.get_display_widget("node", extra_options)
         return handler
     get_node_handler = classmethod(get_node_handler)
@@ -1779,6 +1780,7 @@ class CustomProcessConfig(object):
 
     def get_info_handler(cls, node_type, extra_options={}):
         config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
         handler = config.get_display_widget("info", extra_options)
         return handler
     get_info_handler = classmethod(get_info_handler)
@@ -1786,6 +1788,7 @@ class CustomProcessConfig(object):
 
     def get_process_handler(cls, node_type, extra_options={}):
         config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
         handler = config.get_display_widget("process", extra_options)
         return handler
     get_process_handler = classmethod(get_process_handler)
