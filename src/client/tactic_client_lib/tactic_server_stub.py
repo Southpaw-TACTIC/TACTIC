@@ -3647,6 +3647,44 @@ class TacticServerStub(object):
         '''
         return my.server.execute_transaction(my.ticket, transaction_xml, file_mode)
 
+    def check_access(my, access_group, key, access, value=None, is_match=False, default="edit"):
+        '''API Function: check_access(access_group, key, access, value, is_match, default="edit")
+        check the access for a specified access_group name like search_type, sobject, project, or builtin. 
+        It can also be custom-defined.
+
+        @param:
+            access_group - it can be custom-defined or predefined like search_type, sobject, project, or builtin
+            key - usually in a dictionary or list of dictionary that maps to the parameters in the xml access rule
+            access - allow, delete, retire, insert, edit, view, deny
+        @keyparam:
+            value - an extra modifier to the key. Rarely used. 
+            is_match - boolean to specify whether you want to match exactly the access string as defined in access_rules. 
+                       The default is to return True if the specified access is equal or lower than the one defined.
+            default - default access like allow or view can be specified. The default access is "edit"
+
+        @return:
+            boolean - True or False
+
+        @usage:
+
+            # check if one is allowed to view the project called workflow1
+            server.check_access('project', [{'code','workflow1'},{'code','*}], 'allow')
+
+            # check if one has retire_delete access
+            access_key1 = {
+            'key': 'retire_delete',
+            'project': project_code
+            }
+
+            access_key2 = {
+                'key': 'retire_delete'
+            }
+            access_keys = [access_key1, access_key2]
+            server.check_access('builtin', access_keys, 'allow')    
+
+        '''
+        return my.server.check_access(my.ticket, access_group, key, access, value, is_match, default)
+
 
 
 
