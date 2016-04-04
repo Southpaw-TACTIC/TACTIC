@@ -291,6 +291,15 @@ def xmlrpc_decorator(meth):
         try:
             ticket = my.init(original_ticket)
 
+
+            # These lines disable a good chunk of the API.  This will need to
+            # have rules specified ... like a specific API ticket or an access
+            # rule that allows this.
+            #if my.get_protocol() != 'local':
+            #    if meth.__name__ not in ["execute_cmd", "get_widget", "ping"]:
+            #        raise Exception("Permission Denied")
+
+
             try:
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
@@ -566,7 +575,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         return False
     missing_method.exposed = True
 
-    '''
+    """
     def missing_method(my, func, args):
         try:
             return True
@@ -590,7 +599,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 msg = "Wrong number of arguments"
             print("Failed to execute [%s]: %s" % (expr, msg))
         return None
-        '''
+    """
 
 
 

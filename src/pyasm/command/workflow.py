@@ -756,13 +756,19 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         process_output = workflow.get("output")
         if process_output:
-            from pyasm.biz import Snapshot
-            snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
-            if snapshot:
-                my.output_data = {
-                    'snapshot': snapshot,
-                    'path': snapshot.get_lib_path_by_type()
-                }
+            my.output_data = process_output.copy()
+
+            output_type = process_output.get("type")
+            if output_type == "file":
+                my.output_data['snapshot'] = None
+                my.output_data['path'] = process_output.get("path")
+
+            else:
+                from pyasm.biz import Snapshot
+                snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+                if snapshot:
+                    my.output_data['snapshot'] = snapshot
+                    my.output_data['path'] = snapshot.get_lib_path_by_type()
 
         my.store_state()
         # ---------------------------------------
