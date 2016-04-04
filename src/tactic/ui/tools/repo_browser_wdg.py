@@ -498,9 +498,9 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-    def get_file_search(my, base_dir, search_types, parent_ids, mode):
+    def get_file_search(my, base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
    
-        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode)    
+        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode)    
         
 
     def get_relative_paths(my, base_dir):
@@ -591,7 +591,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # sobjects
         if my.show_files:
 
-            search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder")
+            search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=my.parent_mode)
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -689,7 +689,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
                 if my.counts.get(subdir) is None:
-                    search = my.get_file_search(subdir, search_types, parent_ids, mode="count")
+                    search = my.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=my.parent_mode)
                     count = search.get_count()
                     my.counts[subdir] = count
 
@@ -3380,7 +3380,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 class RepoBrowserSearchWrapper(object):
 
 
-    def get_file_search(base_dir, search_types, parent_ids, mode="count"):
+    def get_file_search(base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
 
         search = Search("sthpw/file")
 
@@ -3421,8 +3421,11 @@ class RepoBrowserSearchWrapper(object):
         show_main_only = True
         show_latest = True
         show_versionless = False
-        if show_latest or show_versionless:
+        if show_latest or show_versionless or parent_mode == "single_file": 
             search.add_join("sthpw/snapshot")
+            # Force repo browser to show only the publish process
+            if parent_mode == "single_file":
+                search.add_filter("process", "publish", table="snapshot")
             search.add_op("begin")
             if show_latest:
                 search.add_filter("is_latest", True, table="snapshot")
@@ -3530,7 +3533,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
                 parent_search.add_op("or")
                 search = parent_search
             else:
-                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [])
+                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [], parent_mode=my.parent_mode)
                 search = Search(search_type)
                 search.add_relationship_search_filter(file_search)
  
