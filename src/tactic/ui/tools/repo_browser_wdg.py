@@ -73,6 +73,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         if "workflow/asset" in search_type:
             single_asset_mode = True
 
+        expression = my.kwargs.get("expression")
+
         parent_key = my.kwargs.get("search_key")
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
@@ -251,6 +253,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 view='table',
                 dirname=project_dir,
                 basename="",
+                expression=expression
             )
             outer_div.add(widget)
         else:
@@ -2917,6 +2920,8 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             spt.panel.load(content, class_name, kwargs);
         ''' % single_asset_mode
         
+        expression = my.kwargs.get("expression")
+
         #TODO: Drag and drop upload
         # pass in parent key for deliverable
         # "self" for single_asset_mode
@@ -2930,6 +2935,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             show_shelf=False,
             show_search_limit=False,
             layout=layout_mode,
+            expression=expression,
             scale='100',
             show_scale=True,
             width='100%',
