@@ -1570,7 +1570,7 @@ class IngestUploadCmd(Command):
                 raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
         if library_mode:
-            relative_dir = relative_dir + "/000"
+            relative_dir = relative_dir + "/001"
 
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
