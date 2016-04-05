@@ -1036,6 +1036,11 @@ class IngestUploadWdg(BaseRefreshWdg):
             keywords = "";
         }
 
+        var status = values["edit|status"];
+        if (!status) {
+            status = "Unverified"; 
+        }
+
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
         var search_key = values.search_key[0];
@@ -1066,6 +1071,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             parent_key: parent_key,
             //category: category,
             keywords: keywords,
+            status: status,
             extra_data: extra_data,
             update_data: update_data,
             process: process,
