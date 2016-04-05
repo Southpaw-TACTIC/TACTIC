@@ -47,7 +47,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'context_mode': 'Set or remove context case sensitivity.',
         'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
         'title': 'The title to display at the top',
-        'library_mode': 'Mode to determine if Ingest should handle huge amounts of files'
+        'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
+        'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped'
     }
 
 
@@ -898,6 +899,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         library_mode = my.kwargs.get("library_mode")
         if not library_mode:
             library_mode = False
+
+        dated_dirs = my.kwargs.get("dated_dirs")
+        if not dated_dirs:
+            dated_dirs = False
  
         from tactic.ui.app import MessageWdg
         progress.add_behavior( {
@@ -1004,6 +1009,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var context = bvr.kwargs.context;
 
         var library_mode = bvr.kwargs.library_mode;
+        var dated_dirs = bvr.kwargs.dated_dirs;
 
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
@@ -1082,6 +1088,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             ignore_ext: ignore_ext,
             column: column,
             library_mode: library_mode,
+            dated_dirs: dated_dirs,
             context_mode: context_mode
         }
         on_complete = function(rtn_data) {
@@ -1169,6 +1176,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'script_found': script_found,
                 'context': context,
                 'library_mode': library_mode,
+                'dated_dirs' : dated_dirs,
                 'context_mode': context_mode
             },
             'cbjs_action': '''
@@ -1479,6 +1487,8 @@ class IngestUploadCmd(Command):
         FOLDER_LIMIT = 500
         library_mode = my.kwargs.get("library_mode")
         current_folder = 0
+
+        dated_dirs = my.kwargs.get("dated_dirs")
         
         filenames = my.kwargs.get("filenames")
         relative_dir = my.kwargs.get("relative_dir")
@@ -1624,8 +1634,10 @@ class IngestUploadCmd(Command):
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 search.add_filter(column, filename)
+
                 if relative_dir and search.column_exists("relative_dir"):
-                    search.add_filter("relative_dir", relative_dir)
+                    if not dated_dirs:
+                        search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
                 if len(sobjects) > 1:
                     sobject = None
@@ -1641,7 +1653,8 @@ class IngestUploadCmd(Command):
                 search.add_filter(column, filename)
 
                 if relative_dir and search.column_exists("relative_dir"):
-                    search.add_filter("relative_dir", relative_dir)
+                    if not dated_dirs:
+                        search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
                 if sobjects:
                     sobject = sobjects[0]
