@@ -840,21 +840,25 @@ class Site(object):
         if not site:
             return
         sites = Container.get("sites")
-        
+
         is_redundant = False
         if sites == None:
             sites = []
             Container.put("sites", sites)
         elif sites and sites[-1] == site:
             is_redundant = True 
-        
-        sites.append(site)
+       
+        if is_redundant:
+            return
          
+        
         security_list = Container.get("Environment:security_list")
         if not security_list:
             security_list = []
-
-
+        
+     
+        sites.append(site)
+        
         try:
             sql = DbContainer.get("sthpw")
         except:
@@ -864,12 +868,9 @@ class Site(object):
 
         # if site is different from current, renew security instance
         cur_security = Environment.get_security()
-        if is_redundant:
-            security_list.append(cur_security)
-            return
       
-     
-            
+   
+        
         if cur_security and cur_security._login:
             security = Security()
             security._is_logged_in = True
@@ -878,11 +879,13 @@ class Site(object):
             security._find_all_login_groups()
         
             security.add_access_rules()
+            # initialize a new security
             Environment.set_security(security)
-            security_list.append(security)
-
+            # store the current security
+            security_list.append(cur_security)
+            Environment.set_security_list(security_list)
      
-        
+     
         try:
             # check if user is allowed to see the site
             #from pyasm.search import Search
@@ -900,16 +903,17 @@ class Site(object):
         sites = Container.get("sites")
         if sites == None:
             return ""
+        site = None
         if sites:
             site = sites.pop()
-        
-     
+         
         security_list = Container.get("Environment:security_list")
         if security_list:
             security = security_list.pop()
-            
             if security:
                 Environment.set_security(security)
+            
+            Environment.set_security_list(security_list)
 
         return site
        
@@ -2264,5 +2268,14 @@ class License(object):
 
     get = classmethod(get)
 
-
-
+if __name__ == '__main__':
+    from pyasm.security import Batch
+    Batch(login_code='wendy20', site='wendy20')
+    sec = Environment.get_security()
+  
+    Site.set_site('default')
+    Site.set_site('wendy20')
+    Site.pop_site()
+    Site.pop_site()
+    Site.pop_site()
+  
