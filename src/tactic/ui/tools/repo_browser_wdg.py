@@ -285,14 +285,9 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 file_system_edit=file_system_edit,
                 search_type=search_type,
                 view='table',
-<<<<<<< HEAD
                 dirname=view_dir,
-                basename=""
-=======
-                dirname=project_dir,
                 basename="",
                 expression=expression
->>>>>>> upstream/4.5
             )
             outer_div.add(widget)
         else:
