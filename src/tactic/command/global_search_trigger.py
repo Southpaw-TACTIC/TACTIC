@@ -130,8 +130,11 @@ class GlobalSearchTrigger(Trigger):
                     collection_name = update_data.get("name")
 
                     keywords_data = sobj.get_json_value("keywords_data", {})
-                    keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
-
+                    if collection_keywords:
+                        keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
+                    else:
+                        keywords_data['user'] = "%s" % collection_name
+                        
                     sobj.set_json_value("keywords_data", keywords_data)
                     sobj.commit(triggers=False)
                     my.set_searchable_keywords(sobj)  

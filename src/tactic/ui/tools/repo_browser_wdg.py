@@ -77,6 +77,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         search_type = my.kwargs.get("search_type")
         search_type = SearchType.build_search_type(search_type)
 
+        expression = my.kwargs.get("expression")
+
         parent_key = my.kwargs.get("search_key")
         
         if parent_key:
@@ -283,8 +285,14 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 file_system_edit=file_system_edit,
                 search_type=search_type,
                 view='table',
+<<<<<<< HEAD
                 dirname=view_dir,
                 basename=""
+=======
+                dirname=project_dir,
+                basename="",
+                expression=expression
+>>>>>>> upstream/4.5
             )
             outer_div.add(widget)
         else:
@@ -3629,6 +3637,11 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
         # FIXME: This kwarg does not take effect
         # TODO: Drag and drop upload
+        
+        expression = my.kwargs.get("expression")
+
+        #TODO: Drag and drop upload
+        
         # pass in parent key for deliverable
         # "self" for parent_mode
         upload_mode = False
@@ -3641,6 +3654,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             show_shelf=False,
             show_search_limit=False,
             layout=layout_mode,
+            expression=expression,
             scale='100',
             show_scale=True,
             width='100%',
