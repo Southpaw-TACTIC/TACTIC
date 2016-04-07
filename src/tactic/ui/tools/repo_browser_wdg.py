@@ -1256,7 +1256,17 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.repo_browser.set_lock(false);
                 return;
             }
-  
+            
+            // Get the snapshot or dir moved
+            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
+            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
+            // Get the new relative_dir
+            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
+            if (from_relative_dir == relative_dir) {
+                spt.repo_browser.set_lock(false);
+                return;
+            }
+
             if ( drop_on_el.hasClass("spt_open") == true) {
                 var sibling = drop_on_el.getNext();
                 var inner = sibling.getElement(".spt_dir_list_handler_content");
@@ -1277,12 +1287,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             // Move the files
             var server = TacticServerStub.get(); 
 
-            // Get the snapshot or dir moved
-            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
-            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
-            // Get the new relative_dir
-            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
-           
             // Get path to update folder states
             var old_path = spt.repo_browser.get_relative_path(bvr.src_el);
  
@@ -1307,7 +1311,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
             }
-
 
             spt.repo_browser.set_lock(false);   
             if (!spt.repo_browser.update_ready()) {
@@ -3013,6 +3016,9 @@ class RepoBrowserCbk(Command):
             # NOTE: this may be a bit too much brute force.  It may take files
             # that are not in the file table (but these shouldn't be there
             # in the first place!)
+            
+            if os.path.normpath(relative_dir) == os.path.normpath(from_relative_dir):
+                return
 
             base_dir = Environment.get_asset_dir()
            
