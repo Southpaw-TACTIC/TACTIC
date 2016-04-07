@@ -828,7 +828,32 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         return r'''
             spt.repo_browser = {};
-        
+          
+            // Misc functions
+            spt.repo_browser.getElement = function(el) {
+                // TODO: Pass in a child el when calling this function.
+                // Currently flawed because there could be more than one repo browser tab/popup/view.
+                var repo_top = document.getElement(".spt_repo_browser_top");
+                if (el) {
+                    return repo_top.getElement(el);
+                } else {
+                    return repo_top;
+                }
+            };
+            
+            spt.repo_browser.get_top = function() {
+                return spt.repo_browser.getElement();
+            }
+            
+            spt.repo_browser.get_parent_mode = function() {
+                var repo_browser_top = spt.repo_browser.get_top();
+                var parent_mode = repo_browser_top.getProperty("spt_parent_mode");
+                if (!parent_mode) {
+                    parent_mode = "single_search_type";
+                }
+                return parent_mode;
+            }
+            
             spt.repo_browser.click_file_bvr = function(evt, bvr) {
                 // When an item is clicked in the directory, display 
                 // the file detail.
@@ -883,11 +908,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
             // Update API
-            spt.repo_browser.getElement = function(el) {
-                var repo_top = document.getElement(".spt_repo_browser_top");
-                return repo_top.getElement(el);
-            }
-
             spt.repo_browser.dynamic_lock = false;
 
             spt.repo_browser.lock_block; 
@@ -1265,9 +1285,12 @@ class RepoBrowserDirListWdg(DirListWdg):
            
             // Get path to update folder states
             var old_path = spt.repo_browser.get_relative_path(bvr.src_el);
+ 
+            var parent_mode = spt.repo_browser.get_parent_mode();
 
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
+                parent_mode: parent_mode,
                 snapshot_code: snapshot_code,
                 from_relative_dir: from_relative_dir,
                 relative_dir: relative_dir
@@ -1372,11 +1395,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return;
             }
 
+            var parent_mode = spt.repo_browser.get_parent_mode();
+
             var relative_dir = target.getAttribute("spt_relative_dir");
 
             var server = TacticServerStub.get(); 
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
+                parent_mode: parent_mode,
                 search_key: search_key,
                 search_keys: search_keys,
                 relative_dir: relative_dir
@@ -1384,8 +1410,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             try {
                 server.execute_cmd(cmd, kwargs); 
               
-                //TODO. Update folder states if necessary.
-
                 // Refresh the dropped top
                 var dir_top = target.getParent(".spt_dir_list_handler_top");
                 spt.panel.refresh(dir_top);
@@ -1427,7 +1451,13 @@ class RepoBrowserDirListWdg(DirListWdg):
             // Get path for updating folder state
             var path = spt.repo_browser.get_relative_path(activator);
             
-            // TODO: This should delete all snapshots sharing a context.
+            // TODO: This delete script must be more careful. It must be rewritten
+            // with the following behavior:
+            // In single file mode, all snapshots and the parent are deleted.
+            // Otherwise, all snapshots sharing a context should be deleted.
+            // Note: The list that is set to the delete wdg should be a valid list of sObjects.
+            // Note 2: This script should do at most one server request before actually loading the 
+            // delete wdg.
             if (activator.hasClass("spt_dir_item")) {
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 expr = "@SOBJECT(sthpw/file['relative_dir', 'like', '"+relative_dir+"%'].sthpw/snapshot)";
@@ -1461,9 +1491,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             } else {
                 return;
             }
- 
-            activator.addClass("spt_browser_deleted");
             
+            activator.addClass("spt_browser_deleted");
             // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
             // file in display was deleted.
             var delete_on_complete = "spt.repo_browser.delete_refresh('"+path+"', '"+relative_dir+"');"
@@ -1504,7 +1533,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             
         }
-
+      
        ''' 
 
 
@@ -2779,7 +2808,8 @@ class RepoBrowserActionCmd(Command):
             # get all of the snapshots. Make sure versionless is the first one
             search = Search("sthpw/snapshot")
             search.add_sobject_filter(sobject)
-            search.add_filter("context", context)
+            if parent_mode != "single_file":
+                search.add_filter("context", context)
             search.add_order_by("version")
             snapshots = search.get_sobjects()
 
@@ -2953,6 +2983,8 @@ class RepoBrowserCbk(Command):
         search_keys = my.kwargs.get("search_keys")
         from_relative_dir = my.kwargs.get("from_relative_dir")
 
+        parent_mode = my.kwargs.get("parent_mode")
+
         # FIXME:
         # Possible issue... moving an entire directory structure assumes
         # that all snapshots are in relative directory or parent.
@@ -2962,7 +2994,10 @@ class RepoBrowserCbk(Command):
 
             snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
             parent = snapshot.get_parent()
-            my.move_parent(parent, relative_dir, snapshot)
+            if parent_mode == "single_file":
+                my.move_parent(parent, relative_dir)
+            else:
+                my.move_parent(parent, relative_dir, snapshot)
             return 
         elif search_key:
             my.add_description("Moving files associated with [%s]." % search_key)
@@ -3220,31 +3255,29 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
                 good_file = None
                 reldir = ""
         elif search_key:
+            good_file = None
+            reldir = ""
+
             # search_key is either a snapshot search_key or 
             # single file sObject key.
             sobject = Search.get_by_search_key(search_key)
-            if not sobject:
-                raise Exception("No snapshot found")
-            
-            snapshot = None
+            if sobject:
+                if parent_mode == "single_file":
+                    snapshot = Snapshot.get_latest_by_sobject(sobject)
+                    parent = sobject
+                else:
+                    snapshot = sobject
+                    parent = snapshot.get_parent()
+                
+                if snapshot:
+                    search_type = snapshot.get_value("search_type") 
+                    path = snapshot.get_lib_path_by_type()
+                    dirname = os.path.dirname(path)
+                    basename = os.path.basename(path)
 
-            if parent_mode == "single_file":
-                snapshot = Snapshot.get_latest_by_sobject(sobject)
-                parent = sobject
-            else:
-                snapshot = sobject
-                parent = snapshot.get_parent()
+                    good_file = snapshot.get_file_by_type("main")
+                    reldir = good_file.get_value("relative_dir")
             
-            if not snapshot:
-                raise Exception("No snapshot found")
-            
-            search_type = snapshot.get_value("search_type") 
-            path = snapshot.get_lib_path_by_type()
-            dirname = os.path.dirname(path)
-            basename = os.path.basename(path)
-
-            good_file = snapshot.get_file_by_type("main")
-            reldir = good_file.get_value("relative_dir")
         elif search_type:
             search_type = SearchType.build_search_type(search_type)
             dirname = my.kwargs.get("dirname")
