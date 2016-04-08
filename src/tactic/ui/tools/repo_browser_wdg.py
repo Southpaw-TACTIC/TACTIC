@@ -2811,8 +2811,7 @@ class RepoBrowserActionCmd(Command):
             # get all of the snapshots. Make sure versionless is the first one
             search = Search("sthpw/snapshot")
             search.add_sobject_filter(sobject)
-            if parent_mode != "single_file":
-                search.add_filter("context", context)
+            search.add_filter("context", context)
             search.add_order_by("version")
             snapshots = search.get_sobjects()
 
@@ -2892,7 +2891,7 @@ class RepoBrowserActionCmd(Command):
                     context_file_name = parts[1]
                     _, old_ext = os.path.splitext(context_file_name)
                     if (old_ext):
-                        new_name = new_base
+                        new_name = new_base + old_ext
                     else:
                         new_name, _ = os.path.splitext(new_base)     
                 
@@ -2997,10 +2996,7 @@ class RepoBrowserCbk(Command):
 
             snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
             parent = snapshot.get_parent()
-            if parent_mode == "single_file":
-                my.move_parent(parent, relative_dir)
-            else:
-                my.move_parent(parent, relative_dir, snapshot)
+            my.move_parent(parent, relative_dir, snapshot)
             return 
         elif search_key:
             my.add_description("Moving files associated with [%s]." % search_key)
