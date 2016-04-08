@@ -90,9 +90,10 @@
                     search_key: sk
                 };
                 var popup = spt.panel.load_popup("Edit User", class_name, kwargs);
-
-                popup.on_save_cbk = function() {
-                    spt.panel.refresh(top);
+                var tab_top = bvr.src_el.getParent(".spt_tab_top");
+                popup.on_save_cbk = function(){
+                    spt.tab.set_tab_top(tab_top);
+                    spt.tab.reload_selected();
                 }
             </cbjs_action>
         </display>
