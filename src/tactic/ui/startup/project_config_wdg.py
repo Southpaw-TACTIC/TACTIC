@@ -849,7 +849,7 @@ class UserPanelWdg(BaseRefreshWdg):
                     show_header: false
                 }
                 var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
-                var tab_top = bvr.src_el.getParent(".spt_tab_top);
+                var tab_top = bvr.src_el.getParent(".spt_tab_top");
                 popup.on_save_cbk = function(){
                     spt.tab.set_tab_top(tab_top);
                     spt.tab.reload_selected();
