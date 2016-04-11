@@ -42,14 +42,62 @@ class FileDetailWdg(BaseRefreshWdg):
             snapshots = Snapshot.get_by_sobject(sobject)
             snapshot = snapshots[0]
 
+        # Extension determine UI class for preview
+        thumb_path = snapshot.get_web_path_by_type("icon")
+        web_src = snapshot.get_web_path_by_type("web")
+
+        from pyasm.biz import File
+        file_type = "main"
+        lib_path = snapshot.get_lib_path_by_type(file_type)
+        src = snapshot.get_web_path_by_type(file_type)
+        if not web_src:
+            web_src = src
+        
+        parts = os.path.splitext(src)
+        ext = parts[1]
+        ext = ext.lstrip(".")
+        ext = ext.lower()
+        
         #parent = snapshot.get_parent()
 
         top = my.top
 
+        if ext == "pdf":
+            iframe = HtmlElement.iframe()
+            iframe.set_attr('src', src)
+            iframe.add_style("width: 100%")
+            iframe.add_style("height: 800px")
+            top.add(iframe)
+            return top
+
         from tactic.ui.container import ResizableTableWdg
         table = ResizableTableWdg()
         top.add(table)
-        table.add_row()
+        tr = table.add_row()
+
+        # These bvrs allow for smooth switching if switching between files 
+        # like in the RepoBrowserWdg
+        tr.add_style("height: 200px")
+        load_height_bvr = {
+            'type': 'load',
+            'cbjs_action': '''
+            var last_height = spt.container.get_value("last_img_height");
+            if (last_height) {
+                bvr.src_el.setStyle("height", last_height);
+            } 
+            '''
+        } 
+        tr.add_behavior(load_height_bvr)
+
+        unload_height_bvr = {
+            'type': 'unload',
+            'cbjs_action': '''
+            var last_height = bvr.src_el.getStyle("height");
+            spt.container.set_value("last_img_height", last_height);
+            '''
+        }
+        tr.add_behavior(unload_height_bvr)
+
         table.add_style("width: 100%")
         table.add_style("text-align", "center")
 
@@ -57,23 +105,9 @@ class FileDetailWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_color("background", "background",)
         td.add_style("vertical-align: middle")
-        td.add_style("height: 200px")
+        td.add_style("height: inherit")
         td.add_style("overflow-x: auto")
 
-
-        file_type = "icon"
-        thumb_path = snapshot.get_web_path_by_type(file_type)
-        
-        # Extension determine UI class for preview
-        from pyasm.biz import File
-        file_type = "main"
-        lib_path = snapshot.get_lib_path_by_type(file_type)
-        src = snapshot.get_web_path_by_type(file_type)
-        
-        parts = os.path.splitext(src)
-        ext = parts[1]
-        ext = ext.lstrip(".")
-        ext = ext.lower()
 
         if ext in ['txt','html', 'ini']:
             content_div = DivWdg()
@@ -94,7 +128,7 @@ class FileDetailWdg(BaseRefreshWdg):
                 text = TextAreaWdg()
                 text.add(content)
                 text.add_style("width: 100%")
-                text.add_style("height: 300px")
+                text.add_style("height: 100%")
                 text.add_style("padding: 10px")
                 text.add_style("border: none")
                 text.add_attr("readonly", "true")
@@ -104,43 +138,25 @@ class FileDetailWdg(BaseRefreshWdg):
             content_div.add_style("color", "#000")
             content_div.add_style("width", "auto")
             content_div.add_style("margin", "20px")
+            content_div.add_style("height", "100%")
  
-        elif ext in "gif":
-            img = HtmlElement.img(src=src)
+        elif ext in File.IMAGE_EXT or ext == "gif":
+            if ext == "gif":
+                img = HtmlElement.img(src=src)
+            else:
+                img = HtmlElement.img(src=web_src)
+            img.add_style("height: inherit")
+            img.add_style("width: auto")
             td.add(img)
-        elif ext in ["tif", "tiff"]:
-            img = HtmlElement.img(src=thumb_path)
-            td.add(img)
-        elif ext in File.VIDEO_EXT or ext in File.IMAGE_EXT:
-            if ext in File.VIDEO_EXT:
-                embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, preload="auto", controls=True)
-            elif ext in File.IMAGE_EXT:
-                embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, height='200')
-            
+        elif ext in File.VIDEO_EXT:
+            embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, preload="auto", controls=True)
             td.add(embed_wdg)
             
-            # 100% width is default in EmbedWdg
             embed_wdg.add_style("margin: auto auto")
             embed_wdg.add_class("spt_resizable")
-            #embed_wdg.add_style("width: 100%")
 
-            embed_wdg.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                var last_height = spt.container.get_value("last_img_height");
-                if (last_height) {
-                    bvr.src_el.setStyle("height", last_height);
-                } 
-                '''
-            } )
-
-            embed_wdg.add_behavior( {
-                'type': 'unload',
-                'cbjs_action': '''
-                var last_height = bvr.src_el.getStyle("height");
-                spt.container.set_value("last_img_height", last_height);
-                '''
-            } )
+            embed_wdg.add_behavior(load_height_bvr)
+            embed_wdg.add_behavior(unload_height_bvr)
 
         else:
             thumb_table = DivWdg()
@@ -161,7 +177,6 @@ class FileDetailWdg(BaseRefreshWdg):
             thumb_table.add_style("display: inline-block")
             thumb_table.add_style("vertical-align: top")
             thumb_table.add_style("overflow-y: hidden")    
-            
             from tactic.ui.panel import ThumbWdg2
             thumb = ThumbWdg2()
             thumb_table.add(thumb)
