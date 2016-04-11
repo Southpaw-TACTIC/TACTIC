@@ -51,7 +51,7 @@ class FileDetailWdg(BaseRefreshWdg):
         top.add(table)
         table.add_row()
         table.add_style("width: 100%")
-
+        table.add_style("text-align", "center")
 
         from tactic.ui.widget import EmbedWdg
         td = table.add_cell()
@@ -63,37 +63,20 @@ class FileDetailWdg(BaseRefreshWdg):
 
         file_type = "icon"
         thumb_path = snapshot.get_web_path_by_type(file_type)
-
+        
+        # Extension determine UI class for preview
+        from pyasm.biz import File
         file_type = "main"
-        src = snapshot.get_web_path_by_type(file_type)
         lib_path = snapshot.get_lib_path_by_type(file_type)
-
-
+        src = snapshot.get_web_path_by_type(file_type)
+        
         parts = os.path.splitext(src)
         ext = parts[1]
+        ext = ext.lstrip(".")
         ext = ext.lower()
 
-
-        content_div = DivWdg()
-
-        if ext in ['.doc','.xls']:
-            from pyasm.widget import ThumbWdg
-            link = ThumbWdg.find_icon_link(src)
-            img = HtmlElement.img(src=link)
-            href = DivWdg()
-            href.add_style("text-align: center")
-            href.add(img)
-            td.add(href)
-            href.add_behavior( {
-                'type': 'click_up',
-                'src': src,
-                'cbjs_action': '''
-                window.open(bvr.src);
-                '''
-            } )
-            href.add_class("hand")
-
-        elif ext in ['.txt','.html', '.ini']:
+        if ext in ['txt','html', 'ini']:
+            content_div = DivWdg()
             f = open(lib_path, 'r')
             content = f.read(10000)
             f.close()
@@ -121,15 +104,22 @@ class FileDetailWdg(BaseRefreshWdg):
             content_div.add_style("color", "#000")
             content_div.add_style("width", "auto")
             content_div.add_style("margin", "20px")
-
-
-        elif thumb_path == "__DYNAMIC__":
-            td.add("No Preview")
-        else:
-          
-            # 100% width is default in EmbedWdg
-            embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, height='200')
+ 
+        elif ext in "gif":
+            img = HtmlElement.img(src=src)
+            td.add(img)
+        elif ext in ["tif", "tiff"]:
+            img = HtmlElement.img(src=thumb_path)
+            td.add(img)
+        elif ext in File.VIDEO_EXT or ext in File.IMAGE_EXT:
+            if ext in File.VIDEO_EXT:
+                embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, preload="auto", controls=True)
+            elif ext in File.IMAGE_EXT:
+                embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, height='200')
+            
             td.add(embed_wdg)
+            
+            # 100% width is default in EmbedWdg
             embed_wdg.add_style("margin: auto auto")
             embed_wdg.add_class("spt_resizable")
             #embed_wdg.add_style("width: 100%")
@@ -140,10 +130,9 @@ class FileDetailWdg(BaseRefreshWdg):
                 var last_height = spt.container.get_value("last_img_height");
                 if (last_height) {
                     bvr.src_el.setStyle("height", last_height);
-                }
+                } 
                 '''
             } )
-
 
             embed_wdg.add_behavior( {
                 'type': 'unload',
@@ -153,6 +142,30 @@ class FileDetailWdg(BaseRefreshWdg):
                 '''
             } )
 
+        else:
+            thumb_table = DivWdg()
+            td.add(thumb_table)
+            
+            thumb_table.add_behavior( {
+                'type': 'click_up',
+                'src': src,
+                'cbjs_action': '''
+                window.open(bvr.src);
+                '''
+            } )
+            thumb_table.add_class("hand")
+            thumb_table.add_style("width: 200px")
+            thumb_table.add_style("height: 125px")
+            thumb_table.add_style("padding: 5px")
+            thumb_table.add_style("margin-left: 20px")
+            thumb_table.add_style("display: inline-block")
+            thumb_table.add_style("vertical-align: top")
+            thumb_table.add_style("overflow-y: hidden")    
+            
+            from tactic.ui.panel import ThumbWdg2
+            thumb = ThumbWdg2()
+            thumb_table.add(thumb)
+            thumb.set_sobject(snapshot)
 
 
         table.add_row()
