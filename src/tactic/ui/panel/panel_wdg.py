@@ -3084,7 +3084,6 @@ class ViewPanelWdg(BaseRefreshWdg):
         simple_search_config = my.kwargs.get('simple_search_config')
         simple_search_mode = my.kwargs.get("mode")
         custom_simple_search_view = None
-        custom_simple_search_config = None
 
         if not simple_search_mode:
             simple_search_mode = my.kwargs.get("simple_search_mode")
@@ -3094,7 +3093,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             custom_simple_search_view = simple_search_view
         elif simple_search_config:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
-            custom_simple_search_config = simple_search_config
         else:
             # add a custom search class
             search_class = my.kwargs.get('search_class')
@@ -3111,8 +3109,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             if my.kwargs.get("keywords"):
                 kwargs['keywords'] = my.kwargs.get("keywords")
 
-            if custom_simple_search_config:
-                kwargs['search_config'] = custom_simple_search_config
+            if simple_search_config:
+                kwargs['search_config'] = simple_search_config
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
             kwargs['columns'] = my.kwargs.get("simple_search_columns")
