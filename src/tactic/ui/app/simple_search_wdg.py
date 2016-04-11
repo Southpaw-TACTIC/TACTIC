@@ -237,6 +237,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
         '''
 
         my.view = my.kwargs.get("search_view")
+        config = my.kwargs.get("search_config")
+
         if not my.view:
             my.view = 'custom_filter'
         #view = "custom_filter"
@@ -249,7 +251,13 @@ class SimpleSearchWdg(BaseRefreshWdg):
         config_sobj = search.get_sobject()
         if config_sobj:
             config_xml = config_sobj.get_value("config")
-        
+        elif config:
+            config_xml = '''
+            <config>
+            <custom_filter>%s
+            </custom_filter>
+            </config>
+            ''' % config
         else:
             config_xml = '''
             <config>
