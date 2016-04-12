@@ -13,7 +13,7 @@
 __all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
-
+import tacticenv
 from pyasm.common import *
 from pyasm.search import *
 
@@ -835,7 +835,7 @@ class Site(object):
  
 
 
-    def set_site(cls, site):
+    def set_site(cls, site, store_security=True):
         '''Set the global site for this "session"'''
         if not site:
             return
@@ -848,17 +848,20 @@ class Site(object):
         elif sites and sites[-1] == site:
             is_redundant = True 
        
-        if is_redundant:
-            return
          
+       
         
         security_list = Container.get("Environment:security_list")
         if not security_list:
             security_list = []
+            Environment.set_security_list(security_list)
         
      
         sites.append(site)
-        
+
+        if not store_security:
+            return 
+
         try:
             sql = DbContainer.get("sthpw")
         except:
@@ -866,10 +869,14 @@ class Site(object):
             raise Exception("WARNING: site [%s] does not exist" % site)
 
 
+        
         # if site is different from current, renew security instance
         cur_security = Environment.get_security()
       
    
+        if is_redundant:
+            security_list.append(cur_security)
+            return
         
         if cur_security and cur_security._login:
             security = Security()
@@ -883,8 +890,7 @@ class Site(object):
             Environment.set_security(security)
             # store the current security
             security_list.append(cur_security)
-            Environment.set_security_list(security_list)
-     
+         
      
         try:
             # check if user is allowed to see the site
@@ -898,23 +904,30 @@ class Site(object):
     set_site = classmethod(set_site)
 
 
-    def pop_site(cls):
+    def pop_site(cls, pop_security=True):
         '''Set the global site for this "session"'''
         sites = Container.get("sites")
+      
         if sites == None:
             return ""
         site = None
         if sites:
             site = sites.pop()
-         
+
+        if not pop_security:
+            return site
+
+
         security_list = Container.get("Environment:security_list")
+       
         if security_list:
+            
             security = security_list.pop()
+           
             if security:
                 Environment.set_security(security)
             
-            Environment.set_security_list(security_list)
-
+            
         return site
        
     pop_site = classmethod(pop_site)
