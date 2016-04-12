@@ -350,24 +350,24 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(ignore_ext)
 
 
+        if "column_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Map file name to column")
+            div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
 
-        label_div = DivWdg()
-        label_div.add("Map file name to column")
-        div.add(label_div)
-        label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 8px")
-
-        column_option = my.kwargs.get("column")
-        if not column_option:
-            column_option = "name"
-        column_select = SelectWdg(name="update mode")
-        column_select.add_class("spt_column_select")
-        column_select.set_option("values", ["name", "code"])
-        column_select.set_option("labels", ["Name", "Code"])
-        column_select.set_option("default", column_option)
-        column_select.add_style("margin-top: -3px")
-        column_select.add_style("margin-right: 5px")
-        div.add(column_select)
+            column_option = my.kwargs.get("column")
+            if not column_option:
+                column_option = "name"
+            column_select = SelectWdg(name="update mode")
+            column_select.add_class("spt_column_select")
+            column_select.set_option("values", ["name", "code"])
+            column_select.set_option("labels", ["Name", "Code"])
+            column_select.set_option("default", column_option)
+            column_select.add_style("margin-top: -3px")
+            column_select.add_style("margin-right: 5px")
+            div.add(column_select)
 
 
 
