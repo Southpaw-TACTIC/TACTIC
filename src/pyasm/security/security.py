@@ -13,7 +13,7 @@
 __all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
-import tacticenv
+#import tacticenv
 from pyasm.common import *
 from pyasm.search import *
 
