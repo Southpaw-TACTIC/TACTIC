@@ -982,6 +982,12 @@ class HtmlElement(Widget):
     ###################
     # Factory Methods
     ###################
+    
+    def body(widget=None):
+        element = HtmlElement("body")
+        element.add(widget)
+        return element
+    body = staticmethod(body)
 
     def p(widget=None):
         element = HtmlElement("p")
