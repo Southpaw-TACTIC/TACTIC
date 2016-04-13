@@ -13,7 +13,7 @@
 __all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
-
+#import tacticenv
 from pyasm.common import *
 from pyasm.search import *
 
@@ -835,25 +835,32 @@ class Site(object):
  
 
 
-    def set_site(cls, site):
+    def set_site(cls, site, store_security=True):
         '''Set the global site for this "session"'''
         if not site:
             return
         sites = Container.get("sites")
-        
+
         is_redundant = False
         if sites == None:
             sites = []
             Container.put("sites", sites)
         elif sites and sites[-1] == site:
             is_redundant = True 
-        
-        sites.append(site)
+       
          
+       
+        
         security_list = Container.get("Environment:security_list")
         if not security_list:
             security_list = []
+            Environment.set_security_list(security_list)
+        
+     
+        sites.append(site)
 
+        if not store_security:
+            return 
 
         try:
             sql = DbContainer.get("sthpw")
@@ -862,14 +869,15 @@ class Site(object):
             raise Exception("WARNING: site [%s] does not exist" % site)
 
 
+        
         # if site is different from current, renew security instance
         cur_security = Environment.get_security()
+      
+   
         if is_redundant:
             security_list.append(cur_security)
             return
-      
-     
-            
+        
         if cur_security and cur_security._login:
             security = Security()
             security._is_logged_in = True
@@ -878,11 +886,12 @@ class Site(object):
             security._find_all_login_groups()
         
             security.add_access_rules()
+            # initialize a new security
             Environment.set_security(security)
-            security_list.append(security)
-
+            # store the current security
+            security_list.append(cur_security)
+         
      
-        
         try:
             # check if user is allowed to see the site
             #from pyasm.search import Search
@@ -895,22 +904,30 @@ class Site(object):
     set_site = classmethod(set_site)
 
 
-    def pop_site(cls):
+    def pop_site(cls, pop_security=True):
         '''Set the global site for this "session"'''
         sites = Container.get("sites")
+      
         if sites == None:
             return ""
+        site = None
         if sites:
             site = sites.pop()
-        
-     
+
+        if not pop_security:
+            return site
+
+
         security_list = Container.get("Environment:security_list")
+       
         if security_list:
-            security = security_list.pop()
             
+            security = security_list.pop()
+           
             if security:
                 Environment.set_security(security)
-
+            
+            
         return site
        
     pop_site = classmethod(pop_site)
@@ -2264,5 +2281,14 @@ class License(object):
 
     get = classmethod(get)
 
-
-
+if __name__ == '__main__':
+    from pyasm.security import Batch
+    Batch(login_code='wendy20', site='wendy20')
+    sec = Environment.get_security()
+  
+    Site.set_site('default')
+    Site.set_site('wendy20')
+    Site.pop_site()
+    Site.pop_site()
+    Site.pop_site()
+  
