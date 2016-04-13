@@ -1140,7 +1140,6 @@ class SitePage(AppServer):
         # NOTE: this is not the right place for this, but it allows the
         # top widget to completely be customized
 
-
         # if there is a custom url, then handle it separately
         if my.custom_url:
             xml = my.custom_url.get_xml_value("widget")
@@ -1160,8 +1159,13 @@ class SitePage(AppServer):
                 my.top = CustomTopWdg(url=my.custom_url, hash=hash)
                 return my.top
 
-        # This is the default TACTIC html implementation for html
-        my.top = TopWdg(hash=my.hash)
+        from pyasm.biz import ProjectSetting
+        top_wdg_cls = ProjectSetting.get_value_by_key("top_wdg_cls")
+        if top_wdg_cls:
+            my.top = Common.create_from_class_path(top_wdg_cls)
+        else:
+            from tactic.ui.app import TopWdg
+            my.top = TopWdg(hash=my.hash)
         return my.top
 
 
