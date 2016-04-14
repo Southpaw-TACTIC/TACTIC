@@ -149,7 +149,7 @@ class SnapshotDirListWdg(DirListWdg):
     def __init__(my, **kwargs):
         if kwargs.get("all_open") == None:
             kwargs["all_open"] = True
-
+        
         super(SnapshotDirListWdg, my).__init__(**kwargs)
         my.snapshots = kwargs.get("snapshots")
         if not my.snapshots:
@@ -159,13 +159,11 @@ class SnapshotDirListWdg(DirListWdg):
 
         # convert this to a repo directory
         asset_dir = Environment.get_asset_dir()
-
-        # FIXME: not sure how general this
-        #webdirname = "/assets/%s" % dirname.replace(asset_dir, "")
+        web_dir = Environment.get_web_dir()
 
         web = WebContainer.get_web()
         browser = web.get_browser()
-
+        use_applet = web.use_applet()
 
         if browser == 'Qt':
             top.add_relay_behavior( {
@@ -174,8 +172,9 @@ class SnapshotDirListWdg(DirListWdg):
             'cbjs_action': '''
             var path = bvr.src_el.getAttribute("spt_path");
             var asset_dir = '%s';
-            var url = "/assets/" + path.replace(asset_dir, "");
-            //window.open(url);
+            var web_dir = '%s';
+            var relative_dir = path.replace(asset_dir, "");
+            var url = web_dir + "/" + relative_dir;
 
             var url_parts = url.split("/");
             var file = url_parts.pop();
@@ -192,7 +191,7 @@ class SnapshotDirListWdg(DirListWdg):
             var filename = parts[parts.length-1];
             spt.tab.set_main_body_tab()
             spt.tab.add_new(filename, filename, class_name, kwargs);
-            ''' % asset_dir
+            ''' % (asset_dir, web_dir)
             } )
         else:
             top.add_relay_behavior( {
@@ -200,121 +199,121 @@ class SnapshotDirListWdg(DirListWdg):
             'bvr_match_class': 'spt_dir_list_item',
             'cbjs_action': '''
             var path = bvr.src_el.getAttribute("spt_path");
-            
             if (path.indexOf('####') != -1) {
                 spt.info('Cannot open the file sequence');
-            } 
-            else {
-            var asset_dir = '%s';
-            var url = "/assets/" + path.replace(asset_dir, "");
+            } else {
+                var asset_dir = '%s';
+                var web_dir = '%s';
+                var relative_dir = path.replace(asset_dir, "");
+                var url = web_dir + "/" + relative_dir;
 
-            var url_parts = url.split("/");
-            var filename = url_parts.pop();
-            filename = encodeURIComponent(filename);
-            url_parts.push(filename);
-            url = url_parts.join("/");
+                // Encode the filename
+                var url_parts = url.split("/");
+                var filename = url_parts.pop();
+                filename = encodeURIComponent(filename);
+                url_parts.push(filename);
+                url = url_parts.join("/");
 
-            window.open(url);
+                window.open(url);
             }
-            ''' % asset_dir
+            ''' % (asset_dir, web_dir)
             } )
 
-        # add a top menu
-        menu = Menu(width=180)
-        menu_item = MenuItem(type='title', label='Actions')
-        menu.add(menu_item)
+        if use_applet:
+            # add a top menu
+            menu = Menu(width=180)
+            menu_item = MenuItem(type='title', label='Actions')
+            menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label='Download to Folder')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
+            menu_item = MenuItem(type='action', label='Download to Folder')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var applet = spt.Applet.get();
+                var select_dir = true;
+                var dir = applet.open_file_browser('', select_dir);
+                if (!dir) {
+                    dir = applet.get_current_dir();
+                }
+                if (!dir) {
+                    spt.alert("No folder selected to copy to");
+                    return;
+                }
+                
+                var path = activator.getAttribute("spt_path");
+
+                var asset_dir = '%s';
+                var env = spt.Environment.get();
+                var server_url = env.get_server_url();
+                var url = server_url + "/assets/" + path.replace(asset_dir, "");
+                var parts = path.split("/");
+                var filename = parts[parts.length-1];
+                spt.app_busy.show("Downloading file", filename);
+                applet.download_file(url, dir + "/" + filename);
+                spt.app_busy.hide();
+                if (dir)
+                    spt.notify.show_message("Download to '" + dir + "' completed.")
+                ''' % asset_dir
+            } )
+            #menu_item = MenuItem(type='action', label='Check-out To Sandbox')
+            #menu.add(menu_item)
+            #menu_item.add_behavior( {
+            #'type': 'click_up',
+            #'cbjs_action': '''spt.alert('Not implemented yet.')'''
+            #} )
+            menu_item = MenuItem(type='action', label='Copy to Clipboard')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
-            var applet = spt.Applet.get();
-            var select_dir = true;
-            var dir = applet.open_file_browser('', select_dir);
-            if (!dir) {
-                dir = applet.get_current_dir();
-            }
-            if (!dir) {
-                spt.alert("No folder selected to copy to");
-                return;
-            }
-            
             var path = activator.getAttribute("spt_path");
 
-            var asset_dir = '%s';
-            var env = spt.Environment.get();
-            var server_url = env.get_server_url();
-            var url = server_url + "/assets/" + path.replace(asset_dir, "");
-            var parts = path.split("/");
-            var filename = parts[parts.length-1];
-            spt.app_busy.show("Downloading file", filename);
-            applet.download_file(url, dir + "/" + filename);
-            spt.app_busy.hide();
-            if (dir)
-                spt.notify.show_message("Download to '" + dir + "' completed.")
-            ''' % asset_dir
-        } )
-        #menu_item = MenuItem(type='action', label='Check-out To Sandbox')
-        #menu.add(menu_item)
-        #menu_item.add_behavior( {
-        #'type': 'click_up',
-        #'cbjs_action': '''spt.alert('Not implemented yet.')'''
-        #} )
-        menu_item = MenuItem(type='action', label='Copy to Clipboard')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var activator = spt.smenu.get_activator(bvr);
-        var path = activator.getAttribute("spt_path");
+            var search_key = activator.getAttribute("spt_file_search_key");
 
-        var search_key = activator.getAttribute("spt_file_search_key");
-
-        var server = TacticServerStub.get();
-        var class_name = 'tactic.command.clipboard_cmd.ClipboardCopyCmd';
-        var search_keys = [search_key];
-        var kwargs = {
-            search_keys: search_keys
-        }
-        try {
-            spt.app_busy.show("Copy to Clipboard ...");
-            server.execute_cmd(class_name, kwargs);
-            spt.app_busy.hide();
+            var server = TacticServerStub.get();
+            var class_name = 'tactic.command.clipboard_cmd.ClipboardCopyCmd';
+            var search_keys = [search_key];
+            var kwargs = {
+                search_keys: search_keys
             }
-        catch(e) {
-            spt.alert(spt.exception.handler(e));
-        }
-        '''
-        } )
+            try {
+                spt.app_busy.show("Copy to Clipboard ...");
+                server.execute_cmd(class_name, kwargs);
+                spt.app_busy.hide();
+                }
+            catch(e) {
+                spt.alert(spt.exception.handler(e));
+            }
+            '''
+            } )
 
 
-        menu_item = MenuItem(type='action', label='View Metadata')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var activator = spt.smenu.get_activator(bvr);
-        var path = activator.getAttribute("spt_path");
+            menu_item = MenuItem(type='action', label='View Metadata')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var path = activator.getAttribute("spt_path");
 
-        var search_key = activator.getAttribute("spt_file_search_key");
+            var search_key = activator.getAttribute("spt_file_search_key");
 
-        var server = TacticServerStub.get();
-        var class_name = 'tactic.ui.checkin.SnapshotMetadataWdg';
-        var kwargs = {
-            search_key: search_key
-        }
-        spt.panel.load_popup("Metadata", class_name, kwargs);
-        '''
-        } )
+            var server = TacticServerStub.get();
+            var class_name = 'tactic.ui.checkin.SnapshotMetadataWdg';
+            var kwargs = {
+                search_key: search_key
+            }
+            spt.panel.load_popup("Metadata", class_name, kwargs);
+            '''
+            } )
 
-
-
-        menus_in = {
-            'FILE_MENU_CTX': menu,
-        }
-        SmartMenu.attach_smart_context_menu( top, menus_in, False )
+            menus_in = {
+                'FILE_MENU_CTX': menu,
+            }
+            SmartMenu.attach_smart_context_menu( top, menus_in, False )
 
 
         my.add_selection(top)
