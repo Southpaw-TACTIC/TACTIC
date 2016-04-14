@@ -1567,7 +1567,8 @@ class IngestUploadCmd(Command):
                 new_filename = filename
 
 
-            if filename.endswith(".zip"):
+            unzip = my.kwargs.get("unzip")
+            if unzip in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
 
                 unzip_dir = "/tmp/xxx"
