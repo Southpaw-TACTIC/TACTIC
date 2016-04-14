@@ -896,13 +896,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress.add_style("overflow: hidden")
         progress.add_style("padding-right: 3px")
 
-        library_mode = my.kwargs.get("library_mode")
-        if not library_mode:
-            library_mode = False
-
-        dated_dirs = my.kwargs.get("dated_dirs")
-        if not dated_dirs:
-            dated_dirs = False
+        library_mode = my.kwargs.get("library_mode") or False
+        dated_dirs = my.kwargs.get("dated_dirs") or False
  
         from tactic.ui.app import MessageWdg
         progress.add_behavior( {
@@ -1484,7 +1479,8 @@ class IngestUploadCmd(Command):
 
     def execute(my):
 
-        FOLDER_LIMIT = 500
+        # FOLDER_LIMIT can be adjusted as desired.
+        my.FOLDER_LIMIT = 500
         library_mode = my.kwargs.get("library_mode")
         current_folder = 0
 
@@ -1570,7 +1566,7 @@ class IngestUploadCmd(Command):
                 raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
         if library_mode:
-            relative_dir = relative_dir + "/001"
+            relative_dir = "%s/001" % relative_dir
 
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
@@ -1599,9 +1595,9 @@ class IngestUploadCmd(Command):
                 import glob
                 abs_path = Environment.get_asset_dir() + "/" + relative_dir + "/*"
 
-                if len(glob.glob(abs_path)) > FOLDER_LIMIT:
+                if len(glob.glob(abs_path)) > my.FOLDER_LIMIT:
                     current_folder = current_folder + 1
-                    relative_dir = relative_dir[:-4] + "/%03d" % current_folder
+                    relative_dir = "%s/%03d" % (relative_dir[:-4], current_folder)
 
 
             unzip = my.kwargs.get("unzip")
