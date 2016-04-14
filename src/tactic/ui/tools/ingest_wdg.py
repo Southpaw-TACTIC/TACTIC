@@ -1009,8 +1009,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var ignore_ext = ignore_ext_select.value;
 
         var column_select = top.getElement(".spt_column_select");
-        var column = column_select.value;
-
+        var column = column_select ? column_select.value : bvr.kwargs.column;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
