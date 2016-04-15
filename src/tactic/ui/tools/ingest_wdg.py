@@ -1477,10 +1477,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 class IngestUploadCmd(Command):
 
+    # FOLDER_LIMIT can be adjusted as desired.
+    FOLDER_LIMIT = 500
+
     def execute(my):
 
-        # FOLDER_LIMIT can be adjusted as desired.
-        my.FOLDER_LIMIT = 500
         library_mode = my.kwargs.get("library_mode")
         current_folder = 0
 
