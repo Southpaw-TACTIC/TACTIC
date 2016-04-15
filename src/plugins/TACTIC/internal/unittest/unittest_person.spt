@@ -1,6 +1,6 @@
 #-- Start Entry --#
 insert = SearchType.create('sthpw/search_object')
-insert.set_value('code', """unitest/person""")
+insert.set_value('code', """unittest/person""")
 insert.set_value('description', """Unittest Person""")
 insert.set_value('database', """unittest""")
 insert.set_value('class_name', """pyasm.search.SObject""")
