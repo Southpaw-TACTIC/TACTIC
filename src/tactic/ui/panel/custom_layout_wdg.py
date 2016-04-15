@@ -413,6 +413,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         if is_test:
             Container.put("CustomLayout::is_test", True)
+            my.top.add_style("margin: 0px 5px")
             my.handle_is_test(content)
 
 
@@ -448,8 +449,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
         content.add_behavior( {
             'type': 'mouseover',
             'cbjs_action': '''
-            bvr.src_el.setStyle("border", "solid 1px blue");
-            bvr.src_el.setStyle("margin", "-1px");
+            //bvr.src_el.setStyle("border", "solid 1px blue");
+            bvr.src_el.setStyle("box-shadow", "0px 0px 5px rgba(0, 0, 0, 0.5)");
+            //bvr.src_el.setStyle("margin", "-1px");
             var els = bvr.src_el.getElements(".spt_test");
             for (var i = 0; i < els.length; i++) {
                 els[i].setStyle("display", "");
@@ -464,8 +466,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
             'type': 'mouseleave',
             'cbjs_action': '''
 
-            bvr.src_el.setStyle("border", "none");
-            bvr.src_el.setStyle("margin", "0px");
+            bvr.src_el.setStyle("box-shadow", "");
+            //bvr.src_el.setStyle("margin", "0px");
             var els = bvr.src_el.getElements(".spt_test");
             for (var i = 0; i < els.length; i++) {
                 els[i].setStyle("display", "none");
@@ -478,12 +480,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
         div = DivWdg()
         content.add(div)
         div.add_style("position: absolute")
-        div.add(my.view)
+        div.add("View: %s" % my.view)
         div.add_class("spt_test")
         div.add_border()
-        div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         div.add_style("display: none")
         div.add_style("padding: 3px")
+        div.add_style("margin-left: 3px")
         div.add_style("left: 0px")
         div.add_style("top: -15px")
         #div.add_style("opacity: 0.5")
@@ -559,6 +562,32 @@ class CustomLayoutWdg(BaseRefreshWdg):
             }
             '''
         } )
+
+
+        menu_item = MenuItem(type='action', label='Open in Main Tab')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'view': my.view,
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var popup_top = activator.getParent(".spt_popup");
+            spt.popup.close(popup_top);
+
+            var top = activator.getParent(".spt_custom_top");
+            var class_name = top.getAttribute("spt_class_name");
+            var kwargs = spt.panel.get_element_options(top);
+            //kwargs['is_test'] = true;
+
+            var title = "Test: " + bvr.view;
+
+            spt.tab.set_main_body_tab();
+            spt.tab.add_new(title, title, class_name, kwargs);
+            '''
+        } )
+
+
+
 
         return menu
 

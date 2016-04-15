@@ -53,6 +53,7 @@ spt.hash.set_hash = function(state, title, url) {
 
     var env = spt.Environment.get();
     var project = env.get_project();
+    var site = env.get_site();
 
     var pathname = document.location.pathname;
     // if this is the root / or /tactic the set the whole path
@@ -81,7 +82,14 @@ spt.hash.set_hash = function(state, title, url) {
             break;
         }
     }
+
+    if (site) {
+        base_url.push(site);
+    }
+
     base_url = base_url.join("/");
+
+
 
     if (url.substr(0,1) == "/") {
         url = base_url + url;

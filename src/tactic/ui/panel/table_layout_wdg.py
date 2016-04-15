@@ -3425,6 +3425,15 @@ spt.table.get_selected_codes = function() {
 }
 
 
+spt.table.hide_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    for ( var i = 0; i < rows.length; i++ ) {
+        rows[i].setStyle("display", "none");
+    }
+    spt.table.unselect_all();
+}
+
+
 
 
 spt.table.add_hidden_row = function(row, class_name, kwargs) {

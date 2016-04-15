@@ -1167,7 +1167,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: -6px")
+            if show_keyword_search:
+                button_div.add_style("margin-left: -6px")
+            else:
+                button_div.add_style("margin-left: 6px")
             wdg_list.append({'wdg': button_div})
 
 
@@ -1275,7 +1278,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if last_widget and last_widget.has_class("spt_spacing") and widget.has_class("spt_spacing"):
                 continue
 
-            widget.add_style("display: inline-block")
+            if widget.get_style("display") != "none":
+                widget.add_style("display: inline-block")
             widget.add_style("vertical-align: middle")
             xx.add(widget)
             last_widget = widget
@@ -1767,7 +1771,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             icon = IconWdg( "Filters enabled", IconWdg.GREEN_LIGHT )
             my.filter_num_div.add("&nbsp;"*4)
             my.filter_num_div.add(icon)
-            my.filter_num_div.add("%s filter(s)" % num_filters)
+            if num_filters > 1:
+                my.filter_num_div.add("%s filters" % num_filters)
+            else:
+                my.filter_num_div.add("%s filter" % num_filters)
+
             if not num_filters:
                 my.filter_num_div.add_style("display: none")
             else:

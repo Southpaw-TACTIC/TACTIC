@@ -1,6 +1,6 @@
 #-- Start Entry --#
 insert = SearchType.create('sthpw/search_object')
-insert.set_value('code', """PERSON00337""")
+insert.set_value('code', """unittest/person""")
 insert.set_value('description', """Unittest Person""")
 insert.set_value('database', """unittest""")
 insert.set_value('class_name', """pyasm.search.SObject""")
@@ -29,4 +29,6 @@ table.add('picture',                  'text' )
 table.add('pipeline_code',            'varchar', length='256' )
 table.add('timestamp',                'timestamp' )
 #-- End Entry --#
+
+
 

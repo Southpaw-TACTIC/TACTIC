@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable"]
+__all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable", 'CreateView']
 
 
 import os, types, thread, sys
@@ -3670,6 +3670,98 @@ class AlterTable(CreateTable):
                 sql.do_update(statement)
         else:
             print "WARNING: table [%s] does not exist ... skipping" % my.table
+
+
+
+
+
+class CreateView(Base):
+
+
+    def __init__(my, search_type=None, query=None, search=None):
+
+        if query:
+            my.query = query
+        else:
+            my.query = search.get_statement()
+
+        assert my.query
+
+        from pyasm.biz import Project
+        if search_type:
+            from search import SearchType
+            search_type_sobj = SearchType.get(search_type)
+
+            my.view = search_type_sobj.get_table()
+
+            from search import SearchType
+            search_type_sobj = SearchType.get(search_type)
+
+            project = Project.get_by_search_type(search_type)
+            my.db_resource = project.get_project_db_resource()
+
+            my.table = search_type_sobj.get_table()
+
+            sql = DbContainer.get(my.db_resource)
+            my.impl = sql.get_database_impl()
+        else:
+            my.view = None
+
+            from pyasm.search import DatabaseImpl
+            my.impl = DatabaseImpl.get()
+
+            project = Project.get()
+            my.db_resource = project.get_project_db_resource()
+
+        my.database = my.db_resource.get_database()
+
+
+
+    def set_view(my, view):
+        my.view = view
+
+
+
+
+    def get_statement(my):
+
+        statement = []
+
+        #if my.impl.get_database_type() == 'SQLServer':
+
+        statement.append( 'CREATE VIEW "%s"' % my.view )
+
+        statement.append( 'AS' )
+        
+        statement.append( my.query )
+
+        statement = " ".join(statement)
+
+        return statement
+
+ 
+    def commit(my, sql=None):
+        '''Commit one or more alter table statements'''
+
+        if sql:
+            my.database = sql.get_database_name()
+            db_resource = sql.get_db_resource()
+
+        else:
+            sql = DbContainer.get(my.db_resource)
+            db_resource = my.db_resource
+
+        impl = sql.get_database_impl()
+
+        
+        statement = my.get_statement()
+        sql.do_update(statement)
+
+        sql.clear_table_cache(my.database)
+
+
+
+
 
 
 

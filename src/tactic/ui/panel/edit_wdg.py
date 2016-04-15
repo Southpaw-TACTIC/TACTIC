@@ -643,7 +643,10 @@ class EditWdg(BaseRefreshWdg):
             num_columns = my.kwargs.get('num_columns')
 
         if not num_columns:
-            num_columns = 1
+            if len(my.widgets) > 8:
+                num_columns = 2
+            else:
+                num_columns = 1
         else:
             num_columns = int(num_columns)
 

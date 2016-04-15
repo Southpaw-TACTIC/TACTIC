@@ -58,6 +58,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         title_wdg.add_style("margin: -6px -7px 5px -7px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("font-size: 14px")
+        title_wdg.add_style("height: 25px")
 
         if title:
             title_wdg.add_color("background", "background", -5)
@@ -173,12 +174,6 @@ class ProjectConfigWdg(BaseRefreshWdg):
         panels = my.get_panels()
 
         for panel in panels:
-
-            title = panel.get('title')
-            #if title in ['Data', None]:
-            #    tr, td = table.add_row_cell()
-            #else:
-            #    td = table.add_cell()
             tr = table.add_row()
             td = table.add_cell(resize=False)
             td.add_style("min-height: 100px")
@@ -285,7 +280,7 @@ class SearchTypePanel(BaseRefreshWdg):
         button = SingleButtonWdg(title="Advanced Setup", icon=IconWdg.ADVANCED)
         top.add(button)
         button.add_style("float: right")
-        button.add_style("margin-top: -8px")
+        button.add_style("margin-top: 0px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -296,10 +291,10 @@ class SearchTypePanel(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon=IconWdg.ADD)
+        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="BS_PLUS")
         top.add(button)
         button.add_style("float: left")
-        button.add_style("margin-top: -8px")
+        button.add_style("margin-top: 0px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
