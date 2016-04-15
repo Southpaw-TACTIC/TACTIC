@@ -67,7 +67,6 @@ class SqlTest(unittest.TestCase):
             my._test_rpn_filters()
             my._test_search_filter()
             my._test_join()
-
             my._test_create_view()
 
             # it doesn't allow dropping of a column
@@ -506,12 +505,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
 
 
         car_columns = sql.get_columns("car")
-        print "columns: ", car_columns
         sports_columns = sql.get_columns("sports_car_data")
-        print "columns: ", sports_columns
-        print
-
-
 
         search = Search("unittest/car")
         search.add_join("unittest/sports_car_data")

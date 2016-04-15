@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable"]
+__all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable", 'CreateView']
 
 
 import os, types, thread, sys
@@ -3675,7 +3675,6 @@ class AlterTable(CreateTable):
 
 
 
-__all__.append("CreateView")
 class CreateView(Base):
 
 

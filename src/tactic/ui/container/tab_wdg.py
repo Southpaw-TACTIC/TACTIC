@@ -274,15 +274,18 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var subelement_name = "";
     }
 
+
+    var subelement_title;
+    var full_title;
     if (title.indexOf("/") != -1) {
-        var full_title = title;
+        full_title = title;
         var parts = title.split("/");
         title = parts[0];
         subelement_title = parts[1];
     }
     else {
-        var full_title = title;
-        var subelement_title = title;
+        full_title = title;
+        subelement_title = title;
     }
 
    
