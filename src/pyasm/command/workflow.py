@@ -1070,7 +1070,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(my):
-        my.log_message(my.sobject, my.process, "in_prgress")
+        my.log_message(my.sobject, my.process, "in_progress")
         my.set_all_tasks(my.sobject, my.process, "in_progress")
         my.run_callback(my.pipeline, my.process, "action")
         return my._handle_dependency()
