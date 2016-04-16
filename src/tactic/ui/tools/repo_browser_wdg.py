@@ -1507,6 +1507,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         } )
         """
 
+        #single_asset_mode = True
 
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
@@ -1514,6 +1515,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search_type = parent.get_search_type()
         elif single_asset_mode and len(search_types) == 1:
             search_type = search_types[0]
+
+
         if search_type:
             menu_item = MenuItem(type='action', label='Ingest Files')
             menu.add(menu_item)
