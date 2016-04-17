@@ -2131,8 +2131,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         } )
         """
 
-        #single_asset_mode = True
-
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             if parent:
@@ -3292,17 +3290,18 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
             
             search = Search("sthpw/file")
-            if search_type:
+            if search_type and search_type != 'sthpw/snapshot':
                 search.add_filter("search_type", search_type)
             search.add_filter("relative_dir", reldir)
             search.add_filter("file_name", basename)
-            
+
             files = search.get_sobjects()
           
             # Only display file detail if file has snapshot
             # and grandparent.
             good_file = None
             for file in files:
+
                 snapshot = file.get_parent()
                 if not snapshot:
                     parent = None
