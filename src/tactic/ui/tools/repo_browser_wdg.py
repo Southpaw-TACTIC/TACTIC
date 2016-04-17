@@ -12,12 +12,12 @@
 
 __all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserContentWdg', 'RepoBrowserCbk', 'RepoBrowserDirContentWdg', 'RepoBrowserActionCmd']
 
-from pyasm.common import Environment, Xml, Common
+from pyasm.common import Environment, Xml, Common, jsonloads, jsondumps
 
 from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings, SpanWdg
 from pyasm.biz import Snapshot, Project, File
 from pyasm.search import Search, SearchType, SearchKey, FileUndo
-from pyasm.widget import IconWdg, CheckboxWdg
+from pyasm.widget import IconWdg, CheckboxWdg, HiddenWdg
 from pyasm.command import Command
 
 from tactic.ui.panel import FastTableLayoutWdg
@@ -30,9 +30,34 @@ import os, shutil, re
 
 class RepoBrowserWdg(BaseRefreshWdg):
 
+    ARGS_KEYS = {
+        "parent_mode": {
+            'description': '''The relationship between a snapshot and parent sObject and which determine what views are exposed and   
+                functionality of tools. When mode is single_file, the parent sObject is updated, renamed, deleted and moved with 
+                child snapshots. Note, the single_file search_type must have relative_dir specified.  
+                When mode is single_asset with given search_key, the directory and tools are scoped to the parent.''',
+            'type': 'SelectWdg',
+            'values': 'single_asset|single_file|single_search_type',
+            'default': 'single_search_type',
+            'order': 0
+        },
+        "file_system_edit": {
+            'descirption': 'Enables tools associated with updating the file system: renaming, deleting, moving and creating new folders.',
+            'type': 'SelectWdg',
+            'values': 'false|true',
+            'default': 'false',
+            'order': 1
+        },
+        "search_key": {
+            'description': 'Parent sObject to scope snapshots with when single_asset mode is used.',
+            'type': 'TextWdg',
+            'order': 2   
+        }
+    }
+
 
     def get_display(my):
-
+        
         top = my.top
         top.add_color("background", "background")
         top.add_class("spt_repo_browser_top")
@@ -48,34 +73,14 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #my.mode = 'folder'
 
         keywords = my.kwargs.get("keywords")
-        
-        
+            
         search_type = my.kwargs.get("search_type")
-        if search_type:
-            search_types = [search_type]
-        else:
-            search_types = None
-
-        #TODO: Support multiple sobjects
-        #TODO: Support multiple parent types
-        parent_type = my.kwargs.get("parent_type")
-
-        search = my.kwargs.get("search")
-        if search:
-            search.set_limit(1000)
-            search.set_offset(0)
-        else:
-            search = Search(search_type)
-        
-        # FIXME: Single asset mode needs to be passed through ViewPanelWdg
-        # so that the TACTIC shelf is available for search.
-        single_asset_mode = my.kwargs.get("single_asset_mode")
-        if "workflow/asset" in search_type:
-            single_asset_mode = True
+        search_type = SearchType.build_search_type(search_type)
 
         expression = my.kwargs.get("expression")
 
         parent_key = my.kwargs.get("search_key")
+        
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             my.sobjects = [parent]
@@ -95,17 +100,43 @@ class RepoBrowserWdg(BaseRefreshWdg):
             project_dir = container_path 
 
             search_type = parent.get_search_type()
-            parent_code = parent.get_value("code", no_exception=True)
+            search = Search(search_type)
             
-            # TODO: Add parent search type filter
+            parent_code = parent.get_value("code", no_exception=True)
             if parent_code:
                 search.add_filter("code", parent_code)
-        
-        else:
+            
+            search_types = [search_type] 
+        elif search_type:
             project_code = Project.get_project_code()
             base_dir = Environment.get_asset_dir()
             project_dir = "%s/%s" % (base_dir, project_code) 
         
+            search_types = [search_type]
+ 
+            search = my.kwargs.get("search")
+            if search:
+                search.set_limit(1000)
+                search.set_offset(0)
+            else:
+                search = Search(search_type)
+       
+        is_refresh = my.kwargs.get("is_refresh")
+        
+        file_system_edit = my.kwargs.get("file_system_edit")
+        if file_system_edit == None:
+            file_system_edit = "false"
+        edit_mode_key = "repo_browser_edit:%s" % search_type
+        WidgetSettings.set_value_by_key(edit_mode_key, file_system_edit) 
+        
+        parent_mode = my.kwargs.get("parent_mode")
+        if parent_mode == None:
+            parent_mode = "single_search_type"
+        parent_mode_key = "repo_browser_mode:%s" % search_type
+        WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
+
+        
+
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
         top.add_attr("spt_search_keys", "|".join(search_keys) )
@@ -119,7 +150,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         shelf_wdg = DivWdg()
         left.add(shelf_wdg)
-
 
         if not search_type:
             shelf_wdg.add_style("padding: 10px")
@@ -161,10 +191,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 
-
-
-
-
         stats_div = DivWdg()
         shelf_wdg.add(stats_div)
         stats_div.add_style("font-size: 10px")
@@ -191,9 +217,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left_wdg.add_style("width: 1000px")
 
 
-
-
-
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
         left_wdg.add(content_div)
@@ -204,28 +227,26 @@ class RepoBrowserWdg(BaseRefreshWdg):
         else:
             open_depth = int(open_depth)
 
-
-        # Where should dynamic be passed in?
-        dynamic = True
-        
         # Display the basename of of the base_dir 
         # default is True.
         show_base_dir = my.kwargs.get("show_base_dir")
         
+        # Dynamically load the directory listing
+        dynamic = True
+        
         # The left contains a directory listing
         # starting at project_dir.
         dir_list = RepoBrowserDirListWdg(
-                single_asset_mode=single_asset_mode,
-                base_dir=project_dir,
-                location="server",
-                show_base_dir=show_base_dir,
-                open_depth=open_depth,
-                search_types=search_types,
-                dynamic=dynamic,
-                keywords=keywords,
-                search_keys=search_keys,
-                search=search,
-                parent_key=parent_key
+            base_dir=project_dir,
+            location="server",
+            show_base_dir=show_base_dir,
+            open_depth=open_depth,
+            search_types=search_types,
+            dynamic=dynamic,
+            keywords=keywords,
+            search_keys=search_keys,
+            search=search,
+            parent_key=parent_key
         )
         content_div.add(dir_list)
 
@@ -242,16 +263,29 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
         outer_div.add(content_div)
- 
+        
+        view_dir = my.kwargs.get("view_dir")
+        if view_dir == None:
+            folder_state_key = "repo_browser_folder_state:%s" % search_type
+            folder_state = WidgetSettings.get_value_by_key(folder_state_key)
+            if folder_state:
+                states = folder_state.split("|")
+                if states and states[-1].startswith("view:"):
+                    view_dir = states[-1][5:]
+        
+        if view_dir == None:
+            view_dir = project_dir
+         
         count = 0
         if search:
             count = search.get_count()
         if count:
             widget = RepoBrowserDirContentWdg(
-                single_asset_mode=single_asset_mode,
+                parent_mode=parent_mode,
+                file_system_edit=file_system_edit,
                 search_type=search_type,
                 view='table',
-                dirname=project_dir,
+                dirname=view_dir,
                 basename="",
                 expression=expression
             )
@@ -403,7 +437,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_repo_browser_options");
             var values = spt.api.get_input_values(top, null, false);
-            console.log(values);
 
 
 
@@ -428,16 +461,34 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
-        my.search_types = my.kwargs.get("search_types")
-
-
+    
         my.dynamic = my.kwargs.get("dynamic")
         if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
         else:
             my.dynamic = False
 
-
+        my.search_types = my.kwargs.get("search_types")
+        if my.search_types:
+            search_type = my.search_types[0]
+            
+            key = "repo_browser_edit:%s" % search_type
+            my.file_system_edit = WidgetSettings.get_value_by_key(key)
+            if my.file_system_edit in ["True", "true", True]:
+                my.file_system_edit = True
+            
+            key = "repo_browser_mode:%s" % search_type
+            my.parent_mode = WidgetSettings.get_value_by_key(key)
+        
+            # Set the folder state
+            folder_state = my.kwargs.get("folder_state")
+            if folder_state:
+                key = "repo_browser_folder_state:%s" % search_type
+                WidgetSettings.set_value_by_key(key, folder_state)
+        else:
+            my.file_system_edit = "false"
+            my.parent_mode = "single_search_type"
+     
         # find the sobjects
         search_keys = my.kwargs.get("search_keys")
         if search_keys:
@@ -450,92 +501,10 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-    def get_file_search(my, base_dir, search_types, parent_ids, mode="count"):
-        show_main_only = True
-        show_latest = True
-        show_versionless = False
-
-        asset_base_dir = Environment.get_asset_dir()
-        relative_dir = base_dir.replace(asset_base_dir, "")
-        relative_dir = relative_dir.strip("/")
-
-        keywords = my.kwargs.get("keywords")
-
-        project_code = Project.get_project_code()
-        search = Search("sthpw/file")
-
-        # add a search type filter ... ignore this is the search_type are snapshots
-        if search_types:
-            if search_types[0] != "sthpw/snapshot":
-                search.add_filters("search_type", search_types)
+    def get_file_search(my, base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
+   
+        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode)    
         
-        if relative_dir:
-            # TODO: not very clean.  There are different ways that the
-            # relative dir needs to be searched on depending on usage
-            # For now, just use a simple mode
-            if mode == "count":
-                search.add_op("begin")
-                search.add_filter("relative_dir", "%s" % relative_dir)
-                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-                search.add_op("or")
-            else:
-                search.add_op("begin")
-                search.add_filter("relative_dir", "%s" % relative_dir)
-                if True:
-                    #if not my.dynamic:
-                    search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-                search.add_op("or")
-        
-
-        
-        if parent_ids:
-            search.add_filters("search_id", parent_ids)
-        
-        if keywords:
-            search.add_text_search_filter("metadata_search", keywords)
-
-        if show_latest or show_versionless:
-            search.add_join("sthpw/snapshot")
-            search.add_op("begin")
-            if show_latest:
-                search.add_filter("is_latest", True, table="snapshot")
-            if show_versionless:
-                search.add_filter("version", -1, table="snapshot")
-            search.add_filter("file_name", "")
-            search.add_filter("file_name", "NULL", quoted=False, op="is")
-            search.add_op("or")
-        else:
-            pass
-
-        if show_main_only:
-            search.add_filter("type", "main")
-
-
-        if my.sobjects:
-            search.add_sobjects_filter(my.sobjects)
-
-
-        # FIXME: this could be very slow for large folders
-        search_type = search_types[0]
-
-        key = "repo_browser:%s" % search_type
-        parent_search_str = WidgetSettings.get_value_by_key(key)
-        if parent_search_str:
-            parent_search = Search(search_type)
-            parent_search.select.loads(parent_search_str)
-            parents = parent_search.get_sobjects()
-            parent_codes = [x.get_value("code") for x in parents]
-
-            if search_type == "sthpw/snapshot":
-                search.add_filters("snapshot_code", parent_codes)
-            else:
-                search.add_filter("search_type", search_type)
-                search.add_filters("search_code", parent_codes)
-        
-        return search
-
-
-
 
     def get_relative_paths(my, base_dir):
 
@@ -625,7 +594,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # sobjects
         if my.show_files:
 
-            search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder")
+            search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=my.parent_mode)
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -723,7 +692,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
                 if my.counts.get(subdir) is None:
-                    search = my.get_file_search(subdir, search_types, parent_ids, mode="count")
+                    search = my.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=my.parent_mode)
                     count = search.get_count()
                     my.counts[subdir] = count
 
@@ -855,66 +824,417 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         return paths
 
+    def get_api(my):
 
+        return r'''
+            spt.repo_browser = {};
+          
+            // Misc functions
+            spt.repo_browser.getElement = function(el) {
+                // TODO: Pass in a child el when calling this function.
+                // Currently flawed because there could be more than one repo browser tab/popup/view.
+                var repo_top = document.getElement(".spt_repo_browser_top");
+                if (el) {
+                    return repo_top.getElement(el);
+                } else {
+                    return repo_top;
+                }
+            };
+            
+            spt.repo_browser.get_top = function() {
+                return spt.repo_browser.getElement();
+            }
+            
+            spt.repo_browser.get_parent_mode = function() {
+                var repo_browser_top = spt.repo_browser.get_top();
+                var parent_mode = repo_browser_top.getProperty("spt_parent_mode");
+                if (!parent_mode) {
+                    parent_mode = "single_search_type";
+                }
+                return parent_mode;
+            }
+            
+            spt.repo_browser.click_file_bvr = function(evt, bvr) {
+                // When an item is clicked in the directory, display 
+                // the file detail.
+             
+                if (bvr.src_el.hasClass("spt_item_value")) {
+                    bvr.src_el = bvr.src_el.getParent(".spt_dir_list_item");
+                } 
+            
+                var top = bvr.src_el.getParent(".spt_repo_browser_top");
+                var content = top.getElement(".spt_repo_browser_content");
+                
+                spt.repo_browser.move_view_indicator(bvr.src_el);
 
+                spt.app_busy.show("Loading information");
+                
+                //TODO: Fix selected API
+                //var selected = spt.repo_browser.get_selected();
+                //if (!evt.control) {
+                //    spt.repo_browser.clear_selected();
+                //}
+                //spt.repo_browser.toggle_select(bvr.src_el);
+                var selected = [] 
+                if (selected.length > 1) {
+                    var snapshot_codes = [];
+                    for (var i = 0; i < selected.length; i++) {
+                        snapshot_codes.push( selected[i].getAttribute("spt_snapshot_code"));
+                    }
+                    var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
+                    var kwargs = {
+                        file_system_edit: bvr.file_system_edit,
+                        parent_mode: bvr.parent_mode,
+                        search_type: bvr.search_type,
+                        snapshot_codes: snapshot_codes
+                    };
+                } else {
+                    var dirname = bvr.src_el.getAttribute("spt_dirname");
+                    var basename = bvr.src_el.getAttribute("spt_basename");
+                    
+                    var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
+                    var kwargs = {
+                        file_system_edit: bvr.file_system_edit,
+                        parent_mode: bvr.parent_mode,
+                        search_type: bvr.search_type,
+                        dirname: dirname,
+                        basename: basename
+                    };
+                }
+                
+                spt.panel.load(content, class_name, kwargs);
+                spt.app_busy.hide();
 
+            }
 
-    def add_top_behaviors(my, top):
+            // Update API
+            spt.repo_browser.dynamic_lock = false;
 
-        search = my.kwargs.get("search")
-        if search:
-            key = "repo_browser:%s" % search.get_search_type()
-            dump = search.select.dumps()
-            WidgetSettings.set_value_by_key(key, dump)
-   
-        single_asset_mode = my.kwargs.get("single_asset_mode")
+            spt.repo_browser.lock_block; 
 
-        border = top.get_color("shadow")
-        top.add_class("spt_file_drag_top")
-        top.add_style("position: relative")
+            spt.repo_browser.update_available;
+          
+            spt.repo_browser.queued_update;
+        
+            spt.repo_browser.wait;
+         
+            spt.repo_browser.set_lock = function(lock, block) {
+                // Lock the directory listing while user is editing
+                // When lock is removed, request updates.
+                
+                //if (spt.repo_browser.dynamic_lock == lock) {
+                //    return;
+                //}
 
-        top.add_behavior( {
-        'type': 'load',
-        'border': border,
-        'cbjs_action': '''
+                // Some locks might need to block eachother.
+                if (!block) {
+                    spt.repo_browser.lock_block = null; 
+                } else if (spt.repo_browser.lock_block == block) {
+                    return;
+                } else {
+                    spt.repo_browser.lock_block = block;
+                }
 
-        spt.repo_browser = {};
+                spt.repo_browser.dynamic_lock = lock;
+                
+                var dir_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                
+                // Shut off requests update when the lock is on.
+                // TODO: This should be optimized so that the requests
+                // are only turned off once one update is found.
+                if (lock) {
+                    dir_top.addClass("spt_update_lock");
+                } else {
+                    dir_top.removeClass("spt_update_lock");  
+                }
+
+            }
+
+            spt.repo_browser.handle_update = function() {
+                // Handle server message of update
+                if (spt.repo_browser.dynamic_lock) {
+                    spt.repo_browser.update_available = true;
+                } else {
+                    spt.repo_browser.request_update();
+                }
+            }
+
+            spt.repo_browser.request_update = function() {
+                if (spt.repo_browser.wait) {
+                    spt.repo_browser.queued_update = true;
+                } else {
+                    spt.repo_browser.update();
+                }
+            }
+ 
+            spt.repo_browser.update_ready = function() {
+                // Indicates whether an update is in the queue or not.
+                if (spt.repo_browser.update_available || spt.repo_browser.queued_update) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            spt.repo_browser.update = function() {
+                spt.repo_browser.refresh_directory_listing();
+                
+                spt.repo_browser.wait = true;
+ 
+                timeout = setTimeout(spt.repo_browser.update_on_complete, 20000);
+            }
+
+            spt.repo_browser.update_on_complete = function () {
+                if (spt.repo_browser.update_ready() && !spt.repo_browser.wait) {
+                    spt.repo_browser.update();
+                } else {
+                    spt.repo_browser.update_available = false;
+                    spt.repo_browser.queued_update = false;
+                    spt.repo_browser.wait = false;
+                }
+            }
+
+            spt.repo_browser.refresh_directory_listing = function(dir_list) {
+                
+                if (!dir_list) {
+                    dir_list = spt.repo_browser.getElement(".spt_dir_list_handler_top");
+                }
+               
+                var folder_state = spt.repo_browser.get_raw_folder_state();
+                dir_list.setProperty("spt_folder_state", folder_state);
+
+                spt.panel.refresh(dir_list);
+            }
+ 
+            // Folder state manipulation
+            spt.repo_browser.get_raw_folder_state = function() {
+                // Returns folder states as string - list join with "|"
+                var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                var state_input = dir_list_top.getElement(".spt_folder_state");
+                var folder_state = state_input.value;
+                return folder_state;
+            }
+            
+            spt.repo_browser.get_folder_state = function() {
+                // Returns list of folder state items
+                var folder_state = spt.repo_browser.get_raw_folder_state();
+                var items;
+                if (folder_state == '') {
+                    items = [];
+                } else {
+                    items = folder_state.split("|");
+                } 
+                return items;
+            } 
+
+            spt.repo_browser.set_folder_state = function(folder_list) {
+               // Given list of folder state items, sets the folder state
+               var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+               var state_input = dir_list_top.getElement(".spt_folder_state");
+             
+               var folder_state = folder_list.join("|");
+               state_input.value = folder_state; 
+            }
+
+            spt.repo_browser.add_folder_state = function(dir) {
+                var items = spt.repo_browser.get_folder_state();
+                if (items.length > 0) {
+                    items.splice(-1, 0, dir); 
+                } else {
+                    items.push(dir);
+                }
+                spt.repo_browser.set_folder_state(items);
+            }
+
+            spt.repo_browser.update_folder_state = function(old_path, new_path) {
+                // Updates paths in the folder state
+                // If new_path is specified, then replace references to this path
+                // Otherwise, these paths are removed from folder_state.
+                // Attempts to update directory trees. 
+
+                // Get the folder state list
+                var items = spt.repo_browser.get_folder_state(); 
+               
+                updated_items = []
+                
+                // Update folder state
+                for (var i = 0; i < items.length; i++) {
+                    
+                    var path;
+ 
+                    // Check if this is a view state
+                    var handle_view_state = false;
+                    if (i == items.length -1) {
+                        path = spt.repo_browser.get_view_path(items);
+                        if (path) {
+                            handle_view_state = true;
+                        } 
+                    } 
+                    
+                    if (!handle_view_state) {
+                        path = items[i];
+                    }
+
+                    if (path == old_path || path.startsWith(old_path + "/")) {
+                        if (new_path) {
+                            // This works since replace only replaces first occurence.
+                            path = path.replace(old_path, new_path);
+                        } else {
+                            path = null;
+                        }
+                    }
+                    
+                    if (path) {
+                        if (handle_view_state) {
+                            updated_items.push("view:" + path)
+                        } else {
+                            updated_items.push(path);
+                        }
+                    }
+                }
+
+                spt.repo_browser.set_folder_state(updated_items);
+            }
+
+            spt.repo_browser.get_view_path = function(items) {
+                if (!items) {
+                    items = spt.repo_browser.get_folder_state();
+                } 
+               
+                var length = items.length;
+                if (length > 0 && items[length-1].startsWith("view:")) {
+                    return items[length-1].substring(5); 
+                } else {
+                    return null;
+                }
+            }
+
+            // View state and indicator manipulation
+            spt.repo_browser.move_view_indicator = function(new_item) {
+                
+                // Get the folder state list and old view path
+                var items = spt.repo_browser.get_folder_state();
+                var old_path = spt.repo_browser.get_view_path(items);
+
+                // Get the eye (or create a new one)
+                var eye = spt.repo_browser.get_view_indicator();
+                 
+                // Finally, add the new path to the folder state, and 
+                // move the indicator.
+                var new_path = spt.repo_browser.get_relative_path(new_item);
+                var new_label;    
+                if (new_item.hasClass("spt_dir_item")) {
+                    new_label = new_item.getElement(".spt_dir_value");
+                } else {
+                    new_label = new_item.getElement(".spt_item_value");
+                }
+
+                if (new_path && new_label) {
+                    eye.setStyle("display", "inline");
+                    eye.inject(new_label, "after");
+                }
+                
+                // Remove the old view path and add the new view path
+                var new_key = "view:" + new_path;
+                if (old_path) {
+                    items[items.length-1] = new_key
+                } else {
+                    items.push(new_key)
+                }
+
+                spt.repo_browser.set_folder_state(items);
+            }
+ 
+            spt.repo_browser.get_view_indicator = function() {
+                // Return view indicator (eye) in DOM
+                // If cannot find eye, create from template.
+                var eye = spt.repo_browser.getElement(".spt_browser_view_indicator"); 
+                if (!eye) {
+                    eye = spt.repo_browser.getElement(".spt_browser_view_template").clone(); 
+                    eye.removeClass("spt_browser_view_template");
+                    eye.addClass("spt_browser_view_indicator"); 
+                }
+                return eye;
+            }
+          
+            // File path building
+            spt.repo_browser.get_relative_path = function(item) {
+                // Given element with class spt_dir_item or spt_file_item, 
+                // return the relative path.
+                if (item.hasClass("spt_dir_item")) {
+                    var relative_path = item.getProperty("spt_relative_dir"); 
+                } else if (item.hasClass("spt_file_item")) {
+                    var relative_dir = item.getProperty("spt_relative_dir");
+                    var base_name = item.getProperty("spt_basename");
+                    // FIXME: This is incorrect path building.
+                    var relative_path = relative_dir + "/" + base_name;
+                } else {
+                    log.critical(item);
+                }
+                return relative_path;
+            }
+
+            // Add mouse enter and mouse leave behaviors for the dir and file context menus
+            // that lock the directory.
+            var file_menu = document.getElement(".SPT_SMENU_SUBSET__FILE_ITEM_CTX");
+            var dir_menu = document.getElement(".SPT_SMENU_SUBSET__DIR_ITEM_CTX");
+            var menu_in_bvr = {
+                "type": "mouseenter",
+                "cbjs_action": "spt.repo_browser.set_lock(true);"
+            }
+
+            var menu_out_bvr = {
+                "type": "mouseleave",
+                "cbjs_action": "spt.repo_browser.set_lock(false, 'context_menu_action');"
+            }
+            
+            var menu_bvrs = [menu_in_bvr, menu_out_bvr];
+            spt.behavior.add(file_menu, menu_bvrs);
+            spt.behavior.add(dir_menu, menu_bvrs);
+            
+        '''
+    
+    def get_system_edit_api(my):
+        return r'''
         spt.repo_browser.start_x = null;
         spt.repo_browser.start_y = null;
         spt.repo_browser.top = null;
 
 
-         spt.repo_browser.drag_file_setup = function(evt, bvr, mouse_411) {
-             spt.repo_browser.top = bvr.src_el.getParent(".spt_repo_browser_list");
-             spt.repo_browser.start_x = mouse_411.curr_x;
-             spt.repo_browser.start_y = mouse_411.curr_y;
-         }
+        spt.repo_browser.drag_file_setup = function(evt, bvr, mouse_411) {
+            spt.repo_browser.top = bvr.src_el.getParent(".spt_repo_browser_list");
+            spt.repo_browser.start_x = mouse_411.curr_x;
+            spt.repo_browser.start_y = mouse_411.curr_y;
+           
+            spt.repo_browser.set_lock(true);
+        }
 
-         spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
-             var diff_x = mouse_411.curr_x - spt.repo_browser.start_x;
-             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
-             if (diff_y < 5 && diff_y > -5) {
-                 return;
-             }
+        spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
+            var diff_x = mouse_411.curr_x - spt.repo_browser.start_x;
+            var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
+            if (diff_y < 5 && diff_y > -5) {
+                return;
+            }
 
-             var pos = spt.repo_browser.top.getPosition();
+            var pos = spt.repo_browser.top.getPosition();
 
-             bvr.src_el.setStyle("border", "solid 1px " + bvr.border);
-             bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
-             bvr.src_el.setStyle("position", "absolute");
-             bvr.src_el.setStyle("padding", "5px");
-             bvr.src_el.position({x:mouse_411.curr_x+10 - pos.x, y:mouse_411.curr_y+10 - pos.y});
+            bvr.src_el.setStyle("border", "solid 1px " + bvr.border);
+            bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
+            bvr.src_el.setStyle("position", "absolute");
+            bvr.src_el.setStyle("padding", "5px");
+            bvr.src_el.position({x:mouse_411.curr_x+10 - pos.x, y:mouse_411.curr_y+10 - pos.y});
         }
 
 
         spt.repo_browser.drag_file_action = function(evt, bvr, mouse_411) {
-            /* Drag and drop for file and directories within the DirList */
+            // Drag and drop for file and directories within the DirList 
             
             // Remember the src_dir top for refresh later
             var src_dir_top = bvr.src_el.getParent(".spt_dir_list_handler_top");
 
             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
-            if (diff_y < 5 && diff_y > -5) {
+            if (diff_y < 3 && diff_y > -3) {
+                spt.repo_browser.set_lock(false);
                 return;
             }
 
@@ -931,19 +1251,29 @@ class RepoBrowserDirListWdg(DirListWdg):
                 drop_on_el = drop_on_el.getParent(".spt_dir_item");
             }
 
-            // If drop hasn't occured yet or no drop folder found
+            // If no drop folder found
             if (! drop_on_el) {
-                spt.panel.refresh(src_dir_top);
+                spt.repo_browser.set_lock(false);
                 return;
             }
-  
+            
+            // Get the snapshot or dir moved
+            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
+            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
+            // Get the new relative_dir
+            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
+            if (from_relative_dir == relative_dir) {
+                spt.repo_browser.set_lock(false);
+                return;
+            }
+
             if ( drop_on_el.hasClass("spt_open") == true) {
                 var sibling = drop_on_el.getNext();
                 var inner = sibling.getElement(".spt_dir_list_handler_content");
                 bvr.src_el.inject(inner, 'top');
                 var padding = drop_on_el.getStyle("padding-left");
 
-                if (bvr.src_el.hasClass("spt_dir") ) {
+                if (bvr.src_el.hasClass("spt_dir")) {
                     bvr.src_el.setStyle("padding-left", "");
                 }
                 else {
@@ -957,35 +1287,44 @@ class RepoBrowserDirListWdg(DirListWdg):
             // Move the files
             var server = TacticServerStub.get(); 
 
-            // Get the snapshot or dir moved
-            var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
-            var from_relative_dir = bvr.src_el.getAttribute("spt_relative_dir");
-            // Get the new relative_dir
-            var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
-            
+            // Get path to update folder states
+            var old_path = spt.repo_browser.get_relative_path(bvr.src_el);
+ 
+            var parent_mode = spt.repo_browser.get_parent_mode();
+
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
+                parent_mode: parent_mode,
                 snapshot_code: snapshot_code,
                 from_relative_dir: from_relative_dir,
                 relative_dir: relative_dir
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
+            
+                //TODO: Build new path and add to folder state.
+                spt.repo_browser.update_folder_state(old_path);
+
+                // Refresh the content top
+                var content_top = spt.repo_browser.getElement(".spt_browser_detail_top");
+                spt.panel.refresh(content_top);
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
             }
-       
-            // Refresh the source dir top and destination dir top 
-            spt.panel.refresh(src_dir_top);
-                
-            var dest_dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
-            spt.panel.refresh(dest_dir_top);
-            
+
+            spt.repo_browser.set_lock(false);   
+            if (!spt.repo_browser.update_ready()) {
+                // Refresh the source dir top and destination dir top 
+                spt.repo_browser.refresh_directory_listing(src_dir_top);
+
+                var dest_dir_top = drop_on_el.getParent(".spt_dir_list_handler_top");
+                spt.repo_browser.refresh_directory_listing(dest_dir_top);
+            }
+
         }
 
 
         spt.repo_browser.select = function(file_item) {
-            console.log("select")
             file_item.setStyle("background", "#CCC");
             file_item.setStyle("box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
             file_item.setStyle("border-radius", "3px");
@@ -1014,63 +1353,16 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.get_selected = function() {
-            var selected = $(document.body).getElements(".spt_selected");
+            var repo_top = document.getElement(".spt_repo_browser_top");
+            var selected = repo_top.getElements(".spt_selected");
             return selected;
         }
 
 
-        spt.repo_browser.click_file_bvr = function(evt, bvr) {
-            // When an item is clicked in the directory, display 
-            // the file detail.
-  
-            if (bvr.src_el.hasClass("spt_item_value")) {
-                bvr.src_el = bvr.src_el.getParent(".spt_dir_list_item");
-            } 
-        
-            var top = bvr.src_el.getParent(".spt_repo_browser_top");
-            var content = top.getElement(".spt_repo_browser_content");
-
-            spt.app_busy.show("Loading information");
-            
-            //TODO: Fix selected API
-            //var selected = spt.repo_browser.get_selected();
-            //if (!evt.control) {
-            //    spt.repo_browser.clear_selected();
-            //}
-            //spt.repo_browser.toggle_select(bvr.src_el);
-            var selected = [] 
-            if (selected.length > 1) {
-                var snapshot_codes = [];
-                for (var i = 0; i < selected.length; i++) {
-                    snapshot_codes.push( selected[i].getAttribute("spt_snapshot_code"));
-                }
-                var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
-                var kwargs = {
-                  single_asset_mode: bvr.single_asset_mode,
-                  search_type: bvr.search_type,
-                  snapshot_codes: snapshot_codes
-                };
-            } else {
-                var dirname = bvr.src_el.getAttribute("spt_dirname");
-                var basename = bvr.src_el.getAttribute("spt_basename");
-                
-                var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
-                var kwargs = {
-                  single_asset_mode: bvr.single_asset_mode,
-                  //TODO:parent_key: 
-                  search_type: bvr.search_type,
-                  dirname: dirname,
-                  basename: basename
-                };
-            }
-            
-            spt.panel.load(content, class_name, kwargs);
-            spt.app_busy.hide();
-
-        }
 
 
         spt.repo_browser.drag_enter = function(event, el) {
+            console.log("hi");
         }
 
         spt.repo_browser.drag_leave = function(event, el) {
@@ -1078,8 +1370,11 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.drag_drop = function(evt, bvr) {
-            /* Drop action of tile on folder */
-            
+            // Drop action of tile on folder
+            // TODO: Directory listing should be locked on dragging of tile
+ 
+            // TODO: Tile should not disappear on drag.
+            // Suggested fix: Change opacity
             var tile_top = bvr.src_el.getParent(".spt_tile_top");
             tile_top.setStyle("display", "none");
             
@@ -1089,27 +1384,35 @@ class RepoBrowserDirListWdg(DirListWdg):
             var search_keys = spt.table.get_selected_search_keys();
             if (search_keys.length != 0) {
                 var search_key = null;
-            }
-            else {
+            } else {
                 var search_key = tile_top.getAttribute("spt_search_key");
             }
 
             var target = $(evt.target);
-            if (!target.hasClass("spt_dir")) {
+            if (target.hasClass("spt_dir_value")) {
                 target = target.getParent(".spt_dir");
             }
+
+            if (!target.hasClass("spt_dir")) {
+                tile_top.setStyle("display", "");
+                return;
+            }
+
+            var parent_mode = spt.repo_browser.get_parent_mode();
+
             var relative_dir = target.getAttribute("spt_relative_dir");
 
             var server = TacticServerStub.get(); 
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {
+                parent_mode: parent_mode,
                 search_key: search_key,
                 search_keys: search_keys,
                 relative_dir: relative_dir
             }
             try {
                 server.execute_cmd(cmd, kwargs); 
-             
+              
                 // Refresh the dropped top
                 var dir_top = target.getParent(".spt_dir_list_handler_top");
                 spt.panel.refresh(dir_top);
@@ -1124,62 +1427,322 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
         }
+         
+        spt.repo_browser.delete_empty_folder = function(relative_dir) {
+            if (!relative_dir) return;
+            
+            var server = TacticServerStub.get()
+            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var kwargs = {
+                action: 'delete_folder',
+                relative_dir: relative_dir
+            }
+            try {
+                server.execute_cmd(class_name, kwargs);
+            } catch(err) {
+                var error = spt.exception.handler(err);
+                var message = "Selected snapshots deleted but an error occured when removing the directory ["+relative_dir+"].";
+                message = message + " Error: " + error;
+                spt.alert(message);
+            }
+        }
+
+        spt.repo_browser.delete_assets = function(bvr) {
+            var server = TacticServerStub.get();
+            var activator = spt.smenu.get_activator(bvr);
+            
+            // Get path for updating folder state
+            var path = spt.repo_browser.get_relative_path(activator);
+            
+            // TODO: This delete script must be more careful. It must be rewritten
+            // with the following behavior:
+            // In single file mode, all snapshots and the parent are deleted.
+            // Otherwise, all snapshots sharing a context should be deleted.
+            // Note: The list that is set to the delete wdg should be a valid list of sObjects.
+            // Note 2: This script should do at most one server request before actually loading the 
+            // delete wdg.
+            if (activator.hasClass("spt_dir_item")) {
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+                expr = "@SOBJECT(sthpw/file['relative_dir', 'like', '"+relative_dir+"%'].sthpw/snapshot)";
+                sobjects = server.eval(expr);
+                if (sobjects.length == 0) {
+                    activator.addClass("spt_browser_deleted");
+                    spt.repo_browser.delete_refresh(path, relative_dir);
+                    return;
+                }
+                
+                var search_keys = [];
+                for (var i = 0; i < sobjects.length; i++) {
+                    var search_key = sobjects[i]['__search_key__'];
+                    if (bvr.parent_mode=="single_file") {
+                        var search_type = sobjects[i]['search_type'];
+                        var search_code = sobjects[i]['search_code'];
+                        search_key = server.build_search_key(search_type, search_code);
+                    } 
+                    search_keys.push(search_key);
+                }
+            } else if (activator.hasClass("spt_dir_list_item")) {
+                var snapshot_code = activator.getAttribute("spt_snapshot_code");
+                var search_key = server.build_search_key("sthpw/snapshot", snapshot_code); 
+                if (bvr.parent_mode=="single_file") {
+                    var parent = server.get_parent(search_key);
+                    search_key = parent['__search_key__']; 
+                } 
+                var search_keys = [search_key];
+                
+                var relative_dir = "";
+            } else {
+                return;
+            }
+            
+            activator.addClass("spt_browser_deleted");
+            // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
+            // file in display was deleted.
+            var delete_on_complete = "spt.repo_browser.delete_refresh('"+path+"', '"+relative_dir+"');"
+
+            var class_name = 'tactic.ui.tools.DeleteToolWdg';
+            var kwargs = {
+              search_keys: search_keys,
+              on_complete: delete_on_complete
+            }
+            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+        }
+
+        spt.repo_browser.delete_refresh = function(path, relative_dir) {
+            // If deleting a folder, delete the folder as well.
+            spt.repo_browser.delete_empty_folder(relative_dir);
+
+            var repo_top = document.getElement(".spt_repo_browser_top");
+            
+            // Refresh detail top
+            var detail_top = spt.repo_browser.getElement('.spt_browser_detail_top');
+            spt.panel.refresh(detail_top);
+            
+            // Update the folder state.
+            spt.repo_browser.update_folder_state(path);  
+
+            // Refresh target parent dir - refresh may have occured 
+            var target = spt.repo_browser.getElement('.spt_browser_deleted');
+            var parent_dir;
+            if (target) {
+                parent_dir = target.getParent('.spt_dir_list_handler_top');
+            }
+            var grandparent_dir;
+            if (parent_dir) {
+                grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');
+            }
+            if (grandparent_dir) {
+                spt.repo_browser.refresh_directory_listing(grandparent_dir);
+            }
+            
+        }
+      
+       ''' 
 
 
-        '''
-        } )
+    def get_view_indicator(my, dir, basename):
+        # TODO: Add variable that indicates whther or not 
+        # indicator has been added.
+        # TODO: view item should always be added onto the end of 
+        # the list.
+        
+        web = WebContainer.get_web()
+        folder_state = web.get_form_value("folder_state")
+        if not folder_state:
+            folder_state = my.kwargs.get("folder_state")
+        if folder_state:
+            state_list = folder_state.split("|")
+        else:
+            return False
+
+        base_dir = Environment.get_asset_dir()
+        relative_dir = os.path.relpath(dir, base_dir)
+        relative_path = os.path.join(relative_dir, basename)
+        
+        view = False
+        if state_list:
+            state = state_list[-1]
+            if state == "view:%s" % relative_path:
+                view = True
+
+        if view:
+            selected_icon = IconWdg(icon="BS_EYE_OPEN", size="1.1em")
+            selected_icon.add_class("spt_browser_view_indicator")
+            selected_icon.add_style("position: relative;")
+            selected_icon.add_styles("height: 0px; left: 5px;")
+            return selected_icon
+        else:
+            return False
+ 
+    def get_swap_action(my):
+        return r'''
+        var item_top = bvr.src_el.getParent(".spt_dir_item");
+        var sibling = item_top.getNext(".spt_dir_content");
+
+        // Get the folder state, add dir to state if necessary.
+        var top = item_top.getParent(".spt_dir_list_top");
+        var items = spt.repo_browser.get_folder_state();
+        var dir = spt.repo_browser.get_relative_path(item_top);
+
+        // Get the folder, and view state.
+        var is_open = false;
+        var view  = false;
+        for (var i = 0; i < items.length; i++) {
+            if (i == items.length-1 && items[i] == "view:" + dir) {
+                view = true;
+                break;
+            } else if (items[i] == dir) {
+                is_open = true;
+                break;
+            }
+        }
+        
+        if (item_top.hasClass("spt_dynamic")) {
+
+            if (item_top.hasClass("spt_open")) {
+                //spt.hide(sibling);
+                var children = sibling.getChildren()
+                for (var j = 0; j < children.length; j++) {
+                    spt.behavior.destroy_element(children[j]);
+                }
+                item_top.removeClass("spt_open");
+                sibling.setStyle("display", "none");
+            
+                // Remove this item from the folder states
+                if (is_open) {
+                    items.splice(i, 1);
+                    spt.repo_browser.set_folder_state(items);
+                }
+            } else {
+                // Add this item to the folder states
+                if (!is_open) {
+                    spt.repo_browser.add_folder_state(dir);
+                }
+                var folder_state = spt.repo_browser.get_raw_folder_state();
+                
+              
+               
+                item_top.addClass("spt_open");
+                sibling.setStyle("display", "");
+
+                var base_dir = item_top.getAttribute("spt_dir");
+                var root_dir = item_top.getAttribute("spt_root_dir");
+                
+                // get the search_keys, if any
+                var search_keys = null;
+                if (top) {
+                    search_keys = top.getAttribute("spt_search_keys");
+                }
+                if (search_keys) {
+                    search_keys = search_keys.split("|");
+                } else {
+                    search_keys = [];
+                }
+                
+                var search_types;
+                if (top) {
+                    search_types = top.getAttribute("spt_search_types");
+                }
+                if (search_types) {
+                    search_types = search_types.split("|");
+                } else {
+                    search_types = [];
+                }
+                
+                //FIXME: are these root_dir and base_dir are really needed in this handler_kwargs?
+                var handler_kwargs = {
+                    root_dir: root_dir,
+                    base_dir: base_dir,
+                    search_keys: search_keys,
+                    search_types: search_types
+                } 
+                var extra_handler_kwargs = eval(%s);
+                
+                for (handler_kw in extra_handler_kwargs) {
+                    if (extra_handler_kwargs.hasOwnProperty(handler_kw))
+                        handler_kwargs[handler_kw] = extra_handler_kwargs[handler_kw];
+                }
+                var class_name = 'tactic.ui.widget.DirListPathHandler';
+                var kwargs = {
+                    level: item_top.getAttribute("spt_level"),
+                    base_dir: base_dir,
+                    depth: 1,
+                    all_open: false,
+                    dynamic: true,
+                    handler_class: item_top.getAttribute("spt_handler_class"),
+                    handler_kwargs: handler_kwargs,
+                    folder_state: folder_state
+                };
+                spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
+            }
+        }
+        else {
+            spt.toggle_show_hide(sibling);
+           
+            if (is_open) {
+                items.splice(i, 1);
+                spt.repo_browser.set_folder_state(items);
+            } else {
+                spt.repo_browser.add_folder_state(dir);   
+            }
+        }
+ 
+
+        ''' % (jsondumps(my.handler_kwargs))
 
 
-        """
+    def add_top_behaviors(my, top):
+        
+        selected_icon = IconWdg(icon="BS_EYE_OPEN", size="1.1em")
+        selected_icon.add_class("spt_browser_view_template")
+        selected_icon.add_style("position: relative;")
+        selected_icon.add_styles("height: 0px; left: 5px;")
+        selected_icon.add_style("display: none")
+        top.add(selected_icon)
+
+        search = my.kwargs.get("search")
+        if search:
+            key = "repo_browser:%s" % search.get_search_type()
+            dump = search.select.dumps()
+            WidgetSettings.set_value_by_key(key, dump)
+   
+        border = top.get_color("shadow")
+        top.add_style("position: relative")
+       
+        api_bvr = my.get_api()
+
+        if my.file_system_edit == True:
+            # FIXME: The use of this class is deprecated
+            top.add_class("spt_file_drag_top")
+            
+            # Only load edit API if necessary
+            api_bvr += my.get_system_edit_api()
+
+            # Use freeform context menu    
+            dir_menu = my.get_dir_context_menu(mode="freeform")
+        else:
+            dir_menu = my.get_dir_context_menu()
+        
         top.add_behavior( {
-            'type': 'smart_drag',
-            "drag_el": '@',
-            'bvr_match_class': 'spt_drag_file_item',
-            'cbjs_setup': 'spt.repo_browser.drag_file_setup(evt, bvr, mouse_411)',
-            'cbjs_motion': 'spt.repo_browser.drag_file_motion(evt, bvr, mouse_411)',
-            'cbjs_action': 'spt.repo_browser.drag_file_action(evt, bvr, mouse_411)',
+            'type': 'load',
+            'border': border,
+            'cbjs_action': api_bvr
         } )
-        """
-
-        # add in a context menu
-        freeform_menu = my.get_dir_context_menu()
-        strict_menu = my.get_dir_context_menu(mode="strict")
+  
         file_menu = my.get_file_context_menu()
-
         menus_in = {
-            'FREEFORM_DIR_ITEM_CTX': freeform_menu,
-            'STRICT_DIR_ITEM_CTX': strict_menu,
+            'DIR_ITEM_CTX': dir_menu,
             'FILE_ITEM_CTX': file_menu,
         }
         SmartMenu.attach_smart_context_menu( top, menus_in, False )
-
-
-
-        # add in template UIs
-        template_div = DivWdg()
-        #top.add(template_div)
         
-        new_folder_div = DivWdg()
-        template_div.add(new_folder_div)
-        arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
-        icon = "/context/icons/silk/folder.png";
-        html = "";
-        html += '<img src="'+arrow+'"/>';
-        html += '<img src="'+icon+'"/>';
-        html += '<input type="text" value="New Folder"/>';
-        new_folder_div.add(html)
-
-       
         search_types = my.kwargs.get("search_types")
         if search_types:
             search_type = search_types[0]
+            search_type = SearchType.build_search_type(search_type)
         else:
             search_type = my.kwargs.get("search_type") 
-
-        # If single_asset_mode is specified, then clicking 
-        # a file or directory will display information
-        # related to the single asset search type.
-        single_asset_mode = my.kwargs.get("single_asset_mode")
+            search_type = SearchType.build_search_type(search_type)
 
         # When the parent key is defined, clicking directory
         # item displays sthpw/snapshots based on related parent_type.
@@ -1188,21 +1751,61 @@ class RepoBrowserDirListWdg(DirListWdg):
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search_type = parent.get_search_type()
+   
+        # Get and clean folder_states
+        folder_state_key = "repo_browser_folder_state:%s" % search_type 
+        folder_state = WidgetSettings.get_value_by_key(folder_state_key) 
+        if folder_state:
+            states = folder_state.split("|")
+        else:
+            states = []
         
+        updated_states = []
+        asset_base_dir = Environment.get_asset_dir()
+        
+        # Clean folder states
+        view_exists = False
+        for i, state in enumerate(states):
+            if (i == len(states)-1 and state.startswith("view:")):
+                view_exists = True
+                continue
+            elif (i == len(states)-1):
+                view_exists = False
+            
+            path = os.path.join(asset_base_dir, state)
+            if os.path.exists(path):
+                updated_states.append(state)            
 
+        # Clean view states
+        if view_exists and states:
+            view_state = states[-1]
+            relative_view_path = view_state[5:]
+            view_path = os.path.join(asset_base_dir, relative_view_path)
+            if os.path.exists(view_path):
+                updated_states.append(view_state)
+
+        folder_state = ("|").join(updated_states)
+        
+        text_wdg = HiddenWdg("folder_state")        
+        text_wdg.add_class("spt_folder_state")
+        top.add(text_wdg)
+        text_wdg.set_value(folder_state)
+      
         # Directory click up - display related sObjects
-        # FIXME: How to we pass in the same search that was passed in RepoBrowserDirList?
         top.add_relay_behavior( {
         'type': 'click',
         'parent_key': parent_key,
-        'single_asset_mode': single_asset_mode,
+        'file_system_edit': my.file_system_edit,
+        'parent_mode': my.parent_mode,
         'search_type': search_type,
         'bvr_match_class': 'spt_dir_value',
         'cbjs_action': '''
-     
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
             var item_div = bvr.src_el.getParent(".spt_dir_item");
+
+            // Move view indicator - this updates the folder states
+            spt.repo_browser.move_view_indicator(item_div);
 
             // Get parent search keys
             var search_keys = top.getAttribute("spt_search_keys");
@@ -1219,7 +1822,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
             var kwargs = {
                 parent_key: bvr.parent_key,
-                single_asset_mode: bvr.single_asset_mode,
+                file_system_edit: bvr.file_system_edit,
+                parent_mode: bvr.parent_mode,
                 search_type: bvr.search_type,
                 view: 'table',
                 dirname: dirname,
@@ -1236,20 +1840,34 @@ class RepoBrowserDirListWdg(DirListWdg):
         # File click-up - display file detail
         top.add_relay_behavior( {
             'type': 'click',
-            'single_asset_mode': single_asset_mode,
+            'file_system_edit': my.file_system_edit,
+            'parent_mode': my.parent_mode,
             'search_type': search_type,
             'bvr_match_class': 'spt_item_value',
             'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
 
+        # Directory updates
+        update = {
+             'value': True,
+             'cbjs_action': '''spt.repo_browser.handle_update();'''
+        }
+        if my.parent_mode == "single_asset" and parent_key:
+            update['search_key'] = parent_key    
+        else:
+            update['search_type'] = search_type
+        top.add_update(update)
 
-    def get_dir_context_menu(my, mode="freeform"):
+
+    def get_dir_context_menu(my, mode="strict"):
 
         parent_key = my.kwargs.get("parent_key")
-        single_asset_mode = my.kwargs.get("single_asset_mode")
         search_types = my.kwargs.get("search_types")
+        
+        parent_mode = my.parent_mode
 
         menu = Menu(width=180)
+        
         menu.set_allow_icons(False)
 
         menu_item = MenuItem(type='title', label='Actions')
@@ -1261,12 +1879,14 @@ class RepoBrowserDirListWdg(DirListWdg):
             menu_item.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': r'''
-                
+               
+                spt.repo_browser.set_lock(true, "context_menu_action");
+
                 var activator = spt.smenu.get_activator(bvr);
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 var search_type = activator.getAttribute("spt_search_type");
               
-                //TODO: If directory is not open, open it to edit new item.
+                //TODO: If direct ry is not open, open it to edit new item.
                 //if (!activator.hasClass("spt_open")) {
                 //    var swap_top = activator.getElement(".spt_swap_top");
                 //    var swap_child = swap_top.getLast();
@@ -1309,14 +1929,11 @@ class RepoBrowserDirListWdg(DirListWdg):
                     // Attempt to create new folder
                     var value = this.value;
 
-                    if (!value) {
-                        div.destroy();
-                    }
-
                     var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
                     if (!valid_regex.test(value)) {
                         spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
                         div.destroy();
+                        spt.repo_browser.set_lock(false);
                         return; 
                     }     
                     
@@ -1343,10 +1960,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                         server.execute_cmd(class_name, kwargs);
                         
                         var dir_top = span.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
+                        spt.repo_browser.set_lock(false);   
+                        if (!spt.repo_browser.update_ready()) {
+                            spt.repo_browser.refresh_directory_listing(dir_top);
+                        }
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
                         div.destroy();
+                        spt.repo_browser.set_lock(false);
                         return;
                     }
                     
@@ -1359,9 +1980,11 @@ class RepoBrowserDirListWdg(DirListWdg):
                         evt.stop();
                         this.blur();
                     }
-                    else if (key == 'esc') {
-                        div.destroy();
-                    }
+                    // FIXME: This creates the new folder anyways.
+                    //else if (key == 'esc') {
+                    //    div.destroy();
+                    //    spt.repo_browser.set_lock(false);
+                    //}
                 } );
 
                 input.select();
@@ -1393,6 +2016,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 input.value = parts[parts.length-1];
                 var base_relative_dir = parts.slice(0, parts.length-1).join("/");
                 
+                spt.repo_browser.set_lock(true, "context_menu_action");
+
                 input.onblur = function() {
                     var value = this.value;
                     var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
@@ -1400,14 +2025,17 @@ class RepoBrowserDirListWdg(DirListWdg):
                         spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
                         this.value = original_dir;
                         input.focus();
+                        spt.repo_browser.set_lock(false);
                         return; 
                     } else if (value == original_dir) {
                         input.destroy();
                         original_el.setStyle("display", "");
+                        spt.repo_browser.set_lock(false);
                         return;
                     }
-                    
+                   
                     var new_relative_dir = base_relative_dir + "/" + value;
+                    console.log(new_relative_dir)
                     
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
@@ -1425,57 +2053,53 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                         server.execute_cmd(class_name, kwargs)
                     
-                        spt.notify.show_message("Folder rename complete");
+                        spt.notify.show_message("Folder renamed.");
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
                         
+                        spt.repo_browser.update_folder_state(relative_dir, new_relative_dir);
+                        
+                        spt.repo_browser.set_lock(false);   
+                        if (!spt.repo_browser.update_ready()) {
+                            spt.repo_browser.refresh_directory_listing(dir_top);
+                        } 
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
                         span.destroy();
                         original_el.setStyle("display", "");
+                        spt.repo_browser.set_lock(false);
                     }
 
                 };
-                
+               
+                input.addEvent( "keyup", function(evt) {
+                    var key = evt.key;
+                    if (key == 'enter') {
+                        evt.stop();
+                        this.blur();
+                    }
+                } ); 
+               
                 input.focus();
                 input.select();
 
                 '''
             } )
-
+            
             menu_item = MenuItem(type='action', label='Delete Folder')
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
+                'parent_mode': parent_mode,
                 'cbjs_action': '''
-                // This will only delete the folder if it is empty
-                var activator = spt.smenu.get_activator(bvr);
-                var relative_dir = activator.getAttribute("spt_relative_dir");
-
-                var server = TacticServerStub.get();
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'delete_folder',
-                    relative_dir: relative_dir
-                }
-                try {
-                    server.execute_cmd(class_name, kwargs);
-                    activator.destroy();
-                }
-                catch(err) {
-                    spt.alert(spt.exception.handler(err));
-                }
-
-                //TODO bulk delete
+                    spt.repo_browser.delete_assets(bvr); 
                 '''
             } )
 
 
 
-        menu_item = MenuItem(type='separator')
-        menu.add(menu_item)
+            menu_item = MenuItem(type='separator')
+            menu.add(menu_item)
+
 
         """
         menu_item = MenuItem(type='action', label='Download Files')
@@ -1507,13 +2131,14 @@ class RepoBrowserDirListWdg(DirListWdg):
         } )
         """
 
-
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             if parent:
                 search_type = parent.get_search_type()
-        elif single_asset_mode and len(search_types) == 1:
+        else:
             search_type = search_types[0]
+
+
         if search_type:
             menu_item = MenuItem(type='action', label='Ingest Files')
             menu.add(menu_item)
@@ -1604,8 +2229,8 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_file_context_menu(my):
-
-        single_asset_mode = my.kwargs.get("single_asset_mode")
+    
+        parent_mode = my.parent_mode
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1636,7 +2261,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'single_asset_mode': single_asset_mode,
+            'parent_mode': parent_mode,
             'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var content = activator.getElement(".spt_basename_content");
@@ -1644,7 +2269,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var old_value = content.getAttribute("spt_src_basename");
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 
-        
+                // Hide the original el 
                 var original_el = activator.getElement(".spt_item_value");
                 original_el.setStyle("display", "none");
                 
@@ -1655,6 +2280,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                 input.setStyle("width", "200px");
                 input.inject(original_el, "after");
                 
+                // Lock the directory
+                spt.repo_browser.set_lock(true, "context_menu_action");
+
                 input.onblur = function() {
                     var new_value = this.value;
                     var valid_regex = /^[a-zA-Z0-9_\s-\.]+$/;
@@ -1662,10 +2290,12 @@ class RepoBrowserDirListWdg(DirListWdg):
                         spt.alert("Please enter a valid file system name containing letters, numbers, or characters: . - _");
                         input.value = old_value;
                         input.focus();
+                        spt.repo_browser.set_lock(false);
                         return; 
                     } else if (new_value == old_value) {
                         input.destroy();
                         original_el.setStyle("display", "");
+                        spt.repo_browser.set_lock(false);
                         return;
                     }
                     
@@ -1678,7 +2308,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
                         var kwargs = {
                             search_type: bvr.search_type,
-                            single_asset_mode: bvr.single_asset_mode,
+                            parent_mode: bvr.parent_mode,
                             action: 'rename_item',
                             relative_dir: relative_dir,
                             file_name: file_name,
@@ -1688,16 +2318,38 @@ class RepoBrowserDirListWdg(DirListWdg):
                         server.execute_cmd(class_name, kwargs)
                     
                         spt.notify.show_message("Item rename complete");
+                    
+                        // FIXME: Add new name to folder view state
+                        // For now, removes old name.
+                        spt.repo_browser.update_folder_state(file_name);
+
+                        // Refresh dir list
                         var dir_top = activator.getParent(".spt_dir_list_handler_top");
-                        spt.panel.refresh(dir_top);
+                        spt.repo_browser.set_lock(false);   
+                        if (!spt.repo_browser.update_ready()) {
+                            spt.repo_browser.refresh_directory_listing(dir_top);
+                        } 
+                     
+                        // Refresh browser detail
+                        var detail_top = spt.repo_browser.getElement(".spt_browser_detail_top");
+                        spt.panel.refresh(detail_top);
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
                         span.destroy();
                         original_el.setStyle("display", "");
+                        spt.repo_browser.set_lock(false);
                     }
 
                 };
                 
+                input.addEvent( "keyup", function(evt) {
+                    var key = evt.key;
+                    if (key == 'enter') {
+                        evt.stop();
+                        this.blur();
+                    }
+                } ); 
+
                 input.focus();
                 input.select();
 
@@ -1710,38 +2362,9 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'single_asset_mode': single_asset_mode,
+            'parent_mode': parent_mode,
             'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-
-                if (["True", true, "true"].indexOf(bvr.single_asset_mode) > -1) {
-                    var search_key = activator.getAttribute("spt_search_key");
-                } else {
-                    var server = TacticServerStub.get();
-                    var snapshot_code = activator.getAttribute("spt_snapshot_code");
-                    var search_key = server.build_search_key("sthpw/snapshot", snapshot_code); 
-                }
-               
-                if (!search_key) return;
-                activator.addClass("spt_browser_deleted");
-
-                // On complete, refresh the grandparent directory and the ContentBrowserWdg in case 
-                // file in display was deleted.
-                var delete_on_complete = "var target = document.getElement('.spt_browser_deleted');"
-                delete_on_complete += "var parent_dir = target.getParent('.spt_dir_list_handler_top');"
-                delete_on_complete += "var grandparent_dir = parent_dir.getParent('.spt_dir_list_handler_top');"
-                delete_on_complete += "if (grandparent_dir) {"
-                delete_on_complete += "    spt.panel.refresh(grandparent_dir);"
-                delete_on_complete += "}"
-                delete_on_complete += "var detail_top = document.getElement('.spt_browser_detail_top');"
-                delete_on_complete += "spt.panel.refresh(detail_top);"
-                var class_name = 'tactic.ui.tools.DeleteToolWdg';
-                var kwargs = {
-                  search_key: search_key,
-                  on_complete: delete_on_complete
-                }
-                var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
-
+                 spt.repo_browser.delete_assets(bvr);
             '''
         } )
 
@@ -1754,7 +2377,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_dirname(my, dirname, basename):
-
+        
         path = "%s/%s" % (dirname, basename)
         counts = my.counts.get(path)
         if counts == -1:
@@ -1776,9 +2399,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         #src_path = file_object.get_value("source_path")
         src_path = file_object.get_value("file_name")
         src_basename = os.path.basename(src_path)
-        
-        # FIXME: In single asset mode, simply display the asset name or 
-        # atleast single context.
+
         # NOTE: pretty hacky
         # remove version
         src_basename = re.sub(r"_v\d+", "", src_basename)
@@ -1802,21 +2423,31 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def add_file_behaviors(my, item_div, dirname, basename):
-        item_div.add_class("spt_drag_file_item")
 
         asset_base_dir = Environment.get_asset_dir()
 
-        path = "%s/%s" % (dirname, basename)
-        relative_dir = path.replace(asset_base_dir, "")
+        path = os.path.join(dirname, basename)
+        relative_dir = os.path.relpath(path, asset_base_dir)
         relative_dir = os.path.dirname(relative_dir)
         item_div.add_attr("spt_relative_dir", relative_dir)
 
         search_types = my.search_types_dict
         search_keys = my.search_keys_dict
-
+        
         search_key = search_keys.get(path)
+         
         item_div.add_attr("spt_search_key", search_key)
-
+       
+        """
+        TODO: Add an update on the original items divs.
+        update = {
+            'search_key': search_key,
+            'expression':'@GET(workflow/asset.relative_dir)',
+            'cbjs_action':'''console.log(bvr.value);''',
+            'interval': 1
+        }
+        item_div.add_update(update);
+        """
 
         file_codes = my.file_codes
 
@@ -1844,16 +2475,18 @@ class RepoBrowserDirListWdg(DirListWdg):
         snapshot_code = snapshot_codes.get(path)
         item_div.add_attr("spt_file_code", file_code)
         item_div.add_attr("spt_snapshot_code", snapshot_code)
+ 
+        if my.file_system_edit == True:
+            item_div.add_class("spt_drag_file_item")
+            item_div.add_behavior( {
+                'type': 'drag',
+                "mouse_btn": 'LMB',
+                "drag_el": '@',
+                "cb_set_prefix": 'spt.repo_browser.drag_file'
 
-        item_div.add_behavior( {
-            'type': 'drag',
-            "mouse_btn": 'LMB',
-            "drag_el": '@',
-            "cb_set_prefix": 'spt.repo_browser.drag_file'
+            } )
 
-        } )
-
-        SmartMenu.assign_as_local_activator( item_div, 'FILE_ITEM_CTX' )
+            SmartMenu.assign_as_local_activator( item_div, 'FILE_ITEM_CTX' )
 
 
 
@@ -1864,20 +2497,33 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def add_dir_behaviors(my, item_div, dirname, basename):
-
+        
         parent_key = my.kwargs.get("parent_key")
 
-        """ 
-        item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this)")
-        item_div.add_attr("ondragleave", "spt.repo_browser.drag_leave(event, this)")
-        item_div.add_attr("ondragover", "return false")
-        item_div.add_attr("ondrop", "spt.repo_browser.drag_drop(event, this)")
-        """
-        item_div.add_class("DROP_ROW")
-        item_div.add_class("spt_drop_handler")
-        item_div.add_attr("spt_drop_handler", "spt.repo_browser.drag_drop")
+        if my.file_system_edit == True:
+             
+            
+            """
+            This will not work because dir and items already have a mouseenter and mouseleave. 
+            
+            item_div.add_attr("ondragenter", "spt.repo_browser.drag_enter(event, this);")
+            item_div.add_attr("ondragleave", "spt.repo_browser.drag_leave(event, this)")
+            item_div.add_attr("ondragover", "console.log('hi');" 
+            item_div.add_attr("ondrop", "spt.repo_browser.drag_drop(event, this)")
+            """
 
+            item_div.add_class("DROP_ROW")
+            item_div.add_class("spt_drop_handler")
+            item_div.add_attr("spt_drop_handler", "spt.repo_browser.drag_drop")
+            
+            item_div.add_behavior( {
+                'type': 'drag',
+                "mouse_btn": 'LMB',
+                "drag_el": '@',
+                "cb_set_prefix": 'spt.repo_browser.drag_file'
+            } ) 
 
+        SmartMenu.assign_as_local_activator( item_div, 'DIR_ITEM_CTX' )
 
         asset_base_dir = Environment.get_asset_dir()
 
@@ -1888,22 +2534,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         search_codes = my.search_codes
-
-
-
-        item_div.add_behavior( {
-            'type': 'drag',
-            "mouse_btn": 'LMB',
-            "drag_el": '@',
-            "cb_set_prefix": 'spt.repo_browser.drag_file'
-
-        } )
-
-
-
-        #SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
-        SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
-
 
         search_types = my.search_types_dict
         search_type = search_types.get("%s/" % path)
@@ -1926,6 +2556,16 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_relative_dir", relative_dir)
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
+        """
+        TODO: Add update on individual dir divs. 
+        update = {
+            "search_type": search_type, 
+            #"search_key": parent_sk,
+            #"compare": "@COUNT(@SOBJECT(sthpw/file['relative_dir', 'like', '%%%s%%'])) > 0" % relative_dir,
+            "cbjs_action": '''console.log("hi");'''
+        }
+        item_div.add_update(update)
+        """
 
     def get_file_icon(my, dir, item):
         path = "%s/%s" % (dir, item)
@@ -1982,16 +2622,8 @@ class RepoBrowserActionCmd(Command):
 
     def execute(my):
 
-        # if the search_type is working in "single file" mode, then
-        # we can make a lot of assumptions about moving and deleting files
-        mode = "single_file"
             
-        single_asset_mode = my.kwargs.get("single_asset_mode")
-        if single_asset_mode in [True, "true", "True"]:
-            single_asset_mode = True
-        else:
-            single_aset_mode = False
-
+        parent_mode = my.kwargs.get("parent_mode")
 
         search_type = my.kwargs.get("search_type")
         action = my.kwargs.get("action")
@@ -2002,9 +2634,10 @@ class RepoBrowserActionCmd(Command):
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
+            
+            my.add_description("Creating new folder [%s]" % relative_dir)
 
             full_dir = "%s/%s" % (base_dir, relative_dir)
-
             if os.path.exists(full_dir):
                 raise Exception("Directory [%s] already exists" % relative_dir)
 
@@ -2012,35 +2645,24 @@ class RepoBrowserActionCmd(Command):
 
         elif action == "delete_folder":
          
-            do_not_check = my.kwargs.get("do_not_check")
-
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
+        
+            my.add_description("Deleting folder [%s]." % relative_dir)
+
+            full_dir = "%s/%s" % (base_dir, relative_dir)
             
-            search = Search("sthpw/file")
-            search.add_op("begin")
-            search.add_filter("relative_dir", "%s" % relative_dir)
-            search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-            search.add_op("or")
-             
-            snapshot_search = Search("sthpw/snapshot")
-            snapshot_search.add_relationship_search(search)
-          
-            if snapshot_search.get_count() == 0:
-                full_dir = "%s/%s" % (base_dir, relative_dir)
-                os.rmdir(full_dir)
+            file_exists = False 
+            for root, dirs, files in os.walk(full_dir, topdown=False):
+                if files:
+                    file_exists = True
+                    break
+         
+            if file_exists:
+                raise Exception("Files found in directory tree: [%s]" % relative_dir)
             else:
-                raise Exception("Folder not empty")
-            ''' 
-            if single_asset_mode == True:
-                # TODO: Get all parents
-            else:
-                
-            # TODO: Users should be able to delete a folder with snapshots,
-            # FIXME: If there are dangling files, user should no that.
-            # this will give an error if the directory is not empty
-            '''
+                shutil.rmtree(full_dir) 
 
 
         elif action == "rename_folder":
@@ -2054,6 +2676,8 @@ class RepoBrowserActionCmd(Command):
           
             if old_relative_dir == new_relative_dir:
                 return
+
+            my.add_description("Renaming [%s] to [%s]." % (old_relative_dir, new_relative_dir))
 
             old_dir = "%s/%s" % (base_dir, old_relative_dir)
             new_dir = "%s/%s" % (base_dir, new_relative_dir)
@@ -2086,7 +2710,8 @@ class RepoBrowserActionCmd(Command):
                 # find the parent and store in dictionary for update later
                 parent_search_code = file.get_value("search_code")
                 parent_search_type = file.get_value("search_type")
-
+ 
+                # FIXME: Use SearchType.build_search_type
                 parent_key = "%s&code=%s" % (parent_search_type, parent_search_code)
                 parent_keys.add(parent_key)
                 relative_dirs[parent_key] = new_relative_dir
@@ -2135,6 +2760,7 @@ class RepoBrowserActionCmd(Command):
             relative_dir = my.kwargs.get("relative_dir")
             if not relative_dir:
                 return
+
             relative_dir = relative_dir.strip("/")
 
             file_name = my.kwargs.get("file_name")
@@ -2172,8 +2798,10 @@ class RepoBrowserActionCmd(Command):
             if not new_ext or new_ext != old_ext:
                 new_base = new_value
                 new_ext = old_ext
-            
-            # TODO: If in single asset mode, asset in relative_dir
+           
+            my.add_description("Renaming files sharing the same snapshot context as [%s]." % file_name)
+
+            # TODO: If in single_file parent_mode, asset in relative_dir
             # must be unique.
 
             # get the snapshot
@@ -2199,8 +2827,13 @@ class RepoBrowserActionCmd(Command):
                 # entire snapshot.
                 # Otherwise, commit database changes and move all files.
                 
-                xml = snapshot.get_xml_value("snapshot")
                 version = snapshot.get_value("version")
+                if version == -1:
+                    file_types = snapshot.get_all_file_types()
+                    for file_type in file_types:
+                        snapshot.remove_file(file_type)
+
+                xml = snapshot.get_xml_value("snapshot")
                 context = snapshot.get_value("context")
                 search_code = snapshot.get_value("search_code")
                 if not parents.get(search_code):
@@ -2259,7 +2892,7 @@ class RepoBrowserActionCmd(Command):
                     context_file_name = parts[1]
                     _, old_ext = os.path.splitext(context_file_name)
                     if (old_ext):
-                        new_name = new_base
+                        new_name = new_base + old_ext
                     else:
                         new_name, _ = os.path.splitext(new_base)     
                 
@@ -2271,12 +2904,10 @@ class RepoBrowserActionCmd(Command):
 
                 snapshot.set_value("context", context)
                 snapshot.commit()
-
-            snapshots[-1].update_versionless("latest")
-
-            # Update original parent name if in single asset mode
-            single_asset_mode = my.kwargs.get("single_asset_mode")
-            if single_asset_mode in [True, "true", "True"]:
+            
+            
+            # Update original parent name if in single_file parent_mode
+            if parent_mode == "single_file":
                 # If sobject has an extension in it's name, then 
                 # make sure this extension is preserved.
                 original_name = sobject.get_value("name", no_exception=True)
@@ -2287,9 +2918,12 @@ class RepoBrowserActionCmd(Command):
                     new_name = new_base
                 sobject.set_value("name", new_name)
                 
-                # TODO: remove this commit statement
+                # TODO: remove this commit statement because 
+                # there should only be one parent.
                 sobject.commit()
- 
+            
+            snapshots[-1].update_versionless("latest")
+            
             # Update any associated parents keywords
             for parent in parents.values():
                 my.set_keywords(parent)
@@ -2352,25 +2986,37 @@ class RepoBrowserCbk(Command):
         search_keys = my.kwargs.get("search_keys")
         from_relative_dir = my.kwargs.get("from_relative_dir")
 
+        parent_mode = my.kwargs.get("parent_mode")
+
         # FIXME:
         # Possible issue... moving an entire directory structure assumes
         # that all snapshots are in relative directory or parent.
         # but snapshot_code mode only moves sister snapshots in same context.
         if snapshot_code:
+            my.add_description("Moving files associated with snapshot [%s]." % snapshot_code)
+
             snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
             parent = snapshot.get_parent()
             my.move_parent(parent, relative_dir, snapshot)
             return 
         elif search_key:
+            my.add_description("Moving files associated with [%s]." % search_key)
+
             parent = Search.get_by_search_key(search_key)
             parents = [parent]
         elif search_keys != None:
+            my.add_description("Moving files associated with sObjects: %s" % search_keys)
+
             parents = Search.get_by_search_keys(search_keys)
         else:
             # Move an entire directory
             # NOTE: this may be a bit too much brute force.  It may take files
             # that are not in the file table (but these shouldn't be there
             # in the first place!)
+            
+            if os.path.normpath(relative_dir) == os.path.normpath(from_relative_dir):
+                return
+
             base_dir = Environment.get_asset_dir()
            
             # Build new paths and check that new path is a directory
@@ -2384,9 +3030,12 @@ class RepoBrowserCbk(Command):
             new_path = os.path.join(base_dir, relative_dir, from_basename)
             if (os.path.exists(new_path)):
                 raise Exception("Directory [%s] already exists" % new_path)
+            
+            my.add_description("Moving directory and contents at [%s] to [%s]." % (abs_from_dir, new_path))
 
             # find all the files with the relative dir
             file_search = Search("sthpw/file")
+            # FIXME: filter should not use like.
             file_search.add_filter("relative_dir", "%s%%" % from_relative_dir, op='like')
             files = file_search.get_sobjects()
 
@@ -2470,7 +3119,7 @@ class RepoBrowserCbk(Command):
         snapshots = search.get_sobjects()
 
         # For each snapshot, update all files relative_dir.
-        # Also record version to update latest after fafter for-loopp
+        # Also record versionless to update latest after for-loop
         all_files = []
         # find highest version
         highest_snapshot = {}
@@ -2481,6 +3130,9 @@ class RepoBrowserCbk(Command):
             context = snapshot.get("context")
             version = snapshot.get_value("version")
             if version == -1:
+                file_types = snapshot.get_all_file_types()
+                for file_type in file_types:
+                    snapshot.remove_file(file_type)
                 continue
             if version > highest_version.get(context):
                 highest_version[context] = version
@@ -2496,7 +3148,7 @@ class RepoBrowserCbk(Command):
                 # Build the paths and check if new path already exists
                 old_path = "%s/%s/%s" % (base_dir, file_relative_dir, file_name)
                 if not os.path.exists(old_path):
-                     continue
+                    continue
                 
                 new_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                 if os.path.exists(new_path):
@@ -2508,11 +3160,8 @@ class RepoBrowserCbk(Command):
                 FileUndo.move(old_path, new_path)
 
             all_files.extend(files)
+       
         
-        # Update the versionless snapshot
-        for snapshot in highest_snapshot.values():
-            snapshot.update_versionless("latest")
-
         # Some assumed behavior for this mode:
         # 1) all snapshots in this context exist in the same folder
         #    and should remain so
@@ -2523,8 +3172,11 @@ class RepoBrowserCbk(Command):
         if parent.column_exists("relative_dir"):
             parent.set_value("relative_dir", relative_dir)
             my.set_keywords(parent)
-        
         parent.commit()
+        
+        # Update the versionless snapshot
+        for snapshot in highest_snapshot.values():
+            snapshot.update_versionless("latest")
 
 
 
@@ -2569,8 +3221,8 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             dirname - directory of file 
             basename - basename of file
 
-        single_asset_mode - Indicates what sObject details view to show.
-            If in single_asset_mode, display the single asset detail.
+        parent_mode - Indicates what sObject details view to show.
+            If in single_file parent_mode, display the single asset detail.
             Otherwise, show the snapshot detail.
         '''
         
@@ -2581,41 +3233,54 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
+        file_search_key = my.kwargs.get("file_search_key")
         search_key = my.kwargs.get("search_key")
-        single_asset_mode = my.kwargs.get("single_asset_mode")
-        if single_asset_mode in ["True", "true", True]:
-            single_asset_mode = True
+        parent_mode = my.kwargs.get("parent_mode")
         search_type = my.kwargs.get("search_type")
         
         # Use asset dir to find relative dir
         asset_dir = Environment.get_asset_dir()
-
-        if search_key:
-            # search_key is either a snapshot search_key or 
-            # single context sobject key.
-            sobject = Search.get_by_search_key(search_key)
-            if not sobject:
-                raise Exception("No snapshot found")
+ 
+        if file_search_key:
+            good_file = Search.get_by_search_key(file_search_key)
             
-            snapshot = None
-
-            if single_asset_mode == True:
-                snapshot = Snapshot.get_latest_by_sobject(sobject)
-                parent = sobject
-            else:
-                snapshot = sobject
+            snapshot = None 
+            if good_file:
+                reldir = good_file.get_value("relative_dir")
+                basename = good_file.get_value("file_name")
+                snapshot = good_file.get_parent()
+            
+            parent = None
+            if snapshot:
                 parent = snapshot.get_parent()
             
-            if not snapshot:
-                raise Exception("No snapshot found")
-            
-            search_type = snapshot.get_value("search_type") 
-            path = snapshot.get_lib_path_by_type()
-            dirname = os.path.dirname(path)
-            basename = os.path.basename(path)
+            if not parent:
+                good_file = None
+                reldir = ""
+        elif search_key:
+            good_file = None
+            reldir = ""
 
-            good_file = snapshot.get_file_by_type("main")
-            reldir = good_file.get_value("relative_dir")
+            # search_key is either a snapshot search_key or 
+            # single file sObject key.
+            sobject = Search.get_by_search_key(search_key)
+            if sobject:
+                if parent_mode == "single_file":
+                    snapshot = Snapshot.get_latest_by_sobject(sobject)
+                    parent = sobject
+                else:
+                    snapshot = sobject
+                    parent = snapshot.get_parent()
+                
+                if snapshot:
+                    search_type = snapshot.get_value("search_type") 
+                    path = snapshot.get_lib_path_by_type()
+                    dirname = os.path.dirname(path)
+                    basename = os.path.basename(path)
+
+                    good_file = snapshot.get_file_by_type("main")
+                    reldir = good_file.get_value("relative_dir")
+            
         elif search_type:
             search_type = SearchType.build_search_type(search_type)
             dirname = my.kwargs.get("dirname")
@@ -2625,17 +3290,18 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
             
             search = Search("sthpw/file")
-            if search_type:
+            if search_type and search_type != 'sthpw/snapshot':
                 search.add_filter("search_type", search_type)
             search.add_filter("relative_dir", reldir)
             search.add_filter("file_name", basename)
-            
+
             files = search.get_sobjects()
           
             # Only display file detail if file has snapshot
             # and grandparent.
             good_file = None
             for file in files:
+
                 snapshot = file.get_parent()
                 if not snapshot:
                     parent = None
@@ -2649,7 +3315,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         
         
         if good_file:
-            if single_asset_mode == True:
+            if parent_mode == "single_file":
                 display_sobject = parent
             else:
                 display_sobject = snapshot
@@ -2667,19 +3333,26 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
 
             inner.add( my.get_content_wdg(good_file, display_sobject) )
+
+            file_search_key = good_file.get_search_key()
         else:
             no_file_div = DivWdg()
-            no_file_div.add_style("padding", "15px")
+            no_file_div.add_styles("margin: 100px auto; width: 250px; padding: 50px;")
+            no_file_div.add_styles("font-size: 20px; text-align: centre;")
+            no_file_div.add_border()
             icon = IconWdg("WARNING", IconWdg.WARNING)
             no_file_div.add(icon)
-            no_file_div.add("<b>Invalid file</b>")
-            no_file_div.add("<br/>"*2)
-            inner.add(no_file_div)            
+            no_file_div.add("<b>It appears the file you are looking for has been deleted.</b>")
+            inner.add(no_file_div)
+            
+            file_search_key = ""
         
         is_refresh = my.kwargs.get("is_refresh")
         if is_refresh:
             return inner
         else:
+            top.add_attr("spt_file_search_key", file_search_key)
+            
             return top
         
 
@@ -2746,18 +3419,81 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
 class RepoBrowserSearchWrapper(object):
 
-    def alter_search(my, search):
 
-        search_type = search.get_full_search_type()
+    def get_file_search(base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
 
-        # search for all files that are in this relative_dir
-        file_search = Search("sthpw/file")
-        file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
-        file_search.add_filter("search_type", search_type)
+        search = Search("sthpw/file")
 
-        # use the above search to find all sobjects with files in this
-        # relative_dir
-        search.add_relationship_search_filter(file_search)
+        # Add a search type filter ... ignore this is the search_type are snapshots
+        # FIXME Handle more than one search type
+        search_type = None
+        if search_types:
+            search_type = search_types[0]
+            if search_type != "sthpw/snapshot":
+                search.add_filter("search_type", search_type)
+        if parent_ids:
+            search.add_filters("search_id", parent_ids)
+        
+        asset_base_dir = Environment.get_asset_dir()
+        if (base_dir.startswith(asset_base_dir)):
+            relative_dir = os.path.relpath(base_dir, asset_base_dir)
+            if relative_dir == ".":
+                relative_dir = ""
+        else:
+            relative_dir = base_dir
+
+        if relative_dir:
+            # TODO: not very clean.  There are different ways that the
+            # relative dir needs to be searched on depending on usage
+            # For now, just use a simple mode
+            search.add_op("begin")
+            search.add_filter("relative_dir", "%s" % relative_dir)
+            if mode=="count":
+                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+            search.add_op("or")
+        
+        # TODO: 
+        # keywords = my.kwargs.get("keywords")
+        # if keywords:
+        #    search.add_text_search_filter("metadata_search", keywords)
+
+        # TODO: The repo browser has these settings forced
+        show_main_only = True
+        show_latest = True
+        show_versionless = False
+        if show_latest or show_versionless or parent_mode == "single_file": 
+            search.add_join("sthpw/snapshot")
+            # Force repo browser to show only the publish process
+            if parent_mode == "single_file":
+                search.add_filter("process", "publish", table="snapshot")
+            search.add_op("begin")
+            if show_latest:
+                search.add_filter("is_latest", True, table="snapshot")
+            if show_versionless:
+                search.add_filter("version", -1, table="snapshot")
+            search.add_filter("file_name", "")
+            search.add_filter("file_name", "NULL", quoted=False, op="is")
+            search.add_op("or")
+
+        if show_main_only:
+            search.add_filter("type", "main")
+
+        key = "repo_browser:%s" % search_type
+        parent_search_str = WidgetSettings.get_value_by_key(key)
+        if parent_search_str:
+            parent_search = Search(search_type)
+            parent_search.select.loads(parent_search_str)
+            parents = parent_search.get_sobjects()
+            parent_codes = [x.get_value("code") for x in parents]
+          
+            if search_type == "sthpw/snapshot":
+                search.add_filters("snapshot_code", parent_codes)
+            else:
+                search.add_filter("search_type", search_type)
+                search.add_filters("search_code", parent_codes)
+        
+        return search
+    get_file_search = staticmethod(get_file_search)
 
 
 
@@ -2783,9 +3519,12 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         top.add(inner)
 
         # The determination of search types important for IngestUploadWdg and ViewPanelWdg.
-        single_asset_mode = my.kwargs.get("single_asset_mode")
+        # Also, if parent_mode is single_file, then clicking 
+        # a file or directory will display information
+        # related to the single file search type.
+        parent_mode = my.kwargs.get("parent_mode")
         parent_key = my.kwargs.get("parent_key")
-        if single_asset_mode in ["True", "true", True]:
+        if parent_mode == "single_file":
             parent_type = my.kwargs.get("search_type")
             search_type = parent_type
         else:
@@ -2794,59 +3533,56 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
         parent_type = SearchType.build_search_type(parent_type)
         search_type = SearchType.build_search_type(search_type)
-
+        
         # Input data - snapshots or a absolute directory path
         snapshot_codes = my.kwargs.get("snapshot_codes")
         
         dirname = my.kwargs.get("dirname")
         asset_dir = Environment.get_asset_dir()
-        if not dirname.startswith(asset_dir):
-            error_div = DivWdg()
-            error_div.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
-            return error_div
-        reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
-        if reldir == ".":
-            reldir = ""
-    
+        if dirname.startswith(asset_dir):
+            reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
+            if reldir == ".":
+                reldir = ""
+        else:
+            reldir = dirname
+
+        # If user has selected list of snapshots in directory
+        # display these. 
+        # TODO: Use of snapshot codes involves the unfinished  select API 
         if snapshot_codes:
             search = Search("sthpw/snapshot")
             search.add_filters("code", snapshot_codes)
-
-            search2 = Search(search_type)
-            search2.add_relationship_search_filter(search)
-            sobjects = search2.get_sobjects()
-        elif single_asset_mode:
-            search = Search(search_type)
-            search.add_filter("relative_dir", "%s%%" % reldir, op='like')
         else:
-            # Search for all files that are in this relative_dir
-            file_search = Search("sthpw/file")
-            file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
-            file_search.add_filter("search_type", parent_type)
-            # Search for the snapshots related to these files and filter 
-            # on parent type.
-            search = Search(search_type)
-            search.add_relationship_search_filter(file_search)
-
-            '''
-            FIXME:
-            
-            key = "repo_browser:%s" % search_type
-            parent_search_str = WidgetSettings.get_value_by_key(key)
-            if parent_search_str:
-                parent_search = Search(search_type)
-                parent_search.select.loads(parent_search_str)
-                parent_search.add_column("code")
-                search2.add_search_filter("code", parent_search)
-
-            sobjects = search2.get_sobjects()
-           '''
+            # FIXME: Note, that this widget shows all files in the
+            # entire tree rooted at relative_dir. User may only want to
+            # see files within relative_dir.
+            if parent_mode == "single_file":
+                # Get search from widget settings
+                key = "repo_browser:%s" % parent_type
+                parent_search_str = WidgetSettings.get_value_by_key(key)
+                if parent_search_str:
+                    parent_search = Search(parent_type)
+                    parent_search.select.loads(parent_search_str)
+                else:
+                    parent_search = Search(parent_type)
+                # In single file mode, the parent sObjects are displayed, and filter
+                # is based on these sObjects relative_dir column.
+                parent_search.add_op("begin")
+                parent_search.add_filter("relative_dir", "%s" % reldir)
+                parent_search.add_filter("relative_dir", "%s/%%" % reldir, op='like')
+                parent_search.add_op("or")
+                search = parent_search
+            else:
+                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [])
+                search = Search(search_type)
+                search.add_relationship_search_filter(file_search)
+ 
+        # File system edit
+        my.file_system_edit = my.kwargs.get("file_system_edit") 
+        if my.file_system_edit == "true":
+            my.file_system_edit = True
 
         # Display the path of the directory
-        path = my.kwargs.get("dirname")
-        asset_dir = Environment.get_asset_dir()
-        reldir = path.replace(asset_dir, "").strip("/")
-
         path_div = DivWdg()
         inner.add(path_div)
         path_div.add("<b>Path:</b> %s" % reldir)
@@ -2913,20 +3649,35 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             var search_key = row.getProperty("spt_search_key");
             
             var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
+            
+            var parent_mode = '%s';
             var kwargs = {
                 search_key: search_key,
-                single_asset_mode: "%s"
+                parent_mode: parent_mode
             };
             spt.panel.load(content, class_name, kwargs);
-        ''' % single_asset_mode
+        ''' % parent_mode
+       
+        # Disable context menu and drag if system editing is off
+        if my.file_system_edit == True:
+            show_context_menu = True
+            allow_drag = True
+        else:
+            show_context_menu = False
+            #FIXME: Allow drag is not working
+            allow_drag = False
+
+        # FIXME: This kwarg does not take effect
+        # TODO: Drag and drop upload
         
         expression = my.kwargs.get("expression")
 
         #TODO: Drag and drop upload
+        
         # pass in parent key for deliverable
-        # "self" for single_asset_mode
+        # "self" for parent_mode
         upload_mode = False
-
+   
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
@@ -2941,10 +3692,22 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             width='100%',
             expand_mode=expand_mode,
             script=detail_script,
-            upload_mode=upload_mode
+            upload_mode=upload_mode,
+            show_context_menu=show_context_menu,
+            allow_drag=allow_drag,
+            no_results_msg="Alter search criteria or ingest files to this directory."
         )
         inner.add(layout)
- 
+    
+        # TODO: Lock on drag of tile
+        """ 
+        inner.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_tile_top',
+            'cbjs_action':'''console.log("hi");'''
+        } )
+        """
+
         is_refresh = my.kwargs.get("is_refresh")
         if is_refresh:
             return inner

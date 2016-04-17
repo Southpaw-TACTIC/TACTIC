@@ -1186,7 +1186,7 @@ spt.popup.toggle_minimize = function( src_el )
     var popup = spt.popup.get_popup(src_el);
     var resize = popup.getElement(".spt_popup_resize");
 
-    if (popup.hasClass("spt_popup_minimized")) {
+    if (spt.popup.is_minimized(popup)) {
 
         popup.setStyle("bottom", "");
         popup.setStyle("right", "");

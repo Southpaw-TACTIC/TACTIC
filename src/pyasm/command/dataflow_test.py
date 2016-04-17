@@ -500,12 +500,12 @@ class WorkflowCmd(Command):
         task = Task.create(sobject, process="b")
 
 
-        dataflow = Dataflow()
-        path = dataflow.get_input_path(sobject, "b")
-        my.assertEquals("", path)
+        #dataflow = Dataflow()
+        #path = dataflow.get_input_path(sobject, "b")
+        #my.assertEquals("", path)
 
 
-        # Run the pipeline
+        # Run the pipeline, this will stop at b
         process = "a"
         output = {
             "pipeline": pipeline,
@@ -513,6 +513,15 @@ class WorkflowCmd(Command):
             "process": process,
         }
         Trigger.call(my, "process|pending", output)
+
+
+        # check status of a and b
+        key = "%s|%s|status" % (sobject.get_search_key(), "a")
+        search = Search("sthpw/message")
+        search.add_filter("code", key)
+        message = search.get_sobject()
+        print "mmmm: ", message.get_data()
+
 
 
         dataflow = Dataflow()

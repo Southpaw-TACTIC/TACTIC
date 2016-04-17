@@ -83,7 +83,10 @@ class WatchFolderFileActionThread(threading.Thread):
 
     def run(my):
 
-        Batch()
+        task = my.kwargs.get("task")
+        site = task.site
+        project_code = task.project_code
+        Batch(site=site, project_code=project_code)
         try:
             my._run()
         finally:
@@ -124,15 +127,18 @@ class WatchFolderFileActionThread(threading.Thread):
                     "search_type": task.search_type,
                     "base_dir": task.base_dir,
                     "process": task.process,
-                    "script_path":task.script_path,
+                    "script_path": task.script_path,
                     "path": path
                 }
 
 
-                # create a "custom" command that will act on the file
-                cmd = CustomCmd(
-                        **kwargs
-                )
+                handler = task.get("handler")
+                if handler:
+                    cmd = Common.create_from_class_path(handler, [], kwargs)
+                else:
+                    # create a "custom" command that will act on the file
+                    cmd = CheckinCmd(**kwargs)
+
                 cmd.execute()
 
                 # TEST
@@ -238,7 +244,11 @@ class WatchFolderCheckFileThread(threading.Thread):
                 changed = True
                 break
 
-            file_size2 = os.path.getsize(file_path)
+            if os.path.isdir(file_path):
+                file_size2 = os.path.getsize(file_path)
+            else:
+                file_size2 = os.path.getsize(file_path)
+
             mtime2 = os.path.getmtime(file_path)
             #print "file_size2: ", file_size2
             #print "mtime2: ", mtime2
@@ -254,9 +264,22 @@ class WatchFolderCheckFileThread(threading.Thread):
         return changed
 
 
+from pyasm.command import Command
+__all__.append("TestCmd")
+class TestCmd(Command):
+
+    def execute(my):
+
+        path = my.kwargs.get("path")
+
+        # do something
+        print "path: ", path
 
 
-class CustomCmd(object):
+
+
+
+class CheckinCmd(object):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
@@ -302,11 +325,12 @@ class CustomCmd(object):
     def execute(my):
 
         file_path = my.kwargs.get("path")
+        site = my.kwargs.get("site")
         project_code = my.kwargs.get("project_code")
         base_dir = my.kwargs.get("base_dir")
         search_type = my.kwargs.get("search_type")
         process = my.kwargs.get("process")
-        watch_script_path =  my.kwargs.get("script_path")
+        watch_script_path = my.kwargs.get("script_path")
         if not process:
             process = "publish"
 
@@ -359,7 +383,7 @@ class CustomCmd(object):
 
                 if SearchType.column_exists(search_type, "keywords"):
                     relative_path = relative_path
-                    keywords = Common.get_keywords_from_path(relative_path)
+                    keywords = Common.extract_keywords_from_path(relative_path)
                     keywords = " ".join( keywords )
                     sobj.set_value("keywords", keywords)
 
@@ -431,10 +455,13 @@ class CustomCmd(object):
             f.write(pre_log)
             f.close()
 
-            # Delete the sourse file after check-in step.
-            print "File checked in."
+            # Delete the source file after check-in step.
+            print "File handled."
             if os.path.exists(file_path):
-                os.unlink(file_path)
+                if os.path.isdir(file_path):
+                    os.rmdirs(file_path)
+                else:
+                    os.unlink(file_path)
                 print "Source file [%s] deleted: " %file_name
 
 
@@ -447,7 +474,9 @@ class WatchDropFolderTask(SchedulerTask):
 
     def __init__(my, **kwargs):
 
+        my.input_kwargs = kwargs
         my.base_dir = kwargs.get("base_dir")
+        my.site = kwargs.get("site")
         my.project_code = kwargs.get("project_code")
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
@@ -464,6 +493,9 @@ class WatchDropFolderTask(SchedulerTask):
     def get_paths(my):
         return my.checkin_paths
 
+
+    def get(my, key):
+        return my.input_kwargs.get(key)
 
 
 
@@ -513,6 +545,8 @@ class WatchDropFolderTask(SchedulerTask):
             thread.daemon = True
             thread.start()
 
+            #print "count: ", threading.active_count()
+
 
 
     def execute(my):
@@ -523,11 +557,10 @@ class WatchDropFolderTask(SchedulerTask):
             return
 
 
-        # Start check-in thread
-        
+        # Start action thread
         checkin = WatchFolderFileActionThread(
                 task=my,
-                )
+        )
         checkin.start()
 
         # execute and react based on a loop every second
@@ -577,6 +610,10 @@ class WatchDropFolderTask(SchedulerTask):
         parser.add_option("-s", "--search_type", dest="search_type", help="Define search_type.")
         parser.add_option("-P", "--process", dest="process", help="Define process.")
         parser.add_option("-S", "--script_path",dest="script_path", help="Define script_path.")
+
+        parser.add_option("-x", "--site",dest="site", help="Define site.")
+
+        parser.add_option("-c", "--handler",dest="handler", help="Define Custom Handler Class.")
         (options, args) = parser.parse_args()
 
         
@@ -586,7 +623,8 @@ class WatchDropFolderTask(SchedulerTask):
         if options.project != None :
             project_code= options.project
         else:
-            project_code= 'jobs'
+            raise Exception("No project specified")
+
 
         if options.drop_path!=None :
             drop_path= options.drop_path
@@ -600,7 +638,8 @@ class WatchDropFolderTask(SchedulerTask):
         if options.search_type!=None :
             search_type = options.search_type
         else:
-            search_type = 'jobs/media'
+            search_type = None
+
 
         if options.process!=None :
             process = options.process
@@ -610,13 +649,23 @@ class WatchDropFolderTask(SchedulerTask):
         if options.script_path!=None :
             script_path = options.script_path
         else:
-            script_path="None"
+            script_path = None
           
+        if options.site != None:
+            site = options.site
+        else:
+            site = None
+
+        if options.handler != None:
+            handler = options.handler
+        else:
+            handler = None
+
+        Batch(project_code=project_code, site=site)
 
 
 
-
-        task = WatchDropFolderTask(base_dir=drop_path, project_code=project_code,search_type=search_type, process=process,script_path=script_path)
+        task = WatchDropFolderTask(base_dir=drop_path, site=site, project_code=project_code,search_type=search_type, process=process,script_path=script_path, handler=handler)
         
         scheduler = Scheduler.get()
         scheduler.add_single_task(task, delay=1)
@@ -625,7 +674,6 @@ class WatchDropFolderTask(SchedulerTask):
     start = classmethod(start)
 
 if __name__ == '__main__':
-    Batch()
     WatchDropFolderTask.start()
     while 1:
         try:

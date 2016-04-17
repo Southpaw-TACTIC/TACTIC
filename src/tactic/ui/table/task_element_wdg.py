@@ -1695,8 +1695,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
     def get_num_complete(my, sobject, related_search_type, related_process, scope, related_pipeline_code=None):
 
         complete = my.get_complete(sobject, related_search_type, related_process, scope, related_pipeline_code=None)
-        if related_process == "asset":
-            print "complete: ", complete
 
         num_complete = 0
         for key, value in complete.items():
@@ -1886,32 +1884,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 return;
  
-
-
-                var class_name = 'tactic.ui.panel.ViewPanelWdg';
-                if (bvr.scope == "global") {
-                    var expression = "@SOBJECT("+ bvr.related_type + ")";
-                }
-                else {
-                    var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
-                }
-                var kwargs = {
-                    search_type: bvr.related_type,
-                    search_keys: bvr.search_keys,
-                    //expression: expression,
-                    element_names: 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
-                    show_shelf: false,
-                }
-                var server = TacticServerStub.get();
-                var sobject = server.get_by_code(bvr.search_type, bvr.code);
-                spt.tab.set_main_body_tab();
-                var name = sobject.name;
-                if (!name) {
-                    name = sobject.code;
-                }
-                name = "Related: " + name
-                var title = name;
-                spt.tab.add_new(name, title, class_name, kwargs);
                 '''
             } )
 
@@ -2789,6 +2761,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 __all__.append("RelatedTaskWdg")
 class RelatedTaskWdg(BaseTableElementWdg):
+    '''display tasks related to a search type.  This is displayed when
+    a progress node is clicked in TaskStatusEleemnt'''
+
 
     def get_display(my):
 
@@ -2801,15 +2776,16 @@ class RelatedTaskWdg(BaseTableElementWdg):
         title_wdg.add("Related Tasks")
         title_wdg.add_style("font-size: 25px")
 
-        desc_wdg = DivWdg()
-        desc_wdg.add("All the tasks related to !!!'")
-        top.add(desc_wdg)
-
-        top.add("<hr/>")
 
 
         related_type = my.kwargs.get("related_type")
         search_keys = my.kwargs.get("search_keys")
+
+        #desc_wdg = DivWdg()
+        #desc_wdg.add("")
+        #top.add(desc_wdg)
+
+        top.add("<hr/>")
 
 
         class_name = 'tactic.ui.table.RelatedTaskWdg'
