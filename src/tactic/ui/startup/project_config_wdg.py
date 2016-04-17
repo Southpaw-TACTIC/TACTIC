@@ -960,7 +960,7 @@ class UserPanelWdg(BaseRefreshWdg):
         panel = ViewPanelWdg(search_type='sthpw/login',view=view,show_insert='false',\
             show_gear='false', show_select='false', height='700', expression=expr,\
             simple_search_view='simple_manage_filter', show_column_manager='false',\
-            show_layout_switcher='false', show_expand='false')
+            show_layout_switcher='false', show_expand='false', show_help='false')
         div.add(panel)
         div.add_style('margin-top', '4px')
         
