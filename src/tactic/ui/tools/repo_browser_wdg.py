@@ -120,7 +120,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search.set_offset(0)
             else:
                 search = Search(search_type)
-       
+      
+
         is_refresh = my.kwargs.get("is_refresh")
         
         file_system_edit = my.kwargs.get("file_system_edit")
@@ -246,7 +247,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             keywords=keywords,
             search_keys=search_keys,
             search=search,
-            parent_key=parent_key
+            parent_key=parent_key,
         )
         content_div.add(dir_list)
 
@@ -287,7 +288,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 view='table',
                 dirname=view_dir,
                 basename="",
-                expression=expression
+                expression=expression,
+
             )
             outer_div.add(widget)
         else:
@@ -1671,7 +1673,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
                     handler_kwargs: handler_kwargs,
-                    folder_state: folder_state
+                    folder_state: folder_state,
                 };
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
