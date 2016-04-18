@@ -2804,6 +2804,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '21'
         }, 
 
+        "show_help": {
+            'description': 'Determine whether or not to display the help button in shelf',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '22'
+        },
+
 
         "link": {
             'description': "Definition from a link",
@@ -2856,7 +2864,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'top|bottom',
             'order' : 20,
             'category': 'Display'
-
         }
 
     }
@@ -3186,6 +3193,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = my.kwargs.get("show_gear")
         show_expand = my.kwargs.get("show_expand")
         show_shelf = my.kwargs.get("show_shelf")
+        show_help = my.kwargs.get("show_help")
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
         expression = my.kwargs.get("expression")
@@ -3245,6 +3253,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_gear": show_gear,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
+            "show_help" : show_help,
             "search_key": search_key,
             "parent_key": parent_key,
             "state": my.state,
