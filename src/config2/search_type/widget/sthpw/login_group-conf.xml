@@ -98,7 +98,7 @@
 </startup>
 
 
-  
+<!--
 <simple_search>
     <element name="hide_other_projects">
         <display class="tactic.ui.filter.ExpressionFilterElementWdg">
@@ -106,7 +106,7 @@
         </display>
     </element>
 </simple_search>
-
+-->
 
 
 <permissions>
