@@ -461,12 +461,10 @@ class DirListWdg(BaseRefreshWdg):
         top.add_attr("spt_search_types", "|".join(search_types) )
 
 
-
         # This is the package that gets passed around
         core_handler_kwargs = {
             'base_dir': my.base_dir,
             'root_dir': my.root_dir,
-
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
@@ -540,21 +538,34 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_basename", item)
 
         path = "%s/%s" % (dir, item)
+ 
+        # Dynamic loading of swap content
+        dynamic = my.kwargs.get("dynamic")
+        if dynamic in ["true", "True", True]:
+            dynamic = True
+        else:
+            dynamic = False
+ 
+        if dynamic:
+            div.add_class("spt_dynamic")
+        
+        # Swap display will be set off when opened
+        if dynamic:
+            swap_open = False
+        else:
+            swap_open = is_open
 
         from pyasm.widget import SwapDisplayWdg
-        swap = SwapDisplayWdg.get_triangle_wdg(is_open=is_open)
+        swap = SwapDisplayWdg.get_triangle_wdg(is_open=swap_open)
         div.add(swap)
 
         swap.add_style("margin-right: -7px")
         swap.add_class("spt_dir_swap")
         swap.add_style("float: left")
-
-        #if is_open:
-        #    swap.set_off()
-
+ 
+        # FIXME: my.base_dir = dir
         reldir = dir.replace(my.base_dir, "")
         reldir = reldir.lstrip("/")
-
         if reldir:
             reldir = reldir + "/" + item
         else:
@@ -564,15 +575,6 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_dir", path)
         div.add_attr("spt_root_dir", my.root_dir)
 
-        # Dynamic loading of swap content
-        dynamic = my.kwargs.get("dynamic")
-        if dynamic in ["true", "True", True]:
-            dynamic = True
-        else:
-            dynamic = False
-
-        if dynamic:
-            div.add_class("spt_dynamic")
         
 
 
@@ -580,8 +582,9 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_handler_class", class_path)
         div.add_attr("spt_level", my.level+1)
 
-
-        swap_action = '''
+        swap_action = my.get_swap_action()
+        if not swap_action:
+            swap_action = r'''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext(".spt_dir_content");
 
@@ -693,14 +696,13 @@ class DirListWdg(BaseRefreshWdg):
         folder_state = items.join("|");
         folder_state_el.value = folder_state;
 
-        '''%(jsondumps(my.handler_kwargs))
-
+        ''' % (jsondumps(my.handler_kwargs))
 
         swap.add_action_script(swap_action)
 
 
-        # open the first folder
-        if dynamic and my.get_depth() == 0:
+        # Open if is_open or it is the first folder
+        if dynamic and (is_open or my.get_depth() == 0):
             swap.get_widget("div1").add_behavior( {
                 'type': 'load',
                 'cbjs_action': '''
@@ -765,10 +767,23 @@ class DirListWdg(BaseRefreshWdg):
         else:
             div.add_class("spt_dir")
             my.handle_dir_div(div, dir, item)
+       
+
+        view_indicator = my.get_view_indicator(dir, item)
+        if view_indicator:
+            div.add(view_indicator)
+
+
         div.add("<br clear='all'/>")
 
         return div
 
+    def get_view_indicator(my, dir, basename):
+        '''Indicator used in tactic.ui.tools.RepoBrowserWdg'''
+        return None
+
+    def get_swap_action(my):
+        return None
 
     def get_info(my, dirname, basename):
         location = my.kwargs.get("location")
@@ -861,6 +876,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def handle_item_div(my, item_div, dirname, basename):
+ 
         path = "%s/%s" % (dirname, basename)
         if my.info.get("file_type") == 'missing':
             icon_string = IconWdg.DELETE
@@ -891,6 +907,12 @@ class DirListWdg(BaseRefreshWdg):
         #checkbox.add_class("spt_select")
         #checkbox.add_style("float: right")
         #item_div.add(checkbox)
+
+
+        view_indicator = my.get_view_indicator(dirname, basename)
+        if view_indicator:
+            item_div.add(view_indicator)
+
 
         item_div.add("<br clear='all'/>")
 
@@ -1171,7 +1193,8 @@ class DirListPathHandler(BaseRefreshWdg):
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
             #handler_kwargs['search_type'] = my.kwargs.get("search_type")
             handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
-
+            handler_kwargs['folder_state'] = my.kwargs.get("folder_state")
+            
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
 
 
@@ -1303,6 +1326,7 @@ class DirListPathHandler(BaseRefreshWdg):
                 if basename == '.versions':
                     xis_open = False
                 else:
+
                     web = WebContainer.get_web()
                     folder_state = web.get_form_value("folder_state")
                     if not folder_state:
@@ -1311,10 +1335,14 @@ class DirListPathHandler(BaseRefreshWdg):
                         folder_state = folder_state.split("|")
                     else:
                         folder_state = []
-
-
-
+                    
                     rel_dir = path.replace(base_dir + "/", "").rstrip("/")
+
+                    # The repo_browser stores dir in folder_state relative to
+                    # asset_base_dir.
+                    asset_base_dir = Environment.get_asset_dir()
+                    rel_dir2 = os.path.relpath(path, asset_base_dir)   
+                    
                     if not folder_state:
                         if open_depth != -1 and level < open_depth:
                             xis_open = True
@@ -1322,12 +1350,12 @@ class DirListPathHandler(BaseRefreshWdg):
                             xis_open = all_open
                     elif rel_dir in folder_state:
                         xis_open = True
+                    elif rel_dir2 in folder_state:
+                        xis_open = True
                     else:
                         xis_open = False
-
-
+                    
                 # get the level_div and add the directory to it
-
                 level_divs = level_divs[:level+1]
                 # put some protection here so that there is minimum level
                 if not level_divs:
@@ -2025,8 +2053,7 @@ class IngestCmd(Command):
         # set the snapshot code
         snapshot_code = snapshot.get_value("code")
         file.set_value("snapshot_code", snapshot_code)
-        file.commit()
-        
+        file.commit() 
 
 
 
