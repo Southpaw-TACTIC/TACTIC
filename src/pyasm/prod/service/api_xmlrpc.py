@@ -3415,12 +3415,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         dir = auto_dir
 
 
-
-            upload_path = "%s/%s" % (dir, filename)
-            old_path = '%s/%s' %(dir, old_filename)
-            # the upload logic may have already done the conversion
-            if filename != old_filename and os.path.exists(old_path):
-                shutil.move(old_path, '%s/%s' %(dir, filename))
+            if mode == "uploaded":
+                upload_path = file_path
+            else:
+                upload_path = "%s/%s" % (dir, filename)
+                old_path = '%s/%s' %(dir, old_filename)
+                # the upload logic may have already done the conversion
+                if filename != old_filename and os.path.exists(old_path):
+                    shutil.move(old_path, '%s/%s' %(dir, filename))
 
         file_paths = [upload_path]
         file_types = [file_type]
@@ -3469,9 +3471,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'checkin_type': checkin_type, 'version': version,
             'process': process
         }
-
+        print "Checkin args and kwargs", checkin_args, checkin_kwargs
         checkin = Common.create_from_class_path(checkin_cls, checkin_args, checkin_kwargs)
-
+        
 
         checkin.execute()
 

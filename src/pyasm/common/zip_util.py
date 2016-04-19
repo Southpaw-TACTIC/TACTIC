@@ -216,6 +216,7 @@ class ZipUtil(object):
 
 def get_file_name(file_name):
 
+    """
     # depending how the file is uploaded. If it's uploaded thru Python,
     # it has been JSON dumped as unicode code points, so this decode
     # step would be necessary
@@ -229,8 +230,10 @@ def get_file_name(file_name):
 
     # Not sure if this is really needed anymore
     #file_name = File.get_filesystem_name(file_name)
+    return filename
+    """
 
-    return file_name
+    return unicode(file_name.decode("utf-8"))
 
 
 if __name__ == '__main__':
