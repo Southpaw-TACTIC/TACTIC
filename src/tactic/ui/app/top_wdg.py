@@ -1129,12 +1129,12 @@ class SitePage(AppServer):
 
     def get_top_wdg(my):
         ''' A custom widget can replace TopWdg per custom URL or per project.
-         1. If a custom url specifies a top class through top attribute, 
+         1. If a custom url specifies a top class through the top_wdg_cls attribute, 
             then this class is used.
          2. If no custom url is specified, and a project top class is specified
             through the ProjectSetting key top_wdg_cls, this class is used 
             except for TACTIC admin pages.
-         3. The default widget used is TopWdg.'''
+         3. The default widget used is tactic.ui.app.TopWdg.'''
          
         top_wdg_cls = None
        
@@ -1170,7 +1170,7 @@ class SitePage(AppServer):
                 top_wdg_cls = ProjectSetting.get_value_by_key("top_wdg_cls")
         
         if top_wdg_cls:
-                my.top = Common.create_from_class_path(top_wdg_cls)
+            my.top = Common.create_from_class_path(top_wdg_cls, {}, {'hash': my.hash})
         else:
             from tactic.ui.app import TopWdg
             my.top = TopWdg(hash=my.hash)
