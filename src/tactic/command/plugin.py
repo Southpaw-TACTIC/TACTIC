@@ -17,7 +17,7 @@ import tacticenv
 
 from pyasm.common import Xml, Config, TacticException, Environment, jsonloads, ZipUtil
 from pyasm.biz import Project, Schema
-from pyasm.search import Search, SearchType, TableSchemaDumper, TableDataDumper, DbContainer, Insert, DropTable, CreateTable, SearchKey, TableUndo, SqlException, SearchException
+from pyasm.search import Search, SearchType, TableSchemaDumper, TableDataDumper, DbContainer, Insert, DropTable, CreateTable, CreateView, SearchKey, TableUndo, SqlException, SearchException
 from pyasm.web import WebContainer
 from pyasm.command import Command, DatabaseAction
 

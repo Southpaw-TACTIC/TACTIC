@@ -25,7 +25,7 @@ from pyasm.widget import WidgetConfig, WidgetConfigView
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import TabWdg, Menu, MenuItem
 from tactic.ui.tools import PipelineCanvasWdg
-from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
+from tactic.ui.widget import SingleButtonWdg, IconButtonWdg, ActionButtonWdg
 
 
 class SObjectDetailWdg(BaseRefreshWdg):
@@ -1033,6 +1033,26 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         #sobject_info_wdg = my.get_sobject_info_wdg()
         #sobject_info_wdg.add_style("width: 100%")
         #td.add(sobject_info_wdg)
+
+
+        edit_wdg = ActionButtonWdg(title="Edit")
+        td.add(edit_wdg)
+        edit_wdg.add_behavior( {
+            'type': 'click',
+            'search_key': search_key,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var kwargs = {
+                search_key: bvr.search_key
+            }
+
+            spt.panel.load_popup("Edit", class_name, kwargs);
+
+            '''
+        } )
+
+        edit_wdg.add_style("float: right")
+
 
         title_wdg = DivWdg()
         td.add(title_wdg)

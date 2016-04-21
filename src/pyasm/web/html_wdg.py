@@ -278,6 +278,13 @@ class HtmlElement(Widget):
         my.styles[name] = value
 
 
+    def get_style(my, name):
+        if my.styles:
+            return my.styles.get(name) or ""
+        else:
+            return ""
+
+
     def add_styles(my, styles):
         if type(styles) == str:
             styles_list = styles.split(";")

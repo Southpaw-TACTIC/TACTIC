@@ -600,7 +600,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                 search_key: search_key,
                 tab_element_names: bvr.detail_element_names
             };
-            spt.tab.add_new(search_code, name, class_name, kwargs);
+
+            var element_name = search_code;
+            spt.tab.add_new(element_name, name, class_name, kwargs);
             '''
         } )
 
@@ -1703,11 +1705,16 @@ spt.tile_layout.image_drag_setup = function(evt, bvr, mouse_411) {
     bvr.dy = 10;
     bvr.drop_code = 'DROP_ROW';
     bvr.accepted_search_type = bvr.search_type;
+    bvr.mouse_start = { curr_x: mouse_411.curr_x, curr_y: mouse_411.curr_y };
 
 
 }
 
 spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
+
+    if ( Math.abs(bvr.mouse_start.curr_x-mouse_411.curr_x) < 3 && Math.abs(bvr.mouse_start.curr_y-mouse_411.curr_y) < 3) {
+        return;
+    }
 
     spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
     var target_el = spt.get_event_target(evt);

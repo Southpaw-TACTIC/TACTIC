@@ -2804,6 +2804,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '21'
         }, 
 
+        "show_help": {
+            'description': 'Determine whether or not to display the help button in shelf',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '22'
+        },
+
 
         "link": {
             'description': "Definition from a link",
@@ -2856,7 +2864,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'top|bottom',
             'order' : 20,
             'category': 'Display'
-
         }
 
     }
@@ -3033,6 +3040,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         inline_search = "true"
         search = None
         use_last_search = my.kwargs.get('use_last_search')
+        if use_last_search in ['false', "False"]:
+            use_last_search = False
+        else:
+            use_last_search = True
         
         show_search = my.kwargs.get('show_search')
         if show_search in [False,'false']:
@@ -3097,13 +3108,18 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_config = my.kwargs.get('simple_search_config')
         simple_search_mode = my.kwargs.get("mode")
+        custom_simple_search_view = None
+
         if not simple_search_mode:
             simple_search_mode = my.kwargs.get("simple_search_mode")
 
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             custom_simple_search_view = simple_search_view
+        elif simple_search_config:
+            search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
         else:
             # add a custom search class
             search_class = my.kwargs.get('search_class')
@@ -3119,6 +3135,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             if my.kwargs.get("keywords"):
                 kwargs['keywords'] = my.kwargs.get("keywords")
+
+            if simple_search_config:
+                kwargs['search_config'] = simple_search_config
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
             kwargs['columns'] = my.kwargs.get("simple_search_columns")
@@ -3174,6 +3193,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = my.kwargs.get("show_gear")
         show_expand = my.kwargs.get("show_expand")
         show_shelf = my.kwargs.get("show_shelf")
+        show_help = my.kwargs.get("show_help")
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
         expression = my.kwargs.get("expression")
@@ -3233,6 +3253,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_gear": show_gear,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
+            "show_help" : show_help,
             "search_key": search_key,
             "parent_key": parent_key,
             "state": my.state,
@@ -3246,6 +3267,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "element_names":  my.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
+            "simple_search_config": simple_search_config,
             "simple_search_mode": simple_search_mode,
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
@@ -3291,6 +3313,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['gallery_align'] = my.kwargs.get("gallery_align")
             kwargs['script_path'] = my.kwargs.get("script_path")
             kwargs['script'] = my.kwargs.get("script")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['hide_checkbox'] = my.kwargs.get("hide_checkbox")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3316,6 +3340,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         elif layout == 'browser':
             from tool_layout_wdg import RepoBrowserLayoutWdg
+            kwargs['parent_mode'] = my.kwargs.get('parent_mode')
+            kwargs['file_system_edit'] = my.kwargs.get('file_system_edit')
             layout_table = RepoBrowserLayoutWdg(**kwargs)
 
         elif layout == 'card':

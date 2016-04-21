@@ -191,7 +191,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "order": '14',
             'category': 'Display'
         },
- 
+
  
 
         "temp" : {
@@ -220,8 +220,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'category': 'Display',
             'order': '16'
-        }
+        },
         
+        "show_help": {
+            'description': 'Determine whether or not to display the help button in shelf',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '17'
+        }
 
 
     } 
@@ -3422,6 +3429,15 @@ spt.table.get_selected_codes = function() {
         codes.push(tmps[1]);
     }
     return codes;
+}
+
+
+spt.table.hide_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    for ( var i = 0; i < rows.length; i++ ) {
+        rows[i].setStyle("display", "none");
+    }
+    spt.table.unselect_all();
 }
 
 

@@ -612,8 +612,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_config = my.kwargs.get('simple_search_config')
         if simple_search_view:
             my.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
+        elif simple_search_config:
+            my.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
+            simple_search_view = None
         else:
             # add a custom search class
             my.search_class = my.kwargs.get('search_class')
@@ -627,6 +631,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "search_view": simple_search_view,
                 "keywords": my.kwargs.get("keywords")
             }
+
+            if simple_search_config:
+                kwargs['search_config'] = simple_search_config
+
             simple_search_wdg = Common.create_from_class_path(my.search_class, kwargs=kwargs)
             simple_search_wdg.alter_search(search)
 
@@ -1117,24 +1125,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 } )
             expand_wdg = button
 
+        show_help = my.kwargs.get("show_help")
+        help_wdg = None
 
-        help_alias = my.get_alias_for_search_type(my.search_type)
-        from tactic.ui.app import HelpButtonWdg
-        if HelpButtonWdg.exists():
-            help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
-            help_wdg.add_style("margin-top: -2px")
-        else:
-            help_wdg = None
-
+        if my.kwargs.get("show_help") not in ['false', False]:
+            help_alias = my.get_alias_for_search_type(my.search_type)
+            from tactic.ui.app import HelpButtonWdg
+            if HelpButtonWdg.exists():
+                help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
+                help_wdg.add_style("margin-top: -2px")
 
         wdg_list = []
-
-
-
-
-
-
-
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
@@ -1159,7 +1160,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: -6px")
+            if show_keyword_search:
+                button_div.add_style("margin-left: -6px")
+            else:
+                button_div.add_style("margin-left: 6px")
             wdg_list.append({'wdg': button_div})
 
 
@@ -1267,7 +1271,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if last_widget and last_widget.has_class("spt_spacing") and widget.has_class("spt_spacing"):
                 continue
 
-            widget.add_style("display: inline-block")
+            if widget.get_style("display") != "none":
+                widget.add_style("display: inline-block")
             widget.add_style("vertical-align: middle")
             xx.add(widget)
             last_widget = widget
@@ -1759,7 +1764,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             icon = IconWdg( "Filters enabled", IconWdg.GREEN_LIGHT )
             my.filter_num_div.add("&nbsp;"*4)
             my.filter_num_div.add(icon)
-            my.filter_num_div.add("%s filter(s)" % num_filters)
+            if num_filters > 1:
+                my.filter_num_div.add("%s filters" % num_filters)
+            else:
+                my.filter_num_div.add("%s filter" % num_filters)
+
             if not num_filters:
                 my.filter_num_div.add_style("display: none")
             else:

@@ -292,7 +292,7 @@
         <action class="LoginAction"/>
     </element>
  
-   <element name="upn">
+   <element name="upn" title="User Principal Name">
     </element>
 
     <element name="authentication">
@@ -325,14 +325,14 @@
     <element name="email"/>
 
     <element name="department"/>
-
+    <!--
     <element name="license_type">
       <display class="SelectWdg">
         <empty>true</empty>
         <values>disabled|user</values>
       </display>
     </element>
-
+    -->
 </edit>
 
 <edit_account layout="EditWdg">
@@ -375,7 +375,7 @@
 </edit_account>
 
 
-<insert>
+<insert num_columns="1">
     <element name="thumb">
         <display class="pyasm.widget.ThumbInputWdg"/>
         <action class="NullAction"/>
