@@ -1125,24 +1125,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 } )
             expand_wdg = button
 
+        show_help = my.kwargs.get("show_help")
+        help_wdg = None
 
-        help_alias = my.get_alias_for_search_type(my.search_type)
-        from tactic.ui.app import HelpButtonWdg
-        if HelpButtonWdg.exists():
-            help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
-            help_wdg.add_style("margin-top: -2px")
-        else:
-            help_wdg = None
-
+        if my.kwargs.get("show_help") not in ['false', False]:
+            help_alias = my.get_alias_for_search_type(my.search_type)
+            from tactic.ui.app import HelpButtonWdg
+            if HelpButtonWdg.exists():
+                help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
+                help_wdg.add_style("margin-top: -2px")
 
         wdg_list = []
-
-
-
-
-
-
-
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
