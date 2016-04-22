@@ -3415,7 +3415,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         dir = auto_dir
 
 
-            if mode == "uploaded":
+            if mode == "uploaded" and file_path.startswith(dir):
                 upload_path = file_path
             else:
                 upload_path = "%s/%s" % (dir, filename)
