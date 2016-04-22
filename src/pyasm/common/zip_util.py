@@ -156,13 +156,13 @@ class ZipUtil(object):
         for file_path in name_list:
             
             # Decode the file_path
-            unicode_path = get_file_name(file_path)
+            encoded_path = get_file_name(file_path)
             
             # Check if file is a directory
-            path, ext = os.path.splitext(unicode_path)
+            path, ext = os.path.splitext(encoded_path)
             if not ext:
-                if not os.path.exists(unicode_path):
-                    os.makedirs(unicode_path)
+                if not os.path.exists(encoded_path):
+                    os.makedirs(encoded_path)
                 continue
             
             try:
@@ -170,8 +170,7 @@ class ZipUtil(object):
             except KeyError:
                 print 'ERROR: Did not find %s in zip file' % file_path
             else:
-                new_path = "%s/%s" % (base_dir,unicode_path)
-                print "Writing data to %s" % new_path
+                new_path = "%s/%s" % (base_dir, encoded_path)
                 new_dir = os.path.dirname(new_path)
                 if not os.path.exists(new_dir):
                     os.makedirs(new_dir)
@@ -214,12 +213,15 @@ class ZipUtil(object):
         print
     print_info = classmethod(print_info)
 
-def get_file_name(file_name):
 
-    """
-    # depending how the file is uploaded. If it's uploaded thru Python,
-    # it has been JSON dumped as unicode code points, so this decode
-    # step would be necessary
+def get_file_name(file_name):
+    '''This emulates a decoding and encoding of a file
+    name when uploaded through upload_multipart.py'''
+
+    import sys
+    if sys.stdout.encoding:
+        file_name = file_name.decode(sys.stdout.encoding)
+
     try:
         file_name = file_name.decode('unicode-escape')
     except UnicodeEncodeError, e:
@@ -228,12 +230,7 @@ def get_file_name(file_name):
         pass
     file_name = file_name.replace("\\", "/")
 
-    # Not sure if this is really needed anymore
-    #file_name = File.get_filesystem_name(file_name)
-    return filename
-    """
-
-    return unicode(file_name.decode("utf-8"))
+    return file_name
 
 
 if __name__ == '__main__':

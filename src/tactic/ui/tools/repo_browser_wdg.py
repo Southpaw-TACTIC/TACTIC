@@ -1,4 +1,4 @@
-###########################################################
+:##########################################################
 #
 # Copyright (c) 2005-2008, Southpaw Technology
 #                     All Rights Reserved
@@ -684,7 +684,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # add dirnames if they have sobject files in them
         #if not show_no_sobject_folders:
         if os.path.exists(base_dir) and os.path.isdir(base_dir):
-            dirnames = os.listdir(base_dir)
+            dirnames = os.listdir(unicode(base_dir))
             for dirname in dirnames:
                 subdir = "%s/%s" % (base_dir, dirname)
                 if not os.path.isdir(subdir):
