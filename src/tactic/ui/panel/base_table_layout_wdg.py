@@ -2518,7 +2518,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         return { 'menu_tag_suffix': 'MAIN', 'width': 200, 'opt_spec_list': menu_data, 'allow_icons': False,
-                 'setup_cbfn':  'spt.dg_table.smenu_ctx.setup_cbk' }
+                 'setup_cbfn':  'spt.smenu_ctx.setup_cbk' }
 
 
 
