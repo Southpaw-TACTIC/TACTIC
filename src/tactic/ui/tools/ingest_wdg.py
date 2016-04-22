@@ -455,16 +455,18 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
-        help_button_wdg = DivWdg()
-        header_div.add(help_button_wdg)
-        help_button_wdg.add_styles("float: right; margin-top: 11px;")
-        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
-        help_button_wdg.add(help_button)
+        show_help = my.kwargs.get("show_help")
+        if my.kwargs.get("show_help") not in ['false', False]:
+            help_button_wdg = DivWdg()
+            header_div.add(help_button_wdg)
+            help_button_wdg.add_styles("float: right; margin-top: 11px;")
+            help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+            help_button_wdg.add(help_button)
 
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
-        } )
+            help_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+            } )
 
         div.add("<hr style='margin-right: 4px'/>")
 

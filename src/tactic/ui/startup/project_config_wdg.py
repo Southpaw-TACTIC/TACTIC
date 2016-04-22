@@ -812,6 +812,12 @@ class UserPanelWdg(BaseRefreshWdg):
         show_search_limit = my.kwargs.get("show_search_limit")
         show_help = my.kwargs.get("show_help")
 
+        if not show_search_limit:
+            show_search_limit = True
+
+        if not show_help:
+            show_help = True
+
         project = Project.get().get_code()
 
         if filter_mode == "project":
