@@ -131,7 +131,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         right = table.add_cell()
         right.add_border()
 
-        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event)
+        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event, show_help=my.kwargs.get('show_help'))
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -3696,16 +3696,17 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg.add(button_div)
         """
 
-        help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
-        shelf_wdg.add(help_button)
-        help_button.add_style("padding-top: 3px")
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.help.set_top();
-            spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
-            '''
-        } )
+        if my.kwargs.get("show_help") not in ['false', False]:
+            help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
+            shelf_wdg.add(help_button)
+            help_button.add_style("padding-top: 3px")
+            help_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.help.set_top();
+                spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
+                '''
+            } )
 
 
 
