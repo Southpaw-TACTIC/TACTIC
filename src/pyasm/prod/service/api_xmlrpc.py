@@ -2764,8 +2764,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     pass
         
         from pyasm.security import Site
-        site = Site.get()
-        if site:
+        site = Site.get_site()
+        if site and site != "default":
             data['asset_base_dir'] = site.get_asset_dir(alias="default")
             data['web_base_dir'] = site.get_web_dir(alias="default")
        
