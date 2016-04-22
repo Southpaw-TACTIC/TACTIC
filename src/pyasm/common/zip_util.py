@@ -157,12 +157,13 @@ class ZipUtil(object):
             
             # Decode the file_path
             encoded_path = get_file_name(file_path)
+            new_path = "%s/%s" % (base_dir, encoded_path)
             
             # Check if file is a directory
             path, ext = os.path.splitext(encoded_path)
             if not ext:
-                if not os.path.exists(encoded_path):
-                    os.makedirs(encoded_path)
+                if not os.path.exists(new_path):
+                    os.makedirs(new_path)
                 continue
             
             try:
@@ -170,7 +171,6 @@ class ZipUtil(object):
             except KeyError:
                 print 'ERROR: Did not find %s in zip file' % file_path
             else:
-                new_path = "%s/%s" % (base_dir, encoded_path)
                 new_dir = os.path.dirname(new_path)
                 if not os.path.exists(new_dir):
                     os.makedirs(new_dir)
