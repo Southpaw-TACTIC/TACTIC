@@ -1523,8 +1523,7 @@ class IngestUploadCmd(Command):
             upload_dir = Environment.get_upload_dir()
             base_dir = upload_dir
        
-        absolute_path = my.kwargs.get("absolute_path")
-
+        
         context_mode = my.kwargs.get("context_mode")
         if not context_mode:
             context_mode = "case_insensitive"
@@ -1639,7 +1638,6 @@ class IngestUploadCmd(Command):
 
 
             if unzip_mode in ["true", True] and filename.endswith(".zip"):
-                print "ZIP archive detected. Extracting..."
                 from pyasm.common import ZipUtil
 
                 unzip_dir = Environment.get_upload_dir()
@@ -1648,7 +1646,6 @@ class IngestUploadCmd(Command):
 
                 zip_path = "%s/%s" % (base_dir, filename)
                 paths = ZipUtil.extract(zip_path, base_dir=base_dir, relative=True)
-                print "Extracted from ZIP archive:", paths
               
                 new_kwargs = my.kwargs.copy()
                 new_kwargs['filenames'] = paths
@@ -1772,10 +1769,9 @@ class IngestUploadCmd(Command):
                 print "WARNING: ", e
             """
 
-            print file_path       
             if not os.path.exists(file_path):
-                #raise Exception("Path [%s] does not exist" % file_path)
-                print "WARNING: Path [%s] does not exist" % file_path
+                raise Exception("Path [%s] does not exist" % file_path)
+            
             # get the metadata from this image
             if SearchType.column_exists(search_type, "relative_dir"):
                 if category and category not in ['none', None]:
@@ -1859,7 +1855,8 @@ class IngestUploadCmd(Command):
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (context, filename)
+                basename = os.path.basename(filename)
+                context = "%s/%s" % (context, basename)
 
             if context_mode == "case_insensitive":
                 context = context.lower()                
@@ -1904,7 +1901,6 @@ class IngestUploadCmd(Command):
                     checkin = FileCheckin(sobject, file_path, context=context, process=process)
                     checkin.execute()
                 else:
-                    print "checking in: ", filename
                     server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
 
 
