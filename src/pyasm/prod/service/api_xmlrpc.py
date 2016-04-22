@@ -3471,7 +3471,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             'checkin_type': checkin_type, 'version': version,
             'process': process
         }
-        print "Checkin args and kwargs", checkin_args, checkin_kwargs
+        
         checkin = Common.create_from_class_path(checkin_cls, checkin_args, checkin_kwargs)
         
 
