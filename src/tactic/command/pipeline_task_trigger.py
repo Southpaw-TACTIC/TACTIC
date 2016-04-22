@@ -373,27 +373,42 @@ class RelatedTaskUpdateTrigger(Trigger):
 
 
 class PipelineTaskCreateTrigger(Trigger):
+    
     def execute(my):
         input = my.get_input()
 
         search_key = input.get("search_key")
         task = Search.get_by_search_key(search_key)
-
-        parent = task.get_parent()
-
+        
         # get the definition of the trigger
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         data = jsonloads(data)
+        
+        # check against source status if present 
+        src_status = data.get("src_status")
+        if src_status:
+            task_status = task.get_value("status")
+            if task_status != src_status:
+                return
 
-        process = data.get("output")
-        description = ""
-
-        # FIXME:
-        # find out if there is already a task of that process
-
-        Task.create(parent, process, description, start_date=None, end_date=None)
-
+        parent = task.get_parent()
+        process_names = data.get("output")
+        
+        # only create new task if another of the same
+        # process does not already exist
+        search = Search("sthpw/task")
+        search.add_filters("process", process_names)
+        search.add_parent_filter(parent)
+        tasks = search.get_sobjects()
+        existing_processes = [x.get_value("process") for x in tasks]
+       
+        for process in process_names:
+            if process in existing_processes:    
+                continue
+            else:
+                Task.create(parent, process, start_date=None, end_date=None)
+          
 
 
 

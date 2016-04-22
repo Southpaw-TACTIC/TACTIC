@@ -421,8 +421,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         if (!event.test(/^checkin/)) {
             values.search_type = search_type;
         }
-
-
+  
         var cbk = content.getAttribute("spt_trigger_add_cbk");
         if (cbk == null || cbk == '') {
             alert("Please select an event and an action");
@@ -1485,6 +1484,7 @@ class TriggerCreateWdg(BaseRefreshWdg):
             outputs_div.add(output_div)
             checkbox = CheckboxWdg("output")
             checkbox.set_option("value", output)
+            checkbox.add_attr("spt_is_multiple", "true")
 
             if output in output_values:
                 checkbox.set_checked()
@@ -1617,7 +1617,7 @@ class TriggerDateCbk(BaseTriggerEditCbk):
 
 
 
-class TriggerCreateCbk(Command):
+class TriggerCreateCbk(BaseTriggerEditCbk):
 
     def get_class_name(my): 
         class_name = 'tactic.command.PipelineTaskCreateTrigger'
@@ -1631,14 +1631,16 @@ class TriggerCreateCbk(Command):
         if isinstance(outputs, basestring):
             outputs = [outputs]
 
-        trigger = my.get_trigger()
-
         data = {
             'output': outputs
         }
-        trigger.set_value("data", jsondumps(data))
-
+        
+        src_status =  my.kwargs.get("src_status")
+        if src_status:
+            data["src_status"] = src_status
+        
         trigger = my.get_trigger()
+        trigger.set_value("data", jsondumps(data))
         trigger.commit()
 
         search_key = SearchKey.get_by_sobject(trigger)
