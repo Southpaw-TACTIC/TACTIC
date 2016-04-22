@@ -982,6 +982,7 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         show_context_menu = my.kwargs.get("show_context_menu")
         show_expand = my.kwargs.get("show_expand")
         show_layout_switcher = my.kwargs.get("show_layout_switcher")
+        show_help = my.kwargs.get("show_help")
 
         if not view:
             view = "startup"
@@ -1022,7 +1023,8 @@ class SecurityGroupListWdg(BaseRefreshWdg):
             show_column_manager=show_column_manager,
             show_context_menu=show_context_menu,
             show_expand=show_expand,
-            show_layout_switcher=show_layout_switcher
+            show_layout_switcher=show_layout_switcher,
+            show_help=show_help
         )
         top.add(layout)
 

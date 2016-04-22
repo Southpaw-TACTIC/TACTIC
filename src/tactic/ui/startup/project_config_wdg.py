@@ -209,6 +209,7 @@ class UserConfigWdg(ProjectConfigWdg):
         show_add = my.kwargs.get("show_add")
         view = my.kwargs.get("view")
         filter_mode = my.kwargs.get("filter_mode")
+        show_search_limit = my.kwargs.get("show_search_limit")
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -225,9 +226,10 @@ class UserConfigWdg(ProjectConfigWdg):
                 <show_add>%s</show_add>
                 <view>%s</view>
                 <filter_mode>%s</filter_mode>
+                <show_search_limit>%s</show_search_limit>
             </display>
         </element>
-          ''' %(show_security, show_add, view, filter_mode))
+          ''' %(show_security, show_add, view, filter_mode, show_search_limit))
 
         config_xml.append('''
         <element name="Group Assignment">
@@ -805,6 +807,11 @@ class UserPanelWdg(BaseRefreshWdg):
     def get_display(my):
 
         filter_mode = my.kwargs.get("filter_mode")
+        show_add = my.kwargs.get("show_add") or True
+        show_security = my.kwargs.get("show_security") or True
+        show_search_limit = my.kwargs.get("show_search_limit") or True
+        show_help = my.kwargs.get("show_help") or True
+
         project = Project.get().get_code()
 
         if filter_mode == "project":
@@ -825,7 +832,6 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div.add_style('width','50%')
         tool_div.add_style('margin-bottom','-4px')
 
-        show_add = my.kwargs.get("show_add")
         if show_add not in ['false', False]:
             button = ActionButtonWdg(title="Add", tip="Add New User")
             button.add_style('align-self: flex-end')
@@ -895,7 +901,6 @@ class UserPanelWdg(BaseRefreshWdg):
             top.add(tool_div)
 
 
-        show_security = my.kwargs.get("show_security")
         if show_security not in ['false', False]:
             button = ActionButtonWdg(title="Security")
             button.add_style('align-self: flex-end')
@@ -960,7 +965,8 @@ class UserPanelWdg(BaseRefreshWdg):
         panel = ViewPanelWdg(search_type='sthpw/login',view=view,show_insert='false',\
             show_gear='false', show_select='false', height='700', expression=expr,\
             simple_search_view='simple_manage_filter', show_column_manager='false',\
-            show_layout_switcher='false', show_expand='false')
+            show_layout_switcher='false', show_expand='false',\
+            show_search_limit=show_search_limit, show_help=show_help)
         div.add(panel)
         div.add_style('margin-top', '4px')
         

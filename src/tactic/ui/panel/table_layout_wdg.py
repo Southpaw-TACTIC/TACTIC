@@ -191,7 +191,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "order": '14',
             'category': 'Display'
         },
- 
+
  
 
         "temp" : {
@@ -220,8 +220,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'category': 'Display',
             'order': '16'
-        }
+        },
         
+        "show_help": {
+            'description': 'Determine whether or not to display the help button in shelf',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '17'
+        }
 
 
     } 
