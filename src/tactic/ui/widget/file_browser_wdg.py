@@ -1341,7 +1341,7 @@ class DirListPathHandler(BaseRefreshWdg):
                     # The repo_browser stores dir in folder_state relative to
                     # asset_base_dir.
                     asset_base_dir = Environment.get_asset_dir()
-                    rel_dir2 = path.replace(asset_base_dir + "/", "").rstrip("/")
+                    rel_dir2 = path.replace("%s/" % asset_base_dir, "").rstrip("/")
 
                     if not folder_state:
                         if open_depth != -1 and level < open_depth:
