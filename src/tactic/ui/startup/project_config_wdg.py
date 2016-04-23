@@ -807,16 +807,10 @@ class UserPanelWdg(BaseRefreshWdg):
     def get_display(my):
 
         filter_mode = my.kwargs.get("filter_mode")
-        show_add = my.kwargs.get("show_add")
-        show_security = my.kwargs.get("show_security")
-        show_search_limit = my.kwargs.get("show_search_limit")
-        show_help = my.kwargs.get("show_help")
-
-        if not show_search_limit:
-            show_search_limit = True
-
-        if not show_help:
-            show_help = True
+        show_add = my.kwargs.get("show_add") or True
+        show_security = my.kwargs.get("show_security") or True
+        show_search_limit = my.kwargs.get("show_search_limit") or True
+        show_help = my.kwargs.get("show_help") or True
 
         project = Project.get().get_code()
 
