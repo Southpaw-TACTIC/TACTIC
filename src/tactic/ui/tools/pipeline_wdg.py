@@ -131,7 +131,9 @@ class PipelineToolWdg(BaseRefreshWdg):
         right = table.add_cell()
         right.add_border()
 
-        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event, show_help=my.kwargs.get('show_help'))
+        show_help = my.kwargs.get('show_help') or True
+
+        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event, show_help=show_help)
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
