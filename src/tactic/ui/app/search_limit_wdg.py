@@ -40,7 +40,7 @@ class SearchLimitWdg(Widget):
         my.refresh_script = 'spt.dg_table.search_cbk(evt, bvr)'
         if my.refresh:
             my.prev_hidden_name = 'Prev'
-            my.next_hidden_name='Next'
+            my.next_hidden_name = 'Next'
         else:
             my.prev_hidden_name = '%s_Prev' %my.label
             my.next_hidden_name = '%s_Next' %my.label
@@ -317,18 +317,27 @@ class SearchLimitWdg(Widget):
             prev.add_style("margin-left: 8px")
             prev.add_style("margin-right: 6px")
             prev.add_style("margin-top: 5px")
-
-            next = SpanWdg( IconButtonWdg(title="Next", icon="BS_CHEVRON_RIGHT" ))
-            next.add_style("margin-left: 6px")
-            next.add_style("margin-top: 5px")
+            hidden_name = my.prev_hidden_name
+            hidden = HiddenWdg(hidden_name, "")
+            prev.add(hidden)
 
             prev.add_behavior( {
                 'type': 'click_up',
-                'cbjs_action': my.refresh_script
+                'cbjs_action': " bvr.src_el.getElement('input[name=%s]').value ='Prev';%s"\
+                    % (hidden_name, my.refresh_script)
             } )
+
+            next = SpanWdg( IconButtonWdg(title="Next", icon="BS_CHEVRON_RIGHT" ) )
+            next.add_style("margin-left: 6px")
+            next.add_style("margin-top: 5px")
+            hidden_name = my.next_hidden_name
+            hidden = HiddenWdg(hidden_name, "")
+            next.add(hidden)
+
             next.add_behavior( {
                 'type': 'click_up',
-                'cbjs_action': my.refresh_script
+                'cbjs_action': " bvr.src_el.getElement('input[name=%s]').value ='Next';%s"\
+                    % (hidden_name, my.refresh_script)
             } )
 
             prev.add_style("float: left")
