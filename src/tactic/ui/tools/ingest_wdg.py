@@ -455,7 +455,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
-        show_help = my.kwargs.get("show_help")
+        show_help = my.kwargs.get("show_help") or True
         if my.kwargs.get("show_help") not in ['false', False]:
             help_button_wdg = DivWdg()
             header_div.add(help_button_wdg)
