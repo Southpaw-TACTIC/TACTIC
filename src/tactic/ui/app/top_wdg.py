@@ -1128,24 +1128,26 @@ class SitePage(AppServer):
 
 
     def get_top_wdg(my):
-
-
-        #if not my.hash and not my.custom_url:
-        #    search = Search("config/url")
-        #    search.add_filter("url", "/index")
-        #    my.custom_url = search.get_sobject()
-
-
-
-        # NOTE: this is not the right place for this, but it allows the
-        # top widget to completely be customized
-
-
-        # if there is a custom url, then handle it separately
+        ''' A custom widget can replace TopWdg per custom URL or per project.
+         1. If a custom url specifies a top class through the top_wdg_cls attribute, 
+            then this class is used.
+         2. If no custom url is specified, and a project top class is specified
+            through the ProjectSetting key top_wdg_cls, this class is used 
+            except for TACTIC admin pages.
+         3. The default widget used is tactic.ui.app.TopWdg.'''
+         
+        top_wdg_cls = None
+       
+        if not my.hash and not my.custom_url:
+            search = Search("config/url")
+            search.add_filter("url", "/index")
+            my.custom_url = search.get_sobject()
+        
         if my.custom_url:
             xml = my.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
+            top_wdg_cls = xml.get_value("element/@top_wdg_cls")
             widget = xml.get_value("element/@widget")
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
@@ -1159,9 +1161,20 @@ class SitePage(AppServer):
                 hash = "/%s" % hash
                 my.top = CustomTopWdg(url=my.custom_url, hash=hash)
                 return my.top
-
-        # This is the default TACTIC html implementation for html
-        my.top = TopWdg(hash=my.hash)
+ 
+        if not top_wdg_cls:
+            if my.hash and my.hash[0] == "admin":
+                pass
+            else:
+                from pyasm.biz import ProjectSetting
+                top_wdg_cls = ProjectSetting.get_value_by_key("top_wdg_cls")
+        
+        if top_wdg_cls:
+            my.top = Common.create_from_class_path(top_wdg_cls, {}, {'hash': my.hash})
+        else:
+            from tactic.ui.app import TopWdg
+            my.top = TopWdg(hash=my.hash)
+        
         return my.top
 
 
