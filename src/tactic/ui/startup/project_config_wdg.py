@@ -209,6 +209,7 @@ class UserConfigWdg(ProjectConfigWdg):
         show_add = my.kwargs.get("show_add")
         view = my.kwargs.get("view")
         filter_mode = my.kwargs.get("filter_mode")
+        show_help = my.kwargs.get("show_help")
         show_search_limit = my.kwargs.get("show_search_limit")
 
         from tactic.ui.container import TabWdg
@@ -226,10 +227,11 @@ class UserConfigWdg(ProjectConfigWdg):
                 <show_add>%s</show_add>
                 <view>%s</view>
                 <filter_mode>%s</filter_mode>
+                <show_help>%s</show_help>
                 <show_search_limit>%s</show_search_limit>
             </display>
         </element>
-          ''' %(show_security, show_add, view, filter_mode, show_search_limit))
+          ''' %(show_security, show_add, view, filter_mode, show_help, show_search_limit))
 
         config_xml.append('''
         <element name="Group Assignment">
