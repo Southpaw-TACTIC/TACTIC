@@ -1022,7 +1022,8 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
 
-
+        expr = "@SOBJECT(%s)" %expr_filter
+        logins = Search.eval(expr)
 
         for i, login in enumerate(logins):
             tr = table.add_row()

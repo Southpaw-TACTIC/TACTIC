@@ -1136,7 +1136,6 @@ class Common(Base):
         'woman': 'women',
         }
 
-    VOWELS = set('aeiou')
 
     def pluralize(cls, singular):
         """Return plural form of given lowercase singular word (English only). Based on
@@ -1168,6 +1167,9 @@ class Common(Base):
         'cars'
 
         """
+
+        VOWELS = set('aeiou')
+
         if singular != singular.lower():
             is_title = True
         else:
