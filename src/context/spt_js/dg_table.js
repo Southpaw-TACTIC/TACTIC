@@ -5809,33 +5809,3 @@ spt.dg_table.add_tasks_cbk = function(evt, bvr) {
 
 */
 
-// ----------------------------------------------------------------------------------------------------------------
-//  Smart Context menu dynamic menu-entry info setup call-backs
-// ----------------------------------------------------------------------------------------------------------------
-//
-spt.dg_table.smenu_ctx = {};
-
-
-spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
-{
-    var el_name = activator_el.getProperty("spt_element_name");
-    if (el_name == null) {
-        el_name = 'no_name';
-    }
-
-    var setup_info = {
-        'is_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_groupable") ),
-        'is_time_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_time_groupable") ),
-        'is_sortable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_sortable") ),
-        'is_searchable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_searchable") ),
-        'element_name' : el_name.substr(0,1).toUpperCase() + el_name.substr(1),
-        'sort_prefix': activator_el.getProperty("spt_widget_sort_prefix"),
-        'has_related' : spt.is_TRUE( activator_el.getProperty("spt_widget_has_related") ),
-    };
-
-
-    return setup_info;
-}
-
-
-
