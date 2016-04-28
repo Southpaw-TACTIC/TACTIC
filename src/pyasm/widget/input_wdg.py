@@ -55,6 +55,9 @@ class BaseInputWdg(HtmlElement):
         my.input_prefix = None
         my.value = ""
         my.options = {}
+        if kwargs:
+            my.options = kwargs
+            my.kwargs = kwargs
         my.options['default'] = ""
         my.options['persist'] = "false"
 
@@ -303,7 +306,11 @@ class BaseInputWdg(HtmlElement):
         values = []
        
         web = WebContainer.get_web()
-
+        if my.has_option('search_key') and not my.get_current_sobject():
+            sobject = SearchKey.get_by_search_key(my.options.get('search_key'))
+            if sobject:
+                my.set_sobjects([sobject])
+        
         # getting the value from CGI depends on whether this is for display
         # of the widget or for getting the current value of this widget.
         cgi_values = web.get_form_values( my.get_input_name() )
@@ -716,7 +723,7 @@ class TextAreaWdg(BaseTextWdg):
     }
 
     def __init__(my,name=None, **kwargs):
-        super(TextAreaWdg,my).__init__(name,"textarea")
+        super(TextAreaWdg,my).__init__(name,"textarea", **kwargs)
         
         my.kwargs = kwargs
         # on OSX rows and cols flag are not respected
@@ -1057,6 +1064,7 @@ class SelectWdg(BaseInputWdg):
         css = kwargs.get('css')
         label = kwargs.get('label')
         bs = kwargs.get('bs')
+
         my.sobjects_for_options = None
         my.empty_option_flag = False
         my.empty_option_label, my.empty_option_value = (my.SELECT_LABEL, "")
@@ -1066,7 +1074,8 @@ class SelectWdg(BaseInputWdg):
         my.has_set_options = False
         my.css = css
         my.append_widget = None
-        super(SelectWdg,my).__init__(name, type="select", label=label)
+        super(SelectWdg,my).__init__(name, type="select", label=label, **kwargs)
+        
         # add the standard style class
         my.add_class("inputfield")
         my.add_class("spt_input")
@@ -1353,11 +1362,13 @@ class SelectWdg(BaseInputWdg):
             else:
                 my.labels.extend(extra_values)
 
+        
         # add empty option
         is_empty = my.get_option("empty") not in ['','false'] or my.get_option("empty_label")
         if my.empty_option_flag or is_empty:
             my.values.insert(0, my.empty_option_value)
             # empty_label takes prescedence over empty (boolean)
+            
             if my.get_option("empty_label"):
                 my.labels.insert(0, my.get_option("empty_label"))
             else:
@@ -1427,7 +1438,6 @@ class SelectWdg(BaseInputWdg):
             my.set_dom_options()
 
         # get the current value for this element
-         
         current_values = my.get_values(for_display=True)
         #if not current_value and my.has_option("default"):
             #current_value = my.get_option("default")
