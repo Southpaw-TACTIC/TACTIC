@@ -1074,7 +1074,7 @@ class SelectWdg(BaseInputWdg):
         my.has_set_options = False
         my.css = css
         my.append_widget = None
-        super(SelectWdg,my).__init__(name, type="select", label=label, **kwargs)
+        super(SelectWdg,my).__init__(name, type="select", **kwargs)
         
         # add the standard style class
         my.add_class("inputfield")

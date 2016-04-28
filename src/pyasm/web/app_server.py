@@ -395,7 +395,8 @@ class BaseAppServer(Base):
                 widget.add( Error403Wdg() )
                 widget.add( BottomWdg() )
                 widget.get_display()
-     
+                if '/UploadServer' in web.get_request_url().to_string():
+                    print "WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project)
                 return
 
 
@@ -554,7 +555,6 @@ class BaseAppServer(Base):
             page_type = "dynamic_file"
         else:
             page_type = "normal"
-
 
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
