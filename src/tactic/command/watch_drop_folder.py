@@ -20,7 +20,6 @@ import time, os, shutil, sys
 import os.path
 import sys
 
-from dateutil import parser
 from pyasm.common import Environment, Config, Common
 from pyasm.security import Batch
 from pyasm.biz import Project
@@ -31,12 +30,13 @@ from tactic.command import SchedulerTask, Scheduler
 from time import gmtime, strftime
 from optparse import OptionParser
 from tactic.command import PythonCmd
+from dateutil import parser
 
 import threading
 
 
 import logging
-logging.basicConfig(filename='/tmp/myapp.log', level=logging.INFO)
+#logging.basicConfig(filename='/tmp/myapp.log', level=logging.INFO)
 
 try:
     from watchdog.observers import Observer
