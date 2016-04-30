@@ -205,12 +205,12 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panels = []
 
-        show_security = my.kwargs.get("show_security")
-        show_add = my.kwargs.get("show_add")
-        view = my.kwargs.get("view")
-        filter_mode = my.kwargs.get("filter_mode")
-        show_help = my.kwargs.get("show_help")
-        show_search_limit = my.kwargs.get("show_search_limit")
+        show_security = my.kwargs.get("show_security") or ""
+        show_add = my.kwargs.get("show_add") or ""
+        view = my.kwargs.get("view") or ""
+        filter_mode = my.kwargs.get("filter_mode") or ""
+        show_help = my.kwargs.get("show_help") or ""
+        show_search_limit = my.kwargs.get("show_search_limit") or ""
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -963,18 +963,30 @@ class UserPanelWdg(BaseRefreshWdg):
         if not view:
             view = "manage_user"
 
+
         expr = "@SEARCH(%s)" %expr_filter
-        panel = ViewPanelWdg(search_type='sthpw/login',view=view,show_insert='false',\
-            show_gear='false', show_select='false', height='700', expression=expr,\
-            simple_search_view='simple_manage_filter', show_column_manager='false',\
-            show_layout_switcher='false', show_expand='false',\
-            show_search_limit=show_search_limit, show_help=show_help)
+        panel = ViewPanelWdg(
+                search_type='sthpw/login',
+                view=view,show_insert='false',
+                show_gear='false',
+                show_select='false',
+                #height='700',
+                expression=expr,
+                simple_search_view='simple_manage_filter',
+                show_column_manager='false',
+                show_layout_switcher='false',
+                show_expand='false',
+                show_search_limit=show_search_limit,
+                show_help=show_help
+        )
         div.add(panel)
         div.add_style('margin-top', '4px')
-        
-        return top
+
+        return div
+
 
         """
+
 
         table = Table()
         table.set_max_width()
@@ -1149,6 +1161,7 @@ class UserPanelWdg(BaseRefreshWdg):
         return top
 
         """
+
 
 
 

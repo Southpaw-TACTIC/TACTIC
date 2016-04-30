@@ -45,6 +45,8 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/login" display="@GET(sthpw/login.login)"/>
     <search_type name="sthpw/login_group" display="@GET(sthpw/login_group.login_group)"/>
     <search_type name="sthpw/login_in_group" display="@GET(sthpw/login_in_group.login)"/>
+
+    <search_type name="sthpw/department"/>
     <search_type name="sthpw/connection"/>
     <search_type name='sthpw/pref_list'/>
 
