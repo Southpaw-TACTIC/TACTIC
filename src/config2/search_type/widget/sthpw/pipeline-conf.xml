@@ -144,10 +144,10 @@
 </insert>
 
 <edit_definition>
-    <element name="code"/>
     <element name="name">
         <display class="TextWdg"/>
     </element>
+    <element name="code"/>
     <element name="description"/>
     <element name="search_type">
         <display class="tactic.ui.input.SearchTypeWithPipelineInputWdg"/>
@@ -196,13 +196,13 @@
 </edit>
 
 <pipeline_edit_tool>
+    <element name="name">
+        <display class='TextWdg'/>
+    </element>
     <element name="code">
       <display class='TextWdg'>
         <read_only>true</read_only>
       </display>
-    </element>
-    <element name="name">
-        <display class='TextWdg'/>
     </element>
     <element name="description"/>
     <element name="search_type">

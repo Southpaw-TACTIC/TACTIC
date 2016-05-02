@@ -241,7 +241,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
                 ] )
 
-                opt_spec_list.append( { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" } )
+                opt_spec_list.append( { "type": "submenu", "label": "Workflows", "submenu_tag_suffix": "PIPELINE" } )
 
 
             if my.custom_tools:
@@ -296,7 +296,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                 if access_keys_dict.get('Pipelines'):
                     opt_spec_list.append(
-                        { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" }
+                        { "type": "submenu", "label": "Workflows", "submenu_tag_suffix": "PIPELINE" }
                     )
 
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
@@ -762,7 +762,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if my.is_admin or 'Show Pipeline Code' in label_list:
             menu_items.append(
                 {
-                    "type": "action", "label": "Show Pipeline Code",
+                    "type": "action", "label": "Show Workflow Code",
                     "bvr_cb": {
                         'cbjs_action': '''
                         spt.app_busy.show("Adding Pipeline column to table");
@@ -786,11 +786,11 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if my.is_admin or 'Edit Pipelines' in label_list:
             menu_items.append(
                 {
-                    "type": "action", "label": "Edit Pipelines",
+                    "type": "action", "label": "Edit Workflows",
                     "bvr_cb": {
                         'cbjs_action': '''
                         spt.tab.set_main_body_tab();
-                        spt.tab.add_new("Pipelines", "Pipelines", "tactic.ui.tools.PipelineToolWdg");
+                        spt.tab.add_new("Workflows", "Workflows", "tactic.ui.tools.PipelineToolWdg");
                         '''
                     }
                 }
