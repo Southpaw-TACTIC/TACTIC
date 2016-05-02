@@ -352,15 +352,17 @@ class BaseAppServer(Base):
         # for here on, the user is logged in
         login_name = Environment.get_user_name()
 
-
-
+        is_upload = '/UploadServer' in web.get_request_url().to_string()
+       
         # check if the user has permission to see this project
         project = web.get_context_name()
         if project == 'default':
             override_default = Project.get_default_project()
             if override_default:
                 project = override_default
-        if project != 'default':
+        if is_upload:
+           access = True
+        elif project != 'default':
             security_version = get_security_version()
             if security_version == 1:
                 default = "view"
@@ -395,7 +397,8 @@ class BaseAppServer(Base):
                 widget.add( Error403Wdg() )
                 widget.add( BottomWdg() )
                 widget.get_display()
-     
+                if is_upload:
+                    print "WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project)
                 return
 
 
@@ -554,7 +557,6 @@ class BaseAppServer(Base):
             page_type = "dynamic_file"
         else:
             page_type = "normal"
-
 
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
