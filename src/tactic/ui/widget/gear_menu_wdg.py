@@ -790,7 +790,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     "bvr_cb": {
                         'cbjs_action': '''
                         spt.tab.set_main_body_tab();
-                        spt.tab.add_new("Workflows", "Workflows", "tactic.ui.tools.PipelineToolWdg");
+                        var kwargs = {
+                            'show_gear': 'false'
+                        }
+                        spt.tab.add_new("Workflows", "Workflows", "tactic.ui.tools.PipelineToolWdg", kwargs);
                         '''
                     }
                 }
