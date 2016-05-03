@@ -562,22 +562,22 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         # TODO: not sure if this is necessary ... maybe should always be local
         # unless you create it from scratch in the TableLayout
-
-        tr, td = table.add_row_cell()
-        td.add("Scope:<br/>")
-        radio = RadioWdg("scope")
-        radio.set_option("value", "local")
-        td.add(radio)
-        if scope == "local":
-            radio.set_checked()
-        td.add(" Local to pipeline<br/>")
-        radio = RadioWdg("scope")
-        radio.set_option("value", "global")
-        if scope == "global":
-            radio.set_checked()
-        td.add(radio)
-        td.add(" All [%s] processes<br/>" % my.process)
-        td.add("<br/>")
+        if my.mode == "pipeline":
+            tr, td = table.add_row_cell()
+            td.add("Scope:<br/>")
+            radio = RadioWdg("scope")
+            radio.set_option("value", "local")
+            td.add(radio)
+            if scope == "local":
+                radio.set_checked()
+            td.add(" Local to pipeline<br/>")
+            radio = RadioWdg("scope")
+            radio.set_option("value", "global")
+            if scope == "global":
+                radio.set_checked()
+            td.add(radio)
+            td.add(" All [%s] processes<br/>" % my.process)
+            td.add("<br/>")
 
 
        
