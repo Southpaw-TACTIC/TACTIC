@@ -379,12 +379,18 @@ class PipelineTaskCreateTrigger(Trigger):
 
         search_key = input.get("search_key")
         task = Search.get_by_search_key(search_key)
-        
+        parent = task.get_parent()
+        if not parent:
+            return
+
         # get the definition of the trigger
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
-        data = jsonloads(data)
-        
+        try:
+            data = jsonloads(data)
+        except:
+            data = {}
+
         # check against source status if present 
         src_status = data.get("src_status")
         if src_status:
@@ -392,14 +398,16 @@ class PipelineTaskCreateTrigger(Trigger):
             if task_status != src_status:
                 return
 
-        parent = task.get_parent()
         process_names = data.get("output")
-        
+        if not process_names:
+            return
+
         # only create new task if another of the same
         # process does not already exist
         search = Search("sthpw/task")
         search.add_filters("process", process_names)
         search.add_parent_filter(parent)
+        search.add_project_filter()
         tasks = search.get_sobjects()
         existing_processes = [x.get_value("process") for x in tasks]
        
