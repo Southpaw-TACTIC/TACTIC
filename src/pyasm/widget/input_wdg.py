@@ -55,11 +55,11 @@ class BaseInputWdg(HtmlElement):
         my.input_prefix = None
         my.value = ""
         my.options = {}
+        my.options['default'] = ""
+        my.options['persist'] = "false"
         if kwargs:
             my.options = kwargs
             my.kwargs = kwargs
-        my.options['default'] = ""
-        my.options['persist'] = "false"
 
         my.persistence = False
         my.persistence_obj = None
