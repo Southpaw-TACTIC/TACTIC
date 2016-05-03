@@ -13,7 +13,7 @@ __all__ = ['PipelineTaskStatusTrigger', 'PipelineTaskTrigger', 'PipelineTaskDate
 
 import tacticenv
 
-from pyasm.common import Common, Xml, jsonloads, Container
+from pyasm.common import Common, Xml, jsonloads, Container, TacticException
 from pyasm.biz import Task
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
@@ -381,7 +381,7 @@ class PipelineTaskCreateTrigger(Trigger):
         task = Search.get_by_search_key(search_key)
         parent = task.get_parent()
         if not parent:
-            return
+            raise TacticException("Task parent not found.")
 
         # get the definition of the trigger
         trigger_sobj = my.get_trigger_sobj()
@@ -389,7 +389,7 @@ class PipelineTaskCreateTrigger(Trigger):
         try:
             data = jsonloads(data)
         except:
-            data = {}
+            raise TacticException("Incorrect formatting of trigger [%s]." % trigger_sobj.get_value("code"))
 
         # check against source status if present 
         src_status = data.get("src_status")
