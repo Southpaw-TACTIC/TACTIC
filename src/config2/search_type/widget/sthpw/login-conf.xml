@@ -41,8 +41,7 @@
                 };
 
                 var title = login.display_name + ' Schedule';
-                var top = bvr.src_el.getParent(".spt_dashboard_top");
-                spt.tab.set_tab_top(top);
+                spt.tab.set_tab_top(bvr.src_el);
                 spt.tab.add_new("user_schedule", title, class_name, kwargs);
             </cbjs_action>
         </display>

@@ -245,8 +245,12 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         content_wdg.add_style("height: 1px")
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                     elif mode == "square":
-                        content_wdg.add_style("height: 3px")
-                        content_wdg.add_style("width: 3px")
+
+                        size = my.kwargs.get("square_size")
+                        if not size:
+                            size = "3px"
+                        content_wdg.add_style("height: %s" % size)
+                        content_wdg.add_style("width: %s" % size)
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                         content_wdg.add_style("float: left")
                     else:
@@ -268,6 +272,9 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         display_value = Search.eval(my.sobject_display_expr, [sobject], single=True)
                     else:
                         display_value = my.get_display_value(sobject)
+
+                    if mode == "square":
+                        display_value = ""
 
                     content_wdg.add_attr("title", display_value)
                     my.display_values[sobject.get_search_key()] = display_value
@@ -1010,7 +1017,7 @@ class SObjectCalendarDayDetailWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add("<div style='font-size: 25px'>%s for date: %s</div>" % (title, day))
-        title_wdg.add("List of %s that are due on this day." % title)
+        title_wdg.add("List of %s on this day." % title)
         title_wdg.add("<hr/>")
 
         my.kwargs['show_shelf'] = False

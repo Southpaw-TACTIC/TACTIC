@@ -327,6 +327,17 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         my.sobject = my.get_sobject()
 
+        if not my.sobject:
+            widget = DivWdg()
+            widget.add("SObject no longer exists")
+            widget.add_style("margin: 100px auto")
+            widget.add_style("width: 300px")
+            widget.add_style("height: 60px")
+            widget.add_style("padding: 60px")
+            widget.add_style("text-align: center")
+            widget.add_border()
+            return widget
+
         if not my.__class__.__name__ == "SnapshotDetailWdg" and my.sobject.get_base_search_type() == "sthpw/snapshot":
             widget = SnapshotDetailWdg(**my.kwargs)
             return widget

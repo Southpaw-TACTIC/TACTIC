@@ -197,6 +197,7 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("overflow-y: auto")
         metadata_div.add_style("overflow-x: hidden")
         metadata_div.add_style("margin: 20px 0px 20px 10px")
+        metadata_div.add_style("text-align: left")
 
         metadata_div.add("<div style='font-size: 16px'>File Metadata</div>")
         metadata_div.add("<div>Metadata extracted directly from the file</div>")
