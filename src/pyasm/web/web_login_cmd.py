@@ -65,13 +65,20 @@ class WebLoginCmd(Command):
         my.password = web.get_form_value("password")
         my.domain = web.get_form_value("domain")
 
+
+        
+        
         if my.login == "" and my.password == "":
-            return False
-
-
-        if my.login == "" or  my.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                "Empty username or password") 
+                "Username and password are empty") 
+            return False
+        if my.login == "":
+            web.set_form_value(WebLoginWdg.LOGIN_MSG, \
+                "Username is empty") 
+            return False
+        if my.password == "":
+            web.set_form_value(WebLoginWdg.LOGIN_MSG, \
+                "Password is empty") 
             return False
         
         security = WebContainer.get_security()
