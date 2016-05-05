@@ -109,7 +109,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         menu_wdg.add_border()
         menu_wdg.add_class("spt_switcher_menu")
         menu_wdg.add_style("display: none")
-        menu_wdg.add_style("margin-top", "15px")
+        menu_wdg.add_style("margin-top", "20px")
         menu_wdg.add_style("position", "absolute")
         menu_wdg.add_style("z-index", "10")
         menu_wdg.add_behavior( {
@@ -121,6 +121,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             menu.setStyle("display", "none")
             '''
         } )
+
+        border_color = menu_wdg.get_color("border")
         
         # Pointer under activator
         pointer_wdg = DivWdg()
@@ -134,12 +136,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         style = HtmlElement.style('''
             .spt_switcher_menu .spt_popup_pointer {
                 z-index: 10;
-                margin-top: -15px;
-                margin-left: 100px;
+                margin-top: -45px;
+                margin-left: 95px;
             }
 
             .spt_switcher_menu .spt_first_arrow_div {
-                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ccc;
+                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) %s;
                 top: -15px;
                 z-index: 1;
                 border-width: 0 15px 15px;
@@ -159,7 +161,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 margin-top: -14px;
                 position: absolute;
             }
-        ''')
+        ''' % border_color)
         pointer_wdg.add(style)
  
         if menu:

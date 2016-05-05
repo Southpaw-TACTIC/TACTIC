@@ -505,6 +505,8 @@ class Search(Base):
         return is_expr
 
     is_expr = staticmethod(is_expr)
+
+
     def add_op_filters(my, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
@@ -560,6 +562,22 @@ class Search(Base):
                 else:
                     # <name> in ('<value1>', '<value2>')
                     my.add_filters(name, value, table=table)
+
+            elif len(filter) == 4:
+                name, op, start, end = filter
+
+                table = ""
+                if name.find(".") != -1:
+                    parts = name.split(".")
+                    table = parts[0]
+                    name = parts[1]
+
+
+
+                if op == "in between":
+                    my.add_date_range_filter(name, start, end, table=table)
+
+
             elif len(filter) == 3:
                 name, op, value = filter
                
