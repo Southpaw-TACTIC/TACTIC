@@ -554,10 +554,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         title = my.search_type.split("/")[-1].title()
 
+        detail_view = my.kwargs.get("detail_view")
+        if not detail_view:
+            detail_view = ""
+
+        hide_default_elements = False
+        if my.kwargs.get("hide_default_elements") in [True, 'true']:
+            hide_default_elements = True
+
         values = {
                 'search_key': search_key,
                 'pipeline_code': my.pipeline_code,
                 'search_type': my.search_type,
+                'detail_view': detail_view,
+                'hide_default_elements': hide_default_elements
         }
 
         config_xml = []
@@ -633,6 +643,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 <element name="info">
                   <display class='tactic.ui.tools.SObjectDetailInfoWdg'>
                     <search_key>%(search_key)s</search_key>
+                    <detail_view>%(detail_view)s</detail_view>
+                    <hide_default_elements>%(hide_default_elements)s</hide_default_elements>
                   </display>
                 </element>
                 ''' % values)
@@ -979,6 +991,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 view = "edit"
 
             element_names = ['code', 'name','description']
+
+            # Make element_names empty if user desides to hide the default elements
+            hide_default_elements = my.kwargs.get("hide_default_elements")
+            
+            if hide_default_elements in ['true', 'True', True]:
+                element_names = []
+
             config = WidgetConfigView.get_by_search_type(search_type=my.full_search_type, view=view)
             config_element_names = config.get_element_names()
             for x in config_element_names:
