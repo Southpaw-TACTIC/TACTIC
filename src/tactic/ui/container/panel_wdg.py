@@ -10,13 +10,18 @@
 #
 #
 
+__all__ = ['PanelWdg', 'UserPageCreatorWdg', 'UserPageCreatorCmd']
+
 import tacticenv
 
-from pyasm.search import Search, SObject
+from pyasm.search import Search, SObject, SearchType
 from pyasm.web import DivWdg
+from pyasm.widget import WidgetConfig
+from pyasm.command import Command
 
 from tactic.ui.container import SmartMenu
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.widget import ActionButtonWdg
 
 
 class PanelWdg(BaseRefreshWdg):
@@ -38,8 +43,7 @@ class PanelWdg(BaseRefreshWdg):
         else:
             grid = (4,2)
 
-        view = my.kwargs.get("view")
-
+        my.view = my.kwargs.get("view")
 
         # Define some views that pages.  Pages are views that are self
         # contained and do not require arguments.  They are often created
@@ -52,45 +56,61 @@ class PanelWdg(BaseRefreshWdg):
         my.pages = SObject.get_values(sobjects, "view")
 
 
-        config_xml = my.kwargs.get("config_xml")
+        is_test = False
+        if my.view:
+            search = Search("config/widget_config")
+            search.add_filter("category", "PanelLayoutWdg")
+            search.add_filter("view", my.view)
+            config = search.get_sobject()
 
-        config_xml = '''
-        <config>
-        <elements>
-          <element name="0,0">
-            <display class="tactic.ui.panel.CustomLayoutWdg">
-              <view>pages.test1</view>
-            </display>
-          </element>
+        elif is_test:
+            config_xml = '''
+            <config>
+            <elements>
+              <element name="a">
+                <display class="tactic.ui.panel.CustomLayoutWdg">
+                  <view>pages.test1</view>
+                </display>
+              </element>
 
-          <element name="1,0">
-            <display class="tactic.ui.panel.StaticTableLayoutWdg">
-                <search_type>sthpw/login_group</search_type>
-                <element_names>login_group</element_names>
-                <show_shelf>false</show_shelf>
-            </display>
-          </element>
+              <element name="b">
+                <display class="tactic.ui.panel.StaticTableLayoutWdg">
+                    <search_type>sthpw/login_group</search_type>
+                    <element_names>login_group</element_names>
+                    <show_shelf>false</show_shelf>
+                </display>
+              </element>
 
-          <element name="2,0">
-            <display class="tactic.ui.panel.CustomLayoutWdg">
-              <view>test.search</view>
-            </display>
-          </element>
+              <element name="c">
+                <display class="tactic.ui.panel.CustomLayoutWdg">
+                  <view>test.search</view>
+                </display>
+              </element>
 
- 
-          <element name="1,1">
-            <display class="tactic.ui.panel.StaticTableLayoutWdg">
-                <search_type>sthpw/login_group</search_type>
-                <element_names>login_group</element_names>
-                <show_shelf>false</show_shelf>
-            </display>
-          </element>
-        </elements>
-        </config>
-        '''
+     
+              <element name="d">
+                <display class="tactic.ui.panel.StaticTableLayoutWdg">
+                    <search_type>sthpw/login_group</search_type>
+                    <element_names>login_group</element_names>
+                    <show_shelf>false</show_shelf>
+                </display>
+              </element>
+            </elements>
+            </config>
+            '''
 
-        from pyasm.widget import WidgetConfig
-        config = WidgetConfig.get(view="elements", xml=config_xml)
+            config = WidgetConfig.get(view="elements", xml=config_xml)
+
+
+        if not config:
+            config_xml = '''
+            <config>
+            <elements>
+            </elements>
+            </config>
+            '''
+
+            config = WidgetConfig.get(view="elements", xml=config_xml)
 
 
 
@@ -104,7 +124,9 @@ class PanelWdg(BaseRefreshWdg):
         menu = my.get_action_menu()
         #SmartMenu.add_smart_menu_set( top, { 'BUTTON_MENU': menu } )
 
+        element_names = config.get_element_names()
 
+        index = 0
         for y in range(grid[1]):
             row = DivWdg()
             table.add(row)
@@ -127,7 +149,7 @@ class PanelWdg(BaseRefreshWdg):
                 menu_wdg = DivWdg()
                 col.add(menu_wdg)
                 menu_wdg.add_style("float: right")
-                menu_wdg.add("+ Add View")
+                menu_wdg.add("<i class='fa fa-bars'> </i>")
                 menu_wdg.add_class("hand")
 
                 SmartMenu.add_smart_menu_set( menu_wdg, { 'BUTTON_MENU': menu } )
@@ -140,12 +162,27 @@ class PanelWdg(BaseRefreshWdg):
                 content = DivWdg()
                 col.add(content)
                 content.add_class("spt_panel_content")
+                content.add_style("min-height: 200px;")
 
-                element_name = "%s,%s" % (x,y)
+                element = None
+                if index < len(element_names):
+                    element_name = element_names[index]
+                    #element_name = "%s,%s" % (x,y)
 
-                element = config.get_display_widget(element_name)
-                if element:
-                    content.add(element)
+                    element = config.get_display_widget(element_name)
+
+                if not element:
+                    element = DivWdg()
+                    element.add("No content")
+                    element.add_style("height: 100%")
+                    element.add_style("width: 100%")
+                    element.add_style("text-align: center")
+                    element.add_border()
+
+                content.add(element)
+
+
+                index += 1
 
         if my.kwargs.get("is_refresh"):
             return inner
@@ -161,17 +198,38 @@ class PanelWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label="Reload Page")
+        menu_item = MenuItem(type='action', label="Create New Page")
         menu.add(menu_item)
-        menu_item = MenuItem(type='action', label="Remove Row")
-        menu.add(menu_item)
-        menu_item = MenuItem(type='action', label="Remove Column")
-        menu.add(menu_item)
-        menu_item = MenuItem(type='action', label="Save Layout")
-        menu.add(menu_item)
-
         menu_item.add_behavior( {
             'type': 'click',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.container.panel_wdg.UserPageCreatorWdg';
+            var kwargs = {
+            }
+            spt.panel.load_popup("Page Creator", class_name, kwargs);
+            '''
+        } )
+
+        menu_item = MenuItem(type='action', label="Reload Page")
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_panel_top");
+            var content = top.getElement(".spt_panel_content");
+            spt.panel.refresh(content);
+            '''
+        } )
+
+
+
+
+        menu_item = MenuItem(type='action', label="Save Layout")
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click',
+            'view': my.view,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_panel_layout_top");
@@ -185,7 +243,22 @@ class PanelWdg(BaseRefreshWdg):
                     continue;
                 }
                 var class_name = content.getAttribute("spt_class_name");
+                var kwargs = spt.panel.get_element_options(content);
+
+                element_name = "panel_" + i;
+
                 console.log(class_name);
+                console.log(kwargs);
+
+                try {
+                    var server = TacticServerStub.get();
+                    server.add_config_element("PanelLayoutWdg", bvr.view, element_name, { class_name: class_name, display_options: kwargs, unique: false });
+                }
+                catch(e) {
+                    alert(e);
+                    throw(e);
+                }
+
             }
 
             '''
@@ -235,6 +308,123 @@ class PanelWdg(BaseRefreshWdg):
 
 
         return menu
+
+
+
+class UserPageCreatorWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = my.top
+        top.add_style("width: 600px")
+        top.add_style("height: 600px")
+        top.add_style("margin: 20px")
+        top.add_class("spt_page_creator_top")
+
+        top.add("<div style='font-size: 16px'>Page Creator</div>")
+
+        top.add("<hr/>")
+
+        top.add("Name: <br/>")
+        top.add("<input type='text' class='form-control spt_input' name='name'/>")
+        top.add("<br/>")
+        top.add("Description: <br/>")
+        top.add("<input type='text' class='form-control spt_input' name='description'/>")
+        top.add("<br/>")
+
+        from tactic.ui.tools import WidgetEditorWdg
+        kwargs = {
+        }
+        editor = WidgetEditorWdg()
+        top.add(editor)
+
+
+        top.add("<hr/>")
+
+        button = ActionButtonWdg(title="Cancel")
+        top.add(button)
+        button.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+            '''
+        } )
+
+ 
+
+
+        button = ActionButtonWdg(title="Save Page")
+        top.add(button)
+
+        button.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_page_creator_top");
+            var values = spt.api.get_input_values(top, null, false);
+
+            var class_name = 'tactic.ui.container.panel_wdg.UserPageCreatorCmd';
+            var server = TacticServerStub.get();
+            server.execute_cmd(class_name, values);
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+
+            '''
+        } )
+
+ 
+        return top
+
+
+class UserPageCreatorCmd(Command):
+
+    def execute(my):
+
+        print "kwargs: ", my.kwargs
+
+        name = my.kwargs.get("name")
+        description = my.kwargs.get("description")
+
+        if not name:
+            raise Exception("No name provided")
+
+
+        view = "pages.test.%s" % name
+
+
+        # find if this user page already exists
+        search = Search("config/widget_config")
+        search.add_filter("category", "CustomLayoutWg")
+        search.add_filter("view", view)
+        config = search.get_sobject()
+
+        if config:
+            raise Exception("Page with name [%s] already exists" % name)
+
+        # all pages are custom layouts
+        config_xml = '''<config>
+  <%s>
+    <html>
+    <h1>Hello World</h1>
+    </html>
+  </%s>
+</config>
+        ''' % (view, view)
+
+        config = SearchType.create("config/widget_config")
+        config.set_value("category", "CustomLayoutWdg")
+        config.set_value("view", view)
+        config.set_value("config", config_xml)
+
+        config.commit()
+
+
+
+
+
+
+
 
 
 
