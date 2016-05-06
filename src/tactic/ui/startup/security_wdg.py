@@ -188,6 +188,7 @@ class GroupAssignWdg(BaseRefreshWdg):
         my.set_as_panel(top)
 
         search_key = my.kwargs.get("search_key")
+        show_add = my.kwargs.get("show_add")
 
         login = Search.get_by_search_key(search_key)
         user = login.get_value("login")
@@ -217,36 +218,35 @@ class GroupAssignWdg(BaseRefreshWdg):
         groups = LoginGroup.get_by_project()
         group_names = [x.get_value("login_group") for x in groups]
 
+        if show_add not in ['false','False',False]:
+            add_button = ActionButtonWdg(title="+", size='small', tip="Add New Groups")
+            top.add(add_button)
+            add_button.add_style("float: left")
+            top.add( my.get_add_groups_wdg() )
+            add_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_groups_top");
+                var add = top.getElement(".spt_groups_add");
+                var checkbox = top.getElement(".spt_include_project_checkbox");
+                var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
+                spt.toggle_show_hide(add);
+                spt.toggle_show_hide(checkbox);
+                spt.toggle_show_hide(checkbox_label);
+                '''
+            } )
 
-
-        add_button = ActionButtonWdg(title="+", size='small', tip="Add New Groups")
-        top.add(add_button)
-        add_button.add_style("float: left")
-        top.add( my.get_add_groups_wdg() )
-        add_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_groups_top");
-            var add = top.getElement(".spt_groups_add");
-            var checkbox = top.getElement(".spt_include_project_checkbox");
-            var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
-            spt.toggle_show_hide(add);
-            spt.toggle_show_hide(checkbox);
-            spt.toggle_show_hide(checkbox_label);
-            '''
-        } )
-
-        checkbox = CheckboxWdg("Include Project Name")
-        checkbox.set_option("value", "true")
-        checkbox.add_class("spt_include_project_checkbox")
-        checkbox.add_style("display: none")
-        checkbox.add_style("margin-left: 30px")
-        checkbox.set_checked()
-        checkbox_label = SpanWdg(" Project specific")
-        checkbox_label.add_style("display: none")
-        checkbox_label.add_class("spt_include_project_checkbox_label")
-        checkbox.add(checkbox_label)
-        top.add(checkbox)
+            checkbox = CheckboxWdg("Include Project Name")
+            checkbox.set_option("value", "true")
+            checkbox.add_class("spt_include_project_checkbox")
+            checkbox.add_style("display: none")
+            checkbox.add_style("margin-left: 30px")
+            checkbox.set_checked()
+            checkbox_label = SpanWdg(" Add group to project")
+            checkbox_label.add_style("display: none")
+            checkbox_label.add_class("spt_include_project_checkbox_label")
+            checkbox.add(checkbox_label)
+            top.add(checkbox)
 
 
         action_button = ActionButtonWdg(title="Save")
@@ -367,7 +367,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         item_div = DivWdg()
         item_div.add_style("padding-left: 20px")
-        text = TextWdg("group_name")
+        text = TextWdg("new_group")
         item_div.add(text)
         dynamic_list.add_template(item_div)
 
