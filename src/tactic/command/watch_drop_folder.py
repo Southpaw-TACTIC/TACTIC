@@ -76,7 +76,7 @@ class TestLoggingEventHandler(LoggingEventHandler):
 
 
 class WatchFolderFileActionThread(threading.Thread):
-
+    
     def __init__(my, **kwargs):
         my.kwargs = kwargs
         super(WatchFolderFileActionThread, my).__init__()
@@ -92,32 +92,35 @@ class WatchFolderFileActionThread(threading.Thread):
         finally:
             task = my.kwargs.get("task")
             paths = task.get_paths()
+            task.set_clean(True)
             for path in paths:
                 checkin_path = "%s.lock" % path
                 if os.path.exists(checkin_path):
                     os.unlink(checkin_path)
+            task.set_clean(False)
+            Common.restart()
 
 
     def _run(my):
 
         task = my.kwargs.get("task")
         paths = task.get_paths()
-        
         count = 0
         restart = False
 
         while True:
+            
             if not paths:
                 time.sleep(1)
                 continue
-
+            
             path = paths.pop(0)
-
             checkin_path = "%s.checkin" % path
+            lock_path = "%s.lock" % path
             error_path = "%s.error" % path
 
             if not os.path.exists(checkin_path):
-                print "ERROR: no lock path [%s]" % checkin_path
+                print "ERROR: no checkin path [%s]" % checkin_path
                 continue
 
             try:
@@ -130,7 +133,6 @@ class WatchFolderFileActionThread(threading.Thread):
                     "script_path": task.script_path,
                     "path": path
                 }
-
 
                 handler = task.get("handler")
                 if handler:
@@ -147,8 +149,9 @@ class WatchFolderFileActionThread(threading.Thread):
                 #    os.unlink(path)
 
                 count += 1
-                if count > 50:
+                if count == 20:
                     restart = True
+                    task.set_clean(True)
                     break
 
 
@@ -160,7 +163,17 @@ class WatchFolderFileActionThread(threading.Thread):
                 #raise
 
             finally:
+
+                task.set_clean(True)
                 os.unlink(checkin_path)
+                if os.path.exists(lock_path):
+                    os.unlink(lock_path)
+
+                task.set_clean(False)
+                if restart:
+                    task.set_clean(True)
+
+
 
         # restart every 20 check-ins
         if restart:
@@ -168,7 +181,11 @@ class WatchFolderFileActionThread(threading.Thread):
                 checkin_path = "%s.checkin" % path
                 if os.path.exists(checkin_path):
                     os.unlink(checkin_path)
-            Common.restart()
+            # this exaggerates the effect of not pausing check thread for cleaning
+            #time.sleep(10)
+            #Common.restart()
+
+
 
 
 class WatchFolderCheckFileThread(threading.Thread):
@@ -187,10 +204,15 @@ class WatchFolderCheckFileThread(threading.Thread):
 
         try:
             path = my.kwargs.get("path")
-
-            if os.path.exists(my.lock_path):
+           
+            # this extra checkin_path check may not be needed
+            if os.path.exists(my.lock_path) or os.path.exists(my.checkin_path):
                 return
-
+            task = my.kwargs.get("task")
+            
+            if task.in_clean():
+                return
+            
             f = open(my.lock_path, "w")
             f.close()
 
@@ -202,11 +224,12 @@ class WatchFolderCheckFileThread(threading.Thread):
                     os.unlink(my.lock_path)
                 return
 
-
+            # time has passed, check again
+            if task.in_clean():
+                return
             f = open(my.checkin_path, "w")
             f.close()
 
-            task = my.kwargs.get("task")
             task.add_path(path)
 
 
@@ -395,14 +418,17 @@ class CheckinCmd(object):
 
             #task = server.create_task(sobj.get('__search_key__'),process='publish')
             #server.update(task, {'status': 'New'})
-
-
+            # simulate different check-in duration
+            #from random import randint
+            #sec = randint(1, 5)
+            #print "checking in for ", sec
+            #server.eval("@SOBJECT(sthpw/login)")
+            #time.sleep(sec)
             server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
 
             if watch_script_path:
                 cmd = PythonCmd(script_path=watch_script_path,search_type=search_type,drop_path=file_path,search_key=search_key)
                 cmd.execute()
-
 
 
 
@@ -485,7 +511,9 @@ class WatchDropFolderTask(SchedulerTask):
         super(WatchDropFolderTask, my).__init__()
 
         my.checkin_paths = []
+        my.in_clean_mode = False
 
+        my.files_checked = 0
 
     def add_path(my, path):
         my.checkin_paths.append(path)
@@ -498,6 +526,11 @@ class WatchDropFolderTask(SchedulerTask):
         return my.input_kwargs.get(key)
 
 
+    def set_clean(my, clean):
+        my.in_clean_mode = clean
+
+    def in_clean(my):
+        return my.in_clean_mode
 
     def _execute(my):
 
@@ -532,11 +565,14 @@ class WatchDropFolderTask(SchedulerTask):
         if not dirs:
             return
 
-        #print "Found new: ", dirs
+        num_left = 20 - my.files_checked
+        if len(dirs) > num_left:
+            dirs = dirs[:num_left]
+
 
         # go thru the list to check each file
         for file_name in dirs:
-
+            my.files_checked += 1
             file_path = '%s/%s' %(my.base_dir, file_name)
             thread = WatchFolderCheckFileThread(
                     task=my,
@@ -566,7 +602,7 @@ class WatchDropFolderTask(SchedulerTask):
         # execute and react based on a loop every second
         mode = "loop"
         if mode == "loop":
-            while True:
+           while my.files_checked < 20:
                 my._execute()
                 time.sleep(1)
 
@@ -646,7 +682,7 @@ class WatchDropFolderTask(SchedulerTask):
         else:
             process= 'publish'
 
-        if options.script_path!=None :
+        if options.script_path != None :
             script_path = options.script_path
         else:
             script_path = None
