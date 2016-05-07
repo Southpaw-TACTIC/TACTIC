@@ -166,7 +166,7 @@ class WidgetEditorWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell()
         td.add("Name:")
-        td.add_style("width: 150px")
+        td.add_style("width: 130px")
         td = table.add_cell()
         text = TextInputWdg(name="element_name")
         if element_name:
@@ -374,6 +374,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         search.add_op('or')
         #search.add_order_by("folder")
         search.add_order_by("view")
+
+        view_filter = my.kwargs.get("view_filter")
+        if view_filter:
+            search.add_filter("view", view_filter, op="like")
 
         configs = search.get_sobjects()
 

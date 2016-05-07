@@ -785,7 +785,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
         div = DivWdg()
         outer.add(div)
-        div.add_color("background", "background3")
+        div.add_color("background", "background", -3)
         div.add_style("padding: 5px")
         div.add_border()
 

@@ -1799,8 +1799,11 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
         tr = table.add_row()
         #tr.add_style("display: none")
+        if len(class_values) == 1 and class_values[0] == '__class__':
+            tr.add_style("display: none")
 
         td = table.add_cell()
+
 
         td.add("Widget: ")
         td.add_style("padding: 5px")
@@ -1810,9 +1813,10 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # put xxx_ in front to separate from other options
         widget_select = SelectWdg("xxx_%s|widget_key" % prefix)
         widget_select.add_class("spt_widget_key")
-        widget_select.add_style("width: 250px")
+        widget_select.add_style("width: 230px")
         #if not default_class:
         #    widget_select.add_empty_option()
+
         widget_select.set_option("labels", class_labels)
         widget_select.set_option("values", class_values)
         load_event = False
@@ -1942,7 +1946,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell()
         td.add("Class Name: ")
-        td.add_style("padding: 15px")
+        td.add_style("padding: 10px 5px 10px 10px")
 
 
         class_text = TextInputWdg(name="xxx_%s|display_class" % prefix)
