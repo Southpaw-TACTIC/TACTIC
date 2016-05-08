@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["Common", "Marshaller", "jsondumps", "jsonloads"]
+__all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
 import os, sys, time, string, re, random, types, new, pprint, traceback
@@ -1241,17 +1241,24 @@ class Common(Base):
 
     def kill(pid=None):
         '''Kills the current program.'''
+        
         import sys
         if not pid:
             pid = os.getpid()
         pid = int(pid)
+        
+        log_path = "C:/pid_%s.txt" % pid
+        f.open(log_path, "w")
+        f.close()
 
         if os.name =='nt':
+            """
             # for windows
             python = sys.executable
             python = python.replace('\\','/')
             import subprocess
             subprocess.Popen([python, sys.argv])
+            """
             kill = KillProcessThread(pid)
             kill.start()
         else:
@@ -1260,7 +1267,7 @@ class Common(Base):
 
 
 
-    def restart():
+    def restart(kill_only=False):
         '''Restarts the current program.'''
         import sys
         python = sys.executable
@@ -1269,10 +1276,12 @@ class Common(Base):
         print
         python = python.replace('\\','/')
         if os.name =='nt':
-            import subprocess
-            cmd_list = [python]
-            cmd_list.extend(sys.argv)
-            subprocess.Popen(cmd_list)
+            if not kill_only:
+                import subprocess
+                cmd_list = [python]
+                cmd_list.extend(sys.argv)
+                subprocess.Popen(cmd_list)
+	       
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
