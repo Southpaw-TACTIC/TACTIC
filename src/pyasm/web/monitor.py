@@ -529,7 +529,7 @@ class TacticMonitor(object):
         my.dev_mode = mode
 
     def watch_folder_cleanup(my, base_dir):
-        '''removes old action files from prevous watch
+        '''removes old action files from previous watch
         folder processes.'''
         files = os.listdir(base_dir)
         for file in files:
@@ -671,7 +671,7 @@ class TacticMonitor(object):
                     print "Watch Folder missing project_code ... skipping"
                     continue
 
-                if not project_code:
+                if not base_dir:
                     print "Watch Folder missing base_dir ... skipping"
                     continue
 
