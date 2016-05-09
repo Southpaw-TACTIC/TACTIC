@@ -305,7 +305,7 @@ class PipelineTaskDateTrigger(Trigger):
         item = my.get_caller()
 
 
-        if isinstance(item,SObject):
+        if isinstance(item, SObject):
             if isinstance(item, Task):
                 if src_status != None:
                     if item.get_value("status") != src_status:
@@ -314,6 +314,7 @@ class PipelineTaskDateTrigger(Trigger):
                 item.set_now(column)
                 item.commit()
 
+            #Item can be a note when trigger input is adding or modifying notes
             else:
                 process = item.get_value('process')
                 expr = '@SOBJECT(parent.sthpw/task["process","%s"])'%process
@@ -324,6 +325,7 @@ class PipelineTaskDateTrigger(Trigger):
                         task.set_now(column)
                         task.commit()
 
+        #item can be a command such as check-in                 
         else:
             if hasattr(item, 'process'):
                 process = item.process
@@ -334,9 +336,6 @@ class PipelineTaskDateTrigger(Trigger):
                     for task in tasks:
                         task.set_now(column)
                         task.commit()
-
-            else:
-                return
             
 
 class RelatedTaskUpdateTrigger(Trigger):
