@@ -541,6 +541,7 @@ class WatchDropFolderTask(SchedulerTask):
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
         my.script_path = kwargs.get("script_path")
+        my.code = kwargs.get("code")
 
         super(WatchDropFolderTask, my).__init__()
 
@@ -668,12 +669,7 @@ class WatchDropFolderTask(SchedulerTask):
 
         print "Running Watch Folder ..."
 
-        # record pid in watch folder pid file
-        pid = os.getpid()
-        pid_file = "%s/log/pid.watch_folder" % Environment.get_tmp_dir()
-        f = open(pid_file, "a")
-        f.write(str(pid) + "\n")
-        f.close()
+
 
         # Check whether the user define the drop folder path.
         # Default dop folder path: /tmp/drop
@@ -683,7 +679,7 @@ class WatchDropFolderTask(SchedulerTask):
         parser.add_option("-s", "--search_type", dest="search_type", help="Define search_type.")
         parser.add_option("-P", "--process", dest="process", help="Define process.")
         parser.add_option("-S", "--script_path",dest="script_path", help="Define script_path.")
-
+        parser.add_option("-C", "--code",dest="code", help="Define watch folder code.")
         parser.add_option("-x", "--site",dest="site", help="Define site.")
 
         parser.add_option("-c", "--handler",dest="handler", help="Define Custom Handler Class.")
@@ -733,6 +729,18 @@ class WatchDropFolderTask(SchedulerTask):
             handler = options.handler
         else:
             handler = None
+
+        if options.code != None:
+            code = options.code
+        else:
+            code = None
+        if code:   
+            # record pid in watch folder pid file
+            pid = os.getpid()
+            pid_file = "%s/log/watch_folder.%s" % (Environment.get_tmp_dir(), code)
+            f = open(pid_file, "w")
+            f.write(str(pid))
+            f.close()
 
         Batch(project_code=project_code, site=site)
 

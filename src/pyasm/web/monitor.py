@@ -235,6 +235,7 @@ class WatchFolderThread(BaseProcessThread):
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
         my.script_path=kwargs.get("script_path")
+        my.code = kwargs.get("code")
  
     def get_title(my):
         return "Watch Folder"
@@ -249,6 +250,8 @@ class WatchFolderThread(BaseProcessThread):
         parts.append('--drop_path="%s"' % my.base_dir)
         parts.append('--search_type="%s"' % my.search_type)
         parts.append('--script_path="%s"'%my.script_path)
+        if my.code:
+            parts.append('--code="%s"' % my.code)
         if my.process:
             parts.append('--process="%s"' % my.process)
 
@@ -649,14 +652,6 @@ class TacticMonitor(object):
 
         # Watch Folder services
         if start_watch_folder:
-
-            pid_file = "%s/log/pid.watch_folder" % Environment.get_tmp_dir()
-            if os.path.exists(pid_file):
-                try:
-                    os.remove(pid_file)
-                except:
-                    print "Error handling Watch Folder file."
-
             search = Search("sthpw/watch_folder")
             watch_folders = search.get_sobjects()
 
@@ -666,6 +661,7 @@ class TacticMonitor(object):
                 search_type = watch_folder.get("search_type")
                 process = watch_folder.get("process")
                 script_path = watch_folder.get("script_path")
+                code = watch_folder.get("code")
 
                 if not project_code:
                     print "Watch Folder missing project_code ... skipping"
@@ -686,7 +682,8 @@ class TacticMonitor(object):
                         base_dir=base_dir,
                         search_type=search_type,
                         process=process,
-                        script_path = script_path
+                        script_path = script_path,
+                        code=code
                 )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)
