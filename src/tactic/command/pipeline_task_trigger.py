@@ -306,7 +306,15 @@ class PipelineTaskDateTrigger(Trigger):
 
 
         if isinstance(item,SObject):
-            if not isinstance(item, Task):
+            if isinstance(item, Task):
+                if src_status != None:
+                    if item.get_value("status") != src_status:
+                        return
+
+                item.set_now(column)
+                item.commit()
+
+            else:
                 process = item.get_value('process')
                 expr = '@SOBJECT(parent.sthpw/task["process","%s"])'%process
                 tasks = Search.eval(expr, sobjects=[item])
@@ -315,15 +323,6 @@ class PipelineTaskDateTrigger(Trigger):
                     for task in tasks:
                         task.set_now(column)
                         task.commit()
-                return
-
-
-            if src_status != None:
-                if item.get_value("status") != src_status:
-                    return
-
-            item.set_now(column)
-            item.commit()
 
         else:
             if hasattr(item, 'process'):
@@ -335,7 +334,7 @@ class PipelineTaskDateTrigger(Trigger):
                     for task in tasks:
                         task.set_now(column)
                         task.commit()
-                return
+
             else:
                 return
             
