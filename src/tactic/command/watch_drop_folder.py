@@ -196,9 +196,7 @@ class WatchFolderFileActionThread(threading.Thread):
                     os.unlink(lock_path)
             # this exaggerates the effect of not pausing check thread for cleaning
             #time.sleep(10)
-            print "\n\nrestarting now!!"
-            Common.restart(kill_only=True)
-
+            Common.kill()
 
 
 

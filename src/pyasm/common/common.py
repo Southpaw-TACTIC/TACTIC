@@ -1247,10 +1247,6 @@ class Common(Base):
             pid = os.getpid()
         pid = int(pid)
         
-        log_path = "C:/pid_%s.txt" % pid
-        f.open(log_path, "w")
-        f.close()
-
         if os.name =='nt':
             """
             # for windows
@@ -1267,7 +1263,7 @@ class Common(Base):
 
 
 
-    def restart(kill_only=False):
+    def restart():
         '''Restarts the current program.'''
         import sys
         python = sys.executable
@@ -1276,12 +1272,11 @@ class Common(Base):
         print
         python = python.replace('\\','/')
         if os.name =='nt':
-            if not kill_only:
-                import subprocess
-                cmd_list = [python]
-                cmd_list.extend(sys.argv)
-                subprocess.Popen(cmd_list)
-	       
+            import subprocess
+            cmd_list = [python]
+            cmd_list.extend(sys.argv)
+            subprocess.Popen(cmd_list)
+ 
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
