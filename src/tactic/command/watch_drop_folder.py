@@ -89,8 +89,6 @@ class WatchFolderFileActionThread(threading.Thread):
         Batch(site=site, project_code=project_code)
         try:
             my._run()
-        except Exception as e:
-            print e
         finally:
             task = my.kwargs.get("task")
             paths = task.get_paths()
@@ -114,7 +112,7 @@ class WatchFolderFileActionThread(threading.Thread):
             if not paths:
                 time.sleep(1)
                 continue
-           	print "PATHS ", paths 
+            
             path = paths.pop(0)
             checkin_path = "%s.checkin" % path
             lock_path = "%s.lock" % path
@@ -126,6 +124,7 @@ class WatchFolderFileActionThread(threading.Thread):
                 print "Action Thread SKIP: no checkin path [%s]" % checkin_path
                 continue
             else:
+                # Exit if another process is also checking this file in.                
                 f = open(checkin_path, "r")
                 pid = f.readline()
                 f.close()
@@ -150,7 +149,7 @@ class WatchFolderFileActionThread(threading.Thread):
                     # create a "custom" command that will act on the file
                     cmd = CheckinCmd(**kwargs)
 
-                print "Process [%s] checking in [%s]" % (os.getpid(), path)
+                #print "Process [%s] checking in [%s]" % (os.getpid(), path)
                 cmd.execute()
 
                 # TEST
@@ -176,7 +175,7 @@ class WatchFolderFileActionThread(threading.Thread):
 
                 task.set_clean(True)
                 if os.path.exists(checkin_path):
-					os.unlink(checkin_path)
+                    os.unlink(checkin_path)
                 if os.path.exists(lock_path):
                     os.unlink(lock_path)
                 task.set_clean(False)
@@ -197,7 +196,7 @@ class WatchFolderFileActionThread(threading.Thread):
                     os.unlink(lock_path)
             # this exaggerates the effect of not pausing check thread for cleaning
             #time.sleep(10)
-		    print "\n\nrestarting now!!"
+            print "\n\nrestarting now!!"
             Common.restart(kill_only=True)
 
 
@@ -458,7 +457,7 @@ class CheckinCmd(object):
                 os.makedirs(dest_dir)
             shutil.move(file_path, '%s/%s'%(dest_dir, base_name))
             time.sleep(sec)
-			# move back the file in a few seconds 
+            # move back the file in a few seconds 
             shutil.move('%s/%s'%(dest_dir, base_name), file_path)
             """
             server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
@@ -617,7 +616,6 @@ class WatchDropFolderTask(SchedulerTask):
             thread.start()
 
             #print "count: ", threading.active_count()
-
 
 
     def execute(my):
