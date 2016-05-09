@@ -99,7 +99,6 @@ class BaseProcessThread(threading.Thread):
                 return
 
 
-
         my.num_checks += 1
 
         start = time.clock()
@@ -256,8 +255,6 @@ class WatchFolderThread(BaseProcessThread):
         executable = " ".join(parts)
 
         os.system('%s' % (executable) )
-
-
 
 
 # DEPRECATED: use TacticSchedulerThread below
@@ -531,6 +528,17 @@ class TacticMonitor(object):
     def set_dev(my, mode):
         my.dev_mode = mode
 
+    def watch_folder_cleanup(my, base_dir):
+        '''removes old action files from prevous watch
+        folder processes.'''
+        files = os.listdir(base_dir)
+        for file in files:
+            base_file, ext = os.path.splitext(file)
+            if ext in [".lock", ".checkin"]:
+                path = "%s/%s" % (base_dir, file)
+                os.remove(path)
+             
+
     def execute(my):
         from pyasm.security import Batch
         Batch(login_code="admin")
@@ -641,6 +649,14 @@ class TacticMonitor(object):
 
         # Watch Folder services
         if start_watch_folder:
+
+            pid_file = "%s/log/pid.watch_folder" % Environment.get_tmp_dir()
+            if os.path.exists(pid_file):
+                try:
+                    os.remove(pid_file)
+                except:
+                    print "Error handling Watch Folder file."
+
             search = Search("sthpw/watch_folder")
             watch_folders = search.get_sobjects()
 
@@ -663,13 +679,15 @@ class TacticMonitor(object):
                     print "Watch Folder missing search_type ... skipping"
                     continue
 
+                my.watch_folder_cleanup(base_dir)
+
                 watch_thread = WatchFolderThread(
                         project_code=project_code,
                         base_dir=base_dir,
                         search_type=search_type,
                         process=process,
                         script_path = script_path
-                        )
+                )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)
 

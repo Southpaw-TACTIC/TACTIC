@@ -670,6 +670,13 @@ class WatchDropFolderTask(SchedulerTask):
 
         print "Running Watch Folder ..."
 
+        # record pid in watch folder pid file
+        pid = os.getpid()
+        pid_file = "%s/log/pid.watch_folder" % Environment.get_tmp_dir()
+        f = open(pid_file, "a")
+        f.write(str(pid) + "\n")
+        f.close()
+
         # Check whether the user define the drop folder path.
         # Default dop folder path: /tmp/drop
         parser = OptionParser()
