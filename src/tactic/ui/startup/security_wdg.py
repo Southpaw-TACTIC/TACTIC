@@ -288,6 +288,9 @@ class GroupAssignWdg(BaseRefreshWdg):
 
                 var info = ret_val.info;
                 var top = bvr.src_el.getParent(".spt_groups_top");
+
+                spt.notify.show_message("Group changes saved succesfully");
+
                 if (!info.close_popup) {
                     spt.panel.refresh(top);
                     spt.app_busy.hide()
@@ -301,6 +304,7 @@ class GroupAssignWdg(BaseRefreshWdg):
      
                     spt.app_busy.hide()
                 }
+
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
                 spt.app_busy.hide()
