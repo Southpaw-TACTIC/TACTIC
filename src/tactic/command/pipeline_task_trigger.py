@@ -299,20 +299,44 @@ class PipelineTaskDateTrigger(Trigger):
 
         column = data.get('column')
         src_status = data.get('src_status')
+
         
-        task = my.get_caller()
-        if task.get_value("status") != src_status:
-            return
 
-        task.set_now(column)
-        task.commit()
+        item = my.get_caller()
 
 
+        if isinstance(item, SObject):
+            if isinstance(item, Task):
+                if src_status != None:
+                    if item.get_value("status") != src_status:
+                        return
 
+                item.set_now(column)
+                item.commit()
 
+            #Item can be a note when trigger input is adding or modifying notes
+            else:
+                process = item.get_value('process')
+                expr = '@SOBJECT(parent.sthpw/task["process","%s"])'%process
+                tasks = Search.eval(expr, sobjects=[item])
 
+                if tasks:
+                    for task in tasks:
+                        task.set_now(column)
+                        task.commit()
 
-   
+        #item can be a command such as check-in                 
+        else:
+            if hasattr(item, 'process'):
+                process = item.process
+                expr = '@SOBJECT(sthpw/task["process","%s"])'%process
+                tasks = Search.eval(expr, sobjects=[item.sobject])
+
+                if tasks:
+                    for task in tasks:
+                        task.set_now(column)
+                        task.commit()
+            
 
 class RelatedTaskUpdateTrigger(Trigger):
     '''This is called on every task change.  It syncronizes tasks with

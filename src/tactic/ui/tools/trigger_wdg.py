@@ -1560,7 +1560,7 @@ class TriggerDateWdg(BaseRefreshWdg):
         if trigger:
             data = trigger.get_value("data")
             data = jsonloads(data)
-            column_value = data.get("column")
+            column_values = data.get("column")
             if not column_values:
                 column_values = []
 
