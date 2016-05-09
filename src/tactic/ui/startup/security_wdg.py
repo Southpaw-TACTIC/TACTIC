@@ -188,7 +188,7 @@ class GroupAssignWdg(BaseRefreshWdg):
         my.set_as_panel(top)
 
         search_key = my.kwargs.get("search_key")
-        show_add = my.kwargs.get("show_add")
+        show_add_group = my.kwargs.get("show_add_group")
 
         login = Search.get_by_search_key(search_key)
         user = login.get_value("login")
@@ -218,35 +218,44 @@ class GroupAssignWdg(BaseRefreshWdg):
         groups = LoginGroup.get_by_project()
         group_names = [x.get_value("login_group") for x in groups]
 
-        if show_add not in ['false','False',False]:
-            add_button = ActionButtonWdg(title="+", size='small', tip="Add New Groups")
-            top.add(add_button)
-            add_button.add_style("float: left")
-            top.add( my.get_add_groups_wdg() )
-            add_button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_groups_top");
-                var add = top.getElement(".spt_groups_add");
-                var checkbox = top.getElement(".spt_include_project_checkbox");
-                var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
-                spt.toggle_show_hide(add);
-                spt.toggle_show_hide(checkbox);
-                spt.toggle_show_hide(checkbox_label);
-                '''
-            } )
 
-            checkbox = CheckboxWdg("Include Project Name")
-            checkbox.set_option("value", "true")
-            checkbox.add_class("spt_include_project_checkbox")
-            checkbox.add_style("display: none")
-            checkbox.add_style("margin-left: 30px")
-            checkbox.set_checked()
-            checkbox_label = SpanWdg(" Add group to project")
-            checkbox_label.add_style("display: none")
-            checkbox_label.add_class("spt_include_project_checkbox_label")
-            checkbox.add(checkbox_label)
-            top.add(checkbox)
+        add_button = ActionButtonWdg(title="+", size='small', tip="Add New Groups")
+        top.add(add_button)
+        add_button.add_style("float: left")
+        top.add( my.get_add_groups_wdg() )
+        add_button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_groups_top");
+            var add = top.getElement(".spt_groups_add");
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
+            spt.toggle_show_hide(add);
+            spt.toggle_show_hide(checkbox);
+            spt.toggle_show_hide(checkbox_label);
+            '''
+        } )
+
+        checkbox = CheckboxWdg("Include Project Name")
+        checkbox.set_option("value", "true")
+        checkbox.add_class("spt_include_project_checkbox")
+        checkbox.add_style("display: none")
+        checkbox.add_style("margin-left: 30px")
+        checkbox.set_checked()
+        checkbox_label = SpanWdg(" Add group to project")
+        checkbox_label.add_style("display: none")
+        checkbox_label.add_class("spt_include_project_checkbox_label")
+        checkbox.add(checkbox_label)
+        top.add(checkbox)
+
+        if show_add_group not in ['false','False',False]:
+            show_add_group = True
+        else:
+            show_add_group = False
+
+        if not show_add_group:
+            add_button.add_style("visibility: hidden")
+            checkbox.add_style("visibility: hidden")
 
 
         action_button = ActionButtonWdg(title="Save")
@@ -279,6 +288,9 @@ class GroupAssignWdg(BaseRefreshWdg):
 
                 var info = ret_val.info;
                 var top = bvr.src_el.getParent(".spt_groups_top");
+
+                spt.notify.show_message("Group changes saved succesfully");
+
                 if (!info.close_popup) {
                     spt.panel.refresh(top);
                     spt.app_busy.hide()
@@ -292,6 +304,7 @@ class GroupAssignWdg(BaseRefreshWdg):
      
                     spt.app_busy.hide()
                 }
+
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
                 spt.app_busy.hide()
@@ -324,21 +337,40 @@ class GroupAssignWdg(BaseRefreshWdg):
             group_div = DivWdg()
             groups_div.add(group_div)
             group_div.add_style("padding: 5px")
+            group_div.add_style("display: flex; flex-flow: row nowrap; align-items: flex-end")
 
             checkbox = CheckboxWdg("group_name")
-            group_div.add(checkbox)
+            checkbox_div = DivWdg()
+            checkbox_div.add(checkbox)
+            group_div.add(checkbox_div)
             checkbox.add_attr("multiple", "true")
             checkbox.set_attr("value", group_name)
+            checkbox_div.add_style("margin-right: 5px")
+
             if group_name in user_groups:
                 checkbox.set_checked()
 
+            name_div = DivWdg()
+            group_div.add(name_div)
+            name_div.add("  %s" % group_name)
+            name_div.add_style("display: inline-block")
+            name_div.add_style("margin-right: 5px")
+            name_div.add_style("margin-top: 4px")
+
             if description:
-                group_div.add(description)
-            span = SpanWdg()
-            group_div.add(span)
-            span.add(" (%s)" % group_name)
-            span.add_style("opacity: 0.5")
-            span.add_style("font-style: italic")
+                div = DivWdg()
+                group_div.add(div)
+                div.add(" (%s)" % description)
+                div.add_style("opacity: 0.5")
+                div.add_style("font-style: italic")
+                div.add_style("word-break: break-all")
+                div.add_style("white-space: nowrap")
+                div.add_style("overflow: hidden")
+                div.add_style("word-wrap: break-word")
+                div.add_style("text-overflow: ellipsis")
+                div.add_style("width: 300px")
+                div.add_style("display: inline-block")
+                div.add_style("margin-top: 4px")
 
 
         return top
