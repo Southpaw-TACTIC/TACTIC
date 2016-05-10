@@ -329,7 +329,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         if not my.sobject:
             widget = DivWdg()
-            widget.add("SObject no longer exists")
+            widget.add("SObject does not exist or no longer exists")
             widget.add_style("margin: 100px auto")
             widget.add_style("width: 300px")
             widget.add_style("height: 60px")
