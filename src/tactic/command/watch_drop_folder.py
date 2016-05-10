@@ -228,16 +228,9 @@ class WatchFolderCheckFileThread(threading.Thread):
             
             pid = os.getpid()
             f = open(my.lock_path, "w")
-            #f.write(str(pid))
             f.close()
 
             changed = my.verify_file_size(path)
-            # Return if another process has locked this file last
-            #f = open(my.lock_path, "r")
-            #lock_pid = f.readline()
-            #f.close()
-            #if pid != lock_pid:
-            #    return
             if changed:
                 if os.path.exists(my.lock_path):
                     os.unlink(my.lock_path)
