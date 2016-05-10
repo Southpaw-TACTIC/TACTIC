@@ -780,7 +780,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "pipeline":
                 config_xml.append('''
-                <element name="pipeline" title="Pipeline">
+                <element name="pipeline" title="Workflow">
                   <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
                     <search_key>%(search_key)s</search_key>
                     <pipeline>%(pipeline_code)s</pipeline>
@@ -1758,7 +1758,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         title.add_style("font-weight: bold")
         title.add_style("padding: 4px")
         title.add_border()
-        title.add("Pipeline")
+        title.add("Workflow")
         div.add(title)
 
         kwargs = {
