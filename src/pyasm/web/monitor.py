@@ -235,7 +235,7 @@ class WatchFolderThread(BaseProcessThread):
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
         my.script_path=kwargs.get("script_path")
-        my.code = kwargs.get("code")
+        my.watch_folder_code = kwargs.get("watch_folder_code")
  
     def get_title(my):
         return "Watch Folder"
@@ -250,8 +250,8 @@ class WatchFolderThread(BaseProcessThread):
         parts.append('--drop_path="%s"' % my.base_dir)
         parts.append('--search_type="%s"' % my.search_type)
         parts.append('--script_path="%s"'%my.script_path)
-        if my.code:
-            parts.append('--code="%s"' % my.code)
+        if my.watch_folder_code:
+            parts.append('--watch_folder_code="%s"' % my.watch_folder_code)
         if my.process:
             parts.append('--process="%s"' % my.process)
 
@@ -535,10 +535,10 @@ class TacticMonitor(object):
         '''removes old action files from previous watch
         folder processes.'''
         files = os.listdir(base_dir)
-        for file in files:
-            base_file, ext = os.path.splitext(file)
+        for file_name in files:
+            base_file, ext = os.path.splitext(file_name)
             if ext in [".lock", ".checkin"]:
-                path = "%s/%s" % (base_dir, file)
+                path = "%s/%s" % (base_dir, file_name)
                 os.remove(path)
              
 
@@ -661,7 +661,7 @@ class TacticMonitor(object):
                 search_type = watch_folder.get("search_type")
                 process = watch_folder.get("process")
                 script_path = watch_folder.get("script_path")
-                code = watch_folder.get("code")
+                watch_folder_code = watch_folder.get("code")
 
                 if not project_code:
                     print "Watch Folder missing project_code ... skipping"
@@ -683,7 +683,7 @@ class TacticMonitor(object):
                         search_type=search_type,
                         process=process,
                         script_path = script_path,
-                        code=code
+                        watch_folder_code=watch_folder_code
                 )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)

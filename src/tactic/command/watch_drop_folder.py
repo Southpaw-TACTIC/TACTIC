@@ -121,7 +121,7 @@ class WatchFolderFileActionThread(threading.Thread):
             if not os.path.exists(path):
                 continue
             if not os.path.exists(checkin_path):
-                print "Action Thread SKIP: no checkin path [%s]" % checkin_path
+                #print "Action Thread SKIP: no checkin path [%s]" % checkin_path
                 continue
             else:
                 # Exit if another process is also checking this file in.                
@@ -672,7 +672,9 @@ class WatchDropFolderTask(SchedulerTask):
         parser.add_option("-s", "--search_type", dest="search_type", help="Define search_type.")
         parser.add_option("-P", "--process", dest="process", help="Define process.")
         parser.add_option("-S", "--script_path",dest="script_path", help="Define script_path.")
-        parser.add_option("-C", "--code",dest="code", help="Define watch folder code.")
+        parser.add_option("-w", "--watch_folder_code",dest="watch_folder_code", 
+				help="Define watch folder code. If no code is used, then it assumed that this process \
+				is managed in a standalone script.")
         parser.add_option("-x", "--site",dest="site", help="Define site.")
 
         parser.add_option("-c", "--handler",dest="handler", help="Define Custom Handler Class.")
@@ -723,14 +725,14 @@ class WatchDropFolderTask(SchedulerTask):
         else:
             handler = None
 
-        if options.code != None:
-            code = options.code
+        if options.watch_folder_code != None:
+            watch_folder_code = options.watch_folder_code
         else:
-            code = None
-        if code:   
+            watch_folder_code = None
+        if watch_folder_code:   
             # record pid in watch folder pid file
             pid = os.getpid()
-            pid_file = "%s/log/watch_folder.%s" % (Environment.get_tmp_dir(), code)
+            pid_file = "%s/log/watch_folder.%s" % (Environment.get_tmp_dir(), watch_folder_code)
             f = open(pid_file, "w")
             f.write(str(pid))
             f.close()
@@ -739,7 +741,16 @@ class WatchDropFolderTask(SchedulerTask):
 
 
 
-        task = WatchDropFolderTask(base_dir=drop_path, site=site, project_code=project_code,search_type=search_type, process=process,script_path=script_path, handler=handler)
+        task = WatchDropFolderTask(
+            base_dir=drop_path, 
+            site=site, 
+            project_code=project_code,
+            search_type=search_type, 
+            process=process,
+            script_path=script_path, 
+            handler=handler,
+            watch_folder_code=watch_folder_code
+        )
         
         scheduler = Scheduler.get()
         scheduler.add_single_task(task, delay=1)
