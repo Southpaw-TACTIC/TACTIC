@@ -534,7 +534,7 @@ class WatchDropFolderTask(SchedulerTask):
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
         my.script_path = kwargs.get("script_path")
-        my.code = kwargs.get("code")
+        my.watch_folder_code = kwargs.get("watch_folder_code")
 
         super(WatchDropFolderTask, my).__init__()
 
