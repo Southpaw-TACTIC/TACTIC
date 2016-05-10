@@ -30,7 +30,8 @@ import random
 class DeleteToolWdg(BaseRefreshWdg):
 
     def init(my):
-        my.delete_group = my.kwargs.get('delete_group') or "admin"
+        
+        my.delete_group = "admin"
         
 
     def get_display(my):
@@ -1074,7 +1075,7 @@ class DeleteProjectCmd(DeleteCmd):
         from pyasm.search import DbContainer
         from pyasm.security import Security
 
-        delete_group = my.kwargs.get('delete_group') or "admin"
+        delete_group = "admin"
         
         security = Environment.get_security()
         if not security.is_in_group(delete_group):
