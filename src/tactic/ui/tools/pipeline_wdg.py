@@ -1955,7 +1955,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         # notifications
         search = Search("sthpw/notification")
         search.add_project_filter()
-        search.add_filter("process", process)
+        search.add_filters("process", [process,process_code])
         notification_count = search.get_count()
 
 

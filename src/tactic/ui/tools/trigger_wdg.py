@@ -185,6 +185,9 @@ class TriggerToolWdg(BaseRefreshWdg):
         search = Search("sthpw/notification")
         if my.mode == 'pipeline':
             search.add_filter("process", my.process)
+            if my.process_sobj:
+                search.add_filter("process", my.process_sobj.get_code())
+                search.add_op("or")
         else:
             search.add_op('begin')
             search.add_filter("event", "%%|%s" % my.search_type, op='like')
@@ -781,7 +784,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
         td.add_style("padding: 10px")
-        if trigger_type != 'notification':
+        if trigger_type:
             
             td.add("Do the following: ")
             
@@ -1892,6 +1895,7 @@ class NotificationTriggerEditCbk(Command):
             if not isinstance(notification, Notification):
                 notification = None
         process = my.kwargs.get("process")
+        scope = my.kwargs.get("scope")
         listen_process = my.kwargs.get("listen_process")
         search_type = my.kwargs.get("search_type")
         use_default = my.kwargs.get("default") == 'on'
@@ -1921,7 +1925,15 @@ class NotificationTriggerEditCbk(Command):
         if listen_process:
             notification.set_value("process", listen_process)
         elif process:
-            notification.set_value("process", process)
+            if scope == "local":
+                pipeline_code = my.kwargs.get("pipeline_code")
+                search = Search("config/process")
+                search.add_filter("pipeline_code", pipeline_code)
+                search.add_filter("process", process)
+                process_sobj = search.get_sobject()
+                notification.set_value("process", process_sobj.get_code())
+            else:
+                notification.set_value("process", process)
         if search_type:
             notification.set_value("search_type", search_type)
 
@@ -2290,7 +2302,7 @@ class PythonClassTriggerEditCbk(Command):
         listen_process = my.kwargs.get("listen_process")
         search_type = my.kwargs.get("search_type")
         title = my.kwargs.get("title")
-
+        scope = my.kwargs.get("scope")
 
         # update the trigger
         trigger.set_value("code", trigger_code)
@@ -2298,7 +2310,16 @@ class PythonClassTriggerEditCbk(Command):
         trigger.set_value("event", event)
         trigger.set_value("description", description)
         trigger.set_value("class_name", class_path)
-        trigger.set_value("process", process)
+        if process:
+            if scope == "local":
+                pipeline_code = my.kwargs.get("pipeline_code")
+                search = Search("config/process")
+                search.add_filter("pipeline_code", pipeline_code)
+                search.add_filter("process", process)
+                process_sobj = search.get_sobject()
+                trigger.set_value("process", process_sobj.get_code())
+            else:
+                trigger.set_value("process", process)
         if listen_process:
             trigger.set_value("listen_process", listen_process)
         if search_type:
