@@ -32,9 +32,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
         "parent_mode": {
-            'description': '''The relationship between a snapshot and parent sObject and which determine what views are exposed and   
-                functionality of tools. When mode is single_file, the parent sObject is updated, renamed, deleted and moved with 
-                child snapshots. Note, the single_file search_type must have relative_dir specified.  
+            'description': '''The relationship between a snapshot and parent sObject which determines the sType shown in the 
+                RepoBrowserDirContentWdg, the sObject displayed in RepoBrowserContentWdg and the functionality of file system editing tools.
+                When mode is single_file, the parent sObject is updated, renamed, deleted and moved with 
+                child snapshots. Note, the search_type used in single file must have relative_dir specified.  
                 When mode is single_asset with given search_key, the directory and tools are scoped to the parent.''',
             'type': 'SelectWdg',
             'values': 'single_asset|single_file|single_search_type',
@@ -120,8 +121,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search.set_offset(0)
             else:
                 search = Search(search_type)
-      
-
+       
         is_refresh = my.kwargs.get("is_refresh")
         
         file_system_edit = my.kwargs.get("file_system_edit")
@@ -233,7 +233,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         show_base_dir = my.kwargs.get("show_base_dir")
         
         # Dynamically load the directory listing
-        dynamic = True
+        dynamic = my.kwargs.get("dynamic")
+        dynamic = False
         
         # The left contains a directory listing
         # starting at project_dir.
@@ -241,6 +242,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             base_dir=project_dir,
             location="server",
             show_base_dir=show_base_dir,
+            depth=-1,
             open_depth=open_depth,
             search_types=search_types,
             dynamic=dynamic,
@@ -460,10 +462,17 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def init(my):
         my.file_codes = {}
+        my.file_objects = {}
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
-    
+        my.search_keys_dict = {} 
+       
+        my.folder_state = []
+        my.view_state = ""
+
+        my.counts = {}
+
         my.dynamic = my.kwargs.get("dynamic")
         if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
@@ -482,11 +491,13 @@ class RepoBrowserDirListWdg(DirListWdg):
             key = "repo_browser_mode:%s" % search_type
             my.parent_mode = WidgetSettings.get_value_by_key(key)
         
-            # Set the folder state
+            # get the folder state, clean it, and set it.
+            key = "repo_browser_folder_state:%s" % search_type 
             folder_state = my.kwargs.get("folder_state")
+            if not folder_state:
+                folder_state = WidgetSettings.get_value_by_key(key) 
             if folder_state:
-                key = "repo_browser_folder_state:%s" % search_type
-                WidgetSettings.set_value_by_key(key, folder_state)
+                my._clean_folder_state(folder_state, key)
         else:
             my.file_system_edit = "false"
             my.parent_mode = "single_search_type"
@@ -501,11 +512,50 @@ class RepoBrowserDirListWdg(DirListWdg):
         super(RepoBrowserDirListWdg, my).init()
 
 
+    def _clean_folder_state(my, folder_state, key):
+        # Get and clean folder_states
+        states = folder_state.split("|")
+        
+        updated_states = []
+        updated_root_states = []
 
+        asset_base_dir = Environment.get_asset_dir()
+        base_dir = my.kwargs.get("base_dir")
+        
+        # Clean folder state
+        view_key = ""
+        for i, state in enumerate(states):
+            if (i == len(states)-1 and state.startswith("view:")):
+                view_key = state
+                continue
+            
+            path = "%s/%s" % (asset_base_dir, state)
+            if os.path.exists(path):
+                if path.startswith(base_dir):
+                    updated_states.append(state)
+                updated_root_states.append(state) 
+
+        # Clean view state
+        view_state = ""
+        if view_key:
+            view_state = view_key[5:]
+            view_path = "%s/%s" % (asset_base_dir, view_state)
+            if os.path.exists(view_path):
+                if view_path.startswith(base_dir):
+                    updated_states.append(view_state)
+                updated_root_states.append(view_state)
+
+        my.folder_state = updated_states
+        my.view_state = view_state
+       
+        root_state_str = ("|").join(updated_root_states)
+        WidgetSettings.set_value_by_key(key, root_state_str)
+
+         
 
     def get_file_search(my, base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
-   
-        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode)    
+        
+        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode)
         
 
     def get_relative_paths(my, base_dir):
@@ -574,7 +624,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         search_types = [SearchType.build_search_type(x) for x in search_types]
 
-
         search_type = search_types[0]
         key = "repo_browser:%s" % search_type
         parent_search_str = WidgetSettings.get_value_by_key(key)
@@ -584,13 +633,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         paths = []
-        my.file_codes = {}
-        my.file_objects = {}
-        my.snapshot_codes = {}
-        my.search_types_dict = {}
-        my.search_codes = {}
-        my.search_keys_dict = {}
-
 
         # Note this shold be used sparingly because it can find lots of
         # sobjects
@@ -641,15 +683,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                     #print search_type, relative_dir
                     continue
 
+                """
                 # go up the path and set the search type
                 parts = relative_dir.split("/")
                 for i in range (0, len(parts)+1):
                     tmp_dir = "/".join(parts[:i])
                     tmp_dir = "%s/%s/" % (asset_base_dir, tmp_dir)
                     my.search_types_dict[tmp_dir] = search_type
-
-
-        my.counts = {}
+                """
 
         # find any folders that match
         # FIXME: this is slow and need a way to pass keywords through
@@ -685,15 +726,18 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         # add dirnames if they have sobject files in them
         #if not show_no_sobject_folders:
+        new_sub_paths = []
         if os.path.exists(base_dir) and os.path.isdir(base_dir):
-            dirnames = os.listdir(base_dir)
+            dirnames = os.listdir(unicode(base_dir))
             for dirname in dirnames:
                 subdir = "%s/%s" % (base_dir, dirname)
                 if not os.path.isdir(subdir):
-                    #if subdir not in paths:
-                    #    paths.append(subdir)
                     continue
 
+                reldir = "%s/%s" % (relative_dir, dirname)
+                if reldir in my.folder_state:
+                    new_paths = my.get_relative_paths(subdir)
+                    new_sub_paths.extend(new_paths)
 
                 if my.counts.get(subdir) is None:
                     search = my.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=my.parent_mode)
@@ -711,8 +755,16 @@ class RepoBrowserDirListWdg(DirListWdg):
                         paths.append(full)
 
 
-            #return paths
-
+        """
+        new_sub_paths = []
+        for path in my.folder_state:
+            if path.startswith(relative_dir): 
+                if "%s/%s/" % (asset_base_dir, path) in paths:
+                    new_paths = my.get_relative_paths("%s/%s" % (asset_base_dir, path))
+                    new_sub_paths.extend(new_paths)
+        """
+        paths.extend(new_sub_paths)
+        
         return paths
 
 
@@ -1263,7 +1315,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.repo_browser.set_lock(false);
                 return;
             }
-
+          
             bvr.src_el.setStyle("border", "");
             bvr.src_el.setStyle("box-shadow", "");
             bvr.src_el.setStyle("position", "relative");
@@ -1271,14 +1323,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             bvr.src_el.setStyle("left", "0px");
             bvr.src_el.setStyle("padding", "2px 0px 2px 15px");
 
-            // Get the drop folder
+            // Get the drop folder, and if no drop folder found, return.
             var drop_on_el = spt.get_event_target(evt);
             if (!drop_on_el.hasClass("spt_dir_item")) {
                 drop_on_el = drop_on_el.getParent(".spt_dir_item");
             }
-
-            // If no drop folder found
-            if (! drop_on_el) {
+            if (! drop_on_el || !drop_on_el.hasClass("spt_dir_item")) {
                 spt.repo_browser.set_lock(false);
                 return;
             }
@@ -1293,20 +1343,17 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return;
             }
 
-            if ( drop_on_el.hasClass("spt_open") == true) {
+            if (drop_on_el.hasClass("spt_open")) {
                 var sibling = drop_on_el.getNext();
-                var inner = sibling.getElement(".spt_dir_list_handler_content");
-                bvr.src_el.inject(inner, 'top');
-                var padding = drop_on_el.getStyle("padding-left");
-
-                if (bvr.src_el.hasClass("spt_dir")) {
-                    bvr.src_el.setStyle("padding-left", "");
-                }
-                else {
-                    bvr.src_el.setStyle("padding-left", "15px");
-                }
-            }
-            else {
+                bvr.src_el.inject(sibling, 'top');
+                try { 
+                    var padding = parseInt(drop_on_el.getStyle("padding-left"), 10);
+                    bvr.src_el.setStyle("padding-left", padding + 26 + "px");
+                } catch (err) {
+                    log.critical(err);
+                    bvr.src_el.setStyle("display", "none");
+                } 
+            } else {
                 bvr.src_el.setStyle("display", "none");
             }
             
@@ -1399,10 +1446,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             // Drop action of tile on folder
             // TODO: Directory listing should be locked on dragging of tile
  
-            // TODO: Tile should not disappear on drag.
-            // Suggested fix: Change opacity
             var tile_top = bvr.src_el.getParent(".spt_tile_top");
-            tile_top.setStyle("display", "none");
+            tile_top.setStyle("opacity", ".3");
             
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
@@ -1415,12 +1460,11 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
             var target = $(evt.target);
-            if (target.hasClass("spt_dir_value")) {
-                target = target.getParent(".spt_dir");
+            if (!target.hasClass("spt_dir_item")) {
+                target = target.getParent(".spt_dir_item");
             }
-
-            if (!target.hasClass("spt_dir")) {
-                tile_top.setStyle("display", "");
+            if (!target.hasClass("spt_dir_item")) {
+                tile_top.setStyle("opacity", "1");
                 return;
             }
 
@@ -1448,7 +1492,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.panel.refresh(content_top);
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
-                tile_top.setStyle("display", "");
+                tile_top.setStyle("opacity", "1");
                 return;
             }
 
@@ -1569,29 +1613,15 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_view_indicator(my, dir, basename):
         # TODO: Add variable that indicates whther or not 
         # indicator has been added.
-        # TODO: view item should always be added onto the end of 
-        # the list.
+                
+        if not my.view_state:
+            return False 
         
-        web = WebContainer.get_web()
-        folder_state = web.get_form_value("folder_state")
-        if not folder_state:
-            folder_state = my.kwargs.get("folder_state")
-        if folder_state:
-            state_list = folder_state.split("|")
-        else:
-            return False
-
         base_dir = Environment.get_asset_dir()
-        relative_dir = os.path.relpath(dir, base_dir)
-        relative_path = os.path.join(relative_dir, basename)
-        
-        view = False
-        if state_list:
-            state = state_list[-1]
-            if state == "view:%s" % relative_path:
-                view = True
-
-        if view:
+        relative_dir = Common.relative_dir(base_dir, dir)
+        relative_path = "%s/%s" % (relative_dir, basename)
+       
+        if my.view_state == relative_path: 
             selected_icon = IconWdg(icon="BS_EYE_OPEN", size="1.1em")
             selected_icon.add_class("spt_browser_view_indicator")
             selected_icon.add_style("position: relative;")
@@ -1623,10 +1653,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
         }
         
-        if (item_top.hasClass("spt_dynamic")) {
-
+        if (true) {
             if (item_top.hasClass("spt_open")) {
-                //spt.hide(sibling);
                 var children = sibling.getChildren()
                 for (var j = 0; j < children.length; j++) {
                     spt.behavior.destroy_element(children[j]);
@@ -1646,8 +1674,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 }
                 var folder_state = spt.repo_browser.get_raw_folder_state();
                 
-              
-               
                 item_top.addClass("spt_open");
                 sibling.setStyle("display", "");
 
@@ -1692,17 +1718,17 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var kwargs = {
                     level: item_top.getAttribute("spt_level"),
                     base_dir: base_dir,
-                    depth: 1,
+                    depth: -1,
                     all_open: false,
-                    dynamic: true,
+                    dynamic: false,
                     handler_class: item_top.getAttribute("spt_handler_class"),
                     handler_kwargs: handler_kwargs,
                     folder_state: folder_state,
                 };
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
-        }
-        else {
+        } else {
+            // Non-dynamic opening and closing
             spt.toggle_show_hide(sibling);
            
             if (is_open) {
@@ -1778,43 +1804,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             parent = Search.get_by_search_key(parent_key)
             search_type = parent.get_search_type()
    
-        # Get and clean folder_states
-        folder_state_key = "repo_browser_folder_state:%s" % search_type 
-        folder_state = WidgetSettings.get_value_by_key(folder_state_key) 
-        if folder_state:
-            states = folder_state.split("|")
-        else:
-            states = []
-        
-        updated_states = []
-        asset_base_dir = Environment.get_asset_dir()
-        
-        # Clean folder states
-        view_exists = False
-        for i, state in enumerate(states):
-            if (i == len(states)-1 and state.startswith("view:")):
-                view_exists = True
-                continue
-            elif (i == len(states)-1):
-                view_exists = False
-            
-            path = os.path.join(asset_base_dir, state)
-            if os.path.exists(path):
-                updated_states.append(state)            
 
-        # Clean view states
-        if view_exists and states:
-            view_state = states[-1]
-            relative_view_path = view_state[5:]
-            view_path = os.path.join(asset_base_dir, relative_view_path)
-            if os.path.exists(view_path):
-                updated_states.append(view_state)
 
-        folder_state = ("|").join(updated_states)
-        
         text_wdg = HiddenWdg("folder_state")        
         text_wdg.add_class("spt_folder_state")
         top.add(text_wdg)
+        folder_state = ("|").join(my.folder_state)
         text_wdg.set_value(folder_state)
       
         # Directory click up - display related sObjects
@@ -2454,9 +2449,9 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         asset_base_dir = Environment.get_asset_dir()
 
-        path = os.path.join(dirname, basename)
-        relative_dir = os.path.relpath(path, asset_base_dir)
-        relative_dir = os.path.dirname(relative_dir)
+        path = "%s/%s" % (dirname, basename)
+        relative_path = Common.relative_dir(asset_base_dir, path)
+        relative_dir = os.path.dirname(relative_path)
         item_div.add_attr("spt_relative_dir", relative_dir)
 
         search_types = my.search_types_dict
@@ -2572,13 +2567,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                 tmp_rel_dir = "/".join(parts[:i])
                 tmp_dir = "%s/%s" % (my.base_dir, tmp_rel_dir)
                 search_type = search_types.get("%s/" % tmp_dir)
+                if search_type:
+                    break
 
         if not search_type and search_types:
             search_type = search_types[search_types.keys()[0]]
 
         if not search_type and my.search_types:
             search_type = my.search_types[0]
-
 
         item_div.add_attr("spt_search_type", search_type)
         item_div.add_attr("spt_relative_dir", relative_dir)
@@ -2896,7 +2892,7 @@ class RepoBrowserActionCmd(Command):
                     if os.path.exists(new_path):
                         raise Exception("[%s] already exists in %s" % (new_file_name, relative_dir))
 
-                    # Move the file it is not versionaless
+                    # Move the file it is not versionless
                     old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                     file.set_value("file_name", new_file_name)
                     file.commit()
@@ -3008,11 +3004,17 @@ class RepoBrowserCbk(Command):
         '''
 
         relative_dir = my.kwargs.get("relative_dir")
-        
+        if not relative_dir:
+            raise Exception("Destination directory not given.")
+        relative_dir = relative_dir.strip("/")
+
+        from_relative_dir = my.kwargs.get("from_relative_dir")
+        if from_relative_dir:
+            from_relative_dir = from_relative_dir.strip("/")
+
         snapshot_code = my.kwargs.get("snapshot_code")
         search_key = my.kwargs.get("search_key")
         search_keys = my.kwargs.get("search_keys")
-        from_relative_dir = my.kwargs.get("from_relative_dir")
 
         parent_mode = my.kwargs.get("parent_mode")
 
@@ -3048,14 +3050,14 @@ class RepoBrowserCbk(Command):
             base_dir = Environment.get_asset_dir()
            
             # Build new paths and check that new path is a directory
-            abs_relative_dir = os.path.join(base_dir, relative_dir)
-            abs_from_dir = os.path.join(base_dir, from_relative_dir)
+            abs_relative_dir = "%s/%s" % (base_dir, relative_dir)
+            abs_from_dir = "%s/%s" % (base_dir, from_relative_dir)
             if not os.path.isdir(abs_relative_dir):
-                raise Exception("Destination [%s] is not a directory" % relative_dir)
+                raise Exception("[%s] is not a directory" % relative_dir)
             
-            # Check for naming conflict
+            # Check for naming conflict with full to-path
             from_basename = os.path.basename(from_relative_dir)
-            new_path = os.path.join(base_dir, relative_dir, from_basename)
+            new_path = "%s/%s/%s" % (base_dir, relative_dir, from_basename)
             if (os.path.exists(new_path)):
                 raise Exception("Directory [%s] already exists" % new_path)
             
@@ -3063,8 +3065,10 @@ class RepoBrowserCbk(Command):
 
             # find all the files with the relative dir
             file_search = Search("sthpw/file")
-            # FIXME: filter should not use like.
-            file_search.add_filter("relative_dir", "%s%%" % from_relative_dir, op='like')
+            file_search.add_op("begin")
+            file_search.add_filter("relative_dir", "%s" % from_relative_dir)
+            file_search.add_filter("relative_dir", "%s/%%" % from_relative_dir, op='like')
+            file_search.add_op("or")
             files = file_search.get_sobjects()
 
             # Update each of the file relative_dir and build list of parents
@@ -3075,9 +3079,12 @@ class RepoBrowserCbk(Command):
                 basename = os.path.basename(from_relative_dir)
 
                 file_relative_dir = file.get_value("relative_dir")
-                sub_relative_dir = os.path.relpath(from_relative_dir, file_relative_dir)
-                new_relative_dir = os.path.normpath(os.path.join(relative_dir, basename, sub_relative_dir))
-
+                if file_relative_dir == from_relative_dir:
+                    new_relative_dir = "%s/%s" % (relative_dir, basename)
+                else:
+                    sub_relative_dir = Common.relative_dir(from_relative_dir, file_relative_dir)
+                    new_relative_dir = "%s/%s/%s" % (relative_dir, basename, sub_relative_dir)
+                
                 file.set_value("relative_dir", new_relative_dir)
                 file.commit()
 
@@ -3137,11 +3144,8 @@ class RepoBrowserCbk(Command):
         search.add_parent_filter(parent)
         
         if snapshot:
-            version = snapshot.get_value("version")
             context = snapshot.get_value("context")
             search.add_filter("context", context)
-        else:
-            search.add_parent_filter(parent)
         
         search.add_order_by("version")
         snapshots = search.get_sobjects()
@@ -3176,8 +3180,8 @@ class RepoBrowserCbk(Command):
                 # Build the paths and check if new path already exists
                 old_path = "%s/%s/%s" % (base_dir, file_relative_dir, file_name)
                 if not os.path.exists(old_path):
-                    continue
-                
+                    print "WARNING: [%s] not found." % old_path
+
                 new_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                 if os.path.exists(new_path):
                     raise Exception("[%s] already exists in [%s]." % (file_name, relative_dir))
@@ -3315,8 +3319,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             basename = my.kwargs.get("basename")
             path = "%s/%s" % (dirname, basename)
         
-            reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
-            
+            reldir = Common.relative_dir(asset_dir, dirname)
             search = Search("sthpw/file")
             if search_type and search_type != 'sthpw/snapshot':
                 search.add_filter("search_type", search_type)
@@ -3350,7 +3353,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             
             path_div = DivWdg()
             inner.add(path_div)
-            file_path = os.path.join(reldir, basename)
+            file_path = "%s/%s" % (reldir, basename)
             path_div.add("<b>Path:</b> %s" % file_path)
             path_div.add_color("color", "color")
             path_div.add_color("background", "background")
@@ -3464,7 +3467,7 @@ class RepoBrowserSearchWrapper(object):
         
         asset_base_dir = Environment.get_asset_dir()
         if (base_dir.startswith(asset_base_dir)):
-            relative_dir = os.path.relpath(base_dir, asset_base_dir)
+            relative_dir = Common.relative_dir(asset_base_dir, base_dir)
             if relative_dir == ".":
                 relative_dir = ""
         else:
@@ -3568,7 +3571,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         dirname = my.kwargs.get("dirname")
         asset_dir = Environment.get_asset_dir()
         if dirname.startswith(asset_dir):
-            reldir = os.path.normpath(os.path.relpath(dirname, asset_dir))
+            reldir = Common.relative_dir(asset_dir, dirname)
             if reldir == ".":
                 reldir = ""
         else:

@@ -471,9 +471,7 @@ class DirListWdg(BaseRefreshWdg):
         if my.handler_kwargs:
             core_handler_kwargs.update(my.handler_kwargs)
 
-
-
-        if dynamic:
+        if dynamic or handler_class:
             dir_list = DirListPathHandler(
                 location=location,
                 level=0,
@@ -481,11 +479,11 @@ class DirListWdg(BaseRefreshWdg):
                 root_dir=my.root_dir,
                 handler_class=handler_class,
                 handler_kwargs=core_handler_kwargs,
-                depth=0,
+                depth=depth,
                 all_open=False,
                 # Open depth is not really supported on dynamic mode yet
                 #open_depth=open_depth,
-                dynamic=True,
+                dynamic=dynamic,
             )
             top.add(dir_list)
         else:
@@ -549,6 +547,9 @@ class DirListWdg(BaseRefreshWdg):
         if dynamic:
             div.add_class("spt_dynamic")
         
+        if is_open:
+            div.add_class("spt_open")
+
         # Swap display will be set off when opened
         if dynamic:
             swap_open = False
