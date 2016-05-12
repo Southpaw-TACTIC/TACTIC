@@ -99,7 +99,6 @@ class BaseProcessThread(threading.Thread):
                 return
 
 
-
         my.num_checks += 1
 
         start = time.clock()
@@ -236,6 +235,7 @@ class WatchFolderThread(BaseProcessThread):
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
         my.script_path=kwargs.get("script_path")
+        my.watch_folder_code = kwargs.get("watch_folder_code")
  
     def get_title(my):
         return "Watch Folder"
@@ -250,14 +250,14 @@ class WatchFolderThread(BaseProcessThread):
         parts.append('--drop_path="%s"' % my.base_dir)
         parts.append('--search_type="%s"' % my.search_type)
         parts.append('--script_path="%s"'%my.script_path)
+        if my.watch_folder_code:
+            parts.append('--watch_folder_code="%s"' % my.watch_folder_code)
         if my.process:
             parts.append('--process="%s"' % my.process)
 
         executable = " ".join(parts)
 
         os.system('%s' % (executable) )
-
-
 
 
 # DEPRECATED: use TacticSchedulerThread below
@@ -531,6 +531,17 @@ class TacticMonitor(object):
     def set_dev(my, mode):
         my.dev_mode = mode
 
+    def watch_folder_cleanup(my, base_dir):
+        '''removes old action files from previous watch
+        folder processes.'''
+        files = os.listdir(base_dir)
+        for file_name in files:
+            base_file, ext = os.path.splitext(file_name)
+            if ext in [".lock", ".checkin"]:
+                path = "%s/%s" % (base_dir, file_name)
+                os.remove(path)
+             
+
     def execute(my):
         from pyasm.security import Batch
         Batch(login_code="admin")
@@ -650,12 +661,13 @@ class TacticMonitor(object):
                 search_type = watch_folder.get("search_type")
                 process = watch_folder.get("process")
                 script_path = watch_folder.get("script_path")
+                watch_folder_code = watch_folder.get("code")
 
                 if not project_code:
                     print "Watch Folder missing project_code ... skipping"
                     continue
 
-                if not project_code:
+                if not base_dir:
                     print "Watch Folder missing base_dir ... skipping"
                     continue
 
@@ -663,13 +675,16 @@ class TacticMonitor(object):
                     print "Watch Folder missing search_type ... skipping"
                     continue
 
+                my.watch_folder_cleanup(base_dir)
+
                 watch_thread = WatchFolderThread(
                         project_code=project_code,
                         base_dir=base_dir,
                         search_type=search_type,
                         process=process,
-                        script_path = script_path
-                        )
+                        script_path = script_path,
+                        watch_folder_code=watch_folder_code
+                )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)
 
