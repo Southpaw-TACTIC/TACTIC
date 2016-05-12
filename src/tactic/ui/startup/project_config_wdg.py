@@ -982,7 +982,7 @@ class UserPanelWdg(BaseRefreshWdg):
         div.add(panel)
         div.add_style('margin-top', '4px')
 
-        return div
+        return top
 
 
         """

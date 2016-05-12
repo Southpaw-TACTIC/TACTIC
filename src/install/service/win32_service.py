@@ -45,10 +45,14 @@ def stop():
     log_dir = "%s/log" % Environment.get_tmp_dir()
     files = os.listdir(log_dir)
     ports = []
+    watch_folders = []
     for filename in files:
         base, ext = os.path.splitext(filename)
-        if base =='pid':
+        if base == 'pid':
             ports.append(ext[1:])
+        elif base == 'watch_folder':
+            watch_folders.append(ext[1:])
+    
     for port in ports:
         try:
             file_name = "%s/pid.%s" % (log_dir,port)
@@ -60,6 +64,16 @@ def stop():
             print "Error opening file [%s]" %file_name
             continue
 
+    # kill watch folder processes
+    for watch_folder in watch_folders:
+        try:
+            filename = "%s/watch_folder.%s" % (log_dir, watch_folder)
+            f = open(filename, "r")
+            pid = f.readline()
+            f.close()
+            os.system('taskkill /F /PID %s' % pid)
+        except IOError, e:
+            print "Error handling processes for watch folder [%s]." % watch_folder
 
  
 class TacticService(win32serviceutil.ServiceFramework): 

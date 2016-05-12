@@ -682,9 +682,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
         var trigger_wdg = 'tactic.ui.tools.EventTriggerEditWdg';
 
         spt.panel.load(content, trigger_wdg, bvr.kwargs)
-        var action_area = top.getElement('.spt_trigger_add_top')
-       
-        spt.panel.refresh(action_area, {'event': event});
         '''
         } )
 
@@ -1459,10 +1456,14 @@ class TriggerCreateWdg(BaseRefreshWdg):
 
         process = my.kwargs.get("process")
         pipeline_code = my.kwargs.get("pipeline_code")
-
-        pipeline = Pipeline.get_by_code(pipeline_code)
-        outputs = pipeline.get_output_processes(process)
-        outputs = [x.get_name() for x in outputs]
+        outputs =[]
+        
+        #in case there is no pipeline_code or process passed in
+        if pipeline_code:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if pipeline:
+                outputs = pipeline.get_output_processes(process)
+            outputs = [x.get_name() for x in outputs]
 
         trigger = my.kwargs.get("trigger")
         output_values = []
