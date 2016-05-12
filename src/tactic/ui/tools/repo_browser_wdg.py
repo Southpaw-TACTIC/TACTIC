@@ -558,7 +558,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode)
         
 
-    def get_relative_paths(my, base_dir):
+    def get_relative_paths(my, base_dir, do_search=True):
 
         # options to get files
         # show latest version only
@@ -636,7 +636,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         # Note this shold be used sparingly because it can find lots of
         # sobjects
-        if my.show_files:
+        if my.show_files and do_search:
 
             search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=my.parent_mode)
             file_objects = search.get_sobjects()
@@ -685,6 +685,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 """
                 # go up the path and set the search type
+                # Note: this is done below in handling of subdirs
                 parts = relative_dir.split("/")
                 for i in range (0, len(parts)+1):
                     tmp_dir = "/".join(parts[:i])
@@ -733,36 +734,31 @@ class RepoBrowserDirListWdg(DirListWdg):
                 subdir = "%s/%s" % (base_dir, dirname)
                 if not os.path.isdir(subdir):
                     continue
+                
+                do_sub_search = do_search
+                if my.counts.get(subdir) is None:
+                    full = "%s/" % subdir
+                    paths.append(full)
+                    
+                    if do_sub_search:
+                        search = my.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=my.parent_mode)
+                        count = search.get_count()
+                        my.counts[subdir] = count
+                        if count:
+                            my.search_types_dict[full] = search_types[0]
+                    else:
+                        my.counts[subdir] = 0
+
+                # If there are no files in subdirectories, do not do further searches.
+                if my.counts.get(subdir) == 0:
+                    do_sub_search = False
 
                 reldir = "%s/%s" % (relative_dir, dirname)
                 if reldir in my.folder_state:
-                    new_paths = my.get_relative_paths(subdir)
+                    new_paths = my.get_relative_paths(subdir, do_sub_search)
                     new_sub_paths.extend(new_paths)
 
-                if my.counts.get(subdir) is None:
-                    search = my.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=my.parent_mode)
-                    count = search.get_count()
-                    my.counts[subdir] = count
 
-                    if count:
-                        full = "%s/" % subdir
-                        # FIXME: this actually allows for the click-up behavior
-                        # however, it only currently works for a single stype
-                        my.search_types_dict[full] = search_types[0]
-                        paths.append(full)
-                    else:
-                        full = "%s/" % subdir
-                        paths.append(full)
-
-
-        """
-        new_sub_paths = []
-        for path in my.folder_state:
-            if path.startswith(relative_dir): 
-                if "%s/%s/" % (asset_base_dir, path) in paths:
-                    new_paths = my.get_relative_paths("%s/%s" % (asset_base_dir, path))
-                    new_sub_paths.extend(new_paths)
-        """
         paths.extend(new_sub_paths)
         
         return paths
@@ -2892,7 +2888,7 @@ class RepoBrowserActionCmd(Command):
                     if os.path.exists(new_path):
                         raise Exception("[%s] already exists in %s" % (new_file_name, relative_dir))
 
-                    # Move the file it is not versionless
+                    # Move the file if is not versionless
                     old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                     file.set_value("file_name", new_file_name)
                     file.commit()

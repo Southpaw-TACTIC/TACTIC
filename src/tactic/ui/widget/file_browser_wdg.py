@@ -471,7 +471,7 @@ class DirListWdg(BaseRefreshWdg):
         if my.handler_kwargs:
             core_handler_kwargs.update(my.handler_kwargs)
 
-        if dynamic or handler_class:
+        if dynamic:
             dir_list = DirListPathHandler(
                 location=location,
                 level=0,
@@ -498,6 +498,7 @@ class DirListWdg(BaseRefreshWdg):
                 level=0,
                 base_dir=my.base_dir,
                 root_dir=my.root_dir,
+                handler_kwargs=core_handler_kwargs,
                 handler=my,
                 depth=depth,
                 all_open=all_open,
