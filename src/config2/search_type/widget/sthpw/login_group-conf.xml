@@ -88,7 +88,7 @@
 <!-- a simple less technical interface without using the drop -->
 <startup>
     <element name="project_code" width="114"/>
-    <element name="login_group" width="110"/>
+    <element name="name" width="110"/>
     <element name="description" width="280"/>
     <element name="access_level" width="100"/>
     <element name="user_assign" width="100"/>
@@ -158,7 +158,7 @@
 
 
 <edit>
-    <element name="login_group" title='Group'/>
+    <element name="name" title='Group Name'/>
     <element name="description"/>
     <element name="access_level"/>
     <element name="access_rules" type='xml'>
@@ -173,7 +173,7 @@
 
 
 <insert>
-    <element name="login_group" title='Group'/>
+    <element name="login_group" title='Group Name'/>
     <element name="description"/>
     <element name="add_to_project"/>
 </insert>
@@ -200,6 +200,10 @@
     <element name="add_to_project">
         <display class="tactic.ui.startup.SecurityAddGroupToProjectInputWdg"/>
         <action class="tactic.ui.startup.SecurityAddGroupToProjectAction"/>
+    </element>
+
+    <element name="name">
+      <display class="TextWdg"/>
     </element>
 
 </edit_definition>
