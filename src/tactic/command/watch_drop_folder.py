@@ -303,18 +303,6 @@ class WatchFolderCheckFileThread(threading.Thread):
         return changed
 
 
-from pyasm.command import Command
-__all__.append("TestCmd")
-class TestCmd(Command):
-
-    def execute(my):
-
-        path = my.kwargs.get("path")
-
-        # do something
-        print "path: ", path
-
-
 
 
 
