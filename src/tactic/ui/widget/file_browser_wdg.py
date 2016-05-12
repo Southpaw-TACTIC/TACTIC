@@ -500,6 +500,7 @@ class DirListWdg(BaseRefreshWdg):
                 root_dir=my.root_dir,
                 handler_kwargs=core_handler_kwargs,
                 handler=my,
+                handler_class=handler_class,
                 depth=depth,
                 all_open=all_open,
                 open_depth=open_depth,

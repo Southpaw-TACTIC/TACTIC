@@ -234,7 +234,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         
         # Dynamically load the directory listing
         dynamic = my.kwargs.get("dynamic")
-        dynamic = False
+        if not dynamic:
+            dynamic = False
         
         # The left contains a directory listing
         # starting at project_dir.
@@ -2888,7 +2889,7 @@ class RepoBrowserActionCmd(Command):
                     if os.path.exists(new_path):
                         raise Exception("[%s] already exists in %s" % (new_file_name, relative_dir))
 
-                    # Move the file if is not versionless
+                    # Move the file if it is not versionless
                     old_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                     file.set_value("file_name", new_file_name)
                     file.commit()
