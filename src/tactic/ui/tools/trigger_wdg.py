@@ -153,6 +153,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         # find the triggers
         search = Search("config/trigger")
         if my.mode == 'pipeline':
+            search.add_op('begin')
             search.add_filter("process", my.process)
             if my.process_sobj:
                 search.add_filter("process", my.process_sobj.get_code())
@@ -184,6 +185,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         triggers_div.add("<b>Notifications</b><hr/>")
         search = Search("sthpw/notification")
         if my.mode == 'pipeline':
+            search.add_op('begin')
             search.add_filter("process", my.process)
             if my.process_sobj:
                 search.add_filter("process", my.process_sobj.get_code())
@@ -579,7 +581,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             if scope == "global":
                 radio.set_checked()
             td.add(radio)
-            td.add(" All [%s] processes<br/>" % my.process)
+            td.add(' All "%s" processes<br/>' % my.process)
             td.add("<br/>")
 
 
@@ -768,7 +770,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
 
-
+        #Action Area in Trigger Setting
 
         tr, td = table.add_row_cell()
 
@@ -784,88 +786,89 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
         td.add_style("padding: 10px")
+
+        # Select box in Action Area 
+            
+        td.add("Do the following: ")
+        
+        #td = table.add_cell()
+        # Action Select
+        select = SelectWdg("trigger")
+        select.set_option("labels", trigger_labels)
+        select.set_option("values", trigger_values)
         if trigger_type:
-            
-            td.add("Do the following: ")
-            
-            #td = table.add_cell()
-            # Action Select
-            select = SelectWdg("trigger")
-            select.set_option("labels", trigger_labels)
-            select.set_option("values", trigger_values)
-            if trigger_type:
-                select.set_value(trigger_type)
+            select.set_value(trigger_type)
 
-            if isinstance(trigger, Notification):
-                select.set_value("notification")
-            elif trigger and trigger.get_value("script_path"):
-                select.set_value("python_script")
+        if isinstance(trigger, Notification):
+            select.set_value("notification")
+        elif trigger and trigger.get_value("script_path"):
+            select.set_value("python_script")
 
 
-            select.add_empty_option("-- Choose action --")
-            td.add(select)
-            trigger_sk = ''
-            if trigger:
-                trigger_sk = trigger.get_search_key()
-            select.add_behavior( {
-            'type': 'change',
-            'kwargs': {
-                'pipeline_code': my.pipeline_code,
-                'process': my.process,
-                'search_key': trigger_sk
-            },
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_trigger_detail_top");
-            var content = top.getElement(".spt_trigger_add_top");
-            var event_el = top.getElement(".spt_trigger_event");
+        select.add_empty_option("-- Choose action --")
+        td.add(select)
+        trigger_sk = ''
+        if trigger:
+            trigger_sk = trigger.get_search_key()
+        select.add_behavior( {
+        'type': 'change',
+        'kwargs': {
+            'pipeline_code': my.pipeline_code,
+            'process': my.process,
+            'search_key': trigger_sk
+        },
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_trigger_detail_top");
+        var content = top.getElement(".spt_trigger_add_top");
+        var event_el = top.getElement(".spt_trigger_event");
 
-            var event = event_el.value;
-            bvr.kwargs['event'] = event;
-             
-            var trigger_type = bvr.src_el.value;
-            var trigger_wdg;
-            var trigger_cbk;
-            if (trigger_type == "notification") {
-                trigger_wdg = 'tactic.ui.tools.NotificationTriggerEditWdg';
-                trigger_cbk = 'tactic.ui.tools.NotificationTriggerEditCbk';
-            }
-            else if (trigger_type == "task_status") {
-                trigger_wdg = 'tactic.ui.tools.StatusTriggerEditWdg';
-                trigger_cbk = 'tactic.ui.tools.StatusTriggerEditCbk';
-            }
-            else if (trigger_type == "task_create") {
-                trigger_wdg = 'tactic.ui.tools.TriggerCreateWdg';
-                trigger_cbk = 'tactic.ui.tools.TriggerCreateCbk';
-            }
-            else if (trigger_type == "task_complete") {
-                trigger_wdg = 'tactic.ui.tools.TriggerCompleteWdg';
-                trigger_cbk = 'tactic.ui.tools.TriggerCompleteCbk';
-            }
-            else if (trigger_type == "task_date") {
-                trigger_wdg = 'tactic.ui.tools.TriggerDateWdg';
-                trigger_cbk = 'tactic.ui.tools.TriggerDateCbk';
-            }
-            else if (trigger_type == "python_script") {
-                trigger_wdg = 'tactic.ui.tools.PythonScriptTriggerEditWdg';
-                trigger_cbk = 'tactic.ui.tools.PythonScriptTriggerEditCbk';
-            }
-            else if (trigger_type == "python_class") {
-                trigger_wdg = 'tactic.ui.tools.PythonClassTriggerEditWdg';
-                trigger_cbk = 'tactic.ui.tools.PythonClassTriggerEditCbk';
-            }
-            else {
-                spt.behavior.replace_inner_html(content, "");
-                content.setAttribute("spt_trigger_add_cbk", "");
-                return;
-            }
+        var event = event_el.value;
+        bvr.kwargs['event'] = event;
+         
+        var trigger_type = bvr.src_el.value;
+        var trigger_wdg;
+        var trigger_cbk;
+        if (trigger_type == "notification") {
+            trigger_wdg = 'tactic.ui.tools.NotificationTriggerEditWdg';
+            trigger_cbk = 'tactic.ui.tools.NotificationTriggerEditCbk';
+        }
+        else if (trigger_type == "task_status") {
+            trigger_wdg = 'tactic.ui.tools.StatusTriggerEditWdg';
+            trigger_cbk = 'tactic.ui.tools.StatusTriggerEditCbk';
+        }
+        else if (trigger_type == "task_create") {
+            trigger_wdg = 'tactic.ui.tools.TriggerCreateWdg';
+            trigger_cbk = 'tactic.ui.tools.TriggerCreateCbk';
+        }
+        else if (trigger_type == "task_complete") {
+            trigger_wdg = 'tactic.ui.tools.TriggerCompleteWdg';
+            trigger_cbk = 'tactic.ui.tools.TriggerCompleteCbk';
+        }
+        else if (trigger_type == "task_date") {
+            trigger_wdg = 'tactic.ui.tools.TriggerDateWdg';
+            trigger_cbk = 'tactic.ui.tools.TriggerDateCbk';
+        }
+        else if (trigger_type == "python_script") {
+            trigger_wdg = 'tactic.ui.tools.PythonScriptTriggerEditWdg';
+            trigger_cbk = 'tactic.ui.tools.PythonScriptTriggerEditCbk';
+        }
+        else if (trigger_type == "python_class") {
+            trigger_wdg = 'tactic.ui.tools.PythonClassTriggerEditWdg';
+            trigger_cbk = 'tactic.ui.tools.PythonClassTriggerEditCbk';
+        }
+        else {
+            spt.behavior.replace_inner_html(content, "");
+            content.setAttribute("spt_trigger_add_cbk", "");
+            return;
+        }
 
-            spt.panel.load(content, trigger_wdg, bvr.kwargs)
-            content.setAttribute("spt_trigger_add_cbk", trigger_cbk);
+        spt.panel.load(content, trigger_wdg, bvr.kwargs)
+        content.setAttribute("spt_trigger_add_cbk", trigger_cbk);
 
-            '''
-            } )
+        '''
+        } )
 
-            td.add(HtmlElement.br(2))
+        td.add(HtmlElement.br(2))
 
         trigger_div = DivWdg()
         td.add(trigger_div)
