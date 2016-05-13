@@ -1488,7 +1488,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             save_class_name=my.get_save_cbk(),
             init_load_num = -1,
             expand_on_load=True,
-
+            show_context_menu=False
         )
         layout.set_sobjects(sobjects)
         top.add(layout)
