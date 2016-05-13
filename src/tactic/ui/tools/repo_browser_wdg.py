@@ -32,18 +32,17 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
         "parent_mode": {
-            'description': '''The relationship between a snapshot and parent sObject which determines the sType shown in the 
-                RepoBrowserDirContentWdg, the sObject displayed in RepoBrowserContentWdg and the functionality of file system editing tools.
-                When mode is single_file, the parent sObject is updated, renamed, deleted and moved with 
-                child snapshots. Note, the search_type used in single file must have relative_dir specified.  
-                When mode is single_asset with given search_key, the directory and tools are scoped to the parent.''',
+            'description': '''Determines the sType that is shown in the directory listing and content wdg.
+                - single_search type shows snapshots of files found
+                - single_file parent_mode shows the parent sObjects of files found
+                - single_asset only shows snapshots related to search_key given.''',
             'type': 'SelectWdg',
             'values': 'single_asset|single_file|single_search_type',
             'default': 'single_search_type',
             'order': 0
         },
         "file_system_edit": {
-            'descirption': 'Enables tools associated with updating the file system: renaming, deleting, moving and creating new folders.',
+            'description': 'Enables tools associated with updating the file system: renaming, deleting, moving and creating new folders.',
             'type': 'SelectWdg',
             'values': 'false|true',
             'default': 'false',
@@ -730,7 +729,9 @@ class RepoBrowserDirListWdg(DirListWdg):
         #if not show_no_sobject_folders:
         new_sub_paths = []
         if os.path.exists(base_dir) and os.path.isdir(base_dir):
-            dirnames = os.listdir(unicode(base_dir))
+            if not isinstance(base_dir, unicode):
+                base_dir = unicode(base_dir)
+            dirnames = os.listdir(base_dir)
             for dirname in dirnames:
                 subdir = "%s/%s" % (base_dir, dirname)
                 if not os.path.isdir(subdir):
@@ -1876,7 +1877,19 @@ class RepoBrowserDirListWdg(DirListWdg):
             update['search_type'] = search_type
         top.add_update(update)
 
-
+    def add_base_dir_behaviors(my, div, base_dir):
+        if my.parent_mode == "single_file":
+            hint = "You are viewing the file repository in single file mode. " \
+                "Browse sObjects with a single associated file."
+        elif my.parent_mode == "single_asset":
+            hint = "You are viewing the file repository in single asset mode. " \
+                "Browse snapshots associated with a single sObject."
+        else:
+            hint = "You are viewing the file repository in single_search_type mode. " \
+                "Browse snapshots associated with sObjects from a single search type."
+        div.add_attr("title", hint)
+        div.add_style("cursor", "help")
+ 
     def get_dir_context_menu(my, mode="strict"):
 
         parent_key = my.kwargs.get("parent_key")
