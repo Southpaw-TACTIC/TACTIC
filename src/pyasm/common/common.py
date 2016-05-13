@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["Common", "Marshaller", "jsondumps", "jsonloads"]
+__all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
 import os, sys, time, string, re, random, types, new, pprint, traceback
@@ -64,8 +64,6 @@ except ImportError:
 
 
 class Common(Base):
-
-
 
     def get_next_sobject_code(sobject, column):
         '''Get the next code. When given an sobject, and a column, it gets the value of that
@@ -688,6 +686,7 @@ class Common(Base):
         return filename
     get_filesystem_name = staticmethod(get_filesystem_name)
 
+    
 
     def clean_filesystem_name(filename):
         '''take a name and converts it to a name that can be saved in
@@ -1103,17 +1102,20 @@ class Common(Base):
 
     def kill(pid=None):
         '''Kills the current program.'''
+        
         import sys
         if not pid:
             pid = os.getpid()
         pid = int(pid)
-
+        
         if os.name =='nt':
+            """
             # for windows
             python = sys.executable
             python = python.replace('\\','/')
             import subprocess
             subprocess.Popen([python, sys.argv])
+            """
             kill = KillProcessThread(pid)
             kill.start()
         else:
@@ -1135,6 +1137,7 @@ class Common(Base):
             cmd_list = [python]
             cmd_list.extend(sys.argv)
             subprocess.Popen(cmd_list)
+ 
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()

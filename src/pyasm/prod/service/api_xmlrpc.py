@@ -5975,7 +5975,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if transaction:
                 transaction.set_description(description)
                 transaction.set_title(title)
-            return ticket
+
+            security = Environment.get_security()
+            transaction_ticket = security.get_ticket_key()
+            return transaction_ticket
 
         # otherwise use xmlrpc mode
 
