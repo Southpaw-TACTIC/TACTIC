@@ -153,7 +153,8 @@ class TriggerToolWdg(BaseRefreshWdg):
         # find the triggers
         search = Search("config/trigger")
         if my.mode == 'pipeline':
-            search.add_op('begin')
+            if my.process_sobj:
+                search.add_op('begin')
             search.add_filter("process", my.process)
             if my.process_sobj:
                 search.add_filter("process", my.process_sobj.get_code())
@@ -185,7 +186,8 @@ class TriggerToolWdg(BaseRefreshWdg):
         triggers_div.add("<b>Notifications</b><hr/>")
         search = Search("sthpw/notification")
         if my.mode == 'pipeline':
-            search.add_op('begin')
+            if my.process_sobj:
+                search.add_op('begin')
             search.add_filter("process", my.process)
             if my.process_sobj:
                 search.add_filter("process", my.process_sobj.get_code())
