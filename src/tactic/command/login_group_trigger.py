@@ -46,18 +46,19 @@ class LoginGroupTrigger(Trigger):
             if not login_group_name:
                 login_group_name = sobj.get_value('login_group')
 
-        login_group = re.sub(r'\W', "_", login_group_name)
+        login_group = re.sub(r'[\$\s,#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!-]', "_", login_group_name)
         login_group = login_group.lower()
-        login_group_code = sobj.get_value('login_group')
+        login_group_name = sobj.get_value('login_group')
 
         sobj.set_value('login_group', login_group)
         sobj.set_value('code', login_group)
 
         sobj.commit(triggers=False)
 
-        my.update_related(login_group, login_group_code)
+        my.update_related(login_group, login_group_name)
 
     def update_related(my, login_group, prev_login_group):
+        # Update related table login_in_group
 
         search = Search('sthpw/login_in_group')
         search.add_filter('login_group', prev_login_group)
