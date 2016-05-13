@@ -13,8 +13,9 @@ __all__ = ['LoginGroupTrigger']
 
 import tacticenv
 
-from pyasm.search import SearchKey
+from pyasm.search import Search, SearchKey
 from pyasm.command import Trigger
+from tactic_client_lib import TacticServerStub
 
 
 class LoginGroupTrigger(Trigger):
@@ -46,14 +47,36 @@ class LoginGroupTrigger(Trigger):
 
         login_group = login_group_name.lower()
         login_group = login_group.replace(" ", "_")
+        login_group_code = sobj.get_value('login_group')
 
         sobj.set_value('login_group', login_group)
         sobj.set_value('code', login_group)
 
         sobj.commit(triggers=False)
 
+        my.update_related(login_group, login_group_code)
 
+    def update_related(my, login_group, prev_login_group):
 
+        login_in_groups = Search.eval("@SOBJECT(sthpw/login_in_group['login_group','%s'])" % prev_login_group)
 
+        if login_in_groups:
+
+            server = TacticServerStub.get()
+            login_in_group_dict = {}
+            
+            data = {
+                "login_group": login_group
+            }
+
+            for login_in_group in login_in_groups:
+                login_in_group_code = login_in_group.get("code")
+                login_in_group_sk = server.build_search_key("sthpw/login_in_group", login_in_group_code)
+                login_in_group_dict[login_in_group_sk] = data
+
+            try:
+                server.update_multiple(login_in_group_dict)
+            except Exception:
+                raise Exception
 
 
