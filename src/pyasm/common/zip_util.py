@@ -125,46 +125,52 @@ class ZipUtil(object):
     zip_dir2 = classmethod(zip_dir2)
 
 
-    def extract(cls, zip_path, base_dir=None):
+    def extract(cls, zip_path, base_dir=None, relative=False):
 
-        # first check if this is a zip file
         if not os.path.exists(zip_path):
             raise Exception("Path [%s] does not exist" % zip_path)
-
+        
         is_zip = zipfile.is_zipfile(zip_path)
         if not is_zip:
             raise Exception("Path [%s] is not a zip file" % zip_path)
 
-        # TODO: make sure all paths are relative
-
         if not base_dir:
             base_dir = os.path.dirname(zip_path)
 
-
-
         paths = []
-
 
         f = codecs.open(zip_path, 'rb')
         zf = zipfile.ZipFile(f, 'r')
 
+        """
+        We can not use this because we have no control over filenames.
         if hasattr(zf, 'extractall'):
             try:
                 zf.extractall(path=base_dir)
             except Exception, e:
                 print "WARNING extracting zip: ", e
             return paths            # This does not fill in the paths
+        """
 
         name_list = zf.namelist()
-
         for file_path in name_list:
-
+            
+            # Decode the file_path
+            encoded_path = get_file_name(file_path)
+            new_path = "%s/%s" % (base_dir, encoded_path)
+            
+            # Check if file is a directory
+            path, ext = os.path.splitext(encoded_path)
+            if not ext:
+                if not os.path.exists(new_path):
+                    os.makedirs(new_path)
+                continue
+            
             try:
                 data = zf.read(file_path)
             except KeyError:
-                print 'ERROR: Did not find %s in zip file' % filename
+                print 'ERROR: Did not find %s in zip file' % file_path
             else:
-                new_path = "%s/%s" % (base_dir, file_path)
                 new_dir = os.path.dirname(new_path)
                 if not os.path.exists(new_dir):
                     os.makedirs(new_dir)
@@ -173,8 +179,12 @@ class ZipUtil(object):
                 nf.write(data)
                 nf.close()
 
-                paths.append(new_path)
-
+                if relative == True:
+                    relative_path = os.path.relpath(new_path, base_dir)
+                    paths.append(relative_path)
+                else:
+                    paths.append(new_path)
+   
         return paths
 
     extract = classmethod(extract)
@@ -203,6 +213,24 @@ class ZipUtil(object):
         print
     print_info = classmethod(print_info)
 
+
+def get_file_name(file_name):
+    '''This emulates a decoding and encoding of a file
+    name when uploaded through upload_multipart.py'''
+
+    import sys
+    if sys.stdout.encoding:
+        file_name = file_name.decode(sys.stdout.encoding)
+
+    try:
+        file_name = file_name.decode('unicode-escape')
+    except UnicodeEncodeError, e:
+        pass
+    except UnicodeError,e:
+        pass
+    file_name = file_name.replace("\\", "/")
+
+    return file_name
 
 
 if __name__ == '__main__':

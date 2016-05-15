@@ -48,7 +48,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
         'title': 'The title to display at the top',
         'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
-        'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped'
+        'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped',
+        'unzip_mode': 'When true, .zip files are decompressed and checks-in all individual contents.'
     }
 
 
@@ -397,6 +398,27 @@ class IngestUploadWdg(BaseRefreshWdg):
             div.add(context_mode)
                 
 
+
+        # Archive option
+        if "unzip_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Archived files")
+            div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
+
+            unzip_option = my.kwargs.get("unzip_option")
+            if not unzip_option:
+                unzip_option = "false"
+            unzip_mode = SelectWdg(name="unzip_mode")
+            unzip_mode.add_class("spt_unzip_mode_select")
+            unzip_mode.set_option("values", "false|true")
+            unzip_mode.set_option("labels", "Leave archived (.zip) files compressed.|\
+                Decompress and check-in all contents of archived (.zip) files.")
+            unzip_mode.set_option("default", unzip_option)
+            unzip_mode.add_style("margin-top: -3px")
+            unzip_mode.add_style("margin-right: 5px")
+            div.add(unzip_mode) 
 
         extra_data = my.kwargs.get("extra_data")
         if not isinstance(extra_data, basestring):
@@ -1021,6 +1043,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         var column_select = top.getElement(".spt_column_select");
         var column = column_select ? column_select.value : bvr.kwargs.column;
 
+        var unzip_select = top.getElement(".spt_unzip_mode_select");
+        var unzip_mode = unzip_select ? unzip_select.value : bvr.kwargs.unzip_mode;
+
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
             var name = files[i].name;
@@ -1085,7 +1110,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             column: column,
             library_mode: library_mode,
             dated_dirs: dated_dirs,
-            context_mode: context_mode
+            context_mode: context_mode,
+            unzip_mode: unzip_mode
         }
         on_complete = function(rtn_data) {
 
@@ -1490,12 +1516,14 @@ class IngestUploadCmd(Command):
         
         filenames = my.kwargs.get("filenames")
         relative_dir = my.kwargs.get("relative_dir")
+ 
 
         base_dir = my.kwargs.get("base_dir")
         if not base_dir:
             upload_dir = Environment.get_upload_dir()
             base_dir = upload_dir
-
+       
+        
         context_mode = my.kwargs.get("context_mode")
         if not context_mode:
             context_mode = "case_insensitive"
@@ -1515,7 +1543,10 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        #key = my.kwargs.get("key")
+        key = my.kwargs.get("key")
+       
+        unzip_mode = my.kwargs.get("unzip_mode")
+ 
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
@@ -1569,12 +1600,16 @@ class IngestUploadCmd(Command):
 
         if library_mode:
             relative_dir = "%s/001" % relative_dir
+       
+        top_relative_dir = relative_dir 
 
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
-
+          
+            file_dir = os.path.dirname(filename)
+            relative_dir = os.path.join(top_relative_dir, file_dir) 
 
             if filename.startswith("search_key:"):
                 mode = "single"
@@ -1602,30 +1637,25 @@ class IngestUploadCmd(Command):
                     relative_dir = "%s/%03d" % (relative_dir[:-4], current_folder)
 
 
-            unzip = my.kwargs.get("unzip")
-            if unzip in ["true", True] and filename.endswith(".zip"):
+            if unzip_mode in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
 
-                unzip_dir = "/tmp/xxx"
+                unzip_dir = Environment.get_upload_dir()
                 if not os.path.exists(unzip_dir):
                     os.makedirs(unzip_dir)
 
                 zip_path = "%s/%s" % (base_dir, filename)
-                ZipUtil.extract(zip_path, base_dir=unzip_dir)
-
-                paths = ZipUtil.get_file_paths(zip_path)
-
-
+                paths = ZipUtil.extract(zip_path, base_dir=base_dir, relative=True)
+              
                 new_kwargs = my.kwargs.copy()
                 new_kwargs['filenames'] = paths
-                new_kwargs['base_dir'] = unzip_dir
                 ingest = IngestUploadCmd(**new_kwargs)
                 ingest.execute()
 
                 continue
+            
 
-
-
+       
             if my.sobject:
                 sobject = my.sobject
 
@@ -1687,7 +1717,7 @@ class IngestUploadCmd(Command):
                 path = "%s/%s" % (relative_dir, filename)
             else:
                 path = filename
-
+            
             # Extracting keywords from filename only because all Assets will 
             # have the keywords [project_name]/[search_type name]/[Ingest]
             file_keywords = Common.extract_keywords_from_path(filename)
@@ -1739,10 +1769,9 @@ class IngestUploadCmd(Command):
                 print "WARNING: ", e
             """
 
-
             if not os.path.exists(file_path):
                 raise Exception("Path [%s] does not exist" % file_path)
-
+            
             # get the metadata from this image
             if SearchType.column_exists(search_type, "relative_dir"):
                 if category and category not in ['none', None]:
@@ -1770,7 +1799,8 @@ class IngestUploadCmd(Command):
                         elif category == "by_week":
                             date_str = orig_date.strftime("%Y/Week-%U")
 
-                    full_relative_dir = "%s/%s" % (relative_dir, date_str)
+                    dirname = os.path.dirname(filename)
+                    full_relative_dir = os.path.join(relative_dir, date_str, dirname)
                     sobject.set_value("relative_dir", full_relative_dir)
            
             # Add parent sObject
@@ -1825,7 +1855,8 @@ class IngestUploadCmd(Command):
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (context, filename)
+                basename = os.path.basename(filename)
+                context = "%s/%s" % (context, basename)
 
             if context_mode == "case_insensitive":
                 context = context.lower()                
