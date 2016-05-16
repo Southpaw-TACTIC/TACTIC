@@ -26,7 +26,7 @@ class LoginGroupTrigger(Trigger):
         input = my.get_input()
         update_data = input.get("update_data")
 
-        if not update_data.get('name') and not update_data.get('login_group'):
+        if 'name' not in update_data and 'login_group' not in update_data:
             return
 
         mode = input.get("mode")
@@ -46,7 +46,7 @@ class LoginGroupTrigger(Trigger):
             sobj.set_value('name', login_group_name)
 
         elif mode == "update":
-            if update_data.get('login_group'):
+            if 'login_group' in update_data:
                 raise Exception('Login group attribute is automatically updated. Please edit only the name attribute.')
 
             login_group_name = sobj.get_value('name')
