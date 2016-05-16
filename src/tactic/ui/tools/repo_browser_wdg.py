@@ -1879,14 +1879,11 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_base_dir_behaviors(my, div, base_dir):
         if my.parent_mode == "single_file":
-            hint = "You are viewing the file repository in single file mode. " \
-                "Browse sObjects with a single associated file."
+            hint = "You are viewing the file repository in single file mode."
         elif my.parent_mode == "single_asset":
-            hint = "You are viewing the file repository in single asset mode. " \
-                "Browse snapshots associated with a single sObject."
+            hint = "You are viewing the file repository in single asset mode."
         else:
-            hint = "You are viewing the file repository in single_search_type mode. " \
-                "Browse snapshots associated with sObjects from a single search type."
+            hint = "You are viewing the file repository in single_search_type mode."
         div.add_attr("title", hint)
         div.add_style("cursor", "help")
  
