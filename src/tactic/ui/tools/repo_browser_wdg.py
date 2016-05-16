@@ -17,7 +17,7 @@ from pyasm.common import Environment, Xml, Common, jsonloads, jsondumps
 from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings, SpanWdg
 from pyasm.biz import Snapshot, Project, File
 from pyasm.search import Search, SearchType, SearchKey, FileUndo
-from pyasm.widget import IconWdg, CheckboxWdg, HiddenWdg
+from pyasm.widget import IconWdg, CheckboxWdg, HiddenWdg, HintWdg
 from pyasm.command import Command
 
 from tactic.ui.panel import FastTableLayoutWdg
@@ -1878,14 +1878,16 @@ class RepoBrowserDirListWdg(DirListWdg):
         top.add_update(update)
 
     def add_base_dir_behaviors(my, div, base_dir):
+        
         if my.parent_mode == "single_file":
             hint = "You are viewing the file repository in single file mode."
         elif my.parent_mode == "single_asset":
             hint = "You are viewing the file repository in single asset mode."
         else:
             hint = "You are viewing the file repository in single_search_type mode."
-        div.add_attr("title", hint)
-        div.add_style("cursor", "help")
+        
+        hint_wdg = HintWdg(message=hint)
+        div.add(hint_wdg)
  
     def get_dir_context_menu(my, mode="strict"):
 
