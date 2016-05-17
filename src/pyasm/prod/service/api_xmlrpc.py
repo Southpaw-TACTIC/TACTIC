@@ -968,6 +968,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             db_resource = "sthpw"
         sql = Sql(db_resource)
         sql.connect()
+        impl = sql.get_database_impl()
+        impl_type = impl.get_database_type()
 
         project_code = Project.get_project_code()
 
@@ -977,7 +979,46 @@ class ApiXMLRPC(BaseApiXMLRPC):
         select.set_database(sql)
         select.add_filter("code", key)
         statement = select.get_statement()
+        
         last_message = sql.do_query(statement)
+
+       
+        if impl_type == 'Sqlite':
+            if not last_message:
+                message_obj = SearchType.create("sthpw/message")
+                message_obj.set_value("code", key)
+                message_obj.set_value("project_code", project_code)
+            else:
+                message_obj = Search.eval("@SOBJECT(sthpw/message['code','%s'])"%key, single=True)
+        
+            message_obj.set_value("category", category)
+            if message != None:
+                message_obj.set_value("message", message)
+            if status != None:
+                message_obj.set_value("status", status)
+
+            login = Environment.get_user_name()
+            message_obj.set_value("login", login)
+            message_obj.set_value("timestamp", "NOW")
+            message_obj.commit()
+
+            # repeat with update the message log
+            message_log_obj = SearchType.create("sthpw/message_log")
+            message_log_obj.set_value("message_code", key)
+            if message != None:
+                message_log_obj.set_value("message", message)
+            if status != None:
+                message_log_obj.set_value("status", status)
+
+            message_log_obj.set_value("login", login)
+            message_log_obj.set_value("project_code", project_code)
+            message_log_obj.set_value("timestamp", "NOW")
+
+
+            return 
+
+      
+    
         if not last_message:
             update = Insert()
             update.set_database(sql)
@@ -1001,9 +1042,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         update.set_value("timestamp", "NOW")
 
         statement = update.get_statement()
+            
         sql.do_update(statement)
-
-
+      
         # repeat with update the message log
         update = Insert()
         update.set_database(sql)
@@ -1014,7 +1055,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if status != None:
             update.set_value("status", status)
 
-        login = Environment.get_user_name()
         update.set_value("login", login)
         update.set_value("project_code", project_code)
         update.set_value("timestamp", "NOW")
@@ -1043,7 +1083,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject.commit(triggers=False)
         transaction.commit()
         transaction.remove_from_stack()
-
 
     @xmlrpc_decorator
     def subscribe(my, ticket, key, category=None):
