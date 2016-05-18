@@ -2259,21 +2259,27 @@ class ThumbWdg2(BaseRefreshWdg):
                 color = colors[random.randint(0,7)]
 
                 img = DivWdg()
-                img.add("<div style='display: inline-block; vertical-align: middle; margin-top: 30%%; width: 50px; height: 30px;'>%s</div>" % ext)
-                img.add_style("text-align: center")
-                #img.add_style("width: 80px")
-                #img.add_style("height: 50px")
-                img.add_style("min-width: 80px")
-                img.add_style("min-height: 50px")
-                img.add_style("width: 50%")
-                img.add_style("height: 70%")
+                img.add_style("padding-top: 10px")
+                
+                inner = DivWdg()
+                img.add(inner)
+               
+                ext_div = DivWdg()
+                inner.add(ext_div)
+                ext_div.add_styles("display: inline-block; vertical-align: middle; margin-top: 40%;")
+                ext_div.add(ext)
+                
+                inner.add_style("text-align: center")
+                #inner.add_style("min-width: 80px")
+                #inner.add_style("min-height: 50px")
+                inner.add_style("width: 53%")
+                inner.add_style("height: 80%")
 
-                img.add_style("margin: 30px auto")
-                img.add_style("padding: 0px 10px")
-                img.add_style("font-size: 20px")
-                img.add_style("font-weight: bold")
-                img.add_style("color: #fff")
-                img.add_style("background: %s" % color)
+                inner.add_style("margin: 30px auto")
+                inner.add_style("font-size: 20px")
+                inner.add_style("font-weight: bold")
+                inner.add_style("color: #fff")
+                inner.add_style("background: %s" % color)
 
             else:
                 if isinstance(path, unicode):
