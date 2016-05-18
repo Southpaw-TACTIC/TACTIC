@@ -1666,6 +1666,24 @@ class IngestUploadCmd(Command):
 
             # Create a new entry
             if not sobject:
+                project_code = Project.get_project_code()
+                file_search_type = SearchType.build_search_type(search_type, project_code)
+
+                search_name, search_ext = os.path.splitext(new_filename)
+                search_name = "%s.%%" % search_name
+
+                search_file = Search("sthpw/file")
+                search_file.add_filter("search_type", file_search_type)
+                search_file.add_filter("relative_dir", relative_dir)
+                search_file.add_filter("file_name", search_name, op='like')
+
+                file_sobjects = search_file.get_sobjects()
+
+                if file_sobjects and update_mode in ['true', True] and len(sobjects) > 1:
+                    raise Exception('Multiple files with the same name as "%s" already exist. Please individually update each file.' % new_filename)
+                elif file_sobjects:
+                    raise Exception('A file with the same name as "%s" already exists in the folder "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
+
                 sobject = SearchType.create(search_type)
 
                 if ignore_ext in ['true', True]:
