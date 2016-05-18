@@ -1667,7 +1667,7 @@ class IngestUploadCmd(Command):
 
             # Create a new entry
             if not sobject:
-                if update_mode != "true":
+                if update_mode not in ['true', True]:
                     sobjects = []
 
                 my.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
@@ -1918,7 +1918,7 @@ class IngestUploadCmd(Command):
 
         file_sobjects = search_file.get_sobjects()
 
-        if file_sobjects and update_mode == "true" and len(sobjects) > 1:
+        if file_sobjects and update_mode in ['true', True] and len(sobjects) > 1:
             raise TacticException('Multiple files with the same name as "%s" already exist. Uncertain as to which file to update. Please individually update each file.' % new_filename)
         elif file_sobjects:
             raise TacticException('A file with the same name as "%s" already exists in the path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
