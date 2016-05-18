@@ -33,9 +33,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         "parent_mode": {
             'description': '''Determines the sType that is shown in the directory listing and content wdg.
-                - single_search type shows snapshots of files found
-                - single_file parent_mode shows the parent sObjects of files found
-                - single_asset only shows snapshots related to search_key given.''',
+                file_sytem_edit kwarg may also be specified when parent_mode is single_file.
+                - single_search_type shows snapshots of files found given search_type
+                - single_file shows the parent sObjects of files found given search_type
+                - single_asset shows snapshots related to an sObject given search_key''',
             'type': 'SelectWdg',
             'values': 'single_asset|single_file|single_search_type',
             'default': 'single_search_type',
@@ -231,11 +232,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # default is True.
         show_base_dir = my.kwargs.get("show_base_dir")
         
-        # Dynamically load the directory listing
-        dynamic = my.kwargs.get("dynamic")
-        if not dynamic:
-            dynamic = False
-        
         # The left contains a directory listing
         # starting at project_dir.
         dir_list = RepoBrowserDirListWdg(
@@ -245,7 +241,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             depth=-1,
             open_depth=open_depth,
             search_types=search_types,
-            dynamic=dynamic,
+            dynamic=False,
             keywords=keywords,
             search_keys=search_keys,
             search=search,
@@ -513,7 +509,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def _clean_folder_state(my, folder_state, key):
-        # Get and clean folder_states
+        ''' get and clean folder_states '''
         states = folder_state.split("|")
         
         updated_states = []
@@ -885,7 +881,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser = {};
           
             // Misc functions
-            spt.repo_browser.getElement = function(el) {
+            spt.repo_browser.get_element = function(el) {
                 // TODO: Pass in a child el when calling this function.
                 // Currently flawed because there could be more than one repo browser tab/popup/view.
                 var repo_top = document.getElement(".spt_repo_browser_top");
@@ -897,7 +893,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             };
             
             spt.repo_browser.get_top = function() {
-                return spt.repo_browser.getElement();
+                return spt.repo_browser.get_element();
             }
             
             spt.repo_browser.get_parent_mode = function() {
@@ -992,7 +988,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 spt.repo_browser.dynamic_lock = lock;
                 
-                var dir_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                var dir_top = spt.repo_browser.get_element(".spt_dir_list_top");
                 
                 // Shut off requests update when the lock is on.
                 // TODO: This should be optimized so that the requests
@@ -1052,7 +1048,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.refresh_directory_listing = function(dir_list_el) {
                 
                 if (!dir_list_el) {
-                    dir_list_el = spt.repo_browser.getElement(".spt_dir_list_handler_top");
+                    dir_list_el = spt.repo_browser.get_element(".spt_dir_list_handler_top");
                 }
                
                 var folder_state = spt.repo_browser.get_raw_folder_state();
@@ -1071,7 +1067,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     folder_el = el.getParent(".spt_dir")
                 }
 
-                var dir_list_el = spt.repo_browser.getElement(".spt_dir_list_handler_top");
+                var dir_list_el = spt.repo_browser.get_element(".spt_dir_list_handler_top");
                 var folder_state = spt.repo_browser.get_raw_folder_state();
                 dir_list_el.setProperty("spt_folder_state", folder_state);
 
@@ -1085,7 +1081,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             // Folder state manipulation
             spt.repo_browser.get_raw_folder_state = function() {
                 // Returns folder states as string - list join with "|"
-                var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+                var dir_list_top = spt.repo_browser.get_element(".spt_dir_list_top");
                 var state_input = dir_list_top.getElement(".spt_folder_state");
                 var folder_state = state_input.value;
                 return folder_state;
@@ -1094,18 +1090,13 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.get_folder_state = function() {
                 // Returns list of folder state items
                 var folder_state = spt.repo_browser.get_raw_folder_state();
-                var items;
-                if (folder_state == '') {
-                    items = [];
-                } else {
-                    items = folder_state.split("|");
-                } 
+                var items = folder_state ? folder_state.split("|") : [];
                 return items;
             } 
 
             spt.repo_browser.set_folder_state = function(folder_list) {
                // Given list of folder state items, sets the folder state
-               var dir_list_top = spt.repo_browser.getElement(".spt_dir_list_top");
+               var dir_list_top = spt.repo_browser.get_element(".spt_dir_list_top");
                var state_input = dir_list_top.getElement(".spt_folder_state");
              
                var folder_state = folder_list.join("|");
@@ -1224,9 +1215,9 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.repo_browser.get_view_indicator = function() {
                 // Return view indicator (eye) in DOM
                 // If cannot find eye, create from template.
-                var eye = spt.repo_browser.getElement(".spt_browser_view_indicator"); 
+                var eye = spt.repo_browser.get_element(".spt_browser_view_indicator"); 
                 if (!eye) {
-                    eye = spt.repo_browser.getElement(".spt_browser_view_template").clone(); 
+                    eye = spt.repo_browser.get_element(".spt_browser_view_template").clone(); 
                     eye.removeClass("spt_browser_view_template");
                     eye.addClass("spt_browser_view_indicator"); 
                 }
@@ -1377,7 +1368,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.repo_browser.update_folder_state(old_path);
 
                 // Refresh the content top
-                var content_top = spt.repo_browser.getElement(".spt_browser_detail_top");
+                var content_top = spt.repo_browser.get_element(".spt_browser_detail_top");
                 spt.panel.refresh(content_top);
             } catch(err) {
                 spt.alert(spt.exception.handler(err));
@@ -1583,14 +1574,14 @@ class RepoBrowserDirListWdg(DirListWdg):
             var repo_top = document.getElement(".spt_repo_browser_top");
             
             // Refresh detail top
-            var detail_top = spt.repo_browser.getElement('.spt_browser_detail_top');
+            var detail_top = spt.repo_browser.get_element('.spt_browser_detail_top');
             spt.panel.refresh(detail_top);
             
             // Update the folder state.
             spt.repo_browser.update_folder_state(path);  
 
             // Refresh target parent dir - refresh may have occured 
-            var target = spt.repo_browser.getElement('.spt_browser_deleted');
+            var target = spt.repo_browser.get_element('.spt_browser_deleted');
             var parent_dir;
             if (target) {
                 parent_dir = target.getParent('.spt_dir_list_handler_top');
@@ -2361,7 +2352,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         } 
                      
                         // Refresh browser detail
-                        var detail_top = spt.repo_browser.getElement(".spt_browser_detail_top");
+                        var detail_top = spt.repo_browser.get_element(".spt_browser_detail_top");
                         spt.panel.refresh(detail_top);
                     } catch(err) {
                         spt.alert(spt.exception.handler(err));
