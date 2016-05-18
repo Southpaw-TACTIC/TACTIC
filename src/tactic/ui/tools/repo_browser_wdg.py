@@ -59,6 +59,14 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
     def get_display(my):
         
+        '''In the DirListWdg, the "dynamic" kwarg allows for dynamic loading 
+        of every directory when True. When False, subdirectory contents are preloaded 
+        based on depth parameters. In the RepoBrowserWdg, there is no "dynamic" kwarg. 
+        The RepoBrowserWdg loads subdirectories in the folder_state, but has a dynamic-like 
+        loading on expansion of directories similar to "dynamic" kwarg in the DirListWdg.
+        Note that the RepoBrowserWdg and RepoBrowseDirListWdg are dependant on eachother. 
+        '''
+        
         top = my.top
         top.add_color("background", "background")
         top.add_class("spt_repo_browser_top")
@@ -509,7 +517,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def _clean_folder_state(my, folder_state, key):
-        ''' get and clean folder_states '''
+        '''Get and clean folder_states '''
         states = folder_state.split("|")
         
         updated_states = []
@@ -1716,18 +1724,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 };
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
-        } else {
-            // Non-dynamic opening and closing
-            spt.toggle_show_hide(sibling);
-           
-            if (is_open) {
-                items.splice(i, 1);
-                spt.repo_browser.set_folder_state(items);
-            } else {
-                spt.repo_browser.add_folder_state(dir);   
-            }
-        }
- 
+        } 
 
         ''' % (jsondumps(my.handler_kwargs))
 

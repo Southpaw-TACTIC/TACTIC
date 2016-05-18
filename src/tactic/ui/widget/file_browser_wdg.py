@@ -586,8 +586,92 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_level", my.level+1)
 
         swap_action = my.get_swap_action()
-        if not swap_action:
-            swap_action = r'''
+        swap.add_action_script(swap_action)
+
+
+        # Open if is_open or it is the first folder
+        if dynamic and (is_open or my.get_depth() == 0):
+            swap.get_widget("div1").add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                bvr.src_el.click();
+                '''
+            } )
+
+
+
+        background = my.kwargs.get("background")
+        if not background:
+            background = "background"
+        hover = div.get_color(background, -5)
+        div.add_color("background", background)
+        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
+        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+     
+ 
+
+
+        div.add_attr("spt_path", "%s/%s" % (dir, item) )
+        my.add_dir_behaviors(div, dir, item)
+
+        location = my.kwargs.get("location")
+        if location == 'server':
+            # to improve speed, skip collecting dir info for each sub dir
+            info = Common.get_dir_info(path, skip_dir_details=True)
+        elif location == 'scm':
+            info = {}
+        else:
+            info = {}
+
+        
+        icon_div = my.get_dir_icon_wdg(dir, item)
+        if not icon_div:
+            if info.get("file_type") == 'missing':
+                icon_string = IconWdg.DELETE
+            else:
+                icon_string = my.get_dir_icon(dir, item)
+
+            icon_div = DivWdg()
+            icon = IconWdg(path, icon_string)
+            icon_div.add(icon)
+
+        div.add(icon_div)
+        icon_div.add_style("float: left")
+        icon_div.add_style("margin-left: 3px")
+        icon_div.add_style("margin-top: -1px")
+
+        location = my.kwargs.get("location")
+        if location in ['server', 'scm']:
+            item_div = DivWdg()
+            div.add(item_div)
+
+            item_div.add_attr("spt_dirname", dir)
+            item_div.add_attr("spt_basename", item)
+
+            item_div.add_style("float: left")
+            item_div.add_style("margin-left: 3px")
+            item_div.add_class("spt_dir")
+            my.handle_dir_div(item_div, dir, item)
+        else:
+            div.add_class("spt_dir")
+            my.handle_dir_div(div, dir, item)
+       
+
+        view_indicator = my.get_view_indicator(dir, item)
+        if view_indicator:
+            div.add(view_indicator)
+
+
+        div.add("<br clear='all'/>")
+
+        return div
+
+    def get_view_indicator(my, dir, basename):
+        '''Indicator used in tactic.ui.tools.RepoBrowserWdg'''
+        return None
+
+    def get_swap_action(my):
+        return r'''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext(".spt_dir_content");
 
@@ -700,93 +784,6 @@ class DirListWdg(BaseRefreshWdg):
         folder_state_el.value = folder_state;
 
         ''' % (jsondumps(my.handler_kwargs))
-
-        swap.add_action_script(swap_action)
-
-
-        # Open if is_open or it is the first folder
-        if dynamic and (is_open or my.get_depth() == 0):
-            swap.get_widget("div1").add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                bvr.src_el.click();
-                '''
-            } )
-
-
-
-        background = my.kwargs.get("background")
-        if not background:
-            background = "background"
-        hover = div.get_color(background, -5)
-        div.add_color("background", background)
-        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
-     
- 
-
-
-        div.add_attr("spt_path", "%s/%s" % (dir, item) )
-        my.add_dir_behaviors(div, dir, item)
-
-        location = my.kwargs.get("location")
-        if location == 'server':
-            # to improve speed, skip collecting dir info for each sub dir
-            info = Common.get_dir_info(path, skip_dir_details=True)
-        elif location == 'scm':
-            info = {}
-        else:
-            info = {}
-
-        
-        icon_div = my.get_dir_icon_wdg(dir, item)
-        if not icon_div:
-            if info.get("file_type") == 'missing':
-                icon_string = IconWdg.DELETE
-            else:
-                icon_string = my.get_dir_icon(dir, item)
-
-            icon_div = DivWdg()
-            icon = IconWdg(path, icon_string)
-            icon_div.add(icon)
-
-        div.add(icon_div)
-        icon_div.add_style("float: left")
-        icon_div.add_style("margin-left: 3px")
-        icon_div.add_style("margin-top: -1px")
-
-        location = my.kwargs.get("location")
-        if location in ['server', 'scm']:
-            item_div = DivWdg()
-            div.add(item_div)
-
-            item_div.add_attr("spt_dirname", dir)
-            item_div.add_attr("spt_basename", item)
-
-            item_div.add_style("float: left")
-            item_div.add_style("margin-left: 3px")
-            item_div.add_class("spt_dir")
-            my.handle_dir_div(item_div, dir, item)
-        else:
-            div.add_class("spt_dir")
-            my.handle_dir_div(div, dir, item)
-       
-
-        view_indicator = my.get_view_indicator(dir, item)
-        if view_indicator:
-            div.add(view_indicator)
-
-
-        div.add("<br clear='all'/>")
-
-        return div
-
-    def get_view_indicator(my, dir, basename):
-        '''Indicator used in tactic.ui.tools.RepoBrowserWdg'''
-        return None
-
-    def get_swap_action(my):
-        return None
 
     def get_info(my, dirname, basename):
         location = my.kwargs.get("location")
