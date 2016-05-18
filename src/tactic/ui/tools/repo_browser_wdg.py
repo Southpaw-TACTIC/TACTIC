@@ -64,7 +64,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         based on depth parameters. In the RepoBrowserWdg, there is no "dynamic" kwarg. 
         The RepoBrowserWdg loads subdirectories in the folder_state, but has a dynamic-like 
         loading on expansion of directories similar to "dynamic" kwarg in the DirListWdg.
-        Note that the RepoBrowserWdg and RepoBrowseDirListWdg are dependant on eachother. 
+        Note that the RepoBrowserWdg and RepoBrowseDirListWdg are dependent on each other. 
         '''
         
         top = my.top
