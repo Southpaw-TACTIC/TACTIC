@@ -1632,7 +1632,8 @@ class IngestUploadCmd(Command):
             elif update_mode in ["true", True]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
-                search.add_filter(column, filename)
+                # ingested files into search type applies filename without i.e. _v001 suffix
+                search.add_filter(column, new_filename)
 
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
@@ -1680,9 +1681,9 @@ class IngestUploadCmd(Command):
                 file_sobjects = search_file.get_sobjects()
 
                 if file_sobjects and update_mode in ['true', True] and len(sobjects) > 1:
-                    raise Exception('Multiple files with the same name as "%s" already exist. Please individually update each file.' % new_filename)
+                    raise Exception('Multiple files with the same name as "%s" already exist. Uncertain as to which file to update. Please individually update each file.' % new_filename)
                 elif file_sobjects:
-                    raise Exception('A file with the same name as "%s" already exists in the folder "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
+                    raise Exception('A file with the same name as "%s" already exists in the path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
 
                 sobject = SearchType.create(search_type)
 
