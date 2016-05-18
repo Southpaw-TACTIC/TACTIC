@@ -1632,7 +1632,8 @@ class IngestUploadCmd(Command):
             elif update_mode in ["true", True]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
-                search.add_filter(column, filename)
+                # ingested files into search type applies filename without i.e. _v001 suffix
+                search.add_filter(column, new_filename)
 
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
@@ -1666,6 +1667,11 @@ class IngestUploadCmd(Command):
 
             # Create a new entry
             if not sobject:
+                if update_mode not in ['true', True]:
+                    sobjects = []
+
+                my.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
+
                 sobject = SearchType.create(search_type)
 
                 if ignore_ext in ['true', True]:
@@ -1898,7 +1904,24 @@ class IngestUploadCmd(Command):
         return non_seq_filenames
 
 
+    def check_existing_file(my, search_type, new_filename, relative_dir, update_mode, sobjects):
+        project_code = Project.get_project_code()
+        file_search_type = SearchType.build_search_type(search_type, project_code)
 
+        search_name, search_ext = os.path.splitext(new_filename)
+        search_name = "%s.%%" % search_name
+
+        search_file = Search("sthpw/file")
+        search_file.add_filter("search_type", file_search_type)
+        search_file.add_filter("relative_dir", relative_dir)
+        search_file.add_filter("file_name", search_name, op='like')
+
+        file_sobjects = search_file.get_sobjects()
+
+        if file_sobjects and update_mode in ['true', True] and len(sobjects) > 1:
+            raise TacticException('Multiple files with the same name as "%s" already exist. Uncertain as to which file to update. Please individually update each file.' % new_filename)
+        elif file_sobjects:
+            raise TacticException('A file with the same name as "%s" already exists in the path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
 
     def natural_sort(my,l):
         '''
