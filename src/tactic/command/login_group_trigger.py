@@ -24,14 +24,14 @@ class LoginGroupTrigger(Trigger):
     def execute(my):
 
         input = my.get_input()
-        update_data = input.get("update_data")
-
-        if 'name' not in update_data and 'login_group' not in update_data:
-            return
-
         mode = input.get("mode")
 
         if mode not in ['insert', 'update']:
+            return
+
+        update_data = input.get("update_data")
+
+        if 'name' not in update_data and 'login_group' not in update_data:
             return
 
         search_key = input.get("search_key")
