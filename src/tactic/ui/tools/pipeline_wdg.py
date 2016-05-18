@@ -903,10 +903,11 @@ class PipelineListWdg(BaseRefreshWdg):
                 'search_type': search_type,
                 'code': code,
                 'view': 'pipeline_edit_tool',
-                'save_event': '%s'
+                'save_event': '%s',
+                'title': "Save changes to Workflow (" + code + ")"
             };
             var class_name = 'tactic.ui.panel.EditWdg';
-            spt.panel.load_popup("Edit Workflow", class_name, kwargs);
+            spt.panel.load_popup("Edit Workflow Details", class_name, kwargs);
             ''' % my.save_event
         } )
         menu.add(menu_item)
@@ -1954,7 +1955,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         # notifications
         search = Search("sthpw/notification")
         search.add_project_filter()
-        search.add_filter("process", process)
+        search.add_filters("process", [process,process_code])
         notification_count = search.get_count()
 
 

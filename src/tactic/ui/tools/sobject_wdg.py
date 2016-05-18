@@ -329,7 +329,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         if not my.sobject:
             widget = DivWdg()
-            widget.add("SObject no longer exists")
+            widget.add("SObject does not exist or no longer exists")
             widget.add_style("margin: 100px auto")
             widget.add_style("width: 300px")
             widget.add_style("height: 60px")
@@ -554,10 +554,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         title = my.search_type.split("/")[-1].title()
 
+        detail_view = my.kwargs.get("detail_view")
+        if not detail_view:
+            detail_view = ""
+
+        show_default_elements = True
+        if my.kwargs.get("show_default_elements") in [False, 'False', 'false']:
+            show_default_elements = False
+
         values = {
                 'search_key': search_key,
                 'pipeline_code': my.pipeline_code,
                 'search_type': my.search_type,
+                'detail_view': detail_view,
+                'show_default_elements': show_default_elements
         }
 
         config_xml = []
@@ -633,6 +643,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 <element name="info">
                   <display class='tactic.ui.tools.SObjectDetailInfoWdg'>
                     <search_key>%(search_key)s</search_key>
+                    <detail_view>%(detail_view)s</detail_view>
+                    <show_default_elements>%(show_default_elements)s</show_default_elements>
                   </display>
                 </element>
                 ''' % values)
@@ -768,7 +780,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "pipeline":
                 config_xml.append('''
-                <element name="pipeline" title="Pipeline">
+                <element name="pipeline" title="Workflow">
                   <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
                     <search_key>%(search_key)s</search_key>
                     <pipeline>%(pipeline_code)s</pipeline>
@@ -979,6 +991,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 view = "edit"
 
             element_names = ['code', 'name','description']
+
+            # Make element_names empty if user desides to hide the default elements
+            show_default_elements = my.kwargs.get("show_default_elements")
+            
+            if show_default_elements in ['false', 'False', False]:
+                element_names = []
+
             config = WidgetConfigView.get_by_search_type(search_type=my.full_search_type, view=view)
             config_element_names = config.get_element_names()
             for x in config_element_names:
@@ -1739,7 +1758,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         title.add_style("font-weight: bold")
         title.add_style("padding: 4px")
         title.add_border()
-        title.add("Pipeline")
+        title.add("Workflow")
         div.add(title)
 
         kwargs = {

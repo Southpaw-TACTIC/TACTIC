@@ -619,9 +619,11 @@ class BaseAppServer(Base):
 
         # see if there is an override
         web = WebContainer.get_web()
+        is_from_login = web.get_form_value("is_from_login")
+        
         ticket_key = web.get_form_value("login_ticket")
         # attempt to login in with a ticket
-        if not ticket_key:
+        if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
 
@@ -698,13 +700,11 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
 
-            # FIXME: not sure why this is here???
-            """
+            # let empty username or password thru to get feedback from WebLoginCmd
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-            """
 
         # clear the password
         web.set_form_value('password','')
