@@ -328,6 +328,10 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         for group in groups:
             group_name = group.get_value("login_group")
+            group_name_label = group.get_value("name")
+            if not group_name_label:
+                group_name_label = group_name
+                
             description = group.get_value("description")
             if not description:
                 parts = group_name.split("/")
@@ -352,7 +356,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
             name_div = DivWdg()
             group_div.add(name_div)
-            name_div.add("  %s" % group_name)
+            name_div.add("  %s" % group_name_label)
             name_div.add_style("display: inline-block")
             name_div.add_style("margin-right: 5px")
             name_div.add_style("margin-top: 4px")
