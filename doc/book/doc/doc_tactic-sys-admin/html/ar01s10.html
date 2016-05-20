@@ -2,23 +2,23 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10. Maintenance</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="ar01s09.html" title="9. Troubleshooting" /><link rel="next" href="ar01s11.html" title="11. TACTIC Server VM" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s09.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s11.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_maintenance"></a>10. Maintenance</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_backup_and_restore"></a>10.1. TACTIC Backup and Restore</h3></div></div></div><p>Like any other data producing service, TACTIC requires a backup regimen.
 The data in that TACTIC produces and manages must be backed up in
 accordance with the backup policy of the departments that manage the
-TACTIC service.</p><p><span class="strong"><strong>Backup policy definition</strong></span> TACTIC managers should create a backup policy
+TACTIC service.</p><p>TACTIC managers should create a backup policy
 for TACTIC data. A backup policy is extremely important, as data loss
-within the TACTIC service is catastrophic.</p><p>*What needs be backed up*TACTIC manages data in three parallel scopes;</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
-*versioned assets*Versioned assets are all the files that are checked
+within the TACTIC service is catastrophic.</p><p>TACTIC manages data in three parallel scopes:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">versioned assets</code> Versioned assets are all the files that are checked
 in and out of the tactic service.
 </li><li class="listitem">
-<span class="strong"><strong>asset metadata</strong></span> Asset metadata are all the data produced by user
-interaction with the tactic service. •
+<code class="literal">asset metadata</code> Asset metadata are all the data produced by user
+interaction with the tactic service.
 </li><li class="listitem">
-<span class="strong"><strong>project metadata</strong></span> Project metadata are all data produced by the
+<code class="literal">project metadata</code> Project metadata are all data produced by the
 creation of a project within tactic the tactic service.
 </li></ul></div><p>Tactic data is all of equal importance. The data is all interrelated,
 and thus all data must be treated with equal importance in the backup
-regimen.</p><p><span class="strong"><strong>frequency of backups</strong></span> The frequency of backup of tactic data depends on
+regimen.</p><p>The frequency of backup of tactic data depends on
 the policies of the TACTIC managers. An examination of the frequency of
 use of the tactic service, combined with the down time potentially
-required to back up tactic data should be considered.</p><p><span class="strong"><strong>Backup methods</strong></span> the only consideration that tactic managers should take
+required to back up tactic data should be considered.</p><p>the only consideration that tactic managers should take
 into account when creating a backup policy for tactic data is that
 tactic data produced is synchronized. This is accomplished via a
 transaction system within tactic. This transaction system relies on
@@ -36,21 +36,26 @@ snapshots, and offsite backups can all be utilized to accomplish version
 and asset backups.</p><p>It is highly recommended that you back up your TACTIC server using a
 regular schedule. In the event of a hardware failure, you will be able
 to restore your TACTIC server fully from the latest backup if you have
-taken the following three backup steps:</p><p>\1) Back up the <span class="emphasis"><em>assets</em></span> directory</p><p>\2) Dump the TACTIC database</p><p>\3) Back up the TACTIC program directory</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>You may want to stop the tactic service while you do your backup
+taken the following three backup steps:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Back up the <span class="emphasis"><em>assets</em></span> directory
+</li><li class="listitem">
+Dump the TACTIC database
+</li><li class="listitem">
+Back up the TACTIC program directory
+</li></ol></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>You may want to stop the tactic service while you do your backup
 process. To do so, run the following commands:</p><p><code class="literal">service tactic stop</code></p><p><code class="literal">service tactic start</code></p></blockquote></div><p>The <span class="emphasis"><em>assets</em></span> directory is the repository where TACTIC stores all of the
 asset files. By backing up this directory, you can restore all of your
 asset files in the event of a database crash into a clean TACTIC-managed
 directory structure.</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>You may need to contact your TACTIC server administrator if your
-<span class="emphasis"><em>assets</em></span> directory has been redirected to another location.</p></blockquote></div><p><span class="strong"><strong>For backup:</strong></span></p><p><span class="strong"><strong>Windows</strong></span></p><p>The <span class="emphasis"><em>assets</em></span> directory on a Windows install is located by default in:</p><p><code class="literal">C:\assets</code></p><p><span class="strong"><strong>Linux</strong></span></p><p>The <span class="emphasis"><em>assets</em></span> directory on a Linux install is located by default in:</p><p><code class="literal">/home/apache/assets</code></p><p><span class="strong"><strong>For restore:</strong></span></p><p>To restore the TACTIC <span class="emphasis"><em>assets</em></span> directory, you have to restore your
+<span class="emphasis"><em>assets</em></span> directory has been redirected to another location.</p></blockquote></div><p><span class="strong"><strong>Windows</strong></span></p><p>The <span class="emphasis"><em>assets</em></span> directory on a Windows install is located by default in:</p><p><code class="literal">C:\assets</code></p><p><span class="strong"><strong>Linux</strong></span></p><p>The <span class="emphasis"><em>assets</em></span> directory on a Linux install is located by default in:</p><p><code class="literal">/home/apache/assets</code></p><p>To restore the TACTIC <span class="emphasis"><em>assets</em></span> directory, you have to restore your
 backup to the current <span class="emphasis"><em>assets</em></span> location.</p><p>To dump the TACTIC data base you need to log in to the PostgreSQL
 database and perform a database dump.</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For both Linux and Windows the database file is in the <span class="emphasis"><em>assets</em></span>
 directory, although you may redirect the location to your backup
 location. Also, the TACTIC default for the database is to have no
 password. If you have added a password, you may need to enter it into
-your postgres commands with the <code class="literal">-P</code> tag.</p></blockquote></div><p><span class="strong"><strong>For backup:</strong></span></p><p><span class="strong"><strong>Windows</strong></span></p><p><code class="literal">pg_dumpall -U postgres -c &gt; c:\assets\tacticDatabase.sql</code></p><p><span class="strong"><strong>Linux</strong></span></p><p><code class="literal">pg_dumpall -U postgres -c &gt;
-            /home/apache/assets/tacticDatabase.sql</code></p><p><span class="strong"><strong>For restore:</strong></span></p><p>To restore the TACTIC database run the command:</p><p><code class="literal">psql -U postgres &lt; tacticDatabase.sql</code></p><p>This last step, although not completely necessary, is recommended
+your postgres commands with the <code class="literal">-P</code> tag.</p></blockquote></div><p><span class="strong"><strong>Windows</strong></span></p><p><code class="literal">pg_dumpall -U postgres -c &gt; c:\assets\tacticDatabase.sql</code></p><p><span class="strong"><strong>Linux</strong></span></p><p><code class="literal">pg_dumpall -U postgres -c &gt; /home/apache/assets/tacticDatabase.sql</code></p><p>To restore the TACTIC database run the command:</p><p><code class="literal">psql -U postgres &lt; tacticDatabase.sql</code></p><p>This last step, although not completely necessary, is recommended
 because it takes a snapshot of your TACTIC source code and project
-settings at the time of backup.</p><p><span class="strong"><strong>For backup:</strong></span></p><p><span class="strong"><strong>Windows</strong></span></p><p>The folders to back up are:</p><p><code class="literal">C:\Program Files\southpaw\tactic</code></p><p><code class="literal">C:\Program Files\southpaw\projects</code></p><p><span class="strong"><strong>Linux</strong></span></p><p>The folders to back up are:</p><p><code class="literal">/home/apache/tactic</code></p><p><code class="literal">/home/apache/projects</code></p><p><span class="strong"><strong>For restore:</strong></span></p><p>To restore the TACTIC program files, you have to restore the <code class="literal">tactic</code>
+settings at the time of backup.</p><p><span class="strong"><strong>Windows</strong></span></p><p>The folders to back up are:</p><p><code class="literal">C:\Program Files\southpaw\tactic</code></p><p><code class="literal">C:\Program Files\southpaw\projects</code></p><p><span class="strong"><strong>Linux</strong></span></p><p>The folders to back up are:</p><p><code class="literal">/home/apache/tactic</code></p><p><code class="literal">/home/apache/projects</code></p><p>To restore the TACTIC program files, you have to restore the <code class="literal">tactic</code>
 and <code class="literal">projects</code> directories to their original locations.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_database_backup_automation"></a>10.2. Database Backup Automation</h3></div></div></div><p>Overview</p><p>The TACTIC database needs backing up as part of a routine maintenance on
 the TACTIC system.</p><p>Procedure</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Log into the TACTIC server as root
