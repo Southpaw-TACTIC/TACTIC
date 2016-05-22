@@ -1352,6 +1352,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style('margin', my.spacing)
         div.add_style('background-color','transparent')
         div.add_style('position','relative')
+        div.add_style('vertical-align','top')
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
