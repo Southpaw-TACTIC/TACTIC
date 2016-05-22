@@ -508,8 +508,10 @@ class UserPageCreatorWdg(BaseRefreshWdg):
 
         from tactic.ui.tools import WidgetEditorWdg
         kwargs = {
+            #'display_handler': 'tactic.ui.panel.TableLayoutWdg',
+            'widget_key': 'table',
         }
-        editor = WidgetEditorWdg()
+        editor = WidgetEditorWdg(**kwargs)
         top.add(editor)
 
 

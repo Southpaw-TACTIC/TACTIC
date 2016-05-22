@@ -564,8 +564,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my._process_search_args()
 
         # set some grouping parameters
-        my.group_info = DivWdg()
-        my.group_info.add_class("spt_table_group_info")
         my.process_groups()
 
 

@@ -1042,14 +1042,16 @@ spt.tab.close = function(src_el) {
 
         if (header) {
             var subheader = $(header.getAttribute("spt_subheader_id"));
-            var items = subheader.getElements(".spt_tab_subheader_item");
-            for (var i = 0; i < items.length; i++) {
-                var subheader_element_name = items[i].getAttribute("spt_element_name");
-                var subheader_content = spt.tab.get_content(subheader_element_name);
-                spt.behavior.destroy_element(subheader_content);
+            if (subheader) {
+                var items = subheader.getElements(".spt_tab_subheader_item");
+                for (var i = 0; i < items.length; i++) {
+                    var subheader_element_name = items[i].getAttribute("spt_element_name");
+                    var subheader_content = spt.tab.get_content(subheader_element_name);
+                    spt.behavior.destroy_element(subheader_content);
 
+                }
+                spt.behavior.destroy_element(subheader);
             }
-            spt.behavior.destroy_element(subheader);
         }
 
         //header.destroy();
@@ -2031,6 +2033,69 @@ spt.tab.close = function(src_el) {
             menu.add(menu_item)
 
 
+        has_my_views = True
+        if has_my_views:
+            menu_item = MenuItem(type='action', label='Add to My Views')
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_tab_top");
+                spt.tab.top = top;
+
+                var header = activator;
+                var element_name = header.getAttribute("spt_element_name");
+                var title = header.getAttribute("spt_title");
+
+                var kwargs = header.getAttribute("spt_kwargs");
+                kwargs = kwargs.replace(/&quote;/g, '"');
+                kwargs = JSON.parse(kwargs);
+
+
+                var login = 'admin';
+
+                var class_name = kwargs.class_name;
+                if (!class_name) {
+                    class_name = "tactic.ui.panel.CustomLayoutWdg";
+                }
+
+
+                var view = element_name;
+                var element_name = element_name.replace(/ /g, "_");
+                element_name = element_name.replace(/\//g, "_");
+
+                element_name = login + "." + element_name;
+
+
+                var kwargs = {
+                    class_name: class_name,
+                    display_options: kwargs,
+                    element_attrs: {
+                        title: title
+                    },
+                    login: login,
+                    unique: false,
+                }
+
+
+
+                var view = "my_view_" + login;
+
+                try {
+
+                    var server = TacticServerStub.get();
+                    var info = server.add_config_element("SideBarWdg", "definition", element_name, kwargs);
+                    var info = server.add_config_element("SideBarWdg", view, element_name, kwargs);
+
+                    spt.panel.refresh("side_bar");
+                }
+                catch(e) {
+                    alert(e);
+                    throw(e);
+                }
+
+                '''
+            } )
+            menu.add(menu_item)
 
 
 
@@ -2208,7 +2273,7 @@ spt.tab.close = function(src_el) {
         })
 
         remove_wdg.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
         'cbjs_action': '''
             spt.tab.close(bvr.src_el); 
         '''

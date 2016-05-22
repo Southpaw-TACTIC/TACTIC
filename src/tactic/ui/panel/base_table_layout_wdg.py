@@ -124,6 +124,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.order_element = ""
         my.show_retired_element = ""
 
+
+        my.group_info = DivWdg()
+        my.group_info.add_class("spt_table_group_info")
+
+
         my.element_names = []
 
         # handle config explicitly set

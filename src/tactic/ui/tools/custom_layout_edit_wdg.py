@@ -183,8 +183,8 @@ class WidgetEditorWdg(BaseRefreshWdg):
 
         from tactic.ui.manager import WidgetClassSelectorWdg
 
-        class_labels = ['-- Class Path--']
-        class_values = ['__class__']
+        class_labels = ['Table Layout', '-- Class Path--']
+        class_values = ['table_layout', '__class__']
 
         # add the widget information
         #class_labels = ['Raw Data', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Custom Layout', '-- Class Path --']
