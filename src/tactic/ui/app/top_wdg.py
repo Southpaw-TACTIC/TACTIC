@@ -904,10 +904,12 @@ class TitleTopWdg(TopWdg):
         web = WebContainer.get_web()
         my.body.add_color("color", "color")
 
-        if web.is_title_page():
-            my.body.add_gradient("background", "background", 0, -20)
-        else:
-            my.body.add_gradient("background", "background", 0, -15)
+
+        #if web.is_title_page():
+        #    my.body.add_gradient("background", "background", 0, -20)
+        #else:
+        #    my.body.add_gradient("background", "background", 0, -15)
+        my.body.add_color("background", "background")
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")
