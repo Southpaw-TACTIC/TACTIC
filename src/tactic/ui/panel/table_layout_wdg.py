@@ -383,8 +383,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if values.get("group"):
                 my.group_columns = [values.get("group")]
                 my.group_interval = values.get("interval")
+
         my.is_grouped = len(my.group_columns) > 0
-        my.table.add_attr("spt_group_elements", ",".join(my.group_columns))
+
+        # store the group elements in the dom
+        #my.table.add_attr("spt_group_elements", ",".join(my.group_columns))
+        my.group_info.add_attr("spt_group_elements", ",".join(my.group_columns))
 
         # grouping preprocess , check the type of grouping  
         if my.is_grouped and my.sobjects:
@@ -518,13 +522,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.edit_permission = True
         
         view_editable = my.view_attributes.get("edit")
-
         if not view_editable:
             view_editable = my.kwargs.get("edit")
         if view_editable in ['false', False]:
             my.view_editable = False
         else:
             my.view_editable = True
+
+
+        admin_edit = my.kwargs.get("admin_edit")
+        if admin_edit in ['false', False]:
+            my.view_editable = False
+        else:
+            is_admin = Environment.get_security().is_admin()
+            if is_admin:
+                my.view_editable = True
+
+
+
         my.color_maps = my.get_color_maps()
 
         from pyasm.web import WebContainer
@@ -549,7 +564,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my._process_search_args()
 
         # set some grouping parameters
+        my.group_info = DivWdg()
+        my.group_info.add_class("spt_table_group_info")
         my.process_groups()
+
 
         if my.kwargs.get('temp') != True:
             my.sobjects = my.order_sobjects(my.sobjects, my.group_columns)
@@ -581,8 +599,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_color("color", "color")
         # FIXME: this is not the table and is called this for backwards
         # compatibility
+        if my.kwargs.get("is_inner") not in ['true', True]:
+            inner.add_class("spt_layout")
         inner.add_class("spt_table")
-        inner.add_class("spt_layout")
+
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
@@ -603,7 +623,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         inner.add_attr("spt_version", "2")
         inner.add_style("position: relative")
 
-
+        inner.add(my.group_info)
 
 
         if my.kwargs.get('temp') != True:
@@ -852,6 +872,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             height = my.kwargs.get("height")
             if height:
                 scroll.add_style("height: %s" % height)
+            scroll.add_class("spt_table_scroll")
 
             # Always adding a scroll bar, but using margin-right to hide it
             #scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
@@ -925,6 +946,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             pass
         else:
             show_context_menu = True
+
+        admin_edit = my.kwargs.get("admin_edit")
+        if admin_edit in ['false', False]:
+            show_context_menu = False
+        else:
+            is_admin = Environment.get_security().is_admin()
+            if is_admin:
+                show_context_menu = True
 
         
         temp = my.kwargs.get("temp")
@@ -1091,7 +1120,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             # extra stuff to make it work with ViewPanelWdg
-            top.add_class("spt_table_top");
+            if my.kwargs.get("is_inner") not in ['true', True]:
+                top.add_class("spt_table_top");
+
             class_name = Common.get_full_class_name(my)
             top.add_attr("spt_class_name", class_name)
 
@@ -1658,9 +1689,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
-        # indicator that a cell is editable
 
-        # TEST: event delegation with MooTools
+
+        # indicator that a cell is editable
         table.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -1758,8 +1789,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             
 
         if is_editable:
-            table.add_behavior( {
-                'type': 'smart_click_up',
+            table.add_relay_behavior( {
+                'type': 'click',
                 'bvr_match_class': 'spt_cell_edit',
                 'cbjs_action': '''
 
@@ -2414,7 +2445,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     title = timestamp.strftime("%Y %b")
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        swap = SwapDisplayWdg(title=title, icon='FOLDER_GRAY',is_on=my.is_on)
+        swap = SwapDisplayWdg(title=title, icon='BS_FOLDER_OPEN',is_on=my.is_on)
         swap.set_behavior_top(my.table)
         td.add(swap)
         swap.add_style("width: 800px")
@@ -2423,9 +2454,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_style("height: 25px")
         td.add_style("padding-left: %spx" % (i*15))
 
-
-        tr.add_border(size="1px 0px 0px 0px")
-        tr.add_style("background", "#EEF")
+        border_color = tr.get_color("table_border")
+        tr.add_border(size="1px 0px 1px 0px", color=border_color)
+        #tr.add_style("background", "#EEF")
         
         tr.add_attr("spt_unique_id", unique_id)
         tr.add_class("spt_group_row")
@@ -2442,8 +2473,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.group_ids[group_column] = unique_id
 
-        tr.add_color("background", "background3", 5)
-        tr.add_color("color", "color3")
+        tr.add_color("background", "background", -3 )
+        tr.add_color("color", "color")
 
 
 
@@ -2537,6 +2568,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             my.handle_select(table, sobject)
 
         for i, widget in enumerate(my.widgets):
+
             element_name = widget.get_name()
 
             td = table.add_cell()
@@ -2974,6 +3006,18 @@ spt.table.set_table = function(table) {
     spt.table.set_layout(layout);
    
 }
+
+spt.table.get_group_elements = function() {
+    var layout = spt.table.layout;
+    var group_elements = layout.getElement(".spt_table_group_info").getAttribute("spt_group_elements");
+    if (group_elements) {
+        return group_elements.split(",");
+    }
+    else {
+        return [];
+    }
+}
+
 
 
 spt.table.set_layout = function(layout) {
@@ -4224,27 +4268,23 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         // for calendar input 
         if (spt.has_class(input, 'spt_calendar_input')){
             accept_event = 'change';
-            input.setStyle( "width", size.x+30 + 'px');
+            input.setStyle( "width", size.x+125 + 'px');
 
-
-            // **** NOT USED ****
-            //edit_wdg.setStyle('background','white');
-            //edit_wdg.setStyle('color','black');
-
-            //setting date time
-            //if (value && value.test( /^\d\d\d\d-\d\d-\d\d .*/ ) ) {
-            if (false) {
+            // set the calendar to the current value
+            if (true) {
                 var parts = value.split(" ");
                 var date_values = parts[0].split('-');
                 var time_values = parts[1].split(':');
                 spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
                 spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
-
-                var cal = edit_wdg.getElement('.spt_calendar_top');
-                if (cal)
-                    spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
+                setTimeout( function() {
+                    var cal_top = input.getParent('.spt_calendar_input_top');
+                    var cal = cal_top.getElement(".spt_calendar_top");
+                    if (cal) {
+                        spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
+                    }
+                }, 0);
             }
-            // -------------------
 
 
 
@@ -4924,8 +4964,7 @@ spt.table.get_refresh_kwargs = function(row) {
     
     var show_select = table_top.getAttribute("spt_show_select");
 
-    var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
-    group_elements = group_elements.split(",");
+    var group_elements = spt.table.get_group_elements();
 
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
@@ -4991,13 +5030,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     var server = TacticServerStub.get();
 
-    var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
-    if (group_elements) {
-        group_elements = group_elements.split(",");
-    }
-    else {
-        group_elements = [];
-    }
+    var group_elements = spt.table.get_group_elements();
 
     if (!class_name) {
         class_name = 'tactic.ui.panel.TableLayoutWdg';
@@ -5173,7 +5206,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var search_type = layout.getAttribute("spt_search_type");
 
 
-    var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
+    var group_elements = spt.table.get_group_elements();
+
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
     var class_name = 'tactic.ui.panel.table_layout_wdg.TableLayoutWdg';
@@ -5331,6 +5365,16 @@ spt.table.remove_columns = function(columns) {
         for (var j = 0; j < cells.length; j++) {
             cells[j].destroy();
         }
+    }
+
+
+    var group_rows = spt.table.get_group_rows();
+    for (var i = 0; i < group_rows.length; i++) {
+        var row = group_rows[i];
+        var td = row.getElement("td");
+        var colspan = td.getAttribute("colspan");
+        colspan = parseInt(colspan);
+        td.setAttribute("colspan", colspan-1);
     }
 
 

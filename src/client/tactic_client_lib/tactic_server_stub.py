@@ -3163,7 +3163,9 @@ class TacticServerStub(object):
 
         '''
         return my.server.get_paths(my.ticket, search_key, context, version,
-                                   file_type, level_key, single, versionless)
+                                   file_type, level_key, single, versionless,
+                                   process
+                               )
 
 
 

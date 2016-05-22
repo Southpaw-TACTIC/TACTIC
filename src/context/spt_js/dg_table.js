@@ -2693,7 +2693,6 @@ spt.dg_table.RemoveColumnCmd = new Class({
 // @param: 
 // bvr.search_el - child element of the search_top. If unspecified, it equals bvr.src_el
 // bvr.src_el - child element of the table_top
-
 spt.dg_table.search_cbk = function(evt, bvr){
    
     var panel = null;

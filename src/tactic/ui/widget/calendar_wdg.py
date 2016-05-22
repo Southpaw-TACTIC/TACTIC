@@ -214,6 +214,8 @@ class CalendarWdg(BaseRefreshWdg):
             spt.Environment.get().add_library("spt_calendar");
                 ''' } )
 
+
+
         """NOTE: comment this out for now, doesn't seem to be used
         my.top_wdg.add_relay_behavior( {
             'type': 'click',
@@ -232,6 +234,8 @@ class CalendarWdg(BaseRefreshWdg):
         '''
         })
         """
+
+
         if my.kwargs.get("is_refresh") in [True, 'true']:
             return inner
         else:
@@ -811,6 +815,7 @@ class CalendarInputWdg(BaseInputWdg):
         # should not have float by default
         #my.top.add_style("float: left")
         my.top.add_class("calendar_input_top")
+        my.top.add_class("spt_calendar_input_top")
         # TODO: start week with Sunday
         # May want to globalize in config for all calendars?
         first_day_of_week = my.get_option('first_day_of_week')

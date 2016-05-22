@@ -523,7 +523,6 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)
 
-
             return value_wdg
 
         return value

@@ -1376,17 +1376,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+    def set_default_off(my):
 
+        if my.kwargs.get("set_shelf_defailt") == "off":
 
-    def get_button_row_wdg(my):
-        '''draws the button row in the shelf'''
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
+            settings = {
+                    "show_insert": False,
+                    "show_expand": False,
 
+            }
 
         shelf_elements = my.kwargs.get("shelf_elements")
         if shelf_elements:
             shelf_elements = shelf_elements.split(",")
 
+
+
+
+
+    def get_button_row_wdg(my):
+        '''draws the button row in the shelf'''
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
 
         button_row_wdg = ButtonRowWdg(show_title=True)
 
@@ -1454,7 +1464,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   save_event: 'search_table_' + bvr.table_id,
                   show_header: false,
                 };
-                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add new ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
             } )
@@ -2043,6 +2053,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var activator = spt.smenu.get_activator(bvr);
 
                 if( spt.is_TRUE( activator.getProperty("spt_widget_is_groupable") ) ) {
+                    var test = activator.getParent(".spt_layout").getElements(".spt_search_group");
 
                     var search_group_el = activator.getParent(".spt_layout").getElement(".spt_search_group");
                     var group_by = activator.getProperty("spt_element_name");

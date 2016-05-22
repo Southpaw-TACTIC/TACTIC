@@ -971,8 +971,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_message(my, ticket, key):
+        print "key: ", key
         message = Search.get_by_code("sthpw/message", key)
+        print "message: ", message
         sobject_dict = my._get_sobject_dict(message)
+        print "dict: ", sobject_dict
+        print "---"
         return sobject_dict
 
 
@@ -2669,7 +2673,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject = sobjects[0]
 
         search_type = sobject.get_search_type()
-        search_id = sobject.get_id()
+        search_id = sobject.get_code()
         search_key = SearchKey.get_by_sobject(sobject)
 
         if process:
@@ -2694,9 +2698,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 versionless_mode = 'current'
             snapshot = Snapshot.get_versionless(search_type, search_id, context , mode=versionless_mode, create=False, process=process)
-
         if not snapshot:
-            # This is probaby to0 strict
+            # This is probaby too strict
             #raise ApiException("Snapshot for [%s] with context [%s], version [%s] does not exist" % (search_key, context, version))
             paths = {}
             return paths

@@ -76,30 +76,56 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
     def get_args_keys(my):
         return {
             "custom_menus" : "Custom menus (an array of dictionaries)",
+            "menus" : "Structure of menus to show",
             "embedded_table": "boolean to show if it is part of an embedded table"
         }
 
     def get_access_keys_dict(my):
-
-        from tactic.ui.startup import GearMenuSecurityWdg
-        menu_names = GearMenuSecurityWdg.get_all_menu_names()
 
         project_code = Project.get_project_code()
         security = Environment.get_security()
 
         access_keys_dict = {}
 
-        for key,value in menu_names:
-            submenu = key
-            for label in value.get('label'):
-                
-                access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                
-                if security.check_access("gear_menu", access_keys, "allow"):
-                    if not submenu in access_keys_dict:
-                        access_keys_dict[submenu] = [label]
-                    else:
-                        access_keys_dict[submenu].append(label)
+        menus = my.kwargs.get("menus")
+
+        """
+        menus = {
+                'Tasks': ['Show Tasks'],
+                'Edit': ['Retire Selected Items', 'Delete Selected Items'],
+                'View': ['Save a New View'],
+        }
+        """
+
+        if menus:
+            for submenu, labels in menus.items():
+                for label in labels:
+                    access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+                    if security.check_access("gear_menu", access_keys, "allow"):
+                        if not submenu in access_keys_dict:
+                            access_keys_dict[submenu] = [label]
+                        else:
+                            access_keys_dict[submenu].append(label)
+
+
+
+        else:
+            # This has a special from GearMenuSecurityWdg
+            from tactic.ui.startup import GearMenuSecurityWdg
+            menu_names = GearMenuSecurityWdg.get_all_menu_names()
+
+            for key,value in menu_names:
+                submenu = key
+                for label in value.get('label'):
+                    
+                    access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+                    
+                    if security.check_access("gear_menu", access_keys, "allow"):
+                        if not submenu in access_keys_dict:
+                            access_keys_dict[submenu] = [label]
+                        else:
+                            access_keys_dict[submenu].append(label)
+
 
         return access_keys_dict
 
@@ -218,6 +244,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         
         if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
             my.is_admin = True
+
+        my.is_admin = False
 
         if my.is_admin:
         
