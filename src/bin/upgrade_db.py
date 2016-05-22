@@ -46,7 +46,7 @@ if __name__ == '__main__':
         sys.exit(2)
     # process options
     for o, a in opts:
-	if o in ("-y", "--yes"):
+        if o in ("-y", "--yes"):
             is_confirmed = True
         if o in ("-f", "--force"):
             is_forced = True
@@ -59,6 +59,7 @@ if __name__ == '__main__':
             quiet = True
         if o in ("-s", "--site"):
             site = a
+            print "site: ", site
    
 
     if len(args) == 0:

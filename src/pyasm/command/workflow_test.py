@@ -72,7 +72,9 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_data_flow()
+            my._test_multi_input_reject()
+            my._test_progress()
+            my._test_progress_reject()
             my._test_multi_input()
             my._test_custom_status()
             my._test_messaging()
@@ -92,7 +94,7 @@ class WorkflowCmd(Command):
             raise
 
 
-    def get_pipeline(my, pipeline_xml, add_tasks=False):
+    def get_pipeline(my, pipeline_xml, add_tasks=False, search_type=None):
 
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
@@ -101,6 +103,8 @@ class WorkflowCmd(Command):
         #pipeline.set_id(pipeline_id)
         #pipeline.set_value("id", pipeline_id)
         pipeline.set_value("pipeline", pipeline_xml)
+        if search_type:
+            pipeline.set_value("search_type", search_type)
         pipeline.commit()
 
         process_names = pipeline.get_process_names()
@@ -389,19 +393,10 @@ class WorkflowCmd(Command):
 
     def _test_multi_input(my):
 
-        # Disabled for now.  This is not working
-        #return
-
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
         code = "test%s" % Common.generate_alphanum_key()
         sobject.set_value("code", code)
-
-
-        #search = Search("sthpw/message")
-        #sobjects = search.get_sobjects()
-        #for sobject in sobjects:
-        #    sobject.delete()
 
 
 
@@ -446,6 +441,54 @@ class WorkflowCmd(Command):
             "process": process
         }
         Trigger.call(my, "process|pending", output)
+
+        my.assertEquals( "complete", sobject.get_value("a"))
+        my.assertEquals( "complete", sobject.get_value("b"))
+        my.assertEquals( "complete", sobject.get_value("c"))
+        my.assertEquals( "complete", sobject.get_value("d"))
+
+
+
+
+    def _test_multi_input_reject(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        code = "test%s" % Common.generate_alphanum_key()
+        sobject.set_value("code", code)
+        sobject.set_value("a1", "complete")
+        sobject.set_value("a2", "complete")
+        sobject.set_value("a3", "complete")
+        sobject.set_value("b", "pending")
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a1"/>
+          <process type="action" name="a2"/>
+          <process type="action" name="a3"/>
+          <process type="approval" name="b"/>
+          <connect from="a1" to="b"/>
+          <connect from="a2" to="b"/>
+          <connect from="a3" to="b"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+
+        # Run the pipeline
+        process = "b"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process,
+            "reject_process": ['a1', 'a3']
+        }
+        Trigger.call(my, "process|reject", output)
+
+        my.assertEquals( "revise", sobject.get_value("a1"))
+        my.assertEquals( "complete", sobject.get_value("a2"))
+        my.assertEquals( "revise", sobject.get_value("a3"))
 
 
 
@@ -833,6 +876,180 @@ class WorkflowCmd(Command):
 
 
 
+    def _test_progress(my):
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+        people = []
+
+        person_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="p1"/>
+          <process type="action" name="p2"/>
+          <process type="manual" name="p3"/>
+          <connect from="p1" to="p2"/>
+          <connect from="p2" to="p3"/>
+        </pipeline>
+        '''
+        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
+        person_pipeline_code = person_pipeline.get_value("code")
+
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="c1"/>
+          <process type="progress" name="c2" pipeline_code="%s" search_type="unittest/person" process="p1" status="complete"/>
+          <process type="progress" name="c3" search_type="unittest/person" process="p3" status="complete"/>
+          <process type="action" name="c4"/>
+          <connect from="c1" to="c2"/>
+          <connect from="c2" to="c3"/>
+          <connect from="c3" to="c4"/>
+        </pipeline>
+        ''' % person_pipeline_code
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+        for name in ['Beth', 'Cindy', 'John']:
+            person = SearchType.create("unittest/person")
+            person.set_value("name_first", name)
+            person.set_value("pipeline_code", person_pipeline.get_code())
+            person.set_value("city_code", city.get_code())
+            person.commit()
+
+            person.set_value("p1", "null")
+            person.set_value("p2", "null")
+            person.set_value("p3", "null")
+
+            people.append(person)
+
+
+        # Run the city pipeline
+        process = "c1"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+        # it should have stopped at b
+        my.assertEquals( "complete", city.get_value("c1") )
+        my.assertEquals( "pending", city.get_value("c2") )
+
+        # run the people pipeline
+        for person in people:
+            process = "p1"
+            output = {
+                "pipeline": person_pipeline,
+                "sobject": person,
+                "process": process
+            }
+
+            Trigger.call(my, "process|pending", output)
+
+            #my.assertEquals( "pending", city.get_value("c2") )
+
+
+        # it should have stopped at z
+        for person in people:
+            my.assertEquals( "complete", person.get_value("p1") )
+            my.assertEquals( "complete", person.get_value("p2") )
+            my.assertEquals( "pending", person.get_value("p3") )
+
+
+        # however, because p1 is complete, c2 should have finished
+        my.assertEquals( "complete", city.get_value("c1") )
+        my.assertEquals( "complete", city.get_value("c2") )
+        my.assertEquals( "pending", city.get_value("c3") )
+
+
+        # run the manual p3 for all people
+        for person in people:
+            process = "p3"
+            output = {
+                "pipeline": person_pipeline,
+                "sobject": person,
+                "process": process
+            }
+            Trigger.call(my, "process|complete", output)
+
+    
+        # this should complete c3 and c4
+        for person in people:
+            my.assertEquals( "complete", person.get_value("p1") )
+            my.assertEquals( "complete", person.get_value("p2") )
+            my.assertEquals( "complete", person.get_value("p3") )
+
+        my.assertEquals( "complete", city.get_value("c1") )
+        my.assertEquals( "complete", city.get_value("c2") )
+        my.assertEquals( "complete", city.get_value("c3") )
+        my.assertEquals( "complete", city.get_value("c4") )
+
+
+
+    def _test_progress_reject(my):
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+        people = []
+
+        person_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="p1"/>
+        </pipeline>
+        '''
+        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
+        person_pipeline_code = person_pipeline.get_value("code")
+
+
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="progress" name="c1" pipeline_code="%s" search_type="unittest/person" process="p1" status="complete"/>
+          <process type="approval" name="c2"/>
+          <connect from="c1" to="c2"/>
+        </pipeline>
+        ''' % person_pipeline_code
+        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+        for name in ['Beth', 'Cindy', 'John']:
+            person = SearchType.create("unittest/person")
+            person.set_value("name_first", name)
+            person.set_value("pipeline_code", person_pipeline.get_code())
+            person.set_value("city_code", city.get_code())
+            person.commit()
+
+            person.set_value("p1", "complete")
+
+            people.append(person)
+
+
+
+        process = "c2"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process
+        }
+
+        Trigger.call(my, "process|reject", output)
+
+        for person in people:
+            my.assertEquals( "revise", person.get_value("p1") )
+
+
+ 
+
+
     def _test_messaging(my):
 
         # create a dummy sobject
@@ -997,7 +1214,7 @@ class WorkflowCmd(Command):
                 'sobject': 'sobject',
                 'process': 'fla',
                 'version': 'latest',
-            }
+            },
             'checkin': ['fla'],
         } )
         process.commit()
@@ -1059,8 +1276,6 @@ class WorkflowCmd(Command):
         }
         Trigger.call(my, "process|pending", output)
 
-
-        dafsfadsfd
 
 
 

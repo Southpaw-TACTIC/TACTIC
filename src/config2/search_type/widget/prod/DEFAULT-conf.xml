@@ -273,7 +273,7 @@ display class, it will adopt the one defined here-->
 
 
 
-    <element name='task_pipeline_panels' title='Task Pipeline'>
+    <element name='task_pipeline_panels' title='Task Workflow'>
        <display class='tactic.ui.table.TaskElementWdg'>
         <layout>panel</layout>
         <status_color>status</status_color>
@@ -288,7 +288,7 @@ display class, it will adopt the one defined here-->
     </element>
 
 
-    <element name='task_pipeline_vertical' title='Task Pipeline'>
+    <element name='task_pipeline_vertical' title='Task Workflow'>
        <display class='tactic.ui.table.TaskElementWdg'>
         <layout>vertical</layout>
         <status_color>status</status_color>

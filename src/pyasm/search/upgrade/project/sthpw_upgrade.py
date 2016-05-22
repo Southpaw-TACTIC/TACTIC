@@ -17,6 +17,17 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+
+    #
+    # 4.5.0.b01
+    #
+    def upgrade_v4_5_0_b01_001(my):
+        my.run_sql(''' 
+        UPDATE search_object set description = 'Task', "title" = 'Task' where code = 'sthpw/task';
+        ''') 
+
+
+
     #
     # 4.5.0.a01
     #

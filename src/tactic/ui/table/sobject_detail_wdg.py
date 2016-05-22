@@ -44,6 +44,13 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         'type': 'SelectWdg',
         'values': 'true|false',
         'order': 3
+    },
+    'show_default_elements': {
+        "description": "Determine if the default element names should be hidden",
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 4
     }
 
     }
@@ -118,6 +125,10 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
         tab_element_names = my.kwargs.get("tab_element_names") or ""
         detail_view = my.kwargs.get("detail_view") or ""
+        
+        show_default_elements = "true"
+        if my.kwargs.get("show_default_elements") in ['false', False]:
+            show_default_elements = "false"
 
         widget.add_behavior( {
         'type': 'click_up',
@@ -126,6 +137,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         'tab_element_names': tab_element_names,
         'detail_view': detail_view,
         'show_task_process': my.show_task_process,
+        'show_default_elements': show_default_elements,
         'code': code,
         'name': name,
         'label': title,
@@ -137,7 +149,8 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             use_parent: bvr.use_parent,
             tab_element_names: bvr.tab_element_names,
             show_task_process: bvr.show_task_process,
-            detail_view: bvr.detail_view
+            detail_view: bvr.detail_view,
+            show_default_elements: bvr.show_default_elements
         };
 
         var mode = '';

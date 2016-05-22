@@ -25,7 +25,7 @@ from pyasm.widget import WidgetConfig, WidgetConfigView
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import TabWdg, Menu, MenuItem
 from tactic.ui.tools import PipelineCanvasWdg
-from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
+from tactic.ui.widget import SingleButtonWdg, IconButtonWdg, ActionButtonWdg
 
 
 class SObjectDetailWdg(BaseRefreshWdg):
@@ -327,6 +327,17 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         my.sobject = my.get_sobject()
 
+        if not my.sobject:
+            widget = DivWdg()
+            widget.add("SObject does not exist or no longer exists")
+            widget.add_style("margin: 100px auto")
+            widget.add_style("width: 300px")
+            widget.add_style("height: 60px")
+            widget.add_style("padding: 60px")
+            widget.add_style("text-align: center")
+            widget.add_border()
+            return widget
+
         if not my.__class__.__name__ == "SnapshotDetailWdg" and my.sobject.get_base_search_type() == "sthpw/snapshot":
             widget = SnapshotDetailWdg(**my.kwargs)
             return widget
@@ -543,10 +554,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         title = my.search_type.split("/")[-1].title()
 
+        detail_view = my.kwargs.get("detail_view")
+        if not detail_view:
+            detail_view = ""
+
+        show_default_elements = True
+        if my.kwargs.get("show_default_elements") in [False, 'False', 'false']:
+            show_default_elements = False
+
         values = {
                 'search_key': search_key,
                 'pipeline_code': my.pipeline_code,
                 'search_type': my.search_type,
+                'detail_view': detail_view,
+                'show_default_elements': show_default_elements
         }
 
         config_xml = []
@@ -582,6 +603,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if my.sobject.get_value("_is_collection", no_exception=True):
             tabs.append("collection")
 
+            if "file_detail" in tabs:
+                tabs.remove("file_detail")
+
+            if "checkin_history" in tabs:
+                tabs.remove("checkin_history")
 
         for tab in tabs:
 
@@ -617,6 +643,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 <element name="info">
                   <display class='tactic.ui.tools.SObjectDetailInfoWdg'>
                     <search_key>%(search_key)s</search_key>
+                    <detail_view>%(detail_view)s</detail_view>
+                    <show_default_elements>%(show_default_elements)s</show_default_elements>
                   </display>
                 </element>
                 ''' % values)
@@ -752,7 +780,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "pipeline":
                 config_xml.append('''
-                <element name="pipeline" title="Pipeline">
+                <element name="pipeline" title="Workflow">
                   <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
                     <search_key>%(search_key)s</search_key>
                     <pipeline>%(pipeline_code)s</pipeline>
@@ -762,15 +790,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
             elif tab == "collection":
+                search_type = values['search_type']
+                parts = search_type.split("/")
+                values['collection_type'] = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+                values['expression'] = "@SOBJECT(collection:%(collection_type)s.%(search_type)s)" % values
+
                 config_xml.append('''
                 <element name="collection" title="Collection">
-                  <display class='tactic.ui.panel.ViewPanelWdg'>
-                    <view>table</view>
+                  <display class='tactic.ui.panel.TileLayoutWdg'>
                     <layout>tile</layout>
                     <show_shelf>false</show_shelf>
+                    <width>100%%</width>
                     <search_key>%(search_key)s</search_key>
-                    <search_type>jobs/media_in_media</search_type>
-                    <element_names>preview,search_code</element_names>
+                    <search_type>%(search_type)s</search_type>
+                    <expression>%(expression)s</expression>
                   </display>
                 </element>
                 ''' % values)
@@ -958,6 +991,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 view = "edit"
 
             element_names = ['code', 'name','description']
+
+            # Make element_names empty if user desides to hide the default elements
+            show_default_elements = my.kwargs.get("show_default_elements")
+            
+            if show_default_elements in ['false', 'False', False]:
+                element_names = []
+
             config = WidgetConfigView.get_by_search_type(search_type=my.full_search_type, view=view)
             config_element_names = config.get_element_names()
             for x in config_element_names:
@@ -1023,6 +1063,26 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         #sobject_info_wdg = my.get_sobject_info_wdg()
         #sobject_info_wdg.add_style("width: 100%")
         #td.add(sobject_info_wdg)
+
+
+        edit_wdg = ActionButtonWdg(title="Edit")
+        td.add(edit_wdg)
+        edit_wdg.add_behavior( {
+            'type': 'click',
+            'search_key': search_key,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var kwargs = {
+                search_key: bvr.search_key
+            }
+
+            spt.panel.load_popup("Edit", class_name, kwargs);
+
+            '''
+        } )
+
+        edit_wdg.add_style("float: right")
+
 
         title_wdg = DivWdg()
         td.add(title_wdg)
@@ -1230,7 +1290,7 @@ class SnapshotDetailWdg(SObjectDetailWdg):
 
 
     def get_default_tabs(my):
-        tabs = ["history"]
+        tabs = ["checkin_history"]
         return tabs
 
 
@@ -1698,7 +1758,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         title.add_style("font-weight: bold")
         title.add_style("padding: 4px")
         title.add_border()
-        title.add("Pipeline")
+        title.add("Workflow")
         div.add(title)
 
         kwargs = {
@@ -1802,7 +1862,7 @@ class TaskDetailPipelineWdg(PipelineCanvasWdg):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
-        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+        menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
 
 
         menu_item = MenuItem(type='title', label='Actions')

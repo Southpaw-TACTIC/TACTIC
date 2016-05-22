@@ -1429,9 +1429,9 @@ class Search(Base):
             my.select.add_op("or")
 
 
-    def add_text_search_filter(my, column, keywords, table=None):
+    def add_text_search_filter(my, column, keywords, table=None, op='&'):
 
-        my.select.add_text_search_filter(column, keywords, table=table)
+        my.select.add_text_search_filter(column, keywords, table=table, op=op)
 
 
 
@@ -1768,6 +1768,7 @@ class Search(Base):
             if not statement:
                 statement = my.select.get_statement()
 
+            #print "SQL: ", statement
 
             from pyasm.security import Site
             results = sql.do_query(statement)
@@ -5951,7 +5952,7 @@ class SearchType(SObject):
         elif base == 'sthpw/login_group':
             if not base_triggers.get('login_group_sync'): 
                 from pyasm.command import Trigger
-                event = "update|%s" % base
+                event = "change|%s" % base
                 trigger = SearchType.create("sthpw/trigger")
                 trigger.set_value("event", event)
                 trigger.set_value("mode", "same process,same transaction")
@@ -6267,7 +6268,7 @@ class SearchType(SObject):
 
 
 
-        if parent_type in related_types:
+        if direction == "children" and parent_type in related_types:
             related_types.remove(parent_type)
 
         related_types.append('sthpw/note')

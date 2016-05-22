@@ -67,6 +67,7 @@ class SqlTest(unittest.TestCase):
             my._test_rpn_filters()
             my._test_search_filter()
             my._test_join()
+            my._test_create_view()
 
             # it doesn't allow dropping of a column
             if db_type != 'Sqlite':
@@ -493,6 +494,40 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         search.add_join('unittest/country', 'unittest/city')
         statement = search.get_statement()
         my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
+
+
+
+
+    def _test_create_view(my):
+        from sql import CreateView
+        db_res = DbResource.get_default('unittest')
+        sql = DbContainer.get(db_res)
+
+
+        car_columns = sql.get_columns("car")
+        sports_columns = sql.get_columns("sports_car_data")
+
+        search = Search("unittest/car")
+        search.add_join("unittest/sports_car_data")
+        search.add_column("*", table="car")
+
+        for sports_column in sports_columns:
+            if sports_column not in car_columns:
+                search.add_column(sports_column, table="sports_car_data")
+
+
+        create_view = CreateView(search=search)
+        create_view.set_view("sports_car")
+        statement = create_view.get_statement()
+
+        expected = '''CREATE VIEW "sports_car" AS SELECT "unittest"."public"."car".*, "unittest"."public"."sports_car_data"."acceleration", "unittest"."public"."sports_car_data"."horsepower", "unittest"."public"."sports_car_data"."top_speed" FROM "unittest"."public"."car" LEFT OUTER JOIN "unittest"."public"."sports_car_data" ON "car"."code" = "sports_car_data"."code"'''
+
+        my.assertEquals(expected, statement)
+
+
+
+
+
 
 
 

@@ -58,6 +58,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         title_wdg.add_style("margin: -6px -7px 5px -7px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("font-size: 14px")
+        title_wdg.add_style("height: 25px")
 
         if title:
             title_wdg.add_color("background", "background", -5)
@@ -173,12 +174,6 @@ class ProjectConfigWdg(BaseRefreshWdg):
         panels = my.get_panels()
 
         for panel in panels:
-
-            title = panel.get('title')
-            #if title in ['Data', None]:
-            #    tr, td = table.add_row_cell()
-            #else:
-            #    td = table.add_cell()
             tr = table.add_row()
             td = table.add_cell(resize=False)
             td.add_style("min-height: 100px")
@@ -210,10 +205,12 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panels = []
 
-        show_security = my.kwargs.get("show_security")
-        show_add = my.kwargs.get("show_add")
-        view = my.kwargs.get("view")
-        filter_mode = my.kwargs.get("filter_mode")
+        show_security = my.kwargs.get("show_security") or ""
+        show_add = my.kwargs.get("show_add") or ""
+        view = my.kwargs.get("view") or ""
+        filter_mode = my.kwargs.get("filter_mode") or ""
+        show_help = my.kwargs.get("show_help") or ""
+        show_search_limit = my.kwargs.get("show_search_limit") or ""
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -230,9 +227,11 @@ class UserConfigWdg(ProjectConfigWdg):
                 <show_add>%s</show_add>
                 <view>%s</view>
                 <filter_mode>%s</filter_mode>
+                <show_help>%s</show_help>
+                <show_search_limit>%s</show_search_limit>
             </display>
         </element>
-          ''' %(show_security, show_add, view, filter_mode))
+          ''' %(show_security, show_add, view, filter_mode, show_help, show_search_limit))
 
         config_xml.append('''
         <element name="Group Assignment">
@@ -285,7 +284,7 @@ class SearchTypePanel(BaseRefreshWdg):
         button = SingleButtonWdg(title="Advanced Setup", icon=IconWdg.ADVANCED)
         top.add(button)
         button.add_style("float: right")
-        button.add_style("margin-top: -8px")
+        button.add_style("margin-top: 0px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -296,10 +295,10 @@ class SearchTypePanel(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon=IconWdg.ADD)
+        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="BS_PLUS")
         top.add(button)
         button.add_style("float: left")
-        button.add_style("margin-top: -8px")
+        button.add_style("margin-top: 0px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -810,6 +809,11 @@ class UserPanelWdg(BaseRefreshWdg):
     def get_display(my):
 
         filter_mode = my.kwargs.get("filter_mode")
+        show_add = my.kwargs.get("show_add") or True
+        show_security = my.kwargs.get("show_security") or True
+        show_search_limit = my.kwargs.get("show_search_limit") or True
+        show_help = my.kwargs.get("show_help") or True
+
         project = Project.get().get_code()
 
         if filter_mode == "project":
@@ -830,7 +834,6 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div.add_style('width','50%')
         tool_div.add_style('margin-bottom','-4px')
 
-        show_add = my.kwargs.get("show_add")
         if show_add not in ['false', False]:
             button = ActionButtonWdg(title="Add", tip="Add New User")
             button.add_style('align-self: flex-end')
@@ -840,20 +843,20 @@ class UserPanelWdg(BaseRefreshWdg):
             button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_panel_user_top");
-                var table_top = top.getElement(".spt_table_top");
-                var table_id = table_top.getAttribute("spt_table_id"); 
-                var save_event = 'search_table_' + table_id;
-                
+
                 var class_name = 'tactic.ui.panel.EditWdg';
                 
                 var kwargs = {
                     search_type: "sthpw/login",
                     view: "insert",
-                    show_header: false,
-                    save_event: save_event
+                    show_header: false
                 }
                 var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
+                var tab_top = bvr.src_el.getParent(".spt_tab_top");
+                popup.on_save_cbk = function(){
+                    spt.tab.set_tab_top(tab_top);
+                    spt.tab.reload_selected();
+                }
 
                 '''
             } )
@@ -900,7 +903,6 @@ class UserPanelWdg(BaseRefreshWdg):
             top.add(tool_div)
 
 
-        show_security = my.kwargs.get("show_security")
         if show_security not in ['false', False]:
             button = ActionButtonWdg(title="Security")
             button.add_style('align-self: flex-end')
@@ -961,17 +963,30 @@ class UserPanelWdg(BaseRefreshWdg):
         if not view:
             view = "manage_user"
 
+
         expr = "@SEARCH(%s)" %expr_filter
-        panel = ViewPanelWdg(search_type='sthpw/login',view=view,show_insert='false',\
-            show_gear='false', show_select='false', height='700', expression=expr,\
-            simple_search_view='simple_manage_filter', show_column_manager='false',\
-            show_layout_switcher='false', show_expand='false')
+        panel = ViewPanelWdg(
+                search_type='sthpw/login',
+                view=view,show_insert='false',
+                show_gear='false',
+                show_select='false',
+                #height='700',
+                expression=expr,
+                simple_search_view='simple_manage_filter',
+                show_column_manager='false',
+                show_layout_switcher='false',
+                show_expand='false',
+                show_search_limit=show_search_limit,
+                show_help=show_help
+        )
         div.add(panel)
         div.add_style('margin-top', '4px')
-        
+
         return top
 
+
         """
+
 
         table = Table()
         table.set_max_width()
@@ -1027,7 +1042,8 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
 
-
+        expr = "@SOBJECT(%s)" %expr_filter
+        logins = Search.eval(expr)
 
         for i, login in enumerate(logins):
             tr = table.add_row()
@@ -1145,6 +1161,7 @@ class UserPanelWdg(BaseRefreshWdg):
         return top
 
         """
+
 
 
 

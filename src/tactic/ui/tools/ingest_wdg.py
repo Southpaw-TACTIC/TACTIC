@@ -46,7 +46,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         'update_mode': 'Takes values "true" or "false".  When true, uploaded files will update existing file iff exactly one file exists already with the same name.',
         'context_mode': 'Set or remove context case sensitivity.',
         'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
-        'title': 'The title to display at the top'
+        'title': 'The title to display at the top',
+        'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
+        'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped'
     }
 
 
@@ -206,8 +208,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Ingest Settings")
         title_wdg.add_style("font-size: 25px")
 
-        div.add("<hr/>")
-
         # Build list of process names
         process_names = set()
         from pyasm.biz import Pipeline
@@ -269,8 +269,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Metadata")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
+        title_wdg.add_style("margin-bottom: 5px")
 
-        desc_wdg = DivWdg("This extra metaadata will be added to each new item")
+        desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
+        desc_wdg.add_style("margin-bottom: 10px")
         div.add(desc_wdg)
 
         from tactic.ui.panel import EditWdg
@@ -311,13 +313,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
-        desc_wdg = DivWdg("Determines how the file name matches up to a particular entry")
 
-        #desc_wdg = DivWdg("When update mode is 'Update', if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.  If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.")
-        div.add(desc_wdg)
-
-        div.add("<br/>")
-
+        label_div = DivWdg()
+        label_div.add("Determine how the file maps to a particular item")
+        div.add(label_div)
+        label_div.add_style("margin-top: 10px")
+        label_div.add_style("margin-bottom: 8px")
 
         update_mode_option = my.kwargs.get("update_mode")
         if not update_mode_option:
@@ -336,7 +337,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         label_div.add("Ignore File Extension")
         div.add(label_div)
         label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 5px")
+        label_div.add_style("margin-bottom: 8px")
 
         ignore_ext_option = my.kwargs.get("ignore_ext")
         if not ignore_ext_option:
@@ -351,24 +352,24 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(ignore_ext)
 
 
+        if "column_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Map file name to column")
+            div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
 
-        label_div = DivWdg()
-        label_div.add("Map file name to column:")
-        div.add(label_div)
-        label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 5px")
-
-        column_option = my.kwargs.get("column")
-        if not column_option:
-            column_option = "name"
-        column_select = SelectWdg(name="update mode")
-        column_select.add_class("spt_column_select")
-        column_select.set_option("values", ["name", "code"])
-        column_select.set_option("labels", ["Name", "Code"])
-        column_select.set_option("default", column_option)
-        column_select.add_style("margin-top: -3px")
-        column_select.add_style("margin-right: 5px")
-        div.add(column_select)
+            column_option = my.kwargs.get("column")
+            if not column_option:
+                column_option = "name"
+            column_select = SelectWdg(name="update mode")
+            column_select.add_class("spt_column_select")
+            column_select.set_option("values", ["name", "code"])
+            column_select.set_option("labels", ["Name", "Code"])
+            column_select.set_option("default", column_option)
+            column_select.add_style("margin-top: -3px")
+            column_select.add_style("margin-right: 5px")
+            div.add(column_select)
 
 
 
@@ -454,16 +455,18 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
-        help_button_wdg = DivWdg()
-        header_div.add(help_button_wdg)
-        help_button_wdg.add_styles("float: right; margin-top: 11px;")
-        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
-        help_button_wdg.add(help_button)
+        show_help = my.kwargs.get("show_help") or True
+        if my.kwargs.get("show_help") not in ['false', False]:
+            help_button_wdg = DivWdg()
+            header_div.add(help_button_wdg)
+            help_button_wdg.add_styles("float: right; margin-top: 11px;")
+            help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+            help_button_wdg.add(help_button)
 
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
-        } )
+            help_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+            } )
 
         div.add("<hr style='margin-right: 4px'/>")
 
@@ -521,6 +524,20 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var button = top.getElement(".spt_upload_file_button");
             button.setStyle("display", "none");
+
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
          '''
          } )
 
@@ -874,12 +891,16 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_div.add(progress)
         progress.add_class("spt_upload_progress")
         progress.add_style("width: 0px")
+        progress.add_style("visibility: hidden")
         progress.add_style("height: 100%")
         progress.add_gradient("background", "background3", -10)
         progress.add_style("text-align: right")
         progress.add_style("overflow: hidden")
         progress.add_style("padding-right: 3px")
 
+        library_mode = my.kwargs.get("library_mode") or False
+        dated_dirs = my.kwargs.get("dated_dirs") or False
+ 
         from tactic.ui.app import MessageWdg
         progress.add_behavior( {
             'type': 'load',
@@ -894,6 +915,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
+
+        progress_el = top.getElement(".spt_upload_progress");
+        progress_el.setStyle("visibility", "visible");
+
         '''
 
         upload_progress = '''
@@ -919,6 +944,14 @@ class IngestUploadWdg(BaseRefreshWdg):
                 var file_els = top.getElements(".spt_upload_file");
                 for ( var i = 0; i < file_els.length; i++) {
                 spt.behavior.destroy( file_els[i] );
+
+                
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = ''; 
+                progress_el = top.getElement(".spt_upload_progress");
+                progress_el.setStyle("visibility", "hidden");
+
+
                 };''' + oncomplete_script_ret
                 script_found = True
             else:
@@ -946,6 +979,9 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var info_el = top.getElement(".spt_upload_info");
             info_el.innerHTML = ''; 
+            progress_el = top.getElement(".spt_upload_progress");
+            progress_el.setStyle("visibility", "hidden");
+
 
             if (spt.table)
             {
@@ -969,6 +1005,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
 
+        var library_mode = bvr.kwargs.library_mode;
+        var dated_dirs = bvr.kwargs.dated_dirs;
+
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
         var context_mode = context_mode_select ? context_mode_select.value : bvr.kwargs.context_mode;
@@ -980,8 +1019,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var ignore_ext = ignore_ext_select.value;
 
         var column_select = top.getElement(".spt_column_select");
-        var column = column_select.value;
-
+        var column = column_select ? column_select.value : bvr.kwargs.column;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -997,7 +1035,15 @@ class IngestUploadWdg(BaseRefreshWdg):
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
-        //var keywords = values.keywords[0];
+
+        var keywords = values["edit|user_keywords"];
+
+        if (keywords) {
+            keywords = keywords[0];
+        }
+        else {
+            keywords = "";
+        }
 
         var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
@@ -1028,7 +1074,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             key: key,
             parent_key: parent_key,
             //category: category,
-            //keywords: keywords,
+            keywords: keywords,
             extra_data: extra_data,
             update_data: update_data,
             process: process,
@@ -1037,6 +1083,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode: update_mode,
             ignore_ext: ignore_ext,
             column: column,
+            library_mode: library_mode,
+            dated_dirs: dated_dirs,
             context_mode: context_mode
         }
         on_complete = function(rtn_data) {
@@ -1081,6 +1129,18 @@ class IngestUploadWdg(BaseRefreshWdg):
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
 
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
          '''
          } )
 
@@ -1102,7 +1162,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         context = my.kwargs.get("context")
         context_mode = my.kwargs.get("context_mode")
- 
+
         button.add_behavior( {
             'type': 'click_up',
             'action_handler': action_handler,
@@ -1111,6 +1171,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'relative_dir': relative_dir,
                 'script_found': script_found,
                 'context': context,
+                'library_mode': library_mode,
+                'dated_dirs' : dated_dirs,
                 'context_mode': context_mode
             },
             'cbjs_action': '''
@@ -1416,8 +1478,16 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 class IngestUploadCmd(Command):
 
+    # FOLDER_LIMIT can be adjusted as desired.
+    FOLDER_LIMIT = 500
+
     def execute(my):
 
+        library_mode = my.kwargs.get("library_mode")
+        current_folder = 0
+
+        dated_dirs = my.kwargs.get("dated_dirs")
+        
         filenames = my.kwargs.get("filenames")
         relative_dir = my.kwargs.get("relative_dir")
 
@@ -1497,10 +1567,14 @@ class IngestUploadCmd(Command):
             if filenames == []:
                 raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
+        if library_mode:
+            relative_dir = "%s/001" % relative_dir
+
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
+
 
             if filename.startswith("search_key:"):
                 mode = "single"
@@ -1517,8 +1591,19 @@ class IngestUploadCmd(Command):
                 mode = "multi"
                 new_filename = filename
 
+            if library_mode:
+                
+                # get count of number of files in the current asset ingest dir
+                import glob
+                abs_path = Environment.get_asset_dir() + "/" + relative_dir + "/*"
 
-            if filename.endswith(".zip"):
+                if len(glob.glob(abs_path)) > my.FOLDER_LIMIT:
+                    current_folder = current_folder + 1
+                    relative_dir = "%s/%03d" % (relative_dir[:-4], current_folder)
+
+
+            unzip = my.kwargs.get("unzip")
+            if unzip in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
 
                 unzip_dir = "/tmp/xxx"
@@ -1547,9 +1632,12 @@ class IngestUploadCmd(Command):
             elif update_mode in ["true", True]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
-                search.add_filter(column, filename)
+                # ingested files into search type applies filename without i.e. _v001 suffix
+                search.add_filter(column, new_filename)
+
                 if relative_dir and search.column_exists("relative_dir"):
-                    search.add_filter("relative_dir", relative_dir)
+                    if not dated_dirs:
+                        search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
                 if len(sobjects) > 1:
                     sobject = None
@@ -1565,7 +1653,8 @@ class IngestUploadCmd(Command):
                 search.add_filter(column, filename)
 
                 if relative_dir and search.column_exists("relative_dir"):
-                    search.add_filter("relative_dir", relative_dir)
+                    if not dated_dirs:
+                        search.add_filter("relative_dir", relative_dir)
                 sobjects = search.get_sobjects()
                 if sobjects:
                     sobject = sobjects[0]
@@ -1578,6 +1667,11 @@ class IngestUploadCmd(Command):
 
             # Create a new entry
             if not sobject:
+                if update_mode not in ['true', True]:
+                    sobjects = []
+
+                my.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
+
                 sobject = SearchType.create(search_type)
 
                 if ignore_ext in ['true', True]:
@@ -1592,8 +1686,6 @@ class IngestUploadCmd(Command):
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
 
-
-
             if mode == "single":
                 path = lib_path
 
@@ -1602,24 +1694,31 @@ class IngestUploadCmd(Command):
             else:
                 path = filename
 
-            # extract keywords from filename
-            file_keywords = Common.extract_keywords_from_path(path)
+            # Extracting keywords from filename only because all Assets will 
+            # have the keywords [project_name]/[search_type name]/[Ingest]
+            file_keywords = Common.extract_keywords_from_path(filename)
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
+            new_file_keywords = ""
+
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
-                    file_keywords = "%s %s " % (keywords, file_keywords)
+                    new_file_keywords = "%s %s" % (keywords, file_keywords)
+                else:
+                    new_file_keywords = file_keywords
 
-                if file_keywords:
-                    sobject.set_value("keywords", file_keywords)
+                sobject.set_value("keywords", new_file_keywords)
 
+            if SearchType.column_exists(search_type, "user_keywords"):
+                if keywords:
+                    sobject.set_value("user_keywords", keywords)
 
-            if sobject.column_exists("keywords_data"):
+            if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
-                data['path'] = file_keywords.split(" ")
+                data['user'] = keywords
+                data['path'] = file_keywords
                 sobject.set_json_value("keywords_data", data)
-
 
 
 
@@ -1633,7 +1732,6 @@ class IngestUploadCmd(Command):
                 file_path = path
             else:
                 file_path = "%s/%s" % (base_dir, filename)
-
 
             """
             # TEST: convert on upload
@@ -1806,7 +1904,24 @@ class IngestUploadCmd(Command):
         return non_seq_filenames
 
 
+    def check_existing_file(my, search_type, new_filename, relative_dir, update_mode, sobjects):
+        project_code = Project.get_project_code()
+        file_search_type = SearchType.build_search_type(search_type, project_code)
 
+        search_name, search_ext = os.path.splitext(new_filename)
+        search_name = "%s.%%" % search_name
+
+        search_file = Search("sthpw/file")
+        search_file.add_filter("search_type", file_search_type)
+        search_file.add_filter("relative_dir", relative_dir)
+        search_file.add_filter("file_name", search_name, op='like')
+
+        file_sobjects = search_file.get_sobjects()
+
+        if file_sobjects and update_mode in ['true', True] and len(sobjects) > 1:
+            raise TacticException('Multiple files with the same name as "%s" already exist. Uncertain as to which file to update. Please individually update each file.' % new_filename)
+        elif file_sobjects:
+            raise TacticException('A file with the same name as "%s" already exists in the path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
 
     def natural_sort(my,l):
         '''

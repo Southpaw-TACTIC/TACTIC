@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["Common", "Marshaller", "jsondumps", "jsonloads"]
+__all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
 import os, sys, time, string, re, random, types, new, pprint, traceback
@@ -733,11 +733,17 @@ class Common(Base):
     unzip_file = staticmethod(unzip_file)
 
 
+    def get_filesystem_dir(dirname):
+        '''Get a file system friendly dir without multiple adjacent slashes'''
+        return re.sub(r'//+', '/', dirname)
+    get_filesystem_dir = staticmethod(get_filesystem_dir)
+
     def get_filesystem_name(filename):
         # FIXME: for now, turn it off
         return filename
     get_filesystem_name = staticmethod(get_filesystem_name)
 
+    
 
     def clean_filesystem_name(filename):
         '''take a name and converts it to a name that can be saved in
@@ -1130,7 +1136,6 @@ class Common(Base):
         'woman': 'women',
         }
 
-    VOWELS = set('aeiou')
 
     def pluralize(cls, singular):
         """Return plural form of given lowercase singular word (English only). Based on
@@ -1162,6 +1167,9 @@ class Common(Base):
         'cars'
 
         """
+
+        VOWELS = set('aeiou')
+
         if singular != singular.lower():
             is_title = True
         else:
@@ -1233,17 +1241,20 @@ class Common(Base):
 
     def kill(pid=None):
         '''Kills the current program.'''
+        
         import sys
         if not pid:
             pid = os.getpid()
         pid = int(pid)
-
+        
         if os.name =='nt':
+            """
             # for windows
             python = sys.executable
             python = python.replace('\\','/')
             import subprocess
             subprocess.Popen([python, sys.argv])
+            """
             kill = KillProcessThread(pid)
             kill.start()
         else:
@@ -1265,6 +1276,7 @@ class Common(Base):
             cmd_list = [python]
             cmd_list.extend(sys.argv)
             subprocess.Popen(cmd_list)
+ 
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()

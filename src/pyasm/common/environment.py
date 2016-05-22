@@ -606,14 +606,18 @@ class Environment(Base):
 
 
 
-
     def get_security():
         return Container.get("Environment:security")
     get_security = staticmethod(get_security)
 
     def set_security(security):
         Container.put("Environment:security", security)
+
     set_security = staticmethod(set_security)
+
+    def set_security_list(security_list):
+        Container.put("Environment:security_list", security_list)
+    set_security_list = staticmethod(set_security_list)
 
 
     def get_ticket():

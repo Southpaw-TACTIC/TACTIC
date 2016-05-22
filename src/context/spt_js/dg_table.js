@@ -2950,6 +2950,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_column_manager = target.getAttribute("spt_show_column_manager");
     var show_layout_switcher = target.getAttribute("spt_show_layout_switcher");
     var show_context_menu = target.getAttribute("spt_show_context_menu");
+    var show_help = target.getAttribute("spt_show_help");
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
     var ingest_data_view = target.getAttribute("spt_ingest_data_view");
@@ -2961,6 +2962,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         class_name = "tactic.ui.panel.TableLayoutWdg";
     }
     var simple_search_view = target.getAttribute("spt_simple_search_view");
+    var simple_search_config = target.getAttribute("spt_simple_search_config");
     var simple_search_mode = target.getAttribute("spt_simple_search_mode");
     var search_limit_mode = target.getAttribute("spt_search_limit_mode");
     var search_dialog_id = target.getAttribute("spt_search_dialog_id");
@@ -2970,7 +2972,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var no_results_msg = target.getAttribute("spt_no_results_msg");
     var show_border = target.getAttribute("spt_show_border");
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
-     
+    var order_by = target.getAttribute("spt_order_by");
+    
+    var file_system_edit = target.getAttribute("spt_file_system_edit")
+    var parent_mode = target.getAttribute("spt_parent_mode")
+
     var height = target.getAttribute("spt_height");
     var element_names;
     var column_widths = [];
@@ -3031,9 +3037,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_column_manager': show_column_manager,
         'show_context_menu': show_context_menu,
         'show_layout_switcher': show_layout_switcher,
+        'show_help': show_help,
         'insert_view': insert_view,
         'edit_view': edit_view,
         'simple_search_view': simple_search_view,
+        'simple_search_config': simple_search_config,
         'simple_search_mode': simple_search_mode,
         'search_limit_mode': search_limit_mode,
         'search_dialog_id': search_dialog_id,
@@ -3048,7 +3056,10 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
-        'show_collection_tool': show_collection_tool
+        'show_collection_tool': show_collection_tool,
+        'order_by': order_by,
+        'file_system_edit': file_system_edit,
+        'parent_mode': parent_mode
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -5799,34 +5810,4 @@ spt.dg_table.add_tasks_cbk = function(evt, bvr) {
 }
 
 */
-
-// ----------------------------------------------------------------------------------------------------------------
-//  Smart Context menu dynamic menu-entry info setup call-backs
-// ----------------------------------------------------------------------------------------------------------------
-//
-spt.dg_table.smenu_ctx = {};
-
-
-spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
-{
-    var el_name = activator_el.getProperty("spt_element_name");
-    if (el_name == null) {
-        el_name = 'no_name';
-    }
-
-    var setup_info = {
-        'is_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_groupable") ),
-        'is_time_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_time_groupable") ),
-        'is_sortable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_sortable") ),
-        'is_searchable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_searchable") ),
-        'element_name' : el_name.substr(0,1).toUpperCase() + el_name.substr(1),
-        'sort_prefix': activator_el.getProperty("spt_widget_sort_prefix"),
-        'has_related' : spt.is_TRUE( activator_el.getProperty("spt_widget_has_related") ),
-    };
-
-
-    return setup_info;
-}
-
-
 

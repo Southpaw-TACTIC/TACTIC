@@ -145,11 +145,13 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             var input = top.getElement(".spt_main_search");
             var search_value = input.value.toLowerCase();
             var collections = top.getElements(".spt_collection_div");
+
             var num_result = 0;
+            var no_results_el = top.getElement(".spt_no_results");
+
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
-                var collection_title = collections[i].attributes[0].value.toLowerCase();
-
+                var collection_title = collections[i].getElement(".spt_collection_checkbox").getAttribute("collection_name").toLowerCase();
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
                     num_result += 1;
@@ -158,11 +160,15 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                     collections[i].style.display = "none";
                 }
             }
-            // if no search results, display all
+            // if no search results, show "no_results_el"
             if (num_result == 0) {
                 for (i = 0; i < collections.length; i++) {
-                    collections[i].style.display = "block";
+                    collections[i].style.display = "none";
                 }
+                no_results_el.style.display = "block";
+            }
+            else {
+                no_results_el.style.display = "none";
             }
 
         '''
@@ -172,15 +178,15 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         text = LookAheadTextInputWdg(
             search_type = "workflow/asset",
             column="name",
-            icon="BS_SEARCH",
             icon_pos="right",
             width="100%",
             height="30px",
-            hint_text="'Enter' to search for Colllection...",
+            hint_text="Enter terms to filter collections...",
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
-            is_collection=True
+            is_collection=True,
+            validate='false'
         )
         text.add_class("spt_main_search")
 
@@ -192,6 +198,16 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
+
+        no_results_div = DivWdg()
+        content_div.add(no_results_div)
+
+        no_results_div.add_color("color", "color", 50)
+        no_results_div.add_style("font: normal bold 1.1em arial,serif")
+        no_results_div.add("No collections found.")
+        no_results_div.add_style("display: none")
+        no_results_div.add_style("margin: 10px 0px 0px 10px")
+        no_results_div.add_class("spt_no_results")
 
         for collection in collections:
 
@@ -405,14 +421,14 @@ class CollectionAddCmd(Command):
                     message['parent_collection_names'] = parent_collection_names
                     my.info['message'] = message
                     return
-
+            '''
             has_keywords = SearchType.column_exists(search_type, "keywords")
 
             if has_keywords:
                 collection_keywords = collection.get_value("keywords", no_exception=True)
                 collection_keywords = collection_keywords.split(" ")
                 collection_keywords = set(collection_keywords)
-
+            '''
 
 
             # create new items
@@ -428,7 +444,7 @@ class CollectionAddCmd(Command):
                 new_item.set_value("search_code", sobject.get_code())
                 new_item.commit()
                 has_inserted = True
-
+                '''
                 # copy the metadata of the collection
                 if has_keywords:
                     keywords = sobject.get_value("keywords")
@@ -441,7 +457,7 @@ class CollectionAddCmd(Command):
 
                     sobject.set_value("keywords", keywords)
                     sobject.commit()
-
+                '''
         
             if not has_inserted:
                 message[collection_name] = "No insert"
@@ -644,25 +660,33 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             var input = top.getElement(".spt_main_search");
             var search_value = input.value.toLowerCase();
             var collections = top.getElements(".spt_collection_div");
-
+            var no_results_el = top.getElement(".spt_no_results");
             var num_result = 0;
+
             for (i = 0; i < collections.length; i++) {
                 // Access the Collection title (without number count) 
                 var collection_title = collections[i].attributes[0].value.toLowerCase();
+                var subcollection = collections[i].nextSibling;
 
                 if (collection_title.indexOf(search_value) != '-1') {
                     collections[i].style.display = "block";
+                    subcollection.style.display = "block";
                     num_result += 1;
                 }
                 else {
                     collections[i].style.display = "none";
+                    subcollection.style.display = "none";
                 }
             }
-            // if no search results, display all
+            // if no search results, show "no_results_el"
             if (num_result == 0) {
                 for (i = 0; i < collections.length; i++) {
-                    collections[i].style.display = "block";
+                    collections[i].style.display = "none";
                 }
+                no_results_el.style.display = "block";
+            }
+            else {
+                no_results_el.style.display = "none";
             }
 
         '''
@@ -679,7 +703,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
-            is_collection=True
+            is_collection=True,
+            validate='false'
         )
         text.add_class("spt_main_search")
 
@@ -767,6 +792,16 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
         collections_div.add_class("spt_collection_list")
         collections_div.add_style("margin: 5px 0px 5px -5px")
+
+        no_results_div = DivWdg()
+        collections_div.add(no_results_div)
+
+        no_results_div.add_color("color", "color", 50)
+        no_results_div.add_style("font: normal bold 1.1em arial,serif")
+        no_results_div.add("No collections found.")
+        no_results_div.add_style("display: none")
+        no_results_div.add_style("margin: 10px 0px 0px 10px")
+        no_results_div.add_class("spt_no_results")
 
         from tactic.ui.panel import ThumbWdg2
 

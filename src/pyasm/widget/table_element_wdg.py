@@ -283,8 +283,8 @@ class BaseTableElementWdg(HtmlElement):
     def get_name(my):
         return my.name
 
-    def get_style(my):
-        return "text-align: left"
+    #def get_style(my):
+    #    return "text-align: left"
 
     def set_value(my, value):
         '''explicitly set the value outside of the sobject'''
