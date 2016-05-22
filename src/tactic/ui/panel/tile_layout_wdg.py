@@ -600,7 +600,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                 search_key: search_key,
                 tab_element_names: bvr.detail_element_names
             };
-            spt.tab.add_new(search_code, name, class_name, kwargs);
+
+            var element_name = search_code;
+            spt.tab.add_new(element_name, name, class_name, kwargs);
             '''
         } )
 
@@ -1704,11 +1706,16 @@ spt.tile_layout.image_drag_setup = function(evt, bvr, mouse_411) {
     bvr.dy = 10;
     bvr.drop_code = 'DROP_ROW';
     bvr.accepted_search_type = bvr.search_type;
+    bvr.mouse_start = { curr_x: mouse_411.curr_x, curr_y: mouse_411.curr_y };
 
 
 }
 
 spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
+
+    if ( Math.abs(bvr.mouse_start.curr_x-mouse_411.curr_x) < 3 && Math.abs(bvr.mouse_start.curr_y-mouse_411.curr_y) < 3) {
+        return;
+    }
 
     spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
     var target_el = spt.get_event_target(evt);
@@ -2253,29 +2260,40 @@ class ThumbWdg2(BaseRefreshWdg):
                 color = colors[random.randint(0,7)]
 
                 img = DivWdg()
-                img.add("<div style='display: inline-block; vertical-align: middle; margin-top: 30%%; width: 50px; height: 30px;'>%s</div>" % ext)
-                img.add_style("text-align: center")
-                #img.add_style("width: 80px")
-                #img.add_style("height: 50px")
-                img.add_style("min-width: 80px")
-                img.add_style("min-height: 50px")
-                img.add_style("width: 50%")
-                img.add_style("height: 70%")
+                img.add_style("padding-top: 10px")
+                
+                inner = DivWdg()
+                img.add(inner)
+               
+                ext_div = DivWdg()
+                inner.add(ext_div)
+                ext_div.add_styles("display: inline-block; vertical-align: middle; margin-top: 40%;")
+                ext_div.add(ext)
+                
+                inner.add_style("text-align: center")
+                #inner.add_style("min-width: 80px")
+                #inner.add_style("min-height: 50px")
+                inner.add_style("width: 53%")
+                inner.add_style("height: 80%")
 
-                img.add_style("margin: 30px auto")
-                img.add_style("padding: 0px 10px")
-                img.add_style("font-size: 20px")
-                img.add_style("font-weight: bold")
-                img.add_style("color: #fff")
-                img.add_style("background: %s" % color)
+                inner.add_style("margin: 30px auto")
+                inner.add_style("font-size: 20px")
+                inner.add_style("font-weight: bold")
+                inner.add_style("color: #fff")
+                inner.add_style("background: %s" % color)
 
             else:
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
+
                 path = urllib.pathname2url(path)
                 img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
             if path:
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
                 path = urllib.pathname2url(path)
 
                 img = DivWdg()

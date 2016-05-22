@@ -318,6 +318,10 @@ class PopupWdg(BaseRefreshWdg):
             'options': {'z_sort': 'bring_forward'},
             'ignore_default_motion': 'true',
             "cbjs_setup": '''
+              if (spt.popup.is_minimized(bvr.src_el)) {
+                return;
+              }
+
               if (spt.popup.is_background_visible) {
                   spt.popup.offset_x = document.body.scrollLeft;
                   spt.popup.offset_y = document.body.scrollTop;
@@ -331,6 +335,10 @@ class PopupWdg(BaseRefreshWdg):
               }
             ''',
             "cbjs_motion": '''
+              if (spt.popup.is_minimized(bvr.src_el)) {
+                return;
+              }
+
               mouse_411.curr_x += spt.popup.offset_x;
               mouse_411.curr_y += spt.popup.offset_y;
               spt.mouse.default_drag_motion(evt, bvr, mouse_411);
@@ -405,7 +413,10 @@ class PopupWdg(BaseRefreshWdg):
         icon.add_style("cursor: nw-resize")
         icon.add_style("z-index: 1000")
         icon.add_class("spt_popup_resize")
-        icon.add_style("float: right")
+        #icon.add_style("float: right")
+        icon.add_style("position: absolute")
+        icon.add_style("bottom: 0px")
+        icon.add_style("right: 0px")
         #icon.add_style("margin-top: -15px")
         icon.add_behavior( {
         'type': 'drag',
@@ -424,7 +435,7 @@ class PopupWdg(BaseRefreshWdg):
         from menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         menu.set_allow_icons(False)
-        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+        menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
 
 
         menu_item = MenuItem(type='title', label='Actions')
@@ -821,6 +832,8 @@ spt.popup.destroy = function( popup_el_or_id, fade )
 {
     var popup = $(popup_el_or_id);
 
+    var is_minimized = popup.hasClass("spt_popup_minimized");
+
     var destroy_fn = function() {
         spt.behavior.destroy_element( popup );
     }
@@ -830,6 +843,13 @@ spt.popup.destroy = function( popup_el_or_id, fade )
     else {
         spt.popup.close( popup);
         destroy_fn();
+    }
+
+    if (is_minimized) { 
+        var els = $(document.body).getElements(".spt_popup_minimized");
+        for (var i = 0; i < els.length; i++) {
+            els[i].setStyle("left", i*205);
+        }
     }
 
 }
@@ -1153,9 +1173,53 @@ spt.popup.get_popup = function( src_el )
 }
 
 
+spt.popup.is_minimized = function( src_el ) {
+    var popup = spt.popup.get_popup(src_el);
+    return popup.hasClass("spt_popup_minimized");
+}
+
+
 spt.popup.toggle_minimize = function( src_el )
 {
     spt.toggle_show_hide( spt.get_cousin( src_el, '.spt_popup', '.spt_popup_content' ) );
+
+    var popup = spt.popup.get_popup(src_el);
+    var resize = popup.getElement(".spt_popup_resize");
+
+    if (spt.popup.is_minimized(popup)) {
+
+        popup.setStyle("bottom", "");
+        popup.setStyle("right", "");
+
+        popup.setStyle("top", popup.last_top);
+        popup.setStyle("left", popup.last_left);
+
+        popup.removeClass("spt_popup_minimized");
+        spt.popup.show_background();
+
+        resize.setStyle("display", "");
+
+    }
+    else {
+
+        popup.last_top = popup.getStyle("top");
+        popup.last_left = popup.getStyle("left");
+
+        popup.setStyle("top", "");
+        popup.setStyle("right", "");
+        popup.setStyle("bottom", "2px");
+
+        var minimized = $(document.body).getElements(".spt_popup_minimized");
+        var num = minimized.length * 205;
+
+        popup.setStyle("left", num+"px");
+
+        resize.setStyle("display", "none");
+
+        popup.addClass("spt_popup_minimized");
+        spt.popup.hide_background();
+    }
+
 }
 
 

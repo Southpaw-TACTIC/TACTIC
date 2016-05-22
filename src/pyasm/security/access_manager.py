@@ -81,6 +81,10 @@ class AccessManager(Base):
     def set_up(my):
         if my.was_admin == None:
             security = Environment.get_security()
+            if security._login and not security._is_logged_in:
+                security._groups = []
+                security._group_names = []
+                security._find_all_login_groups()
             my.was_admin = security.is_in_group('admin')
 
     def set_admin(my, flag, sudo=False):

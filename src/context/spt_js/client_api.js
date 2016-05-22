@@ -1266,10 +1266,14 @@ TacticServerStub = function() {
 
 
 
-
+    
 
     this.execute = function(code) {
         return this._delegate("execute", arguments, null);
+    }
+
+    this.check_access = function(access_group, key, access, kwargs) {
+        return this._delegate("check_access", arguments, kwargs);
     }
 
     this.get_column_names = function(search_type) {

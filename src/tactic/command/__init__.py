@@ -30,6 +30,7 @@ from queue import *
 from rsync import *
 from run_transaction_cmd import *
 from watch_handoff_folder import *
+from watch_drop_folder import *
 
 from sobject_copy_cmd import *
 

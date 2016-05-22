@@ -78,6 +78,7 @@ class SearchTest(unittest.TestCase):
                     "ComputerWorld", "5") 
 
 
+
             my._test_no_id()
 
             my._test_order_by()                               
@@ -100,6 +101,10 @@ class SearchTest(unittest.TestCase):
             my._test_set_value()
             my._test_search_set_value()
             my._test_get_by_statement()
+
+            my._test_views()
+
+
         finally:
             my.transaction.rollback()
             Project.set_project('unittest')
@@ -307,8 +312,9 @@ class SearchTest(unittest.TestCase):
         task_search.add_filters('process', [])
         tasks = task_search.get_sobjects()
         my.assertEquals(tasks, [])
-        expected = '''SELECT %s"task".* FROM %s"task" WHERE id is NULL AND ("task"."s_status" != 'retired' or "task"."s_status" is NULL) ORDER BY "task"."search_type", "task"."search_code"'''%(my.sthpw_prefix, my.sthpw_prefix)
-        my.assertEquals(task_search.get_statement(), expected)
+        expected = '''SELECT %s"task".* FROM %s"task" WHERE "task"."id" is NULL AND ("task"."s_status" != 'retired' or "task"."s_status" is NULL) ORDER BY "task"."search_type", "task"."search_code"'''%(my.sthpw_prefix, my.sthpw_prefix)
+        statement = task_search.get_statement()
+        my.assertEquals(statement, expected)
 
         
             
@@ -1017,6 +1023,43 @@ class SearchTest(unittest.TestCase):
         sobject.commit(triggers=False)
         my.assertEquals( sobject.data.get('description'), None)
         my.assertEquals( sobject.get_value('description'), '')
+
+
+
+    def _test_views(my):
+
+        car = SearchType.create('unittest/car')
+        car.set_value('model','Nissan Sentra')
+        car.set_value('class','sedan')
+        car.commit()
+
+        car = SearchType.create('unittest/car')
+        car.set_value('model','Ferrari 958')
+        car.set_value('class','sports_car')
+        car.commit()
+
+
+
+        car = SearchType.create('unittest/car')
+        car.set_value('model','Porsche 911')
+        car.set_value('class','sports_car')
+        car.commit()
+
+
+        search = Search("unittest/car")
+        cars = search.get_sobjects()
+
+        search = Search("unittest/sports_car")
+        sports_cars = search.get_sobjects()
+
+        my.assertEquals(3, len(cars))
+        my.assertEquals(2, len(sports_cars))
+
+        #for sports_car in sports_cars:
+        #    sports_car.set_value("top_speed", "200mph")
+        #    sports_car.commit()
+
+
 
 
 

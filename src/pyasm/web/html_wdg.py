@@ -278,6 +278,13 @@ class HtmlElement(Widget):
         my.styles[name] = value
 
 
+    def get_style(my, name):
+        if my.styles:
+            return my.styles.get(name) or ""
+        else:
+            return ""
+
+
     def add_styles(my, styles):
         if type(styles) == str:
             styles_list = styles.split(";")
@@ -982,6 +989,12 @@ class HtmlElement(Widget):
     ###################
     # Factory Methods
     ###################
+    
+    def body(widget=None):
+        element = HtmlElement("body")
+        element.add(widget)
+        return element
+    body = staticmethod(body)
 
     def p(widget=None):
         element = HtmlElement("p")

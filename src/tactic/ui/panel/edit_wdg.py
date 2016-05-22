@@ -643,7 +643,10 @@ class EditWdg(BaseRefreshWdg):
             num_columns = my.kwargs.get('num_columns')
 
         if not num_columns:
-            num_columns = 1
+            if len(my.widgets) > 8:
+                num_columns = 2
+            else:
+                num_columns = 1
         else:
             num_columns = int(num_columns)
 
@@ -804,7 +807,7 @@ class EditWdg(BaseRefreshWdg):
         content_div = DivWdg()
 
         from tactic.ui.panel import CustomLayoutWdg
-        layout = CustomLayoutWdg(view=layout_view)
+        layout = CustomLayoutWdg(view=layout_view, search_key=my.search_key)
         content_div.add(layout)
 
         for widget in my.widgets:
@@ -863,7 +866,7 @@ class EditWdg(BaseRefreshWdg):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
-        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+        menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
 
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)

@@ -131,7 +131,9 @@ class PipelineToolWdg(BaseRefreshWdg):
         right = table.add_cell()
         right.add_border()
 
-        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event)
+        show_help = my.kwargs.get('show_help') or True
+
+        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event, show_help=show_help, show_gear=my.kwargs.get('show_gear'))
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -150,7 +152,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         msg_div = DivWdg()
         start_div.add(msg_div)
-        msg_div.add("Select a pipeline<br/><br/>or<br/><br/>Create a new one")
+        msg_div.add("Select a workflow<br/><br/>or<br/><br/>Create a new one")
         msg_div.add_style("width: 300px")
         msg_div.add_style("height: 150px")
         msg_div.add_style("margin-top: 20%")
@@ -297,7 +299,7 @@ class PipelineTabWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='title', label='Raw Data')
         menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label='Show Site Wide Pipelines')
+        menu_item = MenuItem(type='action', label='Show Site Wide Workflows')
         menu_item.add_behavior( {
         'cbjs_action': '''
         var class_name = 'tactic.ui.panel.ViewPanelWdg';
@@ -310,7 +312,7 @@ class PipelineTabWdg(BaseRefreshWdg):
         var header = spt.smenu.get_activator(bvr);
         var top = header.getParent(".spt_tab_top");
         spt.tab.set_tab_top(top);
-        spt.tab.add_new("site_wide_pipeline", "Site Wide Pipelines", class_name, kwargs);
+        spt.tab.add_new("site_wide_pipeline", "Site Wide Workflows", class_name, kwargs);
 
         '''
         } )
@@ -412,7 +414,7 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div = DivWdg()
 
 
-        button = ActionButtonWdg(title="Add", tip="Add a new pipeline", size='small')
+        button = ActionButtonWdg(title="Add", tip="Add a new workflow", size='small')
         button.add_style("position: absolute")
         button.add_style("top: 5px")
         button.add_style("right: 5px")
@@ -429,7 +431,7 @@ class PipelineListWdg(BaseRefreshWdg):
             single: true,
             save_event: bvr.save_event
         }
-        spt.api.load_popup("Add New Pipeline", class_name, kwargs);
+        spt.api.load_popup("Add New Workflow", class_name, kwargs);
         '''
         } )
 
@@ -442,7 +444,7 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div.add_style("padding-left: 5px")
         title_div.add_style("padding-top: 10px")
         #title_div.add_color("background", "background", -10)
-        title_div.add("Pipelines")
+        title_div.add("Workflows")
         title_div.add_style("font-size: 16px")
         title_div.add("<hr/>")
 
@@ -515,7 +517,7 @@ class PipelineListWdg(BaseRefreshWdg):
         swap.add_style("float: left")
 
 
-        title = DivWdg("<b>Project Pipelines</b>")
+        title = DivWdg("<b>Project Workflows</b>")
         title.add_style("padding-bottom: 2px")
         title.add_style("padding-top: 3px")
         inner.add(title)
@@ -538,10 +540,19 @@ class PipelineListWdg(BaseRefreshWdg):
             search.add_op("or")
             search.add_op("and")
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            search.add_order_by("search_type")
             pipelines = search.get_sobjects()
+
+            last_search_type = None
             for pipeline in pipelines:
                 if pipeline.get_value("parent_process"):
                     continue
+
+                search_type = pipeline.get_value("search_type")
+                if last_search_type and last_search_type != search_type:
+                    content_div.add("<hr/>")
+                last_search_type = search_type
+
 
                 # build each pipeline menu item
                 pipeline_div = my.get_pipeline_wdg(pipeline)
@@ -567,7 +578,7 @@ class PipelineListWdg(BaseRefreshWdg):
         inner.add(swap)
         swap.add_style("float: left")
 
-        title = DivWdg("<b>Task Status Pipelines</b>")
+        title = DivWdg("<b>Task Status Workflows</b>")
         title.add_style("padding-bottom: 2px")
         title.add_style("padding-top: 3px")
         inner.add(title)
@@ -606,7 +617,7 @@ class PipelineListWdg(BaseRefreshWdg):
         inner.add(swap)
         swap.add_style("float: left")
 
-        title = DivWdg("<b>Misc Pipelines</b>")
+        title = DivWdg("<b>Misc Workflows</b>")
         title.add_style("padding-bottom: 2px")
         title.add_style("padding-top: 3px")
         inner.add(title)
@@ -656,7 +667,7 @@ class PipelineListWdg(BaseRefreshWdg):
             swap.add_style("margin-top: -2px")
             inner.add(title)
             swap.add_style("float: left")
-            title.add("<b>Site Wide Pipelines</b><br/>")
+            title.add("<b>Site Wide Workflows</b><br/>")
           
             site_wide_div = DivWdg()
             site_wide_div.add_styles('padding-left: 8px; padding-top: 6px') 
@@ -819,10 +830,10 @@ class PipelineListWdg(BaseRefreshWdg):
         var current_group_name = spt.pipeline.get_current_group();
         var group_name = bvr.pipeline_code;
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
-            spt.confirm("Current pipeline has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
+            spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
         }
         else if (current_group_name == group_name) {
-            spt.confirm("Reload current pipeline?", ok, null); 
+            spt.confirm("Reload current workflow?", ok, null); 
         } else {
             ok();
         }
@@ -863,7 +874,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
-        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+        menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
 
 
         menu_item = MenuItem(type='title', label='Actions')
@@ -892,10 +903,11 @@ class PipelineListWdg(BaseRefreshWdg):
                 'search_type': search_type,
                 'code': code,
                 'view': 'pipeline_edit_tool',
-                'save_event': '%s'
+                'save_event': '%s',
+                'title': "Save changes to Workflow (" + code + ")"
             };
             var class_name = 'tactic.ui.panel.EditWdg';
-            spt.panel.load_popup("Edit Pipeline", class_name, kwargs);
+            spt.panel.load_popup("Edit Workflow Details", class_name, kwargs);
             ''' % my.save_event
         } )
         menu.add(menu_item)
@@ -921,7 +933,7 @@ class PipelineListWdg(BaseRefreshWdg):
      
             }
 
-            spt.confirm("Confirm to delete pipeline ["+name+"]", ok);
+            spt.confirm("Confirm to delete workflow ["+name+"]", ok);
             '''
         } )
         menu.add(menu_item)
@@ -1098,7 +1110,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 spt.panel.load_popup("Edit Process " + process, class_name, kwargs);
             }
             else {
-                 spt.info("Process entry does not exist. Try saving this pipeline first.");
+                 spt.info("Process entry does not exist. Try saving this workflow first.");
             }
             '''
         } )
@@ -1189,7 +1201,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
 
-        menu_item = MenuItem(type='action', label='Edit Task Status Pipeline')
+        menu_item = MenuItem(type='action', label='Edit Task Status Workflow')
         menu.add(menu_item)
         menu_item.add_behavior( {
         'cbjs_action': '''
@@ -1254,7 +1266,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         }
 
 
-        spt.confirm("Confirm to create a custom task status pipeline", ok)
+        spt.confirm("Confirm to create a custom task status workflow", ok)
 
         '''
         } )
@@ -1278,7 +1290,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
         pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
 
         if not pipeline:
-            return "Pipeline not found"
+            return "Workflow not found"
 
 
         search_type = pipeline.get_value("search_type")
@@ -1421,7 +1433,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         if not left_process or not right_process:
             info_wdg = DivWdg()
             info_wdg.add_style("margin: 10px")
-            info_wdg.add("Save your pipeline to edit connector properties.") 
+            info_wdg.add("Save your workflow to edit connector properties.") 
             top.add(info_wdg)
             return top
 
@@ -1943,7 +1955,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         # notifications
         search = Search("sthpw/notification")
         search.add_project_filter()
-        search.add_filter("process", process)
+        search.add_filters("process", [process,process_code])
         notification_count = search.get_count()
 
 
@@ -2872,10 +2884,19 @@ class ProgressInfoWdg(BaseInfoWdg):
             workflow = {}
 
         related_search_type = workflow.get("search_type")
+        related_pipeline_code = workflow.get("pipeline_code")
         related_process = workflow.get("process")
         related_status = workflow.get("status")
         related_scope = workflow.get("scope")
         related_wait = workflow.get("wait")
+
+
+        # overrides
+        web = WebContainer.get_web()
+        if web.get_form_value("related_search_type"):
+            related_search_type = web.get_form_value("related_search_type")
+        if web.get_form_value("related_pipeline_code"):
+            related_pipeline_code = web.get_form_value("related_pipeline_code")
 
 
         project = Project.get()
@@ -2897,7 +2918,7 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Listen to events of search type:</b>")
+        settings_wdg.add("<b>Listen to events from:</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         if related_search_type:
@@ -2905,8 +2926,19 @@ class ProgressInfoWdg(BaseInfoWdg):
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
-        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the sobjects of the selected search type.</span>")
+        settings_wdg.add("<span style='opacity: 0.6'>This process will track the progress of the items of the selected search type.</span>")
         settings_wdg.add("<br/>")
+
+
+        select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var kwargs = {
+                related_search_type: bvr.src_el.value
+            }
+            spt.panel.refresh(bvr.src_el, kwargs);
+            '''
+        } )
 
 
         from pyasm.widget import RadioWdg
@@ -2936,15 +2968,53 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
 
-        search_type = "vfx/shot"
-
-
         search = Search("sthpw/pipeline")
-        search.add_filter("search_type", search_type)
+        search.add_filter("search_type", related_search_type)
+        search.add_project_filter()
         related_pipelines = search.get_sobjects()
+
+
+
+        labels = ["%s (%s)" % (x.get_value("name"), x.get_value("search_type")) for x in related_pipelines]
+        values = [x.get_value("code") for x in related_pipelines]
+
+
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>Listen to Workflow</b>")
+        select = SelectWdg("related_pipeline_code")
+        if related_pipeline_code:
+            select.set_value(related_pipeline_code)
+        settings_wdg.add(select)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- %s --" % "any")
+        settings_wdg.add("<span style='opacity: 0.6'>Determines which workflow to track.</span>")
+
+        select.add_behavior( {
+            'type': 'change',
+            'related_search_type': related_search_type,
+            'cbjs_action': '''
+            var kwargs = {
+                related_search_type: bvr.related_search_type,
+                related_pipeline_code: bvr.src_el.value
+            }
+            spt.panel.refresh(bvr.src_el, kwargs);
+            '''
+        } )
+
+
+        settings_wdg.add("<br/>"*2)
+
+
+
 
         values = set()
         for related_pipeline in related_pipelines:
+            if related_pipeline_code:
+                if related_pipeline.get_code() not in related_pipeline_code:
+                    continue
+
             related_process_names = related_pipeline.get_process_names()
             for x in related_process_names:
                 values.add(x)
@@ -3382,6 +3452,7 @@ class ProcessInfoCmd(Command):
 
 
         related_search_type = my.kwargs.get("related_search_type")
+        related_pipeline_code = my.kwargs.get("related_pipeline_code")
         related_process = my.kwargs.get("related_process")
         if not related_process:
             related_process = process
@@ -3395,6 +3466,8 @@ class ProcessInfoCmd(Command):
 
         if related_search_type:
             workflow['search_type'] = related_search_type
+        if related_pipeline_code:
+            workflow['pipeline_code'] = related_pipeline_code
         if related_process:
             workflow['process'] = related_process
         if related_scope:
@@ -3454,7 +3527,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_editor_top")
 
         my.save_new_event = my.kwargs.get("save_new_event")
-
+        my.show_gear = my.kwargs.get("show_gear")
 
         inner = DivWdg()
         top.add(inner)
@@ -3596,7 +3669,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spacing_div.add_style("float: left")
 
 
-        button_div = my.get_buttons_wdg();
+        show_gear = my.kwargs.get("show_gear")
+        button_div = my.get_buttons_wdg(show_gear);
         button_div.add_style("float: left")
         shelf_wdg.add(button_div)
 
@@ -3626,16 +3700,17 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg.add(button_div)
         """
 
-        help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
-        shelf_wdg.add(help_button)
-        help_button.add_style("padding-top: 3px")
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.help.set_top();
-            spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
-            '''
-        } )
+        if my.kwargs.get("show_help") not in ['false', False]:
+            help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
+            shelf_wdg.add(help_button)
+            help_button.add_style("padding-top: 3px")
+            help_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.help.set_top();
+                spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
+                '''
+            } )
 
 
 
@@ -3649,7 +3724,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-    def get_buttons_wdg(my):
+    def get_buttons_wdg(my, show_gear):
         from pyasm.widget import IconWdg
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 
@@ -3672,7 +3747,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 spt.panel.refresh(editor_top); 
             }
             if (editor_top && editor_top.hasClass("spt_has_changes")) {
-                spt.confirm("Current pipeline has changes.  Do you wish to continue?", ok, null);
+                spt.confirm("Current workflow has changes.  Do you wish to continue?", ok, null);
             } else {
                 ok();
             }
@@ -3681,7 +3756,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         """
 
 
-        button = ButtonNewWdg(title="Save Current Pipeline", icon="BS_SAVE")
+        button = ButtonNewWdg(title="Save Current Workflow", icon="BS_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -3710,7 +3785,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 },
                 save_event: bvr.save_event
             }
-            spt.api.load_popup("Add New Pipeline", class_name, kwargs);
+            spt.api.load_popup("Add New Workflow", class_name, kwargs);
         }
         else {
             var data = spt.pipeline.get_data();
@@ -3765,7 +3840,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu = Menu(width=200)
         
 
-        menu_item = MenuItem(type='action', label='Save as Site Wide Pipeline')
+        menu_item = MenuItem(type='action', label='Save as Site Wide Workflow')
         menu.add(menu_item)
         # no project code here
         menu_item.add_behavior( {
@@ -3792,7 +3867,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     pipeline: xml
                 }
             }
-            spt.api.load_popup("Add New Pipeline", class_name, kwargs);
+            spt.api.load_popup("Add New Workflow", class_name, kwargs);
         }
         else {
             var data = spt.pipeline.get_data();
@@ -3815,7 +3890,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
 
-        menu_item = MenuItem(type='action', label='Save All Pipelines')
+        menu_item = MenuItem(type='action', label='Save All Workflows')
         menu.add(menu_item)
         # no project code here
         menu_item.add_behavior( {
@@ -3839,7 +3914,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 var color = data.colors[group_name];
 
                 server = TacticServerStub.get();
-                spt.app_busy.show("Saving All Pipelines ["+group_name+"]",null);
+                spt.app_busy.show("Saving All Workflows ["+group_name+"]",null);
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);
                 try {
@@ -3851,7 +3926,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             }
             spt.app_busy.hide();
             }
-            spt.confirm("Saving all pipelines does not make new pipelines project specific. Continue?", ok, cancel );
+            spt.confirm("Saving all workflows does not make new workflows project specific. Continue?", ok, cancel );
         '''
         } )
 
@@ -3930,7 +4005,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        menu_item = MenuItem(type='action', label='Add Sub-pipeline')
+        menu_item = MenuItem(type='action', label='Add Sub-workflow')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -4029,28 +4104,29 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
+        if show_gear not in ['false', False]:
+            print "show_gear: ", show_gear
+            button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
+            button_row.add(button)
 
-        button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
-        button_row.add(button)
-
-        menu = Menu(width=200)
-        
-        menu_item = MenuItem(type='action', label='TEST')
-        menu.add(menu_item)
-        # no project code here
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            alert("test");
-            '''
-        } )
+            menu = Menu(width=200)
+            
+            menu_item = MenuItem(type='action', label='TEST')
+            menu.add(menu_item)
+            # no project code here
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                alert("test");
+                '''
+            } )
 
 
-        tab = PipelineTabWdg()
-        menu = tab.get_extra_tab_menu()
+            tab = PipelineTabWdg()
+            menu = tab.get_extra_tab_menu()
 
-        menus = [menu.get_data()]
-        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
-        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
+            menus = [menu.get_data()]
+            SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
+            SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
  
 
 
@@ -4189,7 +4265,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         pipeline_select.add_style("display: table-cell")
         pipeline_select.add_class("spt_pipeline_editor_current")
         pipeline_select.set_option("values", "default")
-        pipeline_select.set_option("labels", "-- New Pipeline --")
+        pipeline_select.set_option("labels", "-- New Workflow --")
 
         pipeline_select.add_behavior( {
             'type': 'change',
@@ -4499,7 +4575,7 @@ class PipelineTaskTriggerCommitCbk(Command):
             trigger = SearchType.create("config/trigger")
             trigger.set_value("event", "update|sthpw/task|status")
             trigger.set_value("class_name", "tactic.command.PipelineTaskTrigger")
-            trigger.set_value("description", "Status change trigger defined by pipeline")
+            trigger.set_value("description", "Status change trigger defined by workflow")
 
             trigger.set_value("mode", "same process,same transaction")
 
@@ -4610,7 +4686,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         tr.add_style("display: none")
         td = table.add_cell('Group: ')
         td.add_style("width: 250px")
-        td.add_attr("title", "Nodes can grouped together within a pipeline")
+        td.add_attr("title", "Nodes can grouped together within a workflow")
         #td.add_style("width: 200px")
         text_name = "spt_property_group"
         text = TextWdg(text_name)
@@ -4646,8 +4722,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         # task_pipeline  (visibility depends on sType)
         table.add_row(css='spt_property_task_status_pipeline')
-        td = table.add_cell('Task Status Pipeline')
-        td.add_attr("title", "The task status pipeline determines all of the statuses that occur within this process")
+        td = table.add_cell('Task Status Workflow')
+        td.add_attr("title", "The task status workflow determines all of the statuses that occur within this process")
 
         text_name = "spt_property_task_pipeline"
         select = SelectWdg(text_name)
@@ -4755,7 +4831,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         tr, td = table.add_row_cell()
 
-        button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save pipeline at the end.")
+        button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save workflow at the end.")
         td.add("<hr/>")
         td.add(button)
         button.add_style("float: right")
@@ -4998,7 +5074,7 @@ class PipelineSaveCbk(Command):
 
         pipeline.on_insert()
         
-        my.description = "Updated pipeline [%s]" % pipeline_code
+        my.description = "Updated workflow [%s]" % pipeline_code
         
         """
         count = 0

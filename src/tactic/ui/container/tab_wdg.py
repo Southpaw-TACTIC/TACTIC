@@ -230,6 +230,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     }
 
     var top = spt.tab.top;
+    if (!top) {
+        spt.tab.set_main_body_tab();
+        top = spt.tab.top;
+    }
 
     if (!hash && hash != false && kwargs.hash) {
         hash = kwargs.hash;
@@ -252,37 +256,81 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         if (header) {
             var num = Math.floor((Math.random()*10000)+1); 
             element_name = element_name + num;
-            //title = title + num;
         }
     }
 
 
     var top_id = top.getAttribute("spt_tab_id");
 
+
+    if (element_name.indexOf("/") != -1) {
+        var full_element_name = element_name;
+        var parts = element_name.split("/");
+        element_name = parts[0];
+        var subelement_name = parts[1];
+    }
+    else {
+        var full_element_name = element_name;
+        var subelement_name = "";
+    }
+
+
+    var subelement_title;
+    var full_title;
+    if (title.indexOf("/") != -1) {
+        full_title = title;
+        var parts = title.split("/");
+        title = parts[0];
+        subelement_title = parts[1];
+    }
+    else {
+        full_title = title;
+        subelement_title = title;
+    }
+
    
     //var headers = header_top.getElements(".spt_tab_header");
     var headers = spt.tab.get_headers();
     var header;
     var found = false;
-    var force = false;
     for (var k=0; k < headers.length; k++){
         var existing_header = headers[k];
         if (existing_header.getAttribute('spt_element_name')==element_name){
             header = existing_header;
             found = true;
-            force = true;
             break;
         }
     }
-    
+
+    // add a new tab
     if (!found) {
-
-
         var template_top = top.getElement(".spt_tab_template_top");
-        //var header_top = top.getElement(".spt_tab_header_top");
         var header_template = template_top.getElement(".spt_tab_header");
+
+        // clone the header template
         var header = spt.behavior.clone(header_template);
-        
+        var header_id = Math.floor(Math.random()*10000000+1);
+        header.setAttribute("id", header_id);
+
+
+        // add a subheader template for each header
+        var subheader_template = template_top.getElement(".spt_tab_subheader");
+        if (subheader_template) {
+            var subheader = spt.behavior.clone(subheader_template);
+
+            var subheader_id = Math.floor(Math.random()*10000000+1);
+            header.setAttribute("spt_subheader_id", subheader_id);
+
+            subheader.setAttribute("id", subheader_id);
+            subheader.setStyle("display", "none");
+
+            subheader.setAttribute("spt_header_id", header_id);
+
+            subheader_top = top.getElement(".spt_tab_subheader_top")
+            subheader.inject(subheader_top);
+        }
+       
+
         var last_header = headers[headers.length -1];
 
         // set the new label
@@ -324,10 +372,82 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var content_boxes = spt.tab.get_contents();
         var last_content = content_boxes[content_boxes.length -1];
         content_box.inject(last_content, "after");
-        var content_boxes = spt.tab.get_contents();
 
     }
-    else {
+
+
+    // if a subtab is needed, create that
+    if (subelement_name) {
+        // find out if the subheader exists
+        var subheader_id = header.getAttribute("spt_subheader_id");
+        var subheader_top = $(subheader_id);
+        var subheaders = subheader_top.getElements(".spt_tab_subheader_item");
+
+        var subheader_exists = false;
+        var subheader = null;
+        for (var i = 0; i < subheaders.length; i++) {
+            var box_name = subheaders[i].getAttribute("spt_element_name");
+            if (full_element_name == box_name) {
+                subheader_exists = true;
+                subheader = subheaders[i];
+                break;
+            }
+        }
+
+        if (subheader_exists == false) {
+
+            // create a new one
+            var subheader = $(document.createElement("div"));
+            subheader.innerHTML = "<div style='padding: 5px 5px'><div class='spt_tab_header_label'>"+subelement_name+"</div></div>";
+            subheader_top.appendChild(subheader);
+            subheader.addClass("spt_tab_subheader_item");
+
+
+            // set the new label
+            var label = subheader.getElement(".spt_tab_header_label");
+            var display_title = subelement_title;
+            if (display_title.length > 20) {
+                display_title = subelement_title.substr(0,18) + "...";
+            }
+            title = subelement_name;
+
+            label.setAttribute("title", subelement_title);
+            label.innerHTML = display_title;
+
+            subheader.setAttribute("spt_class_name", class_name);
+            var kwargs_str = JSON.stringify(kwargs);
+            kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+            subheader.setAttribute("spt_kwargs", kwargs_str);
+            subheader.setAttribute("spt_element_name", full_element_name);
+            subheader.setAttribute("spt_title", full_title);
+            subheader.setAttribute("spt_tab_id", top_id);
+            subheader.removeClass("spt_content_loaded");
+
+
+            // copy the content from template
+            var template_top = top.getElement(".spt_tab_template_top");
+            var content_top = top.getElement(".spt_tab_content_top");
+            var content_template = template_top.getElement(".spt_tab_content");
+            var content_box = spt.behavior.clone(content_template);
+
+            content_box.setAttribute("spt_element_name", full_element_name);
+            content_box.setAttribute("spt_title", full_title);
+            content_box.setAttribute("spt_tab_id", top_id);
+
+            var content_boxes = spt.tab.get_contents();
+            var last_content = content_boxes[content_boxes.length -1];
+            content_box.inject(last_content, "after");
+
+
+        }
+
+    }
+
+
+    // This does nothing?
+    //else {
+    /*
+    if (true) {
         var content_top = top.getElement(".spt_tab_content_top");
         var content_boxes = content_top.getElements(".spt_tab_content");
         for (var i=0; i < content_boxes.length; i++) {
@@ -339,10 +459,18 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             }
         }
     }
-    if (typeof(class_name) == 'undefined') {
+    */
+
+
+    if (! class_name) {
         spt.tab.select(element_name);
     }
+    else if (subelement_name) {
+        var force = true;
+        spt.tab.load_class(subheader, class_name, kwargs, values, force);
+    }
     else {
+        var force = true;
         spt.tab.load_class(header, class_name, kwargs, values, force);
     }
 
@@ -386,8 +514,7 @@ spt.tab.getY = function(oElement)
 
 spt.tab.load_selected = function(element_name, title, class_name, kwargs, values) {
     var top = spt.tab.top;
-    //var content_top = top.getElement(".spt_tab_content_top");
-    //var content_boxes = content_top.getElements(".spt_tab_content");
+
 
     var header = spt.tab.get_selected_header();
     // if none are selected, use the last one
@@ -409,7 +536,11 @@ spt.tab.load_selected = function(element_name, title, class_name, kwargs, values
     header.setAttribute("spt_kwargs", kwargs_str);
 
     var label = header.getElement(".spt_tab_header_label");
-    label.innerHTML = title;
+    var display_title = title;
+    if (display_title.length > 20) {
+        display_title = title.substr(0,18) + "...";
+    }
+    label.innerHTML = display_title;
 
     var content_top = top.getElement(".spt_tab_content_top");
     var content_boxes = content_top.getElements(".spt_tab_content");
@@ -491,7 +622,7 @@ spt.tab.select = function(element_name) {
     header.addClass("spt_is_selected");
     header.addClass("spt_tab_selected");
     header.removeClass("spt_tab_unselected");
-    header.setStyle("font-weight", "bold");
+    //header.setStyle("font-weight", "bold");
     header.setStyle("z-index", "200");
 
 
@@ -576,6 +707,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     }
 
 
+
     var top = spt.tab.top;
     var header_top = top.getElement(".spt_tab_header_top");
     var top_id = top.getAttribute("id");
@@ -595,13 +727,25 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
         }
 
 
-        header.setStyle("opacity", "1.0");
-        header.addClass("spt_is_selected");
-        header.addClass("spt_tab_selected");
-        header.removeClass("spt_tab_unselected");
+        // select the header
+        if (header.hasClass("spt_tab_subheader_item")) {
+            var subheader_top = header.getParent(".spt_tab_subheader");
+            header_id = subheader_top.getAttribute("spt_header_id");
+            select_header = $(header_id);
+        }
+        else {
+            select_header = header;
+        }
 
-        //header.setStyle("font-weight", "bold");
-        header.setStyle("z-index", "200");
+        // select the header
+        select_header.setStyle("opacity", "1.0");
+        select_header.addClass("spt_is_selected");
+        select_header.addClass("spt_tab_selected");
+        select_header.removeClass("spt_tab_unselected");
+        select_header.setStyle("z-index", "200");
+
+
+
 
         var content_top = top.getElement(".spt_tab_content_top");
         var content_boxes = spt.tab.get_contents();
@@ -858,7 +1002,11 @@ spt.tab.close = function(src_el) {
     var element_name;
     // check if it's a header child
     var header = src_el.getParent(".spt_tab_header");
+    var subheader = src_el.getParent(".spt_tab_subheader");
     if (header) {
+        element_name = header.getAttribute("spt_element_name");
+        content = spt.tab.get_content(element_name);
+    } else if (subheader) {
         element_name = header.getAttribute("spt_element_name");
         content = spt.tab.get_content(element_name);
     } else if (content) {
@@ -885,8 +1033,26 @@ spt.tab.close = function(src_el) {
         }
         var opener = header.getAttribute("spt_tab_opener");
         var element_name = header.getAttribute("spt_element_name");
-        header.destroy();
-        content.destroy();
+
+        if (header) {
+            var subheader = $(header.getAttribute("spt_subheader_id"));
+            var items = subheader.getElements(".spt_tab_subheader_item");
+            for (var i = 0; i < items.length; i++) {
+                var subheader_element_name = items[i].getAttribute("spt_element_name");
+                var subheader_content = spt.tab.get_content(subheader_element_name);
+                spt.behavior.destroy_element(subheader_content);
+
+            }
+            spt.behavior.destroy_element(subheader);
+        }
+
+        //header.destroy();
+        //content.destroy();
+        spt.behavior.destroy_element(header);
+        spt.behavior.destroy_element(content);
+
+
+
         var last_element_name = spt.tab.get_last_selected_element_name();
         last_element_name = null;
         // make the opener active
@@ -1114,6 +1280,13 @@ spt.tab.close = function(src_el) {
         header_div.add_style("z-index: 2")
 
 
+        subheader_div = DivWdg()
+        subheader_div.add_class("spt_tab_subheader_top")
+        inner.add(subheader_div)
+        my.add_subheader_behaviors(subheader_div)
+        #subheader_div.add_style("display: none")
+ 
+
 
         my.add_styles()
 
@@ -1146,7 +1319,10 @@ spt.tab.close = function(src_el) {
         header_defs = {}
 
         title_dict = {}
+
         my.add_context_menu( header_div )
+
+
         loaded_dict = {}
         for element_name in element_names:
             attrs = config.get_element_attributes(element_name)
@@ -1418,6 +1594,49 @@ spt.tab.close = function(src_el) {
         is_selected = False
         header = my.get_tab_header(name, title, None, None, is_selected=is_selected, is_template=True)
         template_div.add(header)
+
+
+        # subheader test
+        subheader = my.get_tab_subheader(name, title, None, None, is_selected=is_selected, is_template=True, config=config)
+        template_div.add(subheader)
+        subheader.add_style("z-index: 3")
+
+        header.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+
+            var header_top = bvr.src_el.getParent(".spt_tab_header_top");
+            var top = bvr.src_el.getParent(".spt_tab_top");
+        
+
+            var subheader_id = bvr.src_el.getAttribute("spt_subheader_id")
+
+
+            var subheaders = top.getElements(".spt_tab_subheader");
+            for ( var i = 0; i < subheaders.length; i++) {
+                subheaders[i].setStyle("display", "none");
+            }
+
+            var el = $(subheader_id);
+            var items = el.getElements(".spt_tab_subheader_item");
+            if (items.length == 0) {
+                return;
+            }
+
+            var size = bvr.src_el.getSize();
+            var pos = bvr.src_el.getPosition(header_top);
+
+            el.setStyle("display", "");
+            spt.body.add_focus_element(el);
+
+            el.position({x: pos.x, y: pos.y+size.y-1}, el);
+
+            '''
+        } )
+
+
+
+
 
         top.add(template_div)
         content_div = DivWdg()
@@ -1850,16 +2069,9 @@ spt.tab.close = function(src_el) {
 
         if is_selected:
             header.add_class("spt_tab_selected")
-            #header.add_style("opacity", "1.0");
             header.add_class("spt_is_selected")
-            #header.add_gradient("background", "background", -5, 5)
-            #header.add_color("background", "background", -3)
         else:
             header.add_class("spt_tab_unselected")
-            #header.add_style("opacity", "0.4");
-            #header.add_color("color", "color")
-            #header.add_gradient("background", "background", -5, 5)
-            #header.add_color("background", "background")
 
 
         palette = header.get_palette()
@@ -1936,6 +2148,7 @@ spt.tab.close = function(src_el) {
         title_div.add_attr("nowrap", "nowrap")
         title_div.add_style("float: left")
         title_div.add_class("spt_tab_header_label");
+        #title_div.add_style("text-overflow: ellipsis")
         if len(title) > 20:
             display_title = "%s..." % title[:18]
         else:
@@ -2013,6 +2226,132 @@ spt.tab.close = function(src_el) {
 
 
         return header
+
+
+
+    def get_tab_subheader(my, element_name, title, class_name=None, kwargs=None, is_selected=False, is_loaded=False, is_template=False, config=None):
+
+        subheader_div = DivWdg()
+        subheader_div.add_class("spt_tab_subheader")
+        subheader_div.add_style("width: 200px")
+        subheader_div.add_style("height: auto")
+        subheader_div.add_border()
+        subheader_div.add_style("position: absolute")
+        subheader_div.add_style("left: 5px")
+        subheader_div.add_color("background", "background")
+        subheader_div.add_style("top: 28px")
+        subheader_div.add_style("padding: 10px 5px")
+
+        #element_names = ['my_tasks','all_orders','all_deliverables']
+        element_names = []
+        for element_name in element_names:
+            attrs = config.get_element_attributes(element_name)
+            title = attrs.get("title")
+            if not title:
+                title = Common.get_display_title(element_name)
+
+            subheader = DivWdg()
+            subheader.add_style("position: relative")
+            subheader.add_attr("spt_element_name", element_name)
+
+            subheader.add_class("spt_tab_subheader_item")
+
+            icon = IconWdg("Remove Tab", "BS_REMOVE", opacity=0.3)
+            subheader.add(icon)
+            icon.add_class("spt_icon_inactive")
+            icon.add_styles("position: absolute; right: 0; top: 3px;")
+
+
+            subheader_div.add( subheader )
+            subheader.add_style("padding: 5px")
+            subheader.add(title)
+     
+            display_class = config.get_display_handler(element_name)
+            display_options = config.get_display_options(element_name)
+
+            """
+            subheader.add_behavior( {
+                'type': 'click',
+                'title': title,
+                'display_class': display_class,
+                'display_options': display_options,
+                'cbjs_action': '''
+                spt.panel.load_popup(bvr.title, bvr.display_class, bvr.display_options);
+                '''
+            } )
+            subheader.add_behavior( {
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "#DDD");
+                '''
+            } )
+            subheader.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("background", "");
+                '''
+            } )
+            """
+
+
+        return subheader_div
+
+
+
+    def add_subheader_behaviors(my, subheader_top):
+
+        subheader_top.set_unique_id()
+        subheader_top.add_smart_style("spt_tab_subheader_item", "pointer", "cursor")
+
+        subheader_top.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_tab_subheader_item',
+            'cbjs_action': '''
+            var element_name = bvr.src_el.getAttribute("spt_element_name");
+            var title = bvr.src_el.getAttribute("spt_title");
+            var display_class = bvr.src_el.getAttribute("spt_class_name");
+            var kwargs_str = bvr.src_el.getAttribute("spt_kwargs");
+
+            if (!kwargs_str) {
+                kwargs = {}
+            }
+            else {
+                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs = JSON.parse(kwargs_str);
+            }
+
+            spt.tab.load_selected(element_name, title, display_class, kwargs);
+
+            '''
+        } )
+        subheader_top.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'spt_tab_subheader_item',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "#DDD");
+            '''
+        } )
+        subheader_top.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_tab_subheader_item',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+        subheader_top.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_tab_subheader',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("display", "none");
+            '''
+        } )
+
+
+
+
+
 
 
 from pyasm.command import Command

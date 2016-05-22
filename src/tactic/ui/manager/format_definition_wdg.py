@@ -59,11 +59,15 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
 
         select = SelectWdg(widget_name)
         top.add(select)
+        select.add_style("width: 30%")
+        select.add_style("display: inline-block")
+
         default = option.get('default')
         if default:
             select.set_value(default)
         else:
             select.add_empty_option('-- Select --')
+
 
         values = option.get('values')
         if not values:
@@ -83,7 +87,7 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
         for (var i = 0; i < selects.length; i++) {
             var type = selects[i].getAttribute("spt_type");
             if (value == type) {
-                selects[i].setStyle("display", "");
+                selects[i].setStyle("display", "inline-block");
                 selects[i].removeAttribute("disabled");
             }
             else {
@@ -182,6 +186,8 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                 select.add_style("display", "none")
                 select.add_attr("disabled", "disabled")
 
+            select.add_style("width: 30%")
+
             select.set_option("values", select_values)
             select.add_empty_option("-- Format --")
             top.add(select)
@@ -203,6 +209,7 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                 select.set_option("labels", "12 fps|24 fps|25 fps|30 fps|60 fps")
                 select.add_empty_option("-- fps --")
                 top.add(select)
+                select.add_style("width: 30%")
                
 
         return top

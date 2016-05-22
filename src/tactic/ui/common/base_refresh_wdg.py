@@ -75,6 +75,11 @@ class BaseRefreshWdg(Widget):
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
 
+    def get_style(my, name):
+        my.top.get_style(name)
+
+
+
     def add_behavior(my, behavior):
         my.top.add_behavior(behavior)
 

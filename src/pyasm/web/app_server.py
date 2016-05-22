@@ -352,15 +352,17 @@ class BaseAppServer(Base):
         # for here on, the user is logged in
         login_name = Environment.get_user_name()
 
-
-
+        is_upload = '/UploadServer' in web.get_request_url().to_string()
+       
         # check if the user has permission to see this project
         project = web.get_context_name()
         if project == 'default':
             override_default = Project.get_default_project()
             if override_default:
                 project = override_default
-        if project != 'default':
+        if is_upload:
+           access = True
+        elif project != 'default':
             security_version = get_security_version()
             if security_version == 1:
                 default = "view"
@@ -395,7 +397,8 @@ class BaseAppServer(Base):
                 widget.add( Error403Wdg() )
                 widget.add( BottomWdg() )
                 widget.get_display()
-     
+                if is_upload:
+                    print "WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project)
                 return
 
 
@@ -439,6 +442,8 @@ class BaseAppServer(Base):
             # get the project from the url because we are still 
             # in the admin project at this stage
             current_project = web.get_context_name()
+            
+            sudo = Sudo()
             try:
                 if current_project != "default":
                     project = Project.get_by_code(current_project)
@@ -485,6 +490,8 @@ class BaseAppServer(Base):
                         top.add(web_wdg)
                 else:
                     web_wdg = None
+            finally:
+                sudo.exit()
 
             if not web_wdg:
                 msg = "No default page defined for guest user. Please set up /guest in Custom URL."
@@ -551,7 +558,6 @@ class BaseAppServer(Base):
         else:
             page_type = "normal"
 
-
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
         my.set_templates()
@@ -613,9 +619,11 @@ class BaseAppServer(Base):
 
         # see if there is an override
         web = WebContainer.get_web()
+        is_from_login = web.get_form_value("is_from_login")
+        
         ticket_key = web.get_form_value("login_ticket")
         # attempt to login in with a ticket
-        if not ticket_key:
+        if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
 
@@ -659,14 +667,27 @@ class BaseAppServer(Base):
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
+
                 ticket_key = security.get_ticket_key()
+              
+                if not ticket_key:
+                    if site:
+                        site_obj.pop_site()
+                    return security
+
 
         elif ticket_key:
-
+          
             if site:
                 site_obj.set_site(site)
 
             login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
+           
+            # In the midst of logging out, login is None
+            if not login:
+                if site:
+                    site_obj.pop_site()
+                return security
 
 
         if not security.is_logged_in():
@@ -679,13 +700,11 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
 
-            # FIXME: not sure why this is here???
-            """
+            # let empty username or password thru to get feedback from WebLoginCmd
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-            """
 
         # clear the password
         web.set_form_value('password','')
@@ -714,20 +733,23 @@ class BaseAppServer(Base):
 
         # for now apply the access rules after
         security.add_access_rules()
-
+        
         return security
 
 
     def handle_guest_security(my, security):
-
-        Site.set_site("default")
+       
+        # skip storing current security since it failed
+        Site.set_site("default", store_security=False)
         try:
 
             WebContainer.set_security(security)
+            
             security.login_as_guest()
-
+            
             ticket_key = security.get_ticket_key()
 
+            
             web = WebContainer.get_web()
             web.set_cookie("login_ticket", ticket_key)
 
@@ -740,9 +762,8 @@ class BaseAppServer(Base):
             ''')
             access_manager.add_xml_rules(xml)
         finally:
-            Site.pop_site()
-
-
+            Site.pop_site(pop_security=False)
+           
 
 
     def init_web_container(my):

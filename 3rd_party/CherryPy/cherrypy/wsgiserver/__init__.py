@@ -1597,7 +1597,7 @@ class HTTPServer(object):
             # So we can reuse the socket...
             try: os.unlink(self.bind_addr)
             except: pass
-            
+
             # So everyone can access the socket...
             try: os.chmod(self.bind_addr, 0777)
             except: pass

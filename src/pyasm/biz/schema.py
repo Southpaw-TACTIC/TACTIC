@@ -45,6 +45,8 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/login" display="@GET(sthpw/login.login)"/>
     <search_type name="sthpw/login_group" display="@GET(sthpw/login_group.login_group)"/>
     <search_type name="sthpw/login_in_group" display="@GET(sthpw/login_in_group.login)"/>
+
+    <search_type name="sthpw/department"/>
     <search_type name="sthpw/connection"/>
     <search_type name='sthpw/pref_list'/>
 
@@ -330,6 +332,8 @@ SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
      <search_type name="unittest/city"/>
      <search_type name="unittest/person"/>
      <search_type name="unittest/car"/>
+     <search_type name="unittest/sports_car_data"/>
+     <search_type name="unittest/sports_car"/>
 
      <connect from="unittest/city" to="unittest/country"
             relationship="code" type="hierarchy" from_col='country_code' to_col='code'/>
@@ -342,11 +346,14 @@ SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
      <connect from="unittest/person_in_car" to="unittest/car"
             relationship="code"/>
 
+     <connect from="unittest/sports_car_data" to="unittest/car"
+            relationship="code" from_col="code" to_col="code"/>
+
+
      <connect from="unittest/person" to="unittest/car" relationship="instance" instance_type="unittest/person_in_car"/>
 
 
      <connect from="unittest/person" to="unittest/country" relationship="instance" instance_type="unittest/city"/>
-
 
  </schema>
 '''
