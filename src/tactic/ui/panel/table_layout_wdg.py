@@ -37,14 +37,19 @@ from base_table_layout_wdg import BaseTableLayoutWdg
 
 class FastTableLayoutWdg(BaseTableLayoutWdg):
     SCROLLBAR_WIDTH = 17
-    ARGS_KEYS = {
 
+    #CATEGORY_KEYS = {
+    #    '_order': ['Required', 'Misc']
+    #}
+
+
+    ARGS_KEYS = {
         "mode": {
             'description': "Determines whether to draw with widgets or just use the raw data",
             'type': 'SelectWdg',
             'values': 'widget|raw',
             'order': 00,
-            'category': 'Required'
+            'category': 'Misc'
         },
 
         "search_type": {
@@ -57,10 +62,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'description': "view to be displayed",
             'type': 'TextWdg',
             'order': 02,
-            'category': 'Required'
+            'category': 'Required',
+            'default': 'table',
         },
         'search_limit': {
-            'description': 'The limit of items for each page',
+             'description': 'The limit of items for each page',
              'category': 'Display',
              'order': '01'
         },
@@ -112,9 +118,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'bottom|top|both',
             'order': '04a'
         },
-
-
-
 
 
         'show_column_manager': {
@@ -189,7 +192,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'type': 'SelectWdg',
             'values': 'true|false',
             "order": '14',
-            'category': 'Display'
+            'category': 'Display',
+            #'default': 'true',
         },
 
  
@@ -218,7 +222,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'description': 'determines whether to show the collection button or not',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'category': 'Display',
+            'category': 'Optional',
             'order': '16'
         },
         

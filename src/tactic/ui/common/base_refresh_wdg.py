@@ -35,6 +35,15 @@ class BaseRefreshWdg(Widget):
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
 
+
+    CATEGORY_KEYS = {}
+    def get_category_keys(cls):
+        return cls.CATEGORY_KEYS
+    get_category_keys = classmethod(get_category_keys)
+
+
+
+
     # DEPRECATED: use ARGS_KEYS
     ARGS_OPTIONS = []
     def get_args_options(cls):

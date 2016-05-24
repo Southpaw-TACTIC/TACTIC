@@ -1116,6 +1116,7 @@ spt.tab.close = function(src_el) {
         else:
             my.use_default_style = False
 
+        my.use_default_style = True;
         if my.use_default_style:
 
             palette = my.top.get_palette()
@@ -1148,10 +1149,12 @@ spt.tab.close = function(src_el) {
 
             #%(header_id)s .spt_tab_selected {
                 opacity: 1.0;
+                #border-bottom: none;
             }
 
             #%(header_id)s .spt_tab_unselected {
                 opacity: 0.4 ;
+                #border-bottom: solid 1px %(border)s;
             }
 
             #%(header_id)s .spt_tab_hover {

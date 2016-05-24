@@ -87,7 +87,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         access_keys_dict = {}
 
-        menus = my.kwargs.get("menus")
+        menus = my.kwargs.get("menus") or {}
 
         """
         menus = {

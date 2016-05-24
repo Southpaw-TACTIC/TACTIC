@@ -510,6 +510,7 @@ class UserPageCreatorWdg(BaseRefreshWdg):
         kwargs = {
             #'display_handler': 'tactic.ui.panel.TableLayoutWdg',
             'widget_key': 'table',
+            'show_action': False,
         }
         editor = WidgetEditorWdg(**kwargs)
         top.add(editor)
@@ -567,6 +568,7 @@ class UserPageCreatorCmd(Command):
 
         options = {}
         class_name = "tactic.ui.panel.CustomLayoutWdg"
+        widget_key = ""
         for key, value in my.kwargs.items():
             if value == '':
                 continue
@@ -578,7 +580,7 @@ class UserPageCreatorCmd(Command):
                 if option_key == "display_class":
                     class_name = value
                 elif option_key == "widget_key":
-                    pass
+                    widget_key = value
                 else:
                     options[option_key] = value
 
@@ -598,6 +600,7 @@ class UserPageCreatorCmd(Command):
             raise Exception("No name provided")
 
 
+        name = Common.clean_filesystem_name(name)
 
         login = Environment.get_user_name()
         view = "pages.%s.%s" % (login, name)
@@ -619,17 +622,23 @@ class UserPageCreatorCmd(Command):
         option_str = "\n".join(option_xml)
 
 
+        if widget_key:
+            display_line = '''<display widget="%s">''' % widget_key
+        else:
+            display_line = '''<display class="%s">''' % class_name
+
+
 
         # all pages are custom layouts
         config_xml = '''<config>
   <%s>
     <html>
-    <div>
+    <div style="margin: 20px">
       <div style="font-size: 25px">%s</div>
       <div>%s</div>
       <hr/>
       <element>
-        <display class="%s">
+        %s
         %s
         </display>
       </element>
@@ -637,7 +646,7 @@ class UserPageCreatorCmd(Command):
     </html>
   </%s>
 </config>
-        ''' % (view, name, description, class_name, option_str, view)
+        ''' % (view, name, description, display_line, option_str, view)
 
         print "config_xml: ", config_xml
 

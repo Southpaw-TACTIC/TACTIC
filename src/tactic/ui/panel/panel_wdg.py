@@ -3208,6 +3208,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
         show_collection_tool = my.kwargs.get("show_collection_tool")
+        settings = my.kwargs.get("settings")
 
         is_inner = my.kwargs.get("is_inner")
        
@@ -3289,6 +3290,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "op_filters": op_filters,
             "show_collection_tool": show_collection_tool,
             "is_inner": is_inner,
+            "settings": settings,
             #"search_wdg": search_wdg
             
         }
