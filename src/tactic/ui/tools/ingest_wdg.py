@@ -48,7 +48,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'hidden_options': 'Comma separated list of hidden settings i.e. "process,context_mode"',
         'title': 'The title to display at the top',
         'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
-        'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped'
+        'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped',
+        'update_process': 'Determines the update process for snapshots when the update_mode is set to true and one sobject is found'
     }
 
 
@@ -501,6 +502,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
 
+        # update_process
+        update_process = my.kwargs.get("update_process")
+        if update_process:
+            my.update_process = update_process
+        else:
+            my.update_process = None
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -1004,6 +1011,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
+        var update_process = bvr.kwargs.update_process;
 
         var library_mode = bvr.kwargs.library_mode;
         var dated_dirs = bvr.kwargs.dated_dirs;
@@ -1075,6 +1083,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             parent_key: parent_key,
             //category: category,
             keywords: keywords,
+            update_process: update_process,
             extra_data: extra_data,
             update_data: update_data,
             process: process,
@@ -1173,7 +1182,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'context': context,
                 'library_mode': library_mode,
                 'dated_dirs' : dated_dirs,
-                'context_mode': context_mode
+                'context_mode': context_mode,
+                'update_process': my.update_process
             },
             'cbjs_action': '''
 
@@ -1527,6 +1537,7 @@ class IngestUploadCmd(Command):
         parent_key = my.kwargs.get("parent_key")
         category = my.kwargs.get("category")
         keywords = my.kwargs.get("keywords")
+        update_process = my.kwargs.get("update_process")
         update_data = my.kwargs.get("update_data")
         extra_data = my.kwargs.get("extra_data")
         if extra_data:
@@ -1534,6 +1545,7 @@ class IngestUploadCmd(Command):
         else:
             extra_data = {}
 
+        update_sobject_found = False
         # TODO: use this to generate a category
         category_script_path = my.kwargs.get("category_script_path")
         """
@@ -1643,6 +1655,7 @@ class IngestUploadCmd(Command):
                     sobject = None
                 elif len(sobjects) == 1:
                     sobject = sobjects[0]
+                    update_sobject_found = True
                 else:
                     sobject = None
 
@@ -1823,6 +1836,9 @@ class IngestUploadCmd(Command):
             if not process:
                 process = "publish"
 
+
+            if update_sobject_found and update_process == "update":
+                process = "update"
 
             context = my.kwargs.get("context")
             if not context:
