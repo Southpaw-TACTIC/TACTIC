@@ -504,10 +504,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         # update_process
         update_process = my.kwargs.get("update_process")
-        if update_process:
-            my.update_process = update_process
-        else:
-            my.update_process = None
+        my.update_process = my.kwargs.get("update_process") or ""
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -1837,8 +1834,8 @@ class IngestUploadCmd(Command):
                 process = "publish"
 
 
-            if update_sobject_found and update_process == "update":
-                process = "update"
+            if update_sobject_found:
+                process = update_process
 
             context = my.kwargs.get("context")
             if not context:
