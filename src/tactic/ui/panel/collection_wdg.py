@@ -935,8 +935,8 @@ class CollectionContentWdg(BaseRefreshWdg):
         top = my.top
         top.add_style("min-height: 400px")
 
-        my.kwargs["scale"] = 75;
-        my.kwargs["show_scale"] = False;
+        my.kwargs["scale"] = 75
+        my.kwargs["show_scale"] = True
         my.kwargs["expand_mode"] = "plain"
         my.kwargs["show_search_limit"] = False
 
