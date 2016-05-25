@@ -143,7 +143,7 @@ spt.html5upload.select_files = function(onchange) {
     }
 
     // This is necessary for Qt on a Mac??
-    if (spt.browser.is_Qt() || spt.browser.is_Safari()) {
+    if (spt.browser.is_Qt()) {
         setTimeout( function() {
             el.click();
             spt.html5upload.events[event_name] = onchange;
