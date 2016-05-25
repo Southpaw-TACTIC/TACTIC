@@ -503,7 +503,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             folder_div.add_style("margin-bottom: 10px")
 
         # update_process
-        update_process = my.kwargs.get("update_process")
         my.update_process = my.kwargs.get("update_process") or ""
 
         from tactic.ui.input import Html5UploadWdg
@@ -1834,7 +1833,7 @@ class IngestUploadCmd(Command):
                 process = "publish"
 
 
-            if update_sobject_found:
+            if update_process and update_sobject_found:
                 process = update_process
 
             context = my.kwargs.get("context")
