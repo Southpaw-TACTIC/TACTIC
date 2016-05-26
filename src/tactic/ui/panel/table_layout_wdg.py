@@ -5613,7 +5613,9 @@ spt.table.set_column_width = function(element_name, width) {
         }
         if (layout_width < 750) layout_width = 700;
 
-        layout.setStyle("width", layout_width);
+        //layout.setStyle("width", layout_width);
+        layout.setStyle("width", "auto");
+        layout.setStyle("overflow-x", "auto");
     }
 
     curr_header.setStyle("width", width);

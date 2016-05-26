@@ -828,9 +828,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+
         default = True
         if name in ["gear"]:
-            default = {}
+            default = True
         elif name in ['header_background']:
             default = True
 
@@ -845,8 +846,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 value = settings_default.get(name)
             else:
                 value = settings.get(name)
-
-
 
         # some special settings if the value is False
         if value in [False, None]:
@@ -863,10 +862,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 else:
                     value = True
 
-
-
-
-        print "name: ", name, value
 
 
         return value
