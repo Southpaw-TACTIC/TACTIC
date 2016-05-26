@@ -89,6 +89,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         menus = my.kwargs.get("menus") or {}
 
+        # if menus is explicitly true, then show all menus
+        if menus == True:
+            menus = None
+
         """
         menus = {
                 'Tasks': ['Show Tasks'],

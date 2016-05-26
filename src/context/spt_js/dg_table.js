@@ -2975,7 +2975,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var file_system_edit = target.getAttribute("spt_file_system_edit");
     var parent_mode = target.getAttribute("spt_parent_mode");
 
-    var settings = target.getAttirbute("spt_settings");
+    var settings = target.getAttribute("spt_settings");
+    var gear_settings = target.getAttribute("spt_gear_settings");
 
     var height = target.getAttribute("spt_height");
     var element_names;
@@ -3060,6 +3061,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'file_system_edit': file_system_edit,
         'parent_mode': parent_mode,
         'settings': settings,
+        'gear_settings': gear_settings,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;

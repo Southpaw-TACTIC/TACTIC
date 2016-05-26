@@ -804,6 +804,26 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 new_settings[item] = True
             settings = new_settings
 
+        if settings.has_key("gear") and settings.get("gear") == True:
+            gear_settings = my.kwargs.get("gear_settings")
+            if isinstance(gear_settings, basestring):
+                if gear_settings.startswith("{") and gear_settings.endswith("}"):
+                    gear_settings = jsonloads(gear_settings)
+                else:
+                    gear_settings = gear_settings.split("|")
+
+            if isinstance(gear_settings, list):
+                new_gear_settings = {}
+                for item in gear_settings:
+                    new_gear_settings[item] = True
+                gear_settings = new_gear_settings
+
+            if not gear_settings:
+                gear_settings = {}
+
+            settings["gear"] = gear_settings
+
+
 
 
 
@@ -841,6 +861,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     value = False
                 else:
                     value = True
+
+
+
 
         print "name: ", name, value
 
