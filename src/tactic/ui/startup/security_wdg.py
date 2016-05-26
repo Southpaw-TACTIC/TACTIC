@@ -188,6 +188,7 @@ class GroupAssignWdg(BaseRefreshWdg):
         my.set_as_panel(top)
 
         search_key = my.kwargs.get("search_key")
+        show_add_group = my.kwargs.get("show_add_group")
 
         login = Search.get_by_search_key(search_key)
         user = login.get_value("login")
@@ -218,7 +219,6 @@ class GroupAssignWdg(BaseRefreshWdg):
         group_names = [x.get_value("login_group") for x in groups]
 
 
-
         add_button = ActionButtonWdg(title="+", size='small', tip="Add New Groups")
         top.add(add_button)
         add_button.add_style("float: left")
@@ -242,11 +242,20 @@ class GroupAssignWdg(BaseRefreshWdg):
         checkbox.add_style("display: none")
         checkbox.add_style("margin-left: 30px")
         checkbox.set_checked()
-        checkbox_label = SpanWdg(" Project specific")
+        checkbox_label = SpanWdg(" Add group to project")
         checkbox_label.add_style("display: none")
         checkbox_label.add_class("spt_include_project_checkbox_label")
         checkbox.add(checkbox_label)
         top.add(checkbox)
+
+        if show_add_group not in ['false','False',False]:
+            show_add_group = True
+        else:
+            show_add_group = False
+
+        if not show_add_group:
+            add_button.add_style("visibility: hidden")
+            checkbox.add_style("visibility: hidden")
 
 
         action_button = ActionButtonWdg(title="Save")
@@ -279,6 +288,9 @@ class GroupAssignWdg(BaseRefreshWdg):
 
                 var info = ret_val.info;
                 var top = bvr.src_el.getParent(".spt_groups_top");
+
+                spt.notify.show_message("Group changes saved succesfully");
+
                 if (!info.close_popup) {
                     spt.panel.refresh(top);
                     spt.app_busy.hide()
@@ -292,6 +304,7 @@ class GroupAssignWdg(BaseRefreshWdg):
      
                     spt.app_busy.hide()
                 }
+
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
                 spt.app_busy.hide()
@@ -315,6 +328,10 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         for group in groups:
             group_name = group.get_value("login_group")
+            group_name_label = group.get_value("name")
+            if not group_name_label:
+                group_name_label = group_name
+                
             description = group.get_value("description")
             if not description:
                 parts = group_name.split("/")
@@ -324,21 +341,40 @@ class GroupAssignWdg(BaseRefreshWdg):
             group_div = DivWdg()
             groups_div.add(group_div)
             group_div.add_style("padding: 5px")
+            group_div.add_style("display: flex; flex-flow: row nowrap; align-items: flex-end")
 
             checkbox = CheckboxWdg("group_name")
-            group_div.add(checkbox)
+            checkbox_div = DivWdg()
+            checkbox_div.add(checkbox)
+            group_div.add(checkbox_div)
             checkbox.add_attr("multiple", "true")
             checkbox.set_attr("value", group_name)
+            checkbox_div.add_style("margin-right: 5px")
+
             if group_name in user_groups:
                 checkbox.set_checked()
 
+            name_div = DivWdg()
+            group_div.add(name_div)
+            name_div.add("  %s" % group_name_label)
+            name_div.add_style("display: inline-block")
+            name_div.add_style("margin-right: 5px")
+            name_div.add_style("margin-top: 4px")
+
             if description:
-                group_div.add(description)
-            span = SpanWdg()
-            group_div.add(span)
-            span.add(" (%s)" % group_name)
-            span.add_style("opacity: 0.5")
-            span.add_style("font-style: italic")
+                div = DivWdg()
+                group_div.add(div)
+                div.add(" (%s)" % description)
+                div.add_style("opacity: 0.5")
+                div.add_style("font-style: italic")
+                div.add_style("word-break: break-all")
+                div.add_style("white-space: nowrap")
+                div.add_style("overflow: hidden")
+                div.add_style("word-wrap: break-word")
+                div.add_style("text-overflow: ellipsis")
+                div.add_style("width: 300px")
+                div.add_style("display: inline-block")
+                div.add_style("margin-top: 4px")
 
 
         return top
@@ -367,7 +403,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         item_div = DivWdg()
         item_div.add_style("padding-left: 20px")
-        text = TextWdg("group_name")
+        text = TextWdg("new_group")
         item_div.add(text)
         dynamic_list.add_template(item_div)
 
@@ -1456,7 +1492,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             save_class_name=my.get_save_cbk(),
             init_load_num = -1,
             expand_on_load=True,
-
+            show_context_menu=False
         )
         layout.set_sobjects(sobjects)
         top.add(layout)

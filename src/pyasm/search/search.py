@@ -5970,7 +5970,7 @@ class SearchType(SObject):
         elif base == 'sthpw/login_group':
             if not base_triggers.get('login_group_sync'): 
                 from pyasm.command import Trigger
-                event = "update|%s" % base
+                event = "change|%s" % base
                 trigger = SearchType.create("sthpw/trigger")
                 trigger.set_value("event", event)
                 trigger.set_value("mode", "same process,same transaction")

@@ -277,9 +277,9 @@ class TacticServerStub(object):
             included, the project from get_ticket() is added.
 
         @return:
-        search type string
+        string - search type
 
-        @example
+        @example:
         [code]
         search_type = "prod/asset"
         full_search_type = server.build_search_type(search_type)
@@ -676,22 +676,24 @@ class TacticServerStub(object):
     # Preferences
     #
     def get_preference(my, key):
-        '''Get the user's preference for this project
+        '''API Function: get_preference(key)
+        Get the user's preference for this project
 
-        @params
+        @param:
         key - unique key to identify preference
 
-        @return
-        current value of preference
+        @return:
+        string - current value of preference
         '''
         return my.server.get_preference(my.ticket, key)
 
 
 
     def set_preference(my, key, value):
-        '''Set the user's preference for this project
+        '''API Function: set_preference(key, value)
+        Set the user's preference for this project
 
-        @params
+        @param:
         key - unique key to identify preference
         value - value to set the preference
 
@@ -728,15 +730,15 @@ class TacticServerStub(object):
 
 
     def get_message(my, key):
-        '''API Function: gog_message(key)
+        '''API Function: get_message(key)
 
         Get the message with the appropriate key
 
-        @params
+        @param:
         key - unique key for this message
 
-        @return
-        message
+        @return:
+        string - message
         '''
         return my.server.get_message(my.ticket, key)
 
@@ -748,15 +750,15 @@ class TacticServerStub(object):
         Log a message which will be seen by all who are subscribed to
         the message "key".  Messages are often JSON strings of data.
 
-        @params
+        @params:
         key - unique key for this message
         message - the message to be sent
 
-        @keyparam
+        @keyparam:
         status - arbitrary status for this message
         category - value to categorize this message
 
-        @return
+        @return:
         string - "OK"
         '''
         return my.server.log_message(my.ticket, key, message, status, category)
@@ -769,14 +771,14 @@ class TacticServerStub(object):
         belonging to the corresponding key will be available to users
         subscribed to it.
 
-        @params
+        @param:
         key - unique key for this message
 
-        @keyparam
+        @keyparam:
         category - value to categorize this message
 
-        @return
-        subscription sobject
+        @return:
+        dict - subscription sobject
         '''
         return my.server.subscribe(my.ticket, key, category)
 
@@ -786,10 +788,10 @@ class TacticServerStub(object):
 
         Allow a user to unsubscribe from this message key.
 
-        @params
+        @param:
         key - unique key for this message
 
-        @return
+        @return:
         dictionary - the values of the subscription sobject in the
         form name:value pairs
         '''
@@ -801,7 +803,14 @@ class TacticServerStub(object):
     # Interaction methods
     #
     def get_interaction_count(my, key):
-        '''API Function: get_interaction_count(key, category="default")
+        '''API Function: get_interaction_count(key)
+		Get the interaction count given a key
+
+        @params
+        key - key string for interaction count
+
+        @return:
+        integer - interaction count
         '''
         return my.server.get_interaction_count(my.ticket, key)
 
@@ -816,9 +825,9 @@ class TacticServerStub(object):
     def set_state(my, name, value):
         '''Set a state for this transaction
        
-        @params
-        name: name of state variable
-        value: value of state variable
+        @param:
+        name - name of state variable
+        value - value of state variable
         '''
         return my.server.set_state(my.ticket, name, value)
 
@@ -826,8 +835,8 @@ class TacticServerStub(object):
     def set_project_state(my, project):
         '''Covenience function to set the project state
 
-        @params
-        project: code of the project to set the state to
+        @param:
+        project - code of the project to set the state to
         '''
         return my.set_state("project", project)
 
@@ -835,13 +844,14 @@ class TacticServerStub(object):
         '''API Function: generate_ticket()
         Ask the server to generate a ticket explicity used for your own commands 
             
-        @return - a string representing the transaction ticket
+        @return:
+        string - representing the transaction ticket
         '''
         return my.server.generate_ticket(my.ticket)
 
 
     def start(my, title='', description='', transaction_ticket=''):
-        '''API Function: start(title, description='')
+        '''API Function: start(title, description='', transaction_ticket='')
         Start a transaction.  All commands using the client API are bound
         in a transaction.  The combination of start(), finish() and abort()
         makes it possible to group a series of API commands in a single
@@ -897,10 +907,10 @@ class TacticServerStub(object):
 
 
     def finish(my, description=''):
-        '''API Function: finish()
+        '''API Function: finish(description='')
         End the current transaction and cleans it up
         
-        @params:
+        @keyparam:
         description: this will be recorded in the transaction log as the
             description of the transction
 
@@ -3169,7 +3179,6 @@ class TacticServerStub(object):
 
 
 
-
     def get_base_dirs(my):
         '''API Function: get_base_dirs()
 
@@ -3627,14 +3636,14 @@ class TacticServerStub(object):
         given transaction xml.  The format of the xml is identical to
         the format of how transactions are stored internally
        
-        @params
+        @params:
         ticket - authentication ticket
         transaction_xml - transction instructions
 
-        @return
+        @return:
         None
 
-        @usage
+        @example:
         transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
          <transaction>
            <sobject search_type="project/asset?project=gbs"
@@ -3658,6 +3667,7 @@ class TacticServerStub(object):
             access_group - it can be custom-defined or predefined like search_type, sobject, project, or builtin
             key - usually in a dictionary or list of dictionary that maps to the parameters in the xml access rule
             access - allow, delete, retire, insert, edit, view, deny
+
         @keyparam:
             value - an extra modifier to the key. Rarely used. 
             is_match - boolean to specify whether you want to match exactly the access string as defined in access_rules. 
@@ -3667,7 +3677,7 @@ class TacticServerStub(object):
         @return:
             boolean - True or False
 
-        @usage:
+        @example:
 
             # check if one is allowed to view the project called workflow1
             server.check_access('project', [{'code','workflow1'},{'code','*}], 'allow')

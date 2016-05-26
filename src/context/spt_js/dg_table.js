@@ -2953,6 +2953,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
     var ingest_data_view = target.getAttribute("spt_ingest_data_view");
+    var ingest_custom_view = target.getAttribute("spt_ingest_custom_view");
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
@@ -2971,6 +2972,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var no_results_msg = target.getAttribute("spt_no_results_msg");
     var show_border = target.getAttribute("spt_show_border");
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
+    var order_by = target.getAttribute("spt_order_by");
     
     var file_system_edit = target.getAttribute("spt_file_system_edit");
     var parent_mode = target.getAttribute("spt_parent_mode");
@@ -3050,6 +3052,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'checkin_type': checkin_type,
         'checkin_context': checkin_context,
         'ingest_data_view': ingest_data_view,
+        'ingest_custom_view': ingest_custom_view,
         'init_load_num': init_load_num,
         'mode': mode,
         'no_results_msg': no_results_msg,
@@ -3058,6 +3061,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'is_refresh': 'true',
         'search_keys': search_keys,
         'show_collection_tool': show_collection_tool,
+        'order_by': order_by,
         'file_system_edit': file_system_edit,
         'parent_mode': parent_mode,
         'settings': settings,
@@ -3070,14 +3074,14 @@ spt.dg_table._search_cbk = function(evt, bvr)
     for (var k=0; k < attr_list.length; k++) {
         var attr_val = target.getAttribute('spt_'+ attr_list[k]);
         if (attr_val)
-            args[attr_list[k]] = attr_val;
+            args[attr_list[k]] = attr_val; 
     }
 
     if (bvr.extra_args) {
         for (k in bvr.extra_args)
             args[k] = bvr.extra_args[k];
     }
-    
+
     var fade = true;
 
 
@@ -5812,34 +5816,4 @@ spt.dg_table.add_tasks_cbk = function(evt, bvr) {
 }
 
 */
-
-// ----------------------------------------------------------------------------------------------------------------
-//  Smart Context menu dynamic menu-entry info setup call-backs
-// ----------------------------------------------------------------------------------------------------------------
-//
-spt.dg_table.smenu_ctx = {};
-
-
-spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
-{
-    var el_name = activator_el.getProperty("spt_element_name");
-    if (el_name == null) {
-        el_name = 'no_name';
-    }
-
-    var setup_info = {
-        'is_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_groupable") ),
-        'is_time_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_time_groupable") ),
-        'is_sortable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_sortable") ),
-        'is_searchable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_searchable") ),
-        'element_name' : el_name.substr(0,1).toUpperCase() + el_name.substr(1),
-        'sort_prefix': activator_el.getProperty("spt_widget_sort_prefix"),
-        'has_related' : spt.is_TRUE( activator_el.getProperty("spt_widget_has_related") ),
-    };
-
-
-    return setup_info;
-}
-
-
 

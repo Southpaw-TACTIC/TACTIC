@@ -1707,7 +1707,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         from tactic.ui.container import  Menu, MenuItem
         menu = Menu(width=180)
         menu.set_allow_icons(False)
-        #menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+        #menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
 
         menu_item = MenuItem(type='title', label='Navigate')
         menu.add(menu_item)
@@ -2560,6 +2560,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': 5,
             'category': 'Search'
         },
+        'simple_search_config': {
+            'description': 'config xml as opposed to a view for defining a simple search',
+            'type': 'TextWdg',
+            'order': '5a',
+            'category': 'Search'
+        },
         'simple_search_visible_rows': {
             'description': 'Number of visible rows in the simple search bar',
             'type': 'TextWdg',
@@ -2616,7 +2622,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         "layout": {
             'description': 'Determine the layout to use',
             'type': 'SelectWdg',
-            'values': 'default|tile|static_table|raw_table|fast_table|tool|browser|card|old_table|custom|custom_item',
+            'values': 'default|tile|static_table|raw_table|fast_table|collection|tool|browser|card|old_table|aggregate|custom|custom_item',
             'category': 'Layout',
             'order': '00',
         },
@@ -2763,14 +2769,19 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'order': '16'
         },
-
+        'ingest_custom_view': {
+            'description': 'a custom layout view that Ingest Files menu option opens in a new tab',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': '17'
+        },
 
         'popup': {
             'description': 'Flag to determine whether or not to open as a popup by default',
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '17',
+            'order': '18',
             'category': 'Display'
         },
 
@@ -2778,14 +2789,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Display',
-            'order': '18'
+            'order': '19'
         },    
 
         "no_results_msg" : {
             'description': 'the message displayed when the search returns no item',
             'type': 'TextWdg',
             'category': 'Display',
-            'Order': '19'
+            'Order': '20'
         },
 
         "no_results_mode" : {
@@ -2793,7 +2804,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'default|compact',
             'category': 'Display',
-            'order': '20'
+            'order': '21'
         }, 
 
         "show_collection_tool" : {
@@ -2801,7 +2812,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display',
-            'order': '21'
+            'order': '22'
         }, 
 
         "show_help": {
@@ -2809,7 +2820,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '22'
+            'order': '23'
         },
 
 
@@ -2844,7 +2855,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'mode to pass onto layout engine',
             'type': 'SelectWdg',
             'empty': 'true',
-            'values': 'simple|insert',
+            'values': 'widget|raw',
             'order': 11
         },
         "group_elements" : {
@@ -3109,11 +3120,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
         simple_search_config = my.kwargs.get('simple_search_config')
-        simple_search_mode = my.kwargs.get("mode")
+        
         custom_simple_search_view = None
 
-        if not simple_search_mode:
-            simple_search_mode = my.kwargs.get("simple_search_mode")
+        simple_search_mode = my.kwargs.get("simple_search_mode")
 
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
@@ -3203,6 +3213,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
+        ingest_custom_view = my.kwargs.get("ingest_custom_view")
         group_elements = my.kwargs.get("group_elements")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
@@ -3281,6 +3292,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
+            "ingest_custom_view": ingest_custom_view,
             "group_elements" : group_elements,
             "mode": mode,
             "height": height,

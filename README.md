@@ -11,9 +11,9 @@ smart process applications.
 
 For more information, visit the community site for TACTIC:
 
-http://community.southpawtech.com
+http://tacticopensource.com
 
 For packaged downloads, go directly to:
 
-http://community.southpawtech.com/downloads
+http://tacticopensource.com/downloads
 

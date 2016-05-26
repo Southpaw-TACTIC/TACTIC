@@ -135,8 +135,13 @@ A Web Server
 industrial strength, hugely scalable database that has proven itself in
 thousands of industries around the world. We currently recommend 8.4 and
 upwards for ease of installation. Go to the
-<a class="ulink" href="www.postgresql.org" target="_top">PostgreSQL website</a> for more information.</p><p>rpm -Uvh <a class="ulink" href="http://yum.pgrpms.org/reporpms/8.4/pgdg-fedora-8.4-2.noarch.rpm" target="_top">http://yum.pgrpms.org/reporpms/8.4/pgdg-fedora-8.4-2.noarch.rpm</a></p><p>yum install postgresql postgresql-server postgresql-contrib
-postgresql-devel</p><p>It is located in /var/lib/pgsql/data This file determines all of the
+PostgreSQL website[www.postgresql.org] for more information.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+rpm -Uvh <a class="ulink" href="http://yum.pgrpms.org/reporpms/8.4/pgdg-fedora-8.4-2.noarch.rpm" target="_top">http://yum.pgrpms.org/reporpms/8.4/pgdg-fedora-8.4-2.noarch.rpm</a>
+</li><li class="listitem">
+yum install postgresql postgresql-server postgresql-contrib
+postgresql-devel
+</li><li class="listitem">
+It is located in /var/lib/pgsql/data This file determines all of the
 user permissions for PostgreSQL. To begin with, turn on all of the
 permissions contained in this file. This is a temporary measure that
 will greatly simplify the installation process. You may lock down these
@@ -146,27 +151,34 @@ on how to do this. TACTIC ships with a sample "pg_hba.conf" file
 package&gt;/src/install/postgresql/pg_hba.conf). This file has an open
 security setting for ease of installation. It’s best to back up your
 current pg_hba.conf file before copying over with the file provided by
-TACTIC.</p><p>Restart the PostgreSQL Service</p><p><span class="strong"><strong>Verification</strong></span></p><p>Verify that psql works in the command prompt:</p><pre class="screen">&gt; psql -U postgres template1</pre><p>It should give you a prompt:</p><pre class="screen">template1=#</pre><p>If you see this prompt without the need to enter a password, you have
+TACTIC.
+</li><li class="listitem">
+Restart the PostgreSQL Service
+</li></ol></div><p><span class="strong"><strong>Verification</strong></span></p><p>Verify that psql works in the command prompt:</p><pre class="screen">&gt; psql -U postgres template1</pre><p>It should give you a prompt:</p><pre class="screen">template1=#</pre><p>If you see this prompt without the need to enter a password, you have
 successfully installed the PostgreSQL database. Type \q to exit.</p><p><span class="strong"><strong>Install Python and supporting modules</strong></span></p><p>The TACTIC source code is written in Python. As such, the complete
 codebase is open.</p><p>To install Python, you can find an msi at
-<a class="ulink" href="www.python.org" target="_top"><span class="strong"><strong>http://www.python.org</strong></span></a>. TACTIC requires Python 2.6
+<a class="ulink" href="http://www.python.org" target="_top">http://www.python.org</a>. TACTIC requires Python 2.6
 or higher.</p><p>TACTIC also requires a number of Python modules to function correctly.
 These modules are generally not installed by default with the standard
 Python distributions. For Windows, they are already packaged in a file
 python_modules.zip available for download in the release section of the
-downloads page at
-<a class="ulink" href="support.southpawtech.com/downloads" target="_top"><span class="strong"><strong>http://support.southpawtech.com/downloads</strong></span></a></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
-PIL 1.1.7
-</p><p class="simpara">(Python Image Library)
-* ImageMagick 6.7.8</p><p class="simpara">(A command line program which complements PIL) -</p><p class="simpara"><a class="ulink" href="http://www.imagemagick.org" target="_top">http://www.imagemagick.org</a>
-* <span class="strong"><strong>FFmpeg</strong></span> <span class="strong"><strong>version 0.6</strong></span>(Solution to record, convert and stream audio
-and video and metadata parsing) -
-<a class="ulink" href="www.imagemagick.org" target="_top">http://www.ffmpeg.org</a>
-* psycopg2 2.3.1</p><p class="simpara">(Database connectivity)
-* PyCrypto version 2.0.1/2.1</p><p class="simpara">(For de-encrypting the license file) -</p><p class="simpara"><a class="ulink" href="http://www.amk.ca/python/code/crypto" target="_top">http://www.amk.ca/python/code/crypto</a>
-* simplejson 2.1.1 (not needed since Python 2.6)</p><p class="simpara">simplejson.egg can be installed with the EasyInstaller. It is need for
+downloads page at <a class="ulink" href="http://support.southpawtech.com/downloads" target="_top">http://support.southpawtech.com/downloads</a></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">PIL 1.1.7</code> (Python Image Library)
+</li><li class="listitem">
+<code class="literal">ImageMagick 6.7.8</code> (A command line program which complements PIL) - <a class="ulink" href="http://www.imagemagick.org" target="_top">http://www.imagemagick.org</a>
+</li><li class="listitem">
+<code class="literal">FFmpeg version 0.6</code> (Solution to record, convert and stream audio
+and video and metadata parsing) - <a class="ulink" href="http://www.ffmpeg.org" target="_top">http://www.ffmpeg.org</a>
+</li><li class="listitem">
+<code class="literal">psycopg2 2.3.1</code> (Database connectivity)
+</li><li class="listitem">
+<code class="literal">PyCrypto version 2.0.1/2.1</code> (For de-encrypting the license file) - <a class="ulink" href="http://www.amk.ca/python/code/crypto" target="_top">http://www.amk.ca/python/code/crypto</a>
+</li><li class="listitem">
+<code class="literal">simplejson 2.1.1</code> (not needed since Python 2.6) simplejson.egg can be installed with the EasyInstaller. It is needed for
 JSON string encoding and parsing
-* lxml 2.1 or 2.2</p><p class="simpara">(XML and XPath processing)</p></li></ul></div><p>Unzip the file in a temporary location.</p><pre class="screen"># cd /tmp
+</li><li class="listitem">
+<code class="literal">lxml 2.1 or 2.2</code> (XML and XPath processing)
+</li></ul></div><p>Unzip the file in a temporary location.</p><pre class="screen"># cd /tmp
 # unzip tactic_#.#.#.#.zip</pre><p>Go to
 /tmp/tactic_#../src/install/</p><pre class="screen"># cd /tmp/tactic_#.#.#.#/src/install</pre><p>Execute:
 install.py</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>You must invoke the installation with root user privileges because it
@@ -206,7 +218,9 @@ forward requests to communicate with TACTIC.</p><p><span class="strong"><strong>
 LoadModule proxy_module modules/mod_proxy.so
 LoadModule proxy_http_module modules/mod_proxy_http.so
 LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
-LoadModule deflate_module modules/mod_deflate.so</pre><p>These lines may already be uncommented, depending on your distribution
+LoadModule deflate_module modules/mod_deflate.so</pre><p>Additional lines For Apache 2.4:</p><pre class="screen">LoadModule slotmem_shm_module modules/mod_slotmem_shm.so
+LoadModule filter_module modules/mod_filter.so
+LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so</pre><p>These lines may already be uncommented, depending on your distribution
 and version of Apache. You need Apache version 2.0.31 or later.</p><p>The TACTIC installer generates an Apache extension conf file on
 completion. Copy that file to a directory that is recognized by Apache.</p><p>For Fedora Core: copy the TACTIC generate Apache conf extension file to
 the following directory:</p><pre class="screen">/etc/httpd/conf.d/</pre><p>If there is no such configuration extension folder, you must add the
@@ -220,12 +234,25 @@ BalancerMember http://localhost:8082/tactic
 BalancerMember http://localhost:8083/tactic
 &lt;/Proxy&gt;
 ProxyPass /tactic balancer://tactic
-ProxyPass /tactic_data balancer://tactic</pre><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Warning: For load balancing, only use either:</p><p>\1) the Proxy Balancer method (recommended)</p><p><span class="strong"><strong>or</strong></span></p><p>\2) the RewriteRule method (not recommended).</p><p>Do <span class="strong"><strong>not</strong></span> use both methods at the same time.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For configuring load-balancing set-up in a real production, please refer
+ProxyPass /tactic_data balancer://tactic</pre><p>For Apache 2.4:</p><pre class="screen">Comment out:
+#Order Allow,Deny
+#Allow from All
+
+Uncomment:
+Require all granted</pre><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Warning: For load balancing, only use either:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p class="simpara">
+the Proxy Balancer method (recommended)
+</p><pre class="literallayout">or</pre></li><li class="listitem">
+the RewriteRule method (not recommended).
+</li></ol></div><p>Do <span class="strong"><strong>not</strong></span> use both methods at the same time.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For configuring load-balancing set-up in a real production, please refer
 to the Load Balancing section in the Sys-admin docs.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>When trying to set up Apache on a Windows Server, to specify a share
 folder for Apache to use, you may need to include the name of the share
 folder in the path.</p><p>For example, use the following if you have named the share folder
 "my_share":</p><pre class="screen">Alias /assets "//10.0.0.17/my_share/assets"</pre></blockquote></div><p>Finally, after verifying the configuration is correct, restart the
-Apache service:</p><pre class="screen">service httpd restart</pre><p>Go to the "&lt;TACTIC_INSTALL_DIR&gt;/src/bin" folder</p><p>`cd /home/apache/tactic/src/bin `</p><p>Then su as the user apache is run as:</p><p>su apache</p><p><code class="literal">python startup_dev.py</code></p><p>This "startup_dev.py" script is the development script which will dump
+Apache service:</p><pre class="screen">service httpd restart</pre><p>Go to the "&lt;TACTIC_INSTALL_DIR&gt;/src/bin" folder</p><p>Then su as the user tactic and run startup_dev.py:</p><pre class="screen">cd /home/apache/tactic/src/bin
+
+su tactic
+
+python startup_dev.py</pre><p>This "startup_dev.py" script is the development script which will dump
 output to the screen. The other startup script "startup.py" is the
 production start-up script and will dump output to a log file. The
 development start-up script is also much slower as it monitors the file
@@ -251,113 +278,106 @@ Starting TACTIC ...
 05/Jul/2007:11:16:29 CONFIG INFO server.thread_pool: 5
 05/Jul/2007:11:16:30 HTTP INFO Serving HTTP on http://localhost:8081/</pre><p><code class="literal">http://&lt;TACTIC_server_address&gt;/tactic/admin/</code></p><p>You should see the TACTIC login appear.</p><p><span class="inlinemediaobject"><img src="media/sys-admin-install-tactic-general-loginScreen.png" alt="image" /></span></p><p>There is a default user created on installation. This is the "admin"
 user and this user has the ability to see and change all aspects of the
-system. Log in as the admin user:</p><p><strong>Note: You may be asked to change your password automatically at startup. </strong>without entering these default credentials.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>user:</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">admin</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>password:</strong></span></p></td><td style="" align="left" valign="top"><p><code class="literal">tactic</code></p></td></tr></tbody></table></div><p>Note: If you have not set up the TACTIC service, refer to the page
-"Configure the TACTIC Service".</p><p>First, stop TACTIC running in dev mode if applicable by pressing Ctrl
-C in that shell</p><p>In Linux:</p><p><code class="literal">service tactic start</code></p><p>At this point you will need to install a TACTIC license file and then
-begin to set up a project.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
-For more information on installing the license file, please refer to
-the Install License File chapter.*
-</li><li class="listitem">
-For more information on getting started with projects, please refer to
-Setup documentation.*
-</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_centos_5_4"></a>2.3. How to Install TACTIC on CentOS 5.4</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
+system. Log in as the admin user:</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>You may be asked to change your password automatically at startup</p><p>without entering these default credentials.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>user:</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">admin</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>password:</strong></span></p></td><td style="" align="left" valign="top"><p><code class="literal">tactic</code></p></td></tr></tbody></table></div></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>If you have not set up the TACTIC service, refer to the page
+"Configure the TACTIC Service".</p></blockquote></div><p>First, stop TACTIC running in dev mode if applicable by pressing Ctrl ^ C in that shell</p><p>In Linux:</p><pre class="screen">service tactic start</pre><p>At this point you will need to install a TACTIC license file and then
+begin to set up a project.</p><p>For more information on installing the license file, please refer to the Install License File chapter.</p><p>For more information on getting started with projects, please refer to Setup documentation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_centos_5_4"></a>2.3. How to Install TACTIC on CentOS 5.4</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
 CentOS 5.4.</p><p><span class="strong"><strong>CentOS 5.4</strong></span></p><p>Unfortunately, CentOS 5.4 comes pre-packaged with an outdated version of
 Python: Python 2.4. TACTIC requires Python 2.7.</p><p>To get around this, when we install Python 2.7, we do not overwrite the
 original Python 2.4. See steps #8 and #9.</p><p>Overwritting the original Python would break some software packages,
 such as Yum.</p><p>We must remember to call Python2.7 explicitly whenever we run any TACTIC
 python scripts, including startup.py</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Log in as the root user.
-</li><li class="listitem"><p class="simpara">
+</li><li class="listitem">
 Open the passwd file.
-</p><pre class="screen">vi /etc/passwd</pre><p class="simpara">Modify the apache home directory and login shell to look like the
-following:</p><pre class="screen">apache:x:48:48:Apache:/home/apache:/bin/bash</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">vi /etc/passwd</pre><p>Modify the apache home directory and login shell to look like the
+following:</p><pre class="screen">apache:x:48:48:Apache:/home/apache:/bin/bash</pre><div class="orderedlist"><ol class="orderedlist" start="3" type="1"><li class="listitem">
 Set password for apache to: south123paw
-</p><pre class="screen">passwd apache</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">passwd apache</pre><div class="orderedlist"><ol class="orderedlist" start="4" type="1"><li class="listitem">
 Open to the sudoers file.
-</p><pre class="screen">visudo</pre><p class="simpara">Add the apache user by including the following line in the appropriate
-location in the file:</p><pre class="screen">apache ALL=(ALL) ALL</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">visudo</pre><p>Add the apache user by including the following line in the appropriate
+location in the file:</p><pre class="screen">apache ALL=(ALL) ALL</pre><div class="orderedlist"><ol class="orderedlist" start="5" type="1"><li class="listitem">
 Create the home directory for apache.
-</p><pre class="screen">mkdir /home/apache
+</li></ol></div><pre class="screen">mkdir /home/apache
 chown apache:apache /home/apache
-chmod a+rx /home/apache</pre></li><li class="listitem"><p class="simpara">
+chmod a rx /home/apache</pre><div class="orderedlist"><ol class="orderedlist" start="6" type="1"><li class="listitem">
 Disable SElinux.
-</p><pre class="screen">vi /etc/selinux/config</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">vi /etc/selinux/config</pre><div class="orderedlist"><ol class="orderedlist" start="7" type="1"><li class="listitem">
 Install modules.
-</p><pre class="screen">yum install -y gcc zlib-devel samba libxslt-devel libxml2-devel postgresql-server postgresql-devel</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">yum install -y gcc zlib-devel samba libxslt-devel libxml2-devel postgresql-server postgresql-devel</pre><div class="orderedlist"><ol class="orderedlist" start="8" type="1"><li class="listitem">
 Install Python 2.7.
-</p><pre class="screen">cd; wget http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz
+</li></ol></div><pre class="screen">cd; wget http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz
 tar zxvf Python-2.7.1.tgz
 cd Python-2.7.1
 ./configure -with-zlib=/usr/include
-make install</pre></li><li class="listitem"><p class="simpara">
+make install</pre><div class="orderedlist"><ol class="orderedlist" start="9" type="1"><li class="listitem">
 Installing Python 2.7 will install python2.7 command "ahead" of the
 original python so that "python" from the command line is now 2.7. This
 will break yum. To fix this, remove the python executable for 2.7.
-</p><pre class="screen">rm /usr/local/bin/python</pre></li><li class="listitem">
+</li></ol></div><pre class="screen">rm /usr/local/bin/python</pre><div class="orderedlist"><ol class="orderedlist" start="10" type="1"><li class="listitem">
 Restart the shell so that the environment is clean.
-</li><li class="listitem"><p class="simpara">
+</li><li class="listitem">
 Install lxml.
-</p><pre class="screen">cd; wget http://codespeak.net/lxml/lxml-2.2.8.tgz
+</li></ol></div><pre class="screen">cd; wget http://codespeak.net/lxml/lxml-2.2.8.tgz
 tar zxvf lxml-2.2.8.tgz
 cd lxml-2.2.8
-python2.7 setup.py install</pre></li><li class="listitem"><p class="simpara">
+python2.7 setup.py install</pre><div class="orderedlist"><ol class="orderedlist" start="12" type="1"><li class="listitem">
 Install PIL.
-</p><pre class="screen">cd; wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+</li></ol></div><pre class="screen">cd; wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
 tar zxvf Imaging-1.1.7.tar.gz
 cd Imaging-1.1.7
-python2.7 setup.py install</pre></li><li class="listitem"><p class="simpara">
+python2.7 setup.py install</pre><div class="orderedlist"><ol class="orderedlist" start="13" type="1"><li class="listitem">
 Install psycopg2.
-</p><pre class="screen">cd; wget http://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.3.2.tar.gz
+</li></ol></div><pre class="screen">cd; wget http://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.3.2.tar.gz
 tar zxvf psycopg2-2.3.2.tar.gz
 cd psycopg2-2.3.2
-python2.7 setup.py install</pre></li><li class="listitem"><p class="simpara">
+python2.7 setup.py install</pre><div class="orderedlist"><ol class="orderedlist" start="14" type="1"><li class="listitem">
 Install PyCrypto.
-</p><pre class="screen">cd; wget http://pypi.python.org/packages/source/p/pycrypto/pycrypto-2.3.tar.gz
+</li></ol></div><pre class="screen">cd; wget http://pypi.python.org/packages/source/p/pycrypto/pycrypto-2.3.tar.gz
 tar zxvf pycrypto-2.3.tar.gz
 cd pycrypto-2.3
-python2.7 setup.py install</pre></li><li class="listitem"><p class="simpara">
+python2.7 setup.py install</pre><div class="orderedlist"><ol class="orderedlist" start="15" type="1"><li class="listitem">
 Disable firewall.
-</p><pre class="screen">/etc/init.d/iptables save
-/etc/init.d/iptables stop</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">/etc/init.d/iptables save
+/etc/init.d/iptables stop</pre><div class="orderedlist"><ol class="orderedlist" start="16" type="1"><li class="listitem">
 Create and open the index.html for redirection.
-</p><pre class="screen">vi /var/www/html/index.html</pre><p class="simpara">Insert the following contents:</p><pre class="screen">&lt;META http-equiv="refresh" content="0;URL=/tactic"&gt;</pre></li><li class="listitem">
+</li></ol></div><pre class="screen">vi /var/www/html/index.html</pre><p>Insert the following contents:</p><pre class="screen">&lt;META http-equiv="refresh" content="0;URL=/tactic"&gt;</pre><div class="orderedlist"><ol class="orderedlist" start="17" type="1"><li class="listitem">
 Re-login as the apache user.
-</li><li class="listitem"><p class="simpara">
+</li><li class="listitem">
 Download the TACTIC source code and setup the service.
-</p><p class="simpara">Open the following link in a web browser</p><pre class="screen">http://support.southpawtech.com/download</pre><p class="simpara">Setup the TACTIC service.</p><pre class="screen">cd /tmp
+</li></ol></div><p>Open the following link in a web browser</p><pre class="screen">http://support.southpawtech.com/download</pre><p>Setup the TACTIC service.</p><pre class="screen">cd /tmp
 unzip tactic_#.#.#.#.zip
 sudo cp /tmp/tactic_#.#.#.#/src/install/service/tactic /etc/init.d
 sudo chmod 775 /etc/init.d/tactic
-sudo /sbin/chkconfig tactic on</pre></li><li class="listitem"><p class="simpara">
+sudo /sbin/chkconfig tactic on</pre><div class="orderedlist"><ol class="orderedlist" start="19" type="1"><li class="listitem">
 Setup Postgres.
-</p><pre class="screen">sudo /etc/init.d/postgresql start
+</li></ol></div><pre class="screen">sudo /etc/init.d/postgresql start
 sudo cp /tmp/tactic_#.#.#.#/src/install/postgresql/pg_hba.conf /var/lib/pgsql/data
 sudo chown postgres:postgres /var/lib/pgsql/data/pg_hba.conf
 sudo /sbin/chkconfig postgresql on
-sudo /etc/init.d/postgresql restart</pre></li><li class="listitem"><p class="simpara">
+sudo /etc/init.d/postgresql restart</pre><div class="orderedlist"><ol class="orderedlist" start="20" type="1"><li class="listitem">
 Setup Apache.
-</p><pre class="screen">sudo cp /home/apache/tactic_data/config/tactic.conf /etc/httpd/conf.d/
+</li></ol></div><pre class="screen">sudo cp /home/apache/tactic_data/config/tactic.conf /etc/httpd/conf.d/
 sudo /sbin/chkconfig httpd on
-sudo /etc/init.d/httpd start</pre></li><li class="listitem"><p class="simpara">
+sudo /etc/init.d/httpd start</pre><div class="orderedlist"><ol class="orderedlist" start="21" type="1"><li class="listitem">
 Install TACTIC.
-</p><pre class="screen">cd /tmp/tactic_#.#.#.#/src/install
+</li></ol></div><pre class="screen">cd /tmp/tactic_#.#.#.#/src/install
 sudo python2.7 install.py
 sudo /sbin/chkconfig tactic on
-sudo chown -R apache:apache /home/apache/tactic /home/apache/assets /home/apache/tactic_data /home/apache/tacticTemp</pre></li><li class="listitem"><p class="simpara">
+sudo chown -R apache:apache /home/apache/tactic /home/apache/assets /home/apache/tactic_data /home/apache/tacticTemp</pre><div class="orderedlist"><ol class="orderedlist" start="22" type="1"><li class="listitem">
 Upgrade the database.
-</p><pre class="screen">python2.7 /home/apache/tactic/src/bin/upgrade_db.py</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">python2.7 /home/apache/tactic/src/bin/upgrade_db.py</pre><div class="orderedlist"><ol class="orderedlist" start="23" type="1"><li class="listitem">
 Startup TACTIC in dev mode.
-</p><pre class="screen">python2.7 /home/apache/tactic/src/bin/startup_dev.py</pre></li><li class="listitem">
+</li></ol></div><pre class="screen">python2.7 /home/apache/tactic/src/bin/startup_dev.py</pre><div class="orderedlist"><ol class="orderedlist" start="24" type="1"><li class="listitem">
 Try accessing TACTIC through a web browser on a client machine.
-</li><li class="listitem"><p class="simpara">
+</li><li class="listitem">
 Once startup_dev works, Ctrl^C out of the process.
-</p><pre class="screen">Ctrl^C</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">Ctrl^C</pre><div class="orderedlist"><ol class="orderedlist" start="26" type="1"><li class="listitem">
 Open the TACTIC service file for edit.
-</p><pre class="screen">sudo vi /etc/init.d/tactic</pre><p class="simpara">Modify the variable for PYTHON as follows:</p><pre class="screen">PYTHON=/usr/local/bin/python2.7</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">sudo vi /etc/init.d/tactic</pre><p>Modify the variable for PYTHON as follows:</p><pre class="screen">PYTHON=/usr/local/bin/python2.7</pre><div class="orderedlist"><ol class="orderedlist" start="27" type="1"><li class="listitem">
 Open the TACTIC configuration file for edit.
-</p><pre class="screen">vi /home/apache/tactic_data/config/tactic_linux-conf.xml</pre><p class="simpara">Modify the option variable for python as follows:</p><pre class="screen">&lt;python&gt;/usr/local/bin/python2.7&lt;/python&gt;</pre></li><li class="listitem"><p class="simpara">
+</li></ol></div><pre class="screen">vi /home/apache/tactic_data/config/tactic_linux-conf.xml</pre><p>Modify the option variable for python as follows:</p><pre class="screen">&lt;python&gt;/usr/local/bin/python2.7&lt;/python&gt;</pre><div class="orderedlist"><ol class="orderedlist" start="28" type="1"><li class="listitem">
 Start TACTIC as a service.
-</p><pre class="screen">sudo /etc/init.d/tactic start</pre></li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_5_5"></a>2.4. TACTIC Install - CentOS 5.5</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
+</li></ol></div><pre class="screen">sudo /etc/init.d/tactic start</pre><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_5_5"></a>2.4. TACTIC Install - CentOS 5.5</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
 CentOS 5.5. For CentOS 6.2 and above, please refer to the TACTIC Install
 - CentOS 6.2 page.</p><p><span class="strong"><strong>CentOS 5.5</strong></span></p><p>Unfortunately, CentOS 5.5 comes pre-packaged with an outdated version of
 Python: Python 2.4. TACTIC requires Python 2.7.</p><p>To get around this, when we install Python 2.7, we do not overwrite the
@@ -368,7 +388,7 @@ Log in as the root user.
 </li><li class="listitem"><p class="simpara">
 Open the passwd file.
 </p><pre class="screen">vi /etc/passwd</pre><p class="simpara">Modify the apache home directory and login shell to look like the
-following:</p><pre class="screen">apache:x:48:48:Apache:/home/apache:/bin/bash</pre></li><li class="listitem"><p class="simpara">
+following:</p><pre class="screen">\apache:x:48:48:Apache:/home/apache:/bin/bash</pre></li><li class="listitem"><p class="simpara">
 Set password for apache to: south123paw
 </p><pre class="screen">passwd apache</pre></li><li class="listitem"><p class="simpara">
 Open to the sudoers file.
@@ -766,7 +786,7 @@ also issue the following command for it to take effect immediately.</p><pre clas
 following command as root:</p><pre class="screen">yum install httpd</pre><p>This package has several dependencies and they should be installed as
 well.</p><p>It would be good to familarize yourself with some of the more pertinent
 paths in the Apache installation on CentOS 6.2. They are listed below
-for your convenience.</p><div class="table"><a id="idm256636851824"></a><p class="title"><strong>Table 1. Common Paths in Apache 2.2</strong></p><div class="table-contents"><table summary="Common Paths in Apache 2.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf/httpd.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Apache configuration file.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf.d/</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache dynamic configuration directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path the the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/www/html</p></td><td style="" align="left" valign="top"><p>Path to the Document Root folder of the base Apache
+for your convenience.</p><div class="table"><a id="idm247964613072"></a><p class="title"><strong>Table 1. Common Paths in Apache 2.2</strong></p><div class="table-contents"><table summary="Common Paths in Apache 2.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf/httpd.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Apache configuration file.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf.d/</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache dynamic configuration directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path the the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/www/html</p></td><td style="" align="left" valign="top"><p>Path to the Document Root folder of the base Apache
 install.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>It’s best to test your Apache install at this point. The included main
 Apache configuration file is enough to get the server started. You will
 need create a small html file to do this. Using your editor of choice,
@@ -807,7 +827,7 @@ RPMs for your operating system and architecture.</p><p>Lastly, we will install t
 issue the following command:</p><pre class="screen">yum install postgresql postgresql-server postgresql-contrib postgresql-devel</pre><p>Now that Postgres is installed, you are advised to make some basic
 configuration to make sure the installation is ready for use with
 TACTIC.</p><p>Here are the pertinent Postgres file paths that will be used throughout
-the install:</p><div class="table"><a id="idm256636818368"></a><p class="title"><strong>Table 2. Common Paths in Postgres 9.2 on CentOS 6.2</strong></p><div class="table-contents"><table summary="Common Paths in Postgres 9.2 on CentOS 6.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Postgres directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/data/pg_hba.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the host based authentication
+the install:</p><div class="table"><a id="idm247964579616"></a><p class="title"><strong>Table 2. Common Paths in Postgres 9.2 on CentOS 6.2</strong></p><div class="table-contents"><table summary="Common Paths in Postgres 9.2 on CentOS 6.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Postgres directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/data/pg_hba.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the host based authentication
 file for Postgres.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2/pgstartup.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Postgres startup log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2/data/pg_log</p></td><td style="" align="left" valign="top"><p>Path to Postgres database logs.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Initialize the database:</p><pre class="screen">su - postgres -c /usr/pgsql-9.2/bin/initdb</pre><p>Once that command successfully completes we can then start the service.
 As root issue the following command:</p><pre class="screen">service postgresql-9.2 start</pre><p>If the service starts successfully, we can move forward. Otherwise, you
 can review any startup errors in the Postgres startup log. Further
@@ -862,7 +882,7 @@ the server.</p><p>Once we have the Tactic source we need to unpack it. As root i
 following commands:</p><pre class="screen">cd /tmp
 unzip tactic-3.9.0.rc04.zip</pre><p>Once the TACTIC source is unpacked, you should familarize yourself with
 its directory structure. The prefix of the paths will change during
-install; however, the directory structure will remain the same.</p><div class="table"><a id="idm256636769808"></a><p class="title"><strong>Table 3. Common Paths in Tactic 3.9.0.rc04</strong></p><div class="table-contents"><table summary="Common Paths in Tactic 3.9.0.rc04" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/doc</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic documentation.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic source files.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src/install</p></td><td style="" align="left" valign="top"><p>Path to the Tactic install script
+install; however, the directory structure will remain the same.</p><div class="table"><a id="idm247964531056"></a><p class="title"><strong>Table 3. Common Paths in Tactic 3.9.0.rc04</strong></p><div class="table-contents"><table summary="Common Paths in Tactic 3.9.0.rc04" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/doc</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic documentation.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic source files.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src/install</p></td><td style="" align="left" valign="top"><p>Path to the Tactic install script
 and configuration files for Tactic dependencies.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Before we run the Tactic installer, we must further configure Postgres
 to ensure proper installation of Tactic.</p><p><span class="strong"><strong>Configuring Postgres</strong></span></p><p>Tactic supplies a custom host based authentication file for Postgres.
 After stopping the Postgres service we will install the file in
@@ -940,7 +960,7 @@ chmod 755 /etc/init.d/tactic
 /etc/init.d/tactic start</pre><p>TACTIC should now start properly as a service. Test this by launching a
 web browser and navigating to the TACTIC login page as you did
 previously. If you are having trouble, the following error logs will
-help you diagnose your problems:</p><div class="table"><a id="idm256636710768"></a><p class="title"><strong>Table 4. Common Error Logs</strong></p><div class="table-contents"><table summary="Common Error Logs" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/opt/tactic/tactic_temp/log/stdout.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC standard out
+help you diagnose your problems:</p><div class="table"><a id="idm247964480448"></a><p class="title"><strong>Table 4. Common Error Logs</strong></p><div class="table-contents"><table summary="Common Error Logs" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/opt/tactic/tactic_temp/log/stdout.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC standard out
 log assuming you have chosen /opt/tactic as the base installation path</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/tactic</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC error log in service mode</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error_log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache error log</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/access_log</p></td><td style="" align="left" valign="top"><p>Path to the Apache access log</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Finally, reboot the server and test whether the TACTIC service continues
 to perform across reboots. You are advised to set up log rotation by
 reviewing the Rotate Log section in the Sys Admin documentation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_windows_server_2008"></a>2.7. TACTIC Install - Windows Server 2008</h3></div></div></div><p>To completely install TACTIC Enterprise, there are three main components
@@ -987,24 +1007,31 @@ it. Note: If you have command prompt open, you need to reopen it for the
 environment variable to take effect.</p><p><span class="strong"><strong>Verification</strong></span></p><p>Verify that psql works in the command prompt:</p><pre class="screen">&gt; psql -U postgres template1</pre><p>It should give you a prompt:</p><pre class="screen">template1=#</pre><p>If you see this prompt without the need to enter a password, you have
 successfully installed the PostgreSQL database. Type \q to exit.</p><p><span class="strong"><strong>Install Python and supporting modules</strong></span></p><p>The TACTIC source code is written in Python. As such, the complete
 codebase is open.</p><p>To install Python, you can find an msi at
-<a class="ulink" href="http://www.python.org" target="_top"><span class="strong"><strong>http://www.python.org</strong></span></a>. TACTIC requires Python
-2.6 or higher.</p><p>TACTIC also requires a number of Python modules to function correctly.
+<a class="ulink" href="http://www.python.org" target="_top">http://www.python.org</a>. TACTIC requires Python 2.6
+or higher.</p><p>TACTIC also requires a number of Python modules to function correctly.
 These modules are generally not installed by default with the standard
 Python distributions. For Windows, they are already packaged in a file
 python_modules.zip available for download in the release section of the
-downloads page at <span class="strong"><strong>http://community.southpawtech.com/downloads</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
-PIL 1.1.7
-</p><p class="simpara">(Python Image Library)
-* ImageMagick 6.7.8</p><p class="simpara">(A command line program which complements PIL) -</p><p class="simpara"><a class="ulink" href="http://www.imagemagick.org" target="_top">http://www.imagemagick.org</a>
-* <span class="strong"><strong>FFmpeg</strong></span> <span class="strong"><strong>version 0.6</strong></span>(Solution to record, convert and stream audio
-and video and metadata parsing) -
-<a class="ulink" href="www.imagemagick.org" target="_top">http://www.ffmpeg.org</a>
-* psycopg2 2.3.1</p><p class="simpara">(Database connectivity)
-* PyCrypto version 2.0.1/2.1</p><p class="simpara">(For de-encrypting the license file) -</p><p class="simpara"><a class="ulink" href="http://www.amk.ca/python/code/crypto" target="_top">http://www.amk.ca/python/code/crypto</a>
-* simplejson 2.1.1 (not needed since Python 2.6)</p><p class="simpara">simplejson.egg can be installed with the EasyInstaller. It is need for
+downloads page at <a class="ulink" href="http://support.southpawtech.com/downloads" target="_top">http://support.southpawtech.com/downloads</a></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">PIL 1.1.7</code> (Python Image Library)
+</li><li class="listitem">
+<code class="literal">ImageMagick 6.7.8</code> (A command line program which complements PIL) - <a class="ulink" href="http://www.imagemagick.org" target="_top">http://www.imagemagick.org</a>
+</li><li class="listitem">
+<code class="literal">FFmpeg version 0.6</code> (Solution to record, convert and stream audio
+and video and metadata parsing) - <a class="ulink" href="http://www.ffmpeg.org" target="_top">http://www.ffmpeg.org</a>
+</li><li class="listitem">
+<code class="literal">psycopg2 2.3.1</code> (Database connectivity)
+</li><li class="listitem">
+<code class="literal">PyCrypto version 2.0.1/2.1</code> (For de-encrypting the license file) - <a class="ulink" href="http://www.amk.ca/python/code/crypto" target="_top">http://www.amk.ca/python/code/crypto</a>
+</li><li class="listitem">
+<code class="literal">simplejson 2.1.1</code> (not needed since Python 2.6) simplejson.egg can be installed with the EasyInstaller. It is needed for
 JSON string encoding and parsing
-* lxml 2.1 or 2.2</p><p class="simpara">(XML and XPath processing)
-* pywin32-(build 2##)</p><p class="simpara">(Python Windows OS module)</p></li></ul></div><p><span class="strong"><strong>Windows</strong></span></p><p>Unfortunately, Python is not preinstalled on Windows machines; however,
+</li><li class="listitem">
+<code class="literal">lxml 2.1 or 2.2</code> (XML and XPath processing)
+</li><li class="listitem">
+<code class="literal">pywin32-(build 2##)</code> (Python Windows OS module)
+
+</li></ul></div><p><span class="strong"><strong>Windows</strong></span></p><p>Unfortunately, Python is not preinstalled on Windows machines; however,
 with the installer this is not difficult.</p><p>The Python installer does not set the Python path, so this must be added</p><p>Go to
 Start→Control Panel→System
 Click on the "Advanced" tab.
@@ -1049,15 +1076,17 @@ from serving the static content so that it can focus on the dynamic
 content.</p><p>For production use, it is highly recommended that TACTIC is run behind
 the Apache server. This has many scalability advantages. When running
 behind Apache, Apache uses a reverse proxy and proxy balancer module to
-forward requests to communicate with TACTIC.</p><p><span class="strong"><strong>Windows</strong></span></p><p>After the installation, some changes may need to be made in the
+forward requests to communicate with TACTIC.</p><p>After the installation, some changes may need to be made in the
 "httpd.conf" file for Apache.</p><pre class="screen">C:/Program Files/Apache Software Foundation/Apache2.2/conf/httpd.conf</pre><p>Make sure the following lines are uncommented:</p><pre class="screen">LoadModule rewrite_module modules/mod_rewrite.so
 LoadModule proxy_module modules/mod_proxy.so
 LoadModule proxy_http_module modules/mod_proxy_http.so
 LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
-LoadModule deflate_module modules/mod_deflate.so</pre><p>These lines may already be uncommented, depending on your distribution
+LoadModule deflate_module modules/mod_deflate.so</pre><p>Additional lines For Apache 2.4:</p><pre class="screen">LoadModule slotmem_shm_module modules/mod_slotmem_shm.so
+LoadModule filter_module modules/mod_filter.so
+LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so</pre><p>These lines may already be uncommented, depending on your distribution
 and version of Apache. You need version 2.0.31 or later.</p><p>The TACTIC installer generates an Apache extension conf file on
 completion. You need to copy that file to a directory that is recognized
-by Apache.</p><p>For Windowse: this directory is:</p><p>` C:/Program Files/Apache Software Foundation/Apache2.2/conf`</p><p>You must add the following line to the "httpd.conf" file so that it will
+by Apache.</p><p>For Windows, this directory is:</p><p>` C:/Program Files/Apache Software Foundation/Apache2.2/conf`</p><p>You must add the following line to the "httpd.conf" file so that it will
 read the extension conf file provided by the installer:</p><pre class="screen">Include conf/tactic_win32.conf</pre><p><span class="strong"><strong>Web Server configuration</strong></span></p><p>In our provided file:</p><pre class="screen">tactic_win32.conf</pre><p>Make sure the following lines exist:</p><pre class="screen"># Using the ProxyPass directives
 ProxyPreserveHost on
 
@@ -1067,7 +1096,16 @@ BalancerMember http://localhost:8082/tactic
 BalancerMember http://localhost:8083/tactic
 &lt;/Proxy&gt;
 ProxyPass /tactic balancer://tactic
-ProxyPass /tactic_data balancer://tactic</pre><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Warning: For load balancing, only use either:</p><p>\1) the Proxy Balancer method (recommended)</p><p><span class="strong"><strong>or</strong></span></p><p>\2) the RewriteRule method (not recommended).</p><p>Do <span class="strong"><strong>not</strong></span> use both methods at the same time.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For configuring load-balancing set-up in a real production, please refer
+ProxyPass /tactic_data balancer://tactic</pre><p>For Apache 2.4:</p><pre class="screen">Comment out:
+#Order Allow,Deny
+#Allow from All
+
+Uncomment:
+Require all granted</pre><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Warning: For load balancing, only use either:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p class="simpara">
+the Proxy Balancer method (recommended)
+</p><pre class="literallayout">or</pre></li><li class="listitem">
+the RewriteRule method (not recommended).
+</li></ol></div><p>Do <span class="strong"><strong>not</strong></span> use both methods at the same time.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For configuring load-balancing set-up in a real production, please refer
 to the Load Balancing section in the Sys-admin docs.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>When trying to set up Apache on a Windows Server, to specify a share
 folder for Apache to use, you may need to include the name of the share
 folder in the path.</p><p>For example, use the following if you have named the share folder

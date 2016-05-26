@@ -2753,7 +2753,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_base_dirs(my, ticket):
-        '''get all of the base directories defined on the server'''
+        '''get all of the base directories defined on the server.'''
+        
         data = Config.get_section_values("checkin")
         for key, value in data.items():
             if value.strip().startswith('{'):
@@ -2764,7 +2765,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     data[key] = value
                 except:
                     pass
-
+        
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site and site != "default":
+            site_obj = Site.get()
+            data['asset_base_dir'] = site_obj.get_asset_dir(alias="default")
+            data['web_base_dir'] = site_obj.get_web_dir(alias="default")
        
         return data
 
@@ -6097,7 +6104,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if transaction:
                 transaction.set_description(description)
                 transaction.set_title(title)
-            return ticket
+
+            security = Environment.get_security()
+            transaction_ticket = security.get_ticket_key()
+            return transaction_ticket
 
         # otherwise use xmlrpc mode
 

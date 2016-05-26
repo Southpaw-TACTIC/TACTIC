@@ -133,7 +133,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_help = my.kwargs.get('show_help') or True
 
-        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event, show_help=show_help)
+        pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event, show_help=show_help, show_gear=my.kwargs.get('show_gear'))
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -874,7 +874,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
-        menu.set_setup_cbfn( 'spt.dg_table.smenu_ctx.setup_cbk' )
+        menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
 
 
         menu_item = MenuItem(type='title', label='Actions')
@@ -903,10 +903,11 @@ class PipelineListWdg(BaseRefreshWdg):
                 'search_type': search_type,
                 'code': code,
                 'view': 'pipeline_edit_tool',
-                'save_event': '%s'
+                'save_event': '%s',
+                'title': "Save changes to Workflow (" + code + ")"
             };
             var class_name = 'tactic.ui.panel.EditWdg';
-            spt.panel.load_popup("Edit Workflow", class_name, kwargs);
+            spt.panel.load_popup("Edit Workflow Details", class_name, kwargs);
             ''' % my.save_event
         } )
         menu.add(menu_item)
@@ -1954,7 +1955,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         # notifications
         search = Search("sthpw/notification")
         search.add_project_filter()
-        search.add_filter("process", process)
+        search.add_filters("process", [process,process_code])
         notification_count = search.get_count()
 
 
@@ -3526,7 +3527,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_editor_top")
 
         my.save_new_event = my.kwargs.get("save_new_event")
-
+        my.show_gear = my.kwargs.get("show_gear")
 
         inner = DivWdg()
         top.add(inner)
@@ -3668,7 +3669,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spacing_div.add_style("float: left")
 
 
-        button_div = my.get_buttons_wdg();
+        show_gear = my.kwargs.get("show_gear")
+        button_div = my.get_buttons_wdg(show_gear);
         button_div.add_style("float: left")
         shelf_wdg.add(button_div)
 
@@ -3722,7 +3724,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-    def get_buttons_wdg(my):
+    def get_buttons_wdg(my, show_gear):
         from pyasm.widget import IconWdg
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 
@@ -4102,28 +4104,29 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
+        if show_gear not in ['false', False]:
+            print "show_gear: ", show_gear
+            button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
+            button_row.add(button)
 
-        button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
-        button_row.add(button)
-
-        menu = Menu(width=200)
-        
-        menu_item = MenuItem(type='action', label='TEST')
-        menu.add(menu_item)
-        # no project code here
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            alert("test");
-            '''
-        } )
+            menu = Menu(width=200)
+            
+            menu_item = MenuItem(type='action', label='TEST')
+            menu.add(menu_item)
+            # no project code here
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                alert("test");
+                '''
+            } )
 
 
-        tab = PipelineTabWdg()
-        menu = tab.get_extra_tab_menu()
+            tab = PipelineTabWdg()
+            menu = tab.get_extra_tab_menu()
 
-        menus = [menu.get_data()]
-        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
-        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
+            menus = [menu.get_data()]
+            SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
+            SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
  
 
 

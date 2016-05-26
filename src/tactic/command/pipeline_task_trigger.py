@@ -13,7 +13,7 @@ __all__ = ['PipelineTaskStatusTrigger', 'PipelineTaskTrigger', 'PipelineTaskDate
 
 import tacticenv
 
-from pyasm.common import Common, Xml, jsonloads, Container
+from pyasm.common import Common, Xml, jsonloads, Container, TacticException
 from pyasm.biz import Task
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
@@ -299,20 +299,44 @@ class PipelineTaskDateTrigger(Trigger):
 
         column = data.get('column')
         src_status = data.get('src_status')
+
         
-        task = my.get_caller()
-        if task.get_value("status") != src_status:
-            return
 
-        task.set_now(column)
-        task.commit()
+        item = my.get_caller()
 
 
+        if isinstance(item, SObject):
+            if isinstance(item, Task):
+                if src_status != None:
+                    if item.get_value("status") != src_status:
+                        return
 
+                item.set_now(column)
+                item.commit()
 
+            #Item can be a note when trigger input is adding or modifying notes
+            else:
+                process = item.get_value('process')
+                expr = '@SOBJECT(parent.sthpw/task["process","%s"])'%process
+                tasks = Search.eval(expr, sobjects=[item])
 
+                if tasks:
+                    for task in tasks:
+                        task.set_now(column)
+                        task.commit()
 
-   
+        #item can be a command such as check-in                 
+        else:
+            if hasattr(item, 'process'):
+                process = item.process
+                expr = '@SOBJECT(sthpw/task["process","%s"])'%process
+                tasks = Search.eval(expr, sobjects=[item.sobject])
+
+                if tasks:
+                    for task in tasks:
+                        task.set_now(column)
+                        task.commit()
+            
 
 class RelatedTaskUpdateTrigger(Trigger):
     '''This is called on every task change.  It syncronizes tasks with
@@ -373,27 +397,50 @@ class RelatedTaskUpdateTrigger(Trigger):
 
 
 class PipelineTaskCreateTrigger(Trigger):
+    
     def execute(my):
         input = my.get_input()
 
         search_key = input.get("search_key")
         task = Search.get_by_search_key(search_key)
-
         parent = task.get_parent()
+        if not parent:
+            raise TacticException("Task parent not found.")
 
         # get the definition of the trigger
         trigger_sobj = my.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
-        data = jsonloads(data)
+        try:
+            data = jsonloads(data)
+        except:
+            raise TacticException("Incorrect formatting of trigger [%s]." % trigger_sobj.get_value("code"))
 
-        process = data.get("output")
-        description = ""
+        # check against source status if present 
+        src_status = data.get("src_status")
+        if src_status:
+            task_status = task.get_value("status")
+            if task_status != src_status:
+                return
 
-        # FIXME:
-        # find out if there is already a task of that process
+        process_names = data.get("output")
+        if not process_names:
+            return
 
-        Task.create(parent, process, description, start_date=None, end_date=None)
-
+        # only create new task if another of the same
+        # process does not already exist
+        search = Search("sthpw/task")
+        search.add_filters("process", process_names)
+        search.add_parent_filter(parent)
+        search.add_project_filter()
+        tasks = search.get_sobjects()
+        existing_processes = [x.get_value("process") for x in tasks]
+       
+        for process in process_names:
+            if process in existing_processes:    
+                continue
+            else:
+                Task.create(parent, process, start_date=None, end_date=None)
+          
 
 
 

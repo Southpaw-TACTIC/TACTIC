@@ -353,15 +353,17 @@ class BaseAppServer(Base):
         # for here on, the user is logged in
         login_name = Environment.get_user_name()
 
-
-
+        is_upload = '/UploadServer' in web.get_request_url().to_string()
+       
         # check if the user has permission to see this project
         project = web.get_context_name()
         if project == 'default':
             override_default = Project.get_default_project()
             if override_default:
                 project = override_default
-        if project != 'default':
+        if is_upload:
+           access = True
+        elif project != 'default':
             security_version = get_security_version()
             if security_version == 1:
                 default = "view"
@@ -396,7 +398,8 @@ class BaseAppServer(Base):
                 widget.add( Error403Wdg() )
                 widget.add( BottomWdg() )
                 widget.get_display()
-     
+                if is_upload:
+                    print "WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project)
                 return
 
 
@@ -557,7 +560,6 @@ class BaseAppServer(Base):
         else:
             page_type = "normal"
 
-
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
         my.set_templates()
@@ -619,9 +621,11 @@ class BaseAppServer(Base):
 
         # see if there is an override
         web = WebContainer.get_web()
+        is_from_login = web.get_form_value("is_from_login")
+        
         ticket_key = web.get_form_value("login_ticket")
         # attempt to login in with a ticket
-        if not ticket_key:
+        if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
 
@@ -698,13 +702,11 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
 
-            # FIXME: not sure why this is here???
-            """
+            # let empty username or password thru to get feedback from WebLoginCmd
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-            """
 
         # clear the password
         web.set_form_value('password','')
