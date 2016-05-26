@@ -2669,7 +2669,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject = sobjects[0]
 
         search_type = sobject.get_search_type()
-        search_id = sobject.get_id()
+        search_id = sobject.get_code()
         search_key = SearchKey.get_by_sobject(sobject)
 
         if process:
