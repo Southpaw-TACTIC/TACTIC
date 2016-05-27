@@ -15,7 +15,7 @@ __all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserContentWdg', 'R
 from pyasm.common import Environment, Xml, Common, jsonloads, jsondumps
 
 from pyasm.web import DivWdg, WebContainer, Table, WidgetSettings, SpanWdg
-from pyasm.biz import Snapshot, Project, File
+from pyasm.biz import Snapshot, Project, File, CustomScript
 from pyasm.search import Search, SearchType, SearchKey, FileUndo
 from pyasm.widget import IconWdg, CheckboxWdg, HiddenWdg, HintWdg
 from pyasm.command import Command
@@ -53,6 +53,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
             'description': 'Parent sObject to scope snapshots with when single_asset mode is used.',
             'type': 'TextWdg',
             'order': 2   
+        },
+        "ingest_script_path": {
+            'description': 'Script executed when ingesting into a folder from the folder context menu.',
+            'type': 'TextWdg',
+            'order': 3
         }
     }
 
@@ -144,7 +149,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
         parent_mode_key = "repo_browser_mode:%s" % search_type
         WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
 
-        
+        ingest_script_path = my.kwargs.get("ingest_script_path")
+        if ingest_script_path:
+            ingest_key = "repo_browser_ingest:%s" % search_type
+            WidgetSettings.set_value_by_key(ingest_key, ingest_script_path)
 
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -890,9 +898,8 @@ class RepoBrowserDirListWdg(DirListWdg):
           
             // Misc functions
             spt.repo_browser.get_element = function(el) {
-                // TODO: Pass in a child el when calling this function.
-                // Currently flawed because there could be more than one repo browser tab/popup/view.
-                var repo_top = document.getElement(".spt_repo_browser_top");
+                var dir_list_top = bvr.src_el;
+                var repo_top = dir_list_top.getParent(".spt_repo_browser_top");
                 if (el) {
                     return repo_top.getElement(el);
                 } else {
@@ -1064,26 +1071,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 spt.panel.refresh(dir_list_el);
             }
-
-
-            spt.repo_browser.refresh_directory = function(el) {
-                var folder_el;
-                if (el.hasClass(".spt_dir")) {
-                    folder_el = el;
-                }
-                else {
-                    folder_el = el.getParent(".spt_dir")
-                }
-
-                var dir_list_el = spt.repo_browser.get_element(".spt_dir_list_handler_top");
-                var folder_state = spt.repo_browser.get_raw_folder_state();
-                dir_list_el.setProperty("spt_folder_state", folder_state);
-
-                spt.panel.refresh(folder_el);
-            }
-
-
-
 
  
             // Folder state manipulation
@@ -1423,7 +1410,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.get_selected = function() {
-            var repo_top = document.getElement(".spt_repo_browser_top");
+            var repo_top = spt.repo_browser.get_top();
             var selected = repo_top.getElements(".spt_selected");
             return selected;
         }
@@ -1579,7 +1566,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             // If deleting a folder, delete the folder as well.
             spt.repo_browser.delete_empty_folder(relative_dir);
 
-            var repo_top = document.getElement(".spt_repo_browser_top");
+            var repo_top = spt.repo_browser.get_top();
             
             // Refresh detail top
             var detail_top = spt.repo_browser.get_element('.spt_browser_detail_top');
@@ -1600,6 +1587,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             if (grandparent_dir) {
                 spt.repo_browser.refresh_directory_listing(grandparent_dir);
+            } else {
+                spt.repo_browser.refresh_directory_listing(parent_dir);
             }
             
         }
@@ -1875,6 +1864,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             hint = "You are viewing the file repository in single_search_type mode."
         
         hint_wdg = HintWdg(message=hint)
+        hint_wdg.add_class("spt_repo_browser_hint")
         div.add(hint_wdg)
  
     def get_dir_context_menu(my, mode="strict"):
@@ -1923,7 +1913,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var html = "";
                 html += '<img src="'+arrow+'"/>';
                 html += '<img src="'+icon+'"/>';
-                html += '<input class="new_folder_input" type="text" value="New Folder"/>';
+                html += '<input class="new_folder_input" type="text" value="New Folder" style="z-index:10;"/>';
                 div.innerHTML = html;
 
                 var content = activator.getNext(".spt_dir_content");
@@ -2028,6 +2018,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                 input.value = original_dir;
                 input.setAttribute("type", "text");
                 input.setStyle("width", "200px");
+                input.setStyle("z-index", "10");
+                //input.setStyle("position", "absolute");
+                //input.setStyle("left", original_el.offset)
                 input.inject(original_el, "after");
                 
                 var parts = relative_dir.split("/");
@@ -2037,6 +2030,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 spt.repo_browser.set_lock(true, "context_menu_action");
 
                 input.onblur = function() {
+                    //return;
                     var value = this.value;
                     var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
                     if (!valid_regex.test(value)) {
@@ -2053,7 +2047,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                     }
                    
                     var new_relative_dir = base_relative_dir + "/" + value;
-                    console.log(new_relative_dir)
                     
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
@@ -2158,25 +2151,36 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         if search_type:
+            ingest_key = "repo_browser_ingest:%s" % search_type
+            ingest_settings = WidgetSettings.get_value_by_key(ingest_key)
+            ingest_data_view = ingest_settings
+            ingest_custom_view = ingest_settings
             menu_item = MenuItem(type='action', label='Ingest Files')
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
+                'ingest_custom_view': ingest_custom_view,
+                'ingest_data_view': ingest_data_view,
                 'search_type': search_type,
                 'search_key': parent_key,
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var relative_dir = activator.getAttribute("spt_relative_dir");
-                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+
+                    var title = "Ingest Files";
+                    var class_name = bvr.ingest_custom_view ? 'tactic.ui.panel.CustomLayoutWdg' : 'tactic.ui.tools.IngestUploadWdg';
                     var kwargs = {
+                        view: bvr.ingest_custom_view,
+                        ingest_data_view: bvr.ingest_data_view,
                         search_type: bvr.search_type,
                         search_key: bvr.search_key,
                         relative_dir: relative_dir
                     };
+                    spt.tab.set_main_body_tab();
+                    spt.tab.add_new("ingest_assets", title, class_name, kwargs);  
+                '''    
                     
-                    spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+bvr.search_type+")</i>", class_name, kwargs);
-                '''
-            } )
+            } ) 
 
 
         menu_item = MenuItem(type='separator')
@@ -2296,6 +2300,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 input.value = old_value;
                 input.setAttribute("type", "text");
                 input.setStyle("width", "200px");
+                input.setStyle("z-index", "100");
                 input.inject(original_el, "after");
                 
                 // Lock the directory
@@ -3696,16 +3701,10 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             allow_drag = False
 
         # FIXME: This kwarg does not take effect
-        # TODO: Drag and drop upload
+        upload_mode = False
         
         expression = my.kwargs.get("expression")
 
-        #TODO: Drag and drop upload
-        
-        # pass in parent key for deliverable
-        # "self" for parent_mode
-        upload_mode = False
-   
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,

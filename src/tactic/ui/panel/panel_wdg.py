@@ -2763,14 +2763,19 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display',
             'order': '16'
         },
-
+        'ingest_custom_view': {
+            'description': 'a custom layout view that Ingest Files menu option opens in a new tab',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': '17'
+        },
 
         'popup': {
             'description': 'Flag to determine whether or not to open as a popup by default',
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '17',
+            'order': '18',
             'category': 'Display'
         },
 
@@ -2778,14 +2783,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Display',
-            'order': '18'
+            'order': '19'
         },    
 
         "no_results_msg" : {
             'description': 'the message displayed when the search returns no item',
             'type': 'TextWdg',
             'category': 'Display',
-            'Order': '19'
+            'Order': '20'
         },
 
         "no_results_mode" : {
@@ -2793,7 +2798,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'default|compact',
             'category': 'Display',
-            'order': '20'
+            'order': '21'
         }, 
 
         "show_collection_tool" : {
@@ -2801,7 +2806,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display',
-            'order': '21'
+            'order': '22'
         }, 
 
         "show_help": {
@@ -2809,7 +2814,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '22'
+            'order': '23'
         },
 
 
@@ -3203,6 +3208,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
+        ingest_custom_view = my.kwargs.get("ingest_custom_view")
         group_elements = my.kwargs.get("group_elements")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
@@ -3277,6 +3283,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
+            "ingest_custom_view": ingest_custom_view,
             "group_elements" : group_elements,
             "mode": mode,
             "height": height,
