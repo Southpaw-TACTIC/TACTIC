@@ -2560,6 +2560,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': 5,
             'category': 'Search'
         },
+        'simple_search_config': {
+            'description': 'config xml as opposed to a view for defining a simple search',
+            'type': 'TextWdg',
+            'order': '5a',
+            'category': 'Search'
+        },
         'simple_search_visible_rows': {
             'description': 'Number of visible rows in the simple search bar',
             'type': 'TextWdg',
@@ -2616,7 +2622,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         "layout": {
             'description': 'Determine the layout to use',
             'type': 'SelectWdg',
-            'values': 'default|tile|static_table|raw_table|fast_table|tool|browser|card|old_table|custom|custom_item',
+            'values': 'default|tile|static_table|raw_table|fast_table|collection|tool|browser|card|old_table|aggregate|custom|custom_item',
             'category': 'Layout',
             'order': '00',
         },
@@ -2844,7 +2850,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'mode to pass onto layout engine',
             'type': 'SelectWdg',
             'empty': 'true',
-            'values': 'simple|insert',
+            'values': 'widget|raw',
             'order': 11
         },
         "group_elements" : {
@@ -3109,11 +3115,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
         simple_search_config = my.kwargs.get('simple_search_config')
-        simple_search_mode = my.kwargs.get("mode")
+        
         custom_simple_search_view = None
 
-        if not simple_search_mode:
-            simple_search_mode = my.kwargs.get("simple_search_mode")
+        simple_search_mode = my.kwargs.get("simple_search_mode")
 
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
