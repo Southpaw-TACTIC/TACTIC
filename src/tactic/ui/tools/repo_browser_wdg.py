@@ -2033,7 +2033,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 
                 spt.repo_browser.set_lock(true, "context_menu_action");
  
-                var exit = function() {
+                var exit = function(div, activator) {
                     div.destroy();
                     activator.setStyle("display", "");
                     spt.repo_browser.set_lock(false);
@@ -2049,7 +2049,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         spt.repo_browser.set_lock(false);
                         return; 
                     } else if (value == original_value) {
-                        exit();
+                        exit(div, activator);
                         return;
                     }
  
@@ -2081,7 +2081,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                             spt.repo_browser.refresh_directory_listing(dir_top);
                         } 
                     } catch(err) {
-                        exit();
+                        exit(div, activator);
                         spt.alert(spt.exception.handler(err));
                     }
 
@@ -2319,7 +2319,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 // Lock the directory
                 spt.repo_browser.set_lock(true, "context_menu_action");
  
-                var exit = function() {
+                var exit = function(div, activator) {
                     div.destroy();
                     activator.setStyle("display", "");
                     spt.repo_browser.set_lock(false);
@@ -2335,7 +2335,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         spt.repo_browser.set_lock(false);
                         return; 
                     } else if (new_value == old_value) {
-                        exit();
+                        exit(div, activator);
                         return;
                     }
                     
@@ -2374,7 +2374,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         var detail_top = spt.repo_browser.get_element(".spt_browser_detail_top");
                         spt.panel.refresh(detail_top);
                     } catch(err) {
-                        exit(); 
+                        exit(div, activator); 
                         spt.alert(spt.exception.handler(err));
                     }
 
