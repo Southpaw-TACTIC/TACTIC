@@ -212,8 +212,8 @@ class ThumbWdg(BaseTableElementWdg):
             'bvr_match_class': 'spt_thumb_script_path',
             'script_path': script_path,
             'cbjs_action': '''
-			var search_key = bvr.src_el.getAttribute("spt_search_key");
-			spt.CustomProject.run_script_by_path(bvr.script_path, {search_key: search_key});
+                var search_key = bvr.src_el.getAttribute("spt_search_key");
+                spt.CustomProject.run_script_by_path(bvr.script_path, {search_key: search_key});
             '''
             } )
 
