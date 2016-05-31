@@ -98,8 +98,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.search = None
         my.search_view = kwargs.get('search_view')
         my.search_key = kwargs.get("search_key")
-        my.ingest_data_view = kwargs.get("ingest_data_view")
-        my.ingest_custom_view = kwargs.get("ingest_custom_view")
+        my.ingest_data_view = kwargs.get("ingest_data_view") or ""
+        my.ingest_custom_view = kwargs.get("ingest_custom_view") or ""
 
         # DEPRECATED: Do not use
         if not my.view:
