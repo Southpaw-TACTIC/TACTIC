@@ -50,7 +50,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
         'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped',
         'update_process': 'Determines the update process for snapshots when the update_mode is set to true and one sobject is found',
-        'hide_path_keywords': 'Comma separated string of path keywords to be hidden'
+        'ignore_path_keywords': 'Comma separated string of path keywords to be hidden'
     }
 
 
@@ -506,8 +506,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         # update_process
         my.update_process = my.kwargs.get("update_process") or ""
 
-        # hide_path_keywords
-        my.hide_path_keywords = my.kwargs.get("hide_path_keywords") or ""
+        # ignore_path_keywords
+        my.ignore_path_keywords = my.kwargs.get("ignore_path_keywords") or ""
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -1012,7 +1012,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
         var update_process = bvr.kwargs.update_process;
-        var hide_path_keywords = bvr.kwargs.hide_path_keywords;
+        var ignore_path_keywords = bvr.kwargs.ignore_path_keywords;
 
         var library_mode = bvr.kwargs.library_mode;
         var dated_dirs = bvr.kwargs.dated_dirs;
@@ -1085,7 +1085,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             //category: category,
             keywords: keywords,
             update_process: update_process,
-            hide_path_keywords: hide_path_keywords,
+            ignore_path_keywords: ignore_path_keywords,
             extra_data: extra_data,
             update_data: update_data,
             process: process,
@@ -1186,7 +1186,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'dated_dirs' : dated_dirs,
                 'context_mode': context_mode,
                 'update_process': my.update_process,
-                'hide_path_keywords': my.hide_path_keywords,
+                'ignore_path_keywords': my.ignore_path_keywords,
             },
             'cbjs_action': '''
 
@@ -1541,9 +1541,11 @@ class IngestUploadCmd(Command):
         category = my.kwargs.get("category")
         keywords = my.kwargs.get("keywords")
         update_process = my.kwargs.get("update_process")
-        hide_path_keywords = my.kwargs.get("hide_path_keywords")
-        if hide_path_keywords:
-            hide_path_keywords = hide_path_keywords.split(",")
+        ignore_path_keywords = my.kwargs.get("ignore_path_keywords")
+        if ignore_path_keywords:
+            ignore_path_keywords = ignore_path_keywords.split(",")
+            ignore_path_keywords = [x.strip() for x in ignore_path_keywords]
+
         update_data = my.kwargs.get("update_data")
         extra_data = my.kwargs.get("extra_data")
         if extra_data:
@@ -1714,11 +1716,14 @@ class IngestUploadCmd(Command):
                 path = filename
 
             file_keywords = Common.extract_keywords_from_path(path)
+            # Extract keywords from the path to be added to keywords_data, 
+            # if ignore_path_keywords is found, remove the specified keywords
+            # from the path keywords
 
-            if hide_path_keywords:
-                for hide_path_keyword in hide_path_keywords:
-                    if hide_path_keyword in file_keywords:
-                        file_keywords.remove(hide_path_keyword)
+            if ignore_path_keywords:
+                for ignore_path_keyword in ignore_path_keywords:
+                    if ignore_path_keyword in file_keywords:
+                        file_keywords.remove(ignore_path_keyword)
 
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
