@@ -144,7 +144,14 @@ class RepoBrowserWdg(BaseRefreshWdg):
         parent_mode_key = "repo_browser_mode:%s" % search_type
         WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
 
-        
+        ingest_custom_view = my.kwargs.get("ingest_custom_view") or ""
+        ingest_data_view = my.kwargs.get("ingest_data_view") or ""
+        data = {
+            "ingest_custom_view": ingest_custom_view,
+            "ingest_data_view": ingest_data_view
+        }
+        ingest_key = "repo_browser_ingest:%s" % search_type
+        WidgetSettings.set_value_by_key(ingest_key, jsondumps(data))
 
         # FIXME: is this ever used?
         search_keys =  [x.get_search_key() for x in my.sobjects]
@@ -890,9 +897,8 @@ class RepoBrowserDirListWdg(DirListWdg):
           
             // Misc functions
             spt.repo_browser.get_element = function(el) {
-                // TODO: Pass in a child el when calling this function.
-                // Currently flawed because there could be more than one repo browser tab/popup/view.
-                var repo_top = document.getElement(".spt_repo_browser_top");
+                var dir_list_top = bvr.src_el;
+                var repo_top = dir_list_top.getParent(".spt_repo_browser_top");
                 if (el) {
                     return repo_top.getElement(el);
                 } else {
@@ -1064,26 +1070,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 spt.panel.refresh(dir_list_el);
             }
-
-
-            spt.repo_browser.refresh_directory = function(el) {
-                var folder_el;
-                if (el.hasClass(".spt_dir")) {
-                    folder_el = el;
-                }
-                else {
-                    folder_el = el.getParent(".spt_dir")
-                }
-
-                var dir_list_el = spt.repo_browser.get_element(".spt_dir_list_handler_top");
-                var folder_state = spt.repo_browser.get_raw_folder_state();
-                dir_list_el.setProperty("spt_folder_state", folder_state);
-
-                spt.panel.refresh(folder_el);
-            }
-
-
-
 
  
             // Folder state manipulation
@@ -1423,7 +1409,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.get_selected = function() {
-            var repo_top = document.getElement(".spt_repo_browser_top");
+            var repo_top = spt.repo_browser.get_top();
             var selected = repo_top.getElements(".spt_selected");
             return selected;
         }
@@ -1579,7 +1565,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             // If deleting a folder, delete the folder as well.
             spt.repo_browser.delete_empty_folder(relative_dir);
 
-            var repo_top = document.getElement(".spt_repo_browser_top");
+            var repo_top = spt.repo_browser.get_top();
             
             // Refresh detail top
             var detail_top = spt.repo_browser.get_element('.spt_browser_detail_top');
@@ -1600,6 +1586,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
             if (grandparent_dir) {
                 spt.repo_browser.refresh_directory_listing(grandparent_dir);
+            } else {
+                spt.repo_browser.refresh_directory_listing(parent_dir);
             }
             
         }
@@ -1875,6 +1863,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             hint = "You are viewing the file repository in single_search_type mode."
         
         hint_wdg = HintWdg(message=hint)
+        hint_wdg.add_class("spt_repo_browser_hint")
         div.add(hint_wdg)
  
     def get_dir_context_menu(my, mode="strict"):
@@ -1923,7 +1912,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var html = "";
                 html += '<img src="'+arrow+'"/>';
                 html += '<img src="'+icon+'"/>';
-                html += '<input class="new_folder_input" type="text" value="New Folder"/>';
+                html += '<input class="new_folder_input" type="text" value="New Folder" style="z-index:10;"/>';
                 div.innerHTML = html;
 
                 var content = activator.getNext(".spt_dir_content");
@@ -2017,43 +2006,54 @@ class RepoBrowserDirListWdg(DirListWdg):
                 'type': 'click_up',
                 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
+                
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 var original_dir = activator.getAttribute("spt_reldir");
-
                 var original_el = activator.getElement(".spt_dir_value");
-                original_el.setStyle("display", "none");
                 
-                // Inject a input
-                var input = $(document.createElement("input"));
-                input.value = original_dir;
-                input.setAttribute("type", "text");
-                input.setStyle("width", "200px");
-                input.inject(original_el, "after");
-                
+                // Create dummy entry
+                var div = document.createElement("div");
+                div = $(div);
+                div.setStyles(activator.style);
+                var arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
+                var icon = "/context/icons/silk/folder.png";
+                var html = '<img src="'+arrow+'"/>';
+                html += '<img src="'+icon+'"/>';
+                html += '<input class="rename_folder_input" type="text" style="z-index:10;"/>';
+                div.innerHTML = html;
+                var input = div.getElement(".rename_folder_input");
+
                 var parts = relative_dir.split("/");
-                input.value = parts[parts.length-1];
+                var original_value = parts[parts.length-1];
+                input.value = original_value;
                 var base_relative_dir = parts.slice(0, parts.length-1).join("/");
                 
+                activator.setStyle("display", "none");
+                div.inject(activator, "after");
+                
                 spt.repo_browser.set_lock(true, "context_menu_action");
+ 
+                var exit = function(div, activator) {
+                    div.destroy();
+                    activator.setStyle("display", "");
+                    spt.repo_browser.set_lock(false);
+                }
 
                 input.onblur = function() {
+                    
                     var value = this.value;
                     var valid_regex = /^[a-zA-Z0-9\_\s\-\.]+$/;
                     if (!valid_regex.test(value)) {
                         spt.alert("Please enter a valid file system name. Names may contain alphanumeric characters, underscores, hyphens and spaces.");
-                        this.value = original_dir;
-                        input.focus();
+                        this.value = original_value;
                         spt.repo_browser.set_lock(false);
                         return; 
-                    } else if (value == original_dir) {
-                        input.destroy();
-                        original_el.setStyle("display", "");
-                        spt.repo_browser.set_lock(false);
+                    } else if (value == original_value) {
+                        exit(div, activator);
                         return;
                     }
-                   
+ 
                     var new_relative_dir = base_relative_dir + "/" + value;
-                    console.log(new_relative_dir)
                     
                     var span = $(document.createElement("span"));
                     span.innerHTML = " " +value;
@@ -2081,10 +2081,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                             spt.repo_browser.refresh_directory_listing(dir_top);
                         } 
                     } catch(err) {
+                        exit(div, activator);
                         spt.alert(spt.exception.handler(err));
-                        span.destroy();
-                        original_el.setStyle("display", "");
-                        spt.repo_browser.set_lock(false);
                     }
 
                 };
@@ -2158,25 +2156,42 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         if search_type:
+            ingest_key = "repo_browser_ingest:%s" % search_type
+            ingest_settings = jsonloads(WidgetSettings.get_value_by_key(ingest_key))
+            ingest_data_view = ingest_settings.get("ingest_data_view") or ""
+            ingest_custom_view = ingest_settings.get("ingest_custom_view") or ""
             menu_item = MenuItem(type='action', label='Ingest Files')
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
+                'ingest_custom_view': ingest_custom_view,
+                'ingest_data_view': ingest_data_view,
                 'search_type': search_type,
                 'search_key': parent_key,
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var relative_dir = activator.getAttribute("spt_relative_dir");
-                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+
                     var kwargs = {
                         search_type: bvr.search_type,
                         search_key: bvr.search_key,
-                        relative_dir: relative_dir
+                        relative_dir: relative_dir,
+                        ingest_data_view: bvr.ingest_data_view
                     };
                     
-                    spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+bvr.search_type+")</i>", class_name, kwargs);
-                '''
-            } )
+                    if (bvr.ingest_custom_view) {
+                        kwargs['view'] = bvr.ingest_custom_view;
+                        var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                    } else {
+                        var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    }
+
+                    var title = "Ingest Files";
+                    spt.tab.set_main_body_tab();
+                    spt.tab.add_new("ingest_" + bvr.search_type, title, class_name, kwargs);  
+                '''    
+                    
+            } ) 
 
 
         menu_item = MenuItem(type='separator')
@@ -2287,19 +2302,28 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var old_value = content.getAttribute("spt_src_basename");
                 var relative_dir = activator.getAttribute("spt_relative_dir");
                 
-                // Hide the original el 
-                var original_el = activator.getElement(".spt_item_value");
-                original_el.setStyle("display", "none");
-                
-                // Inject a input
-                var input = $(document.createElement("input"));
+                // Create dummy entry
+                var div = document.createElement("div");
+                div = $(div);
+                div.setStyles(activator.style);
+                var icon = "/context/icons/silk/page_white_text.png"
+                var html = '<img src="'+icon+'"/>';
+                html += '<input class="rename_file_input" type="text" style="z-index:10;"/>';
+                div.innerHTML = html;
+                var input = div.getElement(".rename_file_input");
                 input.value = old_value;
-                input.setAttribute("type", "text");
-                input.setStyle("width", "200px");
-                input.inject(original_el, "after");
+
+                activator.setStyle("display", "none");
+                div.inject(activator, "after"); 
                 
                 // Lock the directory
                 spt.repo_browser.set_lock(true, "context_menu_action");
+ 
+                var exit = function(div, activator) {
+                    div.destroy();
+                    activator.setStyle("display", "");
+                    spt.repo_browser.set_lock(false);
+                }
 
                 input.onblur = function() {
                     var new_value = this.value;
@@ -2311,9 +2335,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         spt.repo_browser.set_lock(false);
                         return; 
                     } else if (new_value == old_value) {
-                        input.destroy();
-                        original_el.setStyle("display", "");
-                        spt.repo_browser.set_lock(false);
+                        exit(div, activator);
                         return;
                     }
                     
@@ -2352,10 +2374,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                         var detail_top = spt.repo_browser.get_element(".spt_browser_detail_top");
                         spt.panel.refresh(detail_top);
                     } catch(err) {
+                        exit(div, activator); 
                         spt.alert(spt.exception.handler(err));
-                        span.destroy();
-                        original_el.setStyle("display", "");
-                        spt.repo_browser.set_lock(false);
                     }
 
                 };
@@ -3640,16 +3660,10 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
             allow_drag = False
 
         # FIXME: This kwarg does not take effect
-        # TODO: Drag and drop upload
+        upload_mode = False
         
         expression = my.kwargs.get("expression")
 
-        #TODO: Drag and drop upload
-        
-        # pass in parent key for deliverable
-        # "self" for parent_mode
-        upload_mode = False
-   
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,

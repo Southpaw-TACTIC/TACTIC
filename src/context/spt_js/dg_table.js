@@ -2954,6 +2954,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
     var ingest_data_view = target.getAttribute("spt_ingest_data_view");
+    var ingest_custom_view = target.getAttribute("spt_ingest_custom_view");
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
@@ -3049,6 +3050,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'checkin_type': checkin_type,
         'checkin_context': checkin_context,
         'ingest_data_view': ingest_data_view,
+        'ingest_custom_view': ingest_custom_view,
         'init_load_num': init_load_num,
         'mode': mode,
         'no_results_msg': no_results_msg,
@@ -3068,14 +3070,14 @@ spt.dg_table._search_cbk = function(evt, bvr)
     for (var k=0; k < attr_list.length; k++) {
         var attr_val = target.getAttribute('spt_'+ attr_list[k]);
         if (attr_val)
-            args[attr_list[k]] = attr_val;
+            args[attr_list[k]] = attr_val; 
     }
 
     if (bvr.extra_args) {
         for (k in bvr.extra_args)
             args[k] = bvr.extra_args[k];
     }
-    
+
     var fade = true;
 
 

@@ -28,6 +28,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         my.ingest_data_view = my.kwargs.get("ingest_data_view")
         if not my.ingest_data_view:
             my.ingest_data_view = 'edit'
+        my.ingest_custom_view = my.kwargs.get("ingest_custom_view") or ""
 
         my.view_save_dialog = my.get_save_wdg()
         my.view_save_dialog_id = my.view_save_dialog.get_id()
@@ -480,24 +481,31 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Ingest Files",
-                    "bvr_cb": { 'cbjs_action': '''
-                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    "bvr_cb": {'type': 'click_up',
+                               'ingest_custom_view': my.ingest_custom_view,
+                               'ingest_data_view': my.ingest_data_view,
+                               'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var top = activator.getParent(".spt_table_top");
                     var table = top.getElement(".spt_table");
                     var search_type = table.getAttribute("spt_search_type");
 
-
                     var kwargs = {
                         search_type: search_type,
-                        ingest_data_view: '%s'
+                        ingest_data_view: bvr.ingest_data_view
                     };
-                    //spt.tab.set_main_body_tab();
-                    //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
-                    var title = "Ingest: " + search_type;
-                    spt.panel.load_popup(title, class_name, kwargs);
-                    '''%my.ingest_data_view
-                 }
+                    
+                    if (bvr.ingest_custom_view) {
+                        kwargs['view'] = bvr.ingest_custom_view;
+                        var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                    } else {
+                        var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    }
+                    
+                    var title = "Ingest Files";
+                    spt.tab.set_main_body_tab();
+                    spt.tab.add_new("ingest_" + search_type, title, class_name, kwargs);  
+                                   '''}
                 } )
         if security.check_access("builtin", access_keys, "allow") or 'Check-out Files' in label_list:
             menu_items.append(
