@@ -206,21 +206,20 @@ class ThumbWdg(BaseTableElementWdg):
 
         script_path = my.options.get("script_path")
         class_name = my.options.get("detail_class_name")
-
         if script_path:
-            layout.add_behavior( {
-            'type': 'smart_click_up',
+            layout.add_relay_behavior( {
+            'type': 'click',
             'bvr_match_class': 'spt_thumb_script_path',
             'script_path': script_path,
             'cbjs_action': '''
-            var script = spt.CustomProject.get_script_by_path(bvr.script_path);
-            spt.CustomProject.exec_script(script);
+                var search_key = bvr.src_el.getAttribute("spt_search_key");
+                spt.CustomProject.run_script_by_path(bvr.script_path, {search_key: search_key});
             '''
             } )
 
         else:
-            layout.add_behavior( {
-            'type': 'smart_click_up',
+            layout.add_relay_behavior( {
+            'type': 'click',
             'bvr_match_class': 'spt_thumb_detail_class_name',
             'class_name': class_name,
             'cbjs_action': '''
