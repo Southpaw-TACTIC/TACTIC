@@ -105,67 +105,90 @@ class GlobalSearchTrigger(Trigger):
         data.update( my.cleanup(caller.get_value("keywords", no_exception=True) ))
 
 
-        # If keywords_data column exists and collection is being changed
+        # If keywords_data column exists and collection is being changed 
+        # or folder structure changed
         if has_keywords_data:
             
             update_data = input.get("update_data")
-            if "user_keywords" in update_data:
-                has_user_keywords = True
 
-                user_keywords = input.get("update_data").get("user_keywords")
+            # If Relative dir is changed, update path keywords
+            if "relative_dir" in update_data and not input.get("mode") == "insert":
+                new_path = update_data.get("relative_dir")
+                asset_name = input.get("sobject").get("name")
+                path_keywords = Common.extract_keywords_from_path(new_path)
 
-                if not user_keywords:
-                    user_keywords = ""
+                path_keywords.append(asset_name.lower())
+                project_code = Project.get_project_code()
+
+                if project_code in path_keywords:
+                    path_keywords.remove(project_code)
+
+                path_keywords = " ".join(path_keywords)
+                keywords_data = sobj.get_json_value("keywords_data", {})
+
+                keywords_data['path'] = path_keywords
+                sobj.set_json_value("keywords_data", keywords_data)
+                sobj.commit(triggers=False)
+                my.set_searchable_keywords(sobj)
 
             else:
-                has_user_keywords = False
+                if "user_keywords" in update_data:
+                    has_user_keywords = True
 
-            if is_collection:
-                if input.get("mode") == "update" and "name" in update_data:
-                    rename_collection = True
+                    user_keywords = input.get("update_data").get("user_keywords")
 
-                # New Collection created
-                if input.get("is_insert"):
-                    collection_keywords = update_data.get("user_keywords")
-                    collection_name = update_data.get("name")
+                    if not user_keywords:
+                        user_keywords = ""
 
-                    keywords_data = sobj.get_json_value("keywords_data", {})
-                    if collection_keywords:
-                        keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
-                    else:
-                        keywords_data['user'] = "%s" % collection_name
-                        
-                    sobj.set_json_value("keywords_data", keywords_data)
-                    sobj.commit(triggers=False)
-                    my.set_searchable_keywords(sobj)  
+                else:
+                    has_user_keywords = False
 
-                # If collection is renamed
-                elif rename_collection:
-                    collection_name = update_data.get("name")
-                    keywords_data = sobj.get_json_value("keywords_data", {})
+                if is_collection:
+                    if input.get("mode") == "update" and "name" in update_data:
+                        rename_collection = True
 
-                    if 'user' in keywords_data:
-                        user = keywords_data.get('user')
-                        old_collection_name = input.get("prev_data").get("name")
+                    # New Collection created
+                    if input.get("is_insert"):
+                        collection_keywords = update_data.get("user_keywords")
+                        collection_name = update_data.get("name")
 
-                        user = user.replace(old_collection_name, "")
-                        keywords_data['user'] = user
-                        
+                        keywords_data = sobj.get_json_value("keywords_data", {})
+                        if collection_keywords:
+                            keywords_data['user'] = "%s %s" % (collection_name, collection_keywords)
+                        else:
+                            keywords_data['user'] = "%s" % collection_name
+                            
                         sobj.set_json_value("keywords_data", keywords_data)
                         sobj.commit(triggers=False)
+                        my.set_searchable_keywords(sobj)  
 
-                        my.update_user_keywords(sobj, user, base_search_type)
+                    # If collection is renamed
+                    elif rename_collection:
+                        collection_name = update_data.get("name")
+                        keywords_data = sobj.get_json_value("keywords_data", {})
 
-                # If user_keywords column is changed 
-                elif has_user_keywords:
-                    
-                    my.update_user_keywords(sobj, user_keywords, base_search_type)
+                        if 'user' in keywords_data:
+                            user = keywords_data.get('user')
+                            old_collection_name = input.get("prev_data").get("name")
 
-            # If regular asset keywords being changed
-            else:
-                if has_user_keywords:
+                            user = user.replace(old_collection_name, "")
+                            keywords_data['user'] = user
+                            
+                            sobj.set_json_value("keywords_data", keywords_data)
+                            sobj.commit(triggers=False)
 
-                    my.update_user_keywords(sobj, user_keywords, base_search_type)
+                            my.update_user_keywords(sobj, user, base_search_type)
+
+                    # If user_keywords column is changed 
+                    elif has_user_keywords:
+                        
+                        my.update_user_keywords(sobj, user_keywords, base_search_type)
+
+                # If regular asset keywords being changed
+                else:
+                    if has_user_keywords:
+
+                        my.update_user_keywords(sobj, user_keywords, base_search_type)
 
         
         # extra columns to add
