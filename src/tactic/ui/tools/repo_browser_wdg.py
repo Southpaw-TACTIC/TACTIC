@@ -2763,7 +2763,6 @@ class RepoBrowserActionCmd(Command):
                 if parent.column_exists("relative_dir"):
                     new_relative_dir = relative_dirs.get(parent.get_search_key())
                     parent.set_value("relative_dir", new_relative_dir)
-                    my.set_keywords(parent)
                     parent.commit()
 
             # Finally, move the entire directory tree.
@@ -2967,35 +2966,7 @@ class RepoBrowserActionCmd(Command):
             
             # Update any associated parents keywords
             for parent in parents.values():
-                my.set_keywords(parent)
                 parent.commit()
-
-
-    def set_keywords(my, parent):
-
-        if not parent.column_exists("keywords_data"):
-            return
-
-
-        keywords_data = parent.get_json_value("keywords_data", {})
-        name = parent.get_value("name")
-        relative_dir = parent.get_value("relative_dir")
-        if relative_dir and name:
-            path = "%s/%s" % (relative_dir, name)
-        else:
-            path = name
-
-        keywords_data['path'] = Common.extract_keywords_from_path(path)
-
-        parent.set_json_value("keywords_data", keywords_data)
-
-        keywords = set()
-        for values in keywords_data.values():
-            keywords.update(values)
-        keywords_list = list(keywords)
-        keywords_list.sort()
-        parent.set_value("keywords", " ".join(keywords_list))
-
 
 
 
@@ -3125,7 +3096,6 @@ class RepoBrowserCbk(Command):
                 if parent.column_exists("relative_dir"):
                     new_relative_dir = relative_dirs.get(parent.get_search_key())
                     parent.set_value("relative_dir", new_relative_dir)
-                    my.set_keywords(parent)
                     parent.commit()
 
             return
@@ -3220,37 +3190,11 @@ class RepoBrowserCbk(Command):
         # used for some other purpose
         if parent.column_exists("relative_dir"):
             parent.set_value("relative_dir", relative_dir)
-            my.set_keywords(parent)
         parent.commit()
         
         # Update the versionless snapshot
         for snapshot in highest_snapshot.values():
             snapshot.update_versionless("latest")
-
-
-
-    def set_keywords(my, parent):
-
-        if not parent.column_exists("keywords_data"):
-            return
-
-        keywords_data = parent.get_json_value("keywords_data", {})
-        name = parent.get_value("name")
-        relative_dir = parent.get_value("relative_dir")
-        if relative_dir and name:
-            path = "%s/%s" % (relative_dir, name)
-        else:
-            path = name
-        
-        keywords_data['path'] = Common.extract_keywords_from_path(path)
-        parent.set_json_value("keywords_data", keywords_data)
-
-        keywords = set()
-        for values in keywords_data.values():
-            keywords.update(values)
-        keywords_list = list(keywords)
-        keywords_list.sort()
-        parent.set_value("keywords", " ".join(keywords_list))
 
 
 
