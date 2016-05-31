@@ -144,8 +144,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         parent_mode_key = "repo_browser_mode:%s" % search_type
         WidgetSettings.set_value_by_key(parent_mode_key, parent_mode) 
 
-        ingest_custom_view = my.kwargs.get("ingest_custom_view")
-        ingest_data_view = my.kwargs.get("ingest_data_view")
+        ingest_custom_view = my.kwargs.get("ingest_custom_view") or ""
+        ingest_data_view = my.kwargs.get("ingest_data_view") or ""
         data = {
             "ingest_custom_view": ingest_custom_view,
             "ingest_data_view": ingest_data_view
