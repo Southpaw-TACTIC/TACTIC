@@ -2158,8 +2158,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         if search_type:
             ingest_key = "repo_browser_ingest:%s" % search_type
             ingest_settings = jsonloads(WidgetSettings.get_value_by_key(ingest_key))
-            ingest_data_view = ingest_settings.get("ingest_data_view")
-            ingest_custom_view = ingest_settings.get("ingest_custom_view")
+            ingest_data_view = ingest_settings.get("ingest_data_view") or ""
+            ingest_custom_view = ingest_settings.get("ingest_custom_view") or ""
             menu_item = MenuItem(type='action', label='Ingest Files')
             menu.add(menu_item)
             menu_item.add_behavior( {

@@ -28,7 +28,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         my.ingest_data_view = my.kwargs.get("ingest_data_view")
         if not my.ingest_data_view:
             my.ingest_data_view = 'edit'
-        my.ingest_custom_view = my.kwargs.get("ingest_custom_view")
+        my.ingest_custom_view = my.kwargs.get("ingest_custom_view") or ""
 
         my.view_save_dialog = my.get_save_wdg()
         my.view_save_dialog_id = my.view_save_dialog.get_id()
