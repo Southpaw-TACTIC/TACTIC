@@ -892,7 +892,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("font-family: courier")
             html = ''.join(htmls)
             html = html.replace( "&amp;", "&")
-            html = re.sub(r'(\<\w+\>)\s(\</\w+\>)',r'\1\2', html, re.MULTILINE)
+            html = re.sub(r'(<\w+>)\s(</\w+>)',r'\1\2', html, re.MULTILINE)
             # a final html conversion to ensure textarea draws properly
             html = Xml.to_html(html, allow_empty=True)
             if html:
@@ -2586,7 +2586,7 @@ class CustomLayoutEditSaveCmd(Command):
         html = html.replace("<%", "<![CDATA[\n<%")
         html = html.replace("%>", "%>]]>")
         html = html.replace("&", "&amp;")
-        html = re.sub(r'(\<\w+\>)(\</\w+\>)',r'\1 \2', html, re.MULTILINE)
+        html = re.sub(r'(<\w+>)(</\w+>)',r'\1 \2', html, re.MULTILINE)
 
 
 
