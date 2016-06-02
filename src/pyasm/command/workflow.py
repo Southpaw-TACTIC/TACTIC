@@ -1488,6 +1488,9 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
+        
+        if not pipeline:
+            return
 
         #print "complete: ", process, sobject.get_search_key()
 
@@ -1500,6 +1503,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         if process.find(".") != -1:
             parts = process.split(".")
             process = parts[-1]
+
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
@@ -1787,7 +1791,12 @@ class ProcessListenTrigger(BaseProcessTrigger):
 
         current_process_name = my.input.get("process")
         current_pipeline = my.input.get("pipeline")
-        current_process = current_pipeline.get_process(current_process_name)
+        current_process = ""
+        # if it has no pipeline_code set, it should exit
+        if current_pipeline:
+            current_process = current_pipeline.get_process(current_process_name)
+        else:
+            return
         current_status = my.input.get("status")
         current_sobject = my.input.get("sobject")
 
