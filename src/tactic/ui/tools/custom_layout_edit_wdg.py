@@ -25,6 +25,7 @@ from tactic.ui.input import TextInputWdg
 
 from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg, ActionButtonWdg, SwapDisplayWdg, IconButtonWdg
 
+import re
 
 class CustomLayoutHelpWdg(BaseRefreshWdg):
     '''Showing sample code when clicking on the Show hint button'''
@@ -891,7 +892,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("font-family: courier")
             html = ''.join(htmls)
             html = html.replace( "&amp;", "&")
-
+            
+            # This reverses formatting by CustomLayoutEditSaveCmd.build_xml
+            # to preserve empty tags.
+            html = re.sub(r'(<\w+>)\s(</\w+>)',r'\1\2', html, re.MULTILINE)
+            
             # a final html conversion to ensure textarea draws properly
             html = Xml.to_html(html, allow_empty=True)
             if html:
@@ -2585,6 +2590,7 @@ class CustomLayoutEditSaveCmd(Command):
         html = html.replace("<%", "<![CDATA[\n<%")
         html = html.replace("%>", "%>]]>")
         html = html.replace("&", "&amp;")
+        html = re.sub(r'(<\w+>)(</\w+>)',r'\1 \2', html, re.MULTILINE)
 
 
 
@@ -2657,7 +2663,6 @@ class CustomLayoutEditSaveCmd(Command):
         if behavior:
             if behavior.find('<![CDATA[') != -1:
                 raise TacticException("CDATA is automatically added when it is saved. Do not include any CDATA tag in behavior.")
-            import re
             behavior = behavior.strip()
             #behavior = behavior.replace("\\", "\\\\")
 
