@@ -638,6 +638,16 @@ class IconCreator(object):
         else:
             print "Warning: [%s] did not get created from pdf" % tmp_web_path
 
+            
+    def get_free_size(my):
+        '''When free_size project setting is true, a thumb is created with size
+        according to free_size value (x,y).
+        Conversion is RGBA instead of default RBG for icon creation.'''
+        from pyasm.biz import ProdSetting
+        free_size = ProdSetting.get_value_by_key('free_size') == 'true' or False
+        return free_size
+    
+        
     def get_web_file_size(my):
         from pyasm.prod.biz import ProdSetting
         web_file_size = ProdSetting.get_value_by_key('web_file_size')
@@ -731,6 +741,8 @@ class IconCreator(object):
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
+        free_size = my.get_free_size()
+        
         # create the web image
         try:
             if my.texture_mode:
@@ -740,7 +752,7 @@ class IconCreator(object):
                 # create the icon
                 thumb_size = (120,100)
                 try:
-                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
+                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size, free_size = free_size)
                 except TacticException:
                     my.icon_path = None
                 else:
@@ -749,7 +761,7 @@ class IconCreator(object):
                 # create the icon only
                 thumb_size = (120,100)
                 try:
-                    my._resize_image(my.file_path, tmp_icon_path, thumb_size)
+                    my._resize_image(my.file_path, tmp_icon_path, thumb_size, free_size = free_size)
                 except TacticException:
                     my.icon_path = None
                 else:
@@ -761,7 +773,7 @@ class IconCreator(object):
                 thumb_size = my.get_web_file_size()
                 
                 try:
-                    my._resize_image(my.file_path, tmp_web_path, thumb_size)
+                    my._resize_image(my.file_path, tmp_web_path, thumb_size, free_size = free_size)
                 except TacticException:
                     my.web_path = None
                 else:
@@ -770,7 +782,7 @@ class IconCreator(object):
                 # create the icon
                 thumb_size = (120,100)
                 try:
-                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
+                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size, free_size = free_size)
                 except TacticException:
                     my.icon_path = None
                 else:
@@ -798,7 +810,7 @@ class IconCreator(object):
         pass
 
 
-    def _resize_image(my, large_path, small_path, thumb_size):
+    def _resize_image(my, large_path, small_path, thumb_size, free_size = False):
         try:
             large_path = large_path.encode('utf-8')
             small_path = small_path.encode('utf-8')
@@ -847,8 +859,10 @@ class IconCreator(object):
                 else:
                     is_animated = True
                     im.seek(0)
-                    im = im.convert('RGB')
-
+                    if free_size:
+                        im = im.convert('RGBA')
+                    else:
+                        im = im.convert('RGB')
                 x,y = im.size
                 to_ext = "PNG"
                 if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
@@ -859,17 +873,23 @@ class IconCreator(object):
                 else:
                     
                     #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
-                    x,y = im.size
-
+                    if not free_size:
+                        x,y = im.size
+                    
                     # first resize to match this thumb_size
                     base_height = thumb_size[1]
                     h_percent = (base_height/float(y))
                     base_width = int((float(x) * float(h_percent)))
                     im = im.resize((base_width, base_height), Image.ANTIALIAS )
-
-                    # then paste to white image
-                    im2 = Image.new( "RGB", thumb_size, (255,255,255) )
-                    offset = (thumb_size[0]/2) - (im.size[0]/2)
+                    
+                    if free_size:                        
+                        im2 = Image.new( "RGBA", (base_width, base_height), (255,255,255,0) )
+                        offset = 0
+                    else:
+                        # then paste to white image
+                        im2 = Image.new( "RGB", thumb_size, (255,255,255) )
+                        offset = (thumb_size[0]/2) - (im.size[0]/2)
+                        
                     im2.paste(im, (offset,0) )
                     im2.save(small_path, to_ext)
 

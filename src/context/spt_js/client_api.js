@@ -1343,9 +1343,19 @@ TacticServerStub = function() {
         return this._delegate("get_all_paths_from_snapshot", arguments, kwargs);
     }
 
-
     // async functions
+    this.async_ping = function(kwargs) {
+        var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
+        var on_error = kwargs['on_error'];
 
+        this._delegate("ping", arguments, kwargs, null, callback, on_error);
+        return;
+    }
+    
+    
     this.async_get_widget = function(class_name, kwargs) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;

@@ -22,10 +22,16 @@ import os
 
 class EmbedWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
-        return {
-            }
-
+    ARGS_KEYS = {
+        "video_class": {
+            'description': "Allows users to select video class path. Default is VideoWdg",
+            'type': 'SelectWdg',
+            'values': 'VideoWdg|VideoJsWdg',
+            'order': 00,
+            'category': 'Optional'
+        }
+    }
+     
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
 
@@ -66,7 +72,9 @@ class EmbedWdg(BaseRefreshWdg):
         #div = DivWdg()
         #top.add(div)
         div = top
-        div.add_class("unselectable")
+        if not my.kwargs.get("selectable") or \
+                my.kwargs.get("selectable") == "false":
+            div.add_class("unselectable")
         div.add_style("opacity", opacity)
         div.add_style("overflow-x: hidden")
         div.add_style("overflow-y: hidden")
@@ -100,15 +108,12 @@ class EmbedWdg(BaseRefreshWdg):
             embed.add_style("width: 100%")
             embed.add_style("height: auto")
         elif ext in File.VIDEO_EXT:
-            from tactic.ui.widget import VideoWdg
+            from tactic.ui.widget import VideoWdg, VideoJsWdg
             embed = DivWdg()
 
-
-            #if not thumb_path:
-            #    thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
-
-
+            
+            
             video_id = None
             sources = [src]
             source_types = ["video/mp4"]
@@ -117,7 +122,22 @@ class EmbedWdg(BaseRefreshWdg):
             height = '100%'
             #width = "640"
             #height = "480"
-            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
+            
+            video_kwargs = {"video_id": video_id, 
+                    "sources": sources, 
+                    "source_types": source_types, 
+                    "poster": poster, 
+                    "preload": preload, 
+                    "controls": controls, 
+                    "width": width, 
+                    "height": height, 
+                    "index": index
+            }
+                    
+            if my.kwargs.get("video_class") == "VideoJsWdg":
+                video = VideoJsWdg(**video_kwargs)
+            else:
+                video = VideoWdg(**video_kwargs)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 
