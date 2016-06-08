@@ -809,6 +809,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             gear_settings = my.kwargs.get("gear_settings")
             if isinstance(gear_settings, basestring):
                 if gear_settings.startswith("{") and gear_settings.endswith("}"):
+                    # HACK:
+                    gear_settings = gear_settings.replace("'", '"')
                     gear_settings = jsonloads(gear_settings)
                 else:
                     gear_settings = gear_settings.split("|")
@@ -823,10 +825,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 gear_settings = {}
 
             settings["gear"] = gear_settings
-
-
-
-
 
 
         default = True
@@ -847,17 +845,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 value = settings.get(name)
 
+
         # some special settings if the value is False
         if value in [False, None]:
+            show_name = "show_%s" % name
 
             if default == True:
-                if my.kwargs.get(name) not in ['false', False]:
+                if my.kwargs.get(show_name) not in ['false', False]:
                     value = True
                 else:
                     value = False
 
             else:
-                if my.kwargs.get(name) not in ['true', True]:
+                if my.kwargs.get(show_name) not in ['true', True]:
                     value = False
                 else:
                     value = True

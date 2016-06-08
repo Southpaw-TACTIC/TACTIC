@@ -32,6 +32,43 @@ class WidgetDbConfig(SObject):
         my._init()
 
 
+
+    """
+    def get_value(my, name, no_exception=False, auto_convert=True):
+        value = super(WidgetDbConfig, my).get_value(name, no_exception, auto_convert)
+        if name == "config" and value.startswith("PATH"):
+            path = "/tmp/config_test-%s" % my.get_id()
+
+            import os
+            if not os.path.exists(path):
+                value = ""
+            else:
+                f = open(path, "r")
+                value = f.read()
+                f.close()
+
+        return value
+
+
+    def set_value(my, name, value, quoted=1, temp=False):
+        if name == "config" and my.data.get("config").startswith("PATH"):
+            path = "/tmp/config_test-%s" % my.get_id()
+            f = open(path, "w")
+            f.write(value)
+            f.close()
+
+            value = "PATH"
+
+
+        return super(WidgetDbConfig, my).set_value(name, value, quoted, temp)
+    """
+
+
+
+
+
+
+
     def _init(my):
         test = my.get_value("config", no_exception=True)
         my.view = my.get_value("view")

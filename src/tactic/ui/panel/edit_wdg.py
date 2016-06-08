@@ -39,7 +39,17 @@ class EditTitleWdg(BaseInputWdg):
             title = title.title()
         div.add(title)
         div.add_style("font-weight: bold")
+        div.add_style("margin", "20px 0px")
+
+        div.add_color("background", "background", -5)
+        div.add_style("height", "20px")
+        div.add_style("padding", "10px 10px")
+
         return div
+
+
+    def get_default_action(my):
+        return "pyasm.command.NullAction"
 
 
 class EditWdg(BaseRefreshWdg):
@@ -182,7 +192,8 @@ class EditWdg(BaseRefreshWdg):
                 my.mode = "edit"
             else:
                 my.mode = "insert"
-                
+             
+        assert(my.search_type)
 
         # explicit override
         if my.kwargs.get("mode"):
@@ -259,9 +270,8 @@ class EditWdg(BaseRefreshWdg):
 
         override_element_names = my.kwargs.get("element_names")
         if override_element_names:
-            element_names = override_element_names
-
-
+            my.element_names = override_element_names
+            my.element_names = my.element_names.split(",")
 
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
@@ -426,6 +436,7 @@ class EditWdg(BaseRefreshWdg):
 
         search_type_obj = SearchType.get(my.search_type)
         sobj_title = search_type_obj.get_title()
+        sobj_title = Common.pluralize(sobj_title)
 
         my.color_mode = my.kwargs.get("color_mode")
         if not my.color_mode:
@@ -684,9 +695,6 @@ class EditWdg(BaseRefreshWdg):
 
             if isinstance(widget, EditTitleWdg):
                 tr, td = table.add_row_cell()
-                tr.add_color("background", "background", -5)
-                td.add_style("height", "30px")
-                td.add_style("padding", "0px 10px")
 
                 td.add(widget)
 
@@ -939,6 +947,8 @@ class EditWdg(BaseRefreshWdg):
         header_div.set_attr("colspan", "2")
         header_div.add_style("height: 30px")
         header_div.add_style("padding: 3px 10px")
+
+        header_div.add_style("margin: -1px -1px 10px -1px")
 
         inner.add(header_div)
 

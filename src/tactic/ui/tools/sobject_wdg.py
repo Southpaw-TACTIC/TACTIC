@@ -493,7 +493,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #menu = my.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
         tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10 )
-        tab.add_style("margin: 0px -2px -2px -1px")
+        tab.add_style("margin: 0px -1px -1px -1px")
 
 
         div.add(tab)

@@ -190,8 +190,6 @@ class EditCmd(Command):
             action_handler_class = \
                     config.get_action_handler(element_name)
 
-            print "aaaa: ", element_name, action_handler_class
-
             # Try to get it from the display view
             if not action_handler_class:
                 display_class = \

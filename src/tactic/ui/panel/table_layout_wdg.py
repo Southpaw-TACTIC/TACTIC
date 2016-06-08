@@ -906,6 +906,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             my.header_table.add_style("table-layout", "fixed")
             my.table.add_style("table-layout", "fixed")
+            my.table.add_style("margin-top: -1px")
 
         else:
             table = my.table

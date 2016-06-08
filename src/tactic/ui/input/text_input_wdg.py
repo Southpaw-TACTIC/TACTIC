@@ -1200,7 +1200,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
 
 
-__all__.append("TextInputResultsWdg")
+_all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
     # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back

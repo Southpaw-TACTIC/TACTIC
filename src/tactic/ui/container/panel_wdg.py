@@ -50,7 +50,7 @@ class PanelWdg(BaseRefreshWdg):
         sobjects = search.get_sobjects()
         my.pages = SObject.get_values(sobjects, "view")
 
-
+        config = None
         is_test = False
         if my.view:
             search = Search("config/widget_config")
