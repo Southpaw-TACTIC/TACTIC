@@ -32,20 +32,43 @@ from pyasm.common import Environment
 from pyasm.web import TacticMonitor
 
 
-def start():
-    monitor = TacticMonitor()
-    monitor.set_check_interval(0)
-    monitor.execute()
+class WinService(object):
+
+    def __init__(my):
+        my.monitor = TacticMonitor()
+
+   
+
+    def init(my):
+        my.monitor.mode = "init"
+        my.monitor.execute()
+
+    def monitor(my):
+        my.monitor.mode = 'monitor'
+        my.monitor.execute()
     
+def write_stop_monitor():
+    '''write a stop.monitor file to notify TacticMonitor to exit'''
+    log_dir = "%s/log" % Environment.get_tmp_dir()
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    file = open("%s/stop.monitor" % log_dir, "w")
+    pid = os.getpid()
+    file.write(str(pid))
+    file.close()
 
 def stop():
     #startup.stop() 
-    
-    
     log_dir = "%s/log" % Environment.get_tmp_dir()
     files = os.listdir(log_dir)
     ports = []
     watch_folders = []
+    write_stop_monitor()
+    
+    import time
+    time.sleep(5)
+
     for filename in files:
         base, ext = os.path.splitext(filename)
         if base == 'pid':
@@ -92,11 +115,12 @@ class TacticService(win32serviceutil.ServiceFramework):
     def SvcDoRun(self): 
 
         self.ReportServiceStatus(win32service.SERVICE_START_PENDING)
-
-        start()
+        service = WinService()
+        service.init()
         self.ReportServiceStatus(win32service.SERVICE_RUNNING)
-        # now, block until our event is set... 
         win32event.WaitForSingleObject(self.stop_event, win32event.INFINITE) 
+        service.monitor()
+        # monitor() needs to run after... 
      
     def SvcStop(self): 
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING) 

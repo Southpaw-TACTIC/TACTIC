@@ -74,6 +74,14 @@ class BaseProcessThread(threading.Thread):
     def execute(my):
         raise Exception("Must override execute")
 
+    def write_log(my, msg):
+        '''for debugging only'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+ 
+        f = open('%s/monitor.log' % log_dir,'a')
+        import datetime
+        f.write('Time: %s\n\n' %datetime.datetime.now())
+        f.write('%s\n'%msg)
 
     def check(my):
         pass
@@ -113,6 +121,7 @@ class BaseProcessThread(threading.Thread):
             pid = file.read()
             file.close()
             print "Killing process: ", pid
+            
             Common.kill(pid) 
         else:
             if response and response != "OK":
@@ -159,9 +168,13 @@ class TacticThread(BaseProcessThread):
             exec_file = STARTUP_EXEC
         os.system('%s %s' % (exec_file, my.port) )
 
+
+
     def check(my):
+        
         f = urllib.urlopen("http://localhost:%s/test" % my.port )
         response = f.readlines()
+        
         f.close()
         return response[0]
 
@@ -513,6 +526,7 @@ class TacticMonitor(object):
 
     def __init__(my, num_processes=None):
         my.check_interval = 120
+        my.startup = True
         my.num_processes = num_processes
         my.dev_mode = False
 
@@ -523,6 +537,9 @@ class TacticMonitor(object):
         sql = DbContainer.get("sthpw")
         # before batch, clean up the ticket with a NULL code
         sql.do_update('DELETE from "ticket" where "code" is NULL;')
+
+        my.tactic_threads = []
+        my.mode = 'normal'
 
 
     def set_check_interval(my, check_interval):
@@ -541,8 +558,14 @@ class TacticMonitor(object):
                 path = "%s/%s" % (base_dir, file_name)
                 os.remove(path)
              
-
     def execute(my):
+        if my.mode == 'monitor':
+            my.monitor()
+        else:
+            my._execute()
+
+    def _execute(my):
+        '''if mode is normal, this runs both the main startup logic plus monitor'''
         from pyasm.security import Batch
         Batch(login_code="admin")
 
@@ -609,6 +632,7 @@ class TacticMonitor(object):
 
         # create a number of processes
         if start_tactic:
+            my.remove_monitor_pid()
             #for i in range(0, my.num_processes):
             for port in ports:
 
@@ -726,16 +750,39 @@ class TacticMonitor(object):
 
 
         DbContainer.close_thread_sql()
+        my.tactic_threads = tactic_threads
+        if my.mode == "normal":
+            my.monitor()
 
 
-        # check each thread every 20 seconds
+    def remove_monitor_pid(my):
+        '''remove the stop.monitor file'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+
+        if os.path.exists("%s/stop.monitor" % log_dir):
+            os.unlink("%s/stop.monitor" % log_dir)
+
+    def monitor(my):
+        '''monitor the tactic threads'''
+        start_time = time.time()
+        
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        
         while 1:
             end = False
             try:
+                monitor_stop = os.path.exists('%s/stop.monitor'%log_dir)
+                if monitor_stop:
+                    break
                 if my.check_interval:
-                    time.sleep(my.check_interval)
-                    for tactic_thread in tactic_threads:
-                        tactic_thread._check()
+                    # don't check threads during startup period
+                    if not my.startup:
+                        time.sleep(my.check_interval)
+                        for tactic_thread in my.tactic_threads:
+                            tactic_thread._check()
+                    else:
+                        if time.time() - start_time > my.check_interval:
+                            my.startup = False
 
                 else:
                     # FIXME: break for now (for windows service)
@@ -743,7 +790,7 @@ class TacticMonitor(object):
 
             except KeyboardInterrupt, e:
                 print "Keyboard interrupt ... exiting Tactic"
-                for tactic_thread in tactic_threads:
+                for tactic_thread in my.tactic_threads:
                     tactic_thread.end = True
                     end = True
 
