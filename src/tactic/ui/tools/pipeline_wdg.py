@@ -2878,11 +2878,11 @@ class ProgressInfoWdg(BaseInfoWdg):
         top.add(settings_wdg)
         settings_wdg.add_style("padding: 0px 10px")
 
-
-        workflow = process_sobj.get_json_value("workflow")
-        if not workflow:
-            workflow = {}
-
+      
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow") or {}
+        
         related_search_type = workflow.get("search_type")
         related_pipeline_code = workflow.get("pipeline_code")
         related_process = workflow.get("process")
