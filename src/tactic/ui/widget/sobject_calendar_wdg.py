@@ -1043,7 +1043,7 @@ class TaskCalendarWdg(SObjectCalendarWdg):
         #    return None
 
         div = DivWdg()
-        div.add_style("margin: 20px 10px 20px 10px")
+        div.add_style("padding: 20px 10px 20px 10px")
         div.add_style("font-size: 0.8em")
 
         table = Table()

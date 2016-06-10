@@ -309,6 +309,8 @@ class CalendarWdg(BaseRefreshWdg):
         legend_wdg = my.get_legend_wdg()
         if legend_wdg:
             widget.add(legend_wdg)
+            legend_wdg.add_border()
+            legend_wdg.add_style("margin-top: -1px")
 
 
 

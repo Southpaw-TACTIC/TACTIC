@@ -2099,7 +2099,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
 
         #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
-        if True:
+        show_detail = my.kwargs.get("show_detail")
+        print "sss: ", show_detail
+        if show_detail not in [False, 'false']:
             detail_div = DivWdg()
             div.add(detail_div)
             detail_div.add_style("float: right")
