@@ -3394,7 +3394,7 @@ class ProcessInfoCmd(Command):
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
-    def handle_approval(my):
+    def handle_status(my):
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")
