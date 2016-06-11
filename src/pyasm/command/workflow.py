@@ -1926,7 +1926,6 @@ class ProcessListenTrigger(BaseProcessTrigger):
         current_sobject = my.input.get("sobject")
 
 
-
         listeners = Container.get("process_listeners")
         if listeners == None:
             # build up a data structure of listeners from the pipelines

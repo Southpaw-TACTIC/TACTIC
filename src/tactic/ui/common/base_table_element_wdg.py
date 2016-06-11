@@ -523,13 +523,17 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)
 
-            """
-            value_wdg.add_class("tactic_new_tab")
-            value_wdg.add_attr("search_key", sobject.get_search_key())
-            value_wdg.add_style("text-decoration: underline")
-            #value_wdg.add_attr("spt_class_name", "tactic.ui.tools.SObjectDetailWdg")
-            value_wdg.add_class("hand")
-            """
+
+            link_expression = my.get_option("link_expression")
+            if link_expression:
+                value_wdg.add_class("tactic_new_tab")
+                value_wdg.add_style("display: inline-block")
+                value_wdg.add_attr("search_key", sobject.get_search_key())
+                value_wdg.add_style("text-decoration: underline")
+                #value_wdg.add_attr("spt_class_name", "tactic.ui.tools.SObjectDetailWdg")
+                value_wdg.add_class("hand")
+
+
 
             return value_wdg
 
