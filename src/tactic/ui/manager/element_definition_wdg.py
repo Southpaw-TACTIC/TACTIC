@@ -2247,15 +2247,17 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     # prevent the ARG_KEYS from getting modifed later on when appending kwargs
                     class_options = class_options.copy()
 
-                    category_options = eval("%s.get_category_keys()" % display_class)
-
-
                 except Exception, e:
                     error = DivWdg()
                     error.add_style('color: red')
                     error.add("WARNING: could not get options.  Failed on get_args_keys() for %s" %display_class)
                     top.add(error)
                     return top
+
+                try:
+                    category_options = eval("%s.get_category_keys()" % display_class)
+                except Exception, e:
+                    pass
 
 
         # special consideration is made for Custom Layouts where options

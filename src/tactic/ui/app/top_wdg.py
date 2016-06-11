@@ -287,6 +287,7 @@ class TopWdg(Widget):
             'bvr_match_class': 'tactic_new_tab',
             'cbjs_action': '''
             var view = bvr.src_el.getAttribute("view")
+            var search_key = bvr.src_el.getAttribute("search_key")
 
             var name = bvr.src_el.getAttribute("name");
             var title = bvr.src_el.getAttribute("title");
@@ -306,10 +307,21 @@ class TopWdg(Widget):
 
             spt.tab.set_main_body_tab()
 
-            var cls = "tactic.ui.panel.CustomLayoutWdg";
-            var kwargs = {
-                view: view
+            if (view) {
+                var cls = "tactic.ui.panel.CustomLayoutWdg";
+                var kwargs = {
+                    view: view
+                }
             }
+            else if (search_key) {
+                var cls = "tactic.ui.tools.SObjectDetailWdg";
+                var kwargs = {
+                    search_key: search_key
+                }
+            }
+
+
+
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
             } catch(e) {

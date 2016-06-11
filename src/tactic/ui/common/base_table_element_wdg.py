@@ -524,40 +524,13 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value_wdg.add(value)
 
 
-
-
             """
-            value_wdg.add_attr("link_search_type", "workflow/delivarable")
-            value_wdg.add_attr("spt_search_key", sobject.get_search_key())
-            #value_wdg.add_class("tactic_new_tab")
+            value_wdg.add_class("tactic_new_tab")
+            value_wdg.add_attr("search_key", sobject.get_search_key())
             value_wdg.add_style("text-decoration: underline")
-            value_wdg.add_attr("spt_class_name", "tactic.ui.tools.SObjectDetailWdg")
+            #value_wdg.add_attr("spt_class_name", "tactic.ui.tools.SObjectDetailWdg")
             value_wdg.add_class("hand")
-
-            value_wdg.add_behavior( {
-                'type': 'click',
-                'cbjs_action': '''
-                var server = TacticServerStub.get();
-                var sobject = server.eval("@SOBJECT(workflow/deliverable)", {search_key: search_key, single: true});
-                var search_key = sobject.__search_key__;
-                var code = sobject.code;
-                var class_name = bvr.src_el.getAttribute("spt_class_name");
-                var kwargs = {
-                    search_key: search_key
-                }
-                var title = "Detail ["+code+"]";
-                spt.tab.add_new(title, title, class_name, kwargs);
-
-
-                
-                '''
-            } )
             """
-
-
-
-
-
 
             return value_wdg
 
