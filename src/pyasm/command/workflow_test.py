@@ -879,6 +879,10 @@ class WorkflowCmd(Command):
 
     def _test_progress(my):
 
+        print
+        print "TEST PROGRESS"
+        print
+
         # create a dummy sobject
         city = SearchType.create("unittest/city")
 

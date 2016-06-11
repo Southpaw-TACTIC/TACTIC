@@ -1506,6 +1506,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # all for collapsing of columns
+        """
         table.add_behavior( {
             #'type': 'double_click',
             'type': 'smart_click_up',
@@ -1517,6 +1518,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             spt.table.toggle_collapse_column(element_name);
             '''
         } )
+        """
 
 
 
@@ -1631,10 +1633,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # selection behaviors
-        table.add_behavior( {
-        'type': 'smart_click_up',
+        table.add_relay_behavior( {
+        'type': 'click',
         'bvr_match_class': 'spt_table_select',
         'cbjs_action': '''
+            if (evt.shift == true) return;
+
             spt.table.set_table(bvr.src_el);
             var row = bvr.src_el.getParent(".spt_table_row");
             if (row.hasClass("spt_table_selected")) {
@@ -1647,11 +1651,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
-        table.add_behavior( {
-        'type': 'smart_click_up',
+        table.add_relay_behavior( {
+        'type': 'click',
         'bvr_match_class': 'spt_table_select',
-        'modkeys': 'SHIFT',
+        #'modkeys': 'SHIFT',
         'cbjs_action': '''
+        if (evt.shift != true) return;
+
         spt.table.set_table(bvr.src_el);
         var row = bvr.src_el.getParent(".spt_table_row");
 

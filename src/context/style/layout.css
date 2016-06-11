@@ -202,3 +202,24 @@ hr
 
 
 
+/* dg table look styles */
+
+.look_dg_row_select_box
+{
+    background-image: url('/context/ui_proto/icons/interface/checkbox_unchecked.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: default;
+}
+
+.look_dg_row_select_box_selected
+{
+    background-image: url('/context/ui_proto/icons/interface/checkbox_checked.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: default;
+}
+
+
+
+

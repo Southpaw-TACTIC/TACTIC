@@ -523,7 +523,6 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)
 
-
             """
             value_wdg.add_class("tactic_new_tab")
             value_wdg.add_attr("search_key", sobject.get_search_key())
