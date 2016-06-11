@@ -288,6 +288,7 @@ class TopWdg(Widget):
             'cbjs_action': '''
             var view = bvr.src_el.getAttribute("view")
             var search_key = bvr.src_el.getAttribute("search_key")
+            var expression = bvr.src_el.getAttribute("expression")
 
             var name = bvr.src_el.getAttribute("name");
             var title = bvr.src_el.getAttribute("title");
@@ -302,6 +303,13 @@ class TopWdg(Widget):
 
             if (!title && !name) {
                 title = name = "Untitled";
+            }
+
+
+            if (expression) {
+                var server = TacticServerStub.get();
+                var sss = server.eval(expression, {search_keys: search_key, single: true})
+                search_key = sss.__search_key__;
             }
 
 
