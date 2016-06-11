@@ -542,13 +542,15 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         delta = due_date - now
         diff = (delta.days * DAY) + delta.seconds
 
+        date_today = now.date()
+        date_due = due_date.date()
 
         if diff < 0:
             if status.lower() in ["approved", "complete", "done"]:
                 mode = "done"
             else:
                 mode = "critical"
-        elif diff > (HOUR*2) and diff <= DAY:
+        elif diff > (HOUR*2) and date_today == date_due:
             mode = "today"
         elif diff > HOUR and diff <= (HOUR*2):
             mode = "warning_1"
@@ -559,6 +561,8 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         
         my.mode = mode
         my.diff = diff
+        my.date_today = date_today
+        my.date_due = date_due
 
 
 
@@ -603,16 +607,18 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         mode = my.mode
         diff = my.diff
-        DAY = my.DAY
-        HOUR = my.HOUR
+        date_today = my.date_today
+        date_due = my.date_due
 
         if mode == "critical":
             div.add_style("color: #FFF")
-            days = diff/DAY
-            msg = "%s Days Overdue" % (-days)
+            days = abs((date_due - date_today).days)
+            msg = "%s Days Overdue" % (days)
             div.add_attr("title", msg)
-            if diff < 0 and diff >= -DAY:
+            if days == 0:
                 div.add("Today")
+            elif days == 1:
+                div.add("1 Day Overdue")
             else:
                 div.add(msg)
         elif mode == "today":
@@ -631,9 +637,9 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             pass
         else:
             div.add_style("color: #000")
-            days = diff/DAY
+            days = abs((date_due - date_today).days)
             div.add_attr("title", "Due in %s Day(s)" % days)
-            if diff > DAY and diff <= (DAY*2):
+            if days == 1:
                 div.add("1 Day")
             else:
                 div.add("%s Days" % days)

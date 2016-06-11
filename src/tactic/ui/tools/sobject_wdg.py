@@ -1066,6 +1066,7 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
 
 
         edit_wdg = ActionButtonWdg(title="Edit")
+        edit_wdg.add_class("spt_details_edit_button")
         td.add(edit_wdg)
         edit_wdg.add_behavior( {
             'type': 'click',
