@@ -938,7 +938,7 @@ class WorkflowCmd(Command):
         Trigger.call(my, "process|pending", output)
 
 
-        # it should have stopped at b
+        # it should have stopped at c2
         my.assertEquals( "complete", city.get_value("c1") )
         my.assertEquals( "pending", city.get_value("c2") )
 
@@ -956,7 +956,7 @@ class WorkflowCmd(Command):
             #my.assertEquals( "pending", city.get_value("c2") )
 
 
-        # it should have stopped at z
+        # it should have stopped at p3
         for person in people:
             my.assertEquals( "complete", person.get_value("p1") )
             my.assertEquals( "complete", person.get_value("p2") )
