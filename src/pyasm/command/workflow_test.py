@@ -425,15 +425,6 @@ class WorkflowCmd(Command):
         pipeline, processes = my.get_pipeline(pipeline_xml)
 
 
-        process = processes.get("c")
-        process.set_json_value("workflow", {
-            'on_action': '''
-            print "c: running action"
-            '''
-        } )
-        process.commit()
-
-
         # Run the pipeline
         process = "a"
         output = {
@@ -444,7 +435,10 @@ class WorkflowCmd(Command):
         Trigger.call(my, "process|pending", output)
 
         my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("b"))
+        my.assertEquals( "complete", sobject.get_value("b1"))
+        my.assertEquals( "complete", sobject.get_value("b2"))
+        my.assertEquals( "complete", sobject.get_value("b3"))
+        my.assertEquals( "complete", sobject.get_value("b4"))
         my.assertEquals( "complete", sobject.get_value("c"))
         my.assertEquals( "complete", sobject.get_value("d"))
 
@@ -878,10 +872,6 @@ class WorkflowCmd(Command):
 
 
     def _test_progress(my):
-
-        print
-        print "TEST PROGRESS"
-        print
 
         # create a dummy sobject
         city = SearchType.create("unittest/city")

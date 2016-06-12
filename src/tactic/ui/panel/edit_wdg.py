@@ -916,13 +916,13 @@ class EditWdg(BaseRefreshWdg):
 
         if not title_str:
             if my.mode == 'insert':
-                action = 'Add New Item'
+                action = 'Add New Item to'
             elif my.mode == 'edit':
-                action = 'Save Changes'
+                action = 'Update'
             else:
                 action = my.mode
             
-            title_str =  action.capitalize() + " to " + sobj_title
+            title_str =  action.capitalize() + " " + sobj_title
             if my.mode == 'edit':
                 title_str = '%s (%s)' %(title_str, my.sobjects[0].get_code())
             
