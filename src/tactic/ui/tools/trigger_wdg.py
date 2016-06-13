@@ -2168,9 +2168,10 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         # Update the trigger
         trigger.set_value("code", trigger_code)
 
-        src_status = my.kwargs.get("src_status")
-        src_process = my.kwargs.get("process")
-        if src_status:
+        event = my.kwargs.get("event")
+        if event == "change|sthpw/task|status":
+            src_status = my.kwargs.get("src_status")
+            src_process = my.kwargs.get("process")
             data = {
                 'src_status': src_status,
                 'src_process': src_process
