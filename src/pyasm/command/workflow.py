@@ -2066,7 +2066,8 @@ class ProcessListenTrigger(BaseProcessTrigger):
             return
 
 
-
+        # this is currently hard coded since ProcessListenTrigger is only run 
+        # when ProcessCompleteTrigger is run
         # override related_status with status passed in
         related_status = "complete"
 
@@ -2083,7 +2084,8 @@ class ProcessListenTrigger(BaseProcessTrigger):
             related_sobjects = Search.eval(expression, sobjects=[sobject])
 
         for related_sobject in related_sobjects:
-
+            """
+            # TOBE commented out
             # if the related_sobject is already complete, don't do anything
             key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
 
@@ -2094,8 +2096,7 @@ class ProcessListenTrigger(BaseProcessTrigger):
                     pass
                 elif value == "complete" and value not in ['revise', 'reject']:
                     continue
-
-
+            """
 
             # This is for unittests which don't necessarily commit changes
             related_sobject = Search.get_by_search_key(related_sobject.get_search_key())
@@ -2106,7 +2107,7 @@ class ProcessListenTrigger(BaseProcessTrigger):
                 related_processes = related_pipeline.get_processes()
                 related_process = related_processes[0]
 
-
+            # these conditions are not fully utilized since it's always complete
             if related_status in ["in_progress", "In Progress"]:
                 event = "process|action"
             else:

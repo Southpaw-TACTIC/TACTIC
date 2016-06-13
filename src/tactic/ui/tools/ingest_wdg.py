@@ -1607,7 +1607,7 @@ class IngestUploadCmd(Command):
 
 
             if filename.startswith("search_key:"):
-                mode = "single"
+                mode = "search_key"
                 tmp, search_key = filename.split("search_key:")
                 snapshot = Search.get_by_search_key(search_key)
                 if snapshot.get_search_type() == "sthpw/snapshot":
@@ -1717,7 +1717,7 @@ class IngestUploadCmd(Command):
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
 
-            if mode == "single":
+            if mode == "search_key":
                 path = lib_path
 
             elif relative_dir:
@@ -1725,7 +1725,15 @@ class IngestUploadCmd(Command):
             else:
                 path = filename
 
-            file_keywords = Common.extract_keywords_from_path(path)
+            # Don't want the keywords being extracted from lib_path, extract the relative dir path instead
+            # Using new_filename because it is the filename without version numbers
+            if relative_dir:
+                path_for_keywords = "%s/%s" % (relative_dir, new_filename)
+            else:
+                path_for_keywords = new_filename
+
+            file_keywords = Common.extract_keywords_from_path(path_for_keywords)            
+            
             # Extract keywords from the path to be added to keywords_data, 
             # if ignore_path_keywords is found, remove the specified keywords
             # from the path keywords
@@ -1766,7 +1774,7 @@ class IngestUploadCmd(Command):
                 first_filename = non_seq_filenames_dict.get(filename)[0]
                 last_filename = non_seq_filenames_dict.get(filename)[-1]
                 file_path = "%s/%s" % (base_dir, first_filename)
-            elif mode == "single":
+            elif mode == "search_key":
                 file_path = path
             else:
                 file_path = "%s/%s" % (base_dir, filename)
@@ -1826,13 +1834,31 @@ class IngestUploadCmd(Command):
                     except:
                         pass
 
+            # for some unknown reason, this input prefix is ignored
+            del(update_data['input_prefix'])
+            new_data = {}
+            for name, value in update_data.items():
+                name = name.replace("%s|"%input_prefix, "")
+                new_data[name] = value
+
+
+            from tactic.ui.panel import EditCmd
+            cmd = EditCmd(
+                    view="edit",
+                    sobject=sobject,
+                    data=new_data,
+                    commit="false",
+
+            )
+            cmd.execute()
+            """
             for key, value in update_data.items():
                 if input_prefix:
                     key = key.replace('%s|'%input_prefix, '')
                 if SearchType.column_exists(search_type, key):
                     if value:
                         sobject.set_value(key, value)
-
+            """
 
 
             for key, value in extra_data.items():
@@ -1904,18 +1930,19 @@ class IngestUploadCmd(Command):
                 file_path = "%s/%s" % (base_dir, filename)
                 server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
             else: 
-                from pyasm.checkin import FileCheckin
-                if mode == "single":
+                
+                if mode == "search_key":
                     # copy the file to a temporary location
                     tmp_dir = Environment.get_tmp_dir()
                     tmp_path = "%s/%s" % (tmp_dir, new_filename)
                     shutil.copy(file_path, tmp_path)
-
-                    checkin = FileCheckin(sobject, tmp_path, process=process)
-                    checkin.execute()
+                    # auto create icon
+                    server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
+                    
                 elif my.kwargs.get("base_dir"):
-                    checkin = FileCheckin(sobject, file_path, context=context, process=process)
-                    checkin.execute()
+                    # auto create icon
+                    server.simple_checkin(search_key, context, file_path, process=process, mode='move')
+                    
                 else:
                     server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
 
@@ -1962,7 +1989,7 @@ class IngestUploadCmd(Command):
         if file_sobjects and update_mode in ['true', True] and len(sobjects) > 1:
             raise TacticException('Multiple files with the same name as "%s" already exist. Uncertain as to which file to update. Please individually update each file.' % new_filename)
         elif file_sobjects:
-            raise TacticException('A file with the same name as "%s" already exists in the path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
+            raise TacticException('A file with the same name as "%s" already exists in the file table with path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
 
     def natural_sort(my,l):
         '''

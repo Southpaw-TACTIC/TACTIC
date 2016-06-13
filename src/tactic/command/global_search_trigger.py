@@ -111,11 +111,12 @@ class GlobalSearchTrigger(Trigger):
             
             update_data = input.get("update_data")
 
-            # If Relative dir is changed, update path keywords
-            if "relative_dir" in update_data and not input.get("mode") == "insert":
-                new_path = update_data.get("relative_dir")
+            # If Relative dir is changed or file is renamed, update path keywords
+            if "relative_dir" in update_data or "name" in update_data and not input.get("mode") == "insert":
+                file_path = input.get("sobject").get("relative_dir")
                 asset_name = input.get("sobject").get("name")
-                path_keywords = Common.extract_keywords_from_path(new_path)
+
+                path_keywords = Common.extract_keywords_from_path(file_path)
 
                 path_keywords.append(asset_name.lower())
                 project_code = Project.get_project_code()

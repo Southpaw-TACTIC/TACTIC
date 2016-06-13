@@ -85,7 +85,7 @@ class EditCmd(Command):
 
         super(EditCmd,my).__init__()
         my.search_type = None
-        my.sobject = None
+        my.sobject = kwargs.get("sobject")
 
 
     def get_sobject(my):
@@ -243,6 +243,10 @@ class EditCmd(Command):
             if not sobject:
                 raise TacticException('This search key [%s] no longer exists.'%my.search_key)
             # this is needed for action handler below
+            my.search_type = sobject.get_search_type()
+
+        elif my.sobject:
+            sobject = my.sobject
             my.search_type = sobject.get_search_type()
 
         else:
