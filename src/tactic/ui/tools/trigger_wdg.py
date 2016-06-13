@@ -1639,9 +1639,13 @@ class TriggerCreateCbk(BaseTriggerEditCbk):
     def execute(my):
 
         outputs = my.kwargs.get("output")
-        if isinstance(outputs, basestring):
+        if isinstance(outputs, basestring) and output != "":
             outputs = [outputs]
-
+        elif isinstance(outputs, list):
+            outputs = [p for p in outputs if p != ""]
+        else:
+            outputs = []
+            
         data = {
             'output': outputs
         }
