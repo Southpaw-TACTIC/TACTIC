@@ -1108,7 +1108,8 @@ class EditWdg(BaseRefreshWdg):
 
         bvr['cbjs_action'] = cbjs_insert
 
-        
+        my.top.add_attr("spt_save_event", save_event)
+
         ok_btn_label = my.mode.capitalize()
         if ok_btn_label == 'Edit':
             ok_btn_label = 'Save'
@@ -1332,7 +1333,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     var src_el = bvr.src_el;
     try {
 
-        var info = server.execute_cmd(class_name, args, values);
+        var ret_val = server.execute_cmd(class_name, args, values);
 
         // add a callback after save
         var popup = bvr.src_el.getParent(".spt_popup");
@@ -1370,9 +1371,16 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         }
         else {
             // update the table
+            info = ret_val.info;
+
+            // FIXME: this search key is just LOST!!!
+            bvr.options = {
+                search_key: info.search_key
+            }
             if (bvr.save_event) {
                 spt.named_events.fire_event(bvr.save_event, bvr);
             }
+
         }
     }
     catch(e) {

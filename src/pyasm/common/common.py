@@ -443,6 +443,9 @@ class Common(Base):
         for item in parts:
             if not item:
                 continue
+
+            item = item.replace(" ", "_")
+
             keywords.add(item)
 
 

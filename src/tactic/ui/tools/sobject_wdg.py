@@ -669,7 +669,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
             else:
                 parts = tab.split(".")
                 name = parts[-1]
-                title = parts[-1].title().replace("_", " ")
+
+                title = None
+                if config:
+                    title = config.get_element_title(tab)
+                
+                if not title:
+                    title = parts[-1].title().replace("_", " ")
                 tab_values = {
                         'title': title,
                         'name': name,
