@@ -1309,6 +1309,9 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
         status_select.add_attr("spt_is_multiple", "true")
         if is_checked:
             status_select.set_value(dst_status )
+        elif statuses:
+            status_select.set_value(statuses[0])
+        
         process_div.add(status_select)
         status_select.set_option("values", statuses)
         status_select.add_style("margin-top: 5px")
