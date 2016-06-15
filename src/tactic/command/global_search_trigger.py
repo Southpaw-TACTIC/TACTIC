@@ -112,19 +112,22 @@ class GlobalSearchTrigger(Trigger):
             update_data = input.get("update_data")
 
             # If Relative dir is changed or file is renamed, update path keywords
-            if "relative_dir" in update_data or "name" in update_data and not input.get("mode") == "insert":
+            if ("relative_dir" in update_data or "name" in update_data) and not input.get("mode") == "insert":
+                
                 file_path = input.get("sobject").get("relative_dir")
                 asset_name = input.get("sobject").get("name")
 
-                path_keywords = Common.extract_keywords_from_path(file_path)
-
-                path_keywords.append(asset_name.lower())
                 project_code = Project.get_project_code()
 
-                if project_code in path_keywords:
-                    path_keywords.remove(project_code)
+                # Ignore the common keywords path
+                ignore_path = "%s/asset" % project_code
+                if ignore_path in file_path:
+                    file_path = file_path.replace(ignore_path, "")
 
+                path_keywords = Common.extract_keywords_from_path(file_path)
+                path_keywords.append(asset_name.lower())
                 path_keywords = " ".join(path_keywords)
+
                 keywords_data = sobj.get_json_value("keywords_data", {})
 
                 keywords_data['path'] = path_keywords

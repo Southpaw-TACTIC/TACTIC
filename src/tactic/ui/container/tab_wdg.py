@@ -279,8 +279,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     */
 
 
-
-
     var subelement_title;
     var full_title;
     if (title.indexOf("/") != -1) {

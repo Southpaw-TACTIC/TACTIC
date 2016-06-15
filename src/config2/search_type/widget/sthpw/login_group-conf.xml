@@ -158,7 +158,7 @@
 
 
 <edit>
-    <element name="name" title='Group Name'/>
+    <element name="name"/>
     <element name="description"/>
     <element name="access_level"/>
     <element name="access_rules" type='xml'>
@@ -173,7 +173,7 @@
 
 
 <insert>
-    <element name="login_group" title='Group Name'/>
+    <element name="name"/>
     <element name="description"/>
     <element name="add_to_project"/>
 </insert>
