@@ -433,13 +433,21 @@ class Common(Base):
         # camel case
         P_camel_case = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
 
+        P_capital_word = re.compile(r'([A-Z]{2,})')
+
 
         #parts = rel_path.split("/")
         parts =  re.split(r'/|\\', rel_path)
         keywords = set()
 
         for item in parts:
+            if not item:
+                continue
             keywords.add(item)
+
+
+            # preprocess capital words
+            item = P_capital_word.sub(r'\1_', item)
 
             item = P_camel_case.sub(r'_\1', item)
             parts2 = re.split(P_delimiters, item)
