@@ -10,13 +10,13 @@
 #
 #
 
-__all__ = ['ProgressWdg']
+__all__ = ['ProgressWdg', 'RadialProgressWdg']
 
-from tactic_client_lib import TacticServerStub
+#from tactic_client_lib import TacticServerStub
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, Canvas
 
 class ProgressWdg(BaseRefreshWdg):
     '''A simple widget which displays the progress and an upload'''
@@ -529,7 +529,7 @@ spt.progress.do_job_serial = function() {
 
 
 
-__all__.append( 'TestProgressWdg' );
+__all__.append( 'TestProgressWdg' )
 class TestProgressWdg(BaseRefreshWdg):
 
     def get_display(my):
@@ -731,7 +731,7 @@ class TestProgressWdg2(BaseRefreshWdg):
 
 
 
-__all__.append( 'TestProgressWdg3' );
+__all__.append( 'TestProgressWdg3' )
 class TestProgressWdg3(BaseRefreshWdg):
 
     def get_display(my):
@@ -835,6 +835,123 @@ class TestProgressWdg3(BaseRefreshWdg):
 
             '''
         } )
+
+        return top
+
+
+class RadialProgressWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = my.top
+        top.add_style("margin: 5px")
+
+        percent = my.kwargs.get("percent")
+
+        count = my.kwargs.get("count")
+        total = my.kwargs.get("total")
+
+        if percent == None and count != None and total != None:
+            if total:
+                percent = int( 100 * (float(count) / float(total)) )
+            else:
+                percent = 0
+
+        if percent == None:
+            percent = 0;
+
+        color = my.kwargs.get("color")
+        if not color:
+            color = '#1b458b'
+
+        #size = 100
+        size = 60 
+
+
+        top.add_style("width", size)
+        top.add_style("height", size)
+        top.add_style("position: relative")
+
+        canvas = Canvas()
+        top.add(canvas)
+        canvas.add_attr("width", size)
+        canvas.add_attr("height", size)
+        canvas.add_behavior( {
+            'type': 'load',
+            'percent': percent,
+            'color': color,
+            'size': size,
+            'cbjs_action': '''
+
+            var canvas = bvr.src_el;
+            var context = canvas.getContext("2d");
+
+            var percent = bvr.percent;
+
+            function drawOval(x, y, rw, rh)
+            {
+              context.scale(1,  rh/rw);
+              context.beginPath();
+              context.arc(x, y, rw, 0,  2 * Math.PI);
+              context.restore();
+              context.lineWidth=6;
+              context.strokeStyle = '#EEE';
+              context.stroke();  
+
+
+              context.beginPath();
+              context.arc(x, y, rw+3, 0,  2 * Math.PI);
+              context.restore();
+              context.lineWidth=1;
+              context.strokeStyle = '#DDD';
+              context.stroke();  
+
+
+              context.beginPath();
+              context.arc(x, y, rw-3, 0,  2 * Math.PI);
+              context.restore();
+              context.lineWidth=1;
+              context.strokeStyle = '#DDD';
+              context.stroke();  
+
+
+
+
+
+              context.beginPath();
+              context.arc(x, y, rw, Math.PI, (1 + percent/100*2) * Math.PI);
+              context.restore();
+              context.lineWidth=6;
+              context.strokeStyle = bvr.color;
+              context.stroke();  
+ 
+            }
+
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            drawOval(centerX, centerY , centerX-5, centerY-5); 
+
+            return;
+
+
+            '''
+        } )
+
+
+        div = DivWdg()
+        top.add(div)
+        if count != None:
+            div.add("%s/%s" % (count, total))
+        else:
+            div.add("%s%%" % percent)
+        div.add_style("position: absolute")
+        div.add_color("color", "color")
+        div.add_style("width", size)
+        div.add_style("text-align: center")
+        div.add_style("font-size: 1.2em")
+        #div.add_style("font-weight: bold")
+        div.add_style("top: %spx" % (size/2-10))
+
 
         return top
 
