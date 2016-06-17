@@ -1114,7 +1114,6 @@ spt.tab.close = function(src_el) {
         else:
             my.use_default_style = False
 
-        my.use_default_style = True;
         if my.use_default_style:
 
             palette = my.top.get_palette()
