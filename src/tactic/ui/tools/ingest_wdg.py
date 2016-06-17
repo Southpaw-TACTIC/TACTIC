@@ -1715,7 +1715,14 @@ class IngestUploadCmd(Command):
             else:
                 path = filename
 
-            file_keywords = Common.extract_keywords_from_path(path)
+            # Don't want the keywords being extracted from lib_path, extract the relative dir path instead
+            # Using new_filename because it is the filename without version numbers
+            if relative_dir:
+                path_for_keywords = "%s/%s" % (relative_dir, new_filename)
+            else:
+                path_for_keywords = new_filename
+            file_keywords = Common.extract_keywords_from_path(path_for_keywords)
+
             # Extract keywords from the path to be added to keywords_data, 
             # if ignore_path_keywords is found, remove the specified keywords
             # from the path keywords
