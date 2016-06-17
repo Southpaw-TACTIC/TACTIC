@@ -186,8 +186,11 @@ class XmlRpcLogin(Environment):
         require_password = Config.get_value("security", "api_require_password")
         api_password = Config.get_value("security", "api_password")
 
+        site = Site.get()
+        allow_guest =  site.allow_guest()
+
         # the xmlrpc login can be overridden to not require a password
-        if require_password == "false":
+        if require_password == "false" or (allow_guest and my.login_name == "guest"):
             security.login_user_without_password(my.login_name, expiry="NULL")
         elif api_password:
             if api_password == my.password:
