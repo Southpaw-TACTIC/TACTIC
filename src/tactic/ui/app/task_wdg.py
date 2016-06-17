@@ -212,7 +212,7 @@ class AddTaskWdg(BaseRefreshWdg):
             v_div.add_style('min-height', min_height)
             v_div.add(HtmlElement.br(2))
             content_div.add(v_div)    
-            processes = pipeline.get_processes(recurse=show_subpipeline)
+            processes = pipeline.get_processes(recurse=show_subpipeline, type=['manual','approval'])
 
             cb_name = '%s|task_process'  %pipeline.get_code()
             master_cb = CheckboxWdg('master_control')
