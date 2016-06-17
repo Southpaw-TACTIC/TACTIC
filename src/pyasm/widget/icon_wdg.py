@@ -522,10 +522,12 @@ class IconButtonWdg(HtmlElement):
         if my.icon_path.startswith("BS_"):
             icon = IconWdg(my.name, my.icon_path)
         else:
-            if not my.icon_path.startswith("/"):
-                icon_path = "/context/icons/silk/%s" % my.icon_path
-            else:
-                icon_path = my.icon_path
+            icon_path = IconWdg.get_icon_path(my.icon_path)
+            if not icon_path:
+                if not my.icon_path.startswith("/"):
+                    icon_path = "/context/icons/silk/%s" % my.icon_path
+                else:
+                    icon_path = my.icon_path
 
             icon = HtmlElement.img(icon_path)
             icon.set_attr("title", my.name)
