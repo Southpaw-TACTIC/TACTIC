@@ -28,7 +28,7 @@ from button_wdg import ButtonElementWdg
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
-from tactic.ui.widget import IconButtonWdg
+from tactic.ui.widget import IconButtonWdg, RadialProgressWdg
 
 from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
 
@@ -1847,7 +1847,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            from spt.ui.widgets import RadialProgressWdg
+           
             progress_wdg = RadialProgressWdg(
                 total=total,
                 count=count,
@@ -1976,7 +1976,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            from spt.ui.widgets import RadialProgressWdg
             progress_wdg = RadialProgressWdg(
                 total=total,
                 count=count,
