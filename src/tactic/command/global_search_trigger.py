@@ -115,6 +115,8 @@ class GlobalSearchTrigger(Trigger):
             if "relative_dir" in update_data and not input.get("mode") == "insert":
                 new_path = update_data.get("relative_dir")
                 asset_name = input.get("sobject").get("name")
+                if asset_name:
+                    new_path = "%s/%s" % (new_path, asset_name)
                 path_keywords = Common.extract_keywords_from_path(new_path)
 
                 path_keywords.append(asset_name.lower())
