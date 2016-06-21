@@ -4731,7 +4731,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         
         for pipeline in task_pipelines:
-            select.append_option(pipeline.get_value('code'), pipeline.get_value('code'))
+            label = '%s (%s)' %(pipeline.get_value('name'), pipeline.get_value('code'))
+            select.append_option(label, pipeline.get_value('code'))
         
         select.add_empty_option('-- Select --')
         select.add_class(text_name)

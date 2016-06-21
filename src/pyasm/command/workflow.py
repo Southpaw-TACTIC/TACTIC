@@ -210,6 +210,7 @@ class TaskStatusChangeTrigger(Trigger):
             'pipeline': pipeline,
             'process': process_name,
             'status': status,
+            'internal': True
         }
         Trigger.call(task, event, output=output)
 
@@ -272,6 +273,12 @@ class BaseProcessTrigger(Trigger):
 
 
     def set_all_tasks(my, sobject, process, status):
+        # prevent for instance TaskStatusChangeTrigger setting a custom task status back to complete
+        if not hasattr(my, "internal"):
+            my.internal = my.input.get("internal") or False
+
+        if my.internal:
+            return
         tasks = Task.get_by_sobject(sobject, process=process)
         title = status.replace("-", " ")
         title = title.replace("_", " ")
@@ -615,7 +622,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         my.sobject = my.input.get("sobject")
         my.input_data = my.input.get("data")
         my.data = my.input_data
-
+        my.internal = my.input.get("internal") or False
 
         if my.process.find(".") != -1:
             parts = my.process.split(".")
@@ -623,7 +630,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             my.process_parts = parts[:-1]
         else:
             my.process_parts = []
-
+        
 
     def check_inputs(my):
         pipeline = my.input.get("pipeline")
@@ -704,6 +711,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         status = "complete"
         my.log_message(my.sobject, my.process, status)
         my.set_all_tasks(my.sobject, my.process, "complete")
+        
         my.run_callback(my.pipeline, my.process, status)
 
         process_obj = my.pipeline.get_process(my.process)
@@ -1197,6 +1205,7 @@ class WorkflowProgressNodeHandler(WorkflowManualNodeHandler):
 
 
 class WorkflowInputNodeHandler(BaseWorkflowNodeHandler):
+
     def handle_pending(my):
         # fast track to complete
         Trigger.call(my, "process|complete", output=my.input)
@@ -1373,6 +1382,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
 class ProcessPendingTrigger(BaseProcessTrigger):
 
+    
     def execute(my):
         # set all task to pending
 
