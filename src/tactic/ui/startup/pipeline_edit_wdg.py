@@ -17,7 +17,7 @@ from pyasm.biz import Pipeline, Project
 from pyasm.command import Command
 from pyasm.search import Search, SearchType
 from pyasm.web import DivWdg, Table
-from pyasm.widget import TextWdg, IconWdg
+from pyasm.widget import TextWdg, IconWdg, HiddenWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, IconButtonWdg
@@ -239,9 +239,16 @@ class PipelineEditWdg(BaseRefreshWdg):
                             process_name = process.get_name()
                         deccription = ''
 
+                process_type = 'manual'
+                process_xpos = ''
+                process_ypos = ''
                 # get the task pipeline for this process
                 if process_name:
                     process = pipeline.get_process(process_name)
+                    process_type = process.get_type()
+                    process_xpos = process.get_attribute('xpos')
+                    process_ypos = process.get_attribute('ypos')
+
                     task_pipeline_code = process.get_task_pipeline()
                     if task_pipeline_code != "task":
                         task_pipeline = Search.get_by_code("sthpw/pipeline", task_pipeline_code)
@@ -251,7 +258,7 @@ class PipelineEditWdg(BaseRefreshWdg):
                     task_pipeline_code = "task"
                     task_pipeline = None
 
-
+                
                 process_div = DivWdg()
                 process_div.add_style("float: left")
                 process_div.add_class("spt_process_top")
@@ -270,7 +277,7 @@ class PipelineEditWdg(BaseRefreshWdg):
                 table.add_row()
 
                 text = TextInputWdg(name="process")
-                table.add_cell(text)
+                process_cell = table.add_cell(text)
                 text.add_style("width: 95px")
                 text.add_style("margin: 5px")
                 text.set_value(process_name)
@@ -280,6 +287,17 @@ class PipelineEditWdg(BaseRefreshWdg):
                 if i == 0:
                     text.add_style("border: solid 1px #AAA")
 
+                hidden = HiddenWdg(name='process_type')
+                hidden.set_value(process_type)
+                process_cell.add(hidden)
+
+                hidden = HiddenWdg(name='process_xpos')
+                hidden.set_value(process_xpos)
+                process_cell.add(hidden)
+
+                hidden = HiddenWdg(name='process_ypos')
+                hidden.set_value(process_ypos)
+                process_cell.add(hidden)
 
 
                 text = TextInputWdg(name="description")
@@ -291,32 +309,37 @@ class PipelineEditWdg(BaseRefreshWdg):
                 if i == 0:
                     text.add_style("border: solid 1px #AAA")
 
+                
+                if process_type in ['manual','approval']:
+                    read_only = False
+                else:
+                    read_only = True
+                text = TextInputWdg(name="task_status", read_only=read_only)
 
-                text = TextInputWdg(name="task_status")
                 table.add_cell(text)
                 text.add_style("width: 325px")
                 text.add_style("margin: 5px")
 
                 #text.set_value(statuses_str)
-                if task_pipeline:
-                    statuses = task_pipeline.get_process_names()
-                    text.set_value(",".join(statuses))
-                else:
-                    text.set_value("(default)")
                     #text.add_style("opacity: 0.5")
                 
 
                 text.add_style("border-style: none")
-
-                text.add_behavior( {
-                'type': 'click_up',
-                'statuses': statuses_str,
-                'cbjs_action': '''
-                if (bvr.src_el.value == '(default)') {
-                    bvr.src_el.value = bvr.statuses;
-                }
-                '''
-                } )
+                if process_type in ['manual','approval']:
+                    if task_pipeline:
+                        statuses = task_pipeline.get_process_names()
+                        text.set_value(",".join(statuses))
+                    else:
+                        text.set_value("(default)")
+                    text.add_behavior( {
+                    'type': 'click_up',
+                    'statuses': statuses_str,
+                    'cbjs_action': '''
+                    if (bvr.src_el.value == '(default)') {
+                        bvr.src_el.value = bvr.statuses;
+                    }
+                    '''
+                    } )
 
                 table.add_cell("&nbsp;"*2)
 
@@ -432,11 +455,14 @@ class PipelineEditCbk(Command):
 
             # get the input data
             processes = pipeline_data.get("process")
+            process_types = pipeline_data.get("process_type")
+            process_xpos = pipeline_data.get("process_xpos")
+            process_ypos = pipeline_data.get("process_ypos")
             statuses = pipeline_data.get("task_status")
             descriptions = pipeline_data.get("description")
 
             # go through each process and build up the xml
-            pipeline_xml = my.create_pipeline_xml(processes)
+            pipeline_xml = my.create_pipeline_xml(processes, process_types, process_xpos, process_ypos)
             pipeline.set_value("pipeline", pipeline_xml)
             pipeline.set_pipeline(pipeline_xml)
             pipeline.on_insert()
@@ -469,11 +495,16 @@ class PipelineEditCbk(Command):
                 
 
             # handle the statuses for each process
-            for process, status in zip(processes, statuses):
+            for process, process_type, xpos, ypos, status in \
+				zip(processes, process_types, process_xpos, process_ypos, statuses):
 
                 if process == '':
                     continue
-
+                
+                # skip if it's not task related
+                if process_type not in ['manual','approval']:
+                    continue
+                
                 if status == '(default)':
                     node = pipeline_xml.get_node("/pipeline/process[@name='%s']" % process)
                     pipeline_xml.del_attribute(node, "task_pipeline")
@@ -483,6 +514,7 @@ class PipelineEditCbk(Command):
                     continue
 
                 status_list = status.split(",")
+                # task status pipeline
                 status_xml = my.create_pipeline_xml(status_list)
 
                 project_code = Project.get_project_code()
@@ -493,6 +525,8 @@ class PipelineEditCbk(Command):
                     status_pipeline = SearchType.create("sthpw/pipeline")
                     status_pipeline.set_value("description", 'Status pipeline for process [%s]'%process)
                     status_pipeline.set_value("code", status_code)
+                    # since pipeline name is preferred now
+                    status_pipeline.set_value("name", status_code)
                     status_pipeline.set_value("search_type", "sthpw/task")
                     # update_process_table relies on this 
                     status_pipeline.set_pipeline(status_xml)
@@ -514,18 +548,29 @@ class PipelineEditCbk(Command):
             pipeline.commit()
 
 
-    def create_pipeline_xml(my, statuses):
+    def create_pipeline_xml(my, statuses, process_types=[], process_xpos=[], process_ypos=[]):
+        '''create regular pipeline with process_types, xpos, ypos or plain task status pipeline'''
         if not statuses:
             statuses = []
 
         xml = []
 
         xml.append('''<pipeline>''')
+        
+        if process_types:
 
-        for status in statuses:
-            if status == '':
-                continue
-            xml.append('''  <process name="%s"/>''' % status)
+            for status, process_type, xpos, ypos in zip(statuses, process_types, process_xpos, process_ypos):
+                if status == '':
+                    continue
+                if xpos and ypos:
+                    xml.append('''  <process name="%s" type="%s" xpos="%s" ypos="%s"/>''' % (status, process_type, xpos, ypos))
+                else:
+                    xml.append('''  <process name="%s" type="%s"/>''' % (status, process_type))
+        else:
+            for status in statuses:
+                if status == '':
+                    continue
+                xml.append('''  <process name="%s"/>''' % status)
 
         
 
