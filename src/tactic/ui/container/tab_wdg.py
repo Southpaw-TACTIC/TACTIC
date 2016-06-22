@@ -263,6 +263,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     var top_id = top.getAttribute("spt_tab_id");
 
 
+    // disable sub tabs for now
+    full_element_name = element_name;
+    subelement_name = "";
+    /*
     if (element_name.indexOf("/") != -1) {
         var full_element_name = element_name;
         var parts = element_name.split("/");
@@ -273,6 +277,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var full_element_name = element_name;
         var subelement_name = "";
     }
+    */
 
 
     var subelement_title;
