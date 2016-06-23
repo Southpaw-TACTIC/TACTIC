@@ -168,12 +168,14 @@ class PipelineEditWdg(BaseRefreshWdg):
 
 
             code = pipeline.get_code()
+            label = '%s  (%s)' %(pipeline.get('name'), code)
             pipeline_div.add_attr("spt_pipeline_code", code)
 
             title = DivWdg()
             pipeline_div.add(title)
             title.add("Pipeline: ")
-            title.add(code)
+            
+            title.add(label)
             title.add_style("padding: 8px 10px")
             title.add_color("background", "background3")
             title.add_style("font-weight: bold")
