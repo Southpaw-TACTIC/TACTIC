@@ -1448,7 +1448,7 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
 
         data = jsondumps(data_list)
 
-        
+
         trigger = my.get_trigger()
 
 
