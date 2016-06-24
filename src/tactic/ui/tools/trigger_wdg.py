@@ -1275,7 +1275,6 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
         checkbox.add_attr("spt_is_multiple", "true")
         checkbox.add_style("margin: 5px 8px 8px -8px")
 
-
         is_checked = False
         dst_status = ''
         for data in my.data:
@@ -1299,24 +1298,26 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
             task_pipeline = Pipeline.get_by_code(task_pipeline_code)
         task_statuses = task_pipeline.get_processes()
 
+
         statuses = []
         for task_status in task_statuses:
             statuses.append(task_status.get_name())
 
         process_div.add(" to ")
+        
         status_select = SelectWdg("dst_status")
         status_select.add_attr("spt_is_multiple", "true")
-        
         if is_checked:
-            status_select.set_value(dst_status)
+            status_select.set_value(dst_status )
         elif statuses:
             status_select.set_value(statuses[0])
         
+        process_div.add(status_select)
+
         status_select.set_option("values", statuses)
         status_select.add_style("margin-top: 5px")
         status_select.add_style("margin-left: 15px")
         
-        process_div.add(status_select)
 
 
         return process_div
