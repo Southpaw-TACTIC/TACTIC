@@ -849,7 +849,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         search.add_filter("pipeline_code", my.pipeline.get_code())
         process_sobj = search.get_sobject()
         autocreate_task = False
-        mapped_status = "Pending"
+        mapped_status = "pending"
+
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
             if workflow.get("autocreate_task") in ['true', True]:
@@ -886,7 +887,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
     def get_mapped_status(my, process_obj):
         '''Get what status is mapped to Pending'''
-        mapped_status = 'Pending'
+        mapped_status = 'pending'
 
         status_pipeline_code = process_obj.get_task_pipeline()
         search = Search("config/process")        
