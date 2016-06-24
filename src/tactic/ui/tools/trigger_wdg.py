@@ -1447,8 +1447,11 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
             data_list.append(data)
 
         data = jsondumps(data_list)
+
         
         trigger = my.get_trigger()
+
+
         trigger.set_value("data", str(data))
         trigger.commit()
 
