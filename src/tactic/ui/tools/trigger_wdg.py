@@ -1275,12 +1275,16 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
         checkbox.add_attr("spt_is_multiple", "true")
         checkbox.add_style("margin: 5px 8px 8px -8px")
 
+
+        print ""
         is_checked = False
         dst_status = ''
         for data in my.data:
             if data.get('dst_process') == process:
+            	print "process: ", process
                 checkbox.set_checked()
                 dst_status = data.get('dst_status')
+                print "dst_status???", dst_status
                 is_checked = True
                 break
         checkbox.set_option("value", process)
@@ -1289,31 +1293,45 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
         task_pipeline = None
         process_obj = my.pipeline.get_process(process)
+        print process_obj
         if process_obj:
             task_pipeline_code = process_obj.get_task_pipeline()
+            print "task_pipeline_code: ", task_pipeline_code
             task_pipeline = Pipeline.get_by_code(task_pipeline_code)
+            print "task_pipeline: ",task_pipeline
 
         if not task_pipeline:
             task_pipeline_code='task'
             task_pipeline = Pipeline.get_by_code(task_pipeline_code)
+            print "task_pipeline in not: ",task_pipeline
         task_statuses = task_pipeline.get_processes()
-
 
         statuses = []
         for task_status in task_statuses:
             statuses.append(task_status.get_name())
 
         process_div.add(" to ")
-
+        print process_obj
+        print statuses
         status_select = SelectWdg("dst_status")
         status_select.add_attr("spt_is_multiple", "true")
+        
+        print "dst_status: ", dst_status
         if is_checked:
-            status_select.set_value(dst_status )
-        process_div.add(status_select)
+            status_select.set_value(dst_status)
+            print "is checked:", process_obj
+        else:
+            status_select.set_value(statuses[0])
+            pass
+        
         status_select.set_option("values", statuses)
         status_select.add_style("margin-top: 5px")
         status_select.add_style("margin-left: 15px")
+        
+        process_div.add(status_select)
 
+
+        print ""
         return process_div
 
 
@@ -1444,8 +1462,7 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
             data_list.append(data)
 
         data = jsondumps(data_list)
-
-
+        
         trigger = my.get_trigger()
 
 
