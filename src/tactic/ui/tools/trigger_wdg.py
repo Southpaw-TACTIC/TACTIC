@@ -1304,7 +1304,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
             statuses.append(task_status.get_name())
 
         process_div.add(" to ")
-        
+
         status_select = SelectWdg("dst_status")
         status_select.add_attr("spt_is_multiple", "true")
         if is_checked:
@@ -1313,12 +1313,9 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
             status_select.set_value(statuses[0])
         
         process_div.add(status_select)
-
         status_select.set_option("values", statuses)
         status_select.add_style("margin-top: 5px")
         status_select.add_style("margin-left: 15px")
-        
-
 
         return process_div
 
@@ -1452,8 +1449,6 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
         data = jsondumps(data_list)
         
         trigger = my.get_trigger()
-
-
         trigger.set_value("data", str(data))
         trigger.commit()
 
