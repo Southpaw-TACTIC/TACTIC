@@ -2883,8 +2883,11 @@ class TaskElementCbk(DatabaseAction):
                 except:
                     processes = []
             
-
-        xx = jsonloads(xx)
+        try:
+            xx = jsonloads(xx)
+        except:
+            raise TacticException("[%s] is not a valid JSON object. You may need to refresh the view."%xx)
+        
         my.xx = xx
 
         #if my.xx.get("add_initial_tasks"):
