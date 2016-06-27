@@ -328,8 +328,6 @@ class TaskElementWdg(BaseTableElementWdg):
             if not pipeline:
                 pipeline = Pipeline.get_by_code("task")
             processes = pipeline.get_process_names()
-            print ''
-            print "All processes:" , processes
             return 120 * len(processes) + 10
         else:
             return 400
@@ -729,7 +727,6 @@ class TaskElementWdg(BaseTableElementWdg):
                         pipeline_code = sobj_pipeline.get_code()
                         my.process_colors[pipeline_code] = {}
                         for process in processes:
-                            print process
                             process_dict = my.process_colors.get(pipeline_code)
                             process_dict[process.get_name()] = process.get_color()
 
@@ -1066,7 +1063,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         key = "%s|%s" % (search_type, code)
 
         tasks = my.tasks_dict.get(key)
-        print tasks
         if tasks == None:
             tasks = []
 
@@ -1354,7 +1350,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         sobject = my.get_current_sobject()
         my.tasks = my.get_tasks(sobject)
         
-        print my.tasks
 
         div = DivWdg()
         div.add_style("margin: -4px auto")
@@ -1442,9 +1437,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             for idx, task in enumerate(my.tasks):
                 process = task.get_value("process")
                 context = task.get_value("context")
-                print ''
-                print 'process', process
-                print 'context', context
                 process_context = '%s:%s' %(process, context)
 
                 if last_process_context == None:
@@ -1457,7 +1449,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     item = []
                     items.append(item)
                     item.append(task)
-                print "item: ", item
                 last_process_context = process_context
 
 
@@ -1496,7 +1487,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             else:
                 supprocess = my.kwargs.get("parent_process")
-                print 'supprocess: ', supprocess
                 # go through each sorted process
                 for idx, process in enumerate(my.sorted_processes):
 
@@ -1516,13 +1506,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     tasks = []
                     
                     # go through each list of tasks
-                    print ''
-                    print items
                     for task_list in items:
-                        print 'task_list : array!!',task_list
-                        print 'task_list[0]: element',task_list[0];
-                        print 'process;', process
-                        print 'task_list 0: ', task_list[0].get_value("process")
 
                         # check if this process in any of the tasks lists
                         if task_list and (process == task_list[0].get_value("process")):
@@ -1533,13 +1517,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     if not is_task_displayed and items:
                         # none of the tasks lists are in the process
-                        print 'items[0]: array' ,items[0]
                         tasks.append(items[0])
-                        print "tasks: ", tasks
 
 
-                    print "final_task:", tasks
-                    print ''
+
                     if pipeline_code:
                         pipeline = my.pipelines_dict.get(pipeline_code)
                     else:
