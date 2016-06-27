@@ -525,6 +525,7 @@ class TaskElementWdg(BaseTableElementWdg):
                 search.add_filters("process", processes)
 
 
+
             # go thru children of main search
             search = my.alter_task_search(search, prefix='children')
             search.add_order_by("id")
@@ -1349,7 +1350,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
  
         sobject = my.get_current_sobject()
         my.tasks = my.get_tasks(sobject)
-        
 
         div = DivWdg()
         div.add_style("margin: -4px auto")
@@ -1449,6 +1449,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     item = []
                     items.append(item)
                     item.append(task)
+
                 last_process_context = process_context
 
 
@@ -1487,6 +1488,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             else:
                 supprocess = my.kwargs.get("parent_process")
+                
                 # go through each sorted process
                 for idx, process in enumerate(my.sorted_processes):
 
@@ -1512,11 +1514,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         if task_list and (process == task_list[0].get_value("process")):
                             tasks.append(task_list)
                             is_task_displayed = True
-#                             break
 
 
                     if not is_task_displayed and items:
                         # none of the tasks lists are in the process
+                        
                         tasks.append(items[0])
 
 
