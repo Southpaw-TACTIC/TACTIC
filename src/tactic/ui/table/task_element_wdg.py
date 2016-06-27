@@ -1431,6 +1431,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             div.add_style("opacity: 0.8")
         else:
             # reset to make these into lists
+            # items is a list of lists of Task Objects
             items = []
             last_process_context = None
             item = None
@@ -1439,6 +1440,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context = task.get_value("context")
                 process_context = '%s:%s' %(process, context)
 
+                # item is a list of Task Objects
+                # Usually only one task in item list unless task is assigned to multiple people
                 if last_process_context == None:
                     item = []
                     items.append(item)
@@ -1505,6 +1508,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     # determins whether or not the task should be displayed.
                     is_task_displayed = False
+                    
+                    # tasks is a list of lists of Task Objects with the same process
                     tasks = []
                     
                     # go through each list of tasks
@@ -1538,7 +1543,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     for task in tasks:
                         # make the task slightly opaque
-                        if node_type in ['manual', 'node','approval'] and task and task[0].get_id() == -1:
+                        if node_type in ['manual','approval'] and task and task[0].get_id() == -1:
                             td.add_style("opacity: 0.5")
 
 
