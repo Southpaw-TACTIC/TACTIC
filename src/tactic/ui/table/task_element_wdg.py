@@ -1488,7 +1488,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             else:
                 supprocess = my.kwargs.get("parent_process")
-                
+
                 # go through each sorted process
                 for idx, process in enumerate(my.sorted_processes):
 
@@ -1518,7 +1518,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     if not is_task_displayed and items:
                         # none of the tasks lists are in the process
-                        
+
                         tasks.append(items[0])
 
 
