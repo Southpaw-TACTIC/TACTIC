@@ -1431,6 +1431,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             div.add_style("opacity: 0.8")
         else:
             # reset to make these into lists
+            # items is a list of lists of Task Objects
             items = []
             last_process_context = None
             item = None
@@ -1439,6 +1440,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context = task.get_value("context")
                 process_context = '%s:%s' %(process, context)
 
+                # item is a list of Task Objects
+                # Usually only one task in item list unless task is assigned to multiple people
                 if last_process_context == None:
                     item = []
                     items.append(item)
@@ -1505,6 +1508,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     # determins whether or not the task should be displayed.
                     is_task_displayed = False
+                    
+                    # tasks is a list of lists of Task Objects with the same process
                     tasks = []
                     
                     # go through each list of tasks
@@ -1512,15 +1517,14 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                         # check if this process in any of the tasks lists
                         if task_list and (process == task_list[0].get_value("process")):
-                            tasks = task_list
+                            tasks.append(task_list)
                             is_task_displayed = True
-                            break
 
 
                     if not is_task_displayed and items:
                         # none of the tasks lists are in the process
 
-                        tasks = items[0]
+                        tasks.append(items[0])
 
 
 
@@ -1537,22 +1541,22 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         node_type = "node"
 
+                    for task in tasks:
+                        # make the task slightly opaque
+                        if node_type in ['manual','approval'] and task and task[0].get_id() == -1:
+                            td.add_style("opacity: 0.5")
 
-                    # make the task slightly opaque
-                    if node_type in ['manual', 'node','approval'] and tasks and tasks[0].get_id() == -1:
-                        td.add_style("opacity: 0.5")
 
-
-                    if is_task_displayed or node_type in ['depndency', 'progress']:
+                        if is_task_displayed or node_type in ['depndency', 'progress']:
                         
-                        task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, process, last_one)
-                    else:
-                        task_wdg = DivWdg()
-                        task_wdg.add_style("width: 115px")
-                        task_wdg.add_style("padding: 2px")
+                            task_wdg = my.get_task_wdg(task, parent_key, pipeline_code, process, last_one)
+                        else:
+                            task_wdg = DivWdg()
+                            task_wdg.add_style("width: 115px")
+                            task_wdg.add_style("padding: 2px")
 
 
-                    td.add(task_wdg)
+                        td.add(task_wdg)
 
 
             div.add(table)
