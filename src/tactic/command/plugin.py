@@ -643,7 +643,7 @@ class PluginCreator(PluginBase):
                 #regex is looking for a word bfore "/" 
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "code", regex)
-            if search_type == "config/process":
+            elif search_type == "config/process":
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "pipeline_code", regex) 
 
