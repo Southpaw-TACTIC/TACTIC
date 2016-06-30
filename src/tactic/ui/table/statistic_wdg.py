@@ -617,6 +617,8 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             div.add_attr("title", msg)
             if days == 0:
                 div.add("Today")
+            elif days == 1:
+                div.add("1 Day Overdue")
             else:
                 div.add(msg)
         elif mode == "today":

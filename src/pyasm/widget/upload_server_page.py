@@ -39,7 +39,7 @@ class UploadServerWdg(Widget):
             files = []
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
-                if not field_storage:
+                if not field_storage or isinstance(field_storage, basestring):
                     continue
 
                 file_name = web.get_form_value("file_name%s"% i)
@@ -70,6 +70,10 @@ class UploadServerWdg(Widget):
 
 
     def get_file_name(my, field_storage):
+
+        # handle some spoofed upload case
+        if isinstance(field_storage, basestring):
+            return field_storage
 
         file_name = field_storage.filename
 
@@ -132,6 +136,8 @@ class UploadServerWdg(Widget):
         is uploaded in html5 mode.
         TODO: This shortcut cannot be used with upload_multipart.py 
         '''
+        if isinstance(field_storage, basestring):
+            return
         path = field_storage.get_path()
         
         # Base 64 encoded files are uploaded and decoded in FileUpload

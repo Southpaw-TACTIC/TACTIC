@@ -439,7 +439,7 @@ class Transaction(Base):
             # was created in another transaction
             from pyasm.search import SqlException, DbContainer
             try:
-                change_timestamp.commit(triggers="none", log_transaction=False, cache=False)
+                change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
             except SqlException, e:
                 print "WARNING: ", str(e)
                 if change_timestamp.is_insert:

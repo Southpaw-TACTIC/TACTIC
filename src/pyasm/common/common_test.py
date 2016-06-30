@@ -22,6 +22,7 @@ from pyasm.common import *
 class CommonTest(unittest.TestCase):
 
     def test_all(my):
+        my._test_keyword_extract()
         my._test_filesystem_name()
         my._test_container()
         my._test_counter()
@@ -274,7 +275,35 @@ class CommonTest(unittest.TestCase):
 
 
 
+    def _test_keyword_extract(my):
 
+        path = "/theLongAndWindingRoad.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['the', 'long', 'and', 'winding', 'road', 'jpg']:
+            my.assertEquals(True, item in keywords)
+
+
+        path = "/bigUglyDog-dangerous_black.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['big','ugly','dog','dangerous','black','jpg']:
+            my.assertEquals(True, item in keywords)
+
+        path = "/BOBtheMan.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['bob', 'the', 'man']:
+            my.assertEquals(True, item in keywords)
+
+
+        path = "/BOB123.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['bob', 'jpg']:
+            my.assertEquals(True, item in keywords)
+
+
+        path = "/testURLagain-main.txt"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['test', 'url', 'again', 'main', 'txt']:
+            my.assertEquals(True, item in keywords)
 
 
 if __name__ == '__main__':

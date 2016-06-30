@@ -105,11 +105,12 @@ class GlobalContext(PyV8.JSClass):
 class JsWrapper(object):
 
     def __init__(my):
-        with PyV8.JSLocker():
-            my.ctx = PyV8.JSContext(GlobalContext())
-            my.ctx.enter()
-            my.init()
-            my.ctx.leave()
+        if HAS_PYV8:
+            with PyV8.JSLocker():
+                my.ctx = PyV8.JSContext(GlobalContext())
+                my.ctx.enter()
+                my.init()
+                my.ctx.leave()
 
 
 
@@ -128,15 +129,16 @@ class JsWrapper(object):
 
 
     def execute(my, js, kwargs={}):
-        with PyV8.JSLocker():
-            my.ctx.enter()
+        if HAS_PYV8:
+            with PyV8.JSLocker():
+                my.ctx.enter()
 
-            for name, value in kwargs.items():
-                my.ctx.locals[name] = value
+                for name, value in kwargs.items():
+                    my.ctx.locals[name] = value
 
-            data = my.ctx.eval(js)
-            my.ctx.leave()
-        return data
+                data = my.ctx.eval(js)
+                my.ctx.leave()
+            return data
 
 
 

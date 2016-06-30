@@ -28,7 +28,7 @@ from button_wdg import ButtonElementWdg
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
-from tactic.ui.widget import IconButtonWdg
+from tactic.ui.widget import IconButtonWdg, RadialProgressWdg
 
 from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
 
@@ -1144,7 +1144,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         if pipeline and show_filler_tasks in ["true", True]:
 
             processes = pipeline.get_process_names(type=["node","manual","approval","hierarchy","dependency"])
-
+            
             if my.filler_cache == None:
                 my.filler_cache = {}
 
@@ -1333,8 +1333,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         # Check if pipeline exists
         pipeline_code = my.get_pipeline_code()
         pipeline = None
+
+        has_misc_processes = False
         if pipeline_code:
             pipeline = Pipeline.get_by_code(pipeline_code)
+            if pipeline:
+                has_misc_processes = pipeline.get_processes(type=['progress','hierarchy','dependency'])
         if not pipeline:
             no_pipeline_div = DivWdg()
             icon = IconWdg("WARNING", IconWdg.WARNING)
@@ -1393,7 +1397,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             div.add( " <i>Add tasks in pipeline</i>")
 
         
-        elif not my.tasks:
+        elif not my.tasks and not has_misc_processes:
             
             show_current_pipeline_only = my.kwargs.get('show_current_pipeline_only') != 'false'
             label = Table()
@@ -1427,6 +1431,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             div.add_style("opacity: 0.8")
         else:
             # reset to make these into lists
+            # items is a list of lists of Task Objects
             items = []
             last_process_context = None
             item = None
@@ -1435,6 +1440,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context = task.get_value("context")
                 process_context = '%s:%s' %(process, context)
 
+                # item is a list of Task Objects
+                # Usually only one task in item list unless task is assigned to multiple people
                 if last_process_context == None:
                     item = []
                     items.append(item)
@@ -1476,7 +1483,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 pipeline_processes_list.append(pipeline_process.get_name())
 
             # if the sobject/pipeline has no tasks.  Items are just lists of tasks
-            if not items:
+            if not items and not has_misc_processes:
                 # draw a div giving a warning of no items
                 error_div = DivWdg("Error. There were no tasks found. If reloading the page doesn't fix the issue, please contact the system administrator.")
                 td = table.add_cell()
@@ -1501,19 +1508,23 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     # determins whether or not the task should be displayed.
                     is_task_displayed = False
-
+                    
+                    # tasks is a list of lists of Task Objects with the same process
+                    tasks = []
+                    
                     # go through each list of tasks
                     for task_list in items:
 
                         # check if this process in any of the tasks lists
                         if task_list and (process == task_list[0].get_value("process")):
-                            tasks = task_list
+                            tasks.append(task_list)
                             is_task_displayed = True
-                            break
 
-                    if not is_task_displayed:
+
+                    if not is_task_displayed and items:
                         # none of the tasks lists are in the process
-                        tasks = items[0]
+
+                        tasks.append(items[0])
 
 
 
@@ -1523,9 +1534,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         pipeline = None
 
 
-                    #task = tasks[0]
-                    #process = task.get_value("process")
-
 
                     process_obj = pipeline.get_process(process)
                     if process_obj:
@@ -1533,22 +1541,22 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         node_type = "node"
 
+                    for task in tasks:
+                        # make the task slightly opaque
+                        if node_type in ['manual','approval'] and task and task[0].get_id() == -1:
+                            td.add_style("opacity: 0.5")
 
-                    # make the task slightly opaque
-                    if node_type in ['manual', 'node','approval'] and tasks[0].get_id() == -1:
-                        td.add_style("opacity: 0.5")
 
-
-                    if is_task_displayed or node_type in ['depndency', 'progress']:
+                        if is_task_displayed or node_type in ['depndency', 'progress']:
                         
-                        task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, process, last_one)
-                    else:
-                        task_wdg = DivWdg()
-                        task_wdg.add_style("width: 115px")
-                        task_wdg.add_style("padding: 2px")
+                            task_wdg = my.get_task_wdg(task, parent_key, pipeline_code, process, last_one)
+                        else:
+                            task_wdg = DivWdg()
+                            task_wdg.add_style("width: 115px")
+                            task_wdg.add_style("padding: 2px")
 
 
-                    td.add(task_wdg)
+                        td.add(task_wdg)
 
 
             div.add(table)
@@ -1847,7 +1855,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            from spt.ui.widgets import RadialProgressWdg
+           
             progress_wdg = RadialProgressWdg(
                 total=total,
                 count=count,
@@ -1976,7 +1984,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-            from spt.ui.widgets import RadialProgressWdg
             progress_wdg = RadialProgressWdg(
                 total=total,
                 count=count,
@@ -2880,8 +2887,11 @@ class TaskElementCbk(DatabaseAction):
                 except:
                     processes = []
             
-
-        xx = jsonloads(xx)
+        try:
+            xx = jsonloads(xx)
+        except:
+            raise TacticException("[%s] is not a valid JSON object. You may need to refresh the view."%xx)
+        
         my.xx = xx
 
         #if my.xx.get("add_initial_tasks"):

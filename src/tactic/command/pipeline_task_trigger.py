@@ -19,6 +19,8 @@ from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
 from pyasm.security import Sudo
 
+from tactic.command import PythonTrigger
+
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
 
@@ -79,6 +81,18 @@ class PipelineTaskStatusTrigger(Trigger):
             src_status = data.get("src_status")
             if src_status and src_task.get_value("status") != src_status:
                 continue
+
+            # Execute script if necessary 
+            script_path = trigger_sobj.get_value("script_path")
+            if script_path:
+                cmd = PythonTrigger(script_path=script_path)
+                cmd.set_input(my.input)
+                cmd.set_output(my.input)
+                cmd.execute()
+                continue
+
+            # If no script was execute,then assume other task
+            # statuses should be updated.
 
             dst_process = data.get("dst_process")
             dst_status = data.get("dst_status")
