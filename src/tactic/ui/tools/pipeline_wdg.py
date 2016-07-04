@@ -3845,9 +3845,17 @@ class PipelineEditorWdg(BaseRefreshWdg):
         # no project code here
         menu_item.add_behavior( {
             'cbjs_action': '''
+
+            spt.alert('This feature is disabled. Saving project-specific Workflow using the disk button is preferred.');
+
+
+        /*
         var act = spt.smenu.get_activator(bvr);
         
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        
+
+        var editor_top = act.getParent(".spt_pipeline_editor_top");
+        
         editor_top.removeClass("spt_has_changes");
         var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
 
@@ -3887,6 +3895,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.named_events.fire_event('pipeline|save', {});
         } 
         spt.app_busy.hide();
+        */
         '''
         } )
 
@@ -4731,7 +4740,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         
         for pipeline in task_pipelines:
-            select.append_option(pipeline.get_value('code'), pipeline.get_value('code'))
+            label = '%s (%s)' %(pipeline.get_value('name'), pipeline.get_value('code'))
+            select.append_option(label, pipeline.get_value('code'))
         
         select.add_empty_option('-- Select --')
         select.add_class(text_name)

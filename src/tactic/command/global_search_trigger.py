@@ -13,7 +13,7 @@ __all__ = ['GlobalSearchTrigger', 'FolderTrigger']
 
 import tacticenv
 
-from pyasm.common import Common, Environment
+from pyasm.common import Common, Environment, TacticException
 from pyasm.biz import Project
 from pyasm.search import SearchType, Search, SearchKey
 from pyasm.command import Command, Trigger
@@ -111,21 +111,23 @@ class GlobalSearchTrigger(Trigger):
             
             update_data = input.get("update_data")
 
-            # If Relative dir is changed, update path keywords
-            if "relative_dir" in update_data and not input.get("mode") == "insert":
-                new_path = update_data.get("relative_dir")
+            # If Relative dir is changed or file is renamed, update path keywords
+            if ("relative_dir" in update_data or "name" in update_data) and not input.get("mode") == "insert":
+                
+                file_path = input.get("sobject").get("relative_dir")
                 asset_name = input.get("sobject").get("name")
-                if asset_name:
-                    new_path = "%s/%s" % (new_path, asset_name)
-                path_keywords = Common.extract_keywords_from_path(new_path)
 
-                path_keywords.append(asset_name.lower())
                 project_code = Project.get_project_code()
 
-                if project_code in path_keywords:
-                    path_keywords.remove(project_code)
+                # Ignore the common keywords path
+                ignore_path = "%s/asset" % project_code
+                if ignore_path in file_path:
+                    file_path = file_path.replace(ignore_path, "")
 
+                path_keywords = Common.extract_keywords_from_path(file_path)
+                path_keywords.append(asset_name.lower())
                 path_keywords = " ".join(path_keywords)
+
                 keywords_data = sobj.get_json_value("keywords_data", {})
 
                 keywords_data['path'] = path_keywords
@@ -220,7 +222,8 @@ class GlobalSearchTrigger(Trigger):
             return
 
         keywords_data = sobj.get_json_value("keywords_data", {})
-        searchable_keywords = ""
+        
+        searchable_keywords = []
 
         if keywords_data:
             path = ""
@@ -234,18 +237,30 @@ class GlobalSearchTrigger(Trigger):
             collection_keywords = ""
             if 'collection' in keywords_data:
                 collection_keywords_data = keywords_data.get('collection')
-                collection_keywords = " ".join(collection_keywords_data.values())
+
+                collection_keywords_data_values = [x.encode('utf-8','replace') for x in collection_keywords_data.values() if x]
+                collection_keywords = " ".join(collection_keywords_data_values)
                 collection_keywords = " ".join(set(collection_keywords.split(" ")))
 
+            
             if path:
-                searchable_keywords = "%s" %path
+                if isinstance(path, unicode):
+                    path = path.encode('utf-8','replace')
+                searchable_keywords.append(path)
 
             if user:
-                searchable_keywords = "%s %s" %(searchable_keywords, user)
+                if isinstance(user, unicode):
+                    user = user.encode('utf-8','replace')
+                searchable_keywords.append(user)
             
             if collection_keywords:
-                searchable_keywords = "%s %s" %(searchable_keywords, collection_keywords)
+                searchable_keywords.append(collection_keywords)
+            
+            
+                
 
+          
+            searchable_keywords = " ".join(searchable_keywords) 
             sobj.set_value("keywords", searchable_keywords)
             sobj.commit(triggers=False)
 
@@ -339,12 +354,24 @@ class GlobalSearchTrigger(Trigger):
         parent_sobject = Search.get_by_code(asset_stype, parent_code)
         child_sobject = Search.get_by_code(asset_stype, search_code)
         
-
         collection_keywords_dict = {}
         parent_collection_keywords_dict = {}
 
         # Existing "collection" keywords in child's keywords_data
         child_keywords_data = child_sobject.get_json_value("keywords_data", {})
+        if isinstance(child_keywords_data, basestring):
+            raise TacticException("Invalid data found in keywords_data for %s. Please notify site administrator to correct it."%child_sobject.get_code())
+
+       
+        # check for old data structure with only keywords filled and initialize if necessary
+        if not child_keywords_data:
+            user_keywords = child_sobject.get_value('user_keywords')
+            original_keywords = child_sobject.get_value('keywords')
+            if original_keywords and not user_keywords:
+                # initiatize keywords_data in this case
+                child_keywords_data['user'] = original_keywords
+                child_sobject.set_value('user_keywords', original_keywords)
+
 
         # Existing "collection" keywords in parent's keywords_data
         parent_keywords_data = parent_sobject.get_json_value("keywords_data", {})
@@ -360,7 +387,8 @@ class GlobalSearchTrigger(Trigger):
 
         if mode == "insert":
             # Add parent's user defined keywords
-            collection_keywords_dict[parent_code] = parent_collection_keywords
+            if parent_collection_keywords:
+                collection_keywords_dict[parent_code] = parent_collection_keywords
 
             # Also append parent's "collection" keywords_data
             collection_keywords_dict.update(parent_collection_keywords_dict)
@@ -383,6 +411,7 @@ class GlobalSearchTrigger(Trigger):
         
         elif mode == "delete":
 
+            child_codes = []
             if parent_code in collection_keywords_dict:
                 # Remove "collection" keywords_data from child with key matching parent_code
                 del collection_keywords_dict[parent_code]
@@ -408,6 +437,7 @@ class GlobalSearchTrigger(Trigger):
 
         child_keywords_data['collection'] = collection_keywords_dict
 
+        
         child_sobject.set_json_value("keywords_data", child_keywords_data)
         child_sobject.commit(triggers=False)
 
