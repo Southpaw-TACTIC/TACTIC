@@ -504,6 +504,12 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
             script_path = trigger.get_value("script_path")
 
+            data = trigger.get_json_value("data")
+            if data:
+                class_path = data.get("class_path")
+                if class_path:
+                    class_name = class_path
+
             # TODO: should use trigger_type in database
             if class_name == 'tactic.command.PipelineTaskStatusTrigger' and not script_path:
                 trigger_type = 'task_status'
@@ -938,7 +944,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         'type': 'click_up',
         'search_key': search_key,
         'cbjs_action': '''
-        if (! confirm( "Are you sure you wish to delete this trigger") ) {
+        if (! confirm( "Are you sure you wish to delete this trigger?") ) {
             return;
         }
         var server = TacticServerStub.get();
@@ -2212,7 +2218,7 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
             div.add_style("margin: 20px auto")
             div.add_color("background", "background3")
             div.add_border()
-            div.add("Only admin can create python scripts")
+            div.add("Only administrators can create python class triggers.")
             return div
 
 
@@ -2226,17 +2232,33 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
             if search_key:
                 trigger = Search.get_by_search_key(search_key)
 
+        class_name = ''
         if trigger:
             class_name = trigger.get_value("class_name")
-        else:
-            class_name = ''
+            if class_name == "tactic.command.PipelineTaskStatusTrigger":
+                data = trigger.get_json_value("data")
+                if data:
+                    class_path = data.get("class_path")
+                    if class_path:
+                        class_name = class_path
 
         div.add("This will run the following python class as a server side trigger.  The class path should be in the Python path and the class should be derived from pyasm.command.Trigger<br/><br/>")
         div.add("Python Class Path: <br/>")
+        
+        class_path_text = TextWdg("class_path")
+        div.add(class_path_text)
+        if class_name:
+            class_path_text.set_value("class_name")
+        class_path_text.add_class("spt_python_class_text")
+        class_path_text.add_class("form-control")
+        class_path_text.add_styles("width: 70%; margin: 5px 5px 5px 0px;")
+        class_path_text.add_styles("display: inline-block; float: left;")
+        class_path_text.set_value(class_name)
+
 
         test_button = ActionButtonWdg(title="Test", tip="Click to test if the class can be found")
         div.add(test_button)
-        test_button.add_style("float: right")
+        test_button.add_styles("display: inline-block; margin: 5px")
         test_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -2244,96 +2266,55 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
         var el = top.getElement(".spt_python_class_text");
         var class_path = el.value;
         if (class_path == "") {
-            alert("Please enter a class path first");
+            spt.alert("Please enter a class path first");
             return;
         }
 
         var server = TacticServerStub.get();
         var ret_val = server.class_exists(class_path);
         if (ret_val) {
-            alert("Class exists");
+            spt.alert("Class exists");
         }
         else {
-            alert("Could not find class");
+            spt.alert("Could not find class");
         }
         '''
         } )
         test_button.add_style("margin-top: -5px")
-
-
-        class_path_text = TextWdg("class_path")
-        div.add(class_path_text)
-        if class_name:
-            class_path_text.set_value("class_name")
-        class_path_text.add_class("spt_python_class_text")
-        class_path_text.add_style("width: 400px")
-        class_path_text.set_value(class_name)
-
 
         div.add("<br/>"*2)
 
         return div
 
 
-class PythonClassTriggerEditCbk(Command):
+class PythonClassTriggerEditCbk(BaseTriggerEditCbk):
 
+    def get_class_name(my):
+        return None
 
     def execute(my):
 
-        search_key = my.kwargs.get("search_key")
-        if search_key:
-            trigger = Search.get_by_search_key(search_key) 
-        else:
-            trigger = SearchType.create("config/trigger")
+        trigger = my.get_trigger()
 
-        trigger.set_value("mode", 'same process,same transaction')
-
-        # need the trigger code
-        trigger_code = my.kwargs.get('code')
-        if not trigger_code:
-            trigger_code = trigger.get_value("code")
-            if not trigger_code:
-                # if a code does not exist yet
-                trigger.commit()
-                trigger_code = trigger.get_value("code")
-
-
-        # get the class path
-        class_path = my.kwargs.get("class_path")
-
-        # get some data
-        script = my.kwargs.get("script")
+        class_path = my.kwargs.get("class_path")  
         event = my.kwargs.get("event")
-        description = my.kwargs.get("description")
-        process = my.kwargs.get("process")
-        listen_process = my.kwargs.get("listen_process")
-        search_type = my.kwargs.get("search_type")
-        title = my.kwargs.get("title")
-        scope = my.kwargs.get("scope")
-
-        # update the trigger
-        trigger.set_value("code", trigger_code)
-        trigger.set_value("title", title)
-        trigger.set_value("event", event)
-        trigger.set_value("description", description)
-        trigger.set_value("class_name", class_path)
-        if process:
-            if scope == "local":
-                pipeline_code = my.kwargs.get("pipeline_code")
-                search = Search("config/process")
-                search.add_filter("pipeline_code", pipeline_code)
-                search.add_filter("process", process)
-                process_sobj = search.get_sobject()
-                trigger.set_value("process", process_sobj.get_code())
-            else:
-                trigger.set_value("process", process)
-        if listen_process:
-            trigger.set_value("listen_process", listen_process)
-        if search_type:
-            trigger.set_value("search_type", search_type)
+        
+        if event == "change|sthpw/task|status":
+            data = {'class_path': class_path}
+            src_status = my.kwargs.get("src_status")
+            src_process = my.kwargs.get("process")
+            if src_status:
+                data['src_status'] = src_status
+            if src_process:
+                data['src_process'] = src_process
+            data = jsondumps(data)
+            trigger.set_value("data", data)
+            trigger.set_value("class_name", "tactic.command.PipelineTaskStatusTrigger")
+        else:
+            trigger.set_value("class_name", class_path)
+ 
         trigger.commit()
-
+        
         search_key = SearchKey.get_by_sobject(trigger)
         my.info['search_key'] = search_key
-
 
