@@ -218,6 +218,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         base_type = search_type_obj.get_base_key()
 
         pipeline_search = Search("sthpw/pipeline")
+        pipeline_search.add_project_filter()
         pipeline_search.add_filter("search_type", base_type)
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
