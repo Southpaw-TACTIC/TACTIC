@@ -376,8 +376,10 @@ class TacticSchedulerThread(threading.Thread):
 
         from pyasm.biz import Project
         search = Search("sthpw/project")
+        # only requires the admin project
+        search.add_filter('code', 'sthpw', op='!=')
         projects = search.get_sobjects()
-
+        
         # get the all of the timed triggers
         #search = Search("sthpw/timed_trigger")
         #search.add_filter("type", "timed")
@@ -551,7 +553,9 @@ class TacticMonitor(object):
     def watch_folder_cleanup(my, base_dir):
         '''removes old action files from previous watch
         folder processes.'''
-        files = os.listdir(base_dir)
+        files = []
+        if os.path.exists(base_dir):
+            files = os.listdir(base_dir)
         for file_name in files:
             base_file, ext = os.path.splitext(file_name)
             if ext in [".lock", ".checkin"]:
@@ -565,7 +569,9 @@ class TacticMonitor(object):
             my._execute()
 
     def _execute(my):
-        '''if mode is normal, this runs both the main startup logic plus monitor'''
+        '''if mode is normal which is fine in Linux, 
+           this runs both the main startup logic plus monitor'''
+        
         from pyasm.security import Batch
         Batch(login_code="admin")
 

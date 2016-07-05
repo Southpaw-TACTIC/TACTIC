@@ -43,8 +43,8 @@ class WinService(object):
         my.monitor.mode = "init"
         my.monitor.execute()
 
-    def monitor(my):
-        my.monitor.mode = 'monitor'
+    def run(my):
+        my.monitor.mode = "monitor"
         my.monitor.execute()
     
 def write_stop_monitor():
@@ -119,7 +119,7 @@ class TacticService(win32serviceutil.ServiceFramework):
         service.init()
         self.ReportServiceStatus(win32service.SERVICE_RUNNING)
         win32event.WaitForSingleObject(self.stop_event, win32event.INFINITE) 
-        service.monitor()
+        service.run()
         # monitor() needs to run after... 
      
     def SvcStop(self): 
