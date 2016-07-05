@@ -187,6 +187,9 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
         inline = my.get_option("cbjs_action")
+        if not inline:
+            inline = my.get_option("javascript")
+
 
         if script_code:
             search = Search("config/custom_script")
@@ -358,11 +361,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         if not my.script_obj and not my.script:
             icon_wdg = IconButtonWdg("No Script Found", IconWdg.ERROR)
         else:
-            try:
-                icon_link = eval("IconWdg.%s" % icon.upper() )
-            except Exception, e:
-                print "WARNING: ", str(e)
-                icon_link = IconWdg.ERROR
+            icon_link = icon.upper()
 
             icon_wdg = IconButtonWdg(icon_tip, icon=icon_link)
             if not sobject.is_insert():
@@ -389,24 +388,31 @@ class ButtonElementWdg(BaseTableElementWdg):
 
         display.add_style("height: 18px")
         display.add_style("min-width: 21px")
-        display.add_style("overflow: hidden")
+        #display.add_style("overflow: hidden")
         display.add_style("margin-top: 0px")
 
 
         expression = my.kwargs.get('expression')
         if expression:
             value = Search.eval(expression, sobject, single=True)
-        else:
-            value = ""
 
-        if value:
-            from pyasm.web import Table
-            top = Table()
-            top.add_row()
-            top.add_cell(display)
-            top.add_cell("<div class='badge' style='margin: 4px 3px 3px 6px; opacity: 0.5;'>%s</div>" % value)
+            if value:
 
-            return top
+                badge = DivWdg()
+                badge.add_style("position: absolute")
+
+                badge.add_style("right: -30px")
+                badge.add_style("top: -2px")
+                badge.add_style("margin: 4px 3px 3px 6px")
+                badge.add_style("opacity: 0.5")
+                badge.add_style("font-size: 0.7em")
+                badge.add_class("badge")
+                badge.add(value)
+
+                display.add(badge)
+                display.add_style("position: relative")
+
+                #return top
 
 
         return display

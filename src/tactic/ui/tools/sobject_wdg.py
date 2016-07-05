@@ -54,9 +54,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
     def get_title_wdg(my):
 
-
-        from pyasm.widget import WidgetConfigView
-        config = WidgetConfigView.get_by_search_type(my.search_type, "detail_title")
+        search = Search("config/widget_config")
+        search.add_filter("view", "detail_title")
+        search.add_filter("search_type", my.search_type)
+        config = search.get_sobject()
         if config:
             element_names = config.get_element_names()
             if "title" in element_names:
@@ -152,174 +153,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         return div
 
-
-
-
-
-
-    def get_displayX(my):
-
-        my.sobject = my.get_sobject()
-
-        top = my.top
-        top.add_class("spt_detail_top")
-        top.add_color("background", "background")
-        top.add_color("color", "color")
-
-        if not my.sobject:
-            top.add("No SObject defined for this widget")
-            return top
-
-        if my.parent:
-            my.search_type = my.parent.get_base_search_type()
-            my.search_key = SearchKey.get_by_sobject(my.parent)
-            top.add_attr("spt_parent_key", my.search_key) 
-            my.pipeline_code = my.parent.get_value("pipeline_code", no_exception=True)
-            my.full_search_type = my.parent.get_search_type()
-        else:
-            my.pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
-            my.search_type = my.sobject.get_base_search_type()
-            my.search_key = SearchKey.get_by_sobject(my.sobject)
-            my.full_search_type = my.sobject.get_search_type()
-
-        if not my.pipeline_code:
-            my.pipeline_code = 'default'
-
-
-        top.add_style("text-align: left")
-        my.set_as_panel(top)
-
-        table = Table()
-        #from tactic.ui.container import ResizableTableWdg
-        #table = ResizableTableWdg()
-        table.add_color("background", "background")
-        table.add_color("color", "color")
-        top.add(table)
-        table.set_max_width()
-
-        # add the title
-        tr, td = table.add_row_cell()
-
-        title_wdg = my.get_title_wdg()
-        td.add(title_wdg)
-
-        td.add("<hr/>")
-
-        table.add_row()
-
-        # left
-        td = table.add_cell()
-        td.add_style("width: 300px")
-        td.add_style("min-width: 300px")
-        td.add_style("vertical-align: top")
-
-
-        div = DivWdg()
-        td.add(div)
-        div.add_class("spt_sobject_detail_top")
-
-        thumb_table = Table()
-        div.add(thumb_table)
-        thumb_table.add_row()
-
-        from tactic.ui.panel import ThumbWdg2
-        thumb = ThumbWdg2()
-        # use a larger version for clearer display
-        #thumb.set_icon_type('web')
-
-        if my.parent:
-            thumb.set_sobject(my.parent)
-            search_key = my.parent.get_search_key()
-        else:
-            thumb.set_sobject(my.sobject)
-            search_key = my.sobject.get_search_key()
-
-
-        gallery_div = DivWdg()
-        div.add( gallery_div )
-        gallery_div.add_class("spt_tile_gallery")
- 
-        thumb_table.add_behavior( {
-            'type': 'click_up',
-            'search_key': search_key,
-            'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_sobject_detail_top");
-                var gallery_el = top.getElement(".spt_tile_gallery");
-
-                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
-                var kwargs = {
-                    search_key: bvr.search_key,
-                    search_keys: [bvr.search_key],
-                };
-                spt.panel.load(gallery_el, class_name, kwargs);
-            ''' } )
- 
-
-        # prefer to see the original image, then web
-        #thumb.set_option('image_link_order', 'main|web|icon')
-        #thumb.set_option("detail", "false")
-        #thumb.set_option("icon_size", "100%")
-
-        td = thumb_table.add_cell(thumb)
-        td.add_style("vertical-align: top")
-        td.add_style("width: auto")
-        td.add_style("padding: 15px")
-
-        #sobject_info_wdg = my.get_sobject_info_wdg()
-        #sobject_info_wdg.add_style("width: 100%")
-        #td.add(sobject_info_wdg)
-
-        if my.search_type == 'sthpw/task' and not my.parent:
-            pass
-        else:
-            sobject_info_wdg = my.get_sobject_detail_wdg()
-            td = table.add_cell()
-            td.add(sobject_info_wdg)
-            td.add_style("vertical-align: top")
-            td.add_style("overflow: hidden")
-            td.add_style("width: 30vw")
-
-
-        # right
-        td = table.add_cell()
-        td.add_style("text-align: left")
-        td.add_style("vertical-align: top")
-        td.add_class("spt_notes_wrapper")
-        td.add_style("padding: 5px 5px")
-
-        title_wdg = DivWdg()
-        td.add(title_wdg)
-        title_wdg.add_style("width: 100%")
-        title_wdg.add("Notes")
-        title_wdg.add("<hr/>")
-        title_wdg.add_style("font-size: 1.2em")
-
-        notes_div = DivWdg()
-        td.add(notes_div)
-        from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False,\
-            show_note_expand=False, show_task_process=my.show_task_process)
-        
-        notes_div.add(discussion_wdg)
-        menu = discussion_wdg.get_menu_wdg(notes_div)
-        notes_div.add(menu)
-
-        notes_div.add_style("min-width: 300px")
-        notes_div.add_style("height: 200")
-        notes_div.add_style("overflow-y: auto")
-        notes_div.add_class("spt_resizable")
-
-
-
-
-        # content
-        tr = table.add_row()
-        td = table.add_cell()
-        td.add_attr("colspan", "5")
-
-        td.add( my.get_tab_wdg() )
-
-        return top
 
 
 
@@ -493,7 +326,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #menu = my.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
         tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10 )
-        tab.add_style("margin: 0px -2px -2px -1px")
+        tab.add_style("margin: 0px -1px -1px -1px")
 
 
         div.add(tab)
@@ -836,7 +669,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
             else:
                 parts = tab.split(".")
                 name = parts[-1]
-                title = parts[-1].title().replace("_", " ")
+
+                title = None
+                if config:
+                    title = config.get_element_title(tab)
+                
+                if not title:
+                    title = parts[-1].title().replace("_", " ")
                 tab_values = {
                         'title': title,
                         'name': name,

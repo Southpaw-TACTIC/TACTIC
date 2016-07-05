@@ -62,7 +62,7 @@ spt.notify.show = function() {
 
 spt.notify.hide = function() {
     new Fx.Tween('spt_notify_top').start('opacity', 0);
-    new Fx.Tween('spt_notify_top').start('marginTop', -50);
+    new Fx.Tween('spt_notify_top').start('marginTop', -60);
 }
 
 

@@ -243,6 +243,10 @@ class DatabaseAction(Command):
                 my.sobject.commit()
 
 
+    def post_execute(my):
+        return
+
+
 
     def convert_value(my, col_type, value):
         if col_type == 'timecode':
