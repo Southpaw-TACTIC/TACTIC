@@ -71,88 +71,98 @@ class WidgetEditorWdg(BaseRefreshWdg):
         top.add_color("background", "background")
 
 
-        action_wdg = DivWdg()
-        top.add(action_wdg)
-        action_wdg.add_color("background", "background", -10)
-        action_wdg.add_style("margin: -10px -10px 10px -10px")
-        action_wdg.add_style("padding: 5px")
+        if my.kwargs.get("show_action") not in ['false', False]:
 
-        """
-        delete = ActionButtonWdg(title='Remove', tip='Remove from Canvas')
-        action_wdg.add(delete)
-        delete.add_style("float: right")
-        delete.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
-        var values = spt.api.get_input_values(attr_top, null, false);
-        '''
-        })
-        """
+            action_wdg = DivWdg()
+            top.add(action_wdg)
+            action_wdg.add_color("background", "background", -10)
+            action_wdg.add_style("margin: -10px -10px 10px -10px")
+            action_wdg.add_style("padding: 5px")
 
-
-        inject = ActionButtonWdg(title='Inject')
-        action_wdg.add(inject)
-
-        editor_id = my.kwargs.get("editor_id")
+            """
+            delete = ActionButtonWdg(title='Remove', tip='Remove from Canvas')
+            action_wdg.add(delete)
+            delete.add_style("float: right")
+            delete.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
+            var values = spt.api.get_input_values(attr_top, null, false);
+            '''
+            })
+            """
 
 
-        inject.add_behavior( {
-        'type': 'click_up',
-        'editor_id': editor_id,
-        'cbjs_action': r'''
-        var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
-        var values = spt.api.get_input_values(attr_top, null, false);
+            inject = ActionButtonWdg(title='Inject')
+            action_wdg.add(inject)
 
-        //console.log(values);
-
-        // load the widget
-        var class_name = values['xxx_option|display_class'];
+            editor_id = my.kwargs.get("editor_id")
 
 
-        // build up a kwargs
-        var kwargs = {};
-        for (key in values) {
-            var parts = key.split("|");
-            if (parts[0] == 'option') {
-                var value = values[key];
-                console.log(value);
-                kwargs[parts[1]] = value;
+            inject.add_behavior( {
+            'type': 'click_up',
+            'editor_id': editor_id,
+            'cbjs_action': r'''
+            var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
+            var values = spt.api.get_input_values(attr_top, null, false);
+
+            //console.log(values);
+
+            // load the widget
+            var class_name = values['xxx_option|display_class'];
+            var widget_key = values['xxx_option|widget_key'];
+
+
+            // build up a kwargs
+            var kwargs = {};
+            for (key in values) {
+                var parts = key.split("|");
+                if (parts[0] == 'option') {
+                    var value = values[key];
+                    console.log(value);
+                    kwargs[parts[1]] = value;
+                }
             }
-        }
 
 
-        var activator = bvr.src_el;
-        var top = activator.getParent(".spt_widget_editor_top");
-        var view = activator.getAttribute("spt_view");
+            var activator = bvr.src_el;
+            var top = activator.getParent(".spt_widget_editor_top");
+            var view = activator.getAttribute("spt_view");
 
-        var element = []
-        if (view) {
-            element.push("<element name='"+view+"'>");
-        }
-        else {
-            element.push("<element>");
-        }
-        element.push("  <display class='"+class_name+"'>");
-        for (key in kwargs) {
-            if (!kwargs.hasOwnProperty(key) ) { continue; }
-            var value = kwargs[key];
-            if (value == "") { continue; }
+            var element = []
+            if (view) {
+                element.push("<element name='"+view+"'>");
+            }
+            else {
+                element.push("<element>");
+            }
 
-            element.push("    <"+key+">" + value + "</"+key+">");
-        }
-        element.push("  </display>");
-        element.push("</element>");
+            if (widget_key) {
+                element.push("  <display widget='"+widget_key+"'>");
+            }
+            else {
+                element.push("  <display class='"+class_name+"'>");
+            }
 
-        spt.ace_editor.set_editor(bvr.editor_id);
-        spt.ace_editor.insert_lines(element);
+            for (key in kwargs) {
+                if (!kwargs.hasOwnProperty(key) ) { continue; }
+                var value = kwargs[key];
+                if (value == "") { continue; }
 
-        var popup = bvr.src_el.getParent( ".spt_popup" );
-        if (popup)
-            spt.popup.close(popup);
+                element.push("    <"+key+">" + value + "</"+key+">");
+            }
+            element.push("  </display>");
+            element.push("</element>");
 
-        '''
-        } )
+            spt.ace_editor.set_editor(bvr.editor_id);
+            spt.ace_editor.insert_lines(element);
+
+            var popup = bvr.src_el.getParent( ".spt_popup" );
+            if (popup)
+                spt.popup.close(popup);
+
+            '''
+            } )
 
 
 
@@ -167,7 +177,7 @@ class WidgetEditorWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell()
         td.add("Name:")
-        td.add_style("width: 150px")
+        td.add_style("width: 85px")
         td = table.add_cell()
         text = TextInputWdg(name="element_name")
         if element_name:
@@ -184,8 +194,8 @@ class WidgetEditorWdg(BaseRefreshWdg):
 
         from tactic.ui.manager import WidgetClassSelectorWdg
 
-        class_labels = ['-- Class Path--']
-        class_values = ['__class__']
+        class_labels = ['Table', 'Calendar', 'Custom', '-- Class Path--']
+        class_values = ['table_layout', 'calendar', 'custom_layout',  '__class__']
 
         # add the widget information
         #class_labels = ['Raw Data', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Custom Layout', '-- Class Path --']
@@ -375,6 +385,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         search.add_op('or')
         #search.add_order_by("folder")
         search.add_order_by("view")
+
+        view_filter = my.kwargs.get("view_filter")
+        if view_filter:
+            search.add_filter("view", view_filter, op="like")
 
         configs = search.get_sobjects()
 

@@ -39,7 +39,17 @@ class EditTitleWdg(BaseInputWdg):
             title = title.title()
         div.add(title)
         div.add_style("font-weight: bold")
+        div.add_style("margin", "20px 0px")
+
+        div.add_color("background", "background", -5)
+        div.add_style("height", "20px")
+        div.add_style("padding", "10px 10px")
+
         return div
+
+
+    def get_default_action(my):
+        return "pyasm.command.NullAction"
 
 
 class EditWdg(BaseRefreshWdg):
@@ -182,7 +192,8 @@ class EditWdg(BaseRefreshWdg):
                 my.mode = "edit"
             else:
                 my.mode = "insert"
-                
+             
+        assert(my.search_type)
 
         # explicit override
         if my.kwargs.get("mode"):
@@ -259,9 +270,8 @@ class EditWdg(BaseRefreshWdg):
 
         override_element_names = my.kwargs.get("element_names")
         if override_element_names:
-            element_names = override_element_names
-
-
+            my.element_names = override_element_names
+            my.element_names = my.element_names.split(",")
 
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
@@ -426,6 +436,7 @@ class EditWdg(BaseRefreshWdg):
 
         search_type_obj = SearchType.get(my.search_type)
         sobj_title = search_type_obj.get_title()
+        sobj_title = Common.pluralize(sobj_title)
 
         my.color_mode = my.kwargs.get("color_mode")
         if not my.color_mode:
@@ -684,9 +695,6 @@ class EditWdg(BaseRefreshWdg):
 
             if isinstance(widget, EditTitleWdg):
                 tr, td = table.add_row_cell()
-                tr.add_color("background", "background", -5)
-                td.add_style("height", "30px")
-                td.add_style("padding", "0px 10px")
 
                 td.add(widget)
 
@@ -908,13 +916,13 @@ class EditWdg(BaseRefreshWdg):
 
         if not title_str:
             if my.mode == 'insert':
-                action = 'Add New Item'
+                action = 'Add New Item to'
             elif my.mode == 'edit':
-                action = 'Save Changes'
+                action = 'Update'
             else:
                 action = my.mode
             
-            title_str =  action.capitalize() + " to " + sobj_title
+            title_str =  action.capitalize() + " " + sobj_title
             if my.mode == 'edit':
                 title_str = '%s (%s)' %(title_str, my.sobjects[0].get_code())
             
@@ -939,6 +947,8 @@ class EditWdg(BaseRefreshWdg):
         header_div.set_attr("colspan", "2")
         header_div.add_style("height: 30px")
         header_div.add_style("padding: 3px 10px")
+
+        header_div.add_style("margin: -1px -1px 10px -1px")
 
         inner.add(header_div)
 
@@ -1098,7 +1108,8 @@ class EditWdg(BaseRefreshWdg):
 
         bvr['cbjs_action'] = cbjs_insert
 
-        
+        my.top.add_attr("spt_save_event", save_event)
+
         ok_btn_label = my.mode.capitalize()
         if ok_btn_label == 'Edit':
             ok_btn_label = 'Save'
@@ -1322,7 +1333,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     var src_el = bvr.src_el;
     try {
 
-        var info = server.execute_cmd(class_name, args, values);
+        var ret_val = server.execute_cmd(class_name, args, values);
 
         // add a callback after save
         var popup = bvr.src_el.getParent(".spt_popup");
@@ -1360,9 +1371,16 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         }
         else {
             // update the table
+            info = ret_val.info;
+
+            // FIXME: this search key is just LOST!!!
+            bvr.options = {
+                search_key: info.search_key
+            }
             if (bvr.save_event) {
                 spt.named_events.fire_event(bvr.save_event, bvr);
             }
+
         }
     }
     catch(e) {

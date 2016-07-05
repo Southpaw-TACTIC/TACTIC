@@ -291,6 +291,15 @@ def xmlrpc_decorator(meth):
         try:
             ticket = my.init(original_ticket)
 
+
+            # These lines disable a good chunk of the API.  This will need to
+            # have rules specified ... like a specific API ticket or an access
+            # rule that allows this.
+            #if my.get_protocol() != 'local':
+            #    if meth.__name__ not in ["execute_cmd", "get_widget", "ping"]:
+            #        raise Exception("Permission Denied")
+
+
             try:
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
@@ -566,7 +575,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         return False
     missing_method.exposed = True
 
-    '''
+    """
     def missing_method(my, func, args):
         try:
             return True
@@ -590,7 +599,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 msg = "Wrong number of arguments"
             print("Failed to execute [%s]: %s" % (expr, msg))
         return None
-        '''
+    """
 
 
 
@@ -971,8 +980,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_message(my, ticket, key):
+        print "key: ", key
         message = Search.get_by_code("sthpw/message", key)
+        print "message: ", message
         sobject_dict = my._get_sobject_dict(message)
+        print "dict: ", sobject_dict
+        print "---"
         return sobject_dict
 
 
@@ -2694,9 +2707,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 versionless_mode = 'current'
             snapshot = Snapshot.get_versionless(search_type, search_id, context , mode=versionless_mode, create=False, process=process)
-
         if not snapshot:
-            # This is probaby to0 strict
+            # This is probaby too strict
             #raise ApiException("Snapshot for [%s] with context [%s], version [%s] does not exist" % (search_key, context, version))
             paths = {}
             return paths

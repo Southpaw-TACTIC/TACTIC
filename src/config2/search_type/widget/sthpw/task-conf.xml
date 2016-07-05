@@ -241,6 +241,42 @@
     <element name="actual_duration"/>
     <element name="actual_quantity"/>
 
+    <element name="task_schedule">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>[
+        {
+          "start_date_col":   "bid_start_date",
+          "end_date_col":     "bid_end_date",
+          "color":            "#33F",
+          "edit":             "true",
+          "default":          "false"
+        },
+        {
+          "start_date_col":   "actual_start_date",
+          "end_date_col":     "actual_end_date",
+          "color":            "#7abc14",
+          "edit":             "false",
+          "default":          "false"
+        }
+
+	]</options>
+        </display>
+      <action class="tactic.ui.table.GanttCbk">
+        <sobjects>@SOBJECT(sthpw/task)</sobjects>
+        <options>[
+        {
+          "prefix":           "bid",
+          "mode":             "default"
+        },
+        {
+          "prefix":           "actual",
+          "mode":             "default"
+        }
+
+        ]</options>
+      </action>
+    </element>
+
 </edit_definition>
 
 

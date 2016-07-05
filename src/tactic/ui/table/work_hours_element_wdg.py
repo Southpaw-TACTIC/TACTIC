@@ -345,7 +345,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         td = table.add_cell(month_div)
         td.add_style('width', '%spx'%my.MONTH_WIDTH)
 
-        icon = IconButtonWdg(tip="Previous Week", icon=IconWdg.LEFT)
+        icon = IconButtonWdg(tip="Previous Week", icon="BS_CHEVRON_LEFT")
         td = table.add_cell(icon)
         offset = 0
         if not my.use_straight_time:
@@ -384,7 +384,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             td.add(day_wdg)
             td.add_styles("text-align: center; padding-left: 2px;min-width: %spx"%my.day_width)
 
-        icon = IconButtonWdg(tip="Next Week", icon=IconWdg.RIGHT)
+        icon = IconButtonWdg(tip="Next Week", icon="BS_CHEVRON_RIGHT")
         icon.add_behavior( {
         'type': 'click_up',
         'start_date': next_start_date.__str__(),
@@ -556,10 +556,12 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 text.add_class('spt_day%s' % (time_prefix))
                 text.add_styles("width: %spx;text-align: right;padding-left: 2px" %(my.day_width-2))
                 #text.add_styles("width: 100%;text-align: right;padding-left: 2px")
-                if day == today:
-                    text.add_style("border: solid 1px black")
-                else:
-                    text.add_border()
+                #if day == today:
+                #    text.add_style("border: solid 1px black")
+                #else:
+                #    text.add_border()
+                text.add_border()
+                text.add_style("box-sizing: border-box")
 
                 week_day = my.weekday_dict[idx]
                 if week_day in ['Sat','Sun']:
@@ -570,6 +572,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                         text.add_color("background", "background2", modifier= [0,15,20])
 
                 text.add_style("margin: 0px 1px")
+                text.add_style("padding: 2px 3px")
 
                 if row_to_draw == my.OT_ROW:
                     text.add_attr('input_field_type', 'ot')
@@ -707,12 +710,15 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             text = TextWdg("total")
             td = table.add_cell(text)
             td.add_style("width: 35px")
-            text.add_border()
+            text.add_style("box-sizing: border-box")
+
 
             text.add_attr('spt_total', '.spt_total%s' % (time_prefix))
             text.add_class('spt_total%s' % (time_prefix))
-            text.add_styles("width: %spx; text-align: right; padding-right: 3px"%my.day_width)
+            text.add_styles("width: %spx; text-align: right; padding-right: 3px; margin-left: 5px;"%my.day_width)
             text.set_attr("readonly", "readonly")
+            text.add_border()
+
 
             # MAIN: Overtime, total.
             if row_to_draw == my.OT_ROW:
@@ -969,14 +975,19 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 text.add_style("width: %spx"%(my.day_width-2))
                 #text.add_style("width: 100%")
                 text.add_style("text-align: right")
-                text.add_style("padding-left: 2px")
+                text.add_style("padding: 2px 3px")
                 text.add_style('font-weight: 500')
                 text.set_attr("readonly", "readonly")
+                text.add_style("box-sizing: border-box")
                 # grey out the text color
                 text.add_color('color', 'color', +40)
+                text.add_style("margin: 0px 1px")
+
+                text.add_border()
 
                 if day == today:
-                    text.add_style("border: solid 1px black")
+                    #text.add_style("border: solid 1px black")
+                    pass
                 elif idx in [0,6]:
                     if row_to_draw == my.OT_ROW:
                         # FOOTER: Overtime, weekends
@@ -1004,14 +1015,14 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
             td = table.add_cell(text)
             text.add_class("spt_total%s" % (time_prefix))
-            # does not look good in FF
-            #td.add_style("border-width: 0 0 0 1")
-            #td.add_style("border-style: solid")
             td.add_style("width: %spx"%my.day_width)
-            text.add_styles("font-weight: 500;width: %spx; text-align: right; padding-left: 2px"%(my.day_width))
+            text.add_styles("font-weight: 500;width: %spx; text-align: right; padding-left: 2px; margin-left: 5px"%(my.day_width))
+            text.add_style("box-sizing: border-box")
+
             
             text.set_attr("readonly", "readonly")
             text.add_color('color', 'color', +40)
+            text.add_border()
 
             if row_to_draw == my.OT_ROW:
                 # FOOTER: Overtime, total.

@@ -2693,7 +2693,6 @@ spt.dg_table.RemoveColumnCmd = new Class({
 // @param: 
 // bvr.search_el - child element of the search_top. If unspecified, it equals bvr.src_el
 // bvr.src_el - child element of the table_top
-
 spt.dg_table.search_cbk = function(evt, bvr){
    
     var panel = null;
@@ -2975,8 +2974,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
     var order_by = target.getAttribute("spt_order_by");
     
-    var file_system_edit = target.getAttribute("spt_file_system_edit")
-    var parent_mode = target.getAttribute("spt_parent_mode")
+    var file_system_edit = target.getAttribute("spt_file_system_edit");
+    var parent_mode = target.getAttribute("spt_parent_mode");
+
+    var settings = target.getAttribute("spt_settings");
+    var gear_settings = target.getAttribute("spt_gear_settings");
 
     var height = target.getAttribute("spt_height");
     var element_names;
@@ -3061,7 +3063,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_collection_tool': show_collection_tool,
         'order_by': order_by,
         'file_system_edit': file_system_edit,
-        'parent_mode': parent_mode
+        'parent_mode': parent_mode,
+        'settings': settings,
+        'gear_settings': gear_settings,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;

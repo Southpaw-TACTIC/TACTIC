@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['Workflow', 'BaseProcessTrigger', 'ProcessStatusTrigger']
+__all__ = ['Workflow', 'BaseWorkflowNodeHandler', 'BaseProcessTrigger', 'ProcessStatusTrigger', 'CustomProcessConfig']
 
 import tacticenv
 
@@ -270,6 +270,36 @@ class ProcessStatusTrigger(Trigger):
 
 
 class BaseProcessTrigger(Trigger):
+
+    def get_handler(my):
+        if node_type == "action":
+            handler = WorkflowActionNodeHandler(input=my.input)
+        elif node_type == "approval":
+            handler = WorkflowApprovalNodeHandler(input=my.input)
+        elif node_type in ["manual", "node"]:
+            handler = WorkflowManualNodeHandler(input=my.input)
+        elif node_type == "hierarchy":
+            handler = WorkflowHierarchyNodeHandler(input=my.input)
+        elif node_type == "input":
+            handler = WorkflowOutputNodeHandler(input=my.input)
+        elif node_type == "output":
+            handler = WorkflowOutputNodeHandler(input=my.input)
+        elif node_type == "condition":
+            handler = WorkflowConditionNodeHandler(input=my.input)
+        elif node_type == "dependency":
+            handler = WorkflowDependencyNodeHandler(input=my.input)
+        elif node_type == "progress":
+            handler = WorkflowProgressNodeHandler(input=my.input)
+
+        elif node_type == "youtube":
+            extra_options = {
+                    'input': my.input
+            }
+            handler = CustomProcessConfig.get_process_handler(node_type, extra_options)
+            #YouTubeNodeHandler(input=my.input)
+
+        return handler
+
 
 
     def set_all_tasks(my, sobject, process, status):
@@ -735,13 +765,19 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         process_output = workflow.get("output")
         if process_output:
-            from pyasm.biz import Snapshot
-            snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
-            if snapshot:
-                my.output_data = {
-                    'snapshot': snapshot,
-                    'path': snapshot.get_lib_path_by_type()
-                }
+            my.output_data = process_output.copy()
+
+            output_type = process_output.get("type")
+            if output_type == "file":
+                my.output_data['snapshot'] = None
+                my.output_data['path'] = process_output.get("path")
+
+            else:
+                from pyasm.biz import Snapshot
+                snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+                if snapshot:
+                    my.output_data['snapshot'] = snapshot
+                    my.output_data['path'] = snapshot.get_lib_path_by_type()
 
         my.store_state()
         # ---------------------------------------
@@ -1076,7 +1112,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(my):
-        my.log_message(my.sobject, my.process, "in_prgress")
+        my.log_message(my.sobject, my.process, "in_progress")
         my.set_all_tasks(my.sobject, my.process, "in_progress")
         my.run_callback(my.pipeline, my.process, "action")
         return my._handle_dependency()
@@ -1459,6 +1495,16 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             handler = WorkflowProgressNodeHandler(input=my.input)
             return handler.handle_pending()
 
+        """
+        else:
+            process_type = Search.get_by_code("sthpw/process_type", node_type)
+            #handle_class = process_type.get_value("info_handler_class")
+            handle_class = process_type.get_value("node_handler_class")
+            handler = Common.create_from_class_path(handle_class, my.input)
+            handler.handle_pending()
+        """
+
+
 
 
         # Make sure the below is completely deprecated
@@ -1729,6 +1775,85 @@ class ProcessErrorTrigger(BaseProcessTrigger):
 
 
 
+class CustomProcessConfig(object):
+    """
+    <config>
+    <youtube>
+        <element name="node">
+          <display class="YouTubeNodeWdg"/>
+        </element>
+        <element name="info">
+          <display class="YouTubeProcessInfoWdg"/>
+        </element>
+        <element name="process">
+          <display class="YouTubeNodeHandler"/>
+        </element>
+    </youtube>
+    </config>
+    """
+
+    def get_config(cls, node_type):
+
+        category = "workflow"
+
+        # cache already search configs
+        configs = Container.get("CustomProcessConfig:configs")
+        if configs == None:
+            configs = {}
+            Container.put("CustomProcessConfig:configs", configs)
+
+
+        config = configs.get(node_type)
+        if config == None:
+            from pyasm.search import WidgetDbConfig
+
+            search = Search("config/widget_config")
+            search.add_filter("category", category)
+            search.add_filter("view", node_type)
+
+            config = search.get_sobject()
+
+            configs[node_type] = config
+
+
+
+        return config
+
+    get_config = classmethod(get_config)
+
+
+
+
+    def get_node_handler(cls, node_type, extra_options={}):
+        config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
+        handler = config.get_display_widget("node", extra_options)
+        return handler
+    get_node_handler = classmethod(get_node_handler)
+
+
+    def get_info_handler(cls, node_type, extra_options={}):
+        config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
+        handler = config.get_display_widget("info", extra_options)
+        return handler
+    get_info_handler = classmethod(get_info_handler)
+
+
+    def get_process_handler(cls, node_type, extra_options={}):
+        config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
+        handler = config.get_display_widget("process", extra_options)
+        return handler
+    get_process_handler = classmethod(get_process_handler)
+
+
+
+
+
+
+
+
 class ProcessCustomTrigger(BaseProcessTrigger):
 
     def execute(my):
@@ -1844,7 +1969,7 @@ class ProcessListenTrigger(BaseProcessTrigger):
             return
         current_status = my.input.get("status")
         current_sobject = my.input.get("sobject")
-    
+
 
         listeners = Container.get("process_listeners")
         if listeners == None:
