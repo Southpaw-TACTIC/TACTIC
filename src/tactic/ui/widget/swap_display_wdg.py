@@ -179,10 +179,17 @@ class SwapDisplayWdg(BaseRefreshWdg):
         icon_str = my.kwargs.get("icon")
         if icon_str and isinstance(icon_str, basestring):
             icon_div = DivWdg()
-            icon = IconWdg(title, eval("IconWdg.%s" % icon_str) )
+
+            if icon_str.startswith("BS_"):
+                icon = IconWdg(name=title, icon=icon_str, size=12 )
+                icon_div.add_style("margin: -2px 10px 0px 10px")
+                icon_div.add_style("margin-left: -3px")
+            else:
+                icon = IconWdg(name=title, icon=icon_str )
+                icon_div.add_style("margin-left: -6px")
+
             icon_div.add(icon)
             td = table.add_cell(icon_div)
-            icon_div.add_style("margin-left: -6px")
 
         elif icon_str:
             td = table.add_cell(icon_str)

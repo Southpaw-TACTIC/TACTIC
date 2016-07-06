@@ -313,6 +313,7 @@ class Login(SObject):
 
         login = SearchType.create("sthpw/login")
         login.set_value("login", user_name)
+        login.set_value("upn", user_name)
 
         # encrypt the password
         encrypted = hashlib.md5(password).hexdigest()
@@ -868,7 +869,8 @@ class Site(object):
 
         try:
             sql = DbContainer.get("sthpw")
-        except:
+        except Exception, e:
+            print "WARNING: ", e
             Site.pop_site()
             raise Exception("WARNING: site [%s] does not exist" % site)
 

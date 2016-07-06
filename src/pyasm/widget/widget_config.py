@@ -175,6 +175,12 @@ class WidgetConfig(Base):
             return {}
 
 
+    def get_view_attribute(my, name):
+        attrs = my.get_view_attributes()
+        return attrs.get(name)
+
+
+
     def get_element_attributes(my, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element

@@ -112,8 +112,45 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
                 bg_color_map[match] = color
 
         my.color_map[name] = bg_color_map, text_color_map
+
+
+
         
     def get_color(my, sobject, index):
+
+        #color_mode = "custom"
+        color_mode = my.kwargs.get("color_mode")
+        if color_mode == "custom":
+            column = "assigned"
+
+            color_column = my.kwargs.get("color_column")
+            color = my.kwargs.get("custom_colors")
+
+            colors = {
+                    'admin': '#ACC',
+                    'librarian': '#CAA',
+                    'NULL': '#CCC'
+            }
+
+            value = sobject.get(column)
+            color = colors.get(value)
+
+            if not color:
+                color = colors.get("NULL")
+
+            if not color:
+                color = "#BBB"
+
+            return color
+
+
+
+        elif color_mode == "single":
+            color = my.kwargs.get("color")
+            if color:
+                return color
+
+
 
         div = DivWdg()
         colors = [
@@ -275,6 +312,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
                     if mode == "square":
                         display_value = ""
+                    elif not display_value:
+                        display_value = sobject.get_code()
 
                     content_wdg.add_attr("title", display_value)
                     my.display_values[sobject.get_search_key()] = display_value
@@ -350,53 +389,6 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
         return value
 
-
-    """
-    # use the one from BaseCalendarDayWdg
-    def get_color(my, sobject, index):
-
-        div = DivWdg()
-        colors = [
-            div.get_color("background3"),
-            div.get_color("background3", -10),
-            div.get_color("background3", -20),
-        ]
-
-        default_color = colors[index%3]
-
-        try:
-            color = sobject.get("color")
-            return color
-        except:
-            pass
-
-        pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
-        if not pipeline_code:
-            pipeline_code = "task"
-
-
-
-
-        pipeline = Pipeline.get_by_code(pipeline_code)
-        if not pipeline:
-            return default_color
-
-     
-
-        status = sobject.get_value("status", no_exception=True)
-        process = pipeline.get_process(status)
-        if not process:
-            return default_color
-
-        color = process.get_color()
-        if not color:
-            return default_color
-        else:
-            color = Common.modify_color(color, 0)
-
-
-        return color
-    """
 
 
     def get_week_left_wdg(my, week):
@@ -634,18 +626,24 @@ class SObjectCalendarWdg(CalendarWdg):
         search.add_op('begin')
         search.add_date_range_filter(my.start_column, my.start_date, my.end_date)
         search.add_date_range_filter(my.end_column, my.start_date, my.end_date)
-
         search.add_op('or')
+
         search.add_op('begin')
         search.add_filter(my.start_column, my.start_date, op='<=')
         search.add_filter(my.end_column, my.end_date, op='>=')
         search.add_op('and')
-        
+
         search.add_op('or')
+
+        extra_codes = my.kwargs.get("extra_codes")
+        if extra_codes:
+            search.add_op('and')
+            extra_codes = extra_codes.split("|")
+            search.add_filters("code", extra_codes)
+            search.add_op('or')
 
 
         search.add_order_by(my.start_column)
-        print "search: ", search.get_statement()
 
         my.sobjects = search.get_sobjects()
 
@@ -787,7 +785,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
         div = DivWdg()
         outer.add(div)
-        div.add_color("background", "background3")
+        div.add_color("background", "background", -3)
         div.add_style("padding: 5px")
         div.add_border()
 
@@ -1045,7 +1043,7 @@ class TaskCalendarWdg(SObjectCalendarWdg):
         #    return None
 
         div = DivWdg()
-        div.add_style("margin: 20px 10px 20px 10px")
+        div.add_style("padding: 20px 10px 20px 10px")
         div.add_style("font-size: 0.8em")
 
         table = Table()

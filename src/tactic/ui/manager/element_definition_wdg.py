@@ -1799,6 +1799,8 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
         tr = table.add_row()
         #tr.add_style("display: none")
+        if len(class_values) == 1 and class_values[0] == '__class__':
+            tr.add_style("display: none")
 
         td = table.add_cell()
 
@@ -1810,9 +1812,10 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # put xxx_ in front to separate from other options
         widget_select = SelectWdg("xxx_%s|widget_key" % prefix)
         widget_select.add_class("spt_widget_key")
-        widget_select.add_style("width: 250px")
+        widget_select.add_style("width: 230px")
         #if not default_class:
         #    widget_select.add_empty_option()
+
         widget_select.set_option("labels", class_labels)
         widget_select.set_option("values", class_values)
         load_event = False
@@ -1902,6 +1905,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         
         td = table.add_cell()
         td.add_class("spt_widget_top")
+        td.add_style("padding: 5px 0px")
 
         help_div = DivWdg()
         td.add(help_div)
@@ -1942,10 +1946,12 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell()
         td.add("Class Name: ")
-        td.add_style("padding: 15px")
-
+        td.add_style("padding: 5px")
+        td.add_style("padding-left: 14px")
 
         class_text = TextInputWdg(name="xxx_%s|display_class" % prefix)
+        table.add_cell(class_text)
+
         class_text.add_class("spt_widget_display_class")
         class_text.add_behavior( {
             'type': 'change',
@@ -1969,7 +1975,6 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         if display_class:
             class_text.set_value(display_class)
         class_text.add_attr("size", "50")
-        table.add_cell(class_text)
 
         # introspect the widget
         #if not display_class:
@@ -2033,39 +2038,6 @@ class ActionClassOptionsWdg(BaseRefreshWdg):
 
     def init(my):
         my.table = Table()
-
-    # sort
-    def xoptions_sort(a, b):
-        if type(a) in types.StringTypes:
-            return 1
-        elif type(b) in types.StringTypes:
-            return -1
-
-        acategory = a.get('category')
-        bcategory = b.get('category')
-        if acategory == 'Required':
-            acategory = '1.Required'
-        if acategory == None:
-            acategory = ''
-        if bcategory == 'Required':
-            bcategory = '1.Required'
-        if bcategory == None:
-            bcategory = ''
-
-        aorder = a.get('order')
-        border = b.get('order')
-
-        avalue = "%s|%s" % (acategory, aorder)
-        bvalue = "%s|%s" % (bcategory, border)
-
-        if avalue == None:
-            return 1
-        if bvalue == None:
-            return -1
-
-        return cmp(avalue, bvalue)
-
-    xoptions_sort = staticmethod(xoptions_sort)
 
 
     def add_style(my, style):
@@ -2249,6 +2221,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
 
         class_options = my.kwargs.get("args_keys")
+        category_options = my.kwargs.get("category_keys") or {}
+
         if not class_options:
             class_options = {}
             import_stmt = Common.get_import_from_class_path(display_class)
@@ -2272,12 +2246,18 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     class_options = eval("%s.get_args_keys()" % display_class)
                     # prevent the ARG_KEYS from getting modifed later on when appending kwargs
                     class_options = class_options.copy()
+
                 except Exception, e:
                     error = DivWdg()
                     error.add_style('color: red')
                     error.add("WARNING: could not get options.  Failed on get_args_keys() for %s" %display_class)
                     top.add(error)
                     return top
+
+                try:
+                    category_options = eval("%s.get_category_keys()" % display_class)
+                except Exception, e:
+                    pass
 
 
         # special consideration is made for Custom Layouts where options
@@ -2354,7 +2334,6 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 class_options_array.append(value)
 
-
         class_options_array.sort(my.options_sort)
 
         current_div = DivWdg()
@@ -2369,6 +2348,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
             category = option.get('category')
             option_name = option.get('name')
+            default_value = option.get("default")
+
 
 
             if category is None:
@@ -2381,7 +2362,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 current_div = DivWdg()
                 top.add(current_div)
 
-                if category in ['deprecated','internal']:
+                if category in ['deprecated','internal','_internal','_deprecated']:
                     current_div.add_style("display: none")
                     # this is for FormatDefinitionEditWdg
                     if option_name == 'format':
@@ -2391,9 +2372,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 category_div = DivWdg()
                 current_div.add(category_div)
-                category_div.add_color("background", "background3", -2)
+                #category_div.add_color("background", "background3", -2)
                 category_div.add_style("margin-bottom", "5px")
                 category_div.add_style("padding-top", "2px")
+                category_div.add("<hr/>")
 
                 script = '''
                 var top = bvr.src_el.getParent(".spt_widget_section_top");
@@ -2433,6 +2415,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 title_wdg = DivWdg()
                 title_wdg.add("%s: " % title)
                 title_wdg.add_style("width: 160px")
+                title_wdg.add_style("margin-top: 5px")
+                title_wdg.add_style("margin-bottom: 1px")
                 description = option.get('description')
                 description = description.replace('  ', '')
                 description = description.replace('\n', ' ')
@@ -2443,7 +2427,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 if category == '':
                     title_wdg.add_style("font-weight: bold")
                 else:
-                    title_wdg.add_style("padding-left: 5px")
+                    title_wdg.add_style("padding-left: 0px")
 
 
             value = display_options.get(option_name)
@@ -2553,6 +2537,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg.add_empty_option('-- Select --')
                 values = option.get('values')
                 edit_wdg.set_option('values', values)
+
+                if default_value and not value:
+                    value = default_value
+
                 if value:
                     edit_wdg.set_value(value)
                     #edit_wdg.add_style("background: #a3d991")
@@ -2567,7 +2555,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg = TextAreaWdg(name)
                 if value:
                     edit_wdg.set_value(value)
-                edit_wdg.add_style("width", "100%")
+                edit_wdg.add_style("width", "450px")
                 edit_wdg.add_class("form-control")
 
             elif widget_type == 'CheckboxWdg':
@@ -2584,6 +2572,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg = DivWdg()
                 select = TextInputWdg(name=name)
                 edit_wdg.add(select)
+                if default_value and not value:
+                    value = default_value
 
                 if value:
                     select.set_value(value)
@@ -2613,7 +2603,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     }
                     edit_wdg = Common.create_from_class_path(widget_type, [], kwargs)
                     edit_wdg.add_class("form-control")
-                    edit_wdg.add_style("width: 100%")
+                    edit_wdg.add_style("width: 450px")
                     if value and hasattr(edit_wdg,'set_value'):
                         edit_wdg.set_value(value)
                 except Exception, e:
@@ -2622,7 +2612,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             if not edit_wdg:
                 edit_wdg = TextWdg(name)
                 edit_wdg.add_class("form-control")
-                edit_wdg.add_style("width: 100%")
+                edit_wdg.add_style("width: 450px")
                 if value:
                     edit_wdg.set_value(value)
 
