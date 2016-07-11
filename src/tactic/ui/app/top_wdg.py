@@ -286,6 +286,7 @@ class TopWdg(Widget):
             'type': 'click',
             'bvr_match_class': 'tactic_new_tab',
             'cbjs_action': '''
+
             var view = bvr.src_el.getAttribute("view")
             var search_key = bvr.src_el.getAttribute("search_key")
             var expression = bvr.src_el.getAttribute("expression")
@@ -327,7 +328,6 @@ class TopWdg(Widget):
                     search_key: search_key
                 }
             }
-
 
 
             try {

@@ -132,7 +132,11 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
 
     def get_width(my):
-        return 400
+        mode = my.kwargs.get("mode")
+        if mode == "icon":
+            return 75
+        else:
+            return 400
        
    
 

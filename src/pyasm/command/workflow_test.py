@@ -72,10 +72,14 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+
+
+
             my._test_multi_input_reject()
             my._test_progress()
             #my._test_progress_reject()
             my._test_multi_input()
+            my._test_multi_input_complete()
             my._test_custom_status()
             my._test_messaging()
             my._test_hierarchy()
@@ -447,6 +451,74 @@ class WorkflowCmd(Command):
         my.assertEquals( "complete", sobject.get_value("b4"))
         my.assertEquals( "complete", sobject.get_value("c"))
         my.assertEquals( "complete", sobject.get_value("d"))
+
+
+
+
+    def _test_multi_input_complete(my):
+
+        # DISABLE until check_inputs is called
+        return
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        code = "test%s" % Common.generate_alphanum_key()
+        sobject.set_value("code", code)
+
+
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="manual" name="b1"/>
+          <process type="manual" name="b2"/>
+          <process type="manual" name="b3"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b1"/>
+          <connect from="a" to="b2"/>
+          <connect from="a" to="b3"/>
+          <connect from="a" to="b4"/>
+          <connect from="b1" to="c"/>
+          <connect from="b2" to="c"/>
+          <connect from="b3" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+
+        process = processes.get("c")
+        process.commit()
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+        # Run the pipeline
+        process = "b1"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|complete", output)
+
+       
+        my.assertEquals( "complete", sobject.get_value("a"))
+        my.assertEquals( "complete", sobject.get_value("b1"))
+        my.assertEquals( "pending", sobject.get_value("b2"))
+        my.assertEquals( "pending", sobject.get_value("b3"))
+
+        # THIS WILL FAIL until we implement this correctly
+        my.assertEquals( "pending", sobject.get_value("c"))
+
+
 
 
 

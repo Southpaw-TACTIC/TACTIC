@@ -560,12 +560,20 @@ class ExpressionElementWdg(TypeTableElementWdg):
         # display a link if specified
         link_expr = my.kwargs.get("link_expression")
         if link_expr:
-            div.add_class("tactic_new_tab")
+            # using direct behavior because new_tab isn't working consistently
+            #div.add_class("tactic_new_tab")
             div.add_style("text-decoration", "underline")
-            #div.add_attr("search_key", s.get_search_key())
             div.add_attr("search_key", my.sobject.get_search_key())
             div.add_attr("expression", link_expr)
             div.add_class("hand")
+
+            # click up blocks any other behavior
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.table.open_link(bvr);
+                '''
+            } )
 
 
         # by default, the value is added

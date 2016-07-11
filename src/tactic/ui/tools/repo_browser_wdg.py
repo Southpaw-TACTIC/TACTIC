@@ -1922,6 +1922,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         SmartMenu.assign_as_local_activator(div, 'BASE_DIR_ITEM_CTX')
 
         # parent_mode tool tip
+        # This makes no sense at all for the end user
+        """
         if my.parent_mode == "single_file":
             hint = "You are viewing the file repository in single file mode."
         elif my.parent_mode == "single_asset":
@@ -1932,6 +1934,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         hint_wdg = HintWdg(message=hint)
         hint_wdg.add_class("spt_repo_browser_hint")
         div.add(hint_wdg)
+        """
 
         # View indicator
         dirname = os.path.dirname(base_dir)

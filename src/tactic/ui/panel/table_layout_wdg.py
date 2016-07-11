@@ -2582,7 +2582,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
-
             td.add_style("overflow: hidden")
 
 
@@ -4452,6 +4451,62 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
 
 }
 
+
+
+// special function which opens a new tab
+// accepted attributes: view, search_key and expression
+spt.table.open_link = function(bvr) {
+
+    var view = bvr.src_el.getAttribute("view")
+    var search_key = bvr.src_el.getAttribute("search_key")
+    var expression = bvr.src_el.getAttribute("expression")
+
+    var name = bvr.src_el.getAttribute("name");
+    var title = bvr.src_el.getAttribute("title");
+
+    if (!name) {
+        name = title;
+    }
+
+    if (!title) {
+        title = name;
+    }
+
+    if (!title && !name) {
+        title = name = "Untitled";
+    }
+
+
+    if (expression) {
+        var server = TacticServerStub.get();
+        var sss = server.eval(expression, {search_keys: search_key, single: true})
+        search_key = sss.__search_key__;
+    }
+
+
+    spt.tab.set_main_body_tab()
+
+    if (view) {
+        var cls = "tactic.ui.panel.CustomLayoutWdg";
+        var kwargs = {
+            view: view
+        }
+    }
+    else if (search_key) {
+        var cls = "tactic.ui.tools.SObjectDetailWdg";
+        var kwargs = {
+            search_key: search_key
+        }
+    }
+
+
+    try {
+        spt.tab.add_new(name, title, cls, kwargs);
+    } catch(e) {
+        spt.alert(e);
+    }
+
+}
 
 
 

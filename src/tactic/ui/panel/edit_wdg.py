@@ -348,10 +348,23 @@ class EditWdg(BaseRefreshWdg):
                 my.skipped_element_names.append(element_name)
                 continue
             widget = my.config.get_display_widget(element_name, kbd_handler=False)
+
             # some element could be disabled due to its data_type e.g. sql_timestamp
             if not widget:
                 my.skipped_element_names.append(element_name)
                 continue
+
+
+            """
+            widget.set_sobject(my.sobjects[0])
+            value = widget.get_value()
+            print "value: ", value
+            from pyasm.web import StringWdg
+            widget = TextWdg()
+            widget.set_option("default", value)
+            widget.add_style("border: none")
+            #widget.set_option("search_type", my.search_type)
+            """
 
 
             widget.set_sobject(my.sobjects[0])
@@ -1298,8 +1311,8 @@ spt.edit.save_changes = function(content, search_key) {
 
     values['search_type'] = bvr.search_type;
 
-    var info = server.execute_cmd(class_name, kwargs, values);
-    return info.info.sobject;
+    var ret_val = server.execute_cmd(class_name, kwargs, values);
+    return ret_val.info.sobject;
 }
 
 
