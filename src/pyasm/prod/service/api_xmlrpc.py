@@ -98,7 +98,7 @@ def get_simple_cmd(my, meth, ticket, args):
                     security = Environment.get_security()
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if access == False:
-                       raise Exception("Access denied")
+                       raise ApiException("Access denied")
                 
                 # actually execute the method
                 my2.results = exec_meth(my, ticket, meth, args)
@@ -193,7 +193,7 @@ def get_full_cmd(my, meth, ticket, args):
                 security = Environment.get_security()
                 access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                 if access == False:
-                   raise Exception("Access denied")
+                   raise ApiException("Access denied")
 
             my2.results = exec_meth(my, ticket, meth, args)
             if isinstance(my2.results, dict) and my2.results.get("description"):
@@ -5265,7 +5265,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             security = Environment.get_security()
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if access == False:
-               raise Exception("Access denied") 
+               raise ApiException("Access denied") 
         
         try:
             Ticket.update_session_expiry()
