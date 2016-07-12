@@ -94,7 +94,7 @@ def get_simple_cmd(my, meth, ticket, args):
                 
             try:
                 # Do a security check
-                if Config.get_value("security", "api_method") == "restricted":
+                if Config.get_value("security", "api_method_access") == "restricted":
                     security = Environment.get_security()
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if access == False:
@@ -189,7 +189,7 @@ def get_full_cmd(my, meth, ticket, args):
             #my2.results = meth(my, ticket, *args)
             
             # Do a security check
-            if Config.get_value("security", "api_method") == "restricted":
+            if Config.get_value("security", "api_method_access") == "restricted":
                 security = Environment.get_security()
                 access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                 if access == False:
@@ -5259,6 +5259,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
+       
+        # Do a security check
+        if Config.get_value("security", "api_cmd_access") == "restricted":
+            print "Checking execute_cmd security"
+            security = Environment.get_security()
+            access = security.check_access("api_cmd", class_name, "allow", default="allow")
+            if access == False:
+               raise Exception("Access denied") 
+        
         try:
             Ticket.update_session_expiry()
         except:
