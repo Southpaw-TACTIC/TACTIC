@@ -510,9 +510,11 @@ class Sql(Base):
                     encoding = 'utf8'
                 if not charset:
                     charset = 'utf8'
+                int_port = int(my.port)
                 my.conn = MySQLdb.connect(  db=my.database_name,
                                             host=my.host,
                                             user=my.user,
+                                            port=int_port,
                                             charset=charset,
                                             use_unicode=True,
                                             passwd=my.password )
