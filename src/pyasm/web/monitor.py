@@ -236,12 +236,19 @@ class ASyncThread(BaseProcessThread):
 
 class JobQueueThread(BaseProcessThread):
 
+    def __init__(my, idx):
+        super(JobQueueThread,my).__init__()
+        my.idx = idx
+
     def get_title(my):
         return "Job Task Queue"
 
+    def _check(my):
+        pass
+
     def execute(my):
         # Run the job queue service
-        executable = '%s "%s/src/bin/startup_queue.py"' % (python, tactic_install_dir)
+        executable = '%s "%s/src/bin/startup_queue.py" -i %s' % (python, tactic_install_dir, my.idx)
         os.system('%s' % (executable) )
 
 
@@ -688,7 +695,7 @@ class TacticMonitor(object):
                 num_processes = int(num_processes)
 
             for i in range(0, num_processes):
-                job_thread = JobQueueThread()
+                job_thread = JobQueueThread(i)
                 job_thread.start()
                 tactic_threads.append(job_thread)
 
@@ -823,12 +830,13 @@ class TacticMonitor(object):
         
 
     def final_kill(my):
-        '''Kill the startup and watch_folder processes. This is used primarily in Windows Service.
+        '''Kill the startup, startup_queue, watch_folder processes. This is used primarily in Windows Service.
            Linux service should have actively killed the processes already'''
         log_dir = "%s/log" % Environment.get_tmp_dir()
         files = os.listdir(log_dir)
         ports = []
         watch_folders = []
+        queues = []
 
         for filename in files:
             base, ext = os.path.splitext(filename)
@@ -836,6 +844,8 @@ class TacticMonitor(object):
                 ports.append(ext[1:])
             elif base == 'watch_folder':
                 watch_folders.append(ext[1:])
+            elif base == 'startup_queue':
+                queues.append(ext[1:])
 
     
         for port in ports:
@@ -858,7 +868,15 @@ class TacticMonitor(object):
                 Common.kill(pid)
             except IOError, e:
                 continue
-
+        for idx, queue in enumerate(queues):
+            try:
+                filename = "%s/startup_queue.%s" % (log_dir, idx)
+                f = open(filename, "r")
+                pid = f.readline()
+                f.close()
+                Common.kill(pid)
+            except IOError, e:
+                continue
 
 if __name__ == '__main__':
     monitor = TacticMonitor()

@@ -26,7 +26,7 @@ echo "TACTIC_DATA_DIR = $TACTIC_DATA_DIR"
 echo
 
 # Some variables
-TACTIC_USER=tactic
+TACTIC_USER=apache
 PYTHON=/usr/bin/python
 export PYTHON
 PID_FILE=/var/run/tactic.pid
@@ -113,7 +113,7 @@ case "$1" in
 	    echo `kill $PID >> $LOG 2>&1`
             if kill $PID >> $LOG 2>&1 ; then
                 i=0
-                for line in $(ps axw|grep -E "startup.py|watch_drop_folder.py" |grep -v grep|awk '{print $1}'); do
+                for line in $(ps axw|grep -E "startup.py|watch_drop_folder.py|startup_queue.py" |grep -v grep|awk '{print $1}'); do
                     STARTUP_PIDS[$i]=$line
                     i=`expr $i + 1`
                 done
