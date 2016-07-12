@@ -5262,7 +5262,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
        
         # Do a security check
         if Config.get_value("security", "api_cmd_access") == "restricted":
-            print "Checking execute_cmd security"
             security = Environment.get_security()
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if access == False:
