@@ -217,26 +217,40 @@ class SPTDate(object):
         now = cls.now()
 
         diff = now - date
+        if diff.days < 0:
+            diff = date - now
+            txt = "from now"
+        else:
+            txt = "ago"
+
+        if diff.days >= 7:
+            value = date.strftime("%b %d at %I:%m %p")
+
+        elif diff.days == 1:
+            value = "1 day %s" % txt
+
+        elif diff.days > 1:
+            value = "%s days %s" % (diff.days, txt)
 
         # less than a minute
-        if diff.seconds < 60:
-            value = "%s seconds ago" % diff.seconds
+        elif diff.seconds < 60:
+            value = "%s seconds %s" % (diff.seconds, txt)
 
         # less than an hour
         elif diff.seconds < 60 * 60:
             minutes = diff.seconds / 60
             if minutes == 1:
-                value = "1 minute ago"
+                value = "1 minute %s" % txt
             else:
-                value = "%s minutes ago" % minutes
+                value = "%s minutes %s" % (minutes, txt)
 
         # less than a day
         elif diff.seconds < 60 * 60 * 24:
             hours = diff.seconds / 60 /60
             if hours == 1:
-                value = "1 hour ago"
+                value = "1 hour %s" % txt
             else:
-                value = "%s hours ago" % hours
+                value = "%s hours %s" % (hours, txt)
 
 
         else:
