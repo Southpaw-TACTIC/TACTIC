@@ -18,7 +18,7 @@ third_party = [
     "mootools/mootools-core-1.4.1-full-nocompat-yc.js",
     "mootools/mootools-more-1.4.0.1-yc.js",
     "json2.js",
-    "moment.min.js",
+
 ]
 
 

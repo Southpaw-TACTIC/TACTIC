@@ -77,100 +77,30 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
     def get_args_keys(my):
         return {
             "custom_menus" : "Custom menus (an array of dictionaries)",
-            "menus" : "Structure of menus to show",
             "embedded_table": "boolean to show if it is part of an embedded table"
         }
 
-
-    def get_builtin_access(my, label):
-        project_code = Project.get_project_code()
-        security = Environment.get_security()
-
-        builtin = False
-        builtin_key = False
-
-        if label == "Export All ...":
-            builtin_key = "export_all_csv"
-        elif label == "Import CSV":
-            builtin_key = "import_csv"
-        elif label == "Ingest Files":
-            builtin_key = "ingest"
-        elif label == 'Check-out Files':
-            # this appeared to be redundant
-            builtin_key = "ingest"
-        elif label == "Column Manager":
-            builtin_key = "view_column_manager"
-
-
-        if builtin_key:
-
-            access_keys = my._get_access_keys(builtin_key,  project_code)
-            builtin = security.check_access("builtin", access_keys, "allow")
-
-        return builtin
-
-
-
-
     def get_access_keys_dict(my):
+
+        from tactic.ui.startup import GearMenuSecurityWdg
+        menu_names = GearMenuSecurityWdg.get_all_menu_names()
 
         project_code = Project.get_project_code()
         security = Environment.get_security()
 
         access_keys_dict = {}
 
-        menus = my.kwargs.get("menus") or {}
-
-        # if menus is explicitly true, then show all menus
-        if menus == True:
-            menus = None
-
-        """
-        menus = {
-                'Tasks': ['Show Tasks'],
-                'Edit': ['Retire Selected Items', 'Delete Selected Items'],
-                'View': ['Save a New View'],
-        }
-        """
-
-        if menus:
-            for submenu, labels in menus.items():
-                if labels == True:
-                    continue
-                for label in labels:
-
-                    builtin_access = my.get_builtin_access(label)
-
-                    access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                    local_access = security.check_access("gear_menu", access_keys, "allow")
-
-                    if builtin_access or local_access:
-
-                        if not submenu in access_keys_dict:
-                            access_keys_dict[submenu] = [label]
-                        else:
-                            access_keys_dict[submenu].append(label)
-
-
-
-        else:
-            # This has a special from GearMenuSecurityWdg
-            from tactic.ui.startup import GearMenuSecurityWdg
-            menu_names = GearMenuSecurityWdg.get_all_menu_names()
-
-            for key,value in menu_names:
-                submenu = key
-                for label in value.get('label'):
-                    builtin_access = my.get_builtin_access(label)
-                    
-                    access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                    
-                    if builtin_access or security.check_access("gear_menu", access_keys, "allow"):
-                        if not submenu in access_keys_dict:
-                            access_keys_dict[submenu] = [label]
-                        else:
-                            access_keys_dict[submenu].append(label)
-
+        for key,value in menu_names:
+            submenu = key
+            for label in value.get('label'):
+                
+                access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+                
+                if security.check_access("gear_menu", access_keys, "allow"):
+                    if not submenu in access_keys_dict:
+                        access_keys_dict[submenu] = [label]
+                    else:
+                        access_keys_dict[submenu].append(label)
 
         return access_keys_dict
 
@@ -289,8 +219,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         
         if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
             my.is_admin = True
-
-        my.is_admin = False
 
         if my.is_admin:
         
@@ -504,10 +432,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('File'):
             label_list = access_keys_dict['File']
 
-        #access_keys = my._get_access_keys("export_all_csv",  project_code)
+        access_keys = my._get_access_keys("export_all_csv",  project_code)
+
         
-        #if security.check_access("builtin", access_keys, "allow") or 'Export All ...' in label_list:
-        if 'Export All ...' in label_list:
+        if security.check_access("builtin", access_keys, "allow") or 'Export All ...' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Export All ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);',
@@ -515,7 +443,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        show_export_separator = False
         if not my.layout or my.layout.can_add_columns():
             if my.is_admin or 'Export Selected ...' in label_list:
                 menu_items.append(
@@ -524,7 +451,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                                     'mode': 'export_selected'}
                     }
                 )
-                show_export_separator = True
 
         if my.is_admin or 'Export Matched ...' in label_list:
             menu_items.append( 
@@ -533,8 +459,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                                 'mode': 'export_matched'}
                 }
             )
-            show_export_separator = True
-
         if my.is_admin or 'Export Displayed ...' in label_list:
             menu_items.append( 
                  { "type": "action", "label": "Export Displayed ...",
@@ -542,21 +466,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                                 'mode': 'export_displayed'}
                 }
             )
-            show_export_separator = True
 
-
-        if show_export_separator:
+        access_keys = my._get_access_keys("import_csv",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or 'Import CSV' in label_list:
             menu_items.append( {"type": "separator"} )
-
-
-        if 'Import CSV' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Import CSV",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_import_cbk(evt,bvr);' }
                 } )
 
 
-        if 'Ingest Files' in label_list:
+        access_keys = my._get_access_keys("ingest",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or 'Ingest Files' in label_list:
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Ingest Files",
@@ -586,7 +507,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     spt.tab.add_new("ingest_" + search_type, title, class_name, kwargs);  
                                    '''}
                 } )
-        if 'Check-out Files' in label_list:
+        if security.check_access("builtin", access_keys, "allow") or 'Check-out Files' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Check-out Files",
                     "bvr_cb": { 'cbjs_action': '''
@@ -1121,7 +1042,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         search_type_obj = SearchType.get(search_type)
 
         # Column Manager menu item ...
-        if 'Column Manager' in label_list:
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or 'Column Manager' in label_list:
             menu_items.append( {
                 "type": "action",
                 "label": "Column Manager",

@@ -199,14 +199,6 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             return
 
 
-        #display_options = config.get_display_options(element_name)
-        #class_name = display_options.get("class_name")
-        #print element_name
-        #print display_options
-        #print class_name
-        #print "---"
-
-
         li = HtmlElement.li()
         li.add_class("spt_side_bar_link")
 
@@ -250,9 +242,6 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         link = "/tab/%s" % (element_name)
         li.add_attr("spt_link", link)
 
-
-
-
         if link_mode == 'href':
             project_code = Project.get_project_code()
             #li.add("<a href='/tactic/%s/#/tab/%s'>%s</a>" % (project_code, element_name, title) )
@@ -290,7 +279,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             # find the tab below the target
             li.add("<a>%s</a>" % title)
             li.add_behavior( {
-                'type': 'click',
+                'type': 'click_up',
                 'bvr_repeat_interval': 3,
                 'title': title,
                 'link': link,

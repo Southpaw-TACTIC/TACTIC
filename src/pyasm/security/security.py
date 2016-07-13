@@ -869,8 +869,7 @@ class Site(object):
 
         try:
             sql = DbContainer.get("sthpw")
-        except Exception, e:
-            print "WARNING: ", e
+        except:
             Site.pop_site()
             raise Exception("WARNING: site [%s] does not exist" % site)
 

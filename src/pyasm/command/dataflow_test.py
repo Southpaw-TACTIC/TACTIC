@@ -134,9 +134,9 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_file()
+            #my._test_file()
             #my._test_checkin()
-            #my._test_manual()
+            my._test_manual()
         except Exception, e:
             print "Error: ", e
             raise
@@ -328,9 +328,10 @@ class WorkflowCmd(Command):
         }
 
         import time
-        start = time.time()
-        Trigger.call(my, "process|pending", output)
-        print time.time() - start
+        for i in range(0, 10):
+            start = time.time()
+            Trigger.call(my, "process|pending", output)
+            print time.time() - start
 
 
 
@@ -357,7 +358,6 @@ class WorkflowCmd(Command):
         sobject.commit()
 
 
-        # the process checks into the "test" context and outputs this context
         process = processes.get("a")
         process.set_json_value("workflow", {
             'output': {
@@ -381,7 +381,6 @@ class WorkflowCmd(Command):
         process.commit()
 
 
-        # the process takes the path from the prvious process
         process = processes.get("b")
         process.set_json_value("workflow", {
             'output': {
@@ -531,9 +530,6 @@ class WorkflowCmd(Command):
 
         task.set_value("status", "complete")
         task.commit()
-
-
-        fasfds
 
 
         return

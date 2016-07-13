@@ -380,8 +380,6 @@ class SendEmail(Command):
     def execute(my):
         
         sender_email = my.kwargs.get('sender_email')
-        sender_name = my.kwargs.get('sender_name')
-
         if not sender_email:
             sender_email = Environment.get_login().get_full_email()
             if not sender_email:
@@ -411,10 +409,7 @@ class SendEmail(Command):
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
-        if sender_name:
-            msg.add_header('From', "%s <%s>" % (sender_name, sender_email))
-        else:
-            msg.add_header('From', "%s" % sender_email)
+        msg.add_header('From', sender_email)
         msg.add_header('Reply-To', sender_email)
         msg.add_header('To',  ','.join(recipient_emails))
         msg.add_header('Date', formatdate(localtime=True))
