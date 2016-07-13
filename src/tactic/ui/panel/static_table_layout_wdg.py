@@ -158,7 +158,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             if row % 2:
                 background = tr.add_color("background", "background")
             else:
-                background = tr.add_color("background", "background", -1)
+                background = tr.add_color("background", "background", -7)
 
             tr.add_class("spt_table_row")
             tr.add_attr("spt_search_key", sobject.get_search_key())
@@ -220,7 +220,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             header_div = DivWdg()
             th.add(header_div)
             th.add_style("padding: 3px")
-            th.add_color("background", "background", -5)
+            th.add_gradient("background", "background", -5, -10)
             th.add_border()
 
             if my.mode == 'widget':

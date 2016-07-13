@@ -10,12 +10,12 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd']
 
 import re
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, Common
+from pyasm.common import Environment
 from pyasm.biz import Pipeline, Project
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
@@ -1674,41 +1674,29 @@ class ProcessInfoWdg(BaseRefreshWdg):
         if search_type == "sthpw/task":
             widget = TaskStatusInfoWdg(**my.kwargs)
 
-        elif node_type in ['manual', 'node']:
-            widget = DefaultInfoWdg(**my.kwargs)
-
         elif node_type == 'approval':
             widget = ApprovalInfoWdg(**my.kwargs)
 
-        elif node_type == 'action':
+        if node_type == 'action':
             widget = ActionInfoWdg(**my.kwargs)
 
-        elif node_type == 'condition':
+        if node_type == 'condition':
             widget = ConditionInfoWdg(**my.kwargs)
 
-        elif node_type == 'hierarchy':
+        if node_type == 'hierarchy':
             widget = HierarchyInfoWdg(**my.kwargs)
 
-        elif node_type == 'dependency':
+        if node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
 
-        elif node_type == 'progress':
+        if node_type == 'progress':
             widget = ProgressInfoWdg(**my.kwargs)
 
-        elif node_type == 'unknown':
+        if node_type == 'unknown':
             widget = UnknownInfoWdg(**my.kwargs)
 
-        elif node_type == 'progress':
+        if node_type == 'progress':
             widget = ProgressInfoWdg(**my.kwargs)
-
-        else:
-            from pyasm.command import CustomProcessConfig
-            widget = CustomProcessConfig.get_info_handler(node_type, my.kwargs)
-            #from spt.tools.youtube import YouTubeProcessInfoWdg
-            #widget = YouTubeProcessInfoWdg(**my.kwargs)
-
-
-
 
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
@@ -1798,8 +1786,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             select = SelectWdg("node_type")
             title_wdg.add(select)
-
-            node_types = [
+            select.set_option("values", [
                 'manual',
                 'action',
                 'condition',
@@ -1807,25 +1794,8 @@ class BaseInfoWdg(BaseRefreshWdg):
                 'hierarchy',
                 # Not supported yet
                 'dependency',
-                'progress',
-            ]
-
-
-            search = Search("config/widget_config")
-            search.add_filter("category", "workflow")
-            configs = search.get_sobjects()
-            if configs:
-                node_types.append('---')
-
-            for config in configs:
-                node_types.append(config.get_value("view"))
-
-            labels = [Common.get_display_title(x) for x in node_types]
-
-            select.set_option("values", node_types)
-            select.set_option("labels", labels)
-
-
+                'progress'
+            ])
             select.add_style("width: 100px")
             if node_type == "node":
                 select.set_value("manual")

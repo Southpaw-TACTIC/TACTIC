@@ -34,7 +34,7 @@ class CustomLayoutElementWdg(CustomLayoutWdg, BaseTableElementWdg):
             'description': 'The view defined in the widget config/Custom Layout Editor that contains the custom html',
             'type': 'TextWdg',
             'order': 0,
-            'category': 'Required'
+            'category': ''
         },
         'show_resize_scroll': {
             'description': 'Determines whether to show the scroll resize widget on elements',
