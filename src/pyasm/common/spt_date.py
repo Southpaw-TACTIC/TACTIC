@@ -246,9 +246,9 @@ class SPTDate(object):
 
         # less than a day
         elif diff.seconds < 60 * 60 * 24:
-            hours = diff.seconds / 60 /60
-            if hours == 1:
-                value = "1 hour %s" % txt
+            hours = float(diff.seconds) / 60.0 / 60.0
+            if hours < 12:
+                value = "%0.1f hours %s" % (hours, txt)
             else:
                 value = "%s hours %s" % (hours, txt)
 
