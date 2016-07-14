@@ -1,5 +1,5 @@
-TACTIC
-======
+TACTIC Open Source
+==================
 
 
 TACTIC is a dynamic, open-source, web-based platform that allows users to manage the development and delivery of digital
