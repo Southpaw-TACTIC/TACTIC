@@ -106,12 +106,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.view = kwargs.get('config_base')
 
 
-        #my.show_search_limit = kwargs.get('show_search_limit')
-        #if my.show_search_limit in ["false", False]:
-        #    my.show_search_limit = False
-        #else:
-        #    my.show_search_limit = True
-        my.show_search_limit = my.get_setting("search_limit")
+        my.show_search_limit = kwargs.get('show_search_limit')
+        if my.show_search_limit == "false":
+            my.show_search_limit = False
+        #elif my.kwargs.get('expression'):
+            #my.show_search_limit = False
+        else:
+            my.show_search_limit = True
 
         my.is_refresh = kwargs.get('is_refresh') == 'true'
         my.aux_info = kwargs.get('aux_info')
@@ -123,11 +124,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.group_sobjects = []
         my.order_element = ""
         my.show_retired_element = ""
-
-
-        my.group_info = DivWdg()
-        my.group_info.add_class("spt_table_group_info")
-
 
         my.element_names = []
 
@@ -739,144 +735,33 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def get_show_insert(my):
-        show_insert = my.view_attributes.get("insert") or True
-
+        show_insert = my.view_attributes.get("insert")
         # if edit_permission on the sobject is not allowed then we don't
         # allow insert
         if my.edit_permission == False:
             show_insert = False
 
-        if show_insert:
-            show_insert = my.get_setting("insert")
+        if show_insert in [ '', None ]:
+            show_insert = my.kwargs.get("show_insert")
+
+        if show_insert in ['false', False]:
+            show_insert = False
+        else:
+            show_insert = True
+
 
         return show_insert
 
-
-
-    def set_default_off(my):
-
-        if my.kwargs.get("set_shelf_defailt") == "off":
-
-            settings = {
-                    "show_insert": False,
-                    "show_expand": False,
-
-            }
-
-        shelf_elements = my.kwargs.get("shelf_elements")
-        if shelf_elements:
-            shelf_elements = shelf_elements.split(",")
-
-
-
-    def get_setting(my, name):
-        settings = my.kwargs.get("settings") or {}
-
-        """
-        settings = {
-            "gear": {
-                    'Tasks': ['Show Tasks'],
-                    'Edit': ['Retire Selected Items', 'Delete Selected Items'],
-                    'View': ['Save a New View'],
-            },
-            #"save": True
-            #"search_limit": True,
-            #"expand": True,
-            #"insert": True,
-            "layour_switcher": True,
-        }
-        #settings = None
-        #settings = "ssave|insert|search|keyword_search"
-        """
-
-
-        settings_default = {
-            'header_background': True
-        }
-
-
-
-        if isinstance(settings, basestring):
-            settings = settings.split("|")
-
-        if isinstance(settings, list):
-            new_settings = {}
-            for item in settings:
-                new_settings[item] = True
-            settings = new_settings
-
-        if settings.has_key("gear") and settings.get("gear") == True:
-            gear_settings = my.kwargs.get("gear_settings")
-            if isinstance(gear_settings, basestring):
-                if gear_settings.startswith("{") and gear_settings.endswith("}"):
-                    # HACK:
-                    gear_settings = gear_settings.replace("'", '"')
-                    gear_settings = jsonloads(gear_settings)
-                else:
-                    gear_settings = gear_settings.split("|")
-
-            if isinstance(gear_settings, list):
-                new_gear_settings = {}
-                for item in gear_settings:
-                    new_gear_settings[item] = True
-                gear_settings = new_gear_settings
-
-            if not gear_settings:
-                gear_settings = {}
-
-            settings["gear"] = gear_settings
-
-
-        default = True
-        if name in ["gear"]:
-            default = True
-        elif name in ['header_background']:
-            default = True
-
-
-
-        value = None
-        if settings:
-            if settings.get(name) in [None, False, "false"]:
-                # if not in settings, then the default is false
-                default = False
-            if not settings.has_key(name):
-                value = settings_default.get(name)
-            else:
-                value = settings.get(name)
-
-
-        # some special settings if the value is False
-        if value in [False, None]:
-            show_name = "show_%s" % name
-
-            if default == True:
-                if my.kwargs.get(show_name) not in ['false', False]:
-                    value = True
-                else:
-                    value = False
-
-            else:
-                if my.kwargs.get(show_name) not in ['true', True]:
-                    value = False
-                else:
-                    value = True
-
-
-
-        return value
 
 
 
 
     def get_action_wdg(my):
 
-
         # determine from the view if the insert button is visible
         show_insert = my.get_show_insert()
         show_retired = my.view_attributes.get("retire")
         show_delete = my.view_attributes.get("delete")
-
 
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
 
@@ -888,8 +773,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_color("color", "color")
         
         border_color = div.get_color("table_border",  default="border")
-        if my.get_setting("header_background"):
-            div.add_color("background", "background",-1)
+        div.add_color("background", "background",-3)
 
 
         # the label on the commit button
@@ -919,8 +803,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add gear menu here
         my.view_save_dialog = None
-        show_gear = my.get_setting("gear")
-        if my.can_use_gear() and show_gear:
+        if my.can_use_gear() and my.kwargs.get("show_gear") not in ["false", False]:
             # Handle configuration for custom script (or straight javascript script) on "post-action on delete"
             # activity ...
             cbjs_post_delete = ''
@@ -939,16 +822,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 cbjs_post_delete = my.kwargs.get("post_delete_js")
 
             embedded_table =  my.kwargs.get("__hidden__") == 'true'
-
            
             btn_dd = DgTableGearMenuWdg(
-                menus=my.get_setting("gear"),
                 layout=my,
                 table_id=my.get_table_id(),
                 search_type=my.search_type, view=my.view,
                 parent_key=my.parent_key,
-                cbjs_post_delete=cbjs_post_delete,
-                show_delete=show_delete,
+                cbjs_post_delete=cbjs_post_delete, show_delete=show_delete,
                 custom_menus=custom_gear_menus,
                 show_retired=show_retired, embedded_table=embedded_table,
                 ingest_data_view= my.ingest_data_view,
@@ -968,7 +848,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         simple_search_mode = my.kwargs.get("simple_search_mode")
 
         # default to true
-        show_keyword_search = my.get_setting("keyword_search")
+        show_keyword_search = my.kwargs.get("show_keyword_search")
+        if show_keyword_search in [False, 'false']:
+            show_keyword_search = False
+        else:
+            show_keyword_search = True
+
+        show_search = my.kwargs.get("show_search") != 'false'
 
         if show_keyword_search:
             from tactic.ui.filter import FilterData
@@ -1158,25 +1044,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         layout_wdg = None
         column_wdg = None
         
-        show_column_wdg = my.get_setting("column_manager")
-        show_layout_wdg = my.get_setting('layout_switcher') 
+        show_column_wdg = my.kwargs.get('show_column_manager') 
+        show_layout_wdg = my.kwargs.get('show_layout_switcher') 
         
-        if show_column_wdg and my.can_add_columns():
+        if not show_column_wdg =='false' and my.can_add_columns():
             column_wdg = my.get_column_manager_wdg()
-        if show_layout_wdg:
+        if not show_layout_wdg =='false':
             layout_wdg = my.get_layout_wdg()
 
-
-        """
         show_expand = my.kwargs.get("show_expand")
         if show_expand in ['false', False]:
             show_expand = False
         else:
             show_expand = True
-        """
-
-        show_expand = my.get_setting("expand")
-
+        #if show_expand in ['true', True]:
+        #    show_expand = True
+        #else:
+        #    show_expand = False
         if not my.can_expand():
             show_expand = False
  
@@ -1263,8 +1147,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-
-            show_search = my.get_setting("search")
             if show_search or show_keyword_search:
                 search_label = 'Search'
             else:
@@ -1446,7 +1328,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def get_save_button(my):
-        show_save = my.get_setting("save")
+        show_save = True
 
         if my.edit_permission == False or not my.view_editable:
             show_save = False
@@ -1502,6 +1384,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         '''draws the button row in the shelf'''
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
 
+
+        shelf_elements = my.kwargs.get("shelf_elements")
+        if shelf_elements:
+            shelf_elements = shelf_elements.split(",")
+
+
         button_row_wdg = ButtonRowWdg(show_title=True)
 
         """
@@ -1520,8 +1408,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # add an item button
-        show_insert = my.get_show_insert()
-        if show_insert:
+        show_insert = my.view_attributes.get("insert")
+        # if edit_permission on the sobject is not allowed then
+        # we don't allow insert
+        show_save = True
+
+        if my.edit_permission == False:
+            show_insert = False
+            show_save = False
+
+        if not my.can_save():
+            show_save = False
+
+        if show_insert in [ '', None ]:
+            show_insert = my.kwargs.get("show_insert")
+
+   
+        #from tactic.ui.container import Menu, MenuItem, SmartMenu
+        if show_insert not in ["false", False]:
             insert_view = my.kwargs.get("insert_view")
             
             if not insert_view or insert_view == 'None':
@@ -1552,7 +1456,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   save_event: 'search_table_' + bvr.table_id,
                   show_header: false,
                 };
-                spt.panel.load_popup('Add new ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
             } )
@@ -1762,7 +1666,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        if my.can_use_gear() and my.get_setting("gear"):
+        if my.can_use_gear() and my.kwargs.get("show_gear") not in ["false", False]:
             #button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
             button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row_wdg.add(button)
@@ -1781,8 +1685,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.filter_num_div = None
         # Search button
         search_dialog_id = my.kwargs.get("search_dialog_id")
-        show_search = my.get_setting("search")
-
+        show_search = my.kwargs.get("show_search") != 'false'
         if show_search and search_dialog_id:
             div = DivWdg()
             my.table.add_attr("spt_search_dialog_id", search_dialog_id)
@@ -2142,7 +2045,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var activator = spt.smenu.get_activator(bvr);
 
                 if( spt.is_TRUE( activator.getProperty("spt_widget_is_groupable") ) ) {
-                    var test = activator.getParent(".spt_layout").getElements(".spt_search_group");
 
                     var search_group_el = activator.getParent(".spt_layout").getElement(".spt_search_group");
                     var group_by = activator.getProperty("spt_element_name");

@@ -161,7 +161,7 @@ class FormatElementWdg(SimpleTableElementWdg):
         value = my.get_value()
         widget_type = my.get_option("type")
         
-        if widget_type in ['date','time'] and value:
+        if widget_type in ['date','time']:
             name = my.get_name()
             if not SObject.is_day_column(name):
                 value = my.get_timezone_value(value)

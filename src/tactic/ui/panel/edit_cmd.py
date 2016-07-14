@@ -85,7 +85,7 @@ class EditCmd(Command):
 
         super(EditCmd,my).__init__()
         my.search_type = None
-        my.sobject = kwargs.get("sobject")
+        my.sobject = None
 
 
     def get_sobject(my):
@@ -139,11 +139,10 @@ class EditCmd(Command):
 
         # discover any default handlers
         default_elements = []
-
         from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
         tmp_config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
-        tmp_element_names = tmp_config.get_element_names()
 
+        tmp_element_names = tmp_config.get_element_names()
         for element_name in tmp_element_names:
             action_handler = tmp_config.get_action_handler(element_name)
             if action_handler == 'DefaultValueDatabaseAction':
@@ -199,7 +198,7 @@ class EditCmd(Command):
                     exec(stmt)
                     action_handler_class = eval("%s.get_default_action()" % display_class)
                 except Exception, e:
-                    #print "WARNING: ", e
+                    print "WARNING: ", e
                     action_handler_class = ""
 
             if action_handler_class == "":
@@ -245,10 +244,6 @@ class EditCmd(Command):
             # this is needed for action handler below
             my.search_type = sobject.get_search_type()
 
-        elif my.sobject:
-            sobject = my.sobject
-            my.search_type = sobject.get_search_type()
-
         else:
             # get the search type and search id
             my.search_type = web.get_form_value("search_type")
@@ -273,7 +268,6 @@ class EditCmd(Command):
 
         # set the sobject for each action handler
         for action_handler in action_handlers:
-
             action_handler.set_sobject(sobject)
             if action_handler.check():
                 if my.parent_key:
@@ -320,7 +314,6 @@ class EditCmd(Command):
                     is_insert = False
 
                 sobject.commit()
-         
 
                 # only connect on insert
                 if is_insert and my.connect_key and my.connect_key != "__NONE__":
@@ -333,19 +326,6 @@ class EditCmd(Command):
 
             # ask the sobject for the description
             my.add_description( sobject.get_update_description() )
-
-
-
-        # do a post action
-        for action_handler in action_handlers:
-            try:
-                action_handler.post_execute()
-            except Exception, e:
-                print "WARNING: ", e
-
-
-
-
         my.sobject = sobject
         # post process each action handers, post commit
         for action_handler in action_handlers:

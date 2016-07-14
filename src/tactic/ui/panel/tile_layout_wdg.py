@@ -2099,8 +2099,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
 
         #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
-        show_detail = my.kwargs.get("show_detail")
-        if show_detail not in [False, 'false']:
+        if True:
             detail_div = DivWdg()
             div.add(detail_div)
             detail_div.add_style("float: right")
@@ -2223,11 +2222,6 @@ class ThumbWdg2(BaseRefreshWdg):
             height = "auto"
 
         sobject = my.get_current_sobject()
-        if not sobject:
-            search_key = my.kwargs.get("search_key")
-            if search_key:
-                sobject = Search.get_by_search_key(search_key)
-                my.set_sobject(sobject)
 
         div = my.top
         div.add_class("spt_thumb_top")

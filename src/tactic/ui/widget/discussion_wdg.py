@@ -1035,7 +1035,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
         my.hidden = my.kwargs.get('hidden') == True 
         
-        mode = my.kwargs.get("mode")
 
         my.show_border = my.kwargs.get("show_border")
         if my.show_border in ['false', False]:
@@ -1148,8 +1147,7 @@ class DiscussionWdg(BaseRefreshWdg):
             # add a refresh listener
             top.add_class("spt_discussion_top")
             my.set_as_panel(top)
-            if mode != "icon":
-                top.add_style("min-width: 300px")
+            top.add_style("min-width: 300px")
 
 
             max_height = my.kwargs.get("max_height")
@@ -1246,7 +1244,6 @@ class DiscussionWdg(BaseRefreshWdg):
         sobj = my.sobject
         has_process = my.sobject.has_value('process')
         has_context = my.sobject.has_value('context')
-
         if notes:
             expand_div = DivWdg()
 
@@ -1284,23 +1281,12 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
             no_notes_div.add(no_notes_msg)
-
-
-            if mode == "icon":
-                add_wdg = IconWdg("Add Note", "BS_EDIT")
-                no_notes_msg.add(add_wdg)
-                if len(notes):
-                    no_notes_msg.add("<i> (%s) </i>" % len(notes))
-
-            else:
-                add_wdg = IconWdg("Add Note", "BS_PLUS")
-                no_notes_msg.add(add_wdg)
-                msg = "No notes. Click to add."
-                no_notes_msg.add("<i> %s </i>" % _(msg))
-                no_notes_div.add_style("font-size: 0.9em")
+            add_wdg = IconWdg("Add Note", "BS_PLUS")
+            no_notes_msg.add(add_wdg)
+            msg = "No notes. Click to add."
+            no_notes_msg.add("<i> %s </i>" % _(msg))
+            no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
-
-
 
             no_notes_msg.add_class(add_class)
             # force the add textarea to show in js
@@ -1430,18 +1416,9 @@ class DiscussionWdg(BaseRefreshWdg):
             if context not in my.default_contexts_open:
                 context_top.add_attr("spt_state", 'closed')
 
-
-            if mode == "icon":
-                context_wdg = IconWdg("Add Note", "BS_EDIT")
-                context_top.add(context_wdg)
-                if len(notes):
-                    context_top.add("<i> (%s) </i>" % len(notes))
-                context_wdg.add_style("margin-left: 3px")
-            else:
-                context_wdg = my.get_context_wdg(process, context)
-                context_top.add(context_wdg)
-                context_top.add_style("min-width: 300px")
-
+            context_wdg = my.get_context_wdg(process, context)
+            context_top.add(context_wdg)
+            context_top.add_style("min-width: 300px")
             if my.contexts:
                 context_choices = my.contexts
             elif has_process and has_context:

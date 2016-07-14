@@ -34,10 +34,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         # or
         'search_type': 'search type of the sobject to be displayed',
         'code': 'code of the sobject to be displayed',
-        'id': {
-            'description': 'id of the sobject to be displayed',
-            'category': '_internal',
-        },
+        'id': 'id of the sobject to be displayed',
+
         'sobjects_expr': 'expression to populate the sobjects for this widget',
 
         'category': {
@@ -56,10 +54,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
             'category': 'Options'
         },
 
-        'state': {
-            'description': 'State surrounding the widget',
-            'category': '_deprecated'
-        },
+        'state': 'state surrounding the widget',
+        'show_resize_scroll': 'true|false - determines wether to show the scroll resize widget on elements',
+
         'html': {
             'description': 'Explicitly define the html layout inline',
             'type': 'TextAreaWdg',
@@ -73,6 +70,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             'description': 'Include any other config files',
             'type': 'TextWdg',
             #'order': '1',
+            'category': 'Options'
         }
     }
 
