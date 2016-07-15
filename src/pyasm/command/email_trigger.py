@@ -391,13 +391,11 @@ class SendEmail(Command):
 
         is_uni = False
         st = 'plain'
-        
-        
+
         if "<html>" in message:
             st = 'html'
         else:
             st = 'plain'
-            
         charset = 'us-ascii'
         subject = "Email Test"
         new_subject = my.kwargs.get('subject')
