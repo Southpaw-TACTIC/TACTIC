@@ -391,7 +391,6 @@ class SendEmail(Command):
 
         is_uni = False
         st = 'plain'
-
         if "<html>" in message:
             st = 'html'
         else:
