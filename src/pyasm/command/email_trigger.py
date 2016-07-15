@@ -390,7 +390,6 @@ class SendEmail(Command):
         message = my.kwargs.get('msg')
 
         is_uni = False
-        st = 'plain'
         if "<html>" in message:
             st = 'html'
         else:
