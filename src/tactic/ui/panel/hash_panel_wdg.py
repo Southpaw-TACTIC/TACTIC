@@ -140,6 +140,13 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
     def _get_predefined_url(cls, key, hash):
+
+        # only allow people with site admin
+        security = Environment.get_security()
+        is_admin = security.is_admin()
+        if not is_admin and key == "admin":
+            return None
+ 
  
         # make some predefined fake urls
         if key in ["link", "tab", "admin"]:
