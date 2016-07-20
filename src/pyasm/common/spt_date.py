@@ -250,7 +250,7 @@ class SPTDate(object):
             if hours < 12:
                 value = "%0.1f hours %s" % (hours, txt)
             else:
-                value = "%s hours %s" % (hours, txt)
+                value = "%s hours %s" % (int(hours), txt)
 
 
         else:
