@@ -567,6 +567,15 @@ class ExpressionElementWdg(TypeTableElementWdg):
             div.add_attr("expression", link_expr)
             div.add_class("hand")
 
+            search_type_sobj = my.sobject.get_search_type_obj()
+            sobj_title = search_type_sobj.get_title()
+
+            #name = my.sobject.get_value("name", no_exception=True)
+            name = None
+            if not name:
+                name = my.sobject.get_code()
+            div.add_attr("name", "%s: %s" % (sobj_title, name))
+
             # click up blocks any other behavior
             div.add_behavior( {
                 'type': 'click_up',

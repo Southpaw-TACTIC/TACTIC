@@ -796,6 +796,11 @@ class Site(object):
 
     def allow_guest(cls, url=None):
         return None
+
+
+    def start_site(cls, site):
+        return False
+    start_site = classmethod(start_site)
  
 
 
@@ -842,6 +847,7 @@ class Site(object):
 
     def set_site(cls, site, store_security=True):
         '''Set the global site for this "session"'''
+
         if not site:
             return
         sites = Container.get("sites")
@@ -870,6 +876,11 @@ class Site(object):
         try:
             sql = DbContainer.get("sthpw")
         except Exception, e:
+
+            # try to start the site
+            site_obj = Site.get()
+            site_obj.start_site(site)
+
             print "WARNING: ", e
             Site.pop_site()
             raise Exception("WARNING: site [%s] does not exist" % site)
