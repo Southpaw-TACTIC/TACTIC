@@ -1171,7 +1171,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
         upload_div.add(button)
         button.add_style("float: right")
-        upload_div.add_style("margin-bottom: 15px")
+        upload_div.add_style("margin-bottom: 20px")
 
 
 
@@ -1539,7 +1539,8 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        #key = my.kwargs.get("key")
+        key = my.kwargs.get("key")
+
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
@@ -1946,23 +1947,25 @@ class IngestUploadCmd(Command):
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 
+
+            if key:
+                msg = {
+                    'progress': percent,
+                    'description': 'Checking in file [%s]' % filename,
+                }
+
+                server.log_message(key, msg, status="in progress")
+
+
+
+
+
+        if key:
             msg = {
-                'progress': percent,
-                'description': 'Checking in file [%s]' % filename,
+                'progress': '100',
+                'description': 'Check-ins complete'
             }
-
-            server.log_message(key, msg, status="in progress")
-
-
-
-
-
-
-        msg = {
-            'progress': '100',
-            'description': 'Check-ins complete'
-        }
-        server.log_message(key, msg, status="complete")
+            server.log_message(key, msg, status="complete")
 
         my.info = non_seq_filenames
         return non_seq_filenames
