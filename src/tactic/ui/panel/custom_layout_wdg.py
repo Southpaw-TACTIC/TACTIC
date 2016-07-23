@@ -606,7 +606,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-
     def process_mako(my, html):
 
         from mako.template import Template
