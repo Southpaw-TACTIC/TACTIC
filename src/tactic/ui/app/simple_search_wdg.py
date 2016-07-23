@@ -244,12 +244,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         if config_sobj:
             config_xml = config_sobj.get_value("config")
-
-            print "config: ", config_xml
-            print "----"
-
             config_xml = Common.run_mako(config_xml)
-            print "config: ", config_xml
 
         elif config:
             config_xml = '''
