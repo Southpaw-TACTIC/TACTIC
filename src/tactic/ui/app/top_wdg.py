@@ -288,6 +288,8 @@ class TopWdg(Widget):
             'cbjs_action': '''
 
             var view = bvr.src_el.getAttribute("view")
+            var search_key = bvr.src_el.getAttribute("search_key")
+            var expression = bvr.src_el.getAttribute("expression")
 
             var name = bvr.src_el.getAttribute("name");
             var title = bvr.src_el.getAttribute("title");
@@ -305,13 +307,27 @@ class TopWdg(Widget):
             }
 
 
-            spt.tab.set_main_body_tab()
-
-            var cls = "tactic.ui.panel.CustomLayoutWdg";
-            var kwargs = {
-                view: view
+            if (expression) {
+                var server = TacticServerStub.get();
+                var sss = server.eval(expression, {search_keys: search_key, single: true})
+                search_key = sss.__search_key__;
             }
 
+
+            spt.tab.set_main_body_tab()
+
+            if (view) {
+                var cls = "tactic.ui.panel.CustomLayoutWdg";
+                var kwargs = {
+                    view: view
+                }
+            }
+            else if (search_key) {
+                var cls = "tactic.ui.tools.SObjectDetailWdg";
+                var kwargs = {
+                    search_key: search_key
+                }
+            }
 
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
@@ -907,10 +923,12 @@ class TitleTopWdg(TopWdg):
         web = WebContainer.get_web()
         my.body.add_color("color", "color")
 
-        if web.is_title_page():
-            my.body.add_gradient("background", "background", 0, -20)
-        else:
-            my.body.add_gradient("background", "background", 0, -15)
+
+        #if web.is_title_page():
+        #    my.body.add_gradient("background", "background", 0, -20)
+        #else:
+        #    my.body.add_gradient("background", "background", 0, -15)
+        my.body.add_color("background", "background")
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")

@@ -2547,7 +2547,7 @@ class PopupWindowLinkWdg(HtmlElement):
 
 
 class FileUploadUpdateWdg(AjaxWdg):
-    '''It updates the upload prgress'''
+    '''It updates the upload progress'''
 
     def init_cgi(my):
         my.file_name = ''

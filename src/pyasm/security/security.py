@@ -876,7 +876,6 @@ class Site(object):
         try:
             sql = DbContainer.get("sthpw")
         except Exception, e:
-
             # try to start the site
             site_obj = Site.get()
             site_obj.start_site(site)

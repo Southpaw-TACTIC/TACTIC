@@ -304,61 +304,71 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         div.add("<br/>")
-        div.add("<hr/>")
 
 
         # options
 
 
         # update mode
+        map_div = DivWdg()
+        div.add(map_div)
+        map_div.add("<hr/>")
+
         title_wdg = DivWdg()
-        div.add(title_wdg)
+
+        map_div.add(title_wdg)
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        label_div = DivWdg()
-        label_div.add("Determine how the file maps to a particular item")
-        div.add(label_div)
-        label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 8px")
-
-        update_mode_option = my.kwargs.get("update_mode")
-        if not update_mode_option:
-            update_mode_option = "true"
-        update_mode = SelectWdg(name="update mode")
-        update_mode.add_class("spt_update_mode_select")
-        update_mode.set_option("values", ["false", "true", "sequence"])
-        update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update as a sequence"])
-        update_mode.set_option("default", update_mode_option)
-        update_mode.add_style("margin-top: -3px")
-        update_mode.add_style("margin-right: 5px")
-        div.add(update_mode)
+        if "map_option" in hidden_options:
+            map_div.add_style("display: none")
 
 
-        label_div = DivWdg()
-        label_div.add("Ignore File Extension")
-        div.add(label_div)
-        label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 8px")
+        if "update_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Determine how the file maps to a particular item")
+            map_div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
 
-        ignore_ext_option = my.kwargs.get("ignore_ext")
-        if not ignore_ext_option:
-            ignore_ext_option = "false"
-        ignore_ext = SelectWdg(name="update mode")
-        ignore_ext.add_class("spt_ignore_ext_select")
-        ignore_ext.set_option("values", ["true", "false"])
-        ignore_ext.set_option("labels", ["Yes", "No"])
-        ignore_ext.set_option("default", ignore_ext_option)
-        ignore_ext.add_style("margin-top: -3px")
-        ignore_ext.add_style("margin-right: 5px")
-        div.add(ignore_ext)
+            update_mode_option = my.kwargs.get("update_mode")
+            if not update_mode_option:
+                update_mode_option = "true"
+            update_mode = SelectWdg(name="update mode")
+            update_mode.add_class("spt_update_mode_select")
+            update_mode.set_option("values", ["false", "true", "sequence"])
+            update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update as a sequence"])
+            update_mode.set_option("default", update_mode_option)
+            update_mode.add_style("margin-top: -3px")
+            update_mode.add_style("margin-right: 5px")
+            map_div.add(update_mode)
+
+
+        if "ext_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Ignore File Extension")
+            map_div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
+
+            ignore_ext_option = my.kwargs.get("ignore_ext")
+            if not ignore_ext_option:
+                ignore_ext_option = "false"
+            ignore_ext = SelectWdg(name="update mode")
+            ignore_ext.add_class("spt_ignore_ext_select")
+            ignore_ext.set_option("values", ["true", "false"])
+            ignore_ext.set_option("labels", ["Yes", "No"])
+            ignore_ext.set_option("default", ignore_ext_option)
+            ignore_ext.add_style("margin-top: -3px")
+            ignore_ext.add_style("margin-right: 5px")
+            map_div.add(ignore_ext)
 
 
         if "column_option" not in hidden_options:
             label_div = DivWdg()
             label_div.add("Map file name to column")
-            div.add(label_div)
+            map_div.add(label_div)
             label_div.add_style("margin-top: 10px")
             label_div.add_style("margin-bottom: 8px")
 
@@ -372,20 +382,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             column_select.set_option("default", column_option)
             column_select.add_style("margin-top: -3px")
             column_select.add_style("margin-right: 5px")
-            div.add(column_select)
+            map_div.add(column_select)
 
 
 
         if "context_mode" not in hidden_options:
-            div.add("<br/>")
-            div.add("<hr/>")
+            map_div.add("<br/>")
+            map_div.add("<hr/>")
 
             title_wdg = DivWdg()
-            div.add(title_wdg)
+            map_div.add(title_wdg)
             title_wdg.add("Context Mode")
             title_wdg.add_style("font-size: 16px")
 
-            div.add("<br/>")
+            map_div.add("<br/>")
 
             context_mode_option = my.kwargs.get("context_mode")
             if not context_mode_option:
@@ -397,7 +407,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             context_mode.set_option("default", context_mode_option)
             context_mode.add_style("margin-top: -3px")
             context_mode.add_style("margin-right: 5px")
-            div.add(context_mode)
+            map_div.add(context_mode)
                 
 
 
@@ -1825,13 +1835,31 @@ class IngestUploadCmd(Command):
                     except:
                         pass
 
+            # for some unknown reason, this input prefix is ignored
+            del(update_data['input_prefix'])
+            new_data = {}
+            for name, value in update_data.items():
+                name = name.replace("%s|"%input_prefix, "")
+                new_data[name] = value
+
+
+            from tactic.ui.panel import EditCmd
+            cmd = EditCmd(
+                    view="edit",
+                    sobject=sobject,
+                    data=new_data,
+                    commit="false",
+
+            )
+            cmd.execute()
+            """
             for key, value in update_data.items():
                 if input_prefix:
                     key = key.replace('%s|'%input_prefix, '')
                 if SearchType.column_exists(search_type, key):
                     if value:
                         sobject.set_value(key, value)
-
+            """
 
 
             for key, value in extra_data.items():

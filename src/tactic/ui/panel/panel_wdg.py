@@ -3219,6 +3219,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
         show_collection_tool = my.kwargs.get("show_collection_tool")
+        settings = my.kwargs.get("settings")
+        gear_settings = my.kwargs.get("gear_settings")
+
+        is_inner = my.kwargs.get("is_inner")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3297,7 +3301,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             "expand_mode": expand_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
-            "show_collection_tool": show_collection_tool
+            "show_collection_tool": show_collection_tool,
+            "is_inner": is_inner,
+            "settings": settings,
+            "gear_settings": gear_settings,
             #"search_wdg": search_wdg
             
         }
@@ -3337,7 +3344,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
-        elif layout == 'fast_table':
+        elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             kwargs['edit'] = my.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
@@ -3397,6 +3404,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'old_table':
             from layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
+
+        elif layout and layout != "default":
+            layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
+
         else:
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             kwargs['show_border'] = my.kwargs.get("show_border")
