@@ -510,9 +510,13 @@ class Sql(Base):
                     encoding = 'utf8'
                 if not charset:
                     charset = 'utf8'
+                if not my.port:
+                    my.port = 3306
+                int_port = int(my.port)
                 my.conn = MySQLdb.connect(  db=my.database_name,
                                             host=my.host,
                                             user=my.user,
+                                            port=int_port,
                                             charset=charset,
                                             use_unicode=True,
                                             passwd=my.password )
@@ -3289,9 +3293,8 @@ class CreateTable(Base):
             from search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
-            print "search_type: ", search_type
+
             project = Project.get_by_search_type(search_type)
-            print "project: ", project
             my.db_resource = project.get_project_db_resource()
 
             my.table = search_type_sobj.get_table()

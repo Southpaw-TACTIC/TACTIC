@@ -91,8 +91,15 @@ def get_simple_cmd(my, meth, ticket, args):
                 else:
                     print_info(my2, args)
                 
-                    
+                
             try:
+                # Do a security check
+                if Config.get_value("security", "api_method_restricted") == "true":
+                    security = Environment.get_security()
+                    access = security.check_access("api_method", meth.__name__, "allow", default="allow")
+                    if not access:
+                       raise ApiException("Access denied")
+                
                 # actually execute the method
                 my2.results = exec_meth(my, ticket, meth, args)
             finally:
@@ -181,6 +188,13 @@ def get_full_cmd(my, meth, ticket, args):
             
             #my2.results = meth(my, ticket, *args)
             
+            # Do a security check
+            if Config.get_value("security", "api_method_restricted") == "true":
+                security = Environment.get_security()
+                access = security.check_access("api_method", meth.__name__, "allow", default="allow")
+                if not access:
+                   raise ApiException("Access denied")
+
             my2.results = exec_meth(my, ticket, meth, args)
             if isinstance(my2.results, dict) and my2.results.get("description"):
                 my2.add_description( my2.results.get("description") )
@@ -290,15 +304,6 @@ def xmlrpc_decorator(meth):
         results = None
         try:
             ticket = my.init(original_ticket)
-
-
-            # These lines disable a good chunk of the API.  This will need to
-            # have rules specified ... like a specific API ticket or an access
-            # rule that allows this.
-            #if my.get_protocol() != 'local':
-            #    if meth.__name__ not in ["execute_cmd", "get_widget", "ping"]:
-            #        raise Exception("Permission Denied")
-
 
             try:
                 #if meth.__name__ in QUERY_METHODS:
@@ -575,7 +580,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         return False
     missing_method.exposed = True
 
-    """
+    '''
     def missing_method(my, func, args):
         try:
             return True
@@ -599,7 +604,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 msg = "Wrong number of arguments"
             print("Failed to execute [%s]: %s" % (expr, msg))
         return None
-    """
+        '''
 
 
 
@@ -980,12 +985,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_message(my, ticket, key):
-        print "key: ", key
         message = Search.get_by_code("sthpw/message", key)
-        print "message: ", message
         sobject_dict = my._get_sobject_dict(message)
-        print "dict: ", sobject_dict
-        print "---"
         return sobject_dict
 
 
@@ -2707,8 +2708,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 versionless_mode = 'current'
             snapshot = Snapshot.get_versionless(search_type, search_id, context , mode=versionless_mode, create=False, process=process)
+
         if not snapshot:
-            # This is probaby too strict
+            # This is probaby to0 strict
             #raise ApiException("Snapshot for [%s] with context [%s], version [%s] does not exist" % (search_key, context, version))
             paths = {}
             return paths
@@ -5245,6 +5247,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
+       
+        # Do a security check
+        if Config.get_value("security", "api_cmd_restricted") == "true":
+            security = Environment.get_security()
+            access = security.check_access("api_cmd", class_name, "allow", default="allow")
+            if not access:
+               raise ApiException("Access denied") 
+        
         try:
             Ticket.update_session_expiry()
         except:

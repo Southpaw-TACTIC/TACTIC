@@ -392,7 +392,10 @@ class SendEmail(Command):
         message = my.kwargs.get('msg')
 
         is_uni = False
-        st = 'plain'
+        if "<html>" in message:
+            st = 'html'
+        else:
+            st = 'plain'
         charset = 'us-ascii'
         subject = "Email Test"
         new_subject = my.kwargs.get('subject')
@@ -415,6 +418,8 @@ class SendEmail(Command):
             msg.add_header('From', "%s <%s>" % (sender_name, sender_email))
         else:
             msg.add_header('From', "%s" % sender_email)
+
+
         msg.add_header('Reply-To', sender_email)
         msg.add_header('To',  ','.join(recipient_emails))
         msg.add_header('Date', formatdate(localtime=True))

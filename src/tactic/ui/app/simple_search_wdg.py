@@ -407,7 +407,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             # show the title
-            title_td.add_style("text-align: left")
+            title_td.add_style("text-align: right")
             title_td.add_style("padding-right: 5px")
             title_td.add_style("min-width: 60px")
 

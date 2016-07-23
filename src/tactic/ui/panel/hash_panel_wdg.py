@@ -140,6 +140,13 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
     def _get_predefined_url(cls, key, hash):
+
+        # only allow people with site admin
+        security = Environment.get_security()
+        is_admin = security.is_admin()
+        if not is_admin and key == "admin":
+            return None
+ 
  
         # make some predefined fake urls
         if key in ["link", "tab", "admin"]:
@@ -196,8 +203,6 @@ class HashPanelWdg(BaseRefreshWdg):
 
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
             options = config.get_display_options(link)
-            class_name = config.get_display_handler(link)
-
             if not options:
 
                 from pyasm.biz import Schema
@@ -228,12 +233,10 @@ class HashPanelWdg(BaseRefreshWdg):
                     return None
 
 
-            if not class_name or class_name == "LinkWdg":
-                class_name = options.get("class_name")
 
+
+            class_name = options.get("class_name")
             widget_key = options.get("widget_key")
-
-
             if widget_key:
                 class_name = WidgetClassHandler().get_display_handler(widget_key)
             elif not class_name:

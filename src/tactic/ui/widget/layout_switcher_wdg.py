@@ -43,16 +43,18 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
           <!-- config_xml -->
           <config>
             <!-- Menu item 1 -->
-            <element name="my_tasks_default" title="My Tasks" target=spt_my_tasks_table_top">
+            <element name="my_tasks_default" title="My Tasks">
               <display class="tactic.ui.panel.ViewPanelWdg">
                 <search_type>sthpw/task</search_type>
                 <show_shelf>false</show_shelf>
                 <view>my_tasks_default</view>
+                <target>spt_my_tasks_table_top</target>
               </display>
             </element>
             <!-- Menu item 2 -->
             <element ... >
               <display ... >
+                <target ... />
               </display>
             </element>
           </config>
@@ -69,14 +71,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         # use_href = my.kwrags.get("use_href")
         
         # Layout switcher button displays menu and assumes right hand position of screen
-        first_title = "Task List"
-
-        mode = "button"
-        if mode == "button":
-            activator = DivWdg("<input type='button' class='btn btn-secondary' style='width: 200px' value='%s'/>" % first_title)
-        else:
-            activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
-
+        activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
         top.add(activator)
         activator.add_class("spt_switcher_activator")
         activator.add_behavior( {
@@ -103,7 +98,6 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                 var pointer = menu.getElement(".spt_popup_pointer");
                 pointer.setStyle("margin-left", menu_size.x - button_size.x);
-
             } 
             '''
         } )
@@ -115,7 +109,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         menu_wdg.add_border()
         menu_wdg.add_class("spt_switcher_menu")
         menu_wdg.add_style("display: none")
-        menu_wdg.add_style("margin-top", "20px")
+        menu_wdg.add_style("margin-top", "15px")
         menu_wdg.add_style("position", "absolute")
         menu_wdg.add_style("z-index", "10")
         menu_wdg.add_behavior( {
@@ -127,8 +121,6 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             menu.setStyle("display", "none")
             '''
         } )
-
-        border_color = menu_wdg.get_color("border")
         
         # Pointer under activator
         pointer_wdg = DivWdg()
@@ -142,12 +134,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         style = HtmlElement.style('''
             .spt_switcher_menu .spt_popup_pointer {
                 z-index: 10;
-                margin-top: -45px;
-                margin-left: 95px;
+                margin-top: -15px;
+                margin-left: 100px;
             }
 
             .spt_switcher_menu .spt_first_arrow_div {
-                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) %s;
+                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ccc;
                 top: -15px;
                 z-index: 1;
                 border-width: 0 15px 15px;
@@ -167,7 +159,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 margin-top: -14px;
                 position: absolute;
             }
-        ''' % border_color)
+        ''')
         pointer_wdg.add(style)
  
         if menu:
@@ -208,7 +200,6 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     'display_class': display_class,
                     'display_options': display_options,
                     'target': target,
-                    'title': title,
                     'cbjs_action': '''
                     var menu_item = bvr.src_el;
                     var top = menu_item.getParent(".spt_switcher_top");
@@ -219,29 +210,15 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     if (target_class.indexOf(".") != -1) {
                         var parts = target_class.split(".");
                         target_class = parts[1]; 
-                        target_top_class = parts[0];
                     }
-                    else {
-                        target_top_class = null;
-                    }
-                
-                    if (target_top_class) {
-                        var target_top = bvr.src_el.getParent("."+target_top_class);
-                    }
-                    else {
-                        var target_top = $(document.body);
-                    }
-                    var target = target_top.getElement("."+target_class);
+                    
+                    var target = $(document.body).getElement("."+target_class);
                     if (target) {
                         spt.panel.load(target, bvr.display_class, bvr.display_options);
                     }
 
                     menu.setStyle("display", "none");
                     top.removeClass("spt_selected");
-
-                    var btn = top.getElement(".btn");
-                    if (btn)
-                        btn.value = bvr.title;
                     '''
                 } )
         

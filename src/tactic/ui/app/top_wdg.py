@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = [ 'TopWdg', 'TitleTopWdg' ]
+__all__ = [ 'TopWdg', 'TitleTopWdg']
 
 import types
 import os
@@ -288,8 +288,6 @@ class TopWdg(Widget):
             'cbjs_action': '''
 
             var view = bvr.src_el.getAttribute("view")
-            var search_key = bvr.src_el.getAttribute("search_key")
-            var expression = bvr.src_el.getAttribute("expression")
 
             var name = bvr.src_el.getAttribute("name");
             var title = bvr.src_el.getAttribute("title");
@@ -307,26 +305,11 @@ class TopWdg(Widget):
             }
 
 
-            if (expression) {
-                var server = TacticServerStub.get();
-                var sss = server.eval(expression, {search_keys: search_key, single: true})
-                search_key = sss.__search_key__;
-            }
-
-
             spt.tab.set_main_body_tab()
 
-            if (view) {
-                var cls = "tactic.ui.panel.CustomLayoutWdg";
-                var kwargs = {
-                    view: view
-                }
-            }
-            else if (search_key) {
-                var cls = "tactic.ui.tools.SObjectDetailWdg";
-                var kwargs = {
-                    search_key: search_key
-                }
+            var cls = "tactic.ui.panel.CustomLayoutWdg";
+            var kwargs = {
+                view: view
             }
 
 
@@ -924,12 +907,10 @@ class TitleTopWdg(TopWdg):
         web = WebContainer.get_web()
         my.body.add_color("color", "color")
 
-
-        #if web.is_title_page():
-        #    my.body.add_gradient("background", "background", 0, -20)
-        #else:
-        #    my.body.add_gradient("background", "background", 0, -15)
-        my.body.add_color("background", "background")
+        if web.is_title_page():
+            my.body.add_gradient("background", "background", 0, -20)
+        else:
+            my.body.add_gradient("background", "background", 0, -15)
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")
@@ -1215,7 +1196,6 @@ class BootstrapIndexWdg(BaseRefreshWdg):
 
 
 
-
 class CustomTopWdg(BaseRefreshWdg):
 
     def get_display(my):
@@ -1233,11 +1213,10 @@ class CustomTopWdg(BaseRefreshWdg):
         method = web.get_request_method()
         headers = web.get_request_headers()
         accept = headers.get("Accept")
-
-
         expression = url.get_value("url")
+        
         kwargs = Common.extract_dict(hash, expression)
-
+        
         # Does the URL listen to specific Accept values?
         # or does it enforce a return content type ... and how does one
         # know what exactly is supported?  Accept is kind of complicated.
@@ -1251,21 +1230,18 @@ class CustomTopWdg(BaseRefreshWdg):
         hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
 
 
-
         # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
         # class to determine what is or isn't implemented, not is it the
         # responsibility of this class to convert the data.  So, it
         # returns whatever is given.
-
+        try:
+            custom_accept = hash_widget.get_content_type()
+            accept = custom_accept
+        except AttributeError as e:
+            pass
 
         widget = Widget()
-
-        # We need to to get the content-type from the widget ... however
-        # it decides to make use of the "Accept" type
-        #widget.get_content_type()
-
-
         #
         # Example implementation of custom script, run by hash_widget
         #

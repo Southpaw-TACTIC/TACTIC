@@ -35,15 +35,6 @@ class BaseRefreshWdg(Widget):
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
 
-
-    CATEGORY_KEYS = {}
-    def get_category_keys(cls):
-        return cls.CATEGORY_KEYS
-    get_category_keys = classmethod(get_category_keys)
-
-
-
-
     # DEPRECATED: use ARGS_KEYS
     ARGS_OPTIONS = []
     def get_args_options(cls):
@@ -80,16 +71,6 @@ class BaseRefreshWdg(Widget):
 
     def add_class(my, class_name):
         my.top.add_class(class_name)
-
-
-    def add_attr(my, name, value):
-        my.top.add_attr(name, value)
-
-    def set_attr(my, name, value):
-        my.top.set_attr(name, value)
-
-
-
 
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
