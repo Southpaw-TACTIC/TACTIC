@@ -1836,9 +1836,13 @@ class IngestUploadCmd(Command):
                         pass
 
             # for some unknown reason, this input prefix is ignored
-            del(update_data['input_prefix'])
+            if update_data.has_key("input_prefix"):
+                del(update_data['input_prefix'])
             new_data = {}
             for name, value in update_data.items():
+                if name == "input_prefix":
+                    continue
+
                 name = name.replace("%s|"%input_prefix, "")
                 new_data[name] = value
 
@@ -1852,15 +1856,6 @@ class IngestUploadCmd(Command):
 
             )
             cmd.execute()
-            """
-            for key, value in update_data.items():
-                if input_prefix:
-                    key = key.replace('%s|'%input_prefix, '')
-                if SearchType.column_exists(search_type, key):
-                    if value:
-                        sobject.set_value(key, value)
-            """
-
 
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
