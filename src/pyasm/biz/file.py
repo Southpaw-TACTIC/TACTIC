@@ -619,9 +619,13 @@ class IconCreator(object):
                 import shlex, subprocess
                 subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
                         "%s"%tmp_icon_path]) 
+                
+                if thumb_web_size[1] == -1:
+                    size = '%s' % thumb_web_size[0]
+                else:
+                    size = '%sx%s' % (thumb_web_size[0], thumb_web_size[1])
 
-                subprocess.call([convert_exe, '-geometry','%sx%s'%(thumb_web_size[0], \
-                    thumb_web_size[1]),'-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
+                subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
 
             except Exception, e:
                 print "Error extracting from pdf [%s]" % e
@@ -644,16 +648,17 @@ class IconCreator(object):
         thumb_size = (640, 480)
         if web_file_size:
             parts = re.split('[\Wx]+', web_file_size)
+            if len(parts) == 1:
+                parts.append(-1)
             
-            thumb_size = (640, 480)
             if len(parts) == 2:
                 try:
                     thumb_size = (int(parts[0]), int(parts[1]))
                 except ValueError:
                     thumb_size = (640, 480)
 
-        return thumb_size
-
+        return thumb_size 
+    
     def _process_video(my, file_name):
         if not HAS_FFMPEG:
             return
@@ -675,10 +680,16 @@ class IconCreator(object):
 
         import subprocess
         try:
+            if thumb_web_size[1] == -1:
+                size_option = "-vf"
+                size = "scale=%s:%s" % ((thumb_web_size[0], thumb_web_size[1]))
+            else:
+                size_option = "-s"
+                size =  "%sx%s" % (thumb_web_size[0], thumb_web_size[1])
+
             subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
-                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
+                    size_option, size,"-vframes","1","-f","image2", tmp_web_path])
             
-           
             if os.path.exists(tmp_web_path):
                 my.web_path = tmp_web_path
             else:
@@ -799,6 +810,7 @@ class IconCreator(object):
 
 
     def _resize_image(my, large_path, small_path, thumb_size):
+        
         try:
             large_path = large_path.encode('utf-8')
             small_path = small_path.encode('utf-8')
@@ -812,10 +824,14 @@ class IconCreator(object):
                     convert_cmd.append('-flatten')
                 if large_path.lower().endswith('psd'):
                     large_path += "[0]"
-                convert_cmd.extend(['-resize','%sx%s'%(thumb_size[0], thumb_size[1])])
+                
+                if thumb_size[1] == -1:
+                    convert_cmd.extend(['-resize','%s' % thumb_size[0]])
+                else:
+                    convert_cmd.extend(['-resize','%sx%s'%(thumb_size[0], thumb_size[1])])
 
                 # FIXME: needs PIL for this ... should use ImageMagick to find image size
-                if HAS_PIL:
+                if HAS_PIL and thumb_size[1] != -1:
                     try:
                         im = Image.open(large_path)
                         x,y = im.size
@@ -861,15 +877,21 @@ class IconCreator(object):
                     #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
                     x,y = im.size
 
-                    # first resize to match this thumb_size
-                    base_height = thumb_size[1]
-                    h_percent = (base_height/float(y))
-                    base_width = int((float(x) * float(h_percent)))
+                    if thumb_size[1] == -1:
+                        base_width = thumb_size[0]
+                        w_percent = (base_width/float(x))
+                        base_height = int((float(y) * float(w_percent)))
+                        im = im.resize((base_width, base_height), Image.ANTIALIAS )
+                    else:
+                        # first resize to match this thumb_size
+                        base_height = thumb_size[1]
+                        h_percent = (base_height/float(y))
+                        base_width = int((float(x) * float(h_percent)))
                     im = im.resize((base_width, base_height), Image.ANTIALIAS )
 
                     # then paste to white image
-                    im2 = Image.new( "RGB", thumb_size, (255,255,255) )
-                    offset = (thumb_size[0]/2) - (im.size[0]/2)
+                    im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
+                    offset = (base_height/2) - (im.size[0]/2)
                     im2.paste(im, (offset,0) )
                     im2.save(small_path, to_ext)
 
