@@ -620,8 +620,8 @@ class IconCreator(object):
                 subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
                         "%s"%tmp_icon_path]) 
                 
-                # Shrink image based of web_file_size
-                # preserves aspect ratio
+                # Shrink image based on web_file_size
+                # (preserves aspect ratio regardless)
                 pdf_width = thumb_web_size[0]
                 if thumb_web_size[1] == -1:
                     pdf_height = pdf_width*10
@@ -662,7 +662,7 @@ class IconCreator(object):
                     thumb_size = (640, 480)
 
         return thumb_size 
-    
+ 
     def _process_video(my, file_name):
         if not HAS_FFMPEG:
             return
@@ -705,6 +705,7 @@ class IconCreator(object):
                 max_height = max_width*1 if free_aspect_ratio else thumb_web_size[1]
                
                 if width < max_width and height < max_height:
+                    # Resizing is not necessary
                     size_option = ""
                     size = ""
                 elif not free_aspect_ratio and (width > max_width or height > max_height):
@@ -716,7 +717,6 @@ class IconCreator(object):
                         size = "scale=%s:-1" % thumb_web_size[0]
                         
                     elif height > width:
-                        
                         aspect_ratio = float(float(height)/(width))
                         if aspect_ratio >= 10:
                             size_option = "-vf"
