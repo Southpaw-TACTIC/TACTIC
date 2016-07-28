@@ -702,7 +702,7 @@ class IconCreator(object):
                 height = int(sample_stream.get("height"))
             
                 max_width = thumb_web_size[0]
-                max_height = max_width*1 if free_aspect_ratio else thumb_web_size[1]
+                max_height = max_width*10 if free_aspect_ratio else thumb_web_size[1]
                
                 if width < max_width and height < max_height:
                     # Resizing is not necessary
