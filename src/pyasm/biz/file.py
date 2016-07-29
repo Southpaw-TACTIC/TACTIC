@@ -888,7 +888,7 @@ class IconCreator(object):
                     # The max allowed height is 10x the width 
                     convert_cmd.extend(['-resize','%sx%s>' % (thumb_size[0], thumb_size[0]*10)])
                 else:
-                    convert_cmd.extend(['-resize','%sx%s' %(thumb_size[0], thumb_size[1])])
+                    convert_cmd.extend(['-resize','%sx%s>' %(thumb_size[0], thumb_size[1])])
 
                 # FIXME: needs PIL for this ... should use ImageMagick to find image size
                 if HAS_PIL and not free_aspect_ratio:
@@ -955,7 +955,7 @@ class IconCreator(object):
 
                     # then paste to white image
                     im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
-                    offset = (base_height/2) - (im.size[0]/2)
+                    offset = (base_width/2) - (im.size[0]/2)
                     im2.paste(im, (offset,0) )
                     im2.save(small_path, to_ext)
 
