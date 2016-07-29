@@ -3489,7 +3489,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if os.path.isfile(upload_path) and create_icon:
             icon_creator = IconCreator(upload_path)
             icon_creator.execute()
-                
+ 
             web_path = icon_creator.get_web_path()
             icon_path = icon_creator.get_icon_path()
            
@@ -3512,7 +3512,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 file_paths.append(icon_path)
                 file_types.append('icon')
                 source_paths.append(icon_path)
-                
+ 
 
         # get the level object
         if level_key:
