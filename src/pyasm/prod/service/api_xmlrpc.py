@@ -3494,11 +3494,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
             icon_path = icon_creator.get_icon_path()
            
             # If this is pure icon context, then don't check in icon
-            # as the main file. However, if web file is not generated, 
-            # and icon is, use original as web.
-            if web_path and context == 'icon':
-                shutil.copy(web_path, upload_path)
-            elif icon_path and not web_path:
+            # as the main file. 
+            if context == 'icon':
+                if web_path:
+                    shutil.copy(web_path, upload_path)
+                elif icon_path:
+                    shutil.copy(icon_path, upload_path)
+
+            # If web file is not generated and icon is, use original as web.
+            if icon_path and not web_path:
                 base, ext = os.path.splitext(upload_path)
                 web_path = "%s_web.%s" % (base, ext)
                 shutil.copy(upload_path, web_path)
