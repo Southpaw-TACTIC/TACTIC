@@ -2202,7 +2202,6 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         script = my.kwargs.get('script')
         script_path = my.kwargs.get('script_path')
-        
         is_admin = my.kwargs.get('is_admin') in ['true', True]
        
         #is_admin  = False
@@ -2217,6 +2216,10 @@ class ScriptEditWdg(BaseRefreshWdg):
         if script_path:
             script_path_folder, script_path_title = os.path.split(script_path)
 
+        script_obj = None
+
+        if script_path:
+            script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
         script_path_div = DivWdg()
         script_path_div.add_styles('width: 100%; height: 60px; padding: 2px')
         div.add(script_path_div)
@@ -2232,21 +2235,54 @@ class ScriptEditWdg(BaseRefreshWdg):
         script_path_folder_text.add_class("spt_script_path_folder")
         script_path_folder_text.add_style("margin-left: 4px")
         script_path_div.add(script_path_folder_text)
-    
+   
+        script_path_folder_text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+             setTimeout( function() {
+
+                var script_path_folder = bvr.src_el.value;
+                var code;
+                if (script_path_folder) {
+                    var server = TacticServerStub.get();
+                    code = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].code)", {single: true});
+                }
+
+                var top = bvr.src_el.getParent(".spt_script_edit");
+                var script_path_title = top.getElement(".spt_script_path_title");
+                var is_read_only = script_path_title.getAttribute('readonly');
+                
+                //var bkgd = script_path_title.getStyle('background');
+                
+                if (code) {
+                    if (is_read_only) {
+                        buttons_div = top.getElement(".spt_script_edit_buttons");
+                        if (buttons_div.getAttribute('edit') != 'true' )
+                            script_path_title.removeAttribute('readonly');
+                    }
+                } else {
+                    script_path_title.setAttribute('readonly','readonly');
+                }
+             }, 250);
+            '''
+        } )
         slash = DivWdg('/')
         slash.add_styles('font-size: 1.7em; margin: 4px 5px 0 3px; float: left')
         script_path_div.add(slash)
         script_path_folder_text.add_styles("width: 120px; float: left")
-        script_path_folder_text.set_value(script_path_folder)
+        if script_obj:
+            script_path_folder_text.set_value(script_path_folder)
         
         script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='240')
         script_path_title_text.add_class("spt_script_path_title")
+
         script_path_div.add(script_path_title_text)
         hr = HtmlElement.hr()
         hr.add_style('margin-top: -2px')
         div.add(hr)
         script_path_title_text.add_style("float: left")
-        script_path_title_text.set_value(script_path_title)
+        if script_obj:
+            script_path_title_text.set_value(script_path_title)
         script_path_title_text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
@@ -2254,18 +2290,18 @@ class ScriptEditWdg(BaseRefreshWdg):
 
                 var script_path_title = bvr.src_el.value;
                 var top = bvr.src_el.getParent(".spt_script_edit");
-                buttons_div = top.getElement(".spt_script_edit_buttons");
+                var buttons_div = top.getElement(".spt_script_edit_buttons");
 
                 spt.show(buttons_div);
 
                 var script_path_folder = top.getElement(".spt_script_path_folder").value;
                 var script_path = script_path_folder + '/' + script_path_title;
                 var el = top.getElement(".spt_python_script_text");
-                script = '';
-                if (script_path_folder && script_path_title)
+                var script = '';
+                if (script_path_folder && script_path_title) {
                     var popup = false;
                     script = spt.CustomProject.get_script_by_path(script_path, popup);
-
+                }
                 if (script_path_folder && script_path_title) { 
                     if (script) {
                         el.value = script;
@@ -2285,20 +2321,20 @@ class ScriptEditWdg(BaseRefreshWdg):
 
 
         can_edit = True
-        if script_path:
-            script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
-            if script_obj:
-                script = script_obj.get_value('script')
-                language = script_obj.get_value('language')
-                if not is_admin and language == 'python':
-                    can_edit = False
+        if script_obj:
+            script = script_obj.get_value('script')
+            language = script_obj.get_value('language')
+            if not is_admin and language == 'python':
+                can_edit = False
 
-        if script_path:
+        # in case the script obj is deleted, it will just let you create new
+        if script_path and script_obj:
             edit_mode = True
             edit_label = "Edit"
         else:
             edit_mode = False
             edit_label = "Create New"
+            script_path_title_text.set_readonly(True)
         
         create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label)
         create_edit_button.add_style("float: left")
@@ -2308,7 +2344,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         buttons_div.add_style('margin-top: -5px')
         div.add(buttons_div)
         
-        if can_edit and edit_mode == True: 
+        if (can_edit and edit_mode == True) or edit_mode == False: 
             buttons_div.add(create_edit_button)
 
         create_edit_button.add_behavior( {
@@ -2317,17 +2353,18 @@ class ScriptEditWdg(BaseRefreshWdg):
             'can_edit': can_edit,
 
             'cbjs_action': '''
-            trigger_top = bvr.src_el.getParent(".spt_script_edit");
-            script_editor = trigger_top.getElement(".spt_python_script_text");
-            buttons_div = trigger_top.getElement(".spt_script_edit_buttons");
+            var trigger_top = bvr.src_el.getParent(".spt_script_edit");
+            var script_editor = trigger_top.getElement(".spt_python_script_text");
+            var buttons_div = trigger_top.getElement(".spt_script_edit_buttons");
 
             if (!bvr.can_edit) {
                 spt.info("You don't have the administrative right to edit this script.");
                 return;
             }
+            var title_input = trigger_top.getElement(".spt_script_path_title");
+            var folder_input = trigger_top.getElement(".spt_script_path_folder");
+
             if (!bvr.edit_mode) {
-                var title_input = trigger_top.getElement(".spt_script_path_title");
-                var folder_input = trigger_top.getElement(".spt_script_path_folder");
                 title_input.value = '';
                 folder_input.value = '';
                 script_editor.value = '';
@@ -2335,10 +2372,16 @@ class ScriptEditWdg(BaseRefreshWdg):
 
             // Displayor Hide the script editor
             if (bvr.edit_mode) {
+                buttons_div.setAttribute('edit','true');
+
                 script_editor.setStyle("display", "");
                 // In edit mode, need to remove read only attribute and grey backround
                 script_editor.removeProperty("readonly")
                 script_editor.setStyle("background", "#FFFFFF");
+
+                // made script path text field readonly
+                folder_input.setAttribute('readonly','readonly');
+                title_input.setAttribute('readonly','readonly');
             } else {
                 script_editor.setStyle("display", "none");
                 buttons_div.setStyle("display", "none");
@@ -2358,7 +2401,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         if script_path and script_path != expected_script_path:
             create_new_button = ActionButtonWdg(title="Create New", tip="Create New Script")
             create_new_button.add_style("float: left")
-            create_new_button.add_style("margin: 5px 6px 10px")
+            create_new_button.add_style("margin: 0px 0px 10px 10px")
             buttons_div.add(create_new_button)
 
             create_new_button.add_behavior( {
@@ -2472,6 +2515,7 @@ class ActionInfoWdg(BaseInfoWdg):
     def get_display(my):
 
         top = my.top
+        top.add_class('spt_action_info_top')
         top.add_style("padding: 20px 0px")
 
         process = my.kwargs.get("process")
@@ -2562,17 +2606,6 @@ class ActionInfoWdg(BaseInfoWdg):
                 form_wdg.add("<br/>")
 
 
-            
-            """
-            text = TextAreaWdg(name="on_action")
-            text.add_class("form-control")
-            if script:
-                text.set_value(script)
-            text.add_style("height: 300px")
-            text.add_style("width: 100%")
-            form_wdg.add(text)
-            form_wdg.add("<br/>")
-            """
 
 
 
@@ -2600,7 +2633,7 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
 
-        save = ActionButtonWdg(title="Save")
+        save = ActionButtonWdg(title="Save", color="primary")
         save.add_styles("float: right; margin-right: 10px")
         
         top.add(save)
@@ -2610,7 +2643,7 @@ class ActionInfoWdg(BaseInfoWdg):
             'pipeline_code': pipeline_code,
             'process': process,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_pipeline_info_top");
+            var top = bvr.src_el.getParent(".spt_action_info_top");
             var input = spt.api.get_input_values(top, null, false);
             var script_new = input.script_new;
             var script_path_folder = input.script_path_folder;
@@ -2652,7 +2685,13 @@ class ActionInfoWdg(BaseInfoWdg):
                 language: input.language,
             }
 
-            server.execute_cmd(class_name, kwargs);
+            var cbk = function() {
+                
+                spt.panel.refresh(top);
+
+            }
+            server.execute_cmd(class_name, kwargs, {}, {on_complete: cbk});
+
 
             '''
         } )
@@ -2712,7 +2751,7 @@ class ActionInfoWdg(BaseInfoWdg):
         form_wdg.add("<br/>")
 
 
-        save = ActionButtonWdg(title="Save")
+        save = ActionButtonWdg(title="Save", color="primary")
         save.add_style("float: right")
         top.add(save)
         save.add_behavior( {
@@ -2884,6 +2923,8 @@ class ApprovalInfoWdg(BaseInfoWdg):
                 process: bvr.process,
                 assigned: input.assigned,
             }
+
+
             server.execute_cmd(class_name, kwargs);
 
 
@@ -4830,6 +4871,7 @@ class TriggerListWdg(BaseRefreshWdg):
 
 
 class PipelineTaskTriggerCommitCbk(Command):
+    
     def execute(my):
 
         data_str = my.kwargs.get("data")

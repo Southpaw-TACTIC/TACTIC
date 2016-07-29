@@ -23,7 +23,7 @@ __all__ = ['TriggerToolWdg', 'TriggerDetailWdg',
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import jsondumps, jsonloads, Common, Environment
+from pyasm.common import jsondumps, jsonloads, Common, Environment, TacticException
 from pyasm.biz import Notification, CustomScript, Pipeline, Project
 from pyasm.web import DivWdg, WebContainer, Table, HtmlElement, SpanWdg
 from pyasm.command import Command
@@ -447,7 +447,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             spt.panel.refresh(top, {search_key: search_key} );
         }
         catch(e){
-            alert(spt.exception.handler(e));
+            spt.error(spt.exception.handler(e));
         }
         spt.app_busy.hide();
         '''
@@ -2191,7 +2191,11 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         elif not script:
             # saving from Create New
             script = my.kwargs.get('script_new')
-            
+        
+        
+        if not script:
+            raise TacticException("Your script is empty. Please save a valid script.")
+
         if not script_path:
             script_path = trigger.get_value("script_path")
         
