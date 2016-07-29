@@ -25,24 +25,28 @@ class NotifyWdg(BaseRefreshWdg):
     def get_display(my):
 
         top = my.top
-
         top.set_id("spt_notify_top")
 
-        top.add_style("position: fixed")
-        top.add_style("top: 60px")
-        top.add_style("z-index: 10000")
-        top.add_style("width: 200px")
-        top.add_style("text-align: center")
-        top.add_style("margin-top: -100px")
+        inner = DivWdg()
+        top.add(inner)
 
-        top.add_color("background", "background", -3)
-        top.add_style("height: 20px")
-        top.add_style("padding: 5px")
-        top.add_border()
+        inner.set_class("spt_notify_el")
+
+        inner.add_style("position: fixed")
+        inner.add_style("top: 60px")
+        inner.add_style("z-index: 10000")
+        inner.add_style("width: auto")
+        inner.add_style("text-align: center")
+        inner.add_style("margin-top: -100px")
+
+        inner.add_color("background", "background", -3)
+        inner.add_style("height: auto")
+        inner.add_style("padding: 10px 20px")
+        inner.add_border()
 
 
         msg_div = DivWdg()
-        top.add(msg_div)
+        inner.add(msg_div)
         msg_div.add_class("spt_notify_message")
 
 
@@ -50,32 +54,52 @@ class NotifyWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
-            'cbjs_action': '''
+            'cbjs_action': r'''
 spt.notify = {};
 
 spt.notify.last_settings = {};
 
-spt.notify.show = function() {
-    new Fx.Tween('spt_notify_top').start('opacity', 1);
-    new Fx.Tween('spt_notify_top').start('marginTop', 0);
+spt.notify.top = bvr.src_el;
+
+spt.notify.clone_el = null;
+
+spt.notify.clone = function() {
+    var template = spt.notify.top.getElement(".spt_notify_el");
+    var clone = spt.behavior.clone( template );
+    spt.notify.top.appendChild(clone);
+    spt.notify.clone_el = clone;
+    return clone;
 }
 
-spt.notify.hide = function() {
-    new Fx.Tween('spt_notify_top').start('opacity', 0);
-    new Fx.Tween('spt_notify_top').start('marginTop', -60);
+
+
+
+
+
+spt.notify.show = function(el) {
+    new Fx.Tween(el).start('opacity', 1);
+    new Fx.Tween(el).start('marginTop', 0);
+}
+
+spt.notify.hide = function(el) {
+    new Fx.Tween(el).start('opacity', 0);
+    new Fx.Tween(el).start('marginTop', -50);
 }
 
 
 
-spt.notify.set_message = function(message, kwargs) {
-    var el = $('spt_notify_top').getElement(".spt_notify_message");
-    spt.behavior.replace_inner_html(el, message);
+spt.notify.set_message = function(message, settings, el) {
+
+    message = message.replace(/\n/g, "<br/>");
+
+    var msg_el = el.getElement(".spt_notify_message");
+    spt.behavior.replace_inner_html(msg_el, message);
 
     spt.notify.last_settings = {};
 
-    for (var key in kwargs) {
-        spt.notify.last_settings[key] = $('spt_notify_top').getStyle(key);
-        $('spt_notify_top').setStyle(key, kwargs[key]);
+    for (var key in settings) {
+        spt.notify.last_settings[key] = el.getStyle(key);
+        el.setStyle(key, settings[key]);
     }
 }
 
@@ -86,14 +110,19 @@ spt.notify.show_message = function(message, duration, kwargs) {
         duration = 5000;
     }
 
-    spt.notify.show();
-    spt.notify.set_message(message, kwargs);
+
+    var el = spt.notify.clone();
+
+    spt.notify.show(el);
+    spt.notify.set_message(message, kwargs, el);
     setTimeout( function() {
-        spt.notify.hide();
+        spt.notify.hide(el);
+        setTimeout( function() {
+            spt.behavior.destroy_element(el);
+        }, 500 )
     }, duration );
 
 
-    var el = $('spt_notify_top');
     var size = el.getSize();
 
     var window_size = $(window).getSize();

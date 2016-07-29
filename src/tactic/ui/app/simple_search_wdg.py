@@ -227,24 +227,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
     def get_config(my):
-        config_xml = '''
-        <config>
-        <custom_filter>
-          <element name='asset_library'>
-            <display class='SelectWdg'>
-                <query>prod/asset_library|code|code</query>
-                <empty>true</empty>
-            </display>
-          </element>
-          <element name='pipeline_code'>
-            <display class='SelectWdg'>
-                <query>sthpw/pipeline|code|code</query>
-                <empty>true</empty>
-            </display>
-          </element>
-        </custom_filter>
-        </config>
-        '''
 
         my.view = my.kwargs.get("search_view")
         config = my.kwargs.get("search_config")
@@ -252,15 +234,18 @@ class SimpleSearchWdg(BaseRefreshWdg):
         if not my.view:
             my.view = 'custom_filter'
         #view = "custom_filter"
+
         project_code = Project.extract_project_code(my.search_type)
         search = Search("config/widget_config", project_code=project_code )
         search.add_filter("view", my.view)
-        
-       
         search.add_filter("search_type", my.base_search_type)
         config_sobj = search.get_sobject()
+
+
         if config_sobj:
             config_xml = config_sobj.get_value("config")
+            config_xml = Common.run_mako(config_xml)
+
         elif config:
             config_xml = '''
             <config>

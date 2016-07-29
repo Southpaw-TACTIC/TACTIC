@@ -242,27 +242,36 @@ class GlobalSearchTrigger(Trigger):
                 collection_keywords = " ".join(collection_keywords_data_values)
                 collection_keywords = " ".join(set(collection_keywords.split(" ")))
 
-            
             if path:
                 if isinstance(path, unicode):
                     path = path.encode('utf-8','replace')
-                searchable_keywords.append(path)
+
+                if isinstance(path, basestring):
+                    searchable_keywords.append(path)
+                else:
+                    searchable_keywords.extend(path)
 
             if user:
                 if isinstance(user, unicode):
                     user = user.encode('utf-8','replace')
-                searchable_keywords.append(user)
+
+                if isinstance(user, basestring):
+                    searchable_keywords.append(user)
+                else:
+                    searchable_keywords.extend(user)
+
             
             if collection_keywords:
-                searchable_keywords.append(collection_keywords)
+                if isinstance(collection_keywords, basestring):
+                    searchable_keywords.append(collection_keywords)
+                else:
+                    searchable_keywords.extend(collection_keywords)
             
             
-                
-
-          
             searchable_keywords = " ".join(searchable_keywords) 
             sobj.set_value("keywords", searchable_keywords)
             sobj.commit(triggers=False)
+
 
     def update_user_keywords(my, sobj, user_keywords, search_type):
         '''

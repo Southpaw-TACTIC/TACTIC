@@ -91,8 +91,15 @@ def get_simple_cmd(my, meth, ticket, args):
                 else:
                     print_info(my2, args)
                 
-                    
+                
             try:
+                # Do a security check
+                if Config.get_value("security", "api_method_restricted") == "true":
+                    security = Environment.get_security()
+                    access = security.check_access("api_method", meth.__name__, "allow", default="allow")
+                    if not access:
+                       raise ApiException("Access denied")
+                
                 # actually execute the method
                 my2.results = exec_meth(my, ticket, meth, args)
             finally:
@@ -181,6 +188,13 @@ def get_full_cmd(my, meth, ticket, args):
             
             #my2.results = meth(my, ticket, *args)
             
+            # Do a security check
+            if Config.get_value("security", "api_method_restricted") == "true":
+                security = Environment.get_security()
+                access = security.check_access("api_method", meth.__name__, "allow", default="allow")
+                if not access:
+                   raise ApiException("Access denied")
+
             my2.results = exec_meth(my, ticket, meth, args)
             if isinstance(my2.results, dict) and my2.results.get("description"):
                 my2.add_description( my2.results.get("description") )
@@ -5245,6 +5259,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
+       
+        # Do a security check
+        if Config.get_value("security", "api_cmd_restricted") == "true":
+            security = Environment.get_security()
+            access = security.check_access("api_cmd", class_name, "allow", default="allow")
+            if not access:
+               raise ApiException("Access denied") 
+        
         try:
             Ticket.update_session_expiry()
         except:

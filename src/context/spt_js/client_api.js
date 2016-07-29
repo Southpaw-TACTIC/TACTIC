@@ -1374,8 +1374,13 @@ TacticServerStub = function() {
             callback = kwargs['callback'];
         }
         var on_error = function(e) {
-            if (e == 502)
-                e = '502 Timeout Error.';
+            if (e == 0)
+                e = 'Received an error (Error 0)';
+            else if (e == 502)
+                e = 'Timeout Error (Error 502)';
+            else if (e == 503)
+                e = 'Service is unavailable (Error 503)';
+
             spt.alert(e); 
         };
         this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);

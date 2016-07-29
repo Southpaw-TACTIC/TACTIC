@@ -2972,7 +2972,7 @@ class SqliteImpl(PostgresImpl):
         else:
             sql = DbContainer.get(db_resource)
 
-        query = "PRAGMA table_info(%s)" % table
+        query = 'PRAGMA table_info("%s")' % table
         results = sql.do_query(query)
 
         # data return is a list of the following

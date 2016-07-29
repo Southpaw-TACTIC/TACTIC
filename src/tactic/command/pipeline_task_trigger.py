@@ -90,6 +90,15 @@ class PipelineTaskStatusTrigger(Trigger):
                 cmd.set_output(my.input)
                 cmd.execute()
                 continue
+ 
+            # Execute trigger if necessary
+            class_path = data.get("class_path")
+            if class_path:
+                trigger = Common.create_from_class_path(class_path)
+                trigger.set_input(my.input)
+                trigger.set_output(my.input)
+                trigger.execute()
+                continue
 
             # If no script was execute,then assume other task
             # statuses should be updated.

@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = [ 'TopWdg', 'TitleTopWdg' ]
+__all__ = [ 'TopWdg', 'TitleTopWdg']
 
 import types
 import os
@@ -286,6 +286,7 @@ class TopWdg(Widget):
             'type': 'click',
             'bvr_match_class': 'tactic_new_tab',
             'cbjs_action': '''
+
             var view = bvr.src_el.getAttribute("view")
             var search_key = bvr.src_el.getAttribute("search_key")
             var expression = bvr.src_el.getAttribute("expression")
@@ -327,8 +328,6 @@ class TopWdg(Widget):
                     search_key: search_key
                 }
             }
-
-
 
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
@@ -1215,7 +1214,6 @@ class BootstrapIndexWdg(BaseRefreshWdg):
 
 
 
-
 class CustomTopWdg(BaseRefreshWdg):
 
     def get_display(my):
@@ -1233,11 +1231,10 @@ class CustomTopWdg(BaseRefreshWdg):
         method = web.get_request_method()
         headers = web.get_request_headers()
         accept = headers.get("Accept")
-
-
         expression = url.get_value("url")
+        
         kwargs = Common.extract_dict(hash, expression)
-
+        
         # Does the URL listen to specific Accept values?
         # or does it enforce a return content type ... and how does one
         # know what exactly is supported?  Accept is kind of complicated.
@@ -1251,21 +1248,18 @@ class CustomTopWdg(BaseRefreshWdg):
         hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
 
 
-
         # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
         # class to determine what is or isn't implemented, not is it the
         # responsibility of this class to convert the data.  So, it
         # returns whatever is given.
-
+        try:
+            custom_accept = hash_widget.get_content_type()
+            accept = custom_accept
+        except AttributeError as e:
+            pass
 
         widget = Widget()
-
-        # We need to to get the content-type from the widget ... however
-        # it decides to make use of the "Accept" type
-        #widget.get_content_type()
-
-
         #
         # Example implementation of custom script, run by hash_widget
         #

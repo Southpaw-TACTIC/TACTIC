@@ -3311,9 +3311,12 @@ class CustomLayoutActionCbk(Command):
     def copy_folder(my):
 
         folder = my.kwargs.get("folder")
+        folder = folder.replace("/", ".")
+
         new_folder = my.kwargs.get("new_folder")
         if not new_folder:
             new_folder = "%s_copy" % folder
+
 
         search = Search("config/widget_config")
         search.add_filter("view", "%s.%%" % folder, op="like" )
@@ -3323,6 +3326,7 @@ class CustomLayoutActionCbk(Command):
         for config in configs:
             view = config.get_value("view")
             new_view = my.new_view(view, new_folder)
+            print "new_view: ", new_view
 
             config_xml = config.get_xml_value("config")
 

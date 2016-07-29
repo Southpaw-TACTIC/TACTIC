@@ -175,14 +175,18 @@ class SObjectDetailWdg(BaseRefreshWdg):
             widget = SnapshotDetailWdg(**my.kwargs)
             return widget
 
+
+
         top = my.top
         top.add_class("spt_detail_top")
         top.add_color("background", "background")
         top.add_color("color", "color")
 
+
         if not my.sobject:
             top.add("No SObject defined for this widget")
             return top
+
 
         if my.parent:
             my.search_type = my.parent.get_base_search_type()
@@ -201,6 +205,31 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         my.set_as_panel(top)
+
+
+
+        # look for a custom view for the sobject detail
+        custom_view = my.kwargs.get("view")
+        if not custom_view:
+            from pyasm.biz import ProjectSetting
+            key = "sobject_detail_view"
+            custom_view = ProjectSetting.get_value_by_key(key, search_type=my.sobject.get_base_search_type())
+
+
+        if custom_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            layout = CustomLayoutWdg(
+                    view=custom_view,
+                    search_type = my.search_type,
+                    search_key = my.search_key,
+                    pipeline_code = my.pipeline_code,
+            )
+            top.add(layout)
+            return layout
+
+
+
+
 
         title_wdg = my.get_title_wdg()
         top.add(title_wdg)

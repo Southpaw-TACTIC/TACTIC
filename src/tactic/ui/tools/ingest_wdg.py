@@ -218,6 +218,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         base_type = search_type_obj.get_base_key()
 
         pipeline_search = Search("sthpw/pipeline")
+        pipeline_search.add_project_filter()
         pipeline_search.add_filter("search_type", base_type)
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
@@ -1170,7 +1171,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
         upload_div.add(button)
         button.add_style("float: right")
-        upload_div.add_style("margin-bottom: 15px")
+        upload_div.add_style("margin-bottom: 20px")
 
 
 
@@ -1538,7 +1539,8 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        #key = my.kwargs.get("key")
+        key = my.kwargs.get("key")
+
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
@@ -1835,9 +1837,13 @@ class IngestUploadCmd(Command):
                         pass
 
             # for some unknown reason, this input prefix is ignored
-            del(update_data['input_prefix'])
+            if update_data.has_key("input_prefix"):
+                del(update_data['input_prefix'])
             new_data = {}
             for name, value in update_data.items():
+                if name == "input_prefix":
+                    continue
+
                 name = name.replace("%s|"%input_prefix, "")
                 new_data[name] = value
 
@@ -1851,15 +1857,6 @@ class IngestUploadCmd(Command):
 
             )
             cmd.execute()
-            """
-            for key, value in update_data.items():
-                if input_prefix:
-                    key = key.replace('%s|'%input_prefix, '')
-                if SearchType.column_exists(search_type, key):
-                    if value:
-                        sobject.set_value(key, value)
-            """
-
 
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
@@ -1950,23 +1947,25 @@ class IngestUploadCmd(Command):
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 
+
+            if key:
+                msg = {
+                    'progress': percent,
+                    'description': 'Checking in file [%s]' % filename,
+                }
+
+                server.log_message(key, msg, status="in progress")
+
+
+
+
+
+        if key:
             msg = {
-                'progress': percent,
-                'description': 'Checking in file [%s]' % filename,
+                'progress': '100',
+                'description': 'Check-ins complete'
             }
-
-            server.log_message(key, msg, status="in progress")
-
-
-
-
-
-
-        msg = {
-            'progress': '100',
-            'description': 'Check-ins complete'
-        }
-        server.log_message(key, msg, status="complete")
+            server.log_message(key, msg, status="complete")
 
         my.info = non_seq_filenames
         return non_seq_filenames
