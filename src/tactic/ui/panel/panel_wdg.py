@@ -3051,7 +3051,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         inline_search = "true"
         search = None
         use_last_search = my.kwargs.get('use_last_search')
-        if use_last_search in ['false', "False"]:
+        if use_last_search in ['false', "False", False]:
             use_last_search = False
         else:
             use_last_search = True
