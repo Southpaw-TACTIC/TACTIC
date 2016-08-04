@@ -426,7 +426,9 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 spt.tab.add_new("create_project", "Create Project", class_name);
             }
             else {
-                document.location = "/tactic/admin/link/create_project";
+                var site = spt.Environment.get().get_site();
+                var url = site ? "/tactic/" + site + "/admin/link/create_project" : "/tactic/admin/link/create_project";
+                document.location = url;
             }
             '''
             } )
