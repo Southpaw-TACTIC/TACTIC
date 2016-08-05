@@ -627,7 +627,7 @@ class IconCreator(object):
                     pdf_height = pdf_width*10
                 else:
                     pdf_height = thumb_web_size[1]
-                size = '%sx%s' % (pdf_width, pdf_height)
+                size = '%sx%s>' % (pdf_width, pdf_height)
 
                 subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
 
