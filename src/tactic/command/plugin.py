@@ -252,8 +252,28 @@ class PluginBase(Command):
         if expr:
             sobjects = Search.eval(expr)
 
+            # order by id
+            def sort_sobjects(a, b):
+                a_id = a.get_id()
+                b_id = b.get_id()
+
+                if a_id > b_id:
+                    return 1
+                elif a_id == b_id:
+                    return 0
+                else:
+                    return -1
+
+            sobjects.sort(sort_sobjects)
+
+
         elif search_type:
-            search = Search(search_type)
+            try:
+                search = Search(search_type)
+            except SearchException, e:
+                return []
+
+
             search.set_show_retired(True)
             if code:
                 search.add_filter("code", code)
@@ -287,7 +307,6 @@ class PluginBase(Command):
 
 
             search.add_order_by("id")
-            print "search: ", search.get_statement()
             sobjects = search.get_sobjects()
         else:
             sobjects = []
@@ -519,7 +538,10 @@ class PluginCreator(PluginBase):
                 path = my.get_path_from_node(node)
                 if path and os.path.exists(path):
                     print "Deleting: ", path
-                    os.unlink(path)
+                    if os.path.isdir(path):
+                        shutil.rmtree(path)
+                    else:
+                        os.unlink(path)
 
 
 
@@ -647,7 +669,10 @@ class PluginCreator(PluginBase):
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "pipeline_code", regex) 
 
-        dumper.dump_tactic_inserts(path, mode='sobject')
+
+        relative_dir_column = Xml.get_attribute(node, "relative_dir_column")
+
+        dumper.dump_tactic_inserts(path, mode='sobject', relative_dir_column=relative_dir_column)
 
         print "\t....dumped [%s] entries" % (len(sobjects))
 
@@ -1540,8 +1565,26 @@ class PluginTools(PluginBase):
             #print "WARNING: path [%s] does not exist" % path
             return []
 
-        #f = codecs.open(path, 'r', 'utf-8')
-        f = codecs.getreader('utf8')(open(path, 'r'))
+
+        if os.path.isdir(path):
+            f = []
+
+            for root, dirnames, basenames in os.walk(path):
+
+                for basename in basenames:
+                    subpath = "%s/%s" % (root, basename)
+                    try:
+                        subf = codecs.getreader('utf8')(open(subpath, 'r'))
+                        f.extend(subf.readlines())
+                        subf.close()
+                        f.append("\n")
+                    except Exception, e:
+                        print "WARNING: ", e
+        else:
+            #f = codecs.open(path, 'r', 'utf-8')
+            f = codecs.getreader('utf8')(open(path, 'r'))
+
+
         statement = []
         count = 1
 
@@ -1751,7 +1794,9 @@ class PluginTools(PluginBase):
                 sobject = None
             else:
                 statement.append(line)
-        f.close()
+
+        if not isinstance(f, list):
+            f.close()
 
         if my.verbose:
             print "\t... added [%s] entries" % count
