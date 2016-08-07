@@ -862,7 +862,7 @@ spt.dg_table.gear_smenu_add_task_matched_cbk = function( evt, bvr )
     
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
-    var search_class = table.get("spt_search_class");
+    var search_class = table.get("spt_search_class") || "";
 
 
     var search_view;
@@ -2937,7 +2937,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var search_limit = target.getAttribute("spt_search_limit");
     var parent_key = target.getAttribute("spt_parent_key");
     var search_key = target.getAttribute("spt_search_key");
-    var search_class = target.getAttribute("spt_search_class");
+    var search_class = target.getAttribute("spt_search_class") || "";
     var search_view = target.getAttribute('spt_search_view');
     var show_search = target.getAttribute("spt_show_search");
     var show_keyword_search = target.getAttribute("spt_show_keyword_search");
@@ -2974,13 +2974,15 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
     var order_by = target.getAttribute("spt_order_by");
     
-    var file_system_edit = target.getAttribute("spt_file_system_edit");
-    var parent_mode = target.getAttribute("spt_parent_mode");
+    var file_system_edit = target.getAttribute("spt_file_system_edit") || "";
+    var parent_mode = target.getAttribute("spt_parent_mode") || "";
 
-    var settings = target.getAttribute("spt_settings");
-    var gear_settings = target.getAttribute("spt_gear_settings");
+    var settings = target.getAttribute("spt_settings") || "";
+    var gear_settings = target.getAttribute("spt_gear_settings") || "";
 
-    var height = target.getAttribute("spt_height");
+    var shelf_view = target.getAttribute("spt_shelf_view") || "";
+
+    var height = target.getAttribute("spt_height") || "";
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -3066,6 +3068,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'parent_mode': parent_mode,
         'settings': settings,
         'gear_settings': gear_settings,
+        'shelf_view': shelf_view,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -4768,7 +4771,7 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
         spt.alert('You are viewing an old table layout. If you want to benefit from better features of the Fast Table Layout, please switch it in Manage Side Bar.');
     }
     var element_names = version == 2 ? spt.table.get_element_names() : [];
-    var search_class = table.get("spt_search_class");
+    var search_class = table.get("spt_search_class") || "";
 
     var tmp_bvr = {};
    
