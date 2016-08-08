@@ -1118,7 +1118,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var class_name = bvr.action_handler;
         // TODO: make the async_callback return throw an e so we can run 
         // server.abort
-        server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
+        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
         
         
         on_progress = function(message) {
@@ -1130,7 +1130,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
         }
-        spt.message.set_interval(key, on_progress, 2000);
+        spt.message.set_interval(key, on_progress, 500, bvr.src_el);
 
         '''
 

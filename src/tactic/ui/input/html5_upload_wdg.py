@@ -309,6 +309,7 @@ class UploadButtonWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_class("spt_upload_top")
+        top.add_style("display: inline-block")
 
         title = my.kwargs.get("title")
         name = my.kwargs.get("name")
@@ -346,7 +347,7 @@ class UploadButtonWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
 
         from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title, color=color, width=width)
+        button = ActionButtonWdg(title=title, color=color, width=width, size='b')
 
 
         button_id = my.kwargs.get("id")
