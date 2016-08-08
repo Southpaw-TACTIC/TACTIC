@@ -1382,11 +1382,9 @@ class MessageWdg(BaseRefreshWdg):
 
     def get_onload_js(cls):
         return r'''
-/*
 if (spt.message) {
     return;
 }
-*/
 
 
 spt.message = {}

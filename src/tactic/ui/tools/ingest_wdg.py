@@ -61,6 +61,23 @@ class IngestUploadWdg(BaseRefreshWdg):
         if search_keys:
             my.sobjects = Search.get_by_search_keys(search_keys)
 
+
+        asset_dir = Environment.get_asset_dir()
+
+        base_dir = my.kwargs.get("base_dir")
+        if base_dir:
+            if not base_dir.startswith(asset_dir):
+                raise Exception("Path needs to be in asset root")
+            else:
+                relative_dir = base_dir.replace(asset_dir, "")
+                relative_dir = relative_dir.strip("/")
+        else:
+            relative_dir = my.kwargs.get("relative_dir")
+
+        my.relative_dir = relative_dir
+
+
+
         top = my.top
         top.add_class("spt_ingest_top")
 
@@ -432,6 +449,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     def get_content_wdg(my):
 
+        """
         asset_dir = Environment.get_asset_dir()
 
         base_dir = my.kwargs.get("base_dir")
@@ -445,6 +463,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             relative_dir = my.kwargs.get("relative_dir")
 
         my.relative_dir = relative_dir
+        """
 
         div = DivWdg()
         div.add_style("width: auto")
@@ -506,10 +525,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             div.add("No search type specfied")
             return div
 
-        if relative_dir:
+        if my.relative_dir:
             folder_div = DivWdg()
             shelf_div.add(folder_div)
-            folder_div.add("Folder: %s" % relative_dir)
+            folder_div.add("Folder: %s" % my.relative_dir)
             folder_div.add_style("opacity: 0.5")
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
@@ -524,43 +543,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload = Html5UploadWdg(multiple=True)
         shelf_div.add(upload)
 
-        button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        shelf_div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
 
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            var button = top.getElement(".spt_upload_file_button");
-            button.setStyle("display", "none");
-
-        
-            //clear upload progress
-            var upload_bar = top.getElement('.spt_upload_progress');
-            if (upload_bar) {
-                upload_bar.setStyle('width','0%');
-                upload_bar.innerHTML = '';
-                upload_bar.setStyle("visibility", "hidden");
-
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = "";
-
-            }
-
-         '''
-         } )
 
         button = ActionButtonWdg(title="Add Files")
-        button.add_style("float: right")
+        #button.add_style("float: right")
+        button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
         shelf_div.add(button)
         button.add_behavior( {
@@ -607,14 +594,50 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        upload_div = DivWdg()
-        shelf_div.add(upload_div)
-        upload_div.add_class("spt_upload_file_button")
-        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
-        upload_div.add(button)
-        upload_div.add_style("display: none")
+
+        button = ActionButtonWdg(title="Clear")
+        #button.add_style("float: right")
+        button.add_style("display: inline-block")
+        button.add_style("margin-top: -3px")
+        shelf_div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
+            var button = top.getElement(".spt_upload_file_button");
+            button.setStyle("display", "none");
+
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
+         '''
+         } )
+
+        ingest = my.get_ingest_button()
+        shelf_div.add(ingest)
+        ingest.add_style("float: right")
 
         shelf_div.add("<br clear='all'/>")
+
+        shelf_div.add(my.get_progress_div())
 
         border_color_light = div.get_color("background2", 8)
         border_color_dark = div.get_color("background2", -15)
@@ -890,40 +913,21 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<br/>")
 
 
+        #upload_wdg = my.get_ingest_button()
+        #div.add(upload_wdg)
 
-        info = DivWdg()
-        div.add(info)
-        info.add_class("spt_upload_info")
+        return div
 
 
-        progress_div = DivWdg()
-        progress_div.add_class("spt_upload_progress_top")
-        div.add(progress_div)
-        progress_div.add_style("width: 595px")
-        progress_div.add_style("height: 15px")
-        progress_div.add_style("margin-bottom: 10px")
-        progress_div.add_border()
-        #progress_div.add_style("display: none")
 
-        progress = DivWdg()
-        progress_div.add(progress)
-        progress.add_class("spt_upload_progress")
-        progress.add_style("width: 0px")
-        progress.add_style("visibility: hidden")
-        progress.add_style("height: 100%")
-        progress.add_gradient("background", "background3", -10)
-        progress.add_style("text-align: right")
-        progress.add_style("overflow: hidden")
-        progress.add_style("padding-right: 3px")
+    def get_ingest_button(my):
+
+        div = DivWdg()
 
         library_mode = my.kwargs.get("library_mode") or False
         dated_dirs = my.kwargs.get("dated_dirs") or False
  
-        from tactic.ui.app import MessageWdg
-        progress.add_behavior( {
-            'type': 'load',
-            'cbjs_action': MessageWdg.get_onload_js()
-        } )
+
 
 
 
@@ -1135,6 +1139,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         '''
 
 
+        """
         button = ActionButtonWdg(title="Clear")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
@@ -1165,13 +1170,15 @@ class IngestUploadWdg(BaseRefreshWdg):
 
          '''
          } )
+        """
+
 
         upload_div = DivWdg()
         div.add(upload_div)
         button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
         upload_div.add(button)
-        button.add_style("float: right")
-        upload_div.add_style("margin-bottom: 20px")
+        #button.add_style("float: right")
+        #upload_div.add_style("margin-bottom: 20px")
 
 
 
@@ -1190,7 +1197,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
-                'relative_dir': relative_dir,
+                'relative_dir': my.relative_dir,
                 'script_found': script_found,
                 'context': context,
                 'library_mode': library_mode,
@@ -1263,6 +1270,45 @@ class IngestUploadWdg(BaseRefreshWdg):
             ''' % (upload_progress, on_complete, upload_init)
         } )
 
+
+        return div
+
+
+
+    def get_progress_div(my):
+
+        div = DivWdg()
+
+        info = DivWdg()
+        div.add(info)
+        info.add_class("spt_upload_info")
+
+
+        progress_div = DivWdg()
+        progress_div.add_class("spt_upload_progress_top")
+        div.add(progress_div)
+        progress_div.add_style("width: 595px")
+        progress_div.add_style("height: 15px")
+        progress_div.add_style("margin-bottom: 10px")
+        progress_div.add_border()
+        #progress_div.add_style("display: none")
+
+        progress = DivWdg()
+        progress_div.add(progress)
+        progress.add_class("spt_upload_progress")
+        progress.add_style("width: 0px")
+        progress.add_style("visibility: hidden")
+        progress.add_style("height: 100%")
+        progress.add_gradient("background", "background3", -10)
+        progress.add_style("text-align: right")
+        progress.add_style("overflow: hidden")
+        progress.add_style("padding-right: 3px")
+
+        from tactic.ui.app import MessageWdg
+        progress.add_behavior( {
+            'type': 'load',
+            'cbjs_action': MessageWdg.get_onload_js()
+        } )
 
         return div
 
