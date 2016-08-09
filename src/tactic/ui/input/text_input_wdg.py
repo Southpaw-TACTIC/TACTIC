@@ -1669,6 +1669,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")
+            div.add_style("cursor: pointer")
             
             if isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')

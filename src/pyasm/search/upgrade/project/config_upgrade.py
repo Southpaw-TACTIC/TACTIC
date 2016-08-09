@@ -18,6 +18,17 @@ from pyasm.search.upgrade.project import *
 
 class ConfigUpgrade(BaseUpgrade):
 
+
+    #
+    #
+    #
+    def upgrade_v4_6.0_a01_001(my):
+        my.run_sql('''
+        ALTER TABLE prod_setting DROP CONSTRAINT "prod_setting_key_idx";
+        ''')
+
+
+
     #
     # 4.4.0.a01
     #

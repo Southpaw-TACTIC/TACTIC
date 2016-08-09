@@ -635,12 +635,16 @@ class CardLayoutWdg(ToolLayoutWdg):
             #value = sobject.get_value(element_name, no_exception=True) or "N/A"
             #table.add_cell(value)
 
-        div.add("<br/>")
-        from tactic.ui.widget import DiscussionWdg
-        search_key = sobject.get_search_key()
-        notes_wdg = DiscussionWdg(search_key=search_key)
-        notes_wdg.set_sobject(sobject)
-        div.add(notes_wdg)
+
+        show_notes = my.kwargs.get("show_notes")
+       
+        if show_notes in [True, 'true']:
+            div.add("<br/>")
+            from tactic.ui.widget import DiscussionWdg
+            search_key = sobject.get_search_key()
+            notes_wdg = DiscussionWdg(search_key=search_key)
+            notes_wdg.set_sobject(sobject)
+            div.add(notes_wdg)
 
         return div
 

@@ -573,7 +573,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         match_class = cls.get_note_class(hidden, 'spt_discussion_add')
         layout.add_relay_behavior( {
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': match_class,
             'hidden': hidden,
             'allow_email': allow_email,
