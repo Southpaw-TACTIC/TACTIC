@@ -207,9 +207,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("width: %s" % my.width)
         canvas.add_style("height: %s" % my.height)
         canvas.add_style("z-index: 200")
-        
  
-      
+     
+
         #canvas.add_style("width: 100%")
         #canvas.add_style("height: 100%")
 
@@ -248,7 +248,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         """
 
 
- 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -256,7 +255,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.select_drag'
         } )
-
 
         canvas.add_behavior( {
         "type": 'click_up',
@@ -276,8 +274,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         }) 
 
-
-
         # create the paint where all the connectors are drawn
         paint = my.get_paint()
 
@@ -288,10 +284,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         #paint.add_style("border: solid 1px blue");
-        paint.add_style("z-index: 1");
+        #paint.add_style("z-index: 1");
+                
         
         outer.add(paint)
-
+        
+                
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -307,7 +305,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.zoom_drag'
         } )
-
         paint.add_behavior( {
         "type": 'wheel',
         "cbjs_action": '''
@@ -489,7 +486,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.set_attr("width", my.width)
         canvas.set_attr("height", my.height)
 
-        canvas.add_style("z-index: 50")
+        canvas.add_style("z-index: 1")
 
         canvas.add_behavior( {
         'type': 'load',
@@ -2067,7 +2064,8 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
     
-  
+    
+
     for (var i=0; i<connectors.length; i++) {
         var connector = connectors[i];
         connector.draw();
@@ -2075,6 +2073,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         var found = false;
         var imgd = ctx.getImageData(left, top, width, height);
         var pix = imgd.data;
+        
         for ( var j = 0; j < pix.length; j += 4) {
             var red = pix[j];
             var green = pix[j+1];
@@ -2166,7 +2165,12 @@ spt.pipeline.select_drag_action = function(evt, bvr, mouse_411) {
     var last_pos = spt.pipeline.select_last_position;
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
 
+
     spt.pipeline.hit_test(last_pos.x, last_pos.y, mouse_pos.x, mouse_pos.y );
+    if (last_pos.x < mouse_pos.x)
+        spt.pipeline.select_nodes_by_box(last_pos, mouse_pos);
+    else
+        spt.pipeline.select_nodes_by_box(mouse_pos, last_pos);
 
     spt.pipeline.redraw_canvas();
 }
@@ -2343,6 +2347,20 @@ spt.pipeline.select_nodes_by_group = function(group_name) {
     for (var i=0; i<nodes.length; i++) {
         var node = nodes[i];
         if (node.spt_group == group_name) {
+            spt.pipeline.select_node(node);
+        }
+    }
+}
+
+spt.pipeline.select_nodes_by_box = function(TL, BR) {
+    spt.pipeline.unselect_all_nodes();
+
+    var nodes = spt.pipeline.get_all_nodes();
+   
+    for (var i=0; i<nodes.length; i++) {
+        var node = nodes[i];
+        
+        if ((TL.x <node.spt_xpos && node.spt_xpos < BR.x ) && (TL.y < node.spt_ypos && node.spt_ypos < BR.y)) {
             spt.pipeline.select_node(node);
         }
     }
@@ -2722,8 +2740,11 @@ spt.pipeline.remove_nodes = function(nodes) {
                 indexes[i] = true;
                 spt.pipeline.delete_connector(connector);
             }
+
+
         }
     }
+
     /*
     // get a reverse order of the indexes
     var indexes_array = [];
@@ -2743,16 +2764,22 @@ spt.pipeline.remove_nodes = function(nodes) {
     // to update this
 
     // remove the nodes
+    var group;
     for (var j = nodes.length-1; j >= 0; j-- ) {
         var node = nodes[j];
 
         // remove the node from the group
-        var group = spt.pipeline.get_group_by_node(node);
+        group = spt.pipeline.get_group_by_node(node);
         group.remove_node(node);
 
         spt.behavior.destroy_element(node);
     }
 
+    // if there is only 1 node left, remove dangling connector
+    var final_nodes = group.get_nodes();
+    if (final_nodes.length == 1) {
+        spt.pipeline.delete_connector(canvas.connectors[0]);
+    }
     spt.pipeline.redraw_canvas();
 }
 
