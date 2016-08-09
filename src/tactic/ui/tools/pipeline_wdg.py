@@ -4415,12 +4415,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
-        spt.pipeline.delete_selected();
 
         var nodes = spt.pipeline.get_selected_nodes();
-        for (var i = 0; i < nodes.length; i++) {
-            spt.pipeline.remove_node(nodes[i]);
-        }
+        
+        spt.pipeline.remove_nodes(nodes);
+        
+        // this targets connectors only
+        spt.pipeline.delete_selected();
+      
         '''
         } )
 
