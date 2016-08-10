@@ -859,8 +859,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #scroll.add_style("overflow-y: hidden")
             #scroll.add_style("overflow-x: none")
 
+
+            padding = DivWdg()
+            scroll.add(padding)
+            padding.add_class("spt_header_padding")
+            padding.add_style("width", "17px")
+            padding.add_style("display", "none")
+
+            padding.add_style("background", "#F5F5F5")
+            padding.add_style("float", "right")
+
+
+
             my.header_table = Table()
             scroll.add(my.header_table)
+
 
 
             my.header_table.add_class("spt_table_with_headers")
@@ -5733,16 +5746,45 @@ spt.table.expand_table = function() {
     // don't set the width of each column, this is simpler
     if (width == '100%') {
         table.setStyle("width", "");
-        if (header_table)
+        if (header_table) {
             header_table.setStyle("width", "");
+        }
     }
     else {
         table.setStyle("width", "100%");
-        if (header_table)
+        if (header_table) {
             header_table.setStyle("width", "100%");
+        }
         layout.setStyle("width", "100%");
     }
- 
+
+
+    // adjust for windows scrollbar
+    if (spt.browser.os_is_Windows()) {
+        var div = layout.getElement(".spt_header_padding"); 
+        if (div) {
+            spt.behavior.destroy_element(div);
+        }
+
+
+        var parent = table.getParent();
+        if (parent.scrollHeight > parent.clientHeight) {
+            header_parent = header_table.getParent();
+            header_parent.setStyle("margin-right", "17px");
+
+            var div = document.createElement("div");
+            div.setStyle("width", "17px");
+            div.innerHTML = "&nbsp;";
+            div.addClass("spt_header_padding");
+
+            var height = header_parent.getStyle("height");
+            div.setStyle("height", height);
+            div.setStyle("background", "#F5F5F5");
+            div.setStyle("float", "right");
+
+            div.inject(header_parent, "before");
+        }
+    }
 }
 
 

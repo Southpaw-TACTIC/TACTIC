@@ -1363,8 +1363,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add a custom layout widget
         custom_shelf_view = my.kwargs.get("shelf_view")
-        if not custom_shelf_view:
-            custom_shelf_view = "_layout_shelf"
+        if custom_shelf_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            widget = CustomLayoutWdg(view=custom_shelf_view)
+            if widget:
+                wdg_list.append( { 'wdg': widget } )
+            else:
+                print "WARNING: shelf view '%s' not defined" % custom_shelf_view
+
+        custom_shelf_view = "_layout_shelf"
         if custom_shelf_view:
             config = WidgetConfigView.get_by_search_type(my.search_type, custom_shelf_view)
             if config:
@@ -1372,6 +1379,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 if element_names:
                     widget = config.get_display_widget(element_names[0])
                     wdg_list.append( { 'wdg': widget } )
+                else:
+                    print "WARNING: shelf view '%s' not defined" % custom_shelf_view
  
 
 

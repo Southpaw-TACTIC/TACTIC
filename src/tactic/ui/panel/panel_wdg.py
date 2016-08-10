@@ -3221,6 +3221,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_collection_tool = my.kwargs.get("show_collection_tool")
         settings = my.kwargs.get("settings")
         gear_settings = my.kwargs.get("gear_settings")
+        shelf_view = my.kwargs.get("shelf_view")
 
         is_inner = my.kwargs.get("is_inner")
        
@@ -3262,7 +3263,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
-            #"shelf_view": my.kwargs.get("shelf_view"),
+            "shelf_view": shelf_view,
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
