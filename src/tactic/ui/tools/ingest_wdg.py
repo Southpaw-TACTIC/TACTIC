@@ -637,7 +637,9 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         shelf_div.add("<br clear='all'/>")
 
-        shelf_div.add(my.get_progress_div())
+
+        progress_wdg = my.get_progress_div()
+        shelf_div.add(progress_wdg)
 
         border_color_light = div.get_color("background2", 8)
         border_color_dark = div.get_color("background2", -15)
@@ -934,13 +936,21 @@ class IngestUploadWdg(BaseRefreshWdg):
         # NOTE: files variable is passed in automatically
 
         upload_init = '''
-        server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
 
-        progress_el = top.getElement(".spt_upload_progress");
-        progress_el.setStyle("visibility", "visible");
 
+        // start the upload
+        var progress_el = top.getElement(".spt_upload_progress");
+        var progress_top = top.getElement(".spt_upload_progress_top");
+
+        setTimeout( function() {
+            progress_el.setStyle("visibility", "visible");
+            progress_top.setStyle("margin-top", "0px");
+        }, 0);
+
+
+        server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         '''
 
         upload_progress = '''
@@ -1020,6 +1030,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
+
 
         var info_el = top.getElement(".spt_upload_info");
         
@@ -1119,6 +1130,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         };
 
+
         var class_name = bvr.action_handler;
         // TODO: make the async_callback return throw an e so we can run 
         // server.abort
@@ -1126,11 +1138,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         
         
         on_progress = function(message) {
+
             msg = JSON.parse(message.message);
             var percent = msg.progress;
             var description = msg.description;
             info_el.innerHTML = description;
-
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
         }
@@ -1278,15 +1290,21 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_progress_div(my):
 
         div = DivWdg()
+        div.add_style("overflow-y: hidden")
+
+        inner = DivWdg()
+        div.add(inner)
+        inner.add_class("spt_upload_progress_top")
+        inner.add_style("margin-top: -30px")
 
         info = DivWdg()
-        div.add(info)
+        inner.add(info)
         info.add_class("spt_upload_info")
 
 
         progress_div = DivWdg()
         progress_div.add_class("spt_upload_progress_top")
-        div.add(progress_div)
+        inner.add(progress_div)
         progress_div.add_style("width: 595px")
         progress_div.add_style("height: 15px")
         progress_div.add_style("margin-bottom: 10px")

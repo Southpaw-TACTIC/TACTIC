@@ -142,17 +142,18 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
     def handle_layout_behaviors(my, layout):
         # in case the note widget appears more than once in a table
-        if my.parent_wdg.drawn_widgets.get(my.__class__.__name__) == True:
-            return
+        if my.parent_wdg:
+            if my.parent_wdg.drawn_widgets.get(my.__class__.__name__) == True:
+                return
 
-        version = my.parent_wdg.get_layout_version()
-        if version == "2":
-            pass
-        else:
-            layout.add_smart_styles("spt_discussion_element_top", {
-                'margin': '-3px -4px -3px -6px',
-                'min-width': '300px'
-            } )
+            version = my.parent_wdg.get_layout_version()
+            if version == "2":
+                pass
+            else:
+                layout.add_smart_styles("spt_discussion_element_top", {
+                    'margin': '-3px -4px -3px -6px',
+                    'min-width': '300px'
+                } )
 
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
@@ -573,7 +574,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         match_class = cls.get_note_class(hidden, 'spt_discussion_add')
         layout.add_relay_behavior( {
-            'type': 'click',
+            'type': 'mouseup',
             'bvr_match_class': match_class,
             'hidden': hidden,
             'allow_email': allow_email,

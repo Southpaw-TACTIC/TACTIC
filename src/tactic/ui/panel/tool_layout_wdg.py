@@ -160,6 +160,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add_attr("spt_version", "2")
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
+        my.layout_wdg = inner
 
         class_name = Common.get_full_class_name(my)
         inner.add_attr("spt_class_name", class_name)
@@ -505,6 +506,13 @@ class CardLayoutWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
+
+    def add_layout_behaviors(my, layout_wdg):
+        my.tile_layout.add_layout_behaviors(layout_wdg)
+
+
+
+
     def get_content_wdg(my):
         div = DivWdg()
 
@@ -519,8 +527,14 @@ class CardLayoutWdg(ToolLayoutWdg):
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
         if my.sobjects:
-            for sobject in my.sobjects:
+            for i, sobject in enumerate(my.sobjects):
+                if i == 0:
+                    my.first = True
+                else:
+                    my.first = False
+                
                 inner.add(my.get_item_wdg(sobject))
+                inner.add("<hr/>")
         else:
             table = Table()
             inner.add(table)
@@ -537,11 +551,33 @@ class CardLayoutWdg(ToolLayoutWdg):
 
     def get_item_wdg(my, sobject):
 
+        my.element_names = my.kwargs.get("element_names")
+        if not my.element_names:
+            my.element_names = ["preview","code","name","description",]
+        else:
+            my.element_names = my.element_names.split(",")
+
+        if my.element_names[0] == "preview":
+            has_preview = True
+            my.element_names = my.element_names[1:]
+        else:
+            has_preview = False
+
+        view = my.kwargs.get("view")
+        if not view:
+            view = "table"
+        from pyasm.widget import WidgetConfigView
+        search_type = sobject.get_search_type()
+        my.config = WidgetConfigView.get_by_search_type(search_type, view)
+
+
+
         div = DivWdg()
         div.add_class("spt_item_top")
         div.add_style("padding: 10px")
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
-        div.add_class("spt_table_row")
+        #div.add_class("spt_table_row")
+        #div.add_class("spt_table_row_%s" % my.table_id)
         div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
         div.add_attr("spt_search_code", sobject.get_code())
         name = sobject.get_value("name", no_exception=True)
@@ -550,6 +586,7 @@ class CardLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_name", name)
 
         table = Table()
+
         div.add(table)
         table.set_max_width()
         tr = table.add_row()
@@ -558,28 +595,21 @@ class CardLayoutWdg(ToolLayoutWdg):
         if not width:
             width = "240px"
 
-        td = table.add_cell()
-        td.add_style("width: %s" % width);
-        td.add_style("vertical-align: top")
+        if has_preview:
+            td = table.add_cell()
+            td.add_style("width: %s" % width);
+            td.add_style("vertical-align: top")
 
-        """
-        from tile_layout_wdg import ThumbWdg2
-        thumb_div = DivWdg()
-        #td.add(thumb_div)
-        thumb_div.add_border()
-        thumb_div.set_box_shadow("0px 0px 5px")
-        thumb_div.add_color("background", "background", -5)
-        thumb_div.add_class("spt_item_content")
-        #thumb_div.add_style("min-height: 120px")
+            options = my.config.get_display_options("preview")
+            redirect_expr = options.get("redirect_expr")
+            if redirect_expr:
+                parent = Search.eval(redirect_expr, sobject, single=True)
+                #parent = sobject.get_parent()
+                tile_wdg = my.tile_layout.get_tile_wdg(parent)
+            else:
+                tile_wdg = my.tile_layout.get_tile_wdg(sobject)
 
-        thumb = ThumbWdg2()
-        thumb_div.add(thumb)
-        thumb.set_sobject(sobject)
-        """
-
-
-        tile_wdg = my.tile_layout.get_tile_wdg(sobject)
-        td.add(tile_wdg)
+            td.add(tile_wdg)
 
         info_div = my.get_info_wdg(sobject)
         td = table.add_cell(info_div)
@@ -593,27 +623,17 @@ class CardLayoutWdg(ToolLayoutWdg):
 
         div = DivWdg()
         div.add_style("margin: 10px 20px 20px 20px")
-        div.add_style("padding: 20px")
-        div.add_color("background", "background", -3)
-        div.add_border()
-        div.add_color("color", "color3")
-        div.set_round_corners(5)
+        div.add_style("padding: 0px 20px")
+        #div.add_color("background", "background", -3)
+        #div.add_border()
+        #div.add_color("color", "color3")
+        #div.set_round_corners(5)
 
         div.add_style("height", "100%")
         div.add_style("position: relative")
 
-        element_names = my.kwargs.get("element_names")
-        if not element_names:
-            element_names = ["code","name","description",]
-        else:
-            element_names = element_names.split(",")
-
-
-        view = "table"
-
-        from pyasm.widget import WidgetConfigView
-        search_type = sobject.get_search_type()
-        config = WidgetConfigView.get_by_search_type(search_type, view)
+        element_names = my.element_names
+        config = my.config
 
 
         table = Table()
@@ -628,6 +648,15 @@ class CardLayoutWdg(ToolLayoutWdg):
 
 
             element = config.get_display_widget(element_name)
+
+            if my.first:
+                try:
+                    element.handle_layout_behaviors(my.layout_wdg)
+                except Exception, e:
+                    print "e :", e
+                    pass
+
+
             element.set_sobject(sobject)
             element.preprocess()
             td = table.add_cell(element)
