@@ -194,6 +194,7 @@ CREATE TABLE login_group (
     id serial PRIMARY KEY,
     code character varying(256),
     login_group character varying(100) NOT NULL,
+    name text,
     sub_groups text,
     access_rules text,
     redirect_url text,
@@ -203,6 +204,7 @@ CREATE TABLE login_group (
     s_status character varying(256),
     start_link text,
     access_level varchar(32),
+    is_default boolean,
     CONSTRAINT "login_group_code_idx" UNIQUE (code)
 );
 

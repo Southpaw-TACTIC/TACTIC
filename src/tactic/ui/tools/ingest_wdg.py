@@ -102,17 +102,20 @@ class IngestUploadWdg(BaseRefreshWdg):
         left.add( my.get_content_wdg() )
 
 
-        right = table.add_cell()
-        right.add_style("vertical-align: top")
-        right.add( my.get_settings_wdg() )
 
         search_key = my.kwargs.get("search_key") or ""
         if search_key:
-            show_settings = False
+            my.show_settings = False
         else:
-            show_settings = my.kwargs.get("show_settings")
+            my.show_settings = my.kwargs.get("show_settings")
+            if my.show_settings == None:
+                my.show_settings = True
 
-        if show_settings in [False, 'false']:
+        right = table.add_cell()
+        right.add_style("vertical-align: top")
+        right.add( my.get_settings_wdg() )
+        
+        if my.show_settings in [False, 'false']:
             right.add_style("display: none")
 
         return top
@@ -300,15 +303,17 @@ class IngestUploadWdg(BaseRefreshWdg):
         ingest_data_view = my.kwargs.get('ingest_data_view')
 
         sobject = SearchType.create(my.search_type)
-        edit = EditWdg(
-                search_key=sobject.get_search_key(),
-                mode='view',
-                view=ingest_data_view,
-                show_header=False,
-                width="auto",
-        )
         
-        div.add(edit)
+        if my.show_settings: 
+            edit = EditWdg(
+                    search_key=sobject.get_search_key(),
+                    mode='view',
+                    view=ingest_data_view,
+                    show_header=False,
+                    width="auto",
+            )
+            
+            div.add(edit)
         hidden = HiddenWdg(name="parent_key")
         div.add(hidden)
         hidden.add_class("spt_parent_key")
@@ -1011,6 +1016,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
+      
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
@@ -1083,7 +1089,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
 
         var return_array = false;
-        var update_data = spt.api.get_input_values(update_data_top, null, return_array);
+        // non-existent when my.show_settings is False
+        var update_data = update_data_top ? spt.api.get_input_values(update_data_top, null, return_array): {};
 
         var kwargs = {
             search_key: search_key,
@@ -1590,8 +1597,9 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        key = my.kwargs.get("key")
-
+        message_key = my.kwargs.get("key")        
+        message_key = "IngestUploadCmd|%s|%s"%(search_key, message_key)
+        
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
@@ -1999,24 +2007,24 @@ class IngestUploadCmd(Command):
             print "checking in: ", filename, percent
 
 
-            if key:
+            if message_key:
                 msg = {
                     'progress': percent,
                     'description': 'Checking in file [%s]' % filename,
                 }
 
-                server.log_message(key, msg, status="in progress")
+                server.log_message(message_key, msg, status="in progress")
 
 
 
 
 
-        if key:
+        if message_key:
             msg = {
                 'progress': '100',
                 'description': 'Check-ins complete'
             }
-            server.log_message(key, msg, status="complete")
+            server.log_message(message_key, msg, status="complete")
 
         my.info = non_seq_filenames
         return non_seq_filenames

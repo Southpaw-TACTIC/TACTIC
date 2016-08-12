@@ -44,7 +44,9 @@ spt.CustomProject.get_script = function(script_code) {
 }
 
 
-spt.CustomProject.get_script_by_path = function(script_path) {
+spt.CustomProject.get_script_by_path = function(script_path, popup) {
+
+    if (typeof(popup) == 'undefined') popup = true;
 
     var server = TacticServerStub.get();
     var search_type = "config/custom_script";
@@ -58,13 +60,15 @@ spt.CustomProject.get_script_by_path = function(script_path) {
     var filters = [['folder', folder], ['title', title]];
     var results = server.query(search_type, {filters:filters});
     if (results.length == 0) {
-        alert("Custom script ["+script_path+"] does not exist");
+        if (popup)
+            spt.alert("Custom script ["+script_path+"] does not exist");
         return;
     }
 
     var script = results[0]["script"]
     if (script == "") {
-        alert("Custom script ["+script_path+"] is empty");
+        if (popup)
+            spt.alert("Custom script ["+script_path+"] is empty");
         return;
     }
 
@@ -112,13 +116,13 @@ spt.CustomProject.custom_script = function(evt, bvr) {
     var filters = [['code', script_code]];
     var results = server.query(search_type, {filters:filters});
     if (results.length == 0) {
-        alert("Custom script ["+script_code+"] does not exist");
+        spt.alert("Custom script ["+script_code+"] does not exist");
         return;
     }
 
     var script = results[0]["script"]
     if (script == "") {
-        alert("Custom script ["+script_code+"] is empty");
+        spt.alert("Custom script ["+script_code+"] is empty");
         return;
     }
 

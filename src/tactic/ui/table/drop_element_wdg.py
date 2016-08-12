@@ -216,7 +216,7 @@ class DropElementWdg(SimpleTableElementWdg):
         div = DivWdg()
         div.add_class("spt_drop_element_top")
         div.add_style("width: 100%")
-        div.add_style("min-height: 30px")
+        div.add_style("min-height: 70px")
         div.add_style("height: auto")
         div.add_style("min-width: 100px")
         div.add_style("max-height: 300px")

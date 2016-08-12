@@ -56,6 +56,8 @@ CREATE TABLE naming (
     class_name nvarchar(max), 
     script_path nvarchar(max),
     checkin_type nvarchar(256),
+    base_dir_alias nvarchar(256),
+    sandbox_dir_alias nvarchar(256),
     CONSTRAINT "naming_code_idx" UNIQUE (code)
 );
 

@@ -621,14 +621,13 @@ spt.tab.select = function(element_name) {
         headers[i].removeClass("spt_tab_selected");
         headers[i].addClass("spt_tab_unselected");
     }
-
-    header.setStyle("opacity", "1.0");
-    header.addClass("spt_is_selected");
-    header.addClass("spt_tab_selected");
-    header.removeClass("spt_tab_unselected");
-    //header.setStyle("font-weight", "bold");
-    header.setStyle("z-index", "200");
-
+    if (header) {
+        header.setStyle("opacity", "1.0");
+        header.addClass("spt_is_selected");
+        header.addClass("spt_tab_selected");
+        header.removeClass("spt_tab_unselected");
+        header.setStyle("z-index", "200");
+    }
 
     var content_top = top.getElement(".spt_tab_content_top");
     var content_boxes = spt.tab.get_contents();
@@ -651,7 +650,7 @@ spt.tab.select = function(element_name) {
     }
 
 
-    var kwargs_str = header.getAttribute("spt_kwargs");
+    var kwargs_str = header ? header.getAttribute("spt_kwargs") : '';
     if (kwargs_str == '') {
         kwargs = {};
     }
@@ -1069,6 +1068,8 @@ spt.tab.close = function(src_el) {
             spt.tab.select(last_element_name);
         }
         else {
+            // select last one from the remaining
+            headers = spt.tab.get_headers();
             var last = headers[headers.length - 1].getAttribute("spt_element_name");
             spt.tab.select(last);
         }
@@ -1476,7 +1477,6 @@ spt.tab.close = function(src_el) {
 
                 window.onresize = function() {
                     var size = el.getSize();
-                    console.log(size);
                     bvr.src_el.setStyle("height", size.y);
                     bvr.src_el.setStyle("max-height", size.y);
                 }
@@ -1620,7 +1620,6 @@ spt.tab.close = function(src_el) {
 
             var subheader_id = bvr.src_el.getAttribute("spt_subheader_id")
 
-
             var subheaders = top.getElements(".spt_tab_subheader");
             for ( var i = 0; i < subheaders.length; i++) {
                 subheaders[i].setStyle("display", "none");
@@ -1635,10 +1634,12 @@ spt.tab.close = function(src_el) {
             var size = bvr.src_el.getSize();
             var pos = bvr.src_el.getPosition(header_top);
 
-            el.setStyle("display", "");
-            spt.body.add_focus_element(el);
+            if (el) {
+                el.setStyle("display", "");
+                spt.body.add_focus_element(el);
 
-            el.position({x: pos.x, y: pos.y+size.y-1}, el);
+                el.position({x: pos.x, y: pos.y+size.y-1}, el);
+            }
 
             '''
         } )

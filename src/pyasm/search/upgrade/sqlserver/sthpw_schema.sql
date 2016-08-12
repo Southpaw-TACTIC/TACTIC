@@ -194,6 +194,7 @@ CREATE TABLE login_group (
     id integer IDENTITY PRIMARY KEY,
     code nvarchar(256),
     login_group nvarchar(100) NOT NULL,
+    name nvarchar(max),
     sub_groups nvarchar(max),
     access_rules nvarchar(max),
     redirect_url nvarchar(max),
@@ -203,6 +204,7 @@ CREATE TABLE login_group (
     s_status nvarchar(256),
     start_link nvarchar(max),
     access_level nvarchar(32),
+    is_default BIT,
     CONSTRAINT "login_group_code_idx" UNIQUE (code)
 );
 
