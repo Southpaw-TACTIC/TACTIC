@@ -864,43 +864,48 @@ class UserPanelWdg(BaseRefreshWdg):
             tool_div.add_style('position','relative')
             tool_div.add_style('top','-8px')
 
-        security = Environment.get_security()
-        license = security.get_license()
-        num_left = license.get_num_licenses_left()
-        current_users = license.get_current_users()
-        #max_users = license.get_max_users()
+
+        show_count = my.kwargs.get("show_count")
+        if show_count in ['true', True]:
+            security = Environment.get_security()
+            license = security.get_license()
+            num_left = license.get_num_licenses_left()
+            current_users = license.get_current_users()
+            #max_users = license.get_max_users()
 
 
-        div = DivWdg('Users')
-        div.add_style('align-self: flex-end')
-        div.add_styles("margin: 0 0 6px 20px")
-        badge_span = SpanWdg(css='badge')
-        badge_span.add_style('margin-left','6px')
-        badge_span.add(current_users)
-        div.add(badge_span)
-        tool_div.add(div)
-
-        tool_div2 = DivWdg()
-        # tool_div.add_style('margin-bottom','8px')
-        tool_div2.add_style('display','inline-flex')
-        tool_div2.add_style('justify-content','flex-end')
-        tool_div2.add_style('width','50%')
-
-        top.add(tool_div)
-        top.add(tool_div2)
-
-
-        if num_left < 1000:
-            div = DivWdg('Users Left')
+            div = DivWdg('Users')
             div.add_style('align-self: flex-end')
             div.add_styles("margin: 0 0 6px 20px")
             badge_span = SpanWdg(css='badge')
             badge_span.add_style('margin-left','6px')
-            badge_span.add(num_left)
+            badge_span.add(current_users)
             div.add(badge_span)
             tool_div.add(div)
 
+            tool_div2 = DivWdg()
+            # tool_div.add_style('margin-bottom','8px')
+            tool_div2.add_style('display','inline-flex')
+            tool_div2.add_style('justify-content','flex-end')
+            tool_div2.add_style('width','50%')
+
             top.add(tool_div)
+            top.add(tool_div2)
+
+
+            if num_left < 1000:
+                div = DivWdg('Users Left')
+                div.add_style('align-self: flex-end')
+                div.add_styles("margin: 0 0 6px 20px")
+                badge_span = SpanWdg(css='badge')
+                badge_span.add_style('margin-left','6px')
+                badge_span.add(num_left)
+                div.add(badge_span)
+                tool_div.add(div)
+
+                top.add(tool_div)
+
+
 
 
         if show_security not in ['false', False]:

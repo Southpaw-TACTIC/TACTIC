@@ -562,6 +562,19 @@ class FormatElementWdg(SimpleTableElementWdg):
                 if not setting:
                     setting = "%Y-%m-%d"
                 value = value.strftime(setting)
+
+
+        elif format == 'TIME_AGO':
+            if not value:
+                value = ''
+            else:
+                value = parser.parse(value)
+                from pyasm.common import SPTDate
+                value = SPTDate.convert(value)
+                value = SPTDate.get_time_ago(value)
+
+
+
         # ------------------------------------------------
         # Scientific
         elif format == '-1.23E+03':

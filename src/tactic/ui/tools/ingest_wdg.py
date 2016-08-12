@@ -962,9 +962,38 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         '''
+
+
+
+        oncomplete_script = '''
+        spt.notify.show_message("Ingest Completed");
+        server.finish();
+
+        var file_els = top.getElements(".spt_upload_file");
+        for ( var i = 0; i < file_els.length; i++) {
+            spt.behavior.destroy( file_els[i] );
+        };
+        var background = top.getElement(".spt_files_background");
+        background.setStyle("display", "");
+
+        spt.message.stop_interval(key);
+
+        var info_el = top.getElement(".spt_upload_info");
+        info_el.innerHTML = ''; 
+
+        var progress_el = top.getElement(".spt_upload_progress");
+        var progress_top = top.getElement(".spt_upload_progress_top");
+
+        setTimeout( function() {
+            progress_el.setStyle("visibility", "hidden");
+            progress_top.setStyle("margin-top", "-30px");
+        }, 0);
+
+        spt.panel.refresh(top);
+        '''
+        
         
         oncomplete_script_path = my.kwargs.get("oncomplete_script_path")
-        oncomplete_script = ''
         if oncomplete_script_path:
             script_folder, script_title = oncomplete_script_path.split("/")
             oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
@@ -972,58 +1001,13 @@ class IngestUploadWdg(BaseRefreshWdg):
             oncomplete_script_ret = server.eval(oncomplete_script_expr, single=True)
             
             if oncomplete_script_ret:
-                oncomplete_script = '''var top = bvr.src_el.getParent(".spt_ingest_top");
-                var file_els = top.getElements(".spt_upload_file");
-                for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-
-                
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = ''; 
-                progress_el = top.getElement(".spt_upload_progress");
-                progress_el.setStyle("visibility", "hidden");
-
-
-                };''' + oncomplete_script_ret
+                oncomplete_script = oncomplete_script + oncomplete_script_ret
                 script_found = True
             else:
                 script_found = False
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
-        if not oncomplete_script:
-            oncomplete_script = '''
-            var click_action = function() {
-                var fade = true;
-                var pop = spt.popup.get_popup(top)
-                spt.popup.close(pop, fade); 
-            }
-            spt.info("Ingest Completed", {click: click_action});
-            server.finish();
 
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            spt.message.stop_interval(key);
-
-            var info_el = top.getElement(".spt_upload_info");
-            info_el.innerHTML = ''; 
-            progress_el = top.getElement(".spt_upload_progress");
-            progress_el.setStyle("visibility", "hidden");
-
-
-            if (spt.table)
-            {
-                spt.table.run_search();
-            }
-            
-            spt.panel.refresh(top);
-            '''
-            script_found = True
-        
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
@@ -1227,8 +1211,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
-           
+          
             var file_els = top.getElements(".spt_upload_file");
+            var num_files = file_els.length;
+            var files_top = top.getElement(".spt_to_ingest_files")
+
+            spt.notify.show_message("Ingesting "+num_files+" Files");
 
             // get the server that will be used in the callbacks
             var server = TacticServerStub.get();
@@ -1246,7 +1234,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             }
             if (files.length == 0) {
-                alert("Either click 'Add' or drag some files over to ingest.");
+                spt.alert("Either click 'Add' or drag some files over to ingest.");
                 return;
             }
 
@@ -1261,7 +1249,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var upload_complete = function(evt) {
             %s;
-            spt.app_busy.hide();
             }
 
 
@@ -1532,7 +1519,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
-        var onchange = function (evt) {
+            var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
                 for (var i = 0; i < files.length; i++) {
@@ -1550,7 +1537,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
-        }
+            }
 
             spt.html5upload.clear();
             spt.html5upload.set_form( top );

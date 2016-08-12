@@ -147,7 +147,8 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                              '01:37:46 PM',
                              '31/12/99 13:37',
                              '31/12/99 13:37:46',
-                             'DATETIME'],
+                             'DATETIME',
+                             'TIME_AGO'],
 
             'scientific':   ['-1.23E+03',
                              '-1.234E+03'],
