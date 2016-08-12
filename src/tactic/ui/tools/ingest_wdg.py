@@ -1906,15 +1906,16 @@ class IngestUploadCmd(Command):
                 new_data[name] = value
 
 
-            from tactic.ui.panel import EditCmd
-            cmd = EditCmd(
-                    view="edit",
-                    sobject=sobject,
-                    data=new_data,
-                    commit="false",
+            if new_data:
+                from tactic.ui.panel import EditCmd
+                cmd = EditCmd(
+                        view="edit",
+                        sobject=sobject,
+                        data=new_data,
+                        commit="false",
 
-            )
-            cmd.execute()
+                )
+                cmd.execute()
 
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
