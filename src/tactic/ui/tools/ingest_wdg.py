@@ -482,7 +482,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         title = my.kwargs.get("title")
         if not title:
             title = "Ingest Files"
-        title_description = "Drag files into the box or click 'Add Files'"
+        title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
        
         title_wdg = DivWdg()
         header_div.add(title_wdg)
@@ -550,7 +550,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Add Files")
+        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
         #button.add_style("float: right")
         button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
@@ -1177,7 +1177,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         upload_div = DivWdg()
         div.add(upload_div)
-        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
+        button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
         upload_div.add(button)
         #button.add_style("float: right")
         #upload_div.add_style("margin-bottom: 20px")
@@ -1501,7 +1501,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_select_files_button(my):
 
 
-        button = ActionButtonWdg(title="Add Files")
+        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
