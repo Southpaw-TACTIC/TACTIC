@@ -128,6 +128,8 @@ spt.notify.show_message = function(message, duration, kwargs) {
     var window_size = $(window).getSize();
     el.setStyle("left", (window_size.x-size.x)/2);
 
+    return el;
+
 
 }
             '''
