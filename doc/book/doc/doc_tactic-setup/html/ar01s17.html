@@ -279,12 +279,12 @@ class TicketEmailHandler(object):
         msg.append("Summary: %s" % summary)
         msg.append("")
 
-        return "\n".join(msg)</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_event_usage"></a>17.5. Advanced Event Usage</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_trigger_setup"></a>17.6. Advanced Trigger Setup</h3></div></div></div><p>Examples of how to set up a client side trigger.</p><p>Different types of database events cause the client trigger to be fired.</p><p>These include the following events: accept, update.</p><p><span class="strong"><strong>Example 1: Simple Javascript Alert</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+        return "\n".join(msg)</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_event_usage"></a>17.5. Advanced Event Usage</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_trigger_setup"></a>17.6. Advanced Trigger Setup</h3></div></div></div><p>Here are the examples of how to set up a Client Side Trigger.</p><p>Different types of database events cause the client trigger to be fired.</p><p>These include the following events: accept, update, lookahead.</p><p><span class="strong"><strong>Example 1: Simple Javascript Alert</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Open the Client Trigger view under: Admin Views → Project
 Essentials → *Client*Triggers
 </li><li class="listitem"><p class="simpara">
 Add the following new entry:
-</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>accept</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>accept|my_project/my_sType</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td><td style="" align="left" valign="top"><p>my_script_folder/my_client_side_script</p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
 Open the Script Editor (keyboard short-cut is "9") and create the
 following entry:
 </p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>log.critical(input)</p></td></tr></tbody></table></div></li><li class="listitem">
@@ -301,41 +301,59 @@ Open the Client Trigger view under: Admin Views → Project
 Essentials → *Client*Triggers
 </li><li class="listitem"><p class="simpara">
 Add the following new entry:
-</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>update</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType2</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>update|my_project/my_sType2</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td><td style="" align="left" valign="top"><p>my_script_folder/my_client_side_script2</p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
 Open the Script Editor (keyboard short-cut is "9") and create the
 following entry:
-</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script2</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div><p class="simpara">log.critical(input); if (input.kwargs) { var search_key =
-input.kwargs.search_keys[0]; var update_data = input.kwargs.update_data;
-var update_dict = eval(input.kwargs.update_data); var prev_description =
-update_dict[0]["description"]; var server = TacticServerStub.get(); //
-Append the word <span class="emphasis"><em>Hello</em></span> to the description. var data = {<span class="emphasis"><em>description</em></span>:
-prev_description + ' Hello'}; server.update(search_key, data); }
-4.  Go to the view of the sType my_project/my_sType2.
-5.  Refresh the tab if the view is stale.
-6.  Modify an entry’s description field. Try typing in "This is test"
-and save.</p><p class="simpara">Notice that after the entry is saved, and when you refresh the view, the
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script2</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div><pre class="screen">log.critical(input);
+if (input.kwargs) {
+    var search_key =
+    input.kwargs.search_keys[0];
+    var update_data = input.kwargs.update_data;
+    var update_dict = eval(input.kwargs.update_data);
+    var prev_description = update_dict[0]["description"];
+    var server = TacticServerStub.get();
+    //Append the word 'Hello' to the description.
+    var data = {'description': prev_description + ' Hello'};
+    server.update(search_key, data);
+}</pre></li><li class="listitem">
+Go to the view of the sType my_project/my_sType2.
+</li><li class="listitem">
+Refresh the tab if the view is stale.
+</li><li class="listitem"><p class="simpara">
+Modify an entry’s description field. Try typing in "This is test"
+and save.
+</p><p class="simpara">Notice that after the entry is saved, and when you refresh the view, the
 description has the word "Hello" appended to it.</p></li></ol></div><p><span class="strong"><strong>Example 3: Automatically Put all Field Text into CAPS after Editing
 (When Row Turns Green)</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Open the Client Trigger view under: Admin Views → Project
 Essentials → *Client*Triggers
 </li><li class="listitem"><p class="simpara">
 Add the following new entry:
-</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>accept</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType3</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>accept|my_project/my_sType3</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td><td style="" align="left" valign="top"><p>my_script_folder/my_client_side_script3</p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
 Open the Script Editor (keyboard short-cut is "9") and create the
 following entry:
-</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script3</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div></li></ol></div><p>TacticServerStub.get(); var column_name = input.element_name; // only
-affect Name column if (column_name == "name") { var column_data =
-input.new_value; column_data = column_data.toUpperCase();
-input.cell.setAttribute(<span class="emphasis"><em>spt_input_value</em></span>, column_data);
-spt.table.set_display(input.cell, column_data, <span class="emphasis"><em>text</em></span>); } }catch( e ){
-spt.alert(spt.exception.handler( e )); }
-4.  Go to the view of the sType my_project/my_sType3.
-5.  Refresh the tab if the view is stale.
-6.  From the code example provided, modify an entry’s name field. Change
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script3</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div><pre class="screen">// Applies caps to Name column in my_sType3 sType
+try {
+    var server = TacticServerStub.get();
+    var column_name = input.element_name;
+    // only affect Name column
+    if (column_name == "name")
+    { var column_data = input.new_value;
+    column_data = column_data.toUpperCase();
+    input.cell.setAttribute('spt_input_value', column_data);
+    spt.table.set_display(input.cell, column_data, 'text'); }
+} catch( e ) {
+    spt.alert(spt.exception.handler( e ));
+}</pre></li><li class="listitem">
+Go to the view of the sType my_project/my_sType3.
+</li><li class="listitem">
+Refresh the tab if the view is stale.
+</li><li class="listitem"><p class="simpara">
+From the code example provided, modify an entry’s name field. Change
 the text in the name field to "Tester" and the row should turn green. Be
-sure to save the change.</p><p>+
-Notice that after the entry is saved, the text in the name field will
-now appear as "TESTER".</p><p><span class="strong"><strong>Example 4: Look at Name Values in Table through a Lookahead and Pop Up
+sure to save the change.
+</p><p class="simpara">Notice that after the entry is saved, the text in the name field will
+now appear as "TESTER".</p></li></ol></div><p><span class="strong"><strong>Example 4: Look at Name Values in Table through a Lookahead and Pop Up
 a Form with Details</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Open the Client Trigger view under: Admin Views → Project
 Essentials → *Client*Triggers
@@ -349,43 +367,69 @@ in an sType table and pop up a form with details about the person. The
 details form would be created in the Custom Layout Editor. In the
 example, the view is called my_project.name_detail.popup. Ensure that
 all values that should be displayed as part of the details in the form
-are also pulled from the sType table i.e. age.</p></div><p class="simpara">try{ server = TacticServerStub.get(); var class_name =
-<span class="emphasis"><em>tactic.ui.panel.CustomLayoutWdg</em></span>; var search_type =
-<span class="emphasis"><em>my_project/my_sType4</em></span>; var name = input.display; var name_id =
-input.value; if (!name) input.value = null; var form_table =
-input.firing_element.getParent(".spt_form_table"); var last_input_name =
-form_table.getElement(<span class="emphasis"><em>.spt_last_input_name</em></span>); var last_names =
-last_input_name.value.split(<span class="emphasis"><em>||</em></span>); // Check if the current name input is
-what was typed in last var reused_name = false; // Check if the current
-name is unknown in my_sType4 table var unknown_name = false; if
-(last_names.length == 2) { reused_name = last_names[0] == name;
-unknown_name = (last_names[1] == name_id )&amp;&amp; (last_names[0] != name); }
-if (!name || name_id == <span class="emphasis"><em>' || name_id === null || reused_name ||
-unknown_name) { } else{ var kwargs = { 'view</em></span>:
-<span class="emphasis"><em>my_project.name_detail.popup</em></span>, <span class="emphasis"><em>name_id</em></span>: name_id }; // Load the popup
-var pop = spt.panel.load_popup("Name Details", class_name, kwargs);
-last_input_name.value = name + <span class="emphasis"><em>||</em></span> + name_id; pop.activator =
-form_table; } }catch( e ){ spt.alert(spt.exception.handler( e )); }
-4.  In order to have a lookahead that will look at the my_sType4 table,
+are also pulled from the sType table i.e. age.</p></div><pre class="screen">try{
+    server = TacticServerStub.get();
+    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+    var search_type = 'my_project/my_sType4';
+    var name = input.display;
+    var name_id =input.value;
+    if (!name) input.value = null;
+    var form_table = input.firing_element.getParent(".spt_form_table");
+    var last_input_name = form_table.getElement('.spt_last_input_name');
+    var last_names = last_input_name.value.split('||');
+    // Check if the current name input is what was typed in last
+    var reused_name = false;
+    // Check if the current name is unknown in my_sType4 table
+    var unknown_name = false;
+    if (last_names.length == 2)
+    {
+        reused_name = last_names[0] == name;
+        unknown_name = (last_names[1] == name_id ) &amp;&amp; (last_names[0] != name);
+    }
+    if (!name || name_id == '' || name_id === null || reused_name || unknown_name)
+    { }
+    else {
+        var kwargs = { 'view': 'my_project.name_detail.popup',
+        'name_id': name_id };
+        // Load the popup
+        var pop = spt.panel.load_popup("Name Details", class_name, kwargs);
+        last_input_name.value = name + '||' + name_id;
+        pop.activator = form_table;
+    }
+}
+catch( e )  {
+    spt.alert(spt.exception.handler( e ));
+}</pre></li><li class="listitem"><p class="simpara">
+In order to have a lookahead that will look at the my_sType4 table,
 a lookahead must be built within a custom view i.e.
 my_views/lookahead_form in the Custom Layout Editor (this will be a
 different view from the aforementioned name details form). An example of
-the code required to create this view is shown below.</p><p class="simpara"><span class="emphasis"><em>HTML Tab in Custom Layout Editor for New View</em></span>&lt;div&gt; &lt;div&gt; &lt;% name_key =
-kwargs.get("search_key") or "" %&gt; &lt;/div&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt;Name&lt;/td&gt; &lt;td&gt;
-&lt;element name="name"&gt; &lt;display
-class="tactic.ui.input.LookAheadTextInputWdg"&gt;
-&lt;search_type&gt;my_project/my_sType4&lt;/search_type&gt; &lt;column&gt;name&lt;/column&gt;
-&lt;search_key&gt;${name_key}&lt;/search_key&gt;
-&lt;filter_search_type&gt;metadata/Title&lt;/filter_search_type&gt;
-&lt;value_column&gt;id&lt;/value_column&gt;
-&lt;current_value_column&gt;id&lt;/current_value_column&gt; &lt;/display&gt; &lt;/element&gt;
-&lt;/td&gt; &lt;/tr&gt; &lt;/table&gt; &lt;/div&gt;
-5.  Go to the my_views/lookahead_form in Custom Layout Editor and click
+the code required to create this view is shown below.
+</p><p class="simpara"><span class="emphasis"><em>HTML Tab in Custom Layout Editor for New View</em></span></p><pre class="screen">&lt;div&gt;
+&lt;div&gt;
+&lt;% name_key = kwargs.get("search_key") or "" %&gt;
+&lt;/div&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt;Name&lt;/td&gt; &lt;td&gt;
+&lt;element name="name"&gt;
+    &lt;display class="tactic.ui.input.LookAheadTextInputWdg"&gt;
+        &lt;search_type&gt;my_project/my_sType4&lt;/search_type&gt; &lt;column&gt;name&lt;/column&gt;
+        &lt;search_key&gt;${name_key}&lt;/search_key&gt;
+        &lt;filter_search_type&gt;metadata/Title&lt;/filter_search_type&gt;
+        &lt;value_column&gt;id&lt;/value_column&gt;
+        &lt;current_value_column&gt;id&lt;/current_value_column&gt;
+    &lt;/display&gt;
+&lt;/element&gt;
+&lt;/td&gt; &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;</pre></li><li class="listitem">
+Go to the my_views/lookahead_form in Custom Layout Editor and click
 on the "Test" button to test the fucntionality of the view. The view can
 also be added to the sidebar.
-6.  In the view, begin typing a name. A list of different name values
+</li><li class="listitem">
+In the view, begin typing a name. A list of different name values
 from the my_sType4 table should appear in a drop down from the
 lookahead.
-7.  Clicking on one of the values in the drop down of the lookahead will
+</li><li class="listitem">
+Clicking on one of the values in the drop down of the lookahead will
 then pop up the my_project.name_detail.popup with all of the values from
-the external system.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_versionless_checkin"></a>17.7. Versionless Checkin</h3></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s16.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
+the external system.
+</li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_versionless_checkin"></a>17.7. Versionless Checkin</h3></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s16.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

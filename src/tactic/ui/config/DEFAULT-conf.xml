@@ -450,8 +450,8 @@
     <display class="LinkWdg">
       <class_name>tactic.ui.tools.PipelineToolWdg</class_name>
       <pipeline>project</pipeline>
-      <width>1400</width>
-      <height>400</height>
+      <width>1100</width>
+      <height>600</height>
     </display>
   </element>
 

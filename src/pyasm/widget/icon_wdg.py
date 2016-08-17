@@ -519,17 +519,15 @@ class IconButtonWdg(HtmlElement):
         if not my.icon_path:
             return
         
-        if my.icon_path.startswith("BS_"):
-            icon = IconWdg(my.name, my.icon_path)
+        if not my.icon_path.startswith("/"):
+            # icon_path = "/context/icons/oo/%s" % my.icon_path
+            icon_path = "/context/icons/silk/%s" % my.icon_path
         else:
-            if not my.icon_path.startswith("/"):
-                icon_path = "/context/icons/silk/%s" % my.icon_path
-            else:
-                icon_path = my.icon_path
+            icon_path = my.icon_path
 
-            icon = HtmlElement.img(icon_path)
-            icon.set_attr("title", my.name)
-            icon.add_styles(my.icon_styles)   
+        icon = HtmlElement.img(icon_path)
+        icon.set_attr("title", my.name)
+        icon.add_styles(my.icon_styles)   
         if my.long:
             img_id = my.generate_unique_id(my.name)
             icon.add_class("icon_out") 

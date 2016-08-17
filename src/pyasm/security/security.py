@@ -313,6 +313,7 @@ class Login(SObject):
 
         login = SearchType.create("sthpw/login")
         login.set_value("login", user_name)
+        login.set_value("upn", user_name)
 
         # encrypt the password
         encrypted = hashlib.md5(password).hexdigest()
@@ -868,8 +869,7 @@ class Site(object):
 
         try:
             sql = DbContainer.get("sthpw")
-        except Exception, e:
-            print "WARNING: ", e
+        except:
             Site.pop_site()
             raise Exception("WARNING: site [%s] does not exist" % site)
 
@@ -1488,8 +1488,18 @@ class Security(Base):
         # user still has to exist
         if not my._login:
             raise SecurityException("Login [%s] does not exist" % login_name)
-
-        my._ticket = my._generate_ticket(login_name, expiry)
+       
+        # Search for unexpired ticket 
+        search = Search("sthpw/ticket")
+        search.add_filter("login", login_name)
+        now = search.get_database_impl().get_timestamp_now()
+        search.add_where('("expiry" > %s or "expiry" is NULL)' % now)        
+        ticket = search.get_sobject()
+        if ticket:
+            my._ticket = ticket
+        else: 
+            my._ticket = my._generate_ticket(login_name, expiry)
+        
         my._do_login()
 
 

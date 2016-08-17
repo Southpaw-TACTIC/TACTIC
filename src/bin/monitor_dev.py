@@ -24,6 +24,10 @@ if __name__ == '__main__':
     monitor = TacticMonitor(num_processes)
     monitor.set_dev(True) 
     #monitor.set_check_interval(0)
+    monitor.mode = 'init'
     monitor.execute()
+    monitor.mode = 'monitor'
+    monitor.execute()
+ 
 
 

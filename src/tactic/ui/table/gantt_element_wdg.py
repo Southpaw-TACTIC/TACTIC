@@ -765,7 +765,7 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
            
-        return my.get_dates_display(dates, "date.strftime('%d')", record_divider_pos=True,name='week', is_scalable=True)
+        return my.get_dates_display(dates, "date.strftime('Wk.%W')", record_divider_pos=True,name='week', is_scalable=True)
 
 
     def get_day_wdg(my, start_date, end_date):
@@ -1919,8 +1919,7 @@ class GanttCbk(DatabaseAction):
             end_date = parser.parse(end_date)
             orig_start_date = parser.parse(orig_start_date)
             orig_end_date = parser.parse(orig_end_date)
-
-
+           
             # cascade tries to shift all related tasks by the same delta range,
             # using start delta if available, or end delta as second choice
             if mode == 'cascade':

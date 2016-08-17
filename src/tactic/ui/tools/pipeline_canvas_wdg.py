@@ -10,11 +10,11 @@
 #
 #
 
-__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg']
+__all__ = ['PipelineCanvasWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Container, Common
+from pyasm.common import Container
 from pyasm.web import DivWdg, WebContainer, Table, Widget
 from pyasm.search import Search, SearchType
 
@@ -22,157 +22,6 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
-
-
-
-class BaseNodeWdg(BaseRefreshWdg):
-
-    def get_node_type(my):
-        return my.kwargs.get("node_type")
-
-    def get_title(my):
-        node_type = my.get_node_type()
-        title = Common.get_display_title(node_type)
-        return title
-
-    def get_width(my):
-        return 120
-
-    def get_height(my):
-        return 40
-
-    def get_border_radius(my):
-        return 0
-
-    def get_nob_offset(my):
-        return 0
-
-    def get_node_behaviors(my):
-        return []
-
-    def get_content(my):
-        return DivWdg()
-
-    def get_shape(my):
-        return ""
-
-
-    def get_content(my):
-        node_type = my.get_node_type()
-        div = DivWdg()
-
-        title = my.get_title()
-        if not title:
-            return div
-
-        inner = DivWdg()
-        div.add(inner)
-
-
-        inner.add(title)
-
-        inner.add_style("font-size: 8px")
-        inner.add_style("background: rgba(0,0,0,0.5)")
-        inner.add_style("color: #FFF")
-        inner.add_style("text-align: center")
-
-        return div
-
-
-    def get_display(my):
-
-        top = my.top
-        top.add_style("overflow: hidden")
-        top.add_class("spt_custom_node")
-
-        width = my.get_width()
-        height = my.get_height()
-
-
-        border_radius = my.get_border_radius()
-        top.add_style("width", width)
-        top.add_style("height", height)
-
-        shape = my.get_shape()
-        if shape == "star":
-            my.set_star_shape()
-
-        elif shape == "parallelogram":
-            my.set_parallelogram_shape()
-
-        elif shape == "circle":
-            top.add_style("border-radius: %spx" % (height/2))
-
-        elif shape == "elipse":
-            top.add_style("width", height)
-            top.add_style("border-radius: %spx" % border_radius)
-
-        else:
-            top.add_style("border-radius: %spx" % border_radius)
-
-        top.add_style("border: solid 1px black")
-
-
-        content_div = DivWdg()
-        content_div.add_style("overflow: hidden")
-        top.add(content_div)
-
-        content = my.get_content()
-        content_div.add(content)
-        content.add_class("spt_content")
-        content.add_style("width", "100%")
-        content.add_style("height", "100%")
-
-
-        for widget in my.widgets:
-            top.add(widget)
-
-        return top
-
-
-    def set_parallelogram_shape(my):
-        div = my.top
-        div.add_style("-webkit-transform: skew(20deg)")
-        div.add_style("-moz-transform: skew(20deg)")
-        div.add_style("-o-transform: skew(20deg)")
-        div.add_border()
-
-
-    def set_star_shape(my):
-
-        # FIXME: this doesn't work too well yet
-
-        div = my.top
-
-        star = DivWdg()
-        div.add(star)
-        star.add_class("star-six")
-
-        from pyasm.web import HtmlElement
-        style = HtmlElement.style()
-        div.add(style)
-        style.add('''
-        .star-six {
-            width: 0;
-            height: 0;
-            border-left: 50px solid transparent;
-            border-right: 50px solid transparent;
-            border-bottom: 100px solid red;
-            position: relative;
-        }
-        .star-six:after {
-            width: 0;
-            height: 0;
-            border-left: 50px solid transparent;
-            border-right: 50px solid transparent;
-            border-top: 100px solid red;
-            position: absolute;
-            content: "";
-            top: 30px;
-            left: -50px;
-        }
-        ''')
-
 
 
 class PipelineCanvasWdg(BaseRefreshWdg):
@@ -358,9 +207,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("width: %s" % my.width)
         canvas.add_style("height: %s" % my.height)
         canvas.add_style("z-index: 200")
-        
  
-      
+     
+
         #canvas.add_style("width: 100%")
         #canvas.add_style("height: 100%")
 
@@ -399,7 +248,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         """
 
 
- 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -407,7 +255,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.select_drag'
         } )
-
 
         canvas.add_behavior( {
         "type": 'click_up',
@@ -427,8 +274,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         }) 
 
-
-
         # create the paint where all the connectors are drawn
         paint = my.get_paint()
 
@@ -439,10 +284,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         #paint.add_style("border: solid 1px blue");
-        paint.add_style("z-index: 1");
+        #paint.add_style("z-index: 1");
+                
         
         outer.add(paint)
-
+        
+                
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -458,7 +305,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.zoom_drag'
         } )
-
         paint.add_behavior( {
         "type": 'wheel',
         "cbjs_action": '''
@@ -504,19 +350,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add_class("spt_pipeline_template")
         inner.add(template_div)
 
-        node = my.get_node("node", node_type="node")
+        node = my.get_node("XXXXX")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
         template_div.add(node)
 
-        node = my.get_node("manual", node_type="manual")
+        node = my.get_node("XXXXX", node_type="manual")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
         template_div.add(node)
 
 
         # add an unknown type
-        node = my.get_node("unknown", node_type="unknown")
+        node = my.get_node("XXXXX", node_type="unknown")
         node.add_style("left: 0px")
         node.add_style("top: 0px")
         template_div.add(node)
@@ -524,49 +370,47 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         # add folder group node
-        folder = my.get_folder("folder")
+        folder = my.get_folder("XXXXX")
         template_div.add(folder)
 
         # add approval node
-        approval = my.get_approval_node("approval")
+        approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
 
-        approval = my.get_condition_node("condition")
+        approval = my.get_condition_node("XXXXX")
         template_div.add(approval)
 
-        action = my.get_node("action", node_type="action")
+        action = my.get_node("XXXXX", node_type="action")
         template_div.add(action)
 
-        heirarchy = my.get_node("heirarcy", node_type="hierarchy")
+        heirarchy = my.get_node("XXXXX", node_type="hierarchy")
         template_div.add(heirarchy)
 
-        dependency = my.get_node("dependency", node_type="dependency")
+        dependency = my.get_node("XXXXX", node_type="dependency")
         template_div.add(dependency)
 
 
-        progress = my.get_node("progress", node_type="progress")
+        progress = my.get_node("XXXXX", node_type="progress")
         template_div.add(progress)
 
 
-        endpoint = my.get_endpoint_node("output", node_type="output")
+        endpoint = my.get_endpoint_node("XXXXX", node_type="output")
         template_div.add(endpoint)
 
-        endpoint = my.get_endpoint_node("input", node_type="input")
+        endpoint = my.get_endpoint_node("XXXXX", node_type="input")
         template_div.add(endpoint)
+
+
+
+        # add custom node
+        custom = my.get_custom_node("custom", "email")
+        template_div.add(custom)
 
 
         # add trigger node
         trigger = my.get_trigger_node()
         template_div.add(trigger)
 
-
-        search = Search("config/widget_config")
-        search.add_filter("category", "workflow")
-        configs = search.get_sobjects()
-        for config in configs:
-            node_type = config.get_value("view")
-            template = my.get_custom_node(node_type, node_type=node_type)
-            template_div.add(template)
 
 
         # resize test
@@ -642,7 +486,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.set_attr("width", my.width)
         canvas.set_attr("height", my.height)
 
-        canvas.add_style("z-index: 50")
+        canvas.add_style("z-index: 1")
 
         canvas.add_behavior( {
         'type': 'load',
@@ -798,7 +642,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node = DivWdg()
 
         width, height = my.get_node_size()
-
 
         if node_type == "action":
             border_radius = 20 
@@ -1462,63 +1305,96 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
+
+
     def get_custom_node(my, name, node_type ):
 
         node = DivWdg()
-
-        node.add_class("spt_pipeline_%s" % node_type)
+        node.add_class("spt_pipeline_custom")
         node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", node_type)
-
-        node.add_class("spt_custom_top")
-
-
-        from pyasm.command import CustomProcessConfig
-        custom_wdg = CustomProcessConfig.get_node_handler(node_type)
-        node.add(custom_wdg)
+        node.add_attr("spt_node_type", "custom")
 
 
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
+
         node.add_style("z-index", "200");
         node.add_style("position: absolute")
 
-        width = custom_wdg.get_width()
-        height = custom_wdg.get_height()
-
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
-
- 
-        node_behaviors = my.get_node_behaviors()
-        for node_behavior in node_behaviors:
-            node.add_behavior( node_behavior )
+        node.add_style("width: auto")
+        node.add_style("height: auto")
 
 
+        class NotificationNodeWdg(BaseRefreshWdg):
+            def get_width(my):
+                return 50 
+            def get_height(my):
+                return 50 
 
- 
+            def get_node_behaviors(my):
+                return []
+
+            def get_node_type(my):
+                return "email"
+
+            def get_handler_class(my):
+                return CustomWorkflowHandler
+
+            def get_display(my):
+                top = my.top
+                #top.add_style("width: %s" % my.get_width())
+                #top.add_style("height: %s" % my.get_height())
+                top.add_style("border-radius: 50px")
+                top.add_style("text-align: center")
+
+                icon_div = DivWdg()
+                top.add(icon_div)
+                icon = IconWdg(name="notification", icon="BS_ENVELOPE")
+                icon_div.add(icon)
+                icon_div.add_style("margin: -20px auto 0px auto")
+                return top
+
+        from pyasm.command import BaseProcessTrigger
+        class NotificationNodeHandler(BaseProcessTrigger):
+            def execute(my):
+                pipeline = my.input.get("pipeline")
+                process = my.input.get("process")
+                sobject = my.input.get("sobject")
+
+                # send email
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+                print "sending email!!!!!"
+
+
+
+        custom_node_wdg = NotificationNodeWdg()
+
+        width = custom_node_wdg.get_width()
+        height = custom_node_wdg.get_height()
+
+
+
         # add custom node behaviors
-        node_behaviors = custom_wdg.get_node_behaviors()
+        node_behaviors = custom_node_wdg.get_node_behaviors()
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
 
-        nobs_offset = 0
-        my.add_nobs(node, height, nobs_offset)
+        my.add_nobs(node, height, 5)
 
 
-        #content = DivWdg()
-        #node.add(content)
-        #content.add_class("spt_content")
-        #content.add_style("overflow: hidden")
-        #content.add_style("width: %spx" % width)
-        #content.add_style("height: %spx" % height)
-        #content.add_style("border-radius: %spx" % (width/2))
-        #content.add_style("border: solid 1px black")
-        #content.add( custom_node_wdg )
+        node.add(custom_node_wdg)
+        custom_node_wdg.add_class("spt_content")
 
-
+        custom_node_wdg.add_style("width: %spx" % width)
+        custom_node_wdg.add_style("height: %spx" % height)
+        custom_node_wdg.add_style("border: solid 1px black")
 
 
         label = Table()
@@ -1536,16 +1412,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         td.add_style("text-align: center")
         label.add_style("overflow: hidden")
 
-
         text = TextWdg()
         node.add(text)
         text.add_style("position: absolute")
         text.add_style("display: none")
         text.add_style("top: %spx" % (height/4+5) )
-        text.add_style("left: %spx" % (height/4+5) )
+        text.add_style("left: 0px")
         text.add_style("width: 65px")
         text.set_value(name)
-
 
         active = DivWdg()
         node.add(active)
@@ -1554,7 +1428,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         my.add_default_node_behaviors(node, text)
 
         return node
-
 
 
 
@@ -2191,7 +2064,8 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
     
-  
+    
+
     for (var i=0; i<connectors.length; i++) {
         var connector = connectors[i];
         connector.draw();
@@ -2199,6 +2073,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         var found = false;
         var imgd = ctx.getImageData(left, top, width, height);
         var pix = imgd.data;
+        
         for ( var j = 0; j < pix.length; j += 4) {
             var red = pix[j];
             var green = pix[j+1];
@@ -2290,7 +2165,12 @@ spt.pipeline.select_drag_action = function(evt, bvr, mouse_411) {
     var last_pos = spt.pipeline.select_last_position;
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
 
+
     spt.pipeline.hit_test(last_pos.x, last_pos.y, mouse_pos.x, mouse_pos.y );
+    if (last_pos.x < mouse_pos.x)
+        spt.pipeline.select_nodes_by_box(last_pos, mouse_pos);
+    else
+        spt.pipeline.select_nodes_by_box(mouse_pos, last_pos);
 
     spt.pipeline.redraw_canvas();
 }
@@ -2390,16 +2270,12 @@ spt.pipeline.clear_selected = function(item) {
 spt.pipeline.select_node = function(node) {
     node.setStyle("z-index", "200");
     node.spt_is_selected = true;
-
-    if (node.hasClass("spt_custom_top")) {
-        var outer = node.getElement(".spt_custom_node");
-    }
-    else {
-        var outer = node.getElement(".spt_content");
-    }
-    outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
-    outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
-    outer.setStyle("opacity", "0.8");
+    //var active = node.getElement(".spt_active");
+    //active.setStyle("display", "");
+    var content = node.getElement(".spt_content");
+    content.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
+    content.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
+    content.setStyle("opacity", "0.8");
 
     
     var group = spt.pipeline.get_group(node.spt_group);
@@ -2416,16 +2292,10 @@ spt.pipeline.unselect_node = function(node) {
     node.spt_is_selected = false;
     //var active = node.getElement(".spt_active");
     //active.setStyle("display", "none");
-
-    if (node.hasClass("spt_custom_top")) {
-        var outer = node.getElement(".spt_custom_node");
-    }
-    else {
-        var outer = node.getElement(".spt_content");
-    }
-    outer.setStyle("box-shadow", "");
-    outer.setStyle("border", "solid 1px black");
-    outer.setStyle("opacity", "1.0");
+    var content = node.getElement(".spt_content");
+    content.setStyle("box-shadow", "");
+    content.setStyle("border", "solid 1px black");
+    content.setStyle("opacity", "1.0");
 }
 
 
@@ -2477,6 +2347,20 @@ spt.pipeline.select_nodes_by_group = function(group_name) {
     for (var i=0; i<nodes.length; i++) {
         var node = nodes[i];
         if (node.spt_group == group_name) {
+            spt.pipeline.select_node(node);
+        }
+    }
+}
+
+spt.pipeline.select_nodes_by_box = function(TL, BR) {
+    spt.pipeline.unselect_all_nodes();
+
+    var nodes = spt.pipeline.get_all_nodes();
+   
+    for (var i=0; i<nodes.length; i++) {
+        var node = nodes[i];
+        
+        if ((TL.x <node.spt_xpos && node.spt_xpos < BR.x ) && (TL.y < node.spt_ypos && node.spt_ypos < BR.y)) {
             spt.pipeline.select_node(node);
         }
     }
@@ -2758,7 +2642,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
     var new_node = spt.behavior.clone(template);
     if (is_unknown) {
-        // change it from "unknown"
+        // change it from "unknonw"
         new_node.setAttribute("spt_node_type", node_type);
     }
     new_node.spt_node_type = node_type;
@@ -2800,7 +2684,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     */
     if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
-    else // for schema
+    else // for schema {
         color = spt.pipeline.get_group_color(name);
 
     if (is_unknown) {
@@ -2856,8 +2740,11 @@ spt.pipeline.remove_nodes = function(nodes) {
                 indexes[i] = true;
                 spt.pipeline.delete_connector(connector);
             }
+
+
         }
     }
+
     /*
     // get a reverse order of the indexes
     var indexes_array = [];
@@ -2877,16 +2764,22 @@ spt.pipeline.remove_nodes = function(nodes) {
     // to update this
 
     // remove the nodes
+    var group;
     for (var j = nodes.length-1; j >= 0; j-- ) {
         var node = nodes[j];
 
         // remove the node from the group
-        var group = spt.pipeline.get_group_by_node(node);
+        group = spt.pipeline.get_group_by_node(node);
         group.remove_node(node);
 
         spt.behavior.destroy_element(node);
     }
 
+    // if there is only 1 node left, remove dangling connector
+    var final_nodes = group.get_nodes();
+    if (final_nodes.length == 1) {
+        spt.pipeline.delete_connector(canvas.connectors[0]);
+    }
     spt.pipeline.redraw_canvas();
 }
 

@@ -32,43 +32,6 @@ class WidgetDbConfig(SObject):
         my._init()
 
 
-
-    """
-    def get_value(my, name, no_exception=False, auto_convert=True):
-        value = super(WidgetDbConfig, my).get_value(name, no_exception, auto_convert)
-        if name == "config" and value.startswith("PATH"):
-            path = "/tmp/config_test-%s" % my.get_id()
-
-            import os
-            if not os.path.exists(path):
-                value = ""
-            else:
-                f = open(path, "r")
-                value = f.read()
-                f.close()
-
-        return value
-
-
-    def set_value(my, name, value, quoted=1, temp=False):
-        if name == "config" and my.data.get("config").startswith("PATH"):
-            path = "/tmp/config_test-%s" % my.get_id()
-            f = open(path, "w")
-            f.write(value)
-            f.close()
-
-            value = "PATH"
-
-
-        return super(WidgetDbConfig, my).set_value(name, value, quoted, temp)
-    """
-
-
-
-
-
-
-
     def _init(my):
         test = my.get_value("config", no_exception=True)
         my.view = my.get_value("view")
@@ -205,22 +168,6 @@ class WidgetDbConfig(SObject):
         return my.xml.get_node(xpath)
 
 
-    def get_view_attributes(my):
-        node = my.get_view_node()
-        if node is not None:
-            # get all of the attributes
-            node_attrs = Xml.get_attributes(node)
-            return node_attrs
-        else:
-            return {}
-
-
-    def get_view_attribute(my, name):
-        attrs = my.get_view_attributes()
-        return attrs.get(name)
-
-
-
     def get_element_attributes(my, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element
@@ -228,10 +175,6 @@ class WidgetDbConfig(SObject):
         node = my.get_element_node(element_name)
         node_attrs = Xml.get_attributes(node)
         return node_attrs
-
-
-    def get_element_title(my, element_name):
-        return my.get_element_attributes(element_name).get("title")
 
 
 
@@ -374,7 +317,7 @@ class WidgetDbConfig(SObject):
         if not display_handler:
             raise Exception("No display handler found for [%s]" % element_name)
 
-        for name, value in extra_options.items():
+        for name, value in display_options.items():
             display_options[name] = value
 
         try:

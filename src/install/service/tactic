@@ -17,6 +17,8 @@
 TACTIC_INSTALL_DIR=`python -c 'import tacticenv; print tacticenv.get_install_dir()'`
 TACTIC_SITE_DIR=`python -c 'import tacticenv; print tacticenv.get_site_dir()'`
 TACTIC_DATA_DIR=`python -c 'import tacticenv; print tacticenv.get_data_dir()'`
+TACTIC_TEMP_DIR=`python -c 'import tacticenv; print tacticenv.get_temp_dir()'`
+
 
 echo "TACTIC_INSTALL_DIR = $TACTIC_INSTALL_DIR"
 echo "TACTIC_SITE_DIR = $TACTIC_SITE_DIR"
@@ -28,6 +30,7 @@ TACTIC_USER=apache
 PYTHON=/usr/bin/python
 export PYTHON
 PID_FILE=/var/run/tactic.pid
+STOP_MONITOR_FILE=$TACTIC_TEMP_DIR/log/stop.monitor
 LOG=/var/log/tactic
 
 APP_DIR=$TACTIC_INSTALL_DIR/src/bin
@@ -110,13 +113,14 @@ case "$1" in
 	    echo `kill $PID >> $LOG 2>&1`
             if kill $PID >> $LOG 2>&1 ; then
                 i=0
-                for line in $(ps axw|grep startup.py |grep -v grep|awk '{print $1}'); do
+                for line in $(ps axw|grep -E "startup.py|watch_drop_folder.py|startup_queue.py" |grep -v grep|awk '{print $1}'); do
                     STARTUP_PIDS[$i]=$line
                     i=`expr $i + 1`
                 done
             
                 if [ ${#STARTUP_PIDS[@]} -gt 0 ]; then
-                    #echo -n $"killing pids:  ${STARTUP_PIDS[*]}"
+                    echo "monitor"  > $STOP_MONITOR_FILE
+                    chown $TACTIC_USER.$TACTIC_USER $STOP_MONITOR_FILE
                     kill -9 ${STARTUP_PIDS[*]}
                     /bin/rm $PID_FILE
                     sleep 2

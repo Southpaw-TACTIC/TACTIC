@@ -219,8 +219,7 @@ class BaseAppServer(Base):
         top = TitleTopWdg()
         widget.add(top)
         body = top.get_body()
-        #body.add_gradient("background", "background", 5, -20)
-        body.add_color("background", "background")
+        body.add_gradient("background", "background", 5, -20)
         body.add_color("color", "color")
 
 
@@ -437,8 +436,7 @@ class BaseAppServer(Base):
             top = TitleTopWdg()
             widget.add(top)
             body = top.get_body()
-            #body.add_gradient("background", "background", 5, -20)
-            body.add_color("background", "background")
+            body.add_gradient("background", "background", 5, -20)
             body.add_color("color", "color")
 
             # get the project from the url because we are still 

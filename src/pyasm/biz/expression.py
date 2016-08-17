@@ -160,6 +160,7 @@ class ExpressionParser(object):
             my.expression = re.sub("\$%s"%name, new_value, my.expression)
 
 
+
         if not mode:
             # start in string mode
             string_idx = my.expression.find("{")

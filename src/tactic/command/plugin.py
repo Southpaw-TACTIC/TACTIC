@@ -643,7 +643,10 @@ class PluginCreator(PluginBase):
                 #regex is looking for a word bfore "/" 
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "code", regex)
-        
+            elif search_type == "config/process":
+                regex = r'^\w+\/'
+                dumper.set_replace_token("$PROJECT/", "pipeline_code", regex) 
+
         dumper.dump_tactic_inserts(path, mode='sobject')
 
         print "\t....dumped [%s] entries" % (len(sobjects))
@@ -1315,6 +1318,9 @@ class PluginTools(PluginBase):
                 #regex is looking for a word bfore "/" 
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "code", regex)
+            elif search_type == "config/process":
+                regex = r'^\w+\/'
+                dumper.set_replace_token("$PROJECT/", "pipeline_code", regex)
         
         dumper.dump_tactic_inserts(path, mode='sobject')
 
@@ -1616,6 +1622,16 @@ class PluginTools(PluginBase):
                     # if the search type is in sthpw namespace, then change
                     # the project code to the current project
                     base_search_type = sobject.get_base_search_type()
+                        
+                    if base_search_type.startswith("config/"):
+                        project = Project.get()
+                        project_code = project.get_value("code")
+                        if base_search_type == "config/process":
+                            if "$PROJECT" in sobject.get('pipeline_code'):
+                                old_code = sobject.get('pipeline_code')
+                                new_code = old_code.replace("$PROJECT",project_code,1)
+                                sobject.set_value('pipeline_code',new_code)
+                                
                     if base_search_type.startswith("sthpw/"):
                         project = Project.get()
                         project_code = project.get_value("code")
@@ -1651,8 +1667,7 @@ class PluginTools(PluginBase):
                                 if not exists:
                                     sobject.set_value('code',new_code)
                                     unique = True
-
-
+            
                         if base_search_type == "sthpw/login_group":
                             if old_project_code:
                                 login_group = sobject.get_value("login_group")

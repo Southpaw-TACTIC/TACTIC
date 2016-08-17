@@ -193,6 +193,7 @@ CREATE TABLE login_group (
     id INT IDENTITY PRIMARY KEY,
     code character varying(256),
     login_group character varying(100) NOT NULL,
+    name VARCHAR(MAX),
     sub_groups VARCHAR(MAX),
     access_rules VARCHAR(MAX),
     redirect_url VARCHAR(MAX),
@@ -202,6 +203,7 @@ CREATE TABLE login_group (
     s_status character varying(256),
     start_link VARCHAR(MAX),
     access_level varchar(32),
+    is_default boolean,
     CONSTRAINT "login_group_code_idx" UNIQUE (code)
 );
 

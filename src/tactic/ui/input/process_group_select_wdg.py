@@ -124,7 +124,6 @@ Search.eval("@GET(sthpw/login_group['login_group',
              group_list.append(item_login)
 
 
-        print "gggg: ", group_dict
             
         
         top = DivWdg()
