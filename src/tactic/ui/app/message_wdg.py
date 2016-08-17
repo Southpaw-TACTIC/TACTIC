@@ -135,11 +135,17 @@ class FormatMessageWdg(BaseRefreshWdg):
         # my.sobjects is preferred, otherwise use
         # search_key.
         search_key = my.kwargs.get('search_key')
+        message = None
+        
+
         if not my.sobjects and search_key:
             message = Search.get_by_search_key(search_key)
         elif my.sobjects:
             message = my.sobjects[0]
         
+        if not message:
+            return DivWdg()
+
         if message.get_search_type() == 'sthpw/message':
             message_code = message.get_value("code")
         else:

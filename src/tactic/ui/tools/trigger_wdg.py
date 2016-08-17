@@ -23,7 +23,7 @@ __all__ = ['TriggerToolWdg', 'TriggerDetailWdg',
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import jsondumps, jsonloads, Common, Environment
+from pyasm.common import jsondumps, jsonloads, Common, Environment, TacticException
 from pyasm.biz import Notification, CustomScript, Pipeline, Project
 from pyasm.web import DivWdg, WebContainer, Table, HtmlElement, SpanWdg
 from pyasm.command import Command
@@ -31,7 +31,7 @@ from pyasm.search import Search, SearchType, SearchKey
 from tactic.ui.panel import TableLayoutWdg
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, IconButtonWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg, TextAreaWdg, RadioWdg
-from tactic.ui.container import ResizableTableWdg
+from tactic.ui.container import ResizableTableWdg, TabWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 from tactic.ui.widget import ActionButtonWdg
 from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
@@ -39,6 +39,8 @@ from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
 import os
 
 class TriggerToolWdg(BaseRefreshWdg):
+    
+    FOLDER_PREFIX  = '_triggers'
 
     def get_display(my):
 
@@ -149,7 +151,8 @@ class TriggerToolWdg(BaseRefreshWdg):
         triggers_div.add_style("margin: 0px 5px")
         triggers_div.add_style("min-height: 400px")
         left.add_color("background", "background", -3)
-
+        
+        my.process_code = ''
         # find the triggers
         search = Search("config/trigger")
         if my.mode == 'pipeline':
@@ -157,7 +160,8 @@ class TriggerToolWdg(BaseRefreshWdg):
                 search.add_op('begin')
             search.add_filter("process", my.process)
             if my.process_sobj:
-                search.add_filter("process", my.process_sobj.get_code())
+                my.process_code = my.process_sobj.get_code()
+                search.add_filter("process", my.process_code)
                 search.add_op("or")
         else:
             search.add_op('begin')
@@ -443,7 +447,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             spt.panel.refresh(top, {search_key: search_key} );
         }
         catch(e){
-            alert(spt.exception.handler(e));
+            spt.error(spt.exception.handler(e));
         }
         spt.app_busy.hide();
         '''
@@ -514,7 +518,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             if class_name == 'tactic.command.PipelineTaskStatusTrigger' and not script_path:
                 trigger_type = 'task_status'
             elif class_name == 'tactic.command.PipelineTaskStatusTrigger' and script_path:
-                trigger_type = 'python_script'
+                trigger_type = 'custom_script'
             elif class_name == 'tactic.command.PipelineTaskCreateTrigger':
                 trigger_type = 'task_create'
             elif class_name == 'tactic.command.PipelineTaskDateTrigger':
@@ -523,7 +527,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             elif class_name:
                 trigger_type = 'python_class'
             elif script_path:
-                trigger_type = 'python_script'
+                trigger_type = 'custom_script'
             else:
                 trigger_type = 'task_status'
 
@@ -758,26 +762,38 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 #'version_delete',
             ]
 
+        
 
         security = Environment.get_security()
         is_admin = security.is_admin()
 
         if is_admin:
             trigger_labels.extend( [
-                'Run Python code',
+                'Run Python/Server JS code',
                 'Run Python trigger'
             ] )
             
             trigger_values.extend( [
-                'python_script',
+                'custom_script',
                 'python_class'
             ] )
 
+        else:
+            trigger_labels.extend( [
+                'Run Server JS code'
+            ] )
+            
+            trigger_values.extend( [
+                'custom_script'
+            ] )
+
+
+        
         #trigger_edit = TaskCompleteTestWdg()
         #trigger_values.append(trigger_edit.get_trigger_type())
 
 
-
+        
 
 
         #Action Area in Trigger Setting
@@ -812,19 +828,32 @@ class TriggerDetailWdg(BaseRefreshWdg):
         if isinstance(trigger, Notification):
             select.set_value("notification")
         elif trigger and trigger.get_value("script_path"):
-            select.set_value("python_script")
+            select.set_value("custom_script")
 
+        # get the process sobject
+        search = Search("config/process")
+        search.add_filter("pipeline_code", my.pipeline_code)
+        search.add_filter("process", my.process)
+        process_sobj = search.get_sobject()
+        
+        # you can't always get a process_sobj
+        my.process_code = ''
+        if process_sobj:
+            my.process_code = process_sobj.get_code()
 
         select.add_empty_option("-- Choose action --")
         td.add(select)
+        
         trigger_sk = ''
         if trigger:
             trigger_sk = trigger.get_search_key()
+            
         select.add_behavior( {
         'type': 'change',
         'kwargs': {
             'pipeline_code': my.pipeline_code,
             'process': my.process,
+            'process_code': my.process_code,
             'search_key': trigger_sk
         },
         'cbjs_action': '''
@@ -858,7 +887,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_wdg = 'tactic.ui.tools.TriggerDateWdg';
             trigger_cbk = 'tactic.ui.tools.TriggerDateCbk';
         }
-        else if (trigger_type == "python_script") {
+        else if (trigger_type == "custom_script") {
             trigger_wdg = 'tactic.ui.tools.PythonScriptTriggerEditWdg';
             trigger_cbk = 'tactic.ui.tools.PythonScriptTriggerEditCbk';
         }
@@ -909,7 +938,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_wdg = TriggerDateWdg(**kwargs)
             trigger_cbk = "tactic.ui.tools.TriggerDateCbk"
 
-        elif trigger_type == "python_script":
+        elif trigger_type == "custom_script":
             trigger_wdg = PythonScriptTriggerEditWdg(**kwargs)
             trigger_cbk = "tactic.ui.tools.PythonScriptTriggerEditCbk"
 
@@ -1999,20 +2028,20 @@ class NotificationTriggerEditCbk(Command):
 class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
-
+        
+     
         is_admin = Environment.get_security().is_admin()
+        """
         if not is_admin:
             div = DivWdg()
             div.add_style("width: 300px")
-            div.add_style("padding: 30px")
+            div.add_style("padding: 6px")
             div.add_style("text-align: center")
-            div.add_style("margin: 20px auto")
+            div.add_style("margin: 2px auto")
             div.add_color("background", "background3")
             div.add_border()
             div.add("Only admin can create python scripts")
-            return div
-
-
+        """
 
         web = WebContainer.get_web()
         div = DivWdg()
@@ -2020,6 +2049,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
         trigger = my.kwargs.get("trigger")
 
         event = None
+        trigger_code = ''
         if not trigger:
             search_key = my.kwargs.get("search_key")
             # event from web takes precedence
@@ -2030,7 +2060,9 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             if search_key and search_key !='null':
                 trigger = Search.get_by_search_key(search_key)
 
+        language = ''
         if trigger:
+            trigger_code = trigger.get_code()
             # event could be switched by the user before saving
             # only get it from the trigger sobj as a last resort
             if not event:
@@ -2045,60 +2077,18 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
                 script = ''
             else:
                 script = script_sobj.get_value("script")
+                language = script_sobj.get_value("language")
+
+
 
         else:
             script_path = ''
             script_sobj = None
             script = ''
 
-        
-        div.add("Run Script Path: <br/>")
-        script_path_text = TextInputWdg(name="script_path")
-        script_path_text.add_class("spt_python_script_path")
+     
+        my.add_script_wdg(div, script_path, is_admin, trigger_code, language)
 
-        div.add(script_path_text)
-        script_path_text.add_style("width: 100%")
-        script_path_text.set_value(script_path)
-        script_path_text.add_behavior( {
-            'type': 'blur',
-            'cbjs_action': '''
-            var script_path = bvr.src_el.value;
-            var top = bvr.src_el.getParent(".spt_python_script_trigger_top");
-            var el = top.getElement(".spt_python_script_text");
-            var script = spt.CustomProject.get_script_by_path(script_path);
-            if (el.value != '') {
-                return;
-            }
-            if (script) {
-                el.value = script
-            }
-            '''
-        } )
-
-        if script_path:
-            edit_mode = True
-            edit_label = "Edit"
-        else:
-            edit_mode = False
-            edit_label = "Create New"
-        
-        create_new_button = ActionButtonWdg(title=edit_label, tip="Create a new script")
-        create_new_button.add_style("float: left")
-        create_new_button.add_style("padding: 5px 0px")
-        div.add(create_new_button)
-        create_new_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            trigger_top = bvr.src_el.getParent(".spt_python_script_trigger_top");
-            
-            // Display the script editor
-            script_editor = trigger_top.getElement(".spt_python_script_text");
-            script_editor.setStyle("display", "");
-            // In edit mode, need to remove read only attribute and grey backround
-            script_editor.removeProperty("readonly")
-            script_editor.setStyle("background", "#FFFFFF")
-            '''
-        } )
 
         edit_button = ActionButtonWdg(title="Script Editor", tip="Open Script Editor")
         edit_button.add_style("float: right")
@@ -2114,22 +2104,57 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
         div.add(HtmlElement.br(2))
 
-        script_text = TextAreaWdg("script")
-        if edit_mode:
-            script_text.set_option("read_only", "true")
-        else:    
-            script_text.add_style("display", "none") 
-        script_text.add_class("form-control")
-        script_text.add_class("spt_python_script_text")
-        div.add(script_text)
-        if script:
-            script_text.set_value(script)
-        script_text.add_style("height: 300px")
-        script_text.add_style("width: 100%")
+      
 
         return div
 
 
+    def add_script_wdg(my, div, script_path, is_admin, trigger_code, language):
+
+
+        if is_admin:
+            div.add("Language:")
+            select = SelectWdg("language")
+            div.add(select)
+            select.set_option("labels", "Python|Server JS")
+            select.set_option("values", "python|server_js")
+            select.set_value(language)
+            div.add("<br/>")
+        else:
+            title_div = DivWdg("Language: Server JS")
+            title_div.add_style('margin-bottom: 6px')
+
+            div.add(title_div)
+            hidden = HiddenWdg('language','server_js')
+            div.add(hidden)
+
+
+
+        config_xml = []
+        config_xml.append('''
+        <config>
+        <tab>
+        ''')
+
+        expected_script_path = "%s/%s" %(TriggerToolWdg.FOLDER_PREFIX, trigger_code)
+        config_xml.append('''
+        <element name='script_path'>
+          <display class='tactic.ui.tools.ScriptEditWdg'>
+              <script_path>%s</script_path>
+              <is_admin>%s</is_admin>
+              <expected_script_path>%s</expected_script_path>
+          </display>
+        </element>
+        '''%(script_path,  str(is_admin).lower(), expected_script_path))
+        
+        config_xml.append('''
+        </tab>
+        </config>
+        ''')
+        config_xml = "".join(config_xml)
+
+        tab = TabWdg(config_xml=config_xml, width="400px", show_add=False)
+        div.add(tab)
 
 class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
 
@@ -2141,6 +2166,7 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
     def execute(my):
 
         scope = my.kwargs.get("scope")
+        language = my.kwargs.get("language")
 
         trigger = my.get_trigger()
 
@@ -2155,16 +2181,30 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
 
         search_type = my.kwargs.get("search_type")
 
-        # Get the script path or script
-        script_path = my.kwargs.get("script_path")
         script = my.kwargs.get("script")
+        script_path = ''
+        # Get the script path or script
+        script_path_folder = my.kwargs.get("script_path_folder")
+        script_path_title = my.kwargs.get("script_path_title")
+        if script_path_folder and script_path_title:
+            script_path = '%s/%s'%(script_path_folder, script_path_title)
+        elif not script:
+            # saving from Create New
+            script = my.kwargs.get('script_new')
+        
+        
+        if not script:
+            raise TacticException("Your script is empty. Please save a valid script.")
+
         if not script_path:
             script_path = trigger.get_value("script_path")
         
         # If script path is defined, then save script to script path.
         # Otherwise, create a new script path entry.
+        # TODO: fix the auto-gen script path to be _triggers/<pipeline_code>/<process_code>
+        # maybe, but certain triggers are not pipeline or process  related
         if not script_path:
-            script_path = "triggers/%s" % trigger.get_code()
+            script_path = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, trigger.get_code())
 
         # Save or create a new custom script
         script_sobj = CustomScript.get_by_path(script_path)
@@ -2176,6 +2216,7 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         script_sobj.set_value("folder", dirname)
         script_sobj.set_value("title", title)
         script_sobj.set_value("script", script) 
+        script_sobj.set_value("language", language) 
         script_sobj.commit()
 
         # Update the trigger
@@ -2210,6 +2251,7 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
     def get_display(my):
 
         is_admin = Environment.get_security().is_admin()
+        """
         if not is_admin:
             div = DivWdg()
             div.add_style("width: 300px")
@@ -2222,7 +2264,7 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
             return div
 
 
-
+        """
         div = DivWdg()
         div.add_class("spt_python_class_top")
 

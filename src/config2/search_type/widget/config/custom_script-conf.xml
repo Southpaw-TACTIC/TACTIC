@@ -53,7 +53,7 @@
     <element name="language">
         <display class="SelectWdg">
             <empty>true</empty>
-            <values>javascript|python|expression|xml</values>
+            <values>javascript|python|expression|xml|server_js</values>
         </display>
     </element>
 </edit>
