@@ -443,6 +443,9 @@ class Common(Base):
         for item in parts:
             if not item:
                 continue
+
+            item = item.replace(" ", "_")
+
             keywords.add(item)
 
 
@@ -1291,6 +1294,47 @@ class Common(Base):
         else:
             os.execl(python, python, * sys.argv)
     restart = staticmethod(restart)
+
+
+
+    def run_mako(cls, text, kwargs={}):
+
+
+        HEADER = '''<%def name='expr(expr)'><% result = server.eval(expr) %>${result}</%def>'''
+        from mako.template import Template
+        from mako import exceptions
+        text = '%s%s' % (HEADER, text)
+
+        # remove CDATA tags
+        text = text.replace("<![CDATA[", "")
+        text = text.replace("]]>", "")
+        #text = text.decode('utf-8')
+
+        encoding = "UTF8"
+        template = Template(text, output_encoding=encoding, input_encoding=encoding)
+
+
+
+        try:
+            text = template.render(**kwargs)
+
+
+            # we have to replace all & signs to &amp; for it be proper text
+            text = text.replace("&", "&amp;")
+        except Exception, e:
+            print "Mako Error: ", e
+            if str(e) == """'str' object has no attribute 'caller_stack'""":
+                raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
+            else:
+                text = exceptions.text().render()
+                text = text.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
+
+        return text
+
+    run_mako = classmethod(run_mako)
+
+
+
 
 
 class KillProcessThread(threading.Thread):

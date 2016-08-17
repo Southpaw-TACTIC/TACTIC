@@ -106,9 +106,6 @@ class SObjectChartWdg(BaseChartWdg):
 
         my.colors = my.kwargs.get("colors")
         if not my.colors:
-            if isinstance(my.colors,basestring):
-                my.colors = my.colors.split("|")
-            my.colors = ['#000099', '#009900', '#999900', '#009999', '#990099', '#990000', '#009900', '#000099', '#999900', '#990000']
             my.colors = [
                 'rgba(0,255,0,0.5)',
                 'rgba(0,0,255,0.5)',
@@ -119,6 +116,9 @@ class SObjectChartWdg(BaseChartWdg):
             ]
             while len(my.elements) >= len(my.colors):
                 my.colors.extend(my.colors)
+        else:
+            if isinstance(my.colors,basestring):
+                my.colors = my.colors.split("|")
 
 
         chart_type = my.kwargs.get("chart_type")
@@ -338,7 +338,7 @@ class SObjectChartWdg(BaseChartWdg):
         chart_div.add(chart)
 
         top.add(chart_div)
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background")
         top.add_color("color", "color")
 
 
@@ -448,7 +448,7 @@ class CalendarChartWdg(BaseChartWdg):
 
         top = my.top
 
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background")
         top.add_gradient("color", "color")
 
         #top.add_style("background", "#000")
@@ -499,8 +499,6 @@ class CalendarChartWdg(BaseChartWdg):
             end_date = parser.parse(end_date)
 
 
-
-
         expression = my.kwargs.get("expression")
         search_type = my.kwargs.get("search_type")
         if expression:
@@ -517,6 +515,7 @@ class CalendarChartWdg(BaseChartWdg):
             sobjects = []
 
 
+
         # Is this a plot or a chart
         # A plot puts the X-axis at the right place.
         # A chart has a interval in which data is combined
@@ -526,8 +525,6 @@ class CalendarChartWdg(BaseChartWdg):
             my.interval = 'weekly'
             #my.interval = 'monthly'
 
-        min_date = None
-        max_date = None
 
         if not sobjects:
             if not start_date:
@@ -539,6 +536,10 @@ class CalendarChartWdg(BaseChartWdg):
                 max_date = datetime.today() + timedelta(days=30)
             else:
                 max_date = end_date
+        else:
+            min_date = start_date
+            max_date = end_date
+
 
         for sobject in sobjects:
             timestamp = sobject.get_value(my.column)
@@ -547,7 +548,6 @@ class CalendarChartWdg(BaseChartWdg):
                 min_date = timestamp
             if max_date == None or timestamp > max_date:
                 max_date = timestamp
-
 
 
         # defined the buckets based on interval
@@ -690,6 +690,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
         rotate_x_axis = my.kwargs.get("rotate_x_axis")
+        y_axis_mode = my.kwargs.get("y_axis_mode")
 
         chart = ChartWdg(
             width=width,
@@ -699,6 +700,7 @@ class CalendarChartWdg(BaseChartWdg):
             labels=chart_labels,
             label_values=[i+0.5 for i,x in enumerate(chart_labels)],
             rotate_x_axis=rotate_x_axis,
+            y_axis_mode=y_axis_mode
         )
         table.add_cell(chart)
 
@@ -707,14 +709,23 @@ class CalendarChartWdg(BaseChartWdg):
         if not chart_type:
             chart_type = 'bar'
 
-        my.colors = [
-            'rgba(0,255,0,0.5)',
-            'rgba(0,0,255,0.5)',
-            'rgba(255,0,0,0.5)',
-            'rgba(255,255,0,0.5)',
-            'rgba(0,255,255,0.5)',
-            'rgba(255,0,255,0.5)',
-        ]
+
+
+        my.colors = my.kwargs.get("colors")
+        if not my.colors:
+            my.colors = [
+                'rgba(0,255,0,0.5)',
+                'rgba(0,0,255,0.5)',
+                'rgba(255,0,0,0.5)',
+                'rgba(255,255,0,0.5)',
+                'rgba(0,255,255,0.5)',
+                'rgba(255,0,255,0.5)',
+            ]
+            #while len(my.elements) >= len(my.colors):
+            #    my.colors.extend(my.colors)
+        else:
+            if isinstance(my.colors,basestring):
+                my.colors = my.colors.split("|")
 
 
         if legend:

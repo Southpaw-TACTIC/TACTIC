@@ -1224,7 +1224,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         
         
         show_partial = my.get_option("show_partial")
-        if show_partial not in ['false', False]:
+        if show_partial in ['true', True]:
 
             from pyasm.widget import IconWdg
             icon_div = DivWdg()
@@ -1474,7 +1474,7 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
 
         #div.add_style("border: solid blue 1px")
         if operator == 'in':
-            op = DivWdg("overlap ")
+            op = DivWdg("overlap &nbsp;")
         else:
             op = DivWdg("does not overlap ")
         table.add_cell(op)
@@ -1487,7 +1487,7 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         if start_date:
             cal1.set_value(start_date)
  
-        table.add_cell(" and ")
+        table.add_cell(" and &nbsp;")
 
         cal2 = CalendarInputWdg("end_date")
         table.add_cell(cal2)

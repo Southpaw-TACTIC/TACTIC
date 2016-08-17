@@ -121,8 +121,6 @@ class ExpressionTest(unittest.TestCase):
                 my.persons.append(person)
 
             my._test_instance()
-
-            """
             my._test_utf8()
             my._test_palette()
             my._test_related_sobject()
@@ -154,7 +152,6 @@ class ExpressionTest(unittest.TestCase):
             my._test_connection()
             my._test_cache()
             my._test_cross_proj_count()
-            """
 
         finally:
             my.transaction.rollback()

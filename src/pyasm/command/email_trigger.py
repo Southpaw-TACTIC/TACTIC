@@ -419,7 +419,6 @@ class SendEmail(Command):
         else:
             msg.add_header('From', "%s" % sender_email)
 
-
         msg.add_header('Reply-To', sender_email)
         msg.add_header('To',  ','.join(recipient_emails))
         msg.add_header('Date', formatdate(localtime=True))

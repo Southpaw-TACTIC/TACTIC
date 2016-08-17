@@ -47,6 +47,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'order': 3,
         'category': 'Options'
     },
+    'link_expression': {
+        'description': 'Expression for linking to another sobject',
+        'type': 'TextAreaWdg',
+        'order': 4,
+        'category': 'Options',
+    },
     'inline_styles': 'Styles to add to the DIV generated that contains the result of the expression',
     'return':   {
         'descripton' : 'Determines what the expression return type should be',
@@ -380,7 +386,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
             result = parser.eval(expression, sobject, vars=my.vars, single=single, list=list, show_retired=my.show_retired)
 
 
-        
 
         # FIXME: don't know how to do this any other way
         try:
@@ -540,6 +545,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.value = result
 
         div = DivWdg()
+        div.add_style("display: inline-block")
         #if my.sobject and not SearchType.column_exists(my.sobject, name):
         if my.sobject:
             # only set if the value does not exist as a key.  This widget should
@@ -548,6 +554,37 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
             div.add_class( "spt_%s_expr_id%s" % ( name, my.sobject.get_id() ) )
             div.add_class( "spt_%s_expr" % name )
+
+
+
+        # display a link if specified
+        link_expr = my.kwargs.get("link_expression")
+        if link_expr:
+            # using direct behavior because new_tab isn't working consistently
+            #div.add_class("tactic_new_tab")
+            div.add_style("text-decoration", "underline")
+            #div.add_class("tactic_new_tab")
+            div.add_attr("search_key", my.sobject.get_search_key())
+            div.add_attr("expression", link_expr)
+            div.add_class("hand")
+
+            search_type_sobj = my.sobject.get_search_type_obj()
+            sobj_title = search_type_sobj.get_title()
+
+            #name = my.sobject.get_value("name", no_exception=True)
+            name = None
+            if not name:
+                name = my.sobject.get_code()
+            div.add_attr("name", "%s: %s" % (sobj_title, name))
+
+            # click up blocks any other behavior
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.table.open_link(bvr);
+                '''
+            } )
+
 
         # by default, the value is added
         if my.mode == 'value':

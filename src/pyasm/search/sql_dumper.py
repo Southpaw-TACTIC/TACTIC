@@ -12,7 +12,7 @@
 
 __all__ = ['TableSchemaDumper', 'TableDataDumper']
 
-
+import os
 import re 
 import sys
 import types
@@ -303,7 +303,7 @@ class TableDataDumper(object):
 
 
 
-    def dump_tactic_inserts(my, path, mode='sql'):
+    def dump_tactic_inserts(my, path, mode='sql', relative_dir_column=None):
         assert my.db_resource
         assert my.table
 
@@ -311,19 +311,20 @@ class TableDataDumper(object):
 
         assert mode in ['sql', 'sobject']
 
-        if path:
-            import os
-            dirname = os.path.dirname(path)
-            if not os.path.exists(dirname):
-                os.makedirs(dirname)
-      
-            #f = open(path, 'w')
-            #f = codecs.open(path, 'a', 'utf-8')
-            UTF8Writer = codecs.getwriter('utf8')
-            f = UTF8Writer(open(path, 'ab'))
-        else:
-            import sys
-            f = sys.stdout
+
+        if not relative_dir_column:
+            if path:
+                dirname = os.path.dirname(path)
+                if not os.path.exists(dirname):
+                    os.makedirs(dirname)
+          
+                #f = open(path, 'w')
+                #f = codecs.open(path, 'a', 'utf-8')
+                UTF8Writer = codecs.getwriter('utf8')
+                f = UTF8Writer(open(path, 'ab'))
+            else:
+                import sys
+                f = sys.stdout
 
         from pyasm.search import Insert, Select, DbContainer, Search, Sql
 
@@ -349,6 +350,23 @@ class TableDataDumper(object):
         column_info = SearchType.get_column_info(my.search_type)
 
         for sobject in my.sobjects:
+
+            if relative_dir_column:
+
+                if path:
+                    #dirname = os.path.dirname(path)
+                    subpath = "%s/%s.spt" % (path, sobject.get_value(relative_dir_column).replace(".","/"))
+
+                    if not os.path.exists(os.path.dirname(subpath)):
+                        os.makedirs(os.path.dirname(subpath))
+                    
+                    UTF8Writer = codecs.getwriter('utf8')
+                    f = UTF8Writer(open(subpath, 'ab'))
+                else:
+                    import sys
+                    f = sys.stdout
+
+
             f.write( "%s\n" % my.delimiter )
 
 
@@ -449,7 +467,11 @@ class TableDataDumper(object):
             f.write( "%s\n" % my.end_delimiter )
             f.write( "\n" )
 
-        if path:
+
+            if relative_dir_column:
+                f.close()
+
+        if not relative_dir_column and path:
             f.close()
 
 

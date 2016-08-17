@@ -72,10 +72,14 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+
+
+
             my._test_multi_input_reject()
             my._test_progress()
             #my._test_progress_reject()
             my._test_multi_input()
+            my._test_multi_input_complete()
             my._test_custom_status()
             my._test_messaging()
             my._test_hierarchy()
@@ -429,7 +433,6 @@ class WorkflowCmd(Command):
 
 
         process = processes.get("c")
-      
         process.commit()
 
         # Run the pipeline
@@ -443,8 +446,79 @@ class WorkflowCmd(Command):
        
         my.assertEquals( "complete", sobject.get_value("a"))
         my.assertEquals( "complete", sobject.get_value("b1"))
+        my.assertEquals( "complete", sobject.get_value("b2"))
+        my.assertEquals( "complete", sobject.get_value("b3"))
+        my.assertEquals( "complete", sobject.get_value("b4"))
         my.assertEquals( "complete", sobject.get_value("c"))
         my.assertEquals( "complete", sobject.get_value("d"))
+
+
+
+
+    def _test_multi_input_complete(my):
+
+        # DISABLE until check_inputs is called
+        return
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        code = "test%s" % Common.generate_alphanum_key()
+        sobject.set_value("code", code)
+
+
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="manual" name="b1"/>
+          <process type="manual" name="b2"/>
+          <process type="manual" name="b3"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b1"/>
+          <connect from="a" to="b2"/>
+          <connect from="a" to="b3"/>
+          <connect from="a" to="b4"/>
+          <connect from="b1" to="c"/>
+          <connect from="b2" to="c"/>
+          <connect from="b3" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+
+        process = processes.get("c")
+        process.commit()
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+
+        # Run the pipeline
+        process = "b1"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|complete", output)
+
+       
+        my.assertEquals( "complete", sobject.get_value("a"))
+        my.assertEquals( "complete", sobject.get_value("b1"))
+        my.assertEquals( "pending", sobject.get_value("b2"))
+        my.assertEquals( "pending", sobject.get_value("b3"))
+
+        # THIS WILL FAIL until we implement this correctly
+        my.assertEquals( "pending", sobject.get_value("c"))
+
+
 
 
 
@@ -912,6 +986,9 @@ class WorkflowCmd(Command):
         city.set_value("pipeline_code", city_pipeline.get_code())
         city.commit()
 
+        from pyasm.common import Container
+        Container.put("process_listeners", None)
+
         for name in ['Beth', 'Cindy', 'John']:
             person = SearchType.create("unittest/person")
             person.set_value("name_first", name)
@@ -1024,6 +1101,10 @@ class WorkflowCmd(Command):
 
     def _test_progress_reject(my):
 
+        # FIXME: it is not completely clear what should happen when a progress
+        # node recieves a revise message.
+        return
+
         # create a dummy sobject
         city = SearchType.create("unittest/city")
 
@@ -1050,6 +1131,11 @@ class WorkflowCmd(Command):
 
         city.set_value("pipeline_code", city_pipeline.get_code())
         city.commit()
+
+
+        from pyasm.common import Container
+        Container.put("process_listeners", None)
+
 
         for name in ['Beth', 'Cindy', 'John']:
             person = SearchType.create("unittest/person")
@@ -1192,120 +1278,6 @@ class WorkflowCmd(Command):
         #sobjects = search.get_sobjects()
         #for sobject in sobjects:
         #    print "sss: ", sobject.get("code"), sobject.get("message")
-
-
-
-
-    def _test_data_flow(my):
-
-        # create a dummy sobject
-        sobject = SearchType.create("unittest/city")
-        sobject.commit()
-
-        # check in a file to the city
-        file_path = "./ttteeesssttt.txt"
-        file = open(file_path, 'w')
-        file.write("test test test")
-        file.close()
-
-        file_paths = [file_path]
-        file_types = ['main']
-        context = "publish"
-        from pyasm.checkin import FileCheckin
-        checkin = FileCheckin(
-                    sobject,
-                    file_paths=file_paths,
-                    file_types=file_types,
-                    context="fla",
-                    mode="move"
-            )
-        checkin.execute()
-
-
-        # create a pipeline
-        pipeline_xml = '''
-        <pipeline>
-          <process type="auto" name="a"/>
-          <process type="auto" name="b"/>
-          <process type="approval" name="c"/>
-          <connect from="a" to="b"/>
-          <connect from="b" to="c"/>
-        </pipeline>
-        '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
-
-        sobject.set_value("pipeline_code", pipeline.get_code())
-        sobject.commit()
-
-
-        process = processes.get("a")
-        process.set_json_value("workflow", {
-            'output': {
-                'sobject': 'sobject',
-                'process': 'fla',
-                'version': 'latest',
-            },
-            'checkin': ['fla'],
-        } )
-        process.commit()
-
-
-        process = processes.get("b")
-        process.set_json_value("workflow", {
-            'output': {
-                'sobject': 'sobject',
-                'process': 'mp4',
-                'version': 'latest',
-            },
-            'checkin': ['mp4'],
-            'on_action': '''
-            data = input.get("data")
-            snapshot = data.get("snapshot")
-            path = data.get("path")
-            print "path: ", path
-            '''
-        } )
-        process.commit()
-
-
-        process = processes.get("c")
-        process.set_json_value("workflow", {
-            'output': {
-                'sobject': 'sobject',
-                'process': 'fla',
-                'version': 'latest',
-            }
-        } )
-        process.commit()
-
-
-
-
-
-
-        # inital data to the input
-        data = {
-            'file': '/path/to/file.jpg'
-        }
-        data = {
-            'snapshot': 'sthpw/snapshot?project=xyz&code=SNAPSHOT0044'
-        }
-        data = {
-            'snapshot': 'sthpw/snapshot?project=xyz&code=SNAPSHOT0044'
-        }
-
-
-
-        # Run the pipeline
-        process = "a"
-        output = {
-            "pipeline": pipeline,
-            "sobject": sobject,
-            "process": process,
-            "data": data
-        }
-        Trigger.call(my, "process|pending", output)
-
 
 
 

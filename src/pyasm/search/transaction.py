@@ -407,6 +407,7 @@ class Transaction(Base):
         code = transaction_log.get_value("code")
 
         from pyasm.biz import Project
+        from pyasm.security import Site
         from pyasm.search import Search
         project_code = Project.get_project_code()
 
@@ -439,6 +440,8 @@ class Transaction(Base):
             # was created in another transaction
             from pyasm.search import SqlException, DbContainer
             try:
+                # triggers are "ingest" which basically runs nothing execpt the
+                # update
                 change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
             except SqlException, e:
                 print "WARNING: ", str(e)

@@ -270,7 +270,8 @@ class ChartWdg(BaseRefreshWdg):
 
         # draw the grid
         rotate_x_axis = my.kwargs.get("rotate_x_axis")
-        grid = ChartGrid(labels=labels, label_values=label_values, rotate_x_axis=rotate_x_axis)
+        y_axis_mode = my.kwargs.get("y_axis_mode")
+        grid = ChartGrid(labels=labels, label_values=label_values, rotate_x_axis=rotate_x_axis, mode=y_axis_mode)
         top.add(grid)
 
 
@@ -298,8 +299,10 @@ class ChartGrid(BaseRefreshWdg):
         xmax = my.kwargs.get("xmax")
         ymax = my.kwargs.get("ymax")
 
-        #mode = 'integer'
-        mode = 'float'
+        mode = my.kwargs.get("mode")
+        if not mode:
+            #mode = 'integer'
+            mode = 'float'
 
 
         my.label_values = my.kwargs.get("label_values")

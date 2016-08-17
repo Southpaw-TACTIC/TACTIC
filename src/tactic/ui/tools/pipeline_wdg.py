@@ -10,13 +10,13 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptCreateWdg', 'ScriptEditWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptCreateWdg', 'ScriptEditWdg']
 
 import re
 import os
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment
+from pyasm.common import Environment, Common
 from pyasm.biz import Pipeline, Project
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
@@ -124,7 +124,9 @@ class PipelineToolWdg(BaseRefreshWdg):
         left.add_style("vertical-align: top")
         #left.add_border()
 
-        pipeline_list = PipelineListWdg(save_event=my.save_event, save_new_event=save_new_event )
+        settings = my.kwargs.get('settings')
+
+        pipeline_list = PipelineListWdg(save_event=my.save_event, save_new_event=save_new_event, settings=settings )
         left.add(pipeline_list)
 
 
@@ -406,6 +408,14 @@ class PipelineListWdg(BaseRefreshWdg):
 
         my.save_new_event = my.kwargs.get("save_new_event")
 
+
+        my.settings = my.kwargs.get("settings")
+        if my.settings:
+            my.settings = my.settings.split("|")
+        else:
+            my.settings = []
+
+
     def get_display(my):
 
         top = my.top
@@ -488,26 +498,24 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
         # template pipeline
-        search = Search("sthpw/pipeline")
-        search.add_filter("project_code", project_code)
-        search.add_filter("code", "%s/__TEMPLATE__" % project_code)
-        pipeline = search.get_sobject()
-        if not pipeline:
-            pipeline = SearchType.create("sthpw/pipeline")
-            pipeline.set_value("code", "%s/__TEMPLATE__" % project_code)
-            pipeline.set_project()
-        pipeline.set_value("search_type", "")
-        pipeline.set_value("name", "Template Processes")
-        pipeline.commit()
+        if not my.settings or "template" in my.settings:
+            search = Search("sthpw/pipeline")
+            search.add_filter("project_code", project_code)
+            search.add_filter("code", "%s/__TEMPLATE__" % project_code)
+            pipeline = search.get_sobject()
+            if not pipeline:
+                pipeline = SearchType.create("sthpw/pipeline")
+                pipeline.set_value("code", "%s/__TEMPLATE__" % project_code)
+                pipeline.set_project()
+            pipeline.set_value("search_type", "")
+            pipeline.set_value("name", "Template Processes")
+            pipeline.commit()
+
+            pipeline_div = my.get_pipeline_wdg(pipeline)
+            inner.add(pipeline_div)
 
 
-        pipeline_div = my.get_pipeline_wdg(pipeline)
-        inner.add(pipeline_div)
-
-
-        inner.add("<br/>")
-
-
+            inner.add("<br/>")
 
 
 
@@ -615,46 +623,50 @@ class PipelineListWdg(BaseRefreshWdg):
 
         inner.add("<br clear='all'/>")
 
-        # misc status pipelines
-        swap = SwapDisplayWdg()
-        inner.add(swap)
-        swap.add_style("float: left")
 
-        title = DivWdg("<b>Misc Workflows</b>")
-        title.add_style("padding-bottom: 2px")
-        title.add_style("padding-top: 3px")
-        inner.add(title)
-        content_div = DivWdg()
-        content_div.add_styles('padding-left: 8px; padding-top: 6px') 
-        SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
-        inner.add(content_div)
+        if not my.settings or "misc" in my.settings:
 
-        search = Search("sthpw/pipeline")
-        search.add_filter("project_code", project_code)
-        search.add_op("begin")
-        search.add_filter("search_type", "NULL", op='is', quoted=False)
-        search.add_op("or")
-        search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
-        pipelines = search.get_sobjects()
+            # misc status pipelines
+            swap = SwapDisplayWdg()
+            inner.add(swap)
+            swap.add_style("float: left")
 
-        colors = {}
-        for pipeline in pipelines:
-            pipeline_div = my.get_pipeline_wdg(pipeline)
-            content_div.add(pipeline_div)
-            colors[pipeline.get_code()] = pipeline.get_value("color")
+            title = DivWdg("<b>Misc Workflows</b>")
+            title.add_style("padding-bottom: 2px")
+            title.add_style("padding-top: 3px")
+            inner.add(title)
+            content_div = DivWdg()
+            content_div.add_styles('padding-left: 8px; padding-top: 6px') 
+            SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
+            inner.add(content_div)
 
-        if not pipelines:
-            no_items = DivWdg()
-            no_items.add_style("padding: 3px 0px 3px 20px")
-            content_div.add(no_items)
-            no_items.add("<i>-- No Items --</i>")
+            search = Search("sthpw/pipeline")
+            search.add_filter("project_code", project_code)
+            search.add_op("begin")
+            search.add_filter("search_type", "NULL", op='is', quoted=False)
+            search.add_op("or")
+            search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            pipelines = search.get_sobjects()
+
+            colors = {}
+            for pipeline in pipelines:
+                pipeline_div = my.get_pipeline_wdg(pipeline)
+                content_div.add(pipeline_div)
+                colors[pipeline.get_code()] = pipeline.get_value("color")
+
+            if not pipelines:
+                no_items = DivWdg()
+                no_items.add_style("padding: 3px 0px 3px 20px")
+                content_div.add(no_items)
+                no_items.add("<i>-- No Items --</i>")
 
 
 
 
         show_site_wide_pipelines = True
 
-        if show_site_wide_pipelines:
+        if (not my.settings or "misc" in my.settings) and show_site_wide_pipelines:
+
             inner.add("<br clear='all'/>")
 
 
@@ -1677,29 +1689,41 @@ class ProcessInfoWdg(BaseRefreshWdg):
         if search_type == "sthpw/task":
             widget = TaskStatusInfoWdg(**my.kwargs)
 
+        elif node_type in ['manual', 'node']:
+            widget = DefaultInfoWdg(**my.kwargs)
+
         elif node_type == 'approval':
             widget = ApprovalInfoWdg(**my.kwargs)
 
-        if node_type == 'action':
+        elif node_type == 'action':
             widget = ActionInfoWdg(**my.kwargs)
 
-        if node_type == 'condition':
+        elif node_type == 'condition':
             widget = ConditionInfoWdg(**my.kwargs)
 
-        if node_type == 'hierarchy':
+        elif node_type == 'hierarchy':
             widget = HierarchyInfoWdg(**my.kwargs)
 
-        if node_type == 'dependency':
+        elif node_type == 'dependency':
             widget = DependencyInfoWdg(**my.kwargs)
 
-        if node_type == 'progress':
+        elif node_type == 'progress':
             widget = ProgressInfoWdg(**my.kwargs)
 
-        if node_type == 'unknown':
+        elif node_type == 'unknown':
             widget = UnknownInfoWdg(**my.kwargs)
 
-        if node_type == 'progress':
+        elif node_type == 'progress':
             widget = ProgressInfoWdg(**my.kwargs)
+
+        else:
+            from pyasm.command import CustomProcessConfig
+            widget = CustomProcessConfig.get_info_handler(node_type, my.kwargs)
+            #from spt.tools.youtube import YouTubeProcessInfoWdg
+            #widget = YouTubeProcessInfoWdg(**my.kwargs)
+
+
+
 
         if not widget:
             widget = DefaultInfoWdg(**my.kwargs)
@@ -1789,7 +1813,8 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             select = SelectWdg("node_type")
             title_wdg.add(select)
-            select.set_option("values", [
+
+            node_types = [
                 'manual',
                 'action',
                 'condition',
@@ -1797,8 +1822,25 @@ class BaseInfoWdg(BaseRefreshWdg):
                 'hierarchy',
                 # Not supported yet
                 'dependency',
-                'progress'
-            ])
+                'progress',
+            ]
+
+
+            search = Search("config/widget_config")
+            search.add_filter("category", "workflow")
+            configs = search.get_sobjects()
+            if configs:
+                node_types.append('---')
+
+            for config in configs:
+                node_types.append(config.get_value("view"))
+
+            labels = [Common.get_display_title(x) for x in node_types]
+
+            select.set_option("values", node_types)
+            select.set_option("labels", labels)
+
+
             select.add_style("width: 100px")
             if node_type == "node":
                 select.set_value("manual")
