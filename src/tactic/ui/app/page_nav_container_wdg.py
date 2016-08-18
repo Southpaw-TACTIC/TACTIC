@@ -706,7 +706,7 @@ class MainBodyTabWdg(BaseRefreshWdg):
         return top
 
 
-
+"""
 from pyasm.command import Command
 class TabSaveStateCmd(Command):
     def execute(my):
@@ -745,4 +745,4 @@ class TabSaveStateCmd(Command):
         WidgetSettings.set_value_by_key("tab", xml_string)
 
 
-
+"""
