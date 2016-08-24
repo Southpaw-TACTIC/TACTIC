@@ -1408,7 +1408,7 @@ spt.message.set_interval = function(key, callback, interval, element) {
             }
             else {
                 console.log("WARNING: message is undefined for key ["+key+"]");
-                //spt.message.stop_interval(key);
+                spt.message.stop_interval(key);
                 return;
             }
         }

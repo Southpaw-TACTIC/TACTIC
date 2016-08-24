@@ -181,7 +181,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             icon_pos="right",
             width="100%",
             height="30px",
-            hint_text="Enter terms to filter collections...",
+            hint_text="Filter collections...",
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
@@ -582,8 +582,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         table.add_row()
         left = table.add_cell()
         left.add_style("vertical-align: top")
-        left.add_style("width: 300px")
-        left.add_style("max-width: 300px")
+        left.add_style("width: 250px")
+        left.add_style("max-width: 250px")
         left.add_style("height: auto")
 
         right = table.add_cell()
@@ -628,6 +628,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         shelf_div.add(button)
         button.add_style("display: inline-block")
         button.add_style("vertical-align: top")
+        button.add_style("margin-top: 2px")
 
         insert_view = "edit_collection"
 
@@ -699,7 +700,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             column="name",
             width="100%",
             height="30px",
-            hint_text="Enter terms to filter collections...",
+            hint_text="Filter collections...",
             value_column="name",
             filters=filters,
             custom_cbk=custom_cbk,
@@ -709,7 +710,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         text.add_class("spt_main_search")
 
         text_div.add(text)
-        text_div.add_style("width: 270px")
+        text_div.add_style("width: 220px")
         text_div.add_style("display: inline-block")
 
         # Asset Library folder access

@@ -142,18 +142,10 @@ spt.html5upload.select_files = function(onchange) {
         el.addEventListener("change", onchange, true);
     }
 
-    // This is necessary for Qt on a Mac??
-    if (spt.browser.is_Qt()) {
-        setTimeout( function() {
-            el.click();
-            spt.html5upload.events[event_name] = onchange;
-        }, 100 );
-    }
-    else {
-        
+    setTimeout( function() {
         el.click();
         spt.html5upload.events[event_name] = onchange;
-    }
+    }, 100 );
 
     // FIXME: this is not very useful as the select file is async, but
     // is required for later code not to open a popup
@@ -309,6 +301,7 @@ class UploadButtonWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_class("spt_upload_top")
+        top.add_style("display: inline-block")
 
         title = my.kwargs.get("title")
         name = my.kwargs.get("name")
@@ -346,7 +339,7 @@ class UploadButtonWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
 
         from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title, color=color, width=width)
+        button = ActionButtonWdg(title=title, color=color, width=width, size='b')
 
 
         button_id = my.kwargs.get("id")

@@ -521,25 +521,28 @@ class LoginGroup(Login):
         for group in groups:
 
             access_level = group.get_value("access_level")
-            group_project_code = group.get_value("project_code")
 
+            # this column complete determines if a login is in a project or not
+            group_project_code = group.get_value("project_code")
             if group_project_code:
                 if project_code == group_project_code:
                     project_groups.append(group)
-                    continue
+                continue
 
             elif access_level in ['high', 'medium']:
                 project_groups.append(group)
                 continue
 
+
             access_rules = group.get_xml_value("access_rules")
-            node = access_rules.get_node("rules/rule[@group='project' and @code='%s']" % project_code)
+            node = access_rules.get_node("rules/rule[@group='project' and @code='%s' and @access='allow']" % project_code)
             if node is not None:
                 project_groups.append( group )
 
             else:
-                node = access_rules.get_node("rules/rule[@group='project' and @code='*']")
+                node = access_rules.get_node("rules/rule[@group='project' and @code='*' and @access='allow']")
                 if node is not None:
+                    print "added2"
                     project_groups.append( group )
 
 

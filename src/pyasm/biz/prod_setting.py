@@ -154,7 +154,7 @@ class ProjectSetting(SObject):
     get_dict_by_key = classmethod(get_dict_by_key)
 
     
-    def create(key, value, type, description='', search_type=''):
+    def create(key, value, type="string", description='', search_type=''):
         '''create a ProjectSetting'''
 
         if Project.get_project_name() in ['admin', 'sthpw']:

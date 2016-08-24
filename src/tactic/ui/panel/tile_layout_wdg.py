@@ -1428,7 +1428,13 @@ class TileLayoutWdg(ToolLayoutWdg):
         kwargs['aspect_ratio'] = my.aspect_ratio
 
         thumb = ThumbWdg2(**kwargs)
-        thumb.set_sobject(sobject)
+
+        use_parent = my.kwargs.get("use_parent")
+        if use_parent in [True, 'true']:
+            parent = sobject.get_parent()
+            thumb.set_sobject(parent)
+        else:
+            thumb.set_sobject(sobject)
         thumb_div.add(thumb)
         thumb_div.add_border()
 

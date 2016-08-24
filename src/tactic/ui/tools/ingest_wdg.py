@@ -61,6 +61,23 @@ class IngestUploadWdg(BaseRefreshWdg):
         if search_keys:
             my.sobjects = Search.get_by_search_keys(search_keys)
 
+
+        asset_dir = Environment.get_asset_dir()
+
+        base_dir = my.kwargs.get("base_dir")
+        if base_dir:
+            if not base_dir.startswith(asset_dir):
+                raise Exception("Path needs to be in asset root")
+            else:
+                relative_dir = base_dir.replace(asset_dir, "")
+                relative_dir = relative_dir.strip("/")
+        else:
+            relative_dir = my.kwargs.get("relative_dir")
+
+        my.relative_dir = relative_dir
+
+
+
         top = my.top
         top.add_class("spt_ingest_top")
 
@@ -437,6 +454,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     def get_content_wdg(my):
 
+        """
         asset_dir = Environment.get_asset_dir()
 
         base_dir = my.kwargs.get("base_dir")
@@ -450,6 +468,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             relative_dir = my.kwargs.get("relative_dir")
 
         my.relative_dir = relative_dir
+        """
 
         div = DivWdg()
         div.add_style("width: auto")
@@ -511,10 +530,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             div.add("No search type specfied")
             return div
 
-        if relative_dir:
+        if my.relative_dir:
             folder_div = DivWdg()
             shelf_div.add(folder_div)
-            folder_div.add("Folder: %s" % relative_dir)
+            folder_div.add("Folder: %s" % my.relative_dir)
             folder_div.add_style("opacity: 0.5")
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
@@ -529,43 +548,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload = Html5UploadWdg(multiple=True)
         shelf_div.add(upload)
 
-        button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        shelf_div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
 
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            var button = top.getElement(".spt_upload_file_button");
-            button.setStyle("display", "none");
-
-        
-            //clear upload progress
-            var upload_bar = top.getElement('.spt_upload_progress');
-            if (upload_bar) {
-                upload_bar.setStyle('width','0%');
-                upload_bar.innerHTML = '';
-                upload_bar.setStyle("visibility", "hidden");
-
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = "";
-
-            }
-
-         '''
-         } )
 
         button = ActionButtonWdg(title="Add Files")
-        button.add_style("float: right")
+        #button.add_style("float: right")
+        button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
         shelf_div.add(button)
         button.add_behavior( {
@@ -612,14 +599,52 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        upload_div = DivWdg()
-        shelf_div.add(upload_div)
-        upload_div.add_class("spt_upload_file_button")
-        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
-        upload_div.add(button)
-        upload_div.add_style("display: none")
+
+        button = ActionButtonWdg(title="Clear")
+        #button.add_style("float: right")
+        button.add_style("display: inline-block")
+        button.add_style("margin-top: -3px")
+        shelf_div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
+            var button = top.getElement(".spt_upload_file_button");
+            button.setStyle("display", "none");
+
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+                upload_bar.setStyle("visibility", "hidden");
+
+                var info_el = top.getElement(".spt_upload_info");
+                info_el.innerHTML = "";
+
+            }
+
+         '''
+         } )
+
+        ingest = my.get_ingest_button()
+        shelf_div.add(ingest)
+        ingest.add_style("float: right")
 
         shelf_div.add("<br clear='all'/>")
+
+
+        progress_wdg = my.get_progress_div()
+        shelf_div.add(progress_wdg)
 
         border_color_light = div.get_color("background2", 8)
         border_color_dark = div.get_color("background2", -15)
@@ -895,53 +920,42 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<br/>")
 
 
+        #upload_wdg = my.get_ingest_button()
+        #div.add(upload_wdg)
 
-        info = DivWdg()
-        div.add(info)
-        info.add_class("spt_upload_info")
+        return div
 
 
-        progress_div = DivWdg()
-        progress_div.add_class("spt_upload_progress_top")
-        div.add(progress_div)
-        progress_div.add_style("width: 595px")
-        progress_div.add_style("height: 15px")
-        progress_div.add_style("margin-bottom: 10px")
-        progress_div.add_border()
-        #progress_div.add_style("display: none")
 
-        progress = DivWdg()
-        progress_div.add(progress)
-        progress.add_class("spt_upload_progress")
-        progress.add_style("width: 0px")
-        progress.add_style("visibility: hidden")
-        progress.add_style("height: 100%")
-        progress.add_gradient("background", "background3", -10)
-        progress.add_style("text-align: right")
-        progress.add_style("overflow: hidden")
-        progress.add_style("padding-right: 3px")
+    def get_ingest_button(my):
+
+        div = DivWdg()
 
         library_mode = my.kwargs.get("library_mode") or False
         dated_dirs = my.kwargs.get("dated_dirs") or False
  
-        from tactic.ui.app import MessageWdg
-        progress.add_behavior( {
-            'type': 'load',
-            'cbjs_action': MessageWdg.get_onload_js()
-        } )
+
 
 
 
         # NOTE: files variable is passed in automatically
 
         upload_init = '''
-        server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
 
-        progress_el = top.getElement(".spt_upload_progress");
-        progress_el.setStyle("visibility", "visible");
 
+        // start the upload
+        var progress_el = top.getElement(".spt_upload_progress");
+        var progress_top = top.getElement(".spt_upload_progress_top");
+
+        setTimeout( function() {
+            progress_el.setStyle("visibility", "visible");
+            progress_top.setStyle("margin-top", "0px");
+        }, 0);
+
+
+        server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         '''
 
         upload_progress = '''
@@ -953,9 +967,38 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         '''
+
+
+
+        oncomplete_script = '''
+        spt.notify.show_message("Ingest Completed");
+        server.finish();
+
+        var file_els = top.getElements(".spt_upload_file");
+        for ( var i = 0; i < file_els.length; i++) {
+            spt.behavior.destroy( file_els[i] );
+        };
+        var background = top.getElement(".spt_files_background");
+        background.setStyle("display", "");
+
+        spt.message.stop_interval(key);
+
+        var info_el = top.getElement(".spt_upload_info");
+        info_el.innerHTML = ''; 
+
+        var progress_el = top.getElement(".spt_upload_progress");
+        var progress_top = top.getElement(".spt_upload_progress_top");
+
+        setTimeout( function() {
+            progress_el.setStyle("visibility", "hidden");
+            progress_top.setStyle("margin-top", "-30px");
+        }, 0);
+
+        spt.panel.refresh(top);
+        '''
+        
         
         oncomplete_script_path = my.kwargs.get("oncomplete_script_path")
-        oncomplete_script = ''
         if oncomplete_script_path:
             script_folder, script_title = oncomplete_script_path.split("/")
             oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
@@ -963,58 +1006,13 @@ class IngestUploadWdg(BaseRefreshWdg):
             oncomplete_script_ret = server.eval(oncomplete_script_expr, single=True)
             
             if oncomplete_script_ret:
-                oncomplete_script = '''var top = bvr.src_el.getParent(".spt_ingest_top");
-                var file_els = top.getElements(".spt_upload_file");
-                for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-
-                
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = ''; 
-                progress_el = top.getElement(".spt_upload_progress");
-                progress_el.setStyle("visibility", "hidden");
-
-
-                };''' + oncomplete_script_ret
+                oncomplete_script = oncomplete_script + oncomplete_script_ret
                 script_found = True
             else:
                 script_found = False
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
-        if not oncomplete_script:
-            oncomplete_script = '''
-            var click_action = function() {
-                var fade = true;
-                var pop = spt.popup.get_popup(top)
-                spt.popup.close(pop, fade); 
-            }
-            spt.info("Ingest Completed", {click: click_action});
-            server.finish();
 
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            spt.message.stop_interval(key);
-
-            var info_el = top.getElement(".spt_upload_info");
-            info_el.innerHTML = ''; 
-            progress_el = top.getElement(".spt_upload_progress");
-            progress_el.setStyle("visibility", "hidden");
-
-
-            if (spt.table)
-            {
-                spt.table.run_search();
-            }
-            
-            spt.panel.refresh(top);
-            '''
-            script_found = True
-        
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
@@ -1022,6 +1020,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
+
 
         var info_el = top.getElement(".spt_upload_info");
         
@@ -1122,26 +1121,28 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         };
 
+
         var class_name = bvr.action_handler;
         // TODO: make the async_callback return throw an e so we can run 
         // server.abort
-        server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
+        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
         
         
         on_progress = function(message) {
+
             msg = JSON.parse(message.message);
             var percent = msg.progress;
             var description = msg.description;
             info_el.innerHTML = description;
-
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
         }
-        spt.message.set_interval(key, on_progress, 2000);
+        spt.message.set_interval(key, on_progress, 500, bvr.src_el);
 
         '''
 
 
+        """
         button = ActionButtonWdg(title="Clear")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
@@ -1172,13 +1173,15 @@ class IngestUploadWdg(BaseRefreshWdg):
 
          '''
          } )
+        """
+
 
         upload_div = DivWdg()
         div.add(upload_div)
         button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
         upload_div.add(button)
-        button.add_style("float: right")
-        upload_div.add_style("margin-bottom: 20px")
+        #button.add_style("float: right")
+        #upload_div.add_style("margin-bottom: 20px")
 
 
 
@@ -1197,7 +1200,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
-                'relative_dir': relative_dir,
+                'relative_dir': my.relative_dir,
                 'script_found': script_found,
                 'context': context,
                 'library_mode': library_mode,
@@ -1215,8 +1218,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
-           
+          
             var file_els = top.getElements(".spt_upload_file");
+            var num_files = file_els.length;
+            var files_top = top.getElement(".spt_to_ingest_files")
+
+            spt.notify.show_message("Ingesting "+num_files+" Files");
 
             // get the server that will be used in the callbacks
             var server = TacticServerStub.get();
@@ -1234,7 +1241,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             }
             if (files.length == 0) {
-                alert("Either click 'Add' or drag some files over to ingest.");
+                spt.alert("Either click 'Add' or drag some files over to ingest.");
                 return;
             }
 
@@ -1249,7 +1256,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var upload_complete = function(evt) {
             %s;
-            spt.app_busy.hide();
             }
 
 
@@ -1270,6 +1276,51 @@ class IngestUploadWdg(BaseRefreshWdg):
             ''' % (upload_progress, on_complete, upload_init)
         } )
 
+
+        return div
+
+
+
+    def get_progress_div(my):
+
+        div = DivWdg()
+        div.add_style("overflow-y: hidden")
+
+        inner = DivWdg()
+        div.add(inner)
+        inner.add_class("spt_upload_progress_top")
+        inner.add_style("margin-top: -30px")
+
+        info = DivWdg()
+        inner.add(info)
+        info.add_class("spt_upload_info")
+
+
+        progress_div = DivWdg()
+        progress_div.add_class("spt_upload_progress_top")
+        inner.add(progress_div)
+        progress_div.add_style("width: 595px")
+        progress_div.add_style("height: 15px")
+        progress_div.add_style("margin-bottom: 10px")
+        progress_div.add_border()
+        #progress_div.add_style("display: none")
+
+        progress = DivWdg()
+        progress_div.add(progress)
+        progress.add_class("spt_upload_progress")
+        progress.add_style("width: 0px")
+        progress.add_style("visibility: hidden")
+        progress.add_style("height: 100%")
+        progress.add_gradient("background", "background3", -10)
+        progress.add_style("text-align: right")
+        progress.add_style("overflow: hidden")
+        progress.add_style("padding-right: 3px")
+
+        from tactic.ui.app import MessageWdg
+        progress.add_behavior( {
+            'type': 'load',
+            'cbjs_action': MessageWdg.get_onload_js()
+        } )
 
         return div
 
@@ -1475,7 +1526,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
-        var onchange = function (evt) {
+            var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
                 for (var i = 0; i < files.length; i++) {
@@ -1493,7 +1544,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
-        }
+            }
 
             spt.html5upload.clear();
             spt.html5upload.set_form( top );

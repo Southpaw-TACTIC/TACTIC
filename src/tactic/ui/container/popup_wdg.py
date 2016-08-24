@@ -160,6 +160,7 @@ class PopupWdg(BaseRefreshWdg):
             div.add_style("width: 100%")
             div.add_class("spt_popup_background")
             div.add_style("display: none")
+            div.add_style("z-index: 2")
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''

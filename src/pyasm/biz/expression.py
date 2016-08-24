@@ -2043,7 +2043,8 @@ class MethodMode(ExpressionParser):
                     search = Search(related_type)
                 else:
                     # Base type have to be the same
-                    assert(related_type == my.search.get_base_search_type())
+                    if not related_type == my.search.get_base_search_type():
+                        raise SyntaxError('Base Type and Related type must be the same: %s' % my.expression)
                     search = my.search
 
                 if my.show_retired:

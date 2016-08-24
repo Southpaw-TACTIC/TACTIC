@@ -1322,18 +1322,6 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         return groups
 
 
-    """
-    def get_groups(my, project_only=True):
-        if not project_only:
-            search = Search("sthpw/login_group")
-            groups = search.get_sobjects()
-        else:
-            groups = LoginGroup.get_by_project()
-
-        return groups
-    """
-
-
 
     def get_display(my):
 
