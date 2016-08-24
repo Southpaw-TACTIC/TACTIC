@@ -997,7 +997,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.panel.refresh(top);
         '''
         
-        
+        script_found = True 
         oncomplete_script_path = my.kwargs.get("oncomplete_script_path")
         if oncomplete_script_path:
             script_folder, script_title = oncomplete_script_path.split("/")
@@ -1007,7 +1007,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             
             if oncomplete_script_ret:
                 oncomplete_script = oncomplete_script + oncomplete_script_ret
-                script_found = True
             else:
                 script_found = False
                 oncomplete_script = "alert('Error: oncomplete script not found');"
