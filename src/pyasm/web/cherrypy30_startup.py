@@ -351,13 +351,10 @@ class CherryPyStartup(CherryPyStartup20):
             cherrypy.root.tactic = Index()
             cherrypy.root.projects = Index()
 
-
         for project in projects:
             project_code = project.get_code()
             my.register_project(project_code, config)
         my.register_project("default", config)
-
-        print
 
 
         from pyasm.security import Site

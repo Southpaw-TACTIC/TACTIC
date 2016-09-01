@@ -43,8 +43,8 @@ class GalleryWdg(BaseRefreshWdg):
         # make the whole Gallery unselectable
         inner.add_class('unselectable')
         inner.add_style("position: fixed")
-        inner.add_style("top: 0")
-        inner.add_style("left: 0")
+        inner.add_style("top: 0px")
+        inner.add_style("left: 0px")
         inner.add_style("width: 100%")
         #inner.add_style("height: 100%")
         inner.add_style("bottom: 0px")
