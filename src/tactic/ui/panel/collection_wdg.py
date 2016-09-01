@@ -938,7 +938,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         my.kwargs["scale"] = 75
         my.kwargs["show_scale"] = True
-        my.kwargs["expand_mode"] = "plain"
+        my.kwargs["expand_mode"] = "gallery"
         my.kwargs["show_search_limit"] = False
 
         from tile_layout_wdg import TileLayoutWdg
