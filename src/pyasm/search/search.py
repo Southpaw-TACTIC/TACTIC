@@ -4030,7 +4030,7 @@ class SObject(object):
         if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
             log_key = my.get_code_key()
-            random_code = Common.generate_random_key()
+            random_code = Common.generate_random_key(digits=8)
             search_code = '%s%s' % (log_key, random_code)
             return search_code
 

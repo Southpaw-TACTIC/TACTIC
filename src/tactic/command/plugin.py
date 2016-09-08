@@ -254,8 +254,8 @@ class PluginBase(Command):
 
             # order by id
             def sort_sobjects(a, b):
-                a_id = a.get_id()
-                b_id = b.get_id()
+                a_id = a.get_code()
+                b_id = b.get_code()
 
                 if a_id > b_id:
                     return 1

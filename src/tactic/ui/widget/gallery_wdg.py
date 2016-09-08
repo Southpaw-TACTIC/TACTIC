@@ -122,7 +122,6 @@ class GalleryWdg(BaseRefreshWdg):
             left.setStyle('top','88%')
             left.setStyle('left','35%')
             right.setStyle('top','88%')
-            
             right.setStyle('right','35%')
             
             height_factor = '70%';
@@ -423,8 +422,8 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("bottom: 80px")
-        icon.add_style("left: 38px")
+        icon.add_style("top: 30px")
+        icon.add_style("right: 38px")
         icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up' ,
@@ -580,9 +579,11 @@ class GalleryWdg(BaseRefreshWdg):
                 '/assets/test/store/Whatever_v001.jpg'
             ]
 
+        """
         for index,path in enumerate(paths):
             path = urllib.pathname2url(path)
             paths[index] = path
+        """
 
         return paths
 
