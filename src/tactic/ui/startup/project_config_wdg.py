@@ -908,23 +908,23 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
 
-        if show_security not in ['false', False]:
-            button = ActionButtonWdg(title="Security")
-            button.add_style('align-self: flex-end')
-            #button.add_styles("position: absolute; right: 10px;")
-            tool_div2.add(button)
-            #button.add_style("margin-top: -8px")
-            button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.startup.SecurityWdg';
-            spt.tab.set_main_body_tab()
-            spt.tab.add_new("Security", "Security", class_name)
-            '''
-            } )
-        else:
-            tool_div.add_style('position','relative')
-            tool_div.add_style('top','0px')
+            if show_security not in ['false', False]:
+                button = ActionButtonWdg(title="Security")
+                button.add_style('align-self: flex-end')
+                #button.add_styles("position: absolute; right: 10px;")
+                tool_div2.add(button)
+                #button.add_style("margin-top: -8px")
+                button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.startup.SecurityWdg';
+                spt.tab.set_main_body_tab()
+                spt.tab.add_new("Security", "Security", class_name)
+                '''
+                } )
+            else:
+                tool_div.add_style('position','relative')
+                tool_div.add_style('top','0px')
 
 
 
