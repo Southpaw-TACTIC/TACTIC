@@ -604,7 +604,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         div = DivWdg()
         div.add_style("margin: 15px 0px")
 
-        title_div = DivWdg("Collection Manager") 
+        title_div = DivWdg("Collections") 
         div.add(title_div)
         div.add_class("spt_collection_left")
         title_div.add_style("font-size: 1.2em")

@@ -329,6 +329,18 @@ class TopWdg(Widget):
                 }
             }
 
+
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var name = attributes[i].name;
+                if (name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[name] = value;
+            }
+ 
+
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
             } catch(e) {
