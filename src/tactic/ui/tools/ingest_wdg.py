@@ -570,6 +570,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
+
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
             var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
@@ -588,6 +592,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
+
+                button.setStyle("display", "");
             }
 
             spt.html5upload.clear();
@@ -1141,41 +1147,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         '''
 
 
-        """
-        button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            //clear upload progress
-            var upload_bar = top.getElement('.spt_upload_progress');
-            if (upload_bar) {
-                upload_bar.setStyle('width','0%');
-                upload_bar.innerHTML = '';
-                upload_bar.setStyle("visibility", "hidden");
-
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = "";
-
-            }
-
-         '''
-         } )
-        """
-
 
         upload_div = DivWdg()
+        upload_div.add_style("display: none")
+        upload_div.add_class("spt_upload_files_top")
         div.add(upload_div)
         button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
         upload_div.add(button)
@@ -1519,12 +1494,15 @@ class IngestUploadWdg(BaseRefreshWdg):
             var files_el = top.getElement(".spt_to_ingest_files");
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
         
-            //clear upload progress
+            // clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
             var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
@@ -1543,6 +1521,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
+
+                upload_button.setStyle("display", "");
             }
 
             spt.html5upload.clear();

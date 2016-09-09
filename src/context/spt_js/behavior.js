@@ -499,8 +499,43 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
 }
 
 
+
+
+// Provide a destroy function which cleans up the behaviors before destroying
+spt.behavior.destroy = function( el ) {
+
+    return spt.behavior.destroy_element(el)
+
+    /*
+    // call any unload behaviors
+    try {
+        spt.behavior.process_unload_behaviors( el );
+    }
+    catch(e) {
+        // if an exception is thrown
+        spt.js_log.warning(e);
+    }
+
+    // deactivate the behaviors and cleanup
+    spt.behavior.deactivate_children( el );
+
+    el.destroy();
+    */
+}
+
+
 spt.behavior.destroy_element = function( el )
 {
+    // call any unload behaviors
+    try {
+        spt.behavior.process_unload_behaviors( el );
+    }
+    catch(e) {
+        // if an exception is thrown
+        spt.js_log.warning(e);
+    }
+
+
     // First do any behavior clean up needed in the DOM under the given element ...
     spt.behavior.deactivate_children( el );
 
@@ -585,23 +620,6 @@ spt.behavior.deactivate = function( bvr_el )
     }
 }
 
-
-// Provide a destroy function which cleans up the behaviors before destroying
-spt.behavior.destroy = function( el ) {
-    // call any unload behaviors
-    try {
-        spt.behavior.process_unload_behaviors( el );
-    }
-    catch(e) {
-        // if an exception is thrown
-        spt.js_log.warning(e);
-    }
-
-    // deactivate the behaviors and cleanup
-    spt.behavior.deactivate_children( el );
-
-    el.destroy();
-}
 
 
 

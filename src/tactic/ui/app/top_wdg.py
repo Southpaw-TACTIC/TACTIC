@@ -332,14 +332,14 @@ class TopWdg(Widget):
 
             var attributes = bvr.src_el.attributes;
             for (var i = 0; i < attributes.length; i++) {
-                var name = attributes[i].name;
-                if (name == "class") {
+                var attr_name = attributes[i].name;
+                if (attr_name == "class") {
                     continue;
                 }
                 var value = attributes[i].value;
-                kwargs[name] = value;
+                kwargs[attr_name] = value;
             }
- 
+
 
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
