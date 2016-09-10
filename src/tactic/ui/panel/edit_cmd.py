@@ -82,6 +82,7 @@ class EditCmd(Command):
         elif my.input_prefix == "__NONE__":
             my.input_prefix = ""
 
+        my.extra_data = kwargs.get("extra_data") or {}
 
         super(EditCmd,my).__init__()
         my.search_type = None
@@ -308,6 +309,10 @@ class EditCmd(Command):
         # specified
         if name:
             sobject.set_value("name", name)
+
+
+        for key, value in my.extra_data.items():
+            sobject.set_value(key, value)
 
 
         # commit the changes unless told not to.
