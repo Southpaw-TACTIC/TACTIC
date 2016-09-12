@@ -447,12 +447,15 @@ class ChartGrid(BaseRefreshWdg):
                     break;
                 }
             }
-            interval.y = interval.y * multiplier;
 
             if (bvr.mode == 'integer') {
                 multiplier = parseInt(multiplier);
             }
+            if (multiplier == 0) {
+                multiplier = 1;
+            }
 
+            interval.y = interval.y * multiplier;
 
             var color2 = 'rgba(240, 240, 240, 0.5)';
             for (var i = 0; ; i++) {
