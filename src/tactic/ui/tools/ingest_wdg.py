@@ -593,7 +593,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                     }
                 }
 
-                button.setStyle("display", "");
+                upload_button.setStyle("display", "");
             }
 
             spt.html5upload.clear();

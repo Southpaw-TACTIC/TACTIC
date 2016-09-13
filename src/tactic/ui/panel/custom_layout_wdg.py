@@ -808,6 +808,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                         my.content.add_behavior(bvr)
 
                     elif bvr.get("type") == "listen":
+                        bvr['bvr_match_class'] = css_class
                         bvr['event_name'] = Xml.get_attribute(behavior_node,'event_name')
                         my.content.add_behavior(bvr)
 

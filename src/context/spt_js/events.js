@@ -246,12 +246,52 @@ spt.named_events._process_listener_bvr = function( bvr, unique )
         event_name_list.push( bvr.event_name );
     }
 
-    for( var c=0; c < event_name_list.length; c++ ) {
-        var event_name =  event_name_list[c];
-        if (unique && spt.named_events.has_listeners(event_name)) {
-            continue;
+
+    if (bvr.bvr_match_class) {
+        var src_el = bvr.src_el;
+        var listen_els = src_el.getElements("."+bvr.bvr_match_class);
+
+        for (var i = 0; i < listen_els.length; i++) {
+
+            for( var c = 0; c < event_name_list.length; c++ ) {
+                var event_name =  event_name_list[c];
+                if (unique && spt.named_events.has_listeners(event_name)) {
+                    continue;
+                }
+
+                var new_bvr = {};
+                for (var name in bvr) {
+                    new_bvr[name] = bvr[name];
+                }
+                new_bvr.src_el = listen_els[i];
+
+                spt.named_events._register_listener(event_name, new_bvr);
+            }
         }
-        spt.named_events._register_listener(event_name, bvr);
+
+        // if there is no match class, then be backwards compatible
+        if (listen_els.length == 0) {
+            for( var c=0; c < event_name_list.length; c++ ) {
+                var event_name =  event_name_list[c];
+                if (unique && spt.named_events.has_listeners(event_name)) {
+                    continue;
+                }
+
+                spt.named_events._register_listener(event_name, bvr);
+            }
+        }
+
+    }
+    else {
+
+        for( var c=0; c < event_name_list.length; c++ ) {
+            var event_name =  event_name_list[c];
+            if (unique && spt.named_events.has_listeners(event_name)) {
+                continue;
+            }
+
+            spt.named_events._register_listener(event_name, bvr);
+        }
     }
 }
 

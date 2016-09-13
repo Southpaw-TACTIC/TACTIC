@@ -57,7 +57,7 @@ class EditWdg(BaseRefreshWdg):
     CLOSE_WDG = "close_wdg"
 
     ARGS_KEYS = {
-            "mode": {
+        "mode": {
             'description': "The mode of this widget",
             'type': 'SelectWdg',
             'values': 'insert|edit|view',
@@ -1120,6 +1120,7 @@ class EditWdg(BaseRefreshWdg):
         bvr['named_event'] = 'edit_pressed'
 
         bvr['cbjs_action'] = cbjs_insert
+        bvr['extra_data'] = my.kwargs.get("extra_data")
 
         my.top.add_attr("spt_save_event", save_event)
 
@@ -1286,7 +1287,7 @@ spt.Environment.get().add_library("spt_edit");
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content, search_key) {
+spt.edit.save_changes = function(content, search_key, extra_data) {
     var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
 
     bvr = JSON.parse(values.__data__);
@@ -1306,6 +1307,9 @@ spt.edit.save_changes = function(content, search_key) {
         kwargs['parent_key'] = bvr.parent_key;
     kwargs['input_prefix'] = bvr.input_prefix;
     kwargs['view'] = bvr.view;
+    if (extra_data) {
+        kwargs['extra_data'] = extra_data;
+    }
 
     var server = TacticServerStub.get();
 
@@ -1341,6 +1345,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         args['parent_key'] = bvr.parent_key;
     args['input_prefix'] = bvr.input_prefix;
     args['view'] = bvr.view;
+    args['extra_data'] = bvr.extra_data;
 
     // this is needed as bvr turns null on error
     var src_el = bvr.src_el;
