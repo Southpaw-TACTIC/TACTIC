@@ -1108,9 +1108,8 @@ class EditWdg(BaseRefreshWdg):
         if not cbjs_insert:
             mode_label = my.mode.capitalize()
             cbjs_insert = '''
-            spt.app_busy.show("%sing items", "");
             spt.edit.edit_form_cbk(evt, bvr);
-            spt.app_busy.hide();
+            spt.notify.show_message("%s item complete.");
             '''%mode_label
 
         save_event = my.kwargs.get('save_event')

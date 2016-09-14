@@ -89,6 +89,7 @@ class EditCmd(Command):
         my.sobject = kwargs.get("sobject")
 
 
+
     def get_sobject(my):
         return my.sobject
 
