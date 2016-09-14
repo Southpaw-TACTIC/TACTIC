@@ -263,6 +263,16 @@ class DatabaseAction(Command):
         elif col_type in ["float", "integer"]:
             if isinstance(value, basestring):
                 value = value.replace(",", "")
+            if value.startswith("$"):
+                value = value.lstrip("$")
+
+            try:
+                if col_type == "float":
+                    value = float(value)
+                else:
+                    value = int(value)
+            except:
+                raise UserException("[%s] must a number." % value)
         return value
 
 
