@@ -1192,7 +1192,6 @@ spt.tab.close = function(src_el) {
         my.mode = my.kwargs.get('mode')
         if not my.mode:
             my.mode = "default"
-        print "xxx: ", my.mode
 
 
         if my.view and my.view != 'tab' and not config_xml:

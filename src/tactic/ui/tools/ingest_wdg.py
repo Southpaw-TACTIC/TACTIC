@@ -855,6 +855,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 }
 
             }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+            upload_button.setStyle("display", "");
+
         }
         '''
         } )
@@ -889,6 +893,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             if (els.length == 0) {
                 var background = top.getElement(".spt_files_background");
                 background.setStyle("display", "");
+
+
+                var upload_button = top.getElement(".spt_upload_files_top");
+                upload_button.setStyle("display", "none");
             }
 
             '''
