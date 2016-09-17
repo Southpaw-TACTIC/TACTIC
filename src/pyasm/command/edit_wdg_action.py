@@ -233,8 +233,10 @@ class DatabaseAction(Command):
 
 
             value = my.convert_value(col_type, value)
-            
-            if parent_key_action:
+
+            if value == None:
+                pass 
+            elif parent_key_action:
                 my.sobject.add_relationship(value)
             else:
                 my.sobject.set_value(column, value )
@@ -267,7 +269,9 @@ class DatabaseAction(Command):
                 value = value.lstrip("$")
 
             try:
-                if col_type == "float":
+                if not value:
+                    value = None
+                elif col_type == "float":
                     value = float(value)
                 else:
                     value = int(value)
