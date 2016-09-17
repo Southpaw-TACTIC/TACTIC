@@ -416,6 +416,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         } )
 
+        """
         canvas.add_behavior( {
         "type": 'click_up',
         "cbjs_action": '''
@@ -424,6 +425,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         editor_top.addClass("spt_has_changes");
         '''
         }) 
+        """
 
         # create the paint where all the connectors are drawn
         paint = my.get_paint()
@@ -849,6 +851,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         SmartMenu.assign_as_local_activator( node, 'NODE_CTX' )
 
 
+        offset = 0
+        my.add_nobs(node, width, height, offset)
+
+        """
         # add nobbies on the node
         left_nob = DivWdg()
         left_nob.add_class("spt_left_nob")
@@ -943,6 +949,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } )
 
 
+        """
 
 
         # active glow
@@ -1099,7 +1106,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-    def add_nobs(my, node, height, offset=0):
+    def add_nobs(my, node, width, height, offset=0):
+
+        #mode = "vertical"
+        mode = "horizontal"
 
         # add nobbies on the node
         left_nob = DivWdg()
@@ -1114,8 +1124,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         left_nob.add_style("background: rgba(255,255,0,0.2)")
         left_nob.add_style("width: 10px")
         left_nob.add_style("height: 10px")
-        left_nob.add_style("top: %spx" % (height/2-5))
-        left_nob.add_style("left: %spx" % (-11-offset))
+
+        if mode == "horizontal":
+            left_nob.add_style("top: %spx" % (height/2-5))
+            left_nob.add_style("left: %spx" % (-11-offset))
+        else:
+            left_nob.add_style("top: %spx" % (-offset))
+            left_nob.add_style("left: %spx" % (width/2-5))
+
         left_nob.add_style("z-index: 100")
         left_nob.add("")
         
@@ -1405,7 +1421,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         height = 20
 
 
-        my.add_nobs(node, height)
+        my.add_nobs(node, width, height)
 
 
         content = DivWdg()
@@ -1502,7 +1518,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         nobs_offset = 0
-        my.add_nobs(node, height, nobs_offset)
+        my.add_nobs(node, width, height, nobs_offset)
 
 
         #content = DivWdg()
@@ -1594,7 +1610,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         offset = width * 0.12 # size to corner of square
 
-        my.add_nobs(node, height, 5)
+        my.add_nobs(node, width, height, 5)
 
 
         content = DivWdg()
@@ -1680,7 +1696,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-        my.add_nobs(node, height)
+        my.add_nobs(node, width, height)
 
 
         content = DivWdg()
@@ -1757,7 +1773,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-        #my.add_nobs(node, height)
+        #my.add_nobs(node, width, height)
 
         content = DivWdg()
         node.add(content)
@@ -2297,6 +2313,7 @@ spt.pipeline.select_drag_action = function(evt, bvr, mouse_411) {
         spt.pipeline.select_nodes_by_box(mouse_pos, last_pos);
 
     spt.pipeline.redraw_canvas();
+
 }
 
 // Mouse functions
@@ -2848,6 +2865,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         spt.named_events.fire_event(event_name, { src_el: new_node } );
     }
 
+    var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+    editor_top.addClass("spt_has_changes");
+
     return new_node;
 }
 
@@ -3338,6 +3358,10 @@ spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
     var node = bvr.drag_el;
     node.removeClass("move");
     spt.named_events.fire_event('pipeline|change', {});
+
+    var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+    editor_top.addClass("spt_has_changes");
+
 }
 
 
