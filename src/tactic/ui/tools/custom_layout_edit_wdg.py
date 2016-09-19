@@ -1323,7 +1323,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var cmd = 'tactic.ui.tools.CustomLayoutEditSaveCmd';
 
             if (!bvr.editor_id) {
-                spt.alert('There is no view to save. Please create a view or select an exixting view.');
+                spt.alert('There is no view to save. Please create a view or select an existing view.');
                 return;
             }
  
@@ -1335,7 +1335,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.ace_editor.set_editor_top(mako_tab);
             var mako = spt.ace_editor.get_value();
             //FIXME: get_value appends newline onto beginning.
-            if (mako.startsWith("\n")) {
+            if (mako && mako.startsWith("\n")) {
                 mako = mako.substring(1);
             }
 
@@ -1443,7 +1443,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.ace_editor.set_editor_top(mako_tab);
             mako = spt.ace_editor.get_value();
             //FIXME: get_value appends newline onto beginning.
-            if (mako.startsWith("\n")) {
+            if (mako && mako.startsWith("\n")) {
                 mako = mako.substring(1);
             }
             values.mako = mako;
