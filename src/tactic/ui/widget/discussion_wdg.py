@@ -481,6 +481,7 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parents = []
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
+        my.custom_processes = my.kwargs.get('custom_processes')
         my.show_task_process = my.kwargs.get('show_task_process')
         
         my.allow_email = my.kwargs.get('allow_email')
@@ -804,6 +805,7 @@ class DiscussionWdg(BaseRefreshWdg):
         # in this case since this is meant for task or snapshot notes
         if has_process and my.use_parent =='true':
            my.append_processes = ''
+           my.custom_processes = ''
 
        
 
@@ -1334,7 +1336,8 @@ class DiscussionWdg(BaseRefreshWdg):
                     'context': context_choices,
                     'process': process_choice,
                     'use_parent': my.use_parent,
-                    'append_process': my.append_processes
+                    'append_process': my.append_processes,
+                    'custom_processes': my.custom_processes
             }
 
 
@@ -1497,7 +1500,8 @@ class DiscussionWdg(BaseRefreshWdg):
                         'context': context_choices,
                         'process': process_choice,
                         'use_parent': my.use_parent,
-                        'append_process': my.append_processes
+                        'append_process': my.append_processes,
+                        'custom_processes': my.custom_processes
                 }
 
                 add_note_wdg = DivWdg()
@@ -2188,6 +2192,14 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             # remove any spaces
             my.append_processes = [x.strip() for x in my.append_processes if x]
 
+
+        my.custom_processes = my.kwargs.get("custom_processes")
+        if my.custom_processes:
+            my.custom_processes = my.custom_processes.split(",")
+            # remove any spaces
+            my.custom_processes = [x.strip() for x in my.custom_processes if x]
+
+
         my.upload_id = my.kwargs.get("upload_id")
         
         my.allow_email = my.kwargs.get("allow_email") not in ['false', False]
@@ -2262,6 +2274,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         if my.append_processes:
             process_names.extend(my.append_processes)
+
+        if my.custom_processes:
+            process_names = my.custom_processes
         
         security = Environment.get_security()
         project_code = Project.get_project_code()

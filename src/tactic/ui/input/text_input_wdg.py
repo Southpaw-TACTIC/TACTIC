@@ -105,8 +105,13 @@ class TextInputWdg(BaseInputWdg):
         if my.password in [True, 'true']:
             my.password = True
 
+        input_type = kwargs.get("type")
+
         if my.password:
             my.text = PasswordWdg(name)
+        elif input_type:
+            my.text = TextWdg(name)
+            my.text.set_option("type", input_type)
         else:
             my.text = TextWdg(name)
 

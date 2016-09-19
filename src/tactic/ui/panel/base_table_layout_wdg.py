@@ -1244,9 +1244,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             expand_wdg = button
 
         show_help = my.kwargs.get("show_help")
+        if show_help in ["", None]:
+            if Project.get().is_admin():
+                show_help = True
+            else:
+                show_help = False
+
+
         help_wdg = None
 
-        if my.kwargs.get("show_help") not in ['false', False]:
+        if show_help not in ['false', False]:
             help_alias = my.get_alias_for_search_type(my.search_type)
             from tactic.ui.app import HelpButtonWdg
             if HelpButtonWdg.exists():

@@ -1026,6 +1026,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
 
+        if my.kwargs.get("oncomplete_script"):
+            oncomplete_script = my.kwargs.get("oncomplete_script")
+
+
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
