@@ -462,8 +462,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if "info" not in tabs:
             tabs.insert(0, "info")
 
-        if my.sobject.get_value("pipeline_code", no_exception=True):
-            tabs.append("pipeline")
+        #if my.sobject.get_value("pipeline_code", no_exception=True):
+        #    tabs.append("pipeline")
+        #    values['pipeline_code'] = my.sobject.get_value("pipeline_code")
         if my.sobject.get_value("_is_collection", no_exception=True):
             tabs.append("collection")
 

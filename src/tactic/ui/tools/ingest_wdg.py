@@ -83,7 +83,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         if my.search_key:
             my.sobject = Search.get_by_search_key(my.search_key)
 
-            if my.kwargs.get("use_parent") in [True, 'true'] or True:
+            if my.kwargs.get("use_parent") in [True, 'true']:
                 my.orig_sobject = my.sobject
                 my.sobject = my.sobject.get_parent()
                 my.search_key = my.sobject.get_search_key()
