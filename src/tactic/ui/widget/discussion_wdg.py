@@ -1282,7 +1282,7 @@ class DiscussionWdg(BaseRefreshWdg):
             if my.show_border:
                 no_notes_div.add_color("background", "background")
                 no_notes_div.add_color("color", "color")
-            no_notes_div.add_style("padding", "3px")
+            no_notes_div.add_style("padding", "0px 5px")
 
   
             add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
@@ -1444,7 +1444,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_top.add(context_wdg)
                 if len(notes):
                     context_top.add("<i> (%s) </i>" % len(notes))
-                context_wdg.add_style("margin-left: 3px")
+                context_wdg.add_style("margin-left: 5px")
             else:
                 context_wdg = my.get_context_wdg(process, context)
                 context_top.add(context_wdg)
@@ -1604,7 +1604,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         div.add_color("color", "color")
-        div.add_style("padding", "5px")
+        div.add_style("padding", "0px 0px 5px 5px")
         #div.add_color("background", "background", -5, -5)
         div.add_style("height", "15px")
         div.add_style("font-weight", "bold")

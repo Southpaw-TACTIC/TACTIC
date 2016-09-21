@@ -902,6 +902,7 @@ class HtmlElement(Widget):
 
         else:
 
+            search_type = update.get("search_type")
             column = update.get("column")
             expression = update.get("expression")
             compare = update.get("compare")
@@ -912,6 +913,8 @@ class HtmlElement(Widget):
             # use "expr_key".
             search_key = update.get("search_key")
             expr_key = update.get("expr_key")
+
+
 
             # NOTE: this is explicitly not supported.  This would allow a client
             # to set the site which is forbidden
@@ -929,7 +932,11 @@ class HtmlElement(Widget):
             if value != None:
                 return value
 
-            if search_key:
+            # get the sobject
+
+            if search_type:
+                return True
+            elif search_key:
                 sobject = Search.get_by_search_key(search_key)
             elif expr_key:
                 sobject = Search.get_by_search_key(expr_key)
