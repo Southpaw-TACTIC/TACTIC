@@ -192,7 +192,7 @@ class EditWdg(BaseRefreshWdg):
                 my.mode = "edit"
             else:
                 my.mode = "insert"
-             
+        
         assert(my.search_type)
 
         # explicit override

@@ -352,9 +352,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
             custom_config = WidgetConfig.get(view=custom_view, xml=custom_config_xml)
             config = WidgetConfigView(search_type='TabWdg', view=custom_view, configs=[custom_config, config])
 
+        selected = my.kwargs.get("selected")
+
         #menu = my.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
-        tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10 )
+        tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10, selected=selected )
         tab.add_style("margin: 0px -1px -1px -1px")
 
 
