@@ -137,9 +137,6 @@ class TransactionQueueAppendCmd(Trigger):
             job.set_value("transaction_code", transaction_code)
             job.set_user()
 
-            host = server.get_value("host")
-
-
             job.set_value("command", "tactic.command.TransactionQueueCmd")
             kwargs = {
                 'server': server.get_value("code"),
@@ -306,6 +303,7 @@ class TransactionQueueCmd(Command):
         if not server:
             raise TacticException("ERROR: No server with code [%s] defined" % server_code)
         host = server.get_value("host")
+        site = server.get_value("site", no_exception=True)
 
 
         # file mode is usually determined by the server
@@ -406,6 +404,7 @@ class TransactionQueueCmd(Command):
         from tactic_client_lib import TacticServerStub
         remote_server = TacticServerStub(
             protocol='xmlrpc',
+            site=site,
             server=host,
             project=project_code,
             user=user,

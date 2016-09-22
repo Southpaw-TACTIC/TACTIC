@@ -83,10 +83,16 @@ def get_simple_cmd(my, meth, ticket, args):
                     Container.put("CHECK", my2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
+
+
+                my.print_info = True
                 
                 if meth.__name__ == 'get_widget':
                     first_arg = args[0]
                     if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
+                        print_info(my2, args)
+                elif meth.__name__ == 'execute_cmd':
+                    if my.print_info == True:
                         print_info(my2, args)
                 else:
                     print_info(my2, args)
