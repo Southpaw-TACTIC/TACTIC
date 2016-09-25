@@ -3016,6 +3016,11 @@ spt.pipeline.get_group_color = function(group_name) {
 
 spt.pipeline.rename_node = function(node, value) {
 
+    if (!value) {
+        spt.alert("Cannot not have empty name");
+        return;
+    }
+
     var input = node.getElement(".spt_input");
     var text = node.getElement(".spt_label");
 

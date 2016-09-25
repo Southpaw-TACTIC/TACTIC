@@ -1973,7 +1973,13 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         process_sobj = search.get_sobject()
         if not process_sobj:
-            top.add("No process found.  Please save")
+            msg = DivWdg()
+            top.add(msg)
+            msg.add("No process found.  Please save")
+            msg.add_style("margin: 30px auto")
+            msg.add_style("text-align: center")
+            msg.add_style("width: 80%")
+            msg.add_style("padding: 20px")
             return top
 
 

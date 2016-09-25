@@ -518,7 +518,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value_wdg = DivWdg()
             value_wdg.add_update( {
                 'search_key': sobject.get_search_key(),
-                'column': name
+                'column': name,
+                'interval': 4,
             } )
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)

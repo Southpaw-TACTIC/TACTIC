@@ -1972,10 +1972,11 @@ class NoteWdg(BaseRefreshWdg):
         current_login = Environment.get_user_name()
         if current_login == login:
 
-            icon = IconButtonWdg(title="Options", icon="BS_LIST")
+            icon = IconButtonWdg(title="Options", icon="BS_PENCIL")
             title.add(icon)
             icon.add_style("float: right")
-            icon.add_style("margin-top: -3px");
+            icon.add_style("margin-top: -5px")
+            icon.add_style("margin-left: 3px")
 
 
             menus = [my.get_note_menu()]
