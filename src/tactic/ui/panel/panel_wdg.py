@@ -3102,7 +3102,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tactic.ui.container import DialogWdg
             search_dialog = DialogWdg(width=770, offset={'x':-250,'y':0})
             search_dialog_id = search_dialog.get_id()
-            #if show_search == 'true':
             # Comment out the above. 
             # Needs to draw the search_dialog for pre-saved parameters to go thru
             # Fast(Base) Table Layout will take care of hiding it

@@ -1271,11 +1271,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
 
-            show_search = my.get_setting("search")
-            if show_search or show_keyword_search:
-                search_label = 'Search'
-            else:
-                search_label = 'Refresh'
+            search_label = 'Search'
             button = ActionButtonWdg(title=search_label)
             my.run_search_bvr = my.kwargs.get('run_search_bvr')
             if my.run_search_bvr:
@@ -1797,7 +1793,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.filter_num_div = None
         # Search button
         search_dialog_id = my.kwargs.get("search_dialog_id")
-        show_search = my.get_setting("search")
+        show_search = my.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
             div = DivWdg()

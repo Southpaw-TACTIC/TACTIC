@@ -570,13 +570,22 @@ class SObjectCalendarWdg(CalendarWdg):
 
     def handle_search(my):
 
+        parent_key = my.kwargs.get("parent_key")
+
         # this is an absolute expression
         my.search_expr = my.kwargs.get("search_expr")
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
             my.search_type = 'sthpw/task'
         if my.search_expr:
-            search = Search.eval(my.search_expr)
+            result = Search.eval(my.search_expr)
+            if isinstance(result, list):
+                search = Search(my.search_type)
+                codes = [x.get_code() for x in result]
+                search.add_filters("code", codes)
+            else:
+                search = result
+
 
         else:
             
@@ -598,7 +607,9 @@ class SObjectCalendarWdg(CalendarWdg):
             my.end_column = 'bid_end_date'
 
        
-        
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            search.add_parent_filter(parent)
 
         search.add_op('begin')
 

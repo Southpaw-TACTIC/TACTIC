@@ -1097,7 +1097,8 @@ class DiscussionWdg(BaseRefreshWdg):
         my.note_format = my.kwargs.get("note_format")
 
         if my.note_format in ['', None]:
-            my.note_format = 'compact'
+            #my.note_format = 'compact'
+            my.note_format = 'full'
 
         my.show_note_status = my.kwargs.get("show_note_status")
         if my.show_note_status in ['true', True]:
@@ -1294,7 +1295,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             if mode == "icon":
-                add_wdg = IconWdg("Add Note", "BS_EDIT")
+                add_wdg = IconWdg("Add Note", "BS_PENCIL")
                 no_notes_msg.add(add_wdg)
                 if len(notes):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
@@ -1424,13 +1425,24 @@ class DiscussionWdg(BaseRefreshWdg):
                 contexts_div.add(context)
                 contexts_div.add("&nbsp;"*3)
             
+        #if mode == "icon":
+        #    contexts = contexts[:1]
 
         # go through every context and display notes
         for context in contexts:
 
+            notes_list = context_notes.get(context)
+
+            note_keys = []
+            for note in notes_list:
+                note_key = note.get_search_key()
+                note_keys.append(note_key)
+
+
             context_top = DivWdg()
             context_top.add_class("spt_discussion_context_top")
             context_top.add_class("my_context")
+            context_top.add_class("hand")
             #context_top.add_class("hand")
             context_top.add_attr("my_context", context.encode('utf-8'))
             top.add(context_top)
@@ -1438,17 +1450,29 @@ class DiscussionWdg(BaseRefreshWdg):
             if context not in my.default_contexts_open:
                 context_top.add_attr("spt_state", 'closed')
 
-
             if mode == "icon":
-                context_wdg = IconWdg("Add Note", "BS_EDIT")
+                if context.endswith("/review"):
+                    context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+                    context_wdg.add_style("color: rgb(232, 74, 77)")
+                    context_wdg.add_style("margin-top: 2px")
+                    context_top.add("<div style='height: 3px'></div>")
+                else:
+                    context_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL")
+
                 context_top.add(context_wdg)
                 if len(notes):
-                    context_top.add("<i> (%s) </i>" % len(notes))
+                    context_top.add("<i> (%s) </i>" % len(note_keys))
                 context_wdg.add_style("margin-left: 5px")
             else:
+                context_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL", size="12")
+                context_top.add(context_wdg)
+                context_wdg.add_style("float: left")
                 context_wdg = my.get_context_wdg(process, context)
                 context_top.add(context_wdg)
                 context_top.add_style("min-width: 300px")
+                if context.endswith("/review"):
+                    context_wdg.add_style("color: #F00")
+
 
             if my.contexts:
                 context_choices = my.contexts
@@ -1518,13 +1542,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-            notes_list = context_notes.get(context)
-
-            note_keys = []
-            for note in notes_list:
-                note_key = note.get_search_key()
-                note_keys.append(note_key)
-
             content = DivWdg()
             note_dialog.add(content)
             content.add_style("min-width: 300px")
@@ -1565,19 +1582,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 '''
             } )
 
-            """
-            notes_wdg = NoteCollectionWdg(
-                    notes=notes_list,
-                    default_num_notes=my.default_num_notes,
-
-                    note_expandable=my.note_expandable,
-                    show_note_status=my.show_note_status,
-                    note_format=my.note_format,
-                    attachments=my.attachments,
-            )
-            
-            #note_dialog.add(notes_wdg)
-            """
         return top
 
 
@@ -2096,7 +2100,7 @@ class NoteWdg(BaseRefreshWdg):
         if my.note_format == 'full':
             left = content.add_cell()
             left.add_style("padding: 10px")
-            left.add_style("width: 100px")
+            left.add_style("width: 55px")
             left.add_style("min-height: 100px")
             left.add_style("vertical-align: top")
 
@@ -2107,16 +2111,15 @@ class NoteWdg(BaseRefreshWdg):
                 login_sobj = Login.get_by_code(login)
 
                 thumb = ThumbWdg()
-                thumb.set_icon_size("60")
+                thumb.set_icon_size("45")
                 if login_sobj:
                     thumb.set_sobject(login_sobj)
                     left.add(thumb)
-                    left.add("<br/>")
                     left.add_style("font-size: 1.0em")
 
-                    name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
-                    left.add("%s</br>" % name)
-                    left.add("%s</br>" % login_sobj.get_value("email"))
+                    #name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
+                    #left.add("%s<br/>" % name)
+                    #left.add("%s<br/>" % login_sobj.get_value("email"))
 
 
 
@@ -2124,7 +2127,7 @@ class NoteWdg(BaseRefreshWdg):
 
         right = content.add_cell()
         right.add_style("vertical-align: top")
-        right.add_style("padding: 10px 30px")
+        right.add_style("padding: 10px 30px 10px 15px")
 
         context = note.get_value("context")
 
