@@ -120,7 +120,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         table.add_row()
         left = table.add_cell()
         left.add_style("width: 200px")
-        left.add_style("min-width: 200px")
+        left.add_style("min-width: 100px")
         left.add_style("vertical-align: top")
         #left.add_border()
 
@@ -130,10 +130,8 @@ class PipelineToolWdg(BaseRefreshWdg):
         left.add(pipeline_list)
 
 
-
         right = table.add_cell()
         right.add_style("width: 500px")
-        right.add_border()
 
         show_help = my.kwargs.get('show_help') or True
 
@@ -470,7 +468,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipelines_div.add_class("spt_resizable")
         pipelines_div.add_style("overflow-x: hidden")
         pipelines_div.add_style("min-height: 290px")
-        pipelines_div.add_style("min-width: 200px")
+        pipelines_div.add_style("min-width: 100px")
         pipelines_div.add_style("width: 200px")
         pipelines_div.add_style("height: auto")
 
@@ -560,8 +558,17 @@ class PipelineListWdg(BaseRefreshWdg):
                     continue
 
                 search_type = pipeline.get_value("search_type")
-                if last_search_type and last_search_type != search_type:
-                    content_div.add("<hr/>")
+                if not last_search_type or last_search_type != search_type:
+                    if last_search_type:
+                        content_div.add("<hr/>")
+                    search_type_obj = SearchType.get(search_type)
+                    title = search_type_obj.get_title()
+                    title = Common.pluralize(title)
+
+                    stype_div = DivWdg()
+                    content_div.add(stype_div)
+                    stype_div.add_style("margin: 5px 0px 5px 5px")
+                    stype_div.add(title)
                 last_search_type = search_type
 
 
@@ -575,8 +582,9 @@ class PipelineListWdg(BaseRefreshWdg):
                 content_div.add(no_items)
                 no_items.add("<i>-- No Items --</i>")
 
-        except:
-            none_wdg = DivWdg("<i>&nbsp;&nbsp;-- No Items --</i>")
+        except Exception, e:
+            print "WARNING: ", e
+            none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
             none_wdg.add_style("font-size: 11px")
             none_wdg.add_color("color", "color", 20)
             none_wdg.add_style("padding", "5px")
@@ -716,7 +724,7 @@ class PipelineListWdg(BaseRefreshWdg):
             description = pipeline.get_code()
         
         # remove weird symbols in description
-        description = re.sub(r'\W', '', description)
+        #description = re.sub(r'\W', '', description)
         
         pipeline_div.add_attr("title", description)
 
@@ -812,6 +820,9 @@ class PipelineListWdg(BaseRefreshWdg):
                 spt.panel.load(info, class_name, kwargs);
             }
 
+
+            editor_top.removeClass("spt_has_changes");
+
         };
 
         var save = function(){
@@ -839,6 +850,8 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.named_events.fire_event('pipeline|save', {});
 
             spt.app_busy.hide();
+
+            editor_top.removeClass("spt_has_changes");
         }
 
 
@@ -866,6 +879,7 @@ class PipelineListWdg(BaseRefreshWdg):
              '''
              })
 
+        """
         search_type = pipeline.get_value("search_type")
         if search_type:
             span = SpanWdg()
@@ -873,6 +887,7 @@ class PipelineListWdg(BaseRefreshWdg):
             span.add_style("opacity: 0.75")
             pipeline_div.add(span)
             span.add(" (%s)" % search_type)
+        """
 
         pipeline_div.add("<br clear='all'/>")
 

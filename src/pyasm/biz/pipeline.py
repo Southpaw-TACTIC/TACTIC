@@ -1110,6 +1110,63 @@ class Pipeline(SObject):
 
 
 
+
+    def create_pipeline_xml(cls, statuses, process_types=[], process_xpos=[], process_ypos=[]):
+        '''create regular pipeline with process_types, xpos, ypos or plain task status pipeline'''
+        if not statuses:
+            statuses = []
+
+        xml = []
+
+        xml.append('''<pipeline>''')
+        
+        if process_types:
+
+            for status, process_type, xpos, ypos in zip(statuses, process_types, process_xpos, process_ypos):
+                if status == '':
+                    continue
+                if xpos and ypos:
+                    xml.append('''  <process name="%s" type="%s" xpos="%s" ypos="%s"/>''' % (status, process_type, xpos, ypos))
+                else:
+                    xml.append('''  <process name="%s" type="%s"/>''' % (status, process_type))
+        else:
+            for status in statuses:
+                if status == '':
+                    continue
+                xml.append('''  <process name="%s"/>''' % status)
+
+        
+
+        last_status = None
+        for i, status in enumerate(statuses):
+            if status == '':
+                continue
+
+            if i == 0 or last_status == None:
+                last_status = status
+                continue
+
+
+            xml.append('''  <connect from="%s" to="%s"/>''' % (last_status,status))
+            last_status = status
+
+        xml.append('''</pipeline>''')
+        return "\n".join(xml)
+
+    create_pipeline_xml = classmethod(create_pipeline_xml)
+
+
+
+
+
+
+
+
+
+
+
+
+
 class ProjectPipeline(Pipeline):
 
     def get_defaults(my):

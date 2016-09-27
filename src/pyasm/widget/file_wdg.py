@@ -909,6 +909,9 @@ class ThumbWdg(BaseTableElementWdg):
         div.add_style("%s: %s" % (my.aspect, icon_size) )
         div.add_style("min-%s: %s" % (my.aspect, min_size) )
         #div.set_box_shadow("0px 0px 5px")
+        div.add_style("overflow: hidden")
+        div.add_style("text-overflow: ellipsis")
+        div.add_style("white-space: nowrap")
         div.add_border()
 
         div.add_style("text-align: left" )

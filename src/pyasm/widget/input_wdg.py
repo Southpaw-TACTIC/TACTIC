@@ -611,7 +611,11 @@ class TextWdg(BaseTextWdg):
    
 
     def get_display(my):
-        my.set_attr("type", "text")
+        input_type = my.get_option("type")
+        if not input_type:
+            input_type = "text"
+
+        my.set_attr("type", input_type)
         my.set_attr("name", my.get_input_name())
 
 

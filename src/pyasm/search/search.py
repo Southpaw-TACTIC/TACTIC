@@ -2568,8 +2568,13 @@ class SObject(object):
 
     def get_code_key(my):
         '''used in the transaction code'''
-        table = my.get_table()
-        return table.upper()
+        from pyasm.biz import ProjectSetting
+        search_type = my.get_base_search_type()
+        prefix = ProjectSetting.get_value_by_key('code_prefix', search_type)
+        if not prefix:
+            prefix = my.get_table()
+            prefix = prefix.upper()
+        return prefix
 
 
 
@@ -4024,9 +4029,9 @@ class SObject(object):
 
 
     def generate_code(my, id):
+        from pyasm.biz import ProjectSetting
         search_type = my.get_base_search_type()
 
-        from pyasm.biz import ProjectSetting
         if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
             log_key = my.get_code_key()

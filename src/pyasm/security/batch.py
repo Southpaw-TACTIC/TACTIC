@@ -199,7 +199,8 @@ class XmlRpcLogin(Environment):
                 # if api password is incorrect, still try and authenticate with
                 # user's password
                 security.login_user(my.login_name, my.password, expiry="NULL")
-
+        elif my.login_name == "guest":
+                security.login_user_without_password(my.login_name)
         else:        
             security.login_user(my.login_name, my.password, expiry="NULL")
 
