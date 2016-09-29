@@ -153,6 +153,17 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                 print "Exception: ", e
 
 
+
+    def add_value_update(my, value_wdg, sobject, name):
+        value_wdg.add_update( {
+            'search_key': sobject.get_search_key(),
+            'column': name,
+            'interval': 4,
+            'cbjs_action': '''
+            alert("WOW");
+            '''
+        } )
+
     def handle_td(my, td):
         sobject = my.get_current_sobject()
         # find the pipeline code of the task

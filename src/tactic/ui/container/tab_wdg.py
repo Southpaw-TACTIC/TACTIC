@@ -1954,6 +1954,9 @@ spt.tab.close = function(src_el) {
 
             }
 
+            var element_name = activator.getAttribute("spt_element_name");
+            spt.tab.select(element_name);
+
             '''
             } )
 
