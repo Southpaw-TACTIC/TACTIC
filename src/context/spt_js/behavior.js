@@ -1259,10 +1259,7 @@ spt.behavior.process_load_behaviors = function( el_list )
                 var bvr = load_bvrs[i];
 
                 if( bvr.cbjs_action ) {
-                    cbjs_action = bvr.cbjs_action
-                    //cbjs_action = cbjs_action.replace(/&lt;/g, "<");
-                    //cbjs_action = cbjs_action.replace(/&gt;/g, ">");
-                    //spt.behavior.run_cbjs( cbjs_action, bvr, null, null );
+                    cbjs_action = bvr.cbjs_action;
                     spt.behavior.run_cbjs( bvr.cbjs_action, bvr, null, null );
                 }
                 else if( 'cbfn_action' in bvr ) {

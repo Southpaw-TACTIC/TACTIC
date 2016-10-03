@@ -44,6 +44,7 @@ TASK_PIPELINE = '''
 
 APPROVAL_PIPELINE = '''
 <pipeline type="serial">
+  <process completion="0" color="#8ad3e5" name="Waiting"/>
   <process completion="10" color="#8ad3e5" name="Pending"/>
   <process completion="50" color="#e84a4d" name="Reject"/>
   <process completion="100" color="#a3d991" name="Approved"/>

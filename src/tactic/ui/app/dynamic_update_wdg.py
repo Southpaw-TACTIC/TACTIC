@@ -486,8 +486,11 @@ class DynamicUpdateCmd(Command):
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
-                
+               
                 stype = values.get("search_type")
+                if stype and stype.find("?project=") == -1:
+                    from pyasm.search import SearchType
+                    stype = SearchType.build_search_type(stype)
                 
                 search_key_set = set()
                 if search_key:
@@ -524,7 +527,7 @@ class DynamicUpdateCmd(Command):
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
-              
+             
                 if value == None:
                     continue
 

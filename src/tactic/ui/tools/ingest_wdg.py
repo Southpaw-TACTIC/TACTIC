@@ -77,9 +77,47 @@ class IngestUploadWdg(BaseRefreshWdg):
         my.relative_dir = relative_dir
 
 
+        # This is used to check into a search key (not create a new sobject)
+        my.orig_sobject = None
+        my.search_key = my.kwargs.get("search_key") or ""
+        if my.search_key:
+            my.sobject = Search.get_by_search_key(my.search_key)
+
+            if my.kwargs.get("use_parent") in [True, 'true'] or True:
+                my.orig_sobject = my.sobject
+                my.sobject = my.sobject.get_parent()
+                my.search_key = my.sobject.get_search_key()
+
+            my.search_type = my.sobject.get_search_type()
+            my.show_settings = False
+        else: 
+            my.search_type = my.kwargs.get("search_type")
+            my.sobject = None
+            my.search_key = None
+
+            my.show_settings = my.kwargs.get("show_settings")
+            if my.show_settings == None:
+                my.show_settings = True
+
+
+
+        my.show_settings = True
 
         top = my.top
         top.add_class("spt_ingest_top")
+
+
+
+        hidden = HiddenWdg(name="parent_key")
+        #hidden = TextWdg(name="parent_key")
+        top.add(hidden)
+        hidden.add_class("spt_parent_key")
+
+        if my.search_key:
+            hidden.set_value(my.search_key)
+
+
+
 
         table = Table()
         top.add(table)
@@ -87,36 +125,39 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
-
-        middle = table.add_cell()
-        middle.add_style("height: 10") # not sure why we need this height
-        middle.add_style("padding: 30px 20px")
-        line = DivWdg()
-        middle.add(line)
-        line.add_style("height: 100%")
-        line.add_style("border-style: solid")
-        line.add_style("border-width: 0px 0px 0px 1px")
-        line.add_style("border-color: #DDD")
-        line.add(" ")
-
         left.add( my.get_content_wdg() )
 
 
+        if not my.search_key:
+            if my.show_settings:
+                middle = table.add_cell()
+                middle.add_style("height: 10") # not sure why we need this height
+                middle.add_style("padding: 30px 20px")
+                line = DivWdg()
+                middle.add(line)
+                line.add_style("height: 100%")
+                line.add_style("border-style: solid")
+                line.add_style("border-width: 0px 0px 0px 1px")
+                line.add_style("border-color: #DDD")
+                line.add(" ")
 
-        search_key = my.kwargs.get("search_key") or ""
-        if search_key:
-            my.show_settings = False
+
+            right = table.add_cell()
+            right.add_style("vertical-align: top")
+            right.add( my.get_settings_wdg() )
+            if my.show_settings in [False, 'false']:
+                right.add_style("display: none")
+
         else:
-            my.show_settings = my.kwargs.get("show_settings")
-            if my.show_settings == None:
-                my.show_settings = True
+            if my.orig_sobject and my.orig_sobject.column_exists("process"):
+                hidden = HiddenWdg(name="process")
+                #hidden = TextWdg(name="process")
+                top.add(hidden)
+                hidden.add_class("spt_process")
+                process = my.orig_sobject.get_value("process")
+                hidden.set_value(process)
 
-        right = table.add_cell()
-        right.add_style("vertical-align: top")
-        right.add( my.get_settings_wdg() )
-        
-        if my.show_settings in [False, 'false']:
-            right.add_style("display: none")
+
 
         return top
 
@@ -314,15 +355,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             )
             
             div.add(edit)
-        hidden = HiddenWdg(name="parent_key")
-        div.add(hidden)
-        hidden.add_class("spt_parent_key")
-        parent_key = my.kwargs.get("search_key") or ""
-        if parent_key:
-            hidden.set_value(parent_key)
-
-
-
 
 
         div.add("<br/>")
@@ -492,8 +524,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
+        is_admin_site = Project.get().is_admin()
         show_help = my.kwargs.get("show_help") or True
-        if my.kwargs.get("show_help") not in ['false', False]:
+        if my.kwargs.get("show_help") not in ['false', False] and is_admin_site:
             help_button_wdg = DivWdg()
             header_div.add(help_button_wdg)
             help_button_wdg.add_styles("float: right; margin-top: 11px;")
@@ -510,15 +543,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         shelf_div = DivWdg()
         div.add(shelf_div)
         shelf_div.add_style("margin-bottom: 10px")
-
-        my.search_key = my.kwargs.get("search_key")
-        if my.search_key:
-            my.sobject = Search.get_by_search_key(my.search_key)
-            my.search_type = my.sobject.get_search_type()
-        else: 
-            my.search_type = my.kwargs.get("search_type")
-            my.sobject = None
-            my.search_key = None
 
         if my.search_key:
             div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % my.search_key)
@@ -1053,15 +1077,23 @@ class IngestUploadWdg(BaseRefreshWdg):
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
         var context_mode = context_mode_select ? context_mode_select.value : bvr.kwargs.context_mode;
+
+        // settings
+        var update_mode = null;
+        var ignore_ext = null;
+        var column = null;
  
         var update_mode_select = top.getElement(".spt_update_mode_select");
-        var update_mode = update_mode_select.value;
+        if (update_mode_select)
+            update_mode = update_mode_select.value;
 
         var ignore_ext_select = top.getElement(".spt_ignore_ext_select");
-        var ignore_ext = ignore_ext_select.value;
+        if (ignore_ext_select)
+            ignore_ext = ignore_ext_select.value;
 
         var column_select = top.getElement(".spt_column_select");
-        var column = column_select ? column_select.value : bvr.kwargs.column;
+        if (column_select)
+            column = column_select ? column_select.value : bvr.kwargs.column;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -1582,7 +1614,7 @@ class IngestUploadCmd(Command):
         search_key = my.kwargs.get("search_key")
         if search_key:
             my.sobject = Search.get_by_search_key(search_key)
-            search_type = my.sobject.get_search_key()
+            search_type = my.sobject.get_base_search_type()
         else:
             search_type = my.kwargs.get("search_type")
             my.sobject = None
@@ -1628,8 +1660,10 @@ class IngestUploadCmd(Command):
             return date.split(" ")[0]
         """
 
-        if not SearchType.column_exists(search_type, column):
-            raise TacticException('The Ingestion puts the file name into the "%s" column which is the minimal requirement. Please first create a "%s" column for this sType.' % (column, column))
+        # REMOVING: this is a bad assumption because this could be checking into
+        # an already existing sobject
+        #if not SearchType.column_exists(search_type, column):
+        #    raise TacticException('The Ingestion puts the file name into the "%s" column which is the minimal requirement. Please first create a "%s" column for this sType.' % (column, column))
 
         input_prefix = update_data.get('input_prefix')
         non_seq_filenames = []
