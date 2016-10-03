@@ -218,11 +218,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
+            selected = my.kwargs.get("selected") or ""
             layout = CustomLayoutWdg(
                     view=custom_view,
                     search_type = my.search_type,
                     search_key = my.search_key,
                     pipeline_code = my.pipeline_code,
+                    selected = selected
             )
             top.add(layout)
             return layout
