@@ -142,8 +142,9 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         style = HtmlElement.style('''
             .spt_switcher_menu .spt_popup_pointer {
                 z-index: 10;
-                margin-top: -45px;
-                margin-left: 95px;
+                position: absolute;
+                top: -15px;
+                right: 15px;
             }
 
             .spt_switcher_menu .spt_first_arrow_div {
