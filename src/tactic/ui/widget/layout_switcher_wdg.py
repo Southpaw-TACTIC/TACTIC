@@ -69,11 +69,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         # use_href = my.kwrags.get("use_href")
         
         # Layout switcher button displays menu and assumes right hand position of screen
-        first_title = "Task List"
+        first_title = "Switch Layout"
 
         mode = "button"
         if mode == "button":
-            activator = DivWdg("<input type='button' class='btn btn-secondary' style='width: 200px' value='%s'/>" % first_title)
+            activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'>%s <span class='caret'></span></button>" % first_title)
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
 

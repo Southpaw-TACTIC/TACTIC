@@ -201,7 +201,24 @@ class TacticServerStub(object):
         # TODO: Not implmeneted: This is needed for isolation of transactions
         #if my.transaction_ticket:
         #    url = '%s%s' % (url, my.transaction_ticket)
-        my.server = xmlrpclib.Server(url, allow_none=True)
+
+        if url.startswith("https:"):
+            # Python 2.7.9 made ssl certificates required and will not allow
+            # an unsigned certificate.  This disables that check
+            import ssl
+            context = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
+            my.server = xmlrpclib.ServerProxy(
+                        url, allow_none=True,
+                        verbose=False, use_datetime=False, 
+                         transport=xmlrpclib.SafeTransport(context=context)
+             )
+
+        else:
+            my.server = xmlrpclib.Server(url, allow_none=True)
+
+
+
+
 
         try:
             pass

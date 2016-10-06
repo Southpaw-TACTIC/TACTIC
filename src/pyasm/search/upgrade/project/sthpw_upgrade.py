@@ -17,6 +17,15 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    #
+    # 4.6.0.a01
+    #
+    def upgrade_v4_6_0_a01_001(my):
+        my.run_sql('''
+        ALTER TABLE "sync_server" ALTER COLUMN "site" TYPE varchar(256);
+        ''')
+
+
 
     #
     # 4.5.0.v02

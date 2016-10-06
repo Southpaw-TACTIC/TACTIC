@@ -4029,15 +4029,7 @@ class SObject(object):
 
 
     def generate_code(my, id):
-        from pyasm.biz import ProjectSetting
         search_type = my.get_base_search_type()
-
-        if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
-            # generate the code
-            log_key = my.get_code_key()
-            random_code = Common.generate_random_key(digits=8)
-            search_code = '%s%s' % (log_key, random_code)
-            return search_code
 
 
         # Generate more readable key
@@ -4051,22 +4043,35 @@ class SObject(object):
         log_key = my.get_code_key()
         parts.append( log_key )
 
-        try:
-            search_type = my.get_base_search_type()
-            if search_type in [
-                    'sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log',
-                    'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log'
-            ]:
-                padding = 8
-            else:
-                padding = 5
 
 
-            int(id)
-            number_expr = "%%0.%dd" % padding
-            parts.append( number_expr % id )
-        except:
-            parts.append(str(id))
+        from pyasm.biz import ProjectSetting
+        if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
+            # generate the code
+            log_key = my.get_code_key()
+            random_code = Common.generate_random_key(digits=10)
+            parts.append( random_code )
+
+        else:
+
+            try:
+                search_type = my.get_base_search_type()
+                if search_type in [
+                        'sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log',
+                        'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log'
+                ]:
+                    padding = 8
+                else:
+                    padding = 5
+
+
+                int(id)
+                number_expr = "%%0.%dd" % padding
+                parts.append( number_expr % id )
+            except:
+                parts.append(str(id))
+
+
 
         delimiter = ""
         #reverse = False
