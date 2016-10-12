@@ -1004,7 +1004,12 @@ spt.tab.close = function(src_el) {
     var content = src_el.getParent(".spt_tab_content");
     var element_name;
     // check if it's a header child
-    var header = src_el.getParent(".spt_tab_header");
+    if (src_el.hasClass("spt_tab_header")) {
+        var header = src_el;
+    }
+    else {
+        var header = src_el.getParent(".spt_tab_header");
+    }
     var subheader = src_el.getParent(".spt_tab_subheader");
     if (header) {
         element_name = header.getAttribute("spt_element_name");
@@ -1912,24 +1917,47 @@ spt.tab.close = function(src_el) {
             menu.add(menu_item)
             menu_item = MenuItem(type='action', label='Close Tab')
             menu_item.add_behavior( {
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_tab_top");
-                spt.tab.top = top;
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_tab_top");
+            spt.tab.top = top;
 
-                var header = activator;
-                var element_name = header.getAttribute("spt_element_name");
-                spt.behavior.destroy_element(header);
+            var header = activator;
+            var element_name = header.getAttribute("spt_element_name");
+            spt.behavior.destroy_element(header);
 
-                var contents = top.getElements(".spt_tab_content");
-                for (var i=0; i<contents.length; i++) {
-                    var content = contents[i];
-                    if (content.getAttribute("element_name") == element_name) {
-                        spt.behavior.destroy_element(content);
-                    }
+            var contents = top.getElements(".spt_tab_content");
+            for (var i=0; i<contents.length; i++) {
+                var content = contents[i];
+                if (content.getAttribute("element_name") == element_name) {
+                    spt.behavior.destroy_element(content);
                 }
-                '''
+            }
+            '''
             } )
+            menu.add(menu_item)
+
+
+            menu_item = MenuItem(type='action', label='Close All Except This Tab')
+            menu_item.add_behavior( {
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_tab_top");
+            spt.tab.top = top;
+
+            var headers = spt.tab.get_headers();
+            for (var i=0; i < headers.length; i++) {
+                var element_name = headers[i].getAttribute("spt_element_name");
+                if (activator.getAttribute('spt_element_name') != element_name) {
+                    spt.tab.close(headers[i]);
+                }
+
+            }
+
+            '''
+            } )
+
+
             menu.add(menu_item)
 
 

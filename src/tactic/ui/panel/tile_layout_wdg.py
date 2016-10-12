@@ -283,8 +283,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 group_wdg = DivWdg()
                 inner.add(group_wdg)
-                group_wdg.add_style("margin: 20px 0px 5px 0px")
-                group_wdg.add_style("padding: 10px 10px")
+                group_wdg.add_style("margin: 0px 0px 5px 0px")
+                group_wdg.add_style("padding: 10px 10px 10px %spx" % (i*10))
                 group_wdg.add_style("width: auto")
 
                 icon = IconWdg(name=title, icon="BS_FOLDER_OPEN")
