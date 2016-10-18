@@ -333,13 +333,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         from tactic.ui.container import ResizableTableWdg
         from table_layout_wdg import FastTableLayoutWdg
 
-        table = ResizableTableWdg()
+        #table = ResizableTableWdg()
+        table = Table()
         table.add_style("table-layout", "fixed")
         table.add_style("width: 100%")
         div.add(table)
         table.add_row()
 
         td = table.add_cell()
+        #td.add_style("width: 30%")
 
 
         kwargs = my.kwargs.copy()
@@ -350,11 +352,12 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         layout_div.add_style("min-height: 500px")
         layout_div.add_style("height: auto")
         td.add(layout_div)
-        td.add_style("overflow: hidden")
+        #td.add_style("overflow: hidden")
+        kwargs['height'] = 500
 
         kwargs['show_shelf'] = False
         kwargs['show_search_limit'] = False
-        kwargs['expand_on_load'] = False
+        kwargs['expand_on_load'] = True
 
         layout = FastTableLayoutWdg(**kwargs)
         layout_div.add(layout)
@@ -373,7 +376,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         content.add_class("spt_tool_content")
         content.add_border(color="#EEE")
         content.add_style("margin: -1px")
-        content.add_style("height: 100%")
+        content.add_style("height: auto")
         #content.add_style("padding: 0px 20px")
 
 

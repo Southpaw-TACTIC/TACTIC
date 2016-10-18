@@ -2298,8 +2298,30 @@ class ThumbWdg2(BaseRefreshWdg):
                 if isinstance(path, unicode):
                     path = path.encode("utf-8")
 
+                if path.endswith("indicator_snake.gif"):
+                    image_size = os.path.getsize(my.lib_path)
+                    if image_size != 0:
+                        # generate icon dynamically
+                        """
+                        img.set_attr("spt_search_key", sobject.get_search_key())
+                        img.add_class("spt_generate_icon")
+                        img.set_attr("spt_image_size", image_size)
+                        """
+
+                        # generate icon inline
+                        from pyasm.widget import ThumbCmd
+                        search_key = my.snapshot.get_search_key()
+                        thumb_cmd = ThumbCmd(search_keys=[search_key])
+                        thumb_cmd.execute()
+                        path = thumb_cmd.get_path()
+
+
                 path = urllib.pathname2url(path)
                 img = HtmlElement.img(src=path)
+
+
+
+
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
@@ -2421,6 +2443,7 @@ class ThumbWdg2(BaseRefreshWdg):
         my.path = path
         my.lib_path = lib_path
         my.icon_path = icon_path
+        my.snapshot = snapshot
  
         return path
 
