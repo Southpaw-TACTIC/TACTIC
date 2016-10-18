@@ -1164,12 +1164,48 @@ class SnapshotDetailWdg(SObjectDetailWdg):
 
 
     def get_default_tabs(my):
-        tabs = ["checkin_history"]
+        #tabs = ["checkin_history"]
+        tabs = []
         return tabs
 
 
     def append_to_config(my, config_xml):
-        return
+
+        values = {}
+
+        process = my.sobject.get_value("process")
+        context = my.sobject.get_value("context")
+        parent = my.sobject.get_parent()
+        #values['search_key'] = parent.get_search_key()
+        values['search_key'] = ''
+
+        values['expression'] = "@SEARCH(sthpw/snapshot['context','%s']['search_code','%s']['search_type','%s'])" % (context, my.sobject.get("search_code"), my.sobject.get("search_type"))
+
+        config_xml.append('''
+        <element name="snapshot_history" title="Check-in History">
+          <display class='tactic.ui.panel.CustomLayoutWdg'>
+          <html>
+            <div style="padding: 20px">
+            <div style="font-size: 25px">Check-in History</div>
+            <div>List of all of the check-ins for this item</div>
+            <hr/>
+            <br/>
+            <element>
+              <display class='tactic.ui.panel.ViewPanelWdg'>
+                <search_type>sthpw/snapshot</search_type>
+                <view>table</view>
+                <parent_key>%(search_key)s</parent_key>
+                <expression>%(expression)s</expression>
+                <show_shelf>false</show_shelf>
+                <width>100%%</width>
+                <use_last_search>false</use_last_search>
+              </display>
+            </element>
+            </div>
+          </html>
+          </display>
+        </element>
+        ''' % values)
 
 
 class TaskDetailWdg(SObjectDetailWdg):

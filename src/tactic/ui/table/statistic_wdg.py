@@ -583,8 +583,8 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             td.add_style("background: #ecbf7f")
         elif my.mode == 'done':
             pass
-        else:
-            td.add_style("background: #FFF")
+        #else:
+        #    td.add_style("background: #FFF")
 
         super(TaskDaysDueElementWdg, my).handle_td(td)
            
