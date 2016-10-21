@@ -460,6 +460,13 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
 
+    def add_value_update(my, value_wdg, sobject, name):
+        value_wdg.add_update( {
+            'search_key': sobject.get_search_key(),
+            'column': name,
+            'interval': 4,
+        } )
+ 
 
     def get_display(my):
         sobject = my.get_current_sobject()

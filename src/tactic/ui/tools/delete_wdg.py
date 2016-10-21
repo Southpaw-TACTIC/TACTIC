@@ -120,7 +120,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             #icon = IconWdg("Note", "BS_NOTE")
             #icon.add_style("float: left")
             #content.add( icon )
-            content.add("<div><b>By selecting the above, the cooresponding related items will be deleted as well.</b></div>")
+            content.add("<div><b>By selecting the above, the corresponding related items will be deleted as well.</b></div>")
             content.add("<br/>"*2)
         else:
             # changed the heading to say no dependencies
@@ -246,6 +246,10 @@ class DeleteToolWdg(BaseRefreshWdg):
         item_div.add(checkbox)
         checkbox.set_attr("value", related_type)
         if related_type in ["sthpw/snapshot", "sthpw/file"]:
+            checkbox.set_checked()
+
+        checked_types = my.kwargs.get("checked_types")
+        if checked_types == "__ALL__":
             checkbox.set_checked()
 
         item_div.add(" ")

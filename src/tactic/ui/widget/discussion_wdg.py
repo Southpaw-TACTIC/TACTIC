@@ -136,7 +136,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         if mode == "icon":
             return 75
         else:
-            return 400
+            return 150
        
    
 
@@ -1303,7 +1303,7 @@ class DiscussionWdg(BaseRefreshWdg):
             else:
                 add_wdg = IconWdg("Add Note", "BS_PLUS")
                 no_notes_msg.add(add_wdg)
-                msg = "No notes. Click to add."
+                msg = "No notes."
                 no_notes_msg.add("<i> %s </i>" % _(msg))
                 no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
