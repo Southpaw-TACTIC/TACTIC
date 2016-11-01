@@ -828,7 +828,17 @@ class EditWdg(BaseRefreshWdg):
         content_div = DivWdg()
 
         from tactic.ui.panel import CustomLayoutWdg
-        layout = CustomLayoutWdg(view=layout_view, search_key=my.search_key)
+        # build the kwargs, including custom ones
+        kwargs2 = {}
+        for key, value in my.kwargs.items():
+            if key in ['search_key','view','config_xml']:
+                continue
+            kwargs2[key] = value
+        kwargs2['search_key'] = my.search_key
+        kwargs2['view'] = layout_view
+
+        layout = CustomLayoutWdg(**kwargs2)
+        #layout = CustomLayoutWdg(view=layout_view, search_key=my.search_key)
         content_div.add(layout)
 
         for widget in my.widgets:
@@ -1286,8 +1296,11 @@ spt.Environment.get().add_library("spt_edit");
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content, search_key, extra_data) {
-    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
+spt.edit.save_changes = function(content, search_key, extra_data, values) {
+
+    if (!values) {
+        values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
+    }
 
     bvr = JSON.parse(values.__data__);
 

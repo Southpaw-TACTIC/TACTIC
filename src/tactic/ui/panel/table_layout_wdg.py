@@ -613,6 +613,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("has_extra_header", "true")
 
 
+        if my.extra_data:
+            if not isinstance(my.extra_data, basestring):
+                inner.set_json_attr("spt_extra_data", my.extra_data)
+            else:
+                inner.add_attr("spt_extra_data", my.extra_data)
+
+
         #if my.config_xml:
         #    inner.add_attr("spt_config_xml", my.config_xml)
 
@@ -2588,6 +2595,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # add in a selection td
         if my.kwargs.get("show_select") not in [False, 'false']:
             my.handle_select(table, sobject)
+
 
         for i, widget in enumerate(my.widgets):
 
@@ -5099,7 +5107,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var search_type = layout_el.getAttribute("spt_search_type");
     var config_xml = layout_el.getAttribute("spt_config_xml");
     var layout = layout_el.getAttribute("spt_layout");
-
+    var extra_data = layout_el.getAttribute("spt_extra_data");
     
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
@@ -5129,7 +5137,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         element_names: element_names,
         group_elements: group_elements,
         config_xml: config_xml,
-        expand_on_load: expand_on_load
+        expand_on_load: expand_on_load,
+        extra_data: extra_data
     }
 
     if (layout == "tile") {

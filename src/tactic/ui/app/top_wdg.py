@@ -830,11 +830,12 @@ class TopWdg(Widget):
 
         skin = web.get_skin()
 
+        version = Environment.get_release_version()
 
         # Bootstrap
         use_bootstrap = True
         if use_bootstrap:
-            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
+            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
 
 
 

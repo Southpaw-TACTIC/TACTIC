@@ -304,6 +304,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
     def handle_td(my, td):
+
         if my.alt_result:
             td.add_attr("spt_input_value", my.alt_result)
         elif my.alt_result:
@@ -403,11 +404,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     res = str(res)
                 elif not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
+
                 encoded_result.append(res)
-            result = ','.join(encoded_result)
-        # FIXME: can we just do this??
-        # adding a tempoary value to this sobject ... dangerous because we
-        # cannot commit this ... need a place for calculated values
+
+            #delimiter = ', '
+            #result = delimiter.join(encoded_result)
+
+            result = encoded_result
+
         if result == None or result == []:
             result = ''
 
@@ -469,6 +473,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
         else:
             result = my._get_result(my.sobject, my.expression)
 
+
+        if isinstance(result, list):
+            delimiter = ','
+            result = delimiter.join(result)
+
+
+
         format_str = my.kwargs.get("display_format")
         if format_str:
             format_val = FormatValue()
@@ -523,9 +534,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 result = my._get_result(my.sobject, my.expression)
 
 
-
-
-
             # calculte the alt expression if defined
             # DEPRECATED: use format expression instead
             if my.alt_expression:
@@ -542,194 +550,208 @@ class ExpressionElementWdg(TypeTableElementWdg):
             widget.add("Expression error: %s" % e)
             return widget
 
-        my.value = result
+        if isinstance(result, list):
+            delimiter = ', '
+            my.value = delimiter.join(result)
+            results = result
+        else:
+            my.value = result
+            results = [result]
 
-        div = DivWdg()
-        div.add_style("display: inline-block")
-        #if my.sobject and not SearchType.column_exists(my.sobject, name):
+
         if my.sobject:
             # only set if the value does not exist as a key.  This widget should
             # not be able to change existing data of an sobject
             my.sobject.set_value(name, result)
 
-            div.add_class( "spt_%s_expr_id%s" % ( name, my.sobject.get_id() ) )
-            div.add_class( "spt_%s_expr" % name )
+
+        outer = DivWdg()
+        for result in results:
+            div = DivWdg()
+            outer.add(div)
+            if len(results) == 1:
+                div.add_style("display: inline-block")
+
+            if my.sobject:
+                div.add_class( "spt_%s_expr_id%s" % ( name, my.sobject.get_id() ) )
+                div.add_class( "spt_%s_expr" % name )
 
 
 
-        # display a link if specified
-        link_expr = my.kwargs.get("link_expression")
-        if link_expr:
-            # using direct behavior because new_tab isn't working consistently
-            #div.add_class("tactic_new_tab")
-            div.add_style("text-decoration", "underline")
-            #div.add_class("tactic_new_tab")
-            div.add_attr("search_key", my.sobject.get_search_key())
-            div.add_attr("expression", link_expr)
-            div.add_class("hand")
 
-            search_type_sobj = my.sobject.get_search_type_obj()
-            sobj_title = search_type_sobj.get_title()
+            # display a link if specified
+            link_expr = my.kwargs.get("link_expression")
+            if link_expr:
+                # using direct behavior because new_tab isn't working consistently
+                #div.add_class("tactic_new_tab")
+                div.add_style("text-decoration", "underline")
+                #div.add_class("tactic_new_tab")
+                div.add_attr("search_key", my.sobject.get_search_key())
+                div.add_attr("expression", link_expr)
+                div.add_class("hand")
 
-            #name = my.sobject.get_value("name", no_exception=True)
-            name = None
-            if not name:
-                name = my.sobject.get_code()
-            div.add_attr("name", "%s: %s" % (sobj_title, name))
+                search_type_sobj = my.sobject.get_search_type_obj()
+                sobj_title = search_type_sobj.get_title()
 
-            # click up blocks any other behavior
-            div.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                spt.table.open_link(bvr);
-                '''
-            } )
+                #name = my.sobject.get_value("name", no_exception=True)
+                name = None
+                if not name:
+                    name = my.sobject.get_code()
+                div.add_attr("name", "%s: %s" % (sobj_title, name))
+
+                # click up blocks any other behavior
+                div.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': '''
+                    spt.table.open_link(bvr);
+                    '''
+                } )
 
 
-        # by default, the value is added
-        if my.mode == 'value':
-            display_expr = my.kwargs.get("display_expression")
-            format_str = my.get_option('display_format')
+            # by default, the value is added
+            if my.mode == 'value':
+                display_expr = my.kwargs.get("display_expression")
+                format_str = my.get_option('display_format')
 
-            if display_expr:
-                if not isinstance( result, basestring ):
-                    display_result = str(result)
+                if display_expr:
+                    if not isinstance( result, basestring ):
+                        display_result = str(result)
+                    else:
+                        display_result = result
+
+                    return_type = my.kwargs.get("return")
+                    if return_type == 'single':
+                        single = True
+                        _list = False
+                    elif return_type== 'list':
+                        single = False
+                        _list = True
+                    else:
+                        single = True
+                        _list = False
+
+                    try:
+                        display_result = Search.eval(display_expr, my.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+                    except Exception, e:
+                        print "WARNING in display expression [%s]: " % display_expr, e
+                        display_result = "ERROR: %s" % e
+
+                elif format_str:
+                    # This import needs to be here because of a deep
+                    # circular import
+                    from tactic.ui.widget import FormatValueWdg
+                    format_wdg = FormatValueWdg(format=format_str, value=result)
+                    display_result = format_wdg
+
                 else:
                     display_result = result
 
-                return_type = my.kwargs.get("return")
-                if return_type == 'single':
-                    single = True
-                    list = False
-                elif return_type== 'list':
-                    single = False
-                    list = True
+                div.add( display_result )
+                div.add_style("min-height: 15px")
+
+
+
+                # if a DG table td has been provided and if there is an alternate expression
+                # specified then use it for the 'spt_input_value' of the td ...
+                #if my.td and alt_result:
+                #    my.td.set_attr("spt_input_value", str(alt_result))
+
+                justify = my.get_option("justify")
+                if justify and justify != 'default':
+                    div.add_style("text-align: %s" % justify)
+
+                elif isinstance(result, datetime.datetime):
+                    div.add_style("text-align: left")
+
+                elif not type(result) in types.StringTypes:
+                    div.add_style("text-align: right")
+                    div.add_style("margin-right: 5px")
+
+                # Now check to see if there are inline CSS styles provided ...
+                inline_styles = my.kwargs.get('inline_styles')
+                if inline_styles:
+                    style_list = inline_styles.split(";")
+                    for style in style_list:
+                        div.add_style( style )
+            elif my.mode == 'boolean':
+                div.add_style("text-align: center")
+
+                if not result:
+                    color = 'red'
+                elif result in [False, 'false']:
+                    color = 'red'
+                elif result in [True, 'true']:
+                    color = 'green'
                 else:
-                    single = True
-                    list = False
+                    color = 'green'
 
+                if color == 'red':
+                    div.add( IconWdg("None", IconWdg.DOT_RED) )
+                else:
+                    div.add( IconWdg(str(result), IconWdg.DOT_GREEN) )
+            elif my.mode == 'check':
+                div.add_style("text-align: center")
                 try:
-                    display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
-                except Exception, e:
-                    print "WARNING in display expression [%s]: " % display_expr, e
-                    display_result = "ERROR: %s" % e
-
-            elif format_str:
-                # This import needs to be here because of a deep
-                # circular import
-                from tactic.ui.widget import FormatValueWdg
-                format_wdg = FormatValueWdg(format=format_str, value=result)
-                display_result = format_wdg
-
+                    value = int(result)
+                except ValueError:
+                    value = 0
+                if value > 0:
+                    div.add( IconWdg(str(result), IconWdg.CHECK) )
+                else:
+                    div.add( '&nbsp;' )
+            elif my.mode == 'icon':
+                if not result:
+                    result = 0
+                vars = {
+                    'VALUE': result
+                }
+                icon_expr = my.get_option("icon_expr")
+                icon = Search.eval(icon_expr, vars=vars)
+                icon = str(icon).upper()
+                div.add_style("text-align: center")
+                try:
+                    icon_wdg = eval("IconWdg.%s" % icon)
+                except:
+                    icon = "ERROR"
+                    icon_wdg = eval("IconWdg.%s" % icon)
+                div.add( IconWdg(str(result), icon_wdg ) )
             else:
-                display_result = result
-
-            div.add( display_result )
-            div.add_style("min-height: 15px")
+                raise TacticException("Unsupported expression display mode [%s] for column [%s]" % (my.mode, my.get_name() ))
 
 
+            if my.sobject and my.enable_eval_listener:
+                my.add_js_expression(div, my.sobject, my.expression)
 
-            # if a DG table td has been provided and if there is an alternate expression
-            # specified then use it for the 'spt_input_value' of the td ...
-            #if my.td and alt_result:
-            #    my.td.set_attr("spt_input_value", str(alt_result))
-
-            justify = my.get_option("justify")
-            if justify and justify != 'default':
-                div.add_style("text-align: %s" % justify)
-
-            elif isinstance(result, datetime.datetime):
-                div.add_style("text-align: left")
-
-            elif not type(result) in types.StringTypes:
-                div.add_style("text-align: right")
-                div.add_style("margin-right: 5px")
-
-            # Now check to see if there are inline CSS styles provided ...
-            inline_styles = my.kwargs.get('inline_styles')
-            if inline_styles:
-                style_list = inline_styles.split(";")
-                for style in style_list:
-                    div.add_style( style )
-        elif my.mode == 'boolean':
-            div.add_style("text-align: center")
-
-            if not result:
-                color = 'red'
-            elif result in [False, 'false']:
-                color = 'red'
-            elif result in [True, 'true']:
-                color = 'green'
-            else:
-                color = 'green'
-
-            if color == 'red':
-                div.add( IconWdg("None", IconWdg.DOT_RED) )
-            else:
-                div.add( IconWdg(str(result), IconWdg.DOT_GREEN) )
-        elif my.mode == 'check':
-            div.add_style("text-align: center")
-            try:
-                value = int(result)
-            except ValueError:
-                value = 0
-            if value > 0:
-                div.add( IconWdg(str(result), IconWdg.CHECK) )
-            else:
-                div.add( '&nbsp;' )
-        elif my.mode == 'icon':
-            if not result:
-                result = 0
-            vars = {
-                'VALUE': result
-            }
-            icon_expr = my.get_option("icon_expr")
-            icon = Search.eval(icon_expr, vars=vars)
-            icon = str(icon).upper()
-            div.add_style("text-align: center")
-            try:
-                icon_wdg = eval("IconWdg.%s" % icon)
-            except:
-                icon = "ERROR"
-                icon_wdg = eval("IconWdg.%s" % icon)
-            div.add( IconWdg(str(result), icon_wdg ) )
-        else:
-            raise TacticException("Unsupported expression display mode [%s] for column [%s]" % (my.mode, my.get_name() ))
+            # test link
+            #link = my.get_option("link")
+            #if link:
+            #    div.add_behavior( {
+            #        'type': 'click_up',
+            #        'cbjs_action': 'document.location = "http://%s"' % link
+            #    } )
 
 
-        if my.sobject and my.enable_eval_listener:
-            my.add_js_expression(div, my.sobject, my.expression)
+            # test behavior
+            behavior = my.get_option("behavior")
+            if behavior:
+                behavior = behavior.replace('\\\\', '\\')
+                behavior = jsonloads(behavior)
+                if behavior.get("type") in ['click_up', 'click']:
+                    div.add_class('hand')
 
-        # test link
-        #link = my.get_option("link")
-        #if link:
-        #    div.add_behavior( {
-        #        'type': 'click_up',
-        #        'cbjs_action': 'document.location = "http://%s"' % link
-        #    } )
-
-
-        # test behavior
-        behavior = my.get_option("behavior")
-        if behavior:
-            behavior = behavior.replace('\\\\', '\\')
-            behavior = jsonloads(behavior)
-            if behavior.get("type") in ['click_up', 'click']:
-                div.add_class('hand')
-
-            behavior['cbjs_action'] = '''
-            var search_key = bvr.src_el.getParent('.spt_table_tbody').getAttribute('spt_search_key');
-            bvr = {
-                script_code: '61MMS',
-                search_key: search_key
-            };
-            spt.CustomProject.custom_script(evt, bvr);
-            '''
-            div.add_behavior( behavior )
+                behavior['cbjs_action'] = '''
+                var search_key = bvr.src_el.getParent('.spt_table_tbody').getAttribute('spt_search_key');
+                bvr = {
+                    script_code: '61MMS',
+                    search_key: search_key
+                };
+                spt.CustomProject.custom_script(evt, bvr);
+                '''
+                div.add_behavior( behavior )
 
 
 
-        return div
+        return outer
 
 
  

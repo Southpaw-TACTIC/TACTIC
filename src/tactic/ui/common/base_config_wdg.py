@@ -13,7 +13,7 @@
 __all__ = ['BaseConfigWdg']
 
 
-from pyasm.common import Common
+from pyasm.common import Common, jsonloads
 from pyasm.search import SearchType
 from pyasm.web import HtmlElement
 from pyasm.prod.biz import ProdSetting
@@ -113,7 +113,12 @@ class BaseConfigWdg(BaseRefreshWdg):
             simple_view = True
         else:
             simple_view = False
-        
+
+
+        my.extra_data = my.kwargs.get("extra_data")
+        if my.extra_data and isinstance(my.extra_data, basestring):
+            my.extra_data = jsonloads(my.extra_data)
+
 
         # go through each element name and construct the handlers
         for idx, element_name in enumerate(my.element_names):
@@ -135,10 +140,17 @@ class BaseConfigWdg(BaseRefreshWdg):
 
             # get the display options
             display_options = my.config.get_display_options(element_name)
+
+            # add in extra_data
+            if my.extra_data:
+                for key, value in my.extra_data.items():
+                    display_options[key] = value
+
             try:
                 if not display_handler:
                     element = my.config.get_display_widget(element_name)
                 else:
+                    display_options['element_name'] = element_name
                     element = WidgetConfig.create_widget( display_handler, display_options=display_options )
             except Exception, e:
                 from tactic.ui.common import WidgetTableElementWdg

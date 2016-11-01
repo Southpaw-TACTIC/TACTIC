@@ -214,6 +214,8 @@ class SPTDate(object):
         if isinstance(date, basestring):
             date = parser.parse(date)
 
+        date = cls.convert(date)
+
         now = cls.now()
 
         diff = now - date

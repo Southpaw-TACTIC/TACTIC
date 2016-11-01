@@ -3221,6 +3221,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         settings = my.kwargs.get("settings")
         gear_settings = my.kwargs.get("gear_settings")
         shelf_view = my.kwargs.get("shelf_view")
+        extra_data = my.kwargs.get("extra_data")
+        if extra_data:
+            if isinstance(extra_data, dict):
+                extra_data = jsondumps(extra_data)
 
         is_inner = my.kwargs.get("is_inner")
        
@@ -3305,13 +3309,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             "is_inner": is_inner,
             "settings": settings,
             "gear_settings": gear_settings,
+            "extra_data": extra_data,
             #"search_wdg": search_wdg
             
         }
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
-      
+
         if layout == 'tile':
             from tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = my.kwargs.get("top_view")
