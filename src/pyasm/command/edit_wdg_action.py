@@ -255,8 +255,11 @@ class DatabaseAction(Command):
             timecode = TimeCode(timecode=value)
             value = timecode.get_frames()
         elif col_type in ["time", "timestamp"]:
+
             from pyasm.common import SPTDate
-            if not SPTDate.has_timezone(value):
+            if not value:
+                value = ""
+            elif not SPTDate.has_timezone(value):
                 timezone = PrefSetting.get_value_by_key('timezone')
                 if timezone:
                     value = SPTDate.add_timezone(value, timezone)
@@ -278,6 +281,38 @@ class DatabaseAction(Command):
             except:
                 raise UserException("[%s] must a number." % value)
         return value
+
+
+
+__all__.append("ForeignKeyDatabaseAction")
+class ForeignKeyDatabaseAction(DatabaseAction):
+
+    def execute(my):
+        # do nothing
+        pass
+
+    def postprocess(my):
+
+        search_type = my.get_option("search_type")
+        column = my.get_option("column")
+
+        search_type = "construction/login_in_trade"
+        column = "trade_code"
+
+        value = my.get_value(my.name) 
+
+        sobject = my.sobject
+
+        search = Search(search_type)
+        search.add_relationship_filter(sobject)
+        related = search.get_sobject()
+
+        if not related:
+            related = SearchType.create(search_type)
+            related.set_parent(sobject)
+
+        related.set_value(column, value)
+        related.commit()
 
 
 class DefaultValueDatabaseAction(DatabaseAction):
@@ -707,118 +742,6 @@ class AddToBinAction(NonEmptyAction):
         
 
 
-
-"""
-class SubmitAction(UploadAction):
-    '''action which submits a movie file to a daily session(bin)'''
-    TO_DAILY = "go_to_daily"
-    
-    def get_title(my):
-        return "Submit a file"
-  
-    def check(my):
-        field_storage = my.get_value(my.name)
-        # if no files have been uploaded, don't do anything
-        if field_storage == "":
-            raise UserException('A file needs to be chosen for submission!')
-            return False
-
-        return True
-        
-    def execute(my):
-        # have to load this dynamically
-        from pyasm.prod.biz import Submission, SubmissionInBin
-
-         
-        context = version = snap_code = ''
-        if isinstance(my.sobject, Snapshot):
-            context = my.sobject.get_value('context')
-            version = my.sobject.get_value('version')
-            snap_code = my.sobject.get_code()
-            search_type = my.sobject.get_value('search_type')
-            search_id = my.sobject.get_value('search_id')
-
-        else:
-            search_type = my.sobject.get_search_type()
-            search_id = my.sobject.get_id()
-            
-        # The user is allowed to make multiple submissions for the 
-        # same snapshot
-        submit = Submission.create_new()
-
-        submit.set_value('search_type', search_type)
-        submit.set_value('search_id', search_id)
-
-        submit.set_value('context', context)
-        submit.set_value('snapshot_code', snap_code)
-        submit.set_value('version', version)
-        submit.set_value('login', Environment.get_user_name())
-
-        # assuming the element name = "description"
-        # TODO: maybe to create an action for the description, artist field
-        description = my.get_value("description")
-        submit.set_value('description', description)
-
-        artist = my.get_value("artist")
-        if artist:
-            submit.set_value('artist', artist)
-        submit.commit()
-
-        my.submit = submit
-        
-        bin_id = Container.get('bin')
-
-        # put the submission in a bin
-        group = SubmissionInBin.create_new()
-        group.set_value('submission_id', submit.get_id())
-        group.set_value('bin_id', bin_id)
-        group.commit()
-
-        # TODO: add description to EditCmd
-        #from pyasm.prod.biz import Bin
-        #my.add_description('Submission to Bin [%s]' % Bin.get_by_id(bin_id).get_code())
-        
-    def postprocess(my):
-        ''' publish the submission into Snapshot '''
-        my.check_in(my.submit)
-
-       
-        
-    def check_in(my, sobject):
-        field_storage = my.get_value(my.name)
-
-        # if no files have been uploaded, don't do anything
-        if field_storage == "":
-            return
-
-        context = 'publish'
-        description = "Submission for [%s]" % sobject.get_value('snapshot_code')
-
-        # process and get the uploaded files
-        upload = FileUpload()
-        upload.set_field_storage(field_storage)
-        upload.execute()
-        my.files = upload.get_files()
-        if not my.files:
-            return
-
-        # set a trigger to give a chance to rename files
-        Trigger.call(my, "rename_files")
-
-        file_types = upload.get_file_types()
-
-        # let checkin take care of moving files to the lib
-        from pyasm.checkin import FileCheckin
-        my.checkin = FileCheckin.get( sobject, my.files, file_types,  \
-            context=context )
-        my.checkin.set_description(description)
-        my.checkin.execute()
-        
-        # remove the files in upload area
-        for file in my.files:
-            os.unlink(file)
-
-"""
 
 
 class PerforceUploadAction(UploadAction):

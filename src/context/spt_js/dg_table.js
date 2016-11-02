@@ -2982,6 +2982,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     var shelf_view = target.getAttribute("spt_shelf_view") || "";
 
+    var extra_data = target.getAttribute("spt_extra_data") || "";
+
     var height = target.getAttribute("spt_height") || "";
     var element_names;
     var column_widths = [];
@@ -3069,6 +3071,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'settings': settings,
         'gear_settings': gear_settings,
         'shelf_view': shelf_view,
+        'extra_data': extra_data,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;

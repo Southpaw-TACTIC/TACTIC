@@ -186,6 +186,10 @@ class HtmlElement(Widget):
         my.set_attr(name, value)
 
 
+    def set_json_attr(my, name, value):
+        value = jsondumps(value).replace('"', "&quot;")
+        my.set_attr(name, value)
+
 
     def set_class(my, value):
         '''Set the class attribute of the html element for css styling'''
