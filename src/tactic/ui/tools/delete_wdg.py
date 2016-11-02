@@ -191,19 +191,15 @@ class DeleteToolWdg(BaseRefreshWdg):
 
             del_trigger();
 
-            spt.popup.destroy(popup);
-
-
             if (bvr.on_complete) {
                on_complete = function() {
                    eval(bvr.on_complete);
                }
                on_complete();
             }
-
-
-
-
+            
+            
+            spt.popup.destroy(popup);
 
         }
         catch(e) {
@@ -1014,10 +1010,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                     server.start({'title': 'Deleted Project ', 'description': 'Deleted Project [' + bvr.project_code + ']'});
                     server.execute_cmd(class_name, kwargs);
                     success = true;
-
-                    var top = bvr.src_el.getParent(".spt_popup");
-                    spt.popup.destroy(top);
-                    server.finish();
                 }
                 catch(e) {
                     error_message = spt.exception.handler(e);
@@ -1046,6 +1038,13 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                         error_message += '. You are advised to sign out and log in again.';
                     spt.error(error_message);
                 }
+                
+                
+                var top = bvr.src_el.getParent(".spt_popup");
+                spt.popup.destroy(top);
+                server.finish();
+                    
+                    
             }, 100);
        
         '''
