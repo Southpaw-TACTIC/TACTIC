@@ -20,6 +20,7 @@ from sobject_detail_wdg import *
 from button_wdg import *
 from link_element_wdg import *
 from json_element_wdg import *
+from html_element_wdg import *
 
 from delete_element_wdg import *
 from python_element_wdg import *

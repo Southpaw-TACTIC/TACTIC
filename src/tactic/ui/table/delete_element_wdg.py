@@ -24,7 +24,8 @@ class DeleteElementWdg(ButtonElementWdg):
 
     def preprocess(my):
 
-        my.set_option( "icon", "DELETE" )
+        #my.set_option( "icon", "DELETE" )
+        my.set_option( "icon", "BS_REMOVE" )
 
         # NOTE: not sure why this needs to be in kwargs and not option
         my.kwargs["cbjs_action"] = '''
