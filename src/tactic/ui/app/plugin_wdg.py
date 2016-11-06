@@ -1532,12 +1532,20 @@ class PluginEditWdg(BaseRefreshWdg):
             })
 
         else:
-            shelf_div.add(HtmlElement.b("This plugin is active in this project. Click to Remove."))
-
-            button = ActionButtonWdg(title='Remove', tip='Remove Plugin from current preject')
-            shelf_div.add(button)
-            button.add_style("margin: 20px 250px")
-            button.add_behavior( {
+            shelf_div.add(HtmlElement.b("This plugin is active in this project. Click to Remove or Reload."))
+            buttons_div = DivWdg()
+            buttons_div.add_style("margin-left: 200px")
+            remove_button = ActionButtonWdg(title='Remove', tip='Remove Plugin from current preject')
+            reload_button = ActionButtonWdg(title='Reload', tip='Reload Plugin from current preject')
+            buttons_div.add(remove_button)
+            buttons_div.add(reload_button)
+            shelf_div.add(buttons_div)
+            remove_button.add_style("margin: 20px 10px")
+            remove_button.add_style("display: inline-block")
+            reload_button.add_style("margin: 20px 10px")
+            reload_button.add_style("display: inline-block")
+            
+            remove_button.add_behavior( {
             'type': 'click_up', 
             'plugin_code': my.code,
             'cbjs_action': '''
@@ -1568,6 +1576,44 @@ class PluginEditWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_plugin_top");
             spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully removed')
+            spt.panel.refresh(top);
+
+            spt.api.app_busy_hide();
+
+            '''
+            })
+            
+            reload_button.add_behavior( {
+            'type': 'click_up', 
+            'plugin_code': my.code,
+            'cbjs_action': '''
+            spt.api.app_busy_show("Reloading Plugin");
+
+            if (!confirm("WARNING: Reload plugin ["+bvr.plugin_code+"]?")) {
+                spt.api.app_busy_hide();
+                return;
+            }
+
+            var top = bvr.src_el.getParent(".spt_plugin_edit");
+            var search_key = top.getAttribute("spt_search_key");
+
+            var class_name = 'tactic.command.PluginReloader';
+            var kwargs = {
+                code: bvr.plugin_code
+            };
+
+            var server = TacticServerStub.get();
+            try {
+                server.execute_cmd( class_name, kwargs );
+            }
+            catch(e) {
+                spt.alert(spt.exception.handler(e));
+                spt.api.app_busy_hide();
+                return;
+            } 
+
+            var top = bvr.src_el.getParent(".spt_plugin_top");
+            spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully reloaded')
             spt.panel.refresh(top);
 
             spt.api.app_busy_hide();
