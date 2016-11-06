@@ -1544,11 +1544,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
             button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
+
             button_row_wdg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
                 'title': search_type_title,
+                'parent_key': my.parent_key,
                 'table_id': my.table_id,
                 #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
                 'cbjs_action': '''
@@ -1557,7 +1559,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var search_type = top.getAttribute("spt_search_type")
                 var kwargs = {
                   search_type: search_type,
-                  parent_key: '%s',
+                  parent_key: bvr.parent_key,
                   view: bvr.view,
                   mode: 'insert',
                   //num_columns: 2,
@@ -1565,7 +1567,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   show_header: false,
                 };
                 spt.panel.load_popup('Add new ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
-                '''%my.parent_key
+                '''
 
             } )
 
