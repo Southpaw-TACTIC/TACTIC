@@ -448,12 +448,36 @@ class Snapshot(SObject):
         file_name = my._get_file_name(node)
 
         file_range_str = Xml.get_attribute(node, "file_range")
+        if not file_range_str:
+            file_range_str = "1-1/1"
 
         file_range = FileRange.get(file_range_str)
 
         expanded_names = FileGroup.expand_paths(file_name, file_range)
 
         return expanded_names
+
+
+    def get_expanded_lib_paths(my, type='main'):
+        '''get all of the file names in the range'''
+        lib_dir = my.get_lib_dir()
+        expanded_file_names = my.get_expanded_file_names(type=type)
+        expanded_paths = ["%s/%s" % (lib_dir, x) for x in expanded_file_names]
+
+        return expanded_paths
+
+
+
+    def get_expanded_web_paths(my, type='main'):
+        '''get all of the file names in the range'''
+        web_dir = my.get_web_dir()
+        expanded_file_names = my.get_expanded_file_names(type=type)
+        expanded_paths = ["%s/%s" % (web_dir, x) for x in expanded_file_names]
+
+        return expanded_paths
+
+
+
 
 
     def get_web_path_by_type(my, type='main'):

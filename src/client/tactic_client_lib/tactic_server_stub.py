@@ -210,13 +210,11 @@ class TacticServerStub(object):
             my.server = xmlrpclib.ServerProxy(
                         url, allow_none=True,
                         verbose=False, use_datetime=False, 
-                         transport=xmlrpclib.SafeTransport(context=context)
+                        transport=xmlrpclib.SafeTransport(context=context)
              )
 
         else:
             my.server = xmlrpclib.Server(url, allow_none=True)
-
-
 
 
 

@@ -69,11 +69,20 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         # use_href = my.kwrags.get("use_href")
         
         # Layout switcher button displays menu and assumes right hand position of screen
+
+        #from pyasm.web import WidgetSettings
+        #key = "layout_switcher"
+        #first_title = WidgetSettings.get_value_by_key(key)
+        #if not first_title:
+        #    first_title = "Switch Layout"
         first_title = "Switch Layout"
+
+
+
 
         mode = "button"
         if mode == "button":
-            activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'>%s <span class='caret'></span></button>" % first_title)
+            activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % first_title)
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
 
@@ -196,6 +205,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     title = Common.get_display_title(element_name)
 
                 item_div.add(title)
+                item_div.add_attr("spt_title", title)
 
                 target = attrs.get("target")
                 if not target:
@@ -204,12 +214,15 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 display_class = config.get_display_handler(element_name)
                 display_options = config.get_display_options(element_name)
 
+                key = "layout_switcher"
+
                 item_div.add_behavior( {
                     'type': 'click_up',
                     'display_class': display_class,
                     'display_options': display_options,
+                    'element_name': element_name,
                     'target': target,
-                    'title': title,
+                    'key': key,
                     'cbjs_action': '''
                     var menu_item = bvr.src_el;
                     var top = menu_item.getParent(".spt_switcher_top");
@@ -240,9 +253,16 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     menu.setStyle("display", "none");
                     top.removeClass("spt_selected");
 
-                    var btn = top.getElement(".btn");
-                    if (btn)
-                        btn.value = bvr.title;
+                    var title = bvr.src_el.getAttribute("spt_title");
+
+                    var title_el = top.getElement(".spt_title");
+                    if (title_el)
+                        title_el.innerHTML = title
+
+
+                    //var server = TacticServerStub.get()
+                    //server.set_widget_setting(bvr.key, bvr.element_name);
+
                     '''
                 } )
         

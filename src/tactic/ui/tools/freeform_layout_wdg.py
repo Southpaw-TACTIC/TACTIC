@@ -1198,7 +1198,7 @@ class FreeFormAttrWdg(BaseRefreshWdg):
 
         action_wdg = DivWdg()
         top.add(action_wdg)
-        action_wdg.add_gradient("background", "background", -10)
+        #action_wdg.add_gradient("background", "background", -10)
 
         delete = ActionButtonWdg(title='Remove', tip='Remove from Canvas')
         action_wdg.add(delete)
@@ -1308,6 +1308,10 @@ class FreeFormAttrWdg(BaseRefreshWdg):
 
         '''
         } )
+
+
+        top.add("<hr/>")
+
 
 
 

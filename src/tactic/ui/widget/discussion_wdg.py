@@ -2103,6 +2103,7 @@ class NoteWdg(BaseRefreshWdg):
             left.add_style("width: 55px")
             left.add_style("min-height: 100px")
             left.add_style("vertical-align: top")
+            #left.add_style("border-right: solid 1px %s" % left.get_color("table_border"))
 
             if not login:
                 login = "-- No User --"
@@ -2156,6 +2157,11 @@ class NoteWdg(BaseRefreshWdg):
             window.open(thumb_path);
             '''
             } )
+
+            right.add("<hr/>")
+            right.add('''
+            <div style="margin-bottom: -10px; font-size: 0.8em;">Attachments:</div>
+            ''')
 
             for snapshot in snapshots:
                 thumb = ThumbWdg()

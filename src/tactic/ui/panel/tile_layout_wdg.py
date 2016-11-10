@@ -2299,7 +2299,16 @@ class ThumbWdg2(BaseRefreshWdg):
                     path = path.encode("utf-8")
 
                 if path.endswith("indicator_snake.gif"):
-                    image_size = os.path.getsize(my.lib_path)
+
+                    if my.lib_path.find("#") != -1:
+                        paths = my.snapshot.get_expanded_file_names()
+                        # handle sequence
+                        lib_dir = my.snapshot.get_lib_dir()
+                        my.lib_path = "%s/%s" % (lib_dir, paths[0])
+                        image_size = os.path.getsize(my.lib_path)
+                    else:
+                        image_size = os.path.getsize(my.lib_path)
+
                     if image_size != 0:
                         # generate icon dynamically
                         """
