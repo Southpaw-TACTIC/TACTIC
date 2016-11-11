@@ -810,66 +810,115 @@ class BaseApiXMLRPC(XmlrpcServer):
         
         results = []
 
-        for sobject in sobjects:
-            result = {}
-            results.append( result )
+        search_keys = SearchKey.get_by_sobjects(sobjects,use_id=False)
 
+        for i, sobject in enumerate(sobjects):
             if not sobject:
                 continue
 
-            result['__search_key__'] = SearchKey.build_by_sobject(sobject, use_id=use_id)
+            search_type = sobject.get_search_type()
+
+            # fast: method used by query
+            """
+            result = sobject.get_data()
+            if columns:
+                result = Common.subset_dict(result, columns)
+
+            result['__search_key__'] = search_keys[i]
             result['__search_type__'] = sobject.get_search_type()
 
-            search_type = sobject.get_search_type()
-            column_info = info.get(search_type)
-            if column_info == None:
-                column_info = SearchType.get_column_info(search_type)
-                info[search_type] = column_info
+            results.append(result)
+            continue
+            """
 
-            if not columns:
-                columns = column_info.keys()
+            result = sobject.get_data()
+            results.append( result )
+
+
+            result['__search_key__'] = search_keys[i]
+            result['__search_type__'] = search_type
+
+            columns = result.keys()
+
 
             for column in columns:
+
+                if column.startswith("__"):
+                    continue
+
                 if column == 'metadata':
                     value = sobject.get_metadata_dict()
 
                 else:
-                    value = sobject.get_value(column)
+                    #value = sobject.get_value(column)
+                    #value = result.get(column)
+                    value = result[column]
 
                     if language == 'c#':
                         if value == '':
-                            value = None
+                            value2 = None
 
-                    info = column_info.get(column)
-                    data_type = info.get("data_type")
-                    # This type is specific to sql server and is not a data
-                    # element that in TACTIC (at the moment)
-                    if data_type == 'sqlserver_timestamp':
+                    if value == None:
+                        # do nothing
                         continue
-                    elif isinstance(value, datetime.datetime):
-                        try:
-                            value = str(value)
-                        except Exception, e:
-                            print "WARNING: Value [%s] can't be processed" % value
-                            continue
-                    elif isinstance(value, long) and value > MAXINT:
-                        value = str(value)
-                    elif isinstance(value, decimal.Decimal):
-                        # use str to avoid loss of precision
-                        value = str(value)
+
+                    elif isinstance(value, str):
+                        # this could be slow, but remove bad characters
+
+                        value2 = unicode(value, errors='ignore')
+
                     elif isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
-                            value.encode("utf-8")
+                            value2 = value.encode("utf-8")
 
                         except Exception, e:
                             print "WARNING: Value [%s] can't be encoded in utf-8" % value
                             raise 
+                    elif isinstance(value, datetime.datetime):
+                        try:
+                            value2 = str(value)
+                        except Exception, e:
+                            print "WARNING: Value [%s] can't be processed" % value
                             continue
-                    elif isinstance(value, str):
-                        # this could be slow, but remove bad characters
-                        value = unicode(value, errors='ignore')
-                result[column] = value
+
+                    elif isinstance(value, int):
+                        continue
+                    elif isinstance(value, float):
+                        continue
+                    elif isinstance(value, long) and value > MAXINT:
+                        value2 = str(value)
+                    elif isinstance(value, decimal.Decimal):
+                        # use str to avoid loss of precision
+                        value2 = str(value)
+
+                    else:
+
+                        # put this all here for performance reasons
+                        column_info = info.get(search_type)
+                        if column_info == None:
+                            column_info = SearchType.get_column_info(search_type)
+                            info[search_type] = column_info
+
+                        #if not columns:
+                        #    columns = column_info.keys()
+
+                        info = column_info.get(column)
+                        data_type = info.get("data_type")
+                        # This type is specific to sql server and is not a data
+                        # element that in TACTIC (at the moment)
+                        if data_type == 'sqlserver_timestamp':
+                            continue
+
+
+                try:
+                    # if there is a value2 and it has changed, then
+                    # use that one
+                    if value2 != None and value2 != value:
+                        result[column] = value2
+                except:
+                    # do nothing
+                    pass
 
         return results
 
@@ -2146,14 +2195,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if not results:
                 pass
             elif isinstance(results[0], pyasm.search.SObject):
-                new_results = []
-                import time
-                start = time.time()
                 results = my._get_sobjects_dict(results)
-                #for sobject in results:
-                #    sobject_dict = my._get_sobject_dict(sobject)
-                #    new_results.append(sobject_dict)
-                #results = new_results
+                return results
 
         else:
             if isinstance(results, pyasm.search.SObject):
