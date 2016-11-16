@@ -1550,6 +1550,39 @@ class MethodMode(ExpressionParser):
                 results.append(result)
 
 
+        elif method == 'BASENAME':
+            if len(args) < 1:
+                raise SyntaxError("Method @%s must have at least 1 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            if not expression.startswith("@"):
+                expression = "@GET(%s)" % expression
+            mode = my.get_mode(expression)
+            values = my.dive(mode, expression=expression)
+
+            results = []
+            for value in values:
+                value2 = os.path.basename(value)
+                results.append(value2)
+
+
+        elif method == 'DIRNAME':
+            if len(args) < 1:
+                raise SyntaxError("Method @%s must have at least 1 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            if not expression.startswith("@"):
+                expression = "@GET(%s)" % expression
+            mode = my.get_mode(expression)
+            values = my.dive(mode, expression=expression)
+
+            results = []
+            for value in values:
+                value2 = os.path.dirname(value)
+                results.append(value2)
+
+
+
         elif method == 'REPLACE':
             if len(args) != 3:
                 raise SyntaxError("Method @%s must have 3 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
