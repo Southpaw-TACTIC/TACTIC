@@ -857,48 +857,6 @@ class CalendarInputWdg(BaseInputWdg):
             show_calendar = False
 
 
-        """
-        if show_activator:
-            #icon = IconWdg("Calendar", IconWdg.DATE)
-            icon = IconWdg("Calendar", "BS_CALENDAR")
-            icon.add_class('hand')
-
-            icon_div = DivWdg(icon)
-            icon_div.add_class("spt_cal_input_show_cal_btn")  # tag this button so we can find it to hide/show
-            icon_div.add_class("APP_CLICK_OFF_TOP_EL")
-            my.top.add(icon_div)
-            icon_div.add_style("float: left")
-
-            icon.add_behavior( {
-                "type": "click_up",
-                "cbjs_action": '''
-                    var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top');
-                    if (!el) {
-                        var el = spt.calendar.get();
-                        var top = bvr.src_el.getParent('.calendar_input_top');
-                        top.appendChild(el);
-                    }
-                    spt.simple_display_toggle(el);
-
-                '''
-            } )
-
-            clear_icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE)
-            clear_icon.add_class('hand')
-            clear_icon.add_style("position: absolute")
-            clear_icon.add_style("padding: 2px 3px")
-            
-            
-            clear_icon.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_input');
-                el.value = '';
-                '''
-            } )
-            clear_icon = FloatDivWdg(clear_icon)
-        """
-            
         name = my.get_input_name()
         read_only = my.get_option('read_only')
         required = my.get_option('required')

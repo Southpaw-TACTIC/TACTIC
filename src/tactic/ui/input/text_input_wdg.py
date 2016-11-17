@@ -1291,6 +1291,12 @@ class TextInputResultsWdg(BaseRefreshWdg):
         top.add_style("margin: 3px 0px")
         top.add_style("padding: 0px 0px")
 
+        first_column = my.kwargs.get("column")
+        if first_column == "name":
+            second_column = "code"
+        if first_column == "code":
+            second_column = "name"
+
         # display only the first 8 (arbitrary)
         results = results[:8]
 
@@ -1323,10 +1329,10 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-            name = result.get_value("name")
-            if name:
+            second_value = result.get_value(second_column)
+            if second_value:
                 info_div.add("<br/>")
-                info_div.add("<span style='opacity: 0.5; font-size: 10px;'>%s</span>" % name)
+                info_div.add("<span style='opacity: 0.5; font-size: 10px;'>%s</span>" % second_value)
 
 
             div.add_class("spt_input_text_result")

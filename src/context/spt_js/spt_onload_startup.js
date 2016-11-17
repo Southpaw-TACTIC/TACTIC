@@ -230,10 +230,18 @@ spt.hash.onload_first = function() {
         'first_load': true
     }
 
+    // pass all the ? name/values in
+    var search = location.search.substring(1);
+    var values = search.split("&").reduce(function(prev, curr, i, arr) {
+        var p = curr.split("=");
+            prev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
+                    return prev;
+    }, {});
+        
 
     var server = TacticServerStub.get();
     var class_name = "tactic.ui.app.TopContainerWdg";
-    var kwargs = {'args': options, 'values': {}};
+    var kwargs = {'args': options, 'values': values};
     var widget_html = server.get_widget(class_name, kwargs);
 
     setTimeout( function() {
