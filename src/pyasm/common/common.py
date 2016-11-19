@@ -756,7 +756,7 @@ class Common(Base):
 
     
 
-    def clean_filesystem_name(filename):
+    def clean_filesystem_name(filename, whitespace="_"):
         '''take a name and converts it to a name that can be saved in
         the filesystem. This is different from File.get_filesystem_name()'''
 
@@ -775,7 +775,7 @@ class Common(Base):
         for i, char in enumerate(filename):
 
             if char == ' ':
-                char = '_'
+                char = whitespace
 
             if i == length - 1:
                 next_char = None

@@ -728,7 +728,7 @@ spt.text_input.run_client_trigger = function(bvr, event_name, display, value) {
 }
     
 // async validate when value_column is defined
-spt.text_input.async_validate = function(src_el, search_type, column, display_value, value_column, kwargs) {
+spt.text_input.async_validate = function(src_el, search_type, column, display_value, value_column, value, kwargs) {
     if (!display_value) 
         return;
     if (!kwargs)  kwargs = {};
@@ -743,7 +743,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
-       
+
         if (!data && data != 0) {
             hidden_el.value = '';
             if (kwargs.validate != false) {
@@ -752,7 +752,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             }
         }
         else {
-            hidden_el.value = data;
+            // This should not attempt to "correct" the data
             src_el.removeClass("spt_invalid");
         }
 
@@ -766,12 +766,17 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         return;
     }
 
+/*
     if (display_value.test(/"/))
         value_expr = "'" + display_value + "'";
     else
         value_expr = '"' + display_value + '"';
-        
-    var expr = '@GET(' + search_type + '["'  + column +'",' + value_expr + '].' + value_column + ')'; 
+*/
+    value_expr = display_value;
+       
+
+
+    var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
     var kw = {
         single: true,
         cbjs_action: cbk
@@ -818,8 +823,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     var hidden_el = top.getElement(".spt_text_value");
                     if (bvr.src_el.value) {
                         var display_value = bvr.src_el.value;
+                        var value = hidden_el.value;
                         var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, kwargs);
+                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                     } else {
                         hidden_el.value ='';
                     }
@@ -962,7 +968,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     if (key == 'enter') {
                         var custom = bvr.custom.enter;
                     } else {
-                        alert("tab");
                         var custom = bvr.custom.tab;
                     }
 
@@ -1291,11 +1296,16 @@ class TextInputResultsWdg(BaseRefreshWdg):
         top.add_style("margin: 3px 0px")
         top.add_style("padding: 0px 0px")
 
-        first_column = my.kwargs.get("column")
+        first_column = my.kwargs.get("value_column")
+        if not first_column:
+            first_column = my.kwargs.get("column")
+
         if first_column == "name":
             second_column = "code"
-        if first_column == "code":
+        elif first_column == "code":
             second_column = "name"
+        else:
+            second_column = "code"
 
         # display only the first 8 (arbitrary)
         results = results[:8]
@@ -1326,11 +1336,15 @@ class TextInputResultsWdg(BaseRefreshWdg):
             info_div.add_style("white-space: nowrap")
             #info_div.add_style("width: 250px")
             info_div.add_style("vertical-align: middle")
+            info_div.add_style("max-width: 225px")
 
 
 
             second_value = result.get_value(second_column)
-            if second_value:
+            second_value = result.get_value("title")
+            if second_value == display:
+                pass
+            elif second_value:
                 info_div.add("<br/>")
                 info_div.add("<span style='opacity: 0.5; font-size: 10px;'>%s</span>" % second_value)
 
