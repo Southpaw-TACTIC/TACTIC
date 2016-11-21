@@ -1166,6 +1166,8 @@ class FileGroup(File):
     extract_template_and_range = classmethod(extract_template_and_range)
 
     def is_sequence(path):
+        if not path:
+            return False
         if path.find("###") != -1:
             return True
         else:

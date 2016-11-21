@@ -2240,7 +2240,7 @@ class ThumbWdg2(BaseRefreshWdg):
         div.add_class("spt_thumb_top")
 
         path = my.path
-        if not FileGroup.is_sequence(my.lib_path) and not os.path.exists(my.lib_path):
+        if my.lib_path and not FileGroup.is_sequence(my.lib_path) and not os.path.exists(my.lib_path):
             path = ""
 
 

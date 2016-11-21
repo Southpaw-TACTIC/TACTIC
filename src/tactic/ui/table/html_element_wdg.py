@@ -59,15 +59,13 @@ class HtmlElementWdg(SimpleTableElementWdg):
         if not column:
             column = my.get_name()
 
-        html = sobject.get_json_value( column ) or ""
+        if sobject:
+            html = sobject.get_json_value( column ) or ""
+        else:
+            html = ""
 
 
         inner.add(html)
-
-
-
-        
-
 
         return top
 
