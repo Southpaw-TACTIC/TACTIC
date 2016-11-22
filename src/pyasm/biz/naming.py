@@ -585,7 +585,7 @@ class NamingUtil(object):
                     'snapshot': snapshot,
                     'file': file
                 }
-                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
+                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True, use_cache=False)
             
             elif part.find(".") != -1:
                 # explict declarasions

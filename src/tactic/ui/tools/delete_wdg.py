@@ -379,8 +379,8 @@ class DeleteCmd(Command):
                     if related_type == 'sthpw/snapshot':
                         my.delete_snapshot(related_sobject)
                     else:
-                        #related_sobject.delete()
-                        my.do_delete(related_sobject)
+                        related_sobject.delete()
+                        #my.do_delete(related_sobject)
 
 
         # implicitly remove "directory" files associated with the sobject
