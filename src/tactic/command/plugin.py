@@ -1011,8 +1011,8 @@ class PluginInstaller(PluginBase):
 
                 # import the backup data back
                 backup_path = "%s/backup/%s.spt" % (my.plugin_dir, search_type.replace("/", "_"))
-                tools = PluginTools(plugin_dir=my.plugin_dir, verbose=my.verbose)
-                tools.import_data(backup_path)
+                tools_backup = PluginTools(plugin_dir=my.plugin_dir, verbose=my.verbose)
+                tools_backup.import_data(backup_path)
 
 
             elif node_name == 'sobject':
