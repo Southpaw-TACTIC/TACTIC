@@ -817,6 +817,7 @@ class Site(object):
         try:
             site = Common.create_from_class_path(class_name)
         except Exception, e:
+            print "WARNING: ", e
             site = Site()
         return site
     get = classmethod(get)

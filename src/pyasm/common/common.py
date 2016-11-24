@@ -231,7 +231,7 @@ class Common(Base):
     def create_from_class_path(class_path, args=[], kwargs={}):
         '''dynamically creats an object from a string class path.'''
         assert class_path
-        
+
         marshaller = Marshaller()
         marshaller.set_class(class_path)
         for arg in args:
