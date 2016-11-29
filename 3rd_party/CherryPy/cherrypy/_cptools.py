@@ -360,9 +360,10 @@ class XMLRPCController(object):
             raise Exception('method "%s" is not supported' % attr)
         
         conf = cherrypy.serving.request.toolmaps['tools'].get("xmlrpc", {})
+        allow_none = 1
         _xmlrpc.respond(body,
                         conf.get('encoding', 'utf-8'),
-                        conf.get('allow_none', 0))
+                        conf.get('allow_none', allow_none))
         return cherrypy.serving.response.body
     default.exposed = True
 

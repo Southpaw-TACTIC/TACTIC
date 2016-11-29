@@ -2975,6 +2975,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var order_by = target.getAttribute("spt_order_by");
     
     var file_system_edit = target.getAttribute("spt_file_system_edit") || "";
+    var base_dir = target.getAttribute("spt_base_dir") || "";
     var parent_mode = target.getAttribute("spt_parent_mode") || "";
 
     var settings = target.getAttribute("spt_settings") || "";
@@ -3067,6 +3068,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_collection_tool': show_collection_tool,
         'order_by': order_by,
         'file_system_edit': file_system_edit,
+        'base_dir': base_dir,
         'parent_mode': parent_mode,
         'settings': settings,
         'gear_settings': gear_settings,

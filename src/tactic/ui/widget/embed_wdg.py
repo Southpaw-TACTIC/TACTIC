@@ -55,7 +55,7 @@ class EmbedWdg(BaseRefreshWdg):
         index = my.kwargs.get("index")
 
         if not height:
-            height = "auto"
+            height = "100%"
         if not width:
             width = "100%"
 
@@ -97,13 +97,46 @@ class EmbedWdg(BaseRefreshWdg):
 
         ext = ext.lstrip(".")
         if ext in File.IMAGE_EXT:
-            if isinstance(src, unicode):
-                src = src.encode("utf-8")
-            src = urllib.pathname2url(src)
 
-            embed = HtmlElement.img(src)
-            embed.add_style("width: 100%")
-            embed.add_style("height: auto")
+            embed = DivWdg()
+            embed.add_style("display: inline-block")
+            #embed.add_style("overflow-y: auto")
+            embed.add_style("vertical-align: top")
+            embed.add_style("height: 100%")
+            embed.add_style("width: auto")
+
+            if src.find("#") != -1:
+                file_range = "1-5"
+                for i in range(1, 16):
+                    expand = src.replace("####", "%0.4d" % i)
+                    item = HtmlElement.img(expand)
+                    embed.add(item)
+                    item.add_style("width: 25%")
+
+                embed.add_style("overflow-y: auto")
+                embed.add_style("text-align: left")
+
+                #embed.add_behavior( {
+                #    'type': 'load',
+                #    'cbjs_action': '''
+                #    new Scrollable(bvr.src_el)
+                #    '''
+                #} )
+
+            else:
+
+                if isinstance(src, unicode):
+                    src = src.encode("utf-8")
+                src = urllib.pathname2url(src)
+
+
+                img = HtmlElement.img(src)
+                embed.add(img)
+                img.add_class("BIG_PIG")
+                img.add_style("width: auto")
+                img.add_style("height: 100%")
+
+
         elif ext in File.VIDEO_EXT:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
@@ -139,7 +172,11 @@ class EmbedWdg(BaseRefreshWdg):
             img.add_style("width: 50%")
             img.add_style("margin: 20px 20px")
             embed = DivWdg(img)
+
+
         div.add(embed)
+
+
 
         if click:
             embed.add_behavior( {
@@ -151,12 +188,7 @@ class EmbedWdg(BaseRefreshWdg):
             } )
             embed.add_class("hand")
 
-        #embed.add_style("width", "100%")
-        # NOTE: to keep true original aspect ratio, don't set this height
-        # and let GalleryWdg inner load script to take care of it on load
-        # that js portion needs uncommenting as well
-        #embed.add_style("height", "100%")
-        #embed.set_box_shadow("1px 1px 1px 1px")
+
         return top
 
     

@@ -3366,6 +3366,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tool_layout_wdg import RepoBrowserLayoutWdg
             kwargs['parent_mode'] = my.kwargs.get('parent_mode')
             kwargs['file_system_edit'] = my.kwargs.get('file_system_edit')
+            kwargs['base_dir'] = my.kwargs.get('base_dir')
             layout_table = RepoBrowserLayoutWdg(**kwargs)
 
         elif layout == 'card':

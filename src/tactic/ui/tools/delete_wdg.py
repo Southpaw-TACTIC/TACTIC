@@ -139,12 +139,23 @@ class DeleteToolWdg(BaseRefreshWdg):
         content.add("<br/>"*3)
 
         button_div = DivWdg()
+        button_div.add_class("spt_buttons")
         content.add(button_div)
         button_div.add_style('text-align: center')
 
         button = ActionButtonWdg(title="Delete", width=100, color="danger")
         button_div.add(button)
         button.add_style("display: inline-block")
+
+        deleting_div = DivWdg()
+        content.add(deleting_div)
+        deleting_div.add("<img src='/context/icons/common/indicator_snake.gif'/>")
+        deleting_div.add_class("spt_delete_msg")
+        deleting_div.add(" Deleting ...")
+        deleting_div.add_style("text-align: center")
+        deleting_div.add_style("font-size: 16px")
+        deleting_div.add_style("margin: 20px")
+        deleting_div.add_style("display: none")
 
         on_complete = my.kwargs.get("on_complete")
 
@@ -154,6 +165,10 @@ class DeleteToolWdg(BaseRefreshWdg):
         'on_complete': on_complete,
         'cbjs_action': '''
         spt.app_busy.show("Deleting");
+        //spt.notify.show_message("Deleting ...");
+
+        //var button_el = bvr.src_el.getParent(".spt_buttons");
+        //button_el.setStyle("display", "none");
 
         var top = bvr.src_el.getParent(".spt_delete_top");
         var values = spt.api.Utility.get_input_values(top);
@@ -177,37 +192,38 @@ class DeleteToolWdg(BaseRefreshWdg):
         }
 
         var server = TacticServerStub.get();
-        try {
-            server.start({'title': 'Delete sObject', 'description': 'Delete sObject [' + bvr.search_keys + ']'});
-            server.execute_cmd(class_name, kwargs);
-            server.finish();
+
+        server.execute_cmd(class_name, kwargs, null, {
+            on_complete: function() {
+                //spt.notify.show_message("Finshed deleting ...");
+
+                // run the post delete and destroy the popup
+                var popup = bvr.src_el.getParent(".spt_popup");
+                if (popup.spt_on_post_delete) {
+                    popup.spt_on_post_delete();
+                }
+
+                del_trigger();
+
+                spt.popup.destroy(popup);
 
 
-            // run the post delete and destroy the popup
-            var popup = bvr.src_el.getParent(".spt_popup");
-            if (popup.spt_on_post_delete) {
-                popup.spt_on_post_delete();
+                if (bvr.on_complete) {
+                   on_complete = function() {
+                       eval(bvr.on_complete);
+                   }
+                   on_complete();
+                }
+
+                spt.app_busy.hide();
+            },
+            on_error: function(e) {
+                spt.notify.show_message("Error on delete");
+                spt.alert(spt.exception.handler(e));
+                spt.app_busy.hide();
             }
+        } );
 
-            del_trigger();
-
-            if (bvr.on_complete) {
-               on_complete = function() {
-                   eval(bvr.on_complete);
-               }
-               on_complete();
-            }
-            
-            
-            spt.popup.destroy(popup);
-
-        }
-        catch(e) {
-            spt.alert(spt.exception.handler(e));
-        }
-
-        spt.app_busy.hide();
-       
         '''
         } )
 
@@ -240,6 +256,7 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         checkbox = CheckboxWdg('related_types')
         item_div.add(checkbox)
+        checkbox.add_style("vertical-align: bottom")
         checkbox.set_attr("value", related_type)
         if related_type in ["sthpw/snapshot", "sthpw/file"]:
             checkbox.set_checked()
@@ -316,7 +333,7 @@ class DeleteCmd(Command):
         for sobject in sobjects:
             my.delete_sobject(sobject)
 
-            
+
     
 
     def delete_sobject(my, sobject):
@@ -334,10 +351,19 @@ class DeleteCmd(Command):
         else:
             related_types = None
 
+        return my.do_delete(sobject, related_types)
+
+
+
+    def do_delete(my, sobject, related_types=None):
+
+        search_type = sobject.get_base_search_type()
+
         # always delete notes and task and snapshot
-        #if not related_types:
-        #    related_types = ['sthpw/note', 'sthpw/task', 'sthpw/snapshot']
+        if not related_types:
+            related_types = ['sthpw/note', 'sthpw/task', 'sthpw/snapshot']
         #related_types = my.schema.get_related_search_types(search_type)
+
         if related_types:
             for related_type in related_types:
                 if not related_type or related_type == search_type:
@@ -353,7 +379,8 @@ class DeleteCmd(Command):
                     if related_type == 'sthpw/snapshot':
                         my.delete_snapshot(related_sobject)
                     else:
-                        related_sobject.delete()
+                        #related_sobject.delete()
+                        my.do_delete(related_sobject)
 
 
         # implicitly remove "directory" files associated with the sobject
@@ -364,17 +391,20 @@ class DeleteCmd(Command):
         search.add_op("or")
         search.add_parent_filter(sobject)
         file_objects = search.get_sobjects()
+
+        #if file_objects:
+        #    print "Removing [%s] file objects" % len(file_objects)
+
         for file_object in file_objects:
             base_dir = Environment.get_asset_dir()
             relative_dir = file_object.get("relative_dir")
             lib_dir = "%s/%s" % (base_dir, relative_dir)
-            print "removing: ", lib_dir
             FileUndo.rmdir(lib_dir)
             file_object.delete()
 
 
         # finally delete the sobject
-        print "deleting: ", sobject.get_search_key()
+        print "Deleting: ", sobject.get_search_key()
         if search_type == 'sthpw/snapshot':
             my.delete_snapshot(sobject)
         else:
@@ -389,15 +419,15 @@ class DeleteCmd(Command):
 
         files = snapshot.get_related_sobjects("sthpw/file")
         for file in files:
-            print "deleting file: ", file.get_search_key()
+            print "Deleting file: ", file.get_search_key()
             file.delete()
 
         # remove the files from the repo
         for file_path in file_paths:
-            "removing path: ", file_path
+            print "Removing path: ", file_path
             FileUndo.remove(file_path)
 
-        print "deleting snapshot: ", snapshot.get_search_key()
+        print "Deleting snapshot: ", snapshot.get_search_key()
         snapshot.delete()
 
 

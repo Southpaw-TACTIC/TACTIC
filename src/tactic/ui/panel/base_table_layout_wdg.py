@@ -1317,7 +1317,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
 
-        wdg_list.append( { 'wdg': spacing_divs[1] } )
+        #wdg_list.append( { 'wdg': spacing_divs[1] } )
 
         from tactic.ui.widget import ButtonRowWdg
         button_row_wdg = ButtonRowWdg(show_title=True)

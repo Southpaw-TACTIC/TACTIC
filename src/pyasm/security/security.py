@@ -882,11 +882,13 @@ class Site(object):
         except Exception, e:
             # try to start the site
             site_obj = Site.get()
-            site_obj.start_site(site)
-
-            print "WARNING: ", e
-            Site.pop_site()
-            raise Exception("WARNING: site [%s] does not exist" % site)
+            state = site_obj.start_site(site)
+            if state == "OK":
+                pass
+            else:
+                print "WARNING: ", e
+                Site.pop_site()
+                raise Exception("WARNING: site [%s] does not exist" % site)
 
 
         

@@ -89,7 +89,13 @@ class IngestUploadWdg(BaseRefreshWdg):
                 my.search_key = my.sobject.get_search_key()
 
             my.search_type = my.sobject.get_search_type()
-            my.show_settings = False
+
+            my.show_settings = my.kwargs.get("show_settings")
+            if not my.show_settings:
+                my.show_settings = False
+
+
+
         else: 
             my.search_type = my.kwargs.get("search_type")
             my.sobject = None
@@ -99,9 +105,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             if my.show_settings == None:
                 my.show_settings = True
 
-
-
-        my.show_settings = True
 
         top = my.top
         top.add_class("spt_ingest_top")
@@ -128,7 +131,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         left.add( my.get_content_wdg() )
 
 
-        if not my.search_key:
+        if not my.search_key or my.show_settings:
             if my.show_settings:
                 middle = table.add_cell()
                 middle.add_style("height: 10") # not sure why we need this height
@@ -323,41 +326,44 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         process_wdg.add("<br/>")
         process_wdg.add("<hr/>")
+
         if "process" in hidden_options:
             process_wdg.set_style("display: none")
 
 
         # Metadata
-        title_wdg = DivWdg()
-        div.add(title_wdg)
-        title_wdg.add("Metadata")
-        title_wdg.add_style("margin-top: 20px")
-        title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("margin-bottom: 5px")
+        hidden_options.append("metadata")
+        if "metadata" not in hidden_options:
+            title_wdg = DivWdg()
+            div.add(title_wdg)
+            title_wdg.add("Metadata")
+            title_wdg.add_style("margin-top: 20px")
+            title_wdg.add_style("font-size: 16px")
+            title_wdg.add_style("margin-bottom: 5px")
 
-        desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
-        desc_wdg.add_style("margin-bottom: 10px")
-        div.add(desc_wdg)
+            desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
+            desc_wdg.add_style("margin-bottom: 10px")
+            div.add(desc_wdg)
 
-        from tactic.ui.panel import EditWdg
+            from tactic.ui.panel import EditWdg
 
-        ingest_data_view = my.kwargs.get('ingest_data_view')
+            ingest_data_view = my.kwargs.get('ingest_data_view')
 
-        sobject = SearchType.create(my.search_type)
-        
-        if my.show_settings: 
-            edit = EditWdg(
-                    search_key=sobject.get_search_key(),
-                    mode='view',
-                    view=ingest_data_view,
-                    show_header=False,
-                    width="auto",
-            )
+            sobject = SearchType.create(my.search_type)
             
-            div.add(edit)
+            if my.show_settings: 
+                edit = EditWdg(
+                        search_key=sobject.get_search_key(),
+                        mode='view',
+                        view=ingest_data_view,
+                        show_header=False,
+                        width="auto",
+                )
+                
+                div.add(edit)
 
 
-        div.add("<br/>")
+            div.add("<br/>")
 
 
         # options
@@ -440,6 +446,28 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
+        if "zip_mode" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("When checking in zipped files:")
+            map_div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
+
+            column_option = my.kwargs.get("column")
+            if not column_option:
+                column_option = "name"
+            column_select = SelectWdg(name="zip mode")
+            column_select.add_class("spt_zip_mode_select")
+            column_select.set_option("values", ["single", "unzip"])
+            column_select.set_option("labels", ["Check-in as a single zipped file", "Unzip and check-in each file"])
+            column_select.set_option("default", "single")
+            column_select.add_style("margin-top: -3px")
+            column_select.add_style("margin-right: 5px")
+            map_div.add(column_select)
+
+
+
+
         if "context_mode" not in hidden_options:
             map_div.add("<br/>")
             map_div.add("<hr/>")
@@ -453,7 +481,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             context_mode_option = my.kwargs.get("context_mode")
             if not context_mode_option:
-                context_mode_option = "case_insensitive"
+                context_mode_option = "case_sensitive"
             context_mode = SelectWdg(name="context_mode")
             context_mode.add_class("spt_context_mode_select")
             context_mode.set_option("values", "case_insensitive|case_sensitive")
@@ -1082,6 +1110,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var update_mode = null;
         var ignore_ext = null;
         var column = null;
+        var zip_mode = null;
  
         var update_mode_select = top.getElement(".spt_update_mode_select");
         if (update_mode_select)
@@ -1094,6 +1123,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         var column_select = top.getElement(".spt_column_select");
         if (column_select)
             column = column_select ? column_select.value : bvr.kwargs.column;
+
+        var zip_mode_select = top.getElement(".spt_zip_mode_select");
+        if (zip_mode_select)
+            zip_mode = zip_mode_select.value;
+
+
+
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -1124,7 +1160,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         var search_key = values.search_key[0];
 
         var convert_el = top.getElement(".spt_image_convert")
-        var convert = spt.api.get_input_values(convert_el);
+        if (convert_el) {
+            convert = spt.api.get_input_values(convert_el);
+        }
+        else {
+            convert = null;
+        }
 
         var processes = values.process;
         if (processes) {
@@ -1162,7 +1203,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             column: column,
             library_mode: library_mode,
             dated_dirs: dated_dirs,
-            context_mode: context_mode
+            context_mode: context_mode,
+            zip_mode: zip_mode
         }
         on_complete = function(rtn_data) {
 
@@ -1660,11 +1702,6 @@ class IngestUploadCmd(Command):
             return date.split(" ")[0]
         """
 
-        # REMOVING: this is a bad assumption because this could be checking into
-        # an already existing sobject
-        #if not SearchType.column_exists(search_type, column):
-        #    raise TacticException('The Ingestion puts the file name into the "%s" column which is the minimal requirement. Please first create a "%s" column for this sType.' % (column, column))
-
         input_prefix = update_data.get('input_prefix')
         non_seq_filenames = []
 
@@ -1690,6 +1727,11 @@ class IngestUploadCmd(Command):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
+
+            if filename.endswith("/"):
+                # this is a folder:
+                    continue
+
 
 
             if filename.startswith("search_key:"):
@@ -1719,10 +1761,12 @@ class IngestUploadCmd(Command):
 
 
             unzip = my.kwargs.get("unzip")
-            if unzip in ["true", True] and filename.endswith(".zip"):
+            zip_mode = my.kwargs.get("zip_mode")
+            if zip_mode in ['unzip'] or unzip in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
+                tmp_dir = Environment.get_tmp_dir()
 
-                unzip_dir = "/tmp/xxx"
+                unzip_dir = "%s/xxx" % tmp_dir
                 if not os.path.exists(unzip_dir):
                     os.makedirs(unzip_dir)
 
@@ -1735,6 +1779,7 @@ class IngestUploadCmd(Command):
                 new_kwargs = my.kwargs.copy()
                 new_kwargs['filenames'] = paths
                 new_kwargs['base_dir'] = unzip_dir
+                new_kwargs['zip_mode'] = "single"
                 ingest = IngestUploadCmd(**new_kwargs)
                 ingest.execute()
 

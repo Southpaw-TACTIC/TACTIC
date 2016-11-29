@@ -95,38 +95,14 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery = {};
         // 1250 is defined also in the css styles
         spt.gallery.portrait = window.innerWidth < 1250;
+        spt.gallery.portrait = false
 
-       
         
         spt.gallery.top = bvr.src_el;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
         spt.gallery.content.setStyle('opacity','0.1')
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
         
-        var height_factor = '100%'; 
-        if (spt.gallery.portrait) {
-            bvr.width = bvr.width * 0.8;
-            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
-            scroll.setStyle('width', bvr.width);
-            scroll.setStyle('height', '80%');
-            scroll.setStyle('position', 'relative');
-            scroll.setStyle('top', '500px');
-            
-            var items = bvr.src_el.getElements('.spt_gallery_item');
-            for (var k=0; k < items.length; k++) {
-                items[k].setStyle('width', bvr.width);
-                items[k].setStyle('height', '80%');
-            }
-            var left = bvr.src_el.getElement('.spt_left_arrow');
-            var right = bvr.src_el.getElement('.spt_right_arrow');
-            left.setStyle('top','88%')
-            left.setStyle('left','35%')
-            right.setStyle('top','88%')
-            right.setStyle('right','35%')
-            
-            height_factor = '70%';
-            
-        }
         //window.addEvent('domready', function() {
         setTimeout(function() {
 		// set the img h or w directly
@@ -134,21 +110,26 @@ class GalleryWdg(BaseRefreshWdg):
 		// fade in
         spt.gallery.content.set('tween', {duration: 250}).fade('in');
 
+        /*
 		for (var k=0; k < items.length; k++) {
 		    var sizes = items[k].getSize();
 		    var item_h = sizes.y;
 		    var item_w = sizes.x;
 		    if (item_h >= item_w){
-			    items[k].setStyle('width', '');
-			    items[k].setStyle('height', height_factor);
+			    //items[k].setStyle('width', 'auto');
+			    //items[k].setStyle('height', '100%');
 		    }
 		    else {
-			    items[k].setStyle('width','100%');
-			    items[k].setStyle('height','');
+			    //items[k].setStyle('width','auto');
+			    //items[k].setStyle('height','100%');
 		    }
 		    
 		}
+        */
+
+
         }, 50)
+
         spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
@@ -215,11 +196,16 @@ class GalleryWdg(BaseRefreshWdg):
                 catch(e) {
                 }
             }
+
+
+            // can't tween percentage with this library???
             var width = spt.gallery.width;
             var margin = - width * index;
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
+ 
+
 
             spt.gallery.index = index;
             var total = spt.gallery.total;
@@ -373,36 +359,18 @@ class GalleryWdg(BaseRefreshWdg):
                 print "Cannot find the thumb_path [%s] "%i 
                 thumb_path = ''
 
-            path_div.add_style("width: %s" % width)
-            if height:
-                path_div.add_style("height: %s" % height)
+            #path_div.add_style("width: %s" % width)
+            #if height:
+            #    path_div.add_style("height: %s" % height)
+            path_div.add_style("width: 100%")
+            path_div.add_style("height: 100%")
+            path_div.add_style("overflow-x: hidden")
+            path_div.add_style("overflow-y: hidden")
 
             from tactic.ui.widget import EmbedWdg
             embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i)
             path_div.add(embed)
-            path_div.add_style("width: 100%")
 
-            #embed.add_style("position: absolute")
-            embed.add_style("margin-top: 25%")
-            embed.add_style("transform: translate(0%, -50%)")
-
-            """
-            path_div.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                var el = bvr.src_el.child();
-                alert(el);
-                var size = el.getSize();
-                bvr.src_el.setStyle("width", size.x);
-
-                '''
-            } )
-            """
-            
-
-            #img = HtmlElement.img(path)
-            #path_div.add(img)
-            #img.add_style("width: 100%")
 
 
 
@@ -513,20 +481,8 @@ class GalleryWdg(BaseRefreshWdg):
 
         if not paths:
             paths = []
-        """
-        if search_keys:
-            sobjects = Search.get_by_search_keys(search_keys)
-            snapshots = Snapshot.get_by_sobjects(sobjects, is_latest=True)
-            file_objects = File.get_by_snapshots(snapshots, file_type='main')
-            paths = [x.get_web_path() for x in file_objects]
 
-            web_file_objects = File.get_by_snapshots(snapshots, file_type='web')
-            web_paths = [x.get_web_path() for x in web_file_objects]
-            #paths = web_paths
 
-            for sobject, path in zip(sobjects, paths):
-                my.sobject_data[path] = sobject
-        """
         if search_keys:
             sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
 
@@ -561,6 +517,11 @@ class GalleryWdg(BaseRefreshWdg):
                 
                 for file_object in file_list:
                     path = file_object.get_web_path()
+
+                    #if path.find("#") != -1:
+                    #    expanded_paths = snapshot.get_expanded_web_paths()
+                    #    path = expanded_paths[0]
+
                     my.sobject_data[path] = sobject
                     paths.append(path)  
 	            # set the current path the user clicks on

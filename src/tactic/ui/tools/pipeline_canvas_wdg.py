@@ -2973,6 +2973,10 @@ spt.pipeline.get_node_properties = function(node) {
 
 
 spt.pipeline.set_color = function(node, color) {
+    if (!color) {
+        return;
+    }
+
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
     var color2 = spt.css.modify_color_value(color, -10);

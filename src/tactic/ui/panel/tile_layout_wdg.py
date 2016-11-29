@@ -2194,6 +2194,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
 from pyasm.biz import Snapshot
 from pyasm.web import HtmlElement
+from pyasm.biz import FileGroup
 __all__.append("ThumbWdg2")
 class ThumbWdg2(BaseRefreshWdg):
 
@@ -2239,12 +2240,14 @@ class ThumbWdg2(BaseRefreshWdg):
         div.add_class("spt_thumb_top")
 
         path = my.path
+        if my.lib_path and not FileGroup.is_sequence(my.lib_path) and not os.path.exists(my.lib_path):
+            path = ""
+
 
         my.is_collection = sobject.get_value("_is_collection", no_exception=True)
 
         search_type = sobject.get_base_search_type()
-        from pyasm.biz import FileGroup
-        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(my.lib_path):   
+        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(my.lib_path):
 
             image_size = os.path.getsize(my.lib_path)
             if image_size != 0:
@@ -2299,7 +2302,16 @@ class ThumbWdg2(BaseRefreshWdg):
                     path = path.encode("utf-8")
 
                 if path.endswith("indicator_snake.gif"):
-                    image_size = os.path.getsize(my.lib_path)
+
+                    if my.lib_path.find("#") != -1:
+                        paths = my.snapshot.get_expanded_file_names()
+                        # handle sequence
+                        lib_dir = my.snapshot.get_lib_dir()
+                        my.lib_path = "%s/%s" % (lib_dir, paths[0])
+                        image_size = os.path.getsize(my.lib_path)
+                    else:
+                        image_size = os.path.getsize(my.lib_path)
+
                     if image_size != 0:
                         # generate icon dynamically
                         """

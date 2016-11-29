@@ -1455,6 +1455,7 @@ class ThumbCmd(Command):
     def execute(my):
 
         search_keys  = my.kwargs.get("search_keys")
+        my.path = None
 
         for search_key in search_keys:
             my.generate_icon(search_key)
@@ -1479,11 +1480,19 @@ class ThumbCmd(Command):
             file_type = "main"
             path = sobject.get_lib_path_by_type(file_type)
 
-            #To check if it is a sequence checkin
+            if path.find("#") != -1:
+                lib_dir = sobject.get_lib_dir()
+                file_name = sobject.get_expanded_file_names()[0]
+                path = "%s/%s" % (lib_dir, file_name)
+
+
+            """
+            # To check if it is a sequence checkin
             all_snapshots=sobject.get_all_file_objects()
             for single_snapshot in all_snapshots:
                 if single_snapshot.get('base_type') == 'sequence':
                     return
+            """
 
             icon_creator = IconCreator(path)
             icon_creator.execute()

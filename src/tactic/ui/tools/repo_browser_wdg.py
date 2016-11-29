@@ -132,13 +132,20 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search.set_offset(0)
             else:
                 search = Search(search_type)
-      
+
         else:
             project_code = Project.get_project_code()
             asset_base_dir = Environment.get_asset_dir()
             base_dir = "%s/%s" % (asset_base_dir, project_code) 
 
+
+        # kwargs of base_dir overrides everything
+        if my.kwargs.get("base_dir"):
+            base_dir = my.kwargs.get("base_dir")
+
         is_refresh = my.kwargs.get("is_refresh")
+
+
         
         file_system_edit = my.kwargs.get("file_system_edit")
         if file_system_edit == None:
@@ -655,6 +662,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         # Note this shold be used sparingly because it can find lots of
         # sobjects
         if my.show_files and do_search:
+
+            # snapshots should use their parents relative_dir
+            if len(search_types) == 1 and search_types[0] == "sthpw/snapshot":
+                relative_dir = ""
 
             search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=my.parent_mode)
             file_objects = search.get_sobjects()

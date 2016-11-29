@@ -2712,8 +2712,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                 if isinstance(value, bool):
                     value = str(value).lower()
-            
 
+
+                if value == None:
+                    value = ""
+            
 
                 td.add_attr("spt_input_value", value)
                 #td.add_attr("spt_input_column", column)
@@ -4300,23 +4303,24 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             input.setStyle( "width", size.x+125 + 'px');
 
             // set the calendar to the current value
-            if (true) {
+            if (value) {
                 var parts = value.split(" ");
                 var date_values = parts[0].split('-');
                 var time_values = parts[1].split(':');
-                spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
-                spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
-                setTimeout( function() {
-                    var cal_top = input.getParent('.spt_calendar_input_top');
-                    var cal = cal_top.getElement(".spt_calendar_top");
-                    if (cal) {
-                        spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
-                    }
-                }, 0);
             }
-
-
-
+            else {
+                var date_values = [""];
+                var time_values = [""];
+            }
+            spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
+            spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
+            setTimeout( function() {
+                var cal_top = input.getParent('.spt_calendar_input_top');
+                var cal = cal_top.getElement(".spt_calendar_top");
+                if (cal) {
+                    spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
+                }
+            }, 0);
 
         }
         else if (input.type == "checkbox") {
@@ -5166,14 +5170,19 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
-         
+        
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
+            /*
                 // transfer the widths to the new row
                 var widths = spt.table.get_column_widths();
                 for (var element_name in widths) {
                     var width = widths[element_name];
                     spt.table.set_column_width(element_name, width);
                 }
+            */
+
+                // FIXME: for now expand and see if its too disconcerting
+                spt.table.expand_table();
             }
 
             var new_rows = dummy.getElements(".spt_table_row");
