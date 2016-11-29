@@ -141,8 +141,6 @@ class DirNaming(object):
         # this is needed first
         my._init_file_object()
 
-
-        
         # get the alias from the naming, if it exists
         if not alias and my.protocol in ["file", "http"]:
             if my._file_object:
@@ -524,6 +522,7 @@ class DirNaming(object):
         return True
 
     def get_from_db_naming(my, protocol):
+
         project_code = Project.get_project_code()
         if project_code in ["admin", "sthpw"]:
             return None

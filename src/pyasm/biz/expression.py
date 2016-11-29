@@ -64,17 +64,21 @@ class ExpressionParser(object):
         my.state = {}
         my.return_mode = 'array'
         my.is_single = False
+        my.use_cache = True
 
 
 
-    def eval(my, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None ):
+    def eval(my, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None, use_cache=None ):
 
         if not expression:
             return ''
 
         my.init()
 
-            
+
+        if use_cache is not None:
+            my.use_cache = use_cache
+
 
         if dictionary == True:
             return_mode = 'dict'
@@ -545,6 +549,7 @@ class ExpressionParser(object):
         new_parser.state = my.state
         new_parser.vars = my.vars
         new_parser.show_retired = my.show_retired
+        new_parser.use_cache = my.use_cache
 
         new_parser.do_parse()
 
@@ -1930,10 +1935,12 @@ class MethodMode(ExpressionParser):
             key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
-        results = Container.get_dict(get_expression_key(), key)
-     
-        if results != None:
-            return results
+
+
+        if my.use_cache == True:
+            results = Container.get_dict(get_expression_key(), key)
+            if results != None:
+                return results
 
         related_types_filters = {}
         related_types_paths = {}

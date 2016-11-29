@@ -1047,7 +1047,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var background = top.getElement(".spt_files_background");
         background.setStyle("display", "");
 
-        spt.message.stop_interval(key);
+        spt.message.stop_interval(message_key);
 
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = ''; 
@@ -1142,7 +1142,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
         }
 
-        var key = spt.message.generate_key();
+
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
 
@@ -1182,12 +1182,18 @@ class IngestUploadWdg(BaseRefreshWdg):
         // non-existent when my.show_settings is False
         var update_data = update_data_top ? spt.api.get_input_values(update_data_top, null, return_array): {};
 
+
+        var message_key = spt.message.generate_key();
+        message_key = "IngestUploadCmd|" + search_key + "|" + message_key;
+
+
+
         var kwargs = {
             search_key: search_key,
             search_type: search_type,
             relative_dir: relative_dir,
             filenames: filenames,
-            key: key,
+            message_key: message_key,
             parent_key: parent_key,
             //category: category,
             keywords: keywords,
@@ -1218,7 +1224,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         // server.abort
         server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
         
-        
         on_progress = function(message) {
 
             msg = JSON.parse(message.message);
@@ -1228,7 +1233,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
         }
-        spt.message.set_interval(key, on_progress, 500, bvr.src_el);
+        spt.message.set_interval(message_key, on_progress, 500, bvr.src_el);
 
         '''
 
@@ -1662,8 +1667,7 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        message_key = my.kwargs.get("key")        
-        message_key = "IngestUploadCmd|%s|%s"%(search_key, message_key)
+        message_key = my.kwargs.get("message_key")        
         
         if not relative_dir:
             project_code = Project.get_project_code()
@@ -1764,9 +1768,8 @@ class IngestUploadCmd(Command):
             zip_mode = my.kwargs.get("zip_mode")
             if zip_mode in ['unzip'] or unzip in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
-                tmp_dir = Environment.get_tmp_dir()
+                unzip_dir = Environment.get_upload_dir()
 
-                unzip_dir = "%s/xxx" % tmp_dir
                 if not os.path.exists(unzip_dir):
                     os.makedirs(unzip_dir)
 
@@ -1774,7 +1777,6 @@ class IngestUploadCmd(Command):
                 ZipUtil.extract(zip_path, base_dir=unzip_dir)
 
                 paths = ZipUtil.get_file_paths(zip_path)
-
 
                 new_kwargs = my.kwargs.copy()
                 new_kwargs['filenames'] = paths

@@ -108,6 +108,7 @@ class TacticRepo(BaseRepo):
                 #elif mode == 'copy': # was free_copy
                    
                     #FileUndo.create( source_paths[i], to_path, io_action=io_action )
+
                 # make it look like the files was created in the repository
                 else: # mode ='create'
                     
@@ -122,7 +123,7 @@ class TacticRepo(BaseRepo):
 
                     file_name = to_name
                     rel_path = "%s/%s" % (rel_dir, file_name)
-                    
+
                     FileUndo.create( src_path, to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
 
 
