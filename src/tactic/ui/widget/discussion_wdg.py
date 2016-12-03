@@ -272,195 +272,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
 
 
-#
-# DEPRECATED
-#
-"""
-class DiscussionEditWdg(BaseRefreshWdg):
-
-
-    def init(my):
-        my.top_class = 'spt_note_edit_panel'
-        my.menu = MenuWdg(mode='horizontal', width = 40, height=16, top_class=my.top_class)
-        #my.menu = MenuWdg(mode='horizontal', width = 25, height=20, top_class=my.top_class)
-
-    def get_menu(my):
-        return my.menu
-
-
-
-    def get_display(my):
-        ''' A container div housing the MenuWdg'''
-        widget = DivWdg()
-        widget.add_class(my.top_class)
-        widget.add_styles('position: absolute; display: none')
-
-        hidden = HiddenWdg('note_search_key')
-        hidden.add_class('spt_note_action_sk')
-        widget.add(hidden)
-
-
-        
-        widget.add(my.menu)
-
-        #menu_item = MenuItem('action', label=IconWdg("Edit", IconWdg.EDIT))
-        menu_item = MenuItem('action', label='edit')
-        script = [] 
-        script.append('''
-            var sk = spt.get_cousin(bvr.src_el, '.spt_note_edit_panel','.spt_note_action_sk');
-            if (sk) sk = sk.value;
-           
-            var server = TacticServerStub.get();
-            var note = null;
-            
-            try {
-                note = server.get_by_search_key(sk);
-            }
-            catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-            
-            var ok = function(value) {
-                try{
-                    var title = 'Saving Note';
-                    server.update(sk, {note: value});
-                    var menu = spt.table.get_edit_menu(bvr.src_el);
-                    spt.discussion.refresh(menu.activator_el);
-
-                }
-                catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-            }
-            spt.prompt('Edit note [ ' + note.context + ' ]:', ok, 
-            {title: 'Edit',
-            text_input_default: note.note, 
-            okText: 'Save'});
-
-          
-
-        ''')
-
-
-        item_behavior = {
-            'type': 'click_up',
-            'cbjs_action': ';'.join(script)
-        }
-        menu_item.add_behavior(item_behavior)
-        my.menu.add(menu_item)
-
-        #menu_item = MenuItem('action', label=IconWdg("Delete", IconWdg.DELETE))
-        menu_item = MenuItem('action', label='delete')
-        script ='''
-            
-            var sk = spt.get_cousin(bvr.src_el, '.spt_note_edit_panel','.spt_note_action_sk');
-
-            if (sk) sk = sk.value;
-           
-            var server = TacticServerStub.get();
-            
-            try {
-                var note = server.get_by_search_key(sk);
-                if (!note) {
-                    spt.alert('This note ' + sk +  ' does not exist');
-                    return;
-                }
-            }
-            catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-            var ok = function() {
-                try{
-                    var title = 'Deleting Note';
-                        server.delete_sobject(sk);
-                        var menu = spt.table.get_edit_menu(bvr.src_el);
-                        spt.discussion.refresh(menu.activator_el);
-
-
-                }
-                catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-            }
-
-            var cancel = function() {};
-            var note_sum = note.note;
-            if (note.note.length > 30 ) 
-                note_sum =  note.note.substring(0,30) + '...';
-            
-            spt.confirm('Delete this note?<br/><br/><div style="padding: 10px;border: 1px #aaa dotted">' + note_sum + '</div>' , ok, cancel);
-
-        '''
-
-        item_behavior = {
-            'type': 'click',
-            'cbjs_action': script
-        }
-        menu_item.add_behavior(item_behavior)
-        my.menu.add(menu_item)
-       
-        menu_item = MenuItem('action', label='status')
-        #menu_item = MenuItem('action', label=IconWdg("Status", IconWdg.FILM))
-        script = [] 
-
-     
-        script.append('''
-            var menu = spt.table.get_edit_menu(bvr.src_el);
-            var sk = spt.get_cousin(bvr.src_el, '.spt_note_edit_panel','.spt_note_action_sk');
-            if (sk) sk = sk.value;
-           
-            var server = TacticServerStub.get();
-            var wdg = '';
-            try {
-                var class_name = 'tactic.ui.widget.NoteStatusEditWdg';
-                var kwargs = {args: {search_key: sk}};
-                var wdg = server.get_widget(class_name, kwargs);
-            }
-            catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-            
-            var ok = function(button) {
-            
-                var server = TacticServerStub.get();
-                var status_sel  = button.getParent('.content').getElement("[name='note_status']");
-                if (status_sel) {
-                    var status = status_sel.value;
-                    
-                    try{
-                        var title = 'Saving Note Status';
-                        //server.start({title:title, description: title});
-
-                        server.update(sk, {status: status});
-                        //server.finish();
-                        spt.discussion.refresh(menu.activator_el);
-                    }
-                    catch(e) {
-                        spt.alert(spt.exception.handler(e));
-                    }
-                }
-                    
-            };
-            
-            spt.prompt('Edit note status:', ok, 
-            {title: 'Edit Note Status',
-             okText: 'Save',
-            custom_html: wdg
-            });
-            '''
-        )
-
-        item_behavior = {
-            'type': 'click_up',
-            'cbjs_action': ';'.join(script)
-        }
-        menu_item.add_behavior(item_behavior)
-        my.menu.add(menu_item)
-
-        return widget
-
-"""
-
 
 
 class DiscussionWdg(BaseRefreshWdg):
@@ -469,7 +280,7 @@ class DiscussionWdg(BaseRefreshWdg):
     HELP = "discussion-wdg"
 
     def init(my):
-        my.process = ''
+        my.process = my.kwargs.get("process") or ""
         my.contexts = []
         my.use_parent = my.kwargs.get('use_parent') 
         my._load_js = False
@@ -820,7 +631,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.contexts = my.contexts.split(',')
                 my.contexts =[x.strip() for x in my.contexts if x.strip()]
 
-
         
         my.get_all_notes()
 
@@ -844,6 +654,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         if my.contexts:
             search.add_filters("context", my.contexts)
+
 
         notes = search.get_sobjects()
         has_process = my.sobjects[0].has_value('process')
@@ -888,18 +699,6 @@ class DiscussionWdg(BaseRefreshWdg):
             notes_list.append(note)
 
 
-        """
-        from pyasm.biz import Snapshot
-        snapshots = Snapshot.get_by_sobjects(notes)
-        my.attachments = {}
-        for snapshot in snapshots:
-            parent_key = snapshot.get_parent_search_key()
-            xx = my.attachments.get(parent_key)
-            if not xx:
-                xx = []
-                my.attachments[parent_key] = xx
-            xx.append(snapshot)
-        """
         my.attachments = {}
 
 
@@ -952,39 +751,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 key = "%s|%s|publish" % (search_type, search_code)
 
 
-        """
-        use_parent = my.use_parent in ['true', True]
-        has_process = my.sobject.has_value('process')
-
-        if has_process and use_parent:
-            process = my.parent_processes[idx]
-        else:
-            process = "publish"
-
-        if my.parent:
-            search_type = my.parent.get_search_type()
-            # Note that this function falls back to id if no code exists
-            search_code = my.parent.get_code()
-
-            if process:
-                key = "%s|%s|%s" % (search_type, search_code, process)
-            else:
-                key = "%s|%s" % (search_type, search_code)
-        else:
-            key = ''
-
-
-        notes = my.notes_dict.get(key)
-        if not notes:
-            search_type = my.parent.get_search_type()
-            search_code = my.parent.get_id()
-            if process:
-                key = "%s|%s|%s" % (search_type, search_code, process)
-            else:
-                key = "%s|%s" % (search_type, search_code)
-
-        """
-
         notes = my.notes_dict.get(key)
         if not notes:
             notes = []
@@ -1011,30 +777,16 @@ class DiscussionWdg(BaseRefreshWdg):
         return allowed
 
 
-    """
-    def get_menu_wdgX(my, top):
-        '''Get the menu setup so the caller can place it outside this DiscussionWdg 
-           with the top element passed in'''
-        edit_wdg = DiscussionEditWdg()
-        my.menu = edit_wdg.get_menu()
-
-        # extra js_action on mouseover to assign the search key of the note to hidden input
-        js_action ='''
-           var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el;
-           sk_input.value = note_top.getAttribute('note_search_key');
-            '''
-
-        my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
-        my.menu.set_activator_out(top, 'spt_discussion_top')
-        return edit_wdg
-    """
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''
         ele.add_behavior({'type': 'load',
             'cbjs_action': my.get_onload_js()})
         my._load_js = True
+
+
+
+
 
     def get_display(my):
         
@@ -1123,10 +875,13 @@ class DiscussionWdg(BaseRefreshWdg):
         # group notes under contexts
         contexts = []
         context_notes = {}
+        process_notes = {}
         last_context = None
+        last_process = None
         for i, note in enumerate(notes):
             context = note.get_value("context")
             process = note.get_value("process")
+
             if last_context == None or context != last_context:
                 contexts.append(context)
             
@@ -1136,10 +891,15 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_notes[context] = note_list
             note_list.append(note)
 
+            note_list = process_notes.get(process)
+            if note_list == None:
+                note_list = []
+                process_notes[process] = note_list
+            note_list.append(note)
+
+
             last_context = context
-
-
-
+            last_process = process
 
 
         if my.is_refresh =='true':
@@ -1650,14 +1410,21 @@ class NoteCollectionWdg(BaseRefreshWdg):
         note_keys = my.kwargs.get("note_keys")
         parent_key = my.kwargs.get("parent_key")
         context = my.kwargs.get("context")
-        
-        
+        process = my.kwargs.get("process")
+
         if note_keys:
             notes = Search.get_by_search_keys(note_keys)
+            parent = Search.get_by_search_key(parent_key)
         elif parent_key:
             # during dynamic update, parent_key and context are used
             parent = Search.get_by_search_key(parent_key)
-            notes = Search.eval("@SOBJECT(sthpw/note['context','%s'])"%context, sobjects=[parent])
+            if context:
+                notes = Search.eval("@SOBJECT(sthpw/note['context','%s'])"%context, sobjects=[parent])
+            elif process:
+                notes = Search.eval("@SOBJECT(sthpw/note['process','%s'])"%process, sobjects=[parent])
+            else:
+                notes = Search.eval("@SOBJECT(sthpw/note['context','%s'])"%context, sobjects=[parent])
+
             
         if not notes:
             return my.top
@@ -1670,16 +1437,38 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
         if my.attachments == None:
+
             from pyasm.biz import Snapshot
-            snapshots = Snapshot.get_by_sobjects(notes)
+
             my.attachments = {}
+
+            snapshots = Snapshot.get_by_sobjects(notes)
             for snapshot in snapshots:
-                parent_key = snapshot.get_parent_search_key()
-                xx = my.attachments.get(parent_key)
+                note_key = snapshot.get_parent_search_key()
+                xx = my.attachments.get(note_key)
                 if not xx:
                     xx = []
-                    my.attachments[parent_key] = xx
+                    my.attachments[note_key] = xx
                 xx.append(snapshot)
+
+
+            """ DISABLING untile we have a better process filtering for this widget
+            if parent:
+                parent_snapshots = Snapshot.get_by_sobject(parent, process="review")
+
+                for note in notes:
+                    note_key = note.get_search_key()
+                    xx = my.attachments.get(note_key)
+
+                    if not xx:
+                        xx = []
+                        my.attachments[note_key] = xx
+
+                    for snapshot in parent_snapshots:
+                        print "snapshot: ", snapshot.get("process"), snapshot.get_value("context")
+                        xx.append(snapshot)
+            """
+
 
 
         elif not my.attachments or my.attachments == "{}":
@@ -1762,8 +1551,6 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 class NoteWdg(BaseRefreshWdg):
     """Display of a single note.  Used by NoteCollectionWdg."""
-
- 
 
     def get_display(my):
         note = my.kwargs.get("note")
@@ -2257,6 +2044,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         search_key_hidden.set_value(parent.get_search_key())
         content_div.add(search_key_hidden)
 
+        content_div.add('''<div style="margin-top: 10px; font-size: 16px">Add New Note</div>''')
+        content_div.add('''<hr/>''')
+
 
         #if my.contexts:
         #    process_names = my.contexts
@@ -2324,7 +2114,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         
             # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
-            wdg_label = "Add To Process:"
+            wdg_label = "To Process:"
             span = SpanWdg(wdg_label)
             span.add_style('padding-right: 4px')
             content_div.add(span)
@@ -2334,7 +2124,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             content_div.add(hidden)
             content_div.add("<b>%s</b>" % process_names[0])
         else:
-            wdg_label = "Add To Process:"
+            wdg_label = "To Process:"
             span = SpanWdg(wdg_label)
             span.add_style('padding-right: 4px')
             content_div.add(span)
@@ -2373,7 +2163,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
         #add_button = ProdIconButtonWdg("Submit Note")
-        add_button = ActionButtonWdg(title="Add Note", tip='Submit information to create a new note')
+        add_button = ActionButtonWdg(title="Add Note", color="primary", tip='Submit information to create a new note')
         content_div.add(add_button)
         add_button.add_style("float: right")
 
