@@ -814,6 +814,8 @@ class UserPanelWdg(BaseRefreshWdg):
         show_search_limit = my.kwargs.get("show_search_limit") or True
         show_help = my.kwargs.get("show_help") or True
 
+        show_toolbar = my.kwargs.get("show_toolbar") or False
+
         project = Project.get().get_code()
 
         if filter_mode == "project":
@@ -866,6 +868,7 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
         show_count = my.kwargs.get("show_count")
+        show_count = True
         if show_count in ['true', True]:
             security = Environment.get_security()
             license = security.get_license()
@@ -889,10 +892,8 @@ class UserPanelWdg(BaseRefreshWdg):
             tool_div2.add_style('justify-content','flex-end')
             tool_div2.add_style('width','50%')
 
-            top.add(tool_div)
-            top.add(tool_div2)
 
-
+        
             if num_left < 1000:
                 div = DivWdg('Users Left')
                 div.add_style('align-self: flex-end')
@@ -902,10 +903,6 @@ class UserPanelWdg(BaseRefreshWdg):
                 badge_span.add(num_left)
                 div.add(badge_span)
                 tool_div.add(div)
-
-                top.add(tool_div)
-
-
 
 
             if show_security not in ['false', False]:
@@ -927,6 +924,10 @@ class UserPanelWdg(BaseRefreshWdg):
                 tool_div.add_style('top','0px')
 
 
+        if show_toolbar in ['true', True]:
+            #top.add(tool_div)
+            #top.add(tool_div2)
+            pass
 
         br = HtmlElement.br(clear=True)
         top.add(br)
@@ -972,7 +973,8 @@ class UserPanelWdg(BaseRefreshWdg):
         expr = "@SEARCH(%s)" %expr_filter
         panel = ViewPanelWdg(
                 search_type='sthpw/login',
-                view=view,show_insert='false',
+                view=view,
+                show_insert='true',
                 show_gear='false',
                 show_select='false',
                 #height='700',
