@@ -148,6 +148,25 @@ class ColorInputWdg(BaseInputWdg):
         top.add(my.input)
 
         start_color = my.kwargs.get("start_color")
+
+        if not value and (not start_color or start_color == "random"):
+            #'rgba(188, 207, 215, 1.0)',
+            import random
+            colors = [
+                '#bccfd7',
+                '#bcd7cf',
+                '#d7bccf',
+                '#d7cfbc',
+                '#cfbcd7',
+                '#cfd7bc',
+            ]
+
+            num = random.randint(0,len(colors)-1)
+            start_color = colors[num]
+            start_color = top.get_color(start_color, -10)
+ 
+
+
         if start_color:
             my.input.set_value(start_color)
             my.input.add_style("background", start_color)
