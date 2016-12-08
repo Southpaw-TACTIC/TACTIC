@@ -59,63 +59,43 @@ class PipelineToolWdg(BaseRefreshWdg):
         table.add_color("color", "color")
         inner.add(table)
 
-        my.save_event = top.get_unique_event()
+        # create two events
+        save_event = top.get_unique_event()
+        #save_new_event = '%s_new' % save_event
+        save_new_event = save_event
 
-        cbjs_action = '''
-        var el = bvr.firing_element;
-        var edit_top = el.getParent(".spt_edit_top")
 
-        var values = spt.api.get_input_values(edit_top, null, false);
+        inner.add_behavior( {
+        'type': 'listen',
+        'event_name': save_event,
+        'cbjs_action': '''
+        var data = bvr.firing_data;
+        var search_key = data.search_key;
+        var sobject = data.sobject;
 
-        var group_name = values['edit|code'];
-        var color = values['edit|color'];
+        var group_name = sobject.code;
+        var color = sobject.color;
 
         var top = bvr.src_el;
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
-        var group = spt.pipeline.get_group(group_name);
-        if (group) {
-            group.set_color(color);
-        }
 
+        // refresh the sidebar
         var list = top.getElement(".spt_pipeline_list");
         spt.panel.refresh(list);
 
         var start = top.getElement(".spt_pipeline_editor_start");
         start.setStyle("display", "none");
 
-        // TODO: group name is NULL ... need to get code of newly created pipeline
         spt.pipeline.clear_canvas();
-        spt.pipeline.import_pipeline(group);
+        spt.pipeline.import_pipeline(group_name);
 
         '''
 
-        inner.add_behavior( {
-        'type': 'listen',
-        'event_name': my.save_event,
-        'cbjs_action': cbjs_action
         } )
 
 
-        # only for new pipeline creation so that it gets clicked on after the UI refreshes
-        save_new_cbjs_action = '''
-        %s
-        var server = TacticServerStub.get();
-        var latest_pipeline_code = server.eval("@GET(sthpw/pipeline['@ORDER_BY','timestamp desc'].code)", {'single': true});
-       
-        spt.pipeline.remove_group("default");
-        spt.named_events.fire_event('pipeline_' + latest_pipeline_code + '|click', bvr);
-        '''%cbjs_action
 
-
-        save_new_event = '%s_new' %my.save_event
-        inner.add_named_listener(save_new_event,  save_new_cbjs_action)
-
-
-        # only for editing pipelines for a particular Stype when the UI refreshes
-        load_event = '%s_load' %my.save_event
-       
-        
 
         table.add_row()
         left = table.add_cell()
@@ -126,7 +106,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         settings = my.kwargs.get('settings')
 
-        pipeline_list = PipelineListWdg(save_event=my.save_event, save_new_event=save_new_event, settings=settings )
+        pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=settings )
         left.add(pipeline_list)
 
 
@@ -925,6 +905,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         menu_item = MenuItem(type='action', label='Edit Data')
         menu_item.add_behavior( {
+            'save_event': my.save_event,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var code = activator.getAttribute("spt_pipeline");
@@ -933,12 +914,12 @@ class PipelineListWdg(BaseRefreshWdg):
                 'search_type': search_type,
                 'code': code,
                 'view': 'pipeline_edit_tool',
-                'save_event': '%s',
+                'edit_event': bvr.save_event,
                 'title': "Save changes to Workflow (" + code + ")"
             };
             var class_name = 'tactic.ui.panel.EditWdg';
             spt.panel.load_popup("Edit Workflow Details", class_name, kwargs);
-            ''' % my.save_event
+            '''
         } )
         menu.add(menu_item)
 
