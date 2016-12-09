@@ -11,7 +11,7 @@
 # 
 
 
-__all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', 'PluginUninstaller', 'PluginSObjectAdderCmd', 'PluginTools']
+__all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', 'PluginUninstaller', 'PluginReloader', 'PluginSObjectAdderCmd', 'PluginTools']
 
 import tacticenv
 
@@ -1114,7 +1114,17 @@ class PluginInstaller(PluginBase):
             print "Error: ", e.message
         '''
 
+class PluginReloader(PluginBase):
 
+    def execute(my):
+    	print "Uninstalling plugin: ", my.plugin_dir
+    	uninstaller = PluginUninstaller(plugin_dir=my.plugin_dir, verbose=False)
+    	uninstaller.execute()
+    	
+    	print "Installing plugin: ", my.plugin_dir
+    	installer = PluginInstaller(plugin_dir=my.plugin_dir, verbose=False, register=True)
+    	installer.execute()
+        
 
 class PluginUninstaller(PluginBase):
 
