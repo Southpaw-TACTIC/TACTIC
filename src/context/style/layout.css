@@ -209,6 +209,7 @@ hr
     background-image: url('/context/ui_proto/icons/interface/checkbox_unchecked.png');
     background-position: center center;
     background-repeat: no-repeat;
+    background-color: inherit;
     cursor: default;
 }
 
@@ -217,6 +218,7 @@ hr
     background-image: url('/context/ui_proto/icons/interface/checkbox_checked.png');
     background-position: center center;
     background-repeat: no-repeat;
+    background-color: inherit;
     cursor: default;
 }
 

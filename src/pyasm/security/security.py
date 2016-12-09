@@ -801,6 +801,12 @@ class Site(object):
         return None
 
 
+    def init_site(cls, site):
+        pass
+    init_site = classmethod(init_site)
+ 
+
+
     def start_site(cls, site):
         return False
     start_site = classmethod(start_site)
@@ -854,6 +860,13 @@ class Site(object):
 
         if not site:
             return
+
+
+        # first get the site object
+        site_obj = Site.get()
+        site_obj.init_site(site)
+
+
         sites = Container.get("sites")
 
         is_redundant = False
@@ -870,8 +883,9 @@ class Site(object):
         if not security_list:
             security_list = []
             Environment.set_security_list(security_list)
-        
-     
+
+    
+        # add this site to the stack
         sites.append(site)
 
         if not store_security:

@@ -909,7 +909,6 @@ class EditWdg(BaseRefreshWdg):
                 }
             },
             'cbjs_action': '''
-            spt.alert("Not yet implemented");
             return
 
 
@@ -1121,6 +1120,14 @@ class EditWdg(BaseRefreshWdg):
         if not save_event:
             save_event = div.get_unique_event("save")
         bvr['save_event'] = save_event
+
+        edit_event = my.kwargs.get('edit_event')
+        if not edit_event:
+            edit_event = div.get_unique_event("edit")
+        bvr['edit_event'] = edit_event
+
+
+
         bvr['named_event'] = 'edit_pressed'
 
         bvr['cbjs_action'] = cbjs_insert
@@ -1359,6 +1366,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     try {
 
         var ret_val = server.execute_cmd(class_name, args, values);
+        var info = ret_val.info;
 
         // add a callback after save
         var popup = bvr.src_el.getParent(".spt_popup");
@@ -1385,22 +1393,32 @@ spt.edit.edit_form_cbk = function( evt, bvr )
             var tmps2 = tmps[0].split('?');
             var update_row_event = "update_row|" + tmps2[0];
             var update_st_event = "update|" + tmps2[0];
+
             var bvr_fire = {};
-            var kwargs = {'update_data': values};
-            var input = {'search_key': bvr.search_key, 'kwargs': kwargs};
+            bvr_fire.src_el = bvr.src_el;
+
+            var kwargs = {update_data: values};
+            var input = {
+                search_key: info.search_key,
+                sobject: info.sobject,
+                kwargs: kwargs
+            };
             bvr_fire.options = input;
             spt.named_events.fire_event(update_st_event, bvr_fire);
             spt.named_events.fire_event(update_row_event, bvr_fire);
 
+            if (bvr.edit_event) {
+                spt.named_events.fire_event(bvr.edit_event, bvr_fire);
+            }
 
         }
         else {
             // update the table
-            info = ret_val.info;
 
             // FIXME: this search key is just LOST!!!
             bvr.options = {
-                search_key: info.search_key
+                search_key: info.search_key,
+                sobject: info.sobject,
             }
             if (bvr.save_event) {
                 spt.named_events.fire_event(bvr.save_event, bvr);

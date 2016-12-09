@@ -144,7 +144,11 @@ Search.eval("@GET(sthpw/login_group['login_group',
         for user in all_users:
             user_name = user.get_value('login')
             values.append(user_name)
-            label = user_name
+
+            label = user.get_value("display_name")
+            if not label:
+                label = user_name
+
             if my.labels_attr:
                 user_labels = [user.get_value(x) for x in my.labels_attr]
                 label = ' '.join(user_labels)
@@ -247,4 +251,15 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 else:
                     raise
 
+    def get_value(my, name=None):
+        if not name:
+            name = my.get_name()
+
+        value = super(LoginTableElementWdg, my).get_value(name)
+        if value:
+            user = Search.get_by_code("sthpw/login", value)
+            if user:
+                value = user.get_value("display_name") or value
+
+        return value
 
