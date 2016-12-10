@@ -56,6 +56,9 @@ class ResizableTableWdg(BaseRefreshWdg):
         var resizable_cells = bvr.src_el.getElements(".spt_resizable_cell");
         for (var i = 0; i < resizable_cells.length; i++) {
             var resizable_el = resizable_cells[i].getElement(".spt_resizable");
+            if (!resizable_el) {
+                continue;
+            }
             var size = resizable_cells[i].getSize();
 
             resizable_el.setStyle("width", size.x);
