@@ -53,8 +53,6 @@ class PipelineToolWdg(BaseRefreshWdg):
         #table = Table()
         table = ResizableTableWdg()
 
-        #table.add_style("width: 100%")
-
         table.add_color("background", "background")
         table.add_color("color", "color")
         inner.add(table)
@@ -160,25 +158,14 @@ class PipelineToolWdg(BaseRefreshWdg):
         info.add_class("spt_panel") 
         info.add_style("width: 400px")
         info.add_style("min-width: 400px")
-        info.add_border()
+        info.add_style("max-width: 400px")
+
         info_wdg = DivWdg()
         info.add(info_wdg)
 
-        """
-        from tactic.ui.panel import EditWdg
-        search = Search("config/process")
-        search.add_filter("process", process)
-        process_sobj = search.get_sobject()
-        search_key = process_sobj.get_search_key()
-        kwargs = {
-                'search_key': search_key,
-                'show_header': False,
-                'width': '400px',
-        }
-        edit_wdg = ProcessInfoWdg(**kwargs)
-        info_wdg.add(edit_wdg)
-        """
-
+        info_wdg.add_border()
+        info_wdg.add_style("height: 100%")
+        info_wdg.add_class("spt_resizable")
 
         show_info_tab = my.kwargs.get("show_info_tab")
         show_info_tab = True

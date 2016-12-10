@@ -46,6 +46,18 @@ class SPTDate(object):
     start_of_today = classmethod(start_of_today)
 
 
+    def strip_time(cls, date):
+        date = datetime(date.year, date.month, date.day)
+        return date
+    strip_time = classmethod(strip_time)
+
+    def set_noon(cls, date):
+        date = datetime(date.year, date.month, date.day, hour=12, minute=0, second=0)
+        return date
+    set_noon = classmethod(set_noon)
+
+
+
     def timedelta(cls, **kwargs):
         delta = timedelta(**kwargs)
         return delta
