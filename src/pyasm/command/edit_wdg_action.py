@@ -1281,7 +1281,11 @@ class TimeAction(DatabaseAction):
 class TaskDateAction(DatabaseAction):
     '''simple class to update the task dependencies'''
 
-    def execute(my):
+    def postprocess(my):
+
+        # TODO: This should only happen *IF* the pipeline process defines it
+        #return
+
         bid_end_date = my.get_value()
         my.sobject.update_dependent_tasks()
 

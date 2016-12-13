@@ -789,7 +789,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table_width = my.kwargs.get("width")
         if not table_width:
             table_width= ''
-        #table_width = '100%'
         table_width = ''
 
 
@@ -1458,71 +1457,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             } )
 
        
-
-
-        """
-        widths = my.kwargs.get("column_widths")
-        #widths = []
-
-        # if no widths are specified, then calculate the widths
-        if not widths:
-            table.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-            setTimeout( function() {
-
-            spt.table.set_table(bvr.src_el);
-            var layout = bvr.src_el.getParent(".spt_layout");
-            var layout_top = layout.getParent(".spt_layout_top");
-            var width = layout_top.getSize().x;
-
-            //layout_top.setStyle("border", "solid 1px red");
-
-            var header_table = spt.table.get_header_table()
-
-            // make sure the headers width are set
-
-            var headers = spt.table.get_headers();
-            var num_headers = headers.length;
-            var mode = "scale";
-
-            if (mode == "full") {
-                header_table.setStyle("width", "100%")
-                var width = 100 / num_headers;
-                width = parseInt(width) + "%";
-            }
-            else {
-                header_table.setStyle("width", "")
-                bvr.src_el.setStyle("width", "")
-                width = width / (num_headers) - 30;
-            }
-
-            if (width == 0) { return; }
-
-            for (var i = 0; i < headers.length; i++) {
-                headers[i].setStyle("width", width);
-            }
-
-
-            var no_items_el = layout.getElements(".spt_table_no_items");
-            if (no_items_el) {
-                header_table.setStyle("width", "100%")
-                bvr.src_el.setStyle("width", "100%")
-                return;
-            }
-
-
-            var row = spt.table.get_first_row();
-            var cells = row.getElements(".spt_cell_edit");
-            for (var i = 0; i < cells.length; i++) {
-                cells[i].setStyle("width", width);
-            }
-
-            }, 100);
-
-            '''
-            } )
-        """
 
 
         # all for collapsing of columns
@@ -5742,6 +5676,7 @@ spt.table.get_column_widths = function() {
 
 
 spt.table.expand_table = function() {
+
     var layout = spt.table.get_layout();
     var version = layout.getAttribute("spt_version");
     var headers;
@@ -5852,47 +5787,6 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     return;
 
 
-    /*
-    spt.table.smallest_size = -1;
-
-    // set all of the header sizes
-    var headers = spt.table.get_headers();
-    var sizes = [];
-    for (var i = 0; i < headers.length; i++ ) {
-        var size = headers[i].getSize();
-        sizes.push(size);
-    }
-
-    // zero out the table
-    for (var i = 0; i < headers.length; i++ ) {
-        headers[i].setStyle("width", "0px");
-    }
-    spt.table.last_table.setStyle("width", "0px");
-
-    
-    for (var i = 0; i < headers.length; i++ ) {
-        headers[i].setStyle("width", sizes[i].x);
-    }
-
-
-    // handle the elements that scale with the table header
-    spt.table.resize_div = []
-    if (!header.hasClass("spt_table_scale") ) {
-        return;
-    }
-
-    spt.table.resize_div.push( header.getElement(".spt_table_scale") );
-
-    var element_name = spt.table.get_element_name_by_header(header);
-    var column_cells = spt.table.get_cells(element_name);
-    for ( var i = 0; i < column_cells.length; i++) {
-        var el = column_cells[i].getElement(".spt_table_scale");
-        if (el == null) { continue; }
-        spt.table.resize_div.push( el );
-    }
-    */
-
-
 }
 
 spt.table.drag_resize_header_motion = function(evt, bvr, mouse_411)
@@ -5908,45 +5802,6 @@ spt.table.drag_resize_header_motion = function(evt, bvr, mouse_411)
 
 
     return;
-
-
-
-
-    /* This is not needed any more
-    if ( x < spt.table.smallest_size ) {
-        spt.table.last_header_inner.setStyle("width", spt.table.smallest_size-offset);
-    }
-    else {
-        spt.table.last_header_inner.setStyle("width", x-offset);
-    }
-    */
-    spt.table.last_header_inner.setStyle("width", x-offset);
-
-    var width = x;
-    spt.table.last_header.setStyle("width", width);
-    spt.table.last_header.setStyle("min-width", width);
-    //spt.table.last_table.setStyle("width", spt.table.last_table_size.x + dx);
-    //spt.table.last_table.setStyle("width", "0px");
-
-    // get the size and force set it
-    var size = spt.table.last_header.getSize();
-    var size_inner = spt.table.last_header_inner.getSize();
-
-    // disable this for Webkit ... it locks the table up.
-    // ... however, this allows the resize to get too small
-    if (!spt.browser.is_Webkit_based()) {
-        if ( size_inner.x + offset < size.x) {
-            spt.table.smallest_size = size.x;
-        }
-    }
-
-    // scale any widgets that scale with table header
-    var resize_div = spt.table.resize_div;
-    for (var i=0; i < resize_div.length; i++ ) {
-        resize_div[i].setStyle('width', width );
-    }
-
-
 }
 
 spt.table.drag_resize_header_action = function(evt, bvr, mouse_411) {

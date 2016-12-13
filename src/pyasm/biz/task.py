@@ -14,7 +14,7 @@ __all__ = ["Task", "Timecard", "Milestone"]
 
 import types
 import re
-from pyasm.common import Xml, Environment, Common
+from pyasm.common import Xml, Environment, Common, SPTDate
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
 from prod_setting import ProdSetting
 from pipeline import Pipeline
@@ -22,7 +22,7 @@ from pyasm.common import Environment, Date
 from project import Project
 from status import StatusLog
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil import parser
 
 
@@ -430,18 +430,84 @@ class Task(SObject):
 
     tasks_updated = None
 
+
+
     def update_dependent_tasks(my, top=True):
         '''for purposes of dependent tasks'''
         if top:
-            Task.tasks_updated = []
-            Task.tasks_updated.append(my.get_id())
+            Task.tasks_updated = set()
+            Task.tasks_updated.add(my.get_id())
 
         # get the dependent tasks
         tasks = my.get_dependent_tasks()
 
-        bid_start_date = my.get_value("bid_start_date")
-        bid_end_date = my.get_value("bid_end_date")
+        pipeline = my.get_pipeline()
 
+
+        use_time = False
+        respect_holidays = False
+
+
+        # set the start date to the next day of the previous task
+        prev_task = my
+        prev_task_start_date = prev_task.get_datetime_value("bid_start_date")
+        prev_task_end_date = prev_task.get_datetime_value("bid_end_date")
+
+        if not use_time:
+            prev_task_start_date = SPTDate.set_noon(prev_task_start_date)
+            prev_task_end_date = SPTDate.set_noon(prev_task_end_date)
+
+
+
+        # go through each dependent task
+        for task in tasks:
+
+            # prevent circular dependency if for some reason they occur.
+            if task.get_id() in Task.tasks_updated:
+                Environment.add_warning("Circular dependency", "Circular dependency with task '%s'" % task.get_id() )
+                continue
+
+            Task.tasks_updated.add(my.get_id())
+
+            # get the current length of this task
+            task_start_date = task.get_datetime_value("bid_start_date")
+            task_end_date = task.get_datetime_value("bid_end_date")
+
+            # if the dates are not set, then get the length from the pipeline
+            if not task_start_date or not task_end_date:
+                # get the length from the pipeline
+                length = timedelat(days=0)
+            else:
+                task_length = task_end_date - task_start_date
+
+
+            # set task start to 1 day after 
+            new_task_start_date = prev_task_end_date + timedelta(days=1)
+
+            if not use_time:
+                new_task_start_date = SPTDate.set_noon(new_task_start_date)
+
+
+            # set the task end by maintaining the previous length
+            new_task_end_date = new_task_start_date + task_length
+
+
+            task.set_value("bid_start_date", new_task_start_date)
+            task.set_value("bid_end_date", new_task_end_date)
+
+            print "start: ", new_task_start_date
+            print "end  : ", new_task_end_date
+            print "---"
+
+            task.commit()
+
+            # recurse to the next dependent tasks
+            task.update_dependent_tasks(top=False)
+
+
+        return
+
+        """
         bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
             bid_duration_unit = 'hour'
@@ -459,51 +525,7 @@ class Task(SObject):
                 bid_end_date = date.get_db_time()
             else:
                 return
-
-
-
-        for task in tasks:
-
-            # prevent circular dependency if for some reason they occur.
-            if task.get_id() in Task.tasks_updated:
-                Environment.add_warning("Circular dependency", "Circular dependency with task '%s'" % task.get_id() )
-                continue
-
-
-            Task.tasks_updated.append(my.get_id())
-
-            # if the dependency is fixed, update the d
-            #mode = task.get_value("mode")
-            mode = "depend"
-
-            # put the start date as the end date
-            if mode == "depend":
-
-                # add one day to the end date to get the start date
-                date = Date(db=bid_end_date)
-                date.add_days(1)
-                bid_start_date = date.get_db_time()
-                task.set_value("bid_start_date", bid_start_date )
-
-                # check if there is a duration in hours to this date
-                bid_duration = task.get_value("bid_duration")
-                if bid_duration:
-                    bid_duration = int(bid_duration)
-
-                    date = Date(db=bid_start_date)
-                    if bid_duration_unit == 'minute':
-                        date.add_minutes(bid_duration)
-                    else:
-                        date.add_hours(bid_duration)
-                    
-                    bid_end_date = date.get_db_time()
-
-                    task.set_value("bid_end_date", bid_end_date)
-
-
-                task.commit()
-
-                task.update_dependent_tasks(False)
+        """
 
 
 

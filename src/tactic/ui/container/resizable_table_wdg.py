@@ -49,6 +49,28 @@ class ResizableTableWdg(BaseRefreshWdg):
         'cbjs_action': my.get_onload_js()
         } )
 
+
+        my.table.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+        var resizable_cells = bvr.src_el.getElements(".spt_resizable_cell");
+        for (var i = 0; i < resizable_cells.length; i++) {
+            var resizable_el = resizable_cells[i].getElement(".spt_resizable");
+            if (!resizable_el) {
+                continue;
+            }
+            var size = resizable_cells[i].getSize();
+
+            resizable_el.setStyle("width", size.x);
+            resizable_el.setStyle("height", size.y);
+            resizable_el.setAttribute("width", size.x);
+            resizable_el.setAttribute("height", size.y);
+        }
+        '''
+        } )
+
+
+
         top.add(my.table)
 
         return top
@@ -142,6 +164,7 @@ class ResizableTableWdg(BaseRefreshWdg):
     def add_cell(my, widget=None, resize=True, rowspan=1, colspan=1):
         td_content = my.table.add_cell()
         td_content.add_style("vertical-align: top")
+        td_content.add_class("spt_resizable_cell")
 
         if rowspan > 1:
             td_content.add_attr("rowspan", rowspan+1)
