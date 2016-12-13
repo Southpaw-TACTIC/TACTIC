@@ -215,6 +215,8 @@ Search.eval("@GET(sthpw/login_group['login_group',
         
         return top
 
+
+
 class LoginTableElementWdg(SimpleTableElementWdg):
     '''This ElementWdg is used to add the group that the given task is looking
     for in ProcessGroupSelectWdg.'''
@@ -255,11 +257,50 @@ class LoginTableElementWdg(SimpleTableElementWdg):
         if not name:
             name = my.get_name()
 
+        div = DivWdg()
+        div.add_style("display: inline-block")
+
         value = super(LoginTableElementWdg, my).get_value(name)
         if value:
             user = Search.get_by_code("sthpw/login", value)
             if user:
                 value = user.get_value("display_name") or value
 
-        return value
+        #return value
+
+        my.sobject = my.get_current_sobject()
+
+        div.add(value)
+
+        # display a link if specified
+        link_expr = "@SOBJECT(sthpw/login)"
+        if link_expr:
+            # using direct behavior because new_tab isn't working consistently
+            #div.add_class("tactic_new_tab")
+            div.add_style("text-decoration", "underline")
+            #div.add_class("tactic_new_tab")
+            div.add_attr("search_key", my.sobject.get_search_key())
+            div.add_attr("expression", link_expr)
+            div.add_class("hand")
+
+            search_type_sobj = my.sobject.get_search_type_obj()
+            sobj_title = search_type_sobj.get_title()
+
+            #name = my.sobject.get_value("name", no_exception=True)
+            name = None
+            if not name:
+                name = my.sobject.get_code()
+            div.add_attr("name", "%s: %s" % (sobj_title, name))
+
+            # click up blocks any other behavior
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.table.open_link(bvr);
+                '''
+            } )
+
+
+
+        return div
 

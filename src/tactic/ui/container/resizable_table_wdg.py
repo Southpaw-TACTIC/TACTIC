@@ -59,12 +59,13 @@ class ResizableTableWdg(BaseRefreshWdg):
             if (!resizable_el) {
                 continue;
             }
+
             var size = resizable_cells[i].getSize();
 
             resizable_el.setStyle("width", size.x);
-            resizable_el.setStyle("height", size.y);
+            //resizable_el.setStyle("height", size.y);
             resizable_el.setAttribute("width", size.x);
-            resizable_el.setAttribute("height", size.y);
+            //resizable_el.setAttribute("height", size.y);
         }
         '''
         } )
