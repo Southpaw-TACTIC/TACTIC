@@ -581,6 +581,8 @@ class Search(Base):
             elif len(filter) == 3:
                 name, op, value = filter
                
+                op = op.replace("lte", "<=")
+                op = op.replace("gte", ">=")
                 op = op.replace("lt", "<")
                 op = op.replace("gt", ">")
                 if my.is_expr(value):
