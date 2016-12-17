@@ -72,6 +72,7 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
+            my._test_multi_task()
 
 
 
@@ -702,6 +703,53 @@ class WorkflowCmd(Command):
         task.set_value("status", "complete")
         task.commit()
         my.assertEquals( "b", sobject.get_value("name_first"))
+
+
+
+
+    def _test_multi_task(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process name="a"/>
+          <process type="action" name="b"/>
+          <connect from="a" to="b"/>
+        </pipeline>
+        '''
+
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code() )
+        sobject.commit()
+
+        for process_name, process in processes.items():
+            process.set_json_value("workflow", {
+                'on_complete': '''
+                sobject.set_value('name_first', '%s')
+                ''' % process_name,
+            } )
+            process.commit()
+ 
+
+        task = Task.create(sobject, process="a", description="Test Task")
+        task2 = Task.create(sobject, process="a", description="Test Task 2")
+
+        task.set_value("status", "complete")
+        task.commit()
+        my.assertEquals( False, "b" == sobject.get_value("name_first"))
+
+        task2.set_value("status", "complete")
+        task2.commit()
+        my.assertEquals( True, "b" == sobject.get_value("name_first"))
+
+
+
+
+
+
 
 
 

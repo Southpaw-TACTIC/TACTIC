@@ -947,6 +947,39 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
 
+    def handle_complete(my):
+
+        status = "complete"
+
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+        # make sure all of the tasks are complete
+        tasks = Task.get_by_sobject(my.sobject, process=process)
+
+        # Make sure all of the tasks are complete
+        is_complete = True
+        print "tasks: ", tasks
+        for task in tasks:
+            #my.log_message(my.sobject, my.process, status)
+
+            # FIXME: this is a temporary solution since it doesn't take into account
+            # remapping of task statuses
+            task_status = task.get_value("status")
+            if task_status.lower() not in ['complete','approved']:
+                is_complete = False
+                break
+
+
+        if not is_complete:
+            return
+
+
+        return super(WorkflowManualNodeHandler, my).handle_complete()
+
+
+            
 
 
 class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
@@ -1596,7 +1629,10 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         
         process_obj = pipeline.get_process(process)
-        node_type = process_obj.get_type()
+        if process_obj:
+            node_type = process_obj.get_type()
+        else:
+            return
 
         handler = None
         if node_type == "action":

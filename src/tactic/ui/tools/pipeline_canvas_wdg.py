@@ -2866,7 +2866,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     }
 
     var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-    editor_top.addClass("spt_has_changes");
+    if (editor_top) {
+        editor_top.addClass("spt_has_changes");
+    }
 
     return new_node;
 }
