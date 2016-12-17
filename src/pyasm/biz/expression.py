@@ -1588,7 +1588,10 @@ class MethodMode(ExpressionParser):
 
             results = []
             for value in values:
-                value2 = os.path.dirname(value)
+                if not value:
+                    value2 = ""
+                else:
+                    value2 = os.path.dirname(value)
                 results.append(value2)
 
 

@@ -129,7 +129,8 @@ class DatabaseAction(Command):
             return ""
 
 
-
+    def get_options(my):
+        return my.options
 
 
     def set_commit_flag(my, flag):

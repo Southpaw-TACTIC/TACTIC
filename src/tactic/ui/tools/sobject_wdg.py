@@ -250,6 +250,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         thumb_table.add_style("height: 125px")
         thumb_table.add_style("padding: 5px")
         thumb_table.add_style("margin-left: 20px")
+        thumb_table.add_style("margin-top: 20px")
         thumb_table.add_style("display: inline-block")
         thumb_table.add_style("vertical-align: top")
         thumb_table.add_style("overflow-y: hidden")
