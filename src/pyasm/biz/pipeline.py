@@ -634,6 +634,17 @@ class Pipeline(SObject):
         return process_sobject
 
 
+    def get_process_sobjects(my):
+
+        process_name = "dummy"
+
+        my.get_process_sobject(process_name)
+
+        return my.process_sobjects
+
+
+
+
     def get_index(my, name):
         index = 0
         for process in my.processes:

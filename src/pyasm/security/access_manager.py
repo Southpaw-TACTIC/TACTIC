@@ -81,17 +81,39 @@ class AccessManager(Base):
     def set_up(my):
         if my.was_admin == None:
             security = Environment.get_security()
+
             if security._login and not security._is_logged_in:
                 security._groups = []
                 security._group_names = []
                 security._find_all_login_groups()
             my.was_admin = security.is_in_group('admin')
 
+
     def set_admin(my, flag, sudo=False):
         my.set_up()
+        security = Environment.get_security()
+
+        if security.get_user_name() == "admin":
+            my.is_admin_flag = True
+            return
+
+
         my.is_admin_flag = flag
 
-        security = Environment.get_security()
+        """
+        if flag == False:
+            import traceback, sys
+            # print the stacktrace
+            tb = sys.exc_info()[2]
+            stacktrace = traceback.format_tb(tb)
+            stacktrace_str = "".join(stacktrace)
+            print "-"*50
+            print "TRACE: ", my.was_admin
+            print stacktrace_str
+            print "-"*50
+        """
+
+
         if not my.was_admin and flag:
             if 'admin' not in security.get_group_names():
                 security._group_names.append('admin')

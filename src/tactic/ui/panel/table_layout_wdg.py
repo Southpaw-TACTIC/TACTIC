@@ -1133,7 +1133,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
-            table.add_style("width: %s" % width)
+            #if table_width:
+            #    table.add_style("width: %s" % table_width)
 
         # refresh columns have init_load_num = -1 and temp = True
         if init_load_num < 0 or temp != True: 
