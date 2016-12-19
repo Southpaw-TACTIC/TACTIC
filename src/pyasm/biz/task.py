@@ -1048,12 +1048,40 @@ class Task(SObject):
                 description = ""
 
 
+
+            # check to see how many weekends there are between these two dates
+            if start_date.weekday() == 5:
+                start_date = start_date + timedelta(days=2)
+            if start_date.weekday() == 6:
+                start_date = start_date + timedelta(days=1)
+
+
+            # this will produce a copy
             end_date = start_date + timedelta(days=0)
 
-            if duration >= 1:
+            skip_weekends = True
+            if skip_weekends:
+                # add duration of days that aren't weekdays
+                end_date = SPTDate.add_business_days(start_date, duration)
+            else:
                 # for a task to be x days long, we need duration x-1.
                 #end_date.add_days(duration-1)
                 end_date += timedelta(days=(duration-1))
+
+
+
+
+
+            # check to see how many weekends there are between these two dates
+            if end_date.weekday() == 5:
+                end_date = start_date + timedelta(days=2)
+            if start_date.weekday() == 6:
+                end_date = start_date + timedelta(days=1)
+
+
+
+
+
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':

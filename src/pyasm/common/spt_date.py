@@ -71,6 +71,32 @@ class SPTDate(object):
 
 
 
+    def is_weekday(cls, date):
+        if date.weekday() in (5,6):
+            return False
+        else:
+            return True
+
+    is_weekday = classmethod(is_weekday)
+
+
+
+    def add_business_days(cls, from_date, add_days, holidays=[]):
+        business_days_to_add = add_days
+        current_date = from_date
+        while business_days_to_add > 0:
+            current_date += timedelta(days=1)
+            weekday = current_date.weekday()
+            if weekday >= 5: # sunday = 6
+                continue
+            if current_date in holidays:
+                continue
+            business_days_to_add -= 1
+        return current_date
+    add_business_days = classmethod(add_business_days)
+
+
+
     def convert_to_local(cls, date):
         '''convert a time to local time with timezone'''
         if not date:
