@@ -5102,7 +5102,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         
         # assigned_login_group
         table.add_row()
-        td = table.add_cell('Assigned Login Group:')
+        td = table.add_cell('Assigned Group:')
         td.add_attr("title", "Used for limiting the users displayed when this process is chosen in a task view.")
 
         text_name = "spt_property_assigned_login_group"
@@ -5117,7 +5117,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         
         # supervisor_login_group
         table.add_row()
-        td = table.add_cell('Supervisor Login Group:')
+        td = table.add_cell('Supervisor Group:')
         td.add_attr("title", "Used for limiting the supervisors displayed when this process is chosen in a task view.")
         text_name = "spt_property_supervisor_login_group"
         select = SelectWdg(text_name)
@@ -5131,7 +5131,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         
         # duration
         table.add_row()
-        td = table.add_cell('Default Duration:')
+        td = table.add_cell('Default Start to End Duration:')
         td.add_attr("title", "The default duration determines the starting duration of a task that is generated for this process")
 
         text_name = "spt_property_duration"
@@ -5146,7 +5146,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         # bid duration in hours
         table.add_row()
-        td = table.add_cell('Default Bid Duration:')
+        td = table.add_cell('Expected Work Hours:')
         td.add_attr("title", "The default bid duration determines the estimated number of hours will be spent on this task.")
 
         text_name = "spt_property_bid_duration"

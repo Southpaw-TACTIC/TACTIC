@@ -1080,6 +1080,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         if my.kwargs.get("oncomplete_script"):
             oncomplete_script = my.kwargs.get("oncomplete_script")
+        if my.kwargs.get("on_complete"):
+            oncomplete_script = my.kwargs.get("on_complete")
+
+
 
 
         on_complete = '''

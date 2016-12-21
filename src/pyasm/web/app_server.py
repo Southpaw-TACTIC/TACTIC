@@ -472,7 +472,6 @@ class BaseAppServer(Base):
                     search = Search("config/url")
                     urls = search.get_sobjects()
                     open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
-                    print "open_hashes: ", open_hashes
                     link = "/%s" % "/".join(my.hash)
 
 

@@ -832,7 +832,7 @@ class Task(SObject):
     sort_shot_tasks = staticmethod(sort_shot_tasks)
 
 
-    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0,assigned=None):
+    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0,assigned=None,start_date=None):
         '''add initial tasks based on the pipeline of the sobject'''
         from pipeline import Pipeline
 
@@ -882,7 +882,7 @@ class Task(SObject):
     <process name='publish'/>
 </pipeline>
             ''')
-            # FIXME: HACK to initialize virtual pipeline
+            # HACK to initialize virtual pipeline
             pipeline.set_pipeline(pipeline.get_value("pipeline"))
  
 
@@ -916,8 +916,6 @@ class Task(SObject):
         description = ""
         tasks = []
 
-        start_date = Date()
-        start_date.add_days(start_offset)
         
         bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
@@ -932,6 +930,10 @@ class Task(SObject):
 
         # this is the explicit mode for creating task for a specific process:context combo
         if mode=='context':
+
+            start_date = Date()
+            start_date.add_days(start_offset)
+
             for context_combo in contexts:
                 process_name, context = context_combo.split(':')               
 
@@ -991,31 +993,67 @@ class Task(SObject):
 
             return tasks
 
-        
+
+        # get all of the process_sobjects
+        process_sobjects = pipeline.get_process_sobjects()
+
+        from pyasm.common import SPTDate
+        if not start_date:
+            start_date = SPTDate.today()
+        else:
+            if isinstance(start_date, basestring):
+                start_date = parser.parse(start_date)
+
+        # set the timestamp to be noon
+        start_date = SPTDate.set_noon(start_date)
+
+        if start_offset:
+            start_date.add_days(start_offset)
+      
+
         for process_name in process_names:
+
+            process_sobject = process_sobjects.get(process_name)
+
+            process_obj = pipeline.get_process(process_name)
+            if not process_obj:
+                continue
+
+
+            # depend_id is pretty much deprecated ... dependencies are usually set
+            # by the workflow engined
             if last_task:
                 depend_id = last_task.get_id()
             else:
                 depend_id = None
-            process_obj = pipeline.get_process(process_name)
-            if not process_obj:
-                continue
+
+
             attrs = process_obj.get_attributes()
             duration = attrs.get("duration")
             if duration:
                 duration = int(duration)
             else:
                 duration = default_duration
+
             bid_duration = attrs.get("bid_duration")
             if not bid_duration:
                 bid_duration = default_bid_duration
             else:
                 bid_duration = int(bid_duration)
 
-            end_date = start_date.copy()
+            # get description
+            if process_sobject:
+                description = process_sobject.get("description")
+            else:
+                description = ""
+
+
+            end_date = start_date + timedelta(days=0)
+
             if duration >= 1:
                 # for a task to be x days long, we need duration x-1.
-                end_date.add_days(duration-1)
+                #end_date.add_days(duration-1)
+                end_date += timedelta(days=(duration-1))
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
@@ -1024,8 +1062,10 @@ class Task(SObject):
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
             pipe_code = process_obj.get_task_pipeline()
 
-            start_date_str = start_date.get_db_date()
-            end_date_str = end_date.get_db_date()
+            #start_date_str = start_date.get_db_date()
+            #end_date_str = end_date.get_db_date()
+
+
             for context in output_contexts:
 
                 # first check if it already exists when skip_duplicate is True
@@ -1040,7 +1080,8 @@ class Task(SObject):
                 if contexts and context not in contexts:
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration,assigned=assigned)
+
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1049,9 +1090,8 @@ class Task(SObject):
 
                 tasks.append(last_task)
 
-            start_date = end_date.copy()
-            # start the day after
-            start_date.add_days(1)
+            start_date = end_date + timedelta(days=1)
+
 
         return tasks
 

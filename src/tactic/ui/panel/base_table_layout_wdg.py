@@ -3200,7 +3200,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             td.add(msg)
             return
 
-        table.add_style("width: 100%")
+        table.add_style("width: auto")
 
         tr, td = table.add_row_cell()
 
@@ -3220,7 +3220,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div = DivWdg()
         td.add(msg_div)
         msg_div.add_style("text-align: center")
-        msg_div.add_style("float: center")
         msg_div.add_style("margin-left: auto")
         msg_div.add_style("margin-right: auto")
         msg_div.add_style("margin-top: -260px")

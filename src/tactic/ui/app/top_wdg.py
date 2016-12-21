@@ -196,12 +196,25 @@ class TopWdg(Widget):
             }
 
             var target = bvr.src_el.getAttribute("target");
+            var title = bvr.src_el.getAttribute("title");
 
             var class_name = 'tactic.ui.panel.CustomLayoutWdg';
             var kwargs = {
                 view: view,  
             }
-            spt.panel.load_popup(target, class_name, kwargs);
+
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var name = attributes[i].name;
+                if (name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[name] = value;
+            }
+
+
+            spt.panel.load_popup(title, class_name, kwargs);
             '''
         } )
 

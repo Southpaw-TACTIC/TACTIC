@@ -129,7 +129,8 @@ class DatabaseAction(Command):
             return ""
 
 
-
+    def get_options(my):
+        return my.options
 
 
     def set_commit_flag(my, flag):
@@ -1284,7 +1285,7 @@ class TaskDateAction(DatabaseAction):
     def postprocess(my):
 
         # TODO: This should only happen *IF* the pipeline process defines it
-        #return
+        return
 
         bid_end_date = my.get_value()
         my.sobject.update_dependent_tasks()

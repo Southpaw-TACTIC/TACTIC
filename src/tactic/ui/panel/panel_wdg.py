@@ -2520,8 +2520,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-
-
+# for dyanmically importing into this namespace
+gl = globals()
+lc = locals()
 
 
 class ViewPanelWdg(BaseRefreshWdg):
@@ -3412,6 +3413,17 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = OldTableLayoutWdg(**kwargs)
 
         elif layout and layout != "default":
+            (module_name, class_name) = Common.breakup_class_path(layout)
+
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception, e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = my.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:

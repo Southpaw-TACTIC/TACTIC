@@ -154,15 +154,39 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
 
 
 
+
     def add_value_update(my, value_wdg, sobject, name):
+
+        if sobject.get_base_search_type() == "sthpw/task":
+            colors = sobject.get_status_colors()
+
+            # FIXME: use the default colors
+            colors = colors.get("task")
+        else:
+            colors = {
+                    'complete': '#FBB'
+            }
+
+        value_wdg.set_json_attr("spt_colors", colors)
+
         value_wdg.add_update( {
             'search_key': sobject.get_search_key(),
             'column': name,
             'interval': 4,
             'cbjs_action': '''
-            alert("WOW");
+            var parent = bvr.src_el.getParent(".spt_cell_edit");
+            var colors = JSON.parse( bvr.src_el.getAttribute("spt_colors") );
+            var value = bvr.value;
+            var color = colors[value];
+            parent.setStyle("background", color);
+            bvr.src_el.innerHTML = value;
+            parent.setAttribute("spt_input_value", value);
             '''
         } )
+ 
+
+
+
 
     def handle_td(my, td):
         sobject = my.get_current_sobject()
@@ -213,6 +237,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         if parent_pipeline_code:
             td.set_attr("spt_parent_pipeline_code", parent_pipeline_code)
         super(TaskStatusElementWdg, my).handle_td(td)
+
 
 
 

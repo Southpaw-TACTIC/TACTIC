@@ -23,7 +23,7 @@ from pyasm.search import SObject
 from tactic.ui.common import BaseRefreshWdg
 from button_new_wdg import IconButtonWdg
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil import parser
 
 try:
@@ -104,6 +104,10 @@ class CalendarWdg(BaseRefreshWdg):
         my.top_id = web.get_form_value("top_id")
         my.col_name = web.get_form_value("col_name")
         my.date = web.get_form_value("date")
+
+        if not my.date:
+            my.date = my.kwargs.get("date")
+
         my.year, my.month = '', ''
         if my.date:
             date = Date(my.date)
