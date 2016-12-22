@@ -299,8 +299,9 @@ class ForeignKeyDatabaseAction(DatabaseAction):
         search_type = "construction/login_in_trade"
         column = "trade_code"
 
-        value = my.get_value(my.name) 
+        value = my.get_value(my.name)
 
+        
         sobject = my.sobject
 
         search = Search(search_type)
@@ -310,9 +311,12 @@ class ForeignKeyDatabaseAction(DatabaseAction):
         if not related:
             related = SearchType.create(search_type)
             related.set_parent(sobject)
-
-        related.set_value(column, value)
-        related.commit()
+            
+        if not value:
+            related.delete()
+        else:
+            related.set_value(column, value)
+            related.commit()
 
 
 class DefaultValueDatabaseAction(DatabaseAction):
