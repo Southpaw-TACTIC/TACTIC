@@ -40,6 +40,8 @@ class ProcessGroupSelectWdg(BaseInputWdg):
         my.labels_attr =  my.get_option('label_attr')
         if my.labels_attr:
             my.labels_attr = my.labels_attr.split('|')
+        else:
+            my.labels_attr = ["display_name"]
 
         from tactic.ui.panel import EditWdg
         if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
@@ -284,13 +286,13 @@ class LoginTableElementWdg(SimpleTableElementWdg):
             div.add_class("hand")
 
             search_type_sobj = my.sobject.get_search_type_obj()
-            sobj_title = search_type_sobj.get_title()
+            sobj_title = value
 
             #name = my.sobject.get_value("name", no_exception=True)
             name = None
             if not name:
                 name = my.sobject.get_code()
-            div.add_attr("name", "%s: %s" % (sobj_title, name))
+            div.add_attr("name", value)
 
             # click up blocks any other behavior
             div.add_behavior( {
