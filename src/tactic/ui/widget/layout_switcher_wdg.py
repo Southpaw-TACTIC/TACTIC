@@ -14,7 +14,7 @@ __all__ = ['LayoutSwitcherWdg']
 
 
 from pyasm.common import Common
-from pyasm.web import DivWdg, Table, HtmlElement
+from pyasm.web import WidgetSettings, DivWdg, Table, HtmlElement
 from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -65,24 +65,18 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         menu = my.kwargs.get("menu")
         config_xml = my.kwargs.get("config_xml")
         target = my.kwargs.get("target")
-        # TODO: use_href to go to specific layout switcher view
-        # use_href = my.kwrags.get("use_href")
+        save_state = my.kwargs.get("save_state")
+        mode = my.kwargs.get("mode")
         
         # Layout switcher button displays menu and assumes right hand position of screen
+        state_value = WidgetSettings.get_value_by_key(save_state)
+        if not state_value:
+           state_value = "Switch Layout"
 
-        #from pyasm.web import WidgetSettings
-        #key = "layout_switcher"
-        #first_title = WidgetSettings.get_value_by_key(key)
-        #if not first_title:
-        #    first_title = "Switch Layout"
-        first_title = "Switch Layout"
-
-
-
-
-        mode = "button"
+        if not mode:
+            mode = "button"
         if mode == "button":
-            activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % first_title)
+            activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % state_value)
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
 
@@ -191,6 +185,9 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             my.view = 'tab'
             config = WidgetConfig.get(view=my.view, xml=config_xml)
             element_names = config.get_element_names()
+            
+            if not WidgetSettings.get_value_by_key(save_state):
+                WidgetSettings.set_value_by_key(save_state, element_names[0])
 
             for element_name in element_names:
 
@@ -213,8 +210,16 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                 display_class = config.get_display_handler(element_name)
                 display_options = config.get_display_options(element_name)
-
-                key = "layout_switcher"
+                
+                state_value =  WidgetSettings.get_value_by_key(save_state)
+                
+                if element_name == state_value:
+                    item_div.add_behavior( {
+                        'type': 'load',
+                        'cbjs_action': '''
+                        bvr.src_el.click();
+                        '''
+                    } )
 
                 item_div.add_behavior( {
                     'type': 'click_up',
@@ -222,7 +227,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                     'display_options': display_options,
                     'element_name': element_name,
                     'target': target,
-                    'key': key,
+                    'save_state': save_state,
                     'cbjs_action': '''
                     var menu_item = bvr.src_el;
                     var top = menu_item.getParent(".spt_switcher_top");
@@ -260,8 +265,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         title_el.innerHTML = title
 
 
-                    //var server = TacticServerStub.get()
-                    //server.set_widget_setting(bvr.key, bvr.element_name);
+                    var server = TacticServerStub.get()
+                    server.set_widget_setting(bvr.save_state, bvr.element_name);
 
                     '''
                 } )
