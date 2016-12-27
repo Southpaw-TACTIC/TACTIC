@@ -83,6 +83,9 @@ class EditCmd(Command):
             my.input_prefix = ""
 
         my.extra_data = kwargs.get("extra_data") or {}
+        if isinstance(my.extra_data, basestring):
+            my.extra_data = jsonloads(my.extra_data)
+
         my.extra_action = kwargs.get("extra_action") or {}
 
         super(EditCmd,my).__init__()
