@@ -130,7 +130,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         left.add_style("vertical-align: top")
         left.add( my.get_content_wdg() )
 
-
         if not my.search_key or my.show_settings:
             if my.show_settings:
                 middle = table.add_cell()
@@ -146,6 +145,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
             right = table.add_cell()
+            right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
             right.add( my.get_settings_wdg() )
             if my.show_settings in [False, 'false']:
@@ -325,7 +325,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             select.set_option("default", selected_process)
 
         process_wdg.add("<br/>")
-        process_wdg.add("<hr/>")
 
         if "process" in hidden_options:
             process_wdg.set_style("display: none")
@@ -334,6 +333,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         # Metadata
         hidden_options.append("metadata")
         if "metadata" not in hidden_options:
+            process_wdg.add("<hr/>")
+
             title_wdg = DivWdg()
             div.add(title_wdg)
             title_wdg.add("Metadata")
@@ -538,6 +539,24 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         header_div = DivWdg()
         div.add(header_div)
+
+
+        if my.show_settings:
+            button_div = DivWdg()
+            header_div.add(button_div)
+            button = IconButtonWdg(title="Expand Options", icon="BS_MENU_HAMBURGER")
+            button_div.add(button)
+            button_div.add_style("float: right")
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_ingest_top");
+                var right = top.getElement(".spt_right_content");
+                spt.toggle_show_hide(right);
+
+                '''
+            } )
+
 
         title = my.kwargs.get("title")
         if not title:
@@ -1244,7 +1263,13 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         upload_div = DivWdg()
-        upload_div.add_style("display: none")
+
+
+        search_keys = my.kwargs.get("search_keys")
+        if not search_keys:
+            upload_div.add_style("display: none")
+
+
         upload_div.add_class("spt_upload_files_top")
         div.add(upload_div)
         button = ActionButtonWdg(title="Upload Files", width=200, color="primary")

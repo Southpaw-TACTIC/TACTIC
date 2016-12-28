@@ -771,21 +771,22 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         top.add_border()
         top.add_class("spt_delete_project_tool_top")
         site = my.kwargs.get("site")
-        
-        if site:
+        set_site = my.kwargs.get("set_site")
+
+        if set_site != False and site:
             Site.set_site(site)
 
         login = Environment.get_user_name()
         
         security = Environment.get_security()
-        
-        if not security.is_in_group(my.delete_group):
+
+        if not security.is_admin() and not security.is_in_group(my.delete_group):
 
             top.add(IconWdg(icon=IconWdg.WARNING))
             top.add("Only Admin can delete projects")
             top.add_style("padding: 50px")
             top.add_style("text-align: center")
-            if site:
+            if set_site and site:
                 Site.pop_site()
             return top
 

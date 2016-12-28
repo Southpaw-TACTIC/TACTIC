@@ -62,19 +62,57 @@ class PipelineToolWdg(BaseRefreshWdg):
         #save_new_event = '%s_new' % save_event
         save_new_event = save_event
 
+        pipeline_code = my.kwargs.get("pipeline")
 
-        if my.kwargs.get("pipeline"):
+
+        if pipeline_code:
+            pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
+            pipeline_name = pipeline.get("name")
             inner.add_behavior( {
             'type': 'load',
-            'pipeline_code': my.kwargs.get('pipeline'),
+            'pipeline_code': pipeline_code,
+            'pipeline_name': pipeline_name,
             'cbjs_action': '''
             setTimeout( function() {
             var top = bvr.src_el;
             var start = top.getElement(".spt_pipeline_editor_start");
             start.setStyle("display", "none");
 
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+
             spt.pipeline.clear_canvas();
             spt.pipeline.import_pipeline(bvr.pipeline_code);
+
+            var value = bvr.pipeline_code;
+            var title = bvr.pipeline_name;
+
+            var text = top.getElement(".spt_pipeline_editor_current2");
+            //text.value = title;
+            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+title+"</span>";
+            text.innerHTML = html;
+
+            spt.pipeline.set_current_group(value);
+
+
+            var info = top.getElement(".spt_pipeline_tool_info");
+            if (info) {
+                var group_name = spt.pipeline.get_current_group();
+
+                var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+                var kwargs = {
+                    pipeline_code: group_name,
+                }
+
+                spt.panel.load(info, class_name, kwargs);
+            }
+
+
+            editor_top.removeClass("spt_has_changes");
+
+
+
             }, 0);
             '''
             } )
@@ -462,7 +500,8 @@ class PipelineListWdg(BaseRefreshWdg):
         inner = DivWdg()
         inner.add_class("spt_pipeline_list_top")
         inner.add_style("width: 300px")
-        inner.add_style("height: 290px")
+        inner.add_style("height: auto")
+        inner.add_style("max-height: 500px")
         pipelines_div.add(inner)
 
 
@@ -507,21 +546,22 @@ class PipelineListWdg(BaseRefreshWdg):
 
         # project_specific pipelines
         from pyasm.widget import SwapDisplayWdg
-        swap = SwapDisplayWdg(on_event_name='proj_pipe_on', off_event_name='proj_pipe_off')
+        #swap = SwapDisplayWdg(on_event_name='proj_pipe_on', off_event_name='proj_pipe_off')
         # open by default
-        inner.add(swap)
-        swap.add_style("float: left")
+        #inner.add(swap)
+        #swap.add_style("float: left")
 
 
-        title = DivWdg("<b>Project Workflows</b>")
-        title.add_style("padding-bottom: 2px")
-        title.add_style("padding-top: 3px")
-        inner.add(title)
-        #inner.add(HtmlElement.br())
+        #title = DivWdg("<b>Project Workflows</b>")
+        #title.add_style("padding-bottom: 2px")
+        #title.add_style("padding-top: 3px")
+        #inner.add(title)
         content_div = DivWdg()
-        content_div.add_styles('padding-left: 8px; padding-top: 6px') 
-        SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
+        content_div.add_style('padding-top: 6px') 
+        #content_div.add_style('padding-left: 8px') 
+        #SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
         inner.add(content_div)
+
         try:
             #search = Search("config/pipeline")
             #pipelines = search.get_sobjects()
@@ -541,6 +581,11 @@ class PipelineListWdg(BaseRefreshWdg):
                     search.add_op("or")
                     search.add_op("and")
                     search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+                    search.add_op("begin")
+                    search.add_filter("type", "sobject", op="!=")
+                    search.add_filter("type", "NULL", op="is", quoted=False)
+                    search.add_op("or")
+
                     search.add_order_by("search_type")
                     pipelines = search.get_sobjects()
                 else:
@@ -560,7 +605,14 @@ class PipelineListWdg(BaseRefreshWdg):
                 search.add_op("or")
                 search.add_op("and")
                 search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+
+                search.add_op("begin")
+                search.add_filter("type", "sobject", op="!=")
+                search.add_filter("type", "NULL", op="is", quoted=False)
+                search.add_op("or")
+
                 search.add_order_by("search_type")
+
                 pipelines = search.get_sobjects()
 
             last_search_type = None
@@ -575,17 +627,33 @@ class PipelineListWdg(BaseRefreshWdg):
                     search_type_obj = SearchType.get(search_type)
                     title = search_type_obj.get_title()
                     title = Common.pluralize(title)
+                    #inner.add(title)
 
                     stype_div = DivWdg()
                     content_div.add(stype_div)
-                    stype_div.add_style("margin: 5px 0px 5px 5px")
-                    stype_div.add(title)
+                    #stype_div.add_style("margin: 5px 0px 5px 5px")
+
+                    swap = SwapDisplayWdg()
+                    stype_div.add(swap)
+                    swap.add_style("float: left")
+                    swap.add_style("margin-top: -2px")
+
+                    stype_div.add("<b>%s</b>" % title)
+
+                    stype_content_div = DivWdg()
+                    #stype_content_div.add_style('padding-left: 8px') 
+                    stype_content_div.add_style('padding-top: 6px; padding-bottom: 3px;') 
+
+                    SwapDisplayWdg.create_swap_title(stype_div, swap, stype_content_div, is_open=True)
+                    content_div.add(stype_content_div)
+
+
                 last_search_type = search_type
 
 
                 # build each pipeline menu item
                 pipeline_div = my.get_pipeline_wdg(pipeline)
-                content_div.add(pipeline_div)
+                stype_content_div.add(pipeline_div)
 
             if not pipelines:
                 no_items = DivWdg()
@@ -596,51 +664,54 @@ class PipelineListWdg(BaseRefreshWdg):
         except Exception, e:
             print "WARNING: ", e
             none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
+            none_wdg.add("<div>%s</div>" % str(e))
             none_wdg.add_style("font-size: 11px")
             none_wdg.add_color("color", "color", 20)
             none_wdg.add_style("padding", "5px")
             content_div.add( none_wdg )
+            raise
 
         inner.add("<br clear='all'/>")
 
         # task status pipelines
-        swap = SwapDisplayWdg()
-        inner.add(swap)
-        swap.add_style("float: left")
+        if not my.settings or "task" in my.settings:
+            swap = SwapDisplayWdg()
+            inner.add(swap)
+            swap.add_style("float: left")
 
-        title = DivWdg("<b>Task Status Workflows</b>")
-        title.add_style("padding-bottom: 2px")
-        title.add_style("padding-top: 3px")
-        inner.add(title)
-        content_div = DivWdg()
-        content_div.add_styles('padding-left: 8px; padding-top: 6px') 
-        SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
-        inner.add(content_div)
+            title = DivWdg("<b>Task Status Workflows</b>")
+            title.add_style("padding-bottom: 2px")
+            title.add_style("padding-top: 3px")
+            inner.add(title)
+            content_div = DivWdg()
+            content_div.add_styles('padding-left: 8px; padding-top: 6px') 
+            SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
+            inner.add(content_div)
 
-        search = Search("sthpw/pipeline")
-        search.add_filter("project_code", project_code)
-        search.add_op("begin")
-        search.add_filter("search_type", "sthpw/task")
-        #search.add_filter("search_type", "NULL", op='is', quoted=False)
-        search.add_op("or")
-        search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
-        pipelines = search.get_sobjects()
+            search = Search("sthpw/pipeline")
+            search.add_filter("project_code", project_code)
+            search.add_op("begin")
+            search.add_filter("search_type", "sthpw/task")
+            #search.add_filter("search_type", "NULL", op='is', quoted=False)
+            search.add_op("or")
+            search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            pipelines = search.get_sobjects()
 
-        colors = {}
-        for pipeline in pipelines:
-            pipeline_div = my.get_pipeline_wdg(pipeline)
-            content_div.add(pipeline_div)
-            colors[pipeline.get_code()] = pipeline.get_value("color")
+            colors = {}
+            for pipeline in pipelines:
+                pipeline_div = my.get_pipeline_wdg(pipeline)
+                content_div.add(pipeline_div)
+                colors[pipeline.get_code()] = pipeline.get_value("color")
 
-        if not pipelines:
-            no_items = DivWdg()
-            no_items.add_style("padding: 3px 0px 3px 20px")
-            content_div.add(no_items)
-            no_items.add("<i>-- No Items --</i>")
+            if not pipelines:
+                no_items = DivWdg()
+                no_items.add_style("padding: 3px 0px 3px 20px")
+                content_div.add(no_items)
+                no_items.add("<i>-- No Items --</i>")
 
 
 
-        inner.add("<br clear='all'/>")
+            inner.add("<br clear='all'/>")
 
 
         if not my.settings or "misc" in my.settings:
@@ -2996,7 +3067,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         top.add(form_wdg)
         form_wdg.add_style("padding: 15px")
 
-        form_wdg.add("Set a default person that will be assigned to the %s task." % process)
+        form_wdg.add("Set a default person that will be assigned to tasks in this process.")
 
         form_wdg.add("<br/>")
         form_wdg.add("<br/>")

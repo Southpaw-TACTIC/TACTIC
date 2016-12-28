@@ -146,12 +146,12 @@ class CherryPyStartup(CherryPyStartup20):
             has_site = True
 
 
-
-        #if project_code in ['default']:
-        #    startup = cherrypy.startup
-        #    config = startup.config
-        #    startup.register_project(project_code, config, site=site)
-        #    return
+        # only set this if there a site ... neded for UploadServerWdg
+        if has_site and project_code in ['default']:
+            startup = cherrypy.startup
+            config = startup.config
+            startup.register_project(project_code, config, site=site)
+            return
 
 
 
@@ -204,6 +204,8 @@ class CherryPyStartup(CherryPyStartup20):
             WebContainer.clear_buffer()
             adapter = CherryPyAdapter()
             WebContainer.set_web(adapter)
+
+            print "error404"
 
             top = DivWdg()
             top.add_style("background: #444")

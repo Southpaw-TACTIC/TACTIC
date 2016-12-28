@@ -911,6 +911,9 @@ class HtmlElement(Widget):
             expression = update.get("expression")
             compare = update.get("compare")
 
+
+            #print "expression: ", expression
+
             # search key is used to determine whether a change has occured.
             # when it is None, the expression is always evaluated ... however,
             # sometimes a search key is needed for the expression. In this case,

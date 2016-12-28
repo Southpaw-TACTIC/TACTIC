@@ -1944,7 +1944,6 @@ class MethodMode(ExpressionParser):
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
 
-
         if my.use_cache == True:
             results = Container.get_dict(get_expression_key(), key)
             if results != None:
@@ -1970,6 +1969,7 @@ class MethodMode(ExpressionParser):
             related_types[i] = related_type
             related_types_filters[related_type] = filters
             related_types_paths[related_type] = path
+
 
         # handle some absolute sobjects
         if len(related_types) == 1:
@@ -2108,7 +2108,7 @@ class MethodMode(ExpressionParser):
                     if extra_filter:
                         search.add_op_filters(extra_filter)
 
-                # on the very specific time when there are no relative sobjects
+                # on the very specific case when there are no relative sobjects
                 # to start off with we only have one level of related types,
                 # then just use the count method
                 if is_count and len(related_types) == 1:
@@ -2142,6 +2142,9 @@ class MethodMode(ExpressionParser):
             cur_search_type = sample_sobject.get_base_search_type()
         elif is_search:
             cur_search_type = related_search.get_base_search_type()
+
+
+
 
         list = []
         for i, related_type in enumerate(related_types):
@@ -2229,6 +2232,18 @@ class MethodMode(ExpressionParser):
                     related_search = sub_search
 
                 else:
+
+                    # on the very specific case when there is just one relative
+                    # type, then just use the count method
+                    if is_count and len(related_types) == 1:
+                        search = Search(related_type)
+                        search.add_relationship_filters(related_sobjects, path=path)
+                        search.add_op_filters(filters)
+                        count = search.get_count()
+                        return count
+
+
+
                     tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=my.show_retired)
 
                     # collapse the list and make it unique

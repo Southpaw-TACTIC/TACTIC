@@ -873,25 +873,53 @@ class Pipeline(SObject):
     # Static methods
     #
 
-    def create(pipeline_name, desc, pipe_search_type):
+    def create(name, desc, search_type, xml=None, code=None):
         '''will only create if it does not exist, otherwise it just updates'''
-        sobject = Pipeline.get_by_name(pipeline_name)
+
+        if code:
+            sobject = Pipeline.get_by_code(code)
+        else:
+            sobject = None
+
         if sobject == None:
             #sobject = Pipeline( Pipeline.SEARCH_TYPE )
             sobject = SearchType.create( Pipeline.SEARCH_TYPE )
         else:
             return sobject
-        xml = Xml()
-        xml.create_doc('pipeline')
-        root = xml.get_root_node()
-        #Xml.set_attribute(root, 'type', type)
+
+        if not xml:
+            xml = Xml()
+            xml.create_doc('pipeline')
+
+        if isinstance(xml, basestring):
+            xml_string = xml
+            xml = Xml()
+            xml.read_string(xml_string)
+
         sobject.set_value("pipeline", xml.get_xml())
+        sobject.set_pipeline(xml.to_string())
 
         sobject.set_value('timestamp', Sql.get_default_timestamp_now(), quoted=False )
-        sobject.set_value('code', pipeline_name)
-        sobject.set_value('search_type', pipe_search_type)
+        if code:
+            sobject.set_value('code', code.strip())
+        sobject.set_value('name', name.strip())
+        sobject.set_value('search_type', search_type)
         sobject.set_value('description', desc)
         sobject.commit()
+
+
+
+        process_names = sobject.get_process_names()
+
+        for i, process_name in enumerate(process_names):
+            process = SearchType.create("config/process")
+            process.set_value("pipeline_code", sobject.get_code() )
+            process.set_value("process", process_name)
+            process.set_value("sort_order", i)
+            process.set_value("subcontext_options", "(main)")
+            process.commit()
+
+
         return sobject
 
     create = staticmethod(create)
@@ -983,7 +1011,9 @@ class Pipeline(SObject):
             pipeline.set_pipeline(pipeline.get_value('pipeline'))
         return pipeline
     get_by_code = classmethod(get_by_code)
-        
+    
+
+    # DEPRECATED
     def get_by_name(name):
         ''' for backward-compatibility, name has been renamed as code '''
         return Pipeline.get_by_code(name)
@@ -1063,7 +1093,7 @@ class Pipeline(SObject):
 
 
     def get_default():
-        return Pipeline.get_by_name("default")
+        return Pipeline.get_by_code("default")
     get_default = staticmethod(get_default)
 
 
@@ -1133,9 +1163,22 @@ class Pipeline(SObject):
         
         if process_types:
 
-            for status, process_type, xpos, ypos in zip(statuses, process_types, process_xpos, process_ypos):
+            for i, status in enumerate(statuses):
+
                 if status == '':
                     continue
+
+                process_type = process_types[i]
+
+                if len(process_xpos) > i:
+                    xpos = process_xpos[i]
+                else:
+                    xpos = None
+                if len(process_ypos) > i:
+                    ypos = process_ypos[i]
+                else:
+                    ypos = None
+
                 if xpos and ypos:
                     xml.append('''  <process name="%s" type="%s" xpos="%s" ypos="%s"/>''' % (status, process_type, xpos, ypos))
                 else:

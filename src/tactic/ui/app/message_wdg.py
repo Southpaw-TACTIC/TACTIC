@@ -1497,6 +1497,10 @@ spt.message.async_poll = function(key, callback) {
         return;
     }
 
+    if (! el.isVisible() ) {
+        return;
+    }
+
     var server = TacticServerStub.get();
     var expr = "@SOBJECT(sthpw/message['code','"+key+"'])";
 
