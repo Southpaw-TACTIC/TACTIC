@@ -292,7 +292,7 @@ class HashPanelWdg(BaseRefreshWdg):
 
     def get_widget_from_hash(cls, hash, return_none=False, force_no_index=False, kwargs={}):
 
-        print "hash: ", hash
+        #print "hash: ", hash
 
         from pyasm.web import DivWdg
         if hash.startswith("//"):

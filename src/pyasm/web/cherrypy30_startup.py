@@ -205,8 +205,6 @@ class CherryPyStartup(CherryPyStartup20):
             adapter = CherryPyAdapter()
             WebContainer.set_web(adapter)
 
-            print "error404"
-
             top = DivWdg()
             top.add_style("background: #444")
             top.add_style("height: 300")
