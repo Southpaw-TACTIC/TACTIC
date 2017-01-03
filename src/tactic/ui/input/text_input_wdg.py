@@ -171,6 +171,32 @@ class TextInputWdg(BaseInputWdg):
                     spt.input.set_error(bvr.src_el);
                 '''
                 } )
+
+
+        custom_cbk = my.kwargs.get("custom_cbk")
+        if custom_cbk:
+            my.text.add_behavior( {
+                'type': 'keyup',
+                'custom': custom_cbk,
+                'cbjs_action': '''
+                var key = evt.key;
+                var custom;
+                try {
+                    if (key == 'enter') {
+                        var custom = bvr.custom.enter;
+                    } else if (key == 'tab') {
+                        var custom = bvr.custom.tab;
+                    }
+
+                    if (custom) {
+                        eval(custom);
+                    }
+ 
+                }
+                catch(e) {
+                }
+                '''
+            } )
  
        
         my.top = DivWdg()

@@ -145,7 +145,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
              relationship='id' from_col='transaction_log_id'/>
 
     <connect from="sthpw/login" to="sthpw/department"
-            relationship='code' from_col='department_code' to_col='code'/>
+            relationship='code' from_col='department' to_col='code'/>
 
 
     <connect from="sthpw/login_in_group" to="sthpw/login"

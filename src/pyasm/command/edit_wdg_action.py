@@ -129,7 +129,8 @@ class DatabaseAction(Command):
             return ""
 
 
-
+    def get_options(my):
+        return my.options
 
 
     def set_commit_flag(my, flag):
@@ -299,8 +300,9 @@ class ForeignKeyDatabaseAction(DatabaseAction):
         search_type = "construction/login_in_trade"
         column = "trade_code"
 
-        value = my.get_value(my.name) 
+        value = my.get_value(my.name)
 
+        
         sobject = my.sobject
 
         search = Search(search_type)
@@ -310,9 +312,12 @@ class ForeignKeyDatabaseAction(DatabaseAction):
         if not related:
             related = SearchType.create(search_type)
             related.set_parent(sobject)
-
-        related.set_value(column, value)
-        related.commit()
+            
+        if not value:
+            related.delete()
+        else:
+            related.set_value(column, value)
+            related.commit()
 
 
 class DefaultValueDatabaseAction(DatabaseAction):
@@ -1284,7 +1289,7 @@ class TaskDateAction(DatabaseAction):
     def postprocess(my):
 
         # TODO: This should only happen *IF* the pipeline process defines it
-        #return
+        return
 
         bid_end_date = my.get_value()
         my.sobject.update_dependent_tasks()

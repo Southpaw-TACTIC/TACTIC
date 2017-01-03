@@ -3090,6 +3090,18 @@ spt.dg_table._search_cbk = function(evt, bvr)
             args[k] = bvr.extra_args[k];
     }
 
+    var extra_keys = target.getAttribute("spt_extra_keys") || "";
+    if (extra_keys) {
+        args['extra_keys'] = extra_keys;
+        extra_keys = extra_keys.split(",");
+        console.log(extra_keys);
+        for (var k = 0; k < extra_keys.length; k++) {
+            var key = extra_keys[k];
+            args[key] = target.getAttribute("spt_"+key) || "";
+        }
+    }
+
+
     var fade = true;
 
 

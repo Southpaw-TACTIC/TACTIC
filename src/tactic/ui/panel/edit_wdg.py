@@ -199,6 +199,11 @@ class EditWdg(BaseRefreshWdg):
             my.view = "edit"
 
 
+        my.display_mode = my.kwargs.get("display_mode")
+        if not my.display_mode:
+            my.display_mode = "default"
+
+
         default_data = my.kwargs.get('default')
         
         if not default_data:
@@ -389,6 +394,10 @@ class EditWdg(BaseRefreshWdg):
             title = my.element_titles[i]
             if title:
                 widget.set_title(title)
+
+            description = attrs.get("description")
+            if description:
+                widget.add_attr("description", description)
 
             my.widgets.append(widget)
 
@@ -623,6 +632,7 @@ class EditWdg(BaseRefreshWdg):
 
         # set the width
         table.add_style("width: %s" % width)
+        table.add_style("margin: 0px 20px")
 
 
 
@@ -779,7 +789,7 @@ class EditWdg(BaseRefreshWdg):
                     td.add_style("border-width: 1" )
                     td.add_style("border-style: solid" )
 
-                td.add_style("text-align: right" )
+                #td.add_style("text-align: right" )
 
                 hint = widget.get_option("hint")
                 if hint:
@@ -793,16 +803,22 @@ class EditWdg(BaseRefreshWdg):
                 th, td = table.add_row_cell( widget )
                 continue
             else:
-                td = table.add_cell( widget )
-                #td = table.add_cell( widget.get_value() )
-                td.add_style("min-width: 300px")
-                td.add_style("padding: 10px 25px 10px 5px")
-                td.add_style("vertical-align: top")
 
-                if my.color_mode == "defaultX":
-                    td.add_color("border-color", "table_border", default="border")
-                    td.add_style("border-width: 1" )
-                    td.add_style("border-style: solid" )
+                if my.display_mode == "default":
+                    td = table.add_cell()
+                    td.add_style("min-width: 300px")
+                    td.add_style("padding: 10px 25px 10px 5px")
+                    td.add_style("vertical-align: top")
+
+                td.add(widget)
+
+
+                # description
+                description = widget.get_attr("description") or ""
+                if description:
+                    color = td.get_color("color", 40)
+                    td.add("<div style='margin-top: 5px'><i style='color: %s'>%s</i></div>" % (color, description))
+
 
 
 

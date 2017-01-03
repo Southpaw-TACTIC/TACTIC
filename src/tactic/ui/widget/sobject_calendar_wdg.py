@@ -558,7 +558,8 @@ class SObjectCalendarWdg(CalendarWdg):
         'search_type': 'search type to search for',
         'search_expr': 'Initial SObjects Expression',
         'view': 'Day view',
-        'sobject_view': 'Day sobject view when the user clicks on each day'
+        'sobject_view': 'Day sobject view when the user clicks on each day',
+        'detail_view': 'Custom view when the user clicks on each day'
     }
 
 
@@ -665,7 +666,8 @@ class SObjectCalendarWdg(CalendarWdg):
 
         custom_view = my.kwargs.get('view')
         my.custom_sobject_view = my.kwargs.get('sobject_view')
-        if not my.custom_sobject_view:
+        my.custom_detail_view = my.kwargs.get("detail_view")
+        if not my.custom_sobject_view and not my.custom_detail_view:
             my.custom_sobject_view = 'table'
 
         my.custom_layout = None
@@ -909,14 +911,14 @@ class SObjectCalendarWdg(CalendarWdg):
             ids_filter = "['id' ,'in', '%s']" %'|'.join(ids) 
             expression = "@SOBJECT(%s%s)" % (my.search_type, ids_filter)
             div.add_behavior( {
-                'type': "click_up",
+                'type': "click",
                 'sobject_view' : my.custom_sobject_view,
+                'detail_view' : my.custom_detail_view,
                 'search_type': my.search_type,
                 'day': str(day),
                 'st_title': st_title,
                 'expression': expression,
                 'cbjs_action': '''
-                //var class_name = 'tactic.ui.panel.TableLayoutWdg';
                 var class_name = 'tactic.ui.widget.SObjectCalendarDayDetailWdg';
                 var title = bvr.st_title + ' ' + bvr.day;
                 var kwargs = {
@@ -924,15 +926,16 @@ class SObjectCalendarWdg(CalendarWdg):
                     'day': bvr.day,
                     'st_title': bvr.st_title,
                     'view': bvr.sobject_view,
+                    'detail_view': bvr.detail_view,
                     'show_insert': 'false',
                     'expression': bvr.expression
                 };
-                spt.app_busy.show("Loading...")
+                //spt.app_busy.show("Loading...")
                 setTimeout(function() {
                     //spt.panel.load_popup( title, class_name, kwargs );
                     spt.tab.set_main_body_tab();
                     spt.tab.add_new(title, title, class_name, kwargs);
-                    spt.app_busy.hide();
+                    //spt.app_busy.hide();
                 }, 200)
 
                 '''
@@ -1014,25 +1017,35 @@ class SObjectCalendarDayDetailWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        from tactic.ui.panel import ViewPanelWdg
+        from tactic.ui.panel import ViewPanelWdg, CustomLayoutWdg
 
         top = my.top
-        top.add_style("margin: 20px")
 
-        day = my.kwargs.get("day")
-        title = my.kwargs.get("st_title")
-        title = Common.pluralize(title)
+        detail_view = my.kwargs.get("detail_view")
+        if detail_view:
+            my.kwargs['view'] = detail_view
+            layout = CustomLayoutWdg(**my.kwargs)
+        else:
+            top.add_style("margin: 20px")
 
-        title_wdg = DivWdg()
-        top.add(title_wdg)
-        title_wdg.add("<div style='font-size: 25px'>%s for date: %s</div>" % (title, day))
-        title_wdg.add("List of %s on this day." % title)
-        title_wdg.add("<hr/>")
+            day = my.kwargs.get("day")
+            title = my.kwargs.get("st_title")
+            title = Common.pluralize(title)
 
-        my.kwargs['show_shelf'] = False
+            title_wdg = DivWdg()
+            top.add(title_wdg)
+            title_wdg.add("<div style='font-size: 25px'>%s for date: %s</div>" % (title, day))
+            title_wdg.add("List of %s on this day." % title)
+            title_wdg.add("<hr/>")
 
-        layout = ViewPanelWdg(**my.kwargs)
+            my.kwargs['show_shelf'] = False
+
+            layout = ViewPanelWdg(**my.kwargs)
+
         top.add(layout)
+
+
+
 
 
         return top

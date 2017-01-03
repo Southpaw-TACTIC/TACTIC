@@ -550,11 +550,16 @@ class ExpressionParser(object):
         new_parser.vars = my.vars
         new_parser.show_retired = my.show_retired
         new_parser.use_cache = my.use_cache
+        new_parser.related_types = my.related_types
 
         new_parser.do_parse()
 
         # get the result from the parse
         my.result = new_parser.get_result()
+
+        # get the related_types going back up after a dive
+        # This is for caching purposes
+        my.related_types = new_parser.related_types
 
         if not expression:
             my.index = new_parser.index
@@ -1583,7 +1588,10 @@ class MethodMode(ExpressionParser):
 
             results = []
             for value in values:
-                value2 = os.path.dirname(value)
+                if not value:
+                    value2 = ""
+                else:
+                    value2 = os.path.dirname(value)
                 results.append(value2)
 
 

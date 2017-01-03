@@ -1133,7 +1133,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
-            table.add_style("width: %s" % width)
+            #if table_width:
+            #    table.add_style("width: %s" % table_width)
 
         # refresh columns have init_load_num = -1 and temp = True
         if init_load_num < 0 or temp != True: 
@@ -3791,6 +3792,19 @@ spt.table.add_insert_extra_value = function(name, value) {
 
 
 
+spt.table.add_extra_action = function(row, action, data) {
+    var extra_action = row.extra_action;
+    if (typeof(extra_action) == 'undefined') {
+        extra_action = {};
+        row.extra_action = extra_action;
+    }
+    extra_action[action] = data;
+    return extra_action;
+}
+
+
+
+
 
 
 spt.table.add_new_item = function(kwargs) {
@@ -4757,6 +4771,7 @@ spt.table.save_changes = function(kwargs) {
     var search_keys = [];
     var web_data = []; 
     var extra_data = [];
+    var extra_action = [];
 
     var parent_key = null;    
     var connect_key = null;    
@@ -4777,6 +4792,16 @@ spt.table.save_changes = function(kwargs) {
         else {
             extra_data.push(null);
         }
+
+        // get extra action
+        var extra_action_row = rows[i].extra_action
+        if (extra_action_row) {
+            extra_action.push(extra_action_row);
+        }
+        else {
+            extra_action.push(null);
+        }
+
 
 
         var search_key = rows[i].getAttribute("spt_search_key");
@@ -4842,6 +4867,7 @@ spt.table.save_changes = function(kwargs) {
         input_prefix: '__NONE__',
         update_data: JSON.stringify(update_data),
         extra_data: JSON.stringify(extra_data),
+        extra_action: JSON.stringify(extra_action),
         connect_key: connect_key
     }
    

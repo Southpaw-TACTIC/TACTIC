@@ -250,6 +250,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         thumb_table.add_style("height: 125px")
         thumb_table.add_style("padding: 5px")
         thumb_table.add_style("margin-left: 20px")
+        thumb_table.add_style("margin-top: 20px")
         thumb_table.add_style("display: inline-block")
         thumb_table.add_style("vertical-align: top")
         thumb_table.add_style("overflow-y: hidden")
@@ -1662,20 +1663,22 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
     def get_pipeline_wdg(my, pipeline_code):
         div = DivWdg()
 
-        title = DivWdg()
-        title.add_color("background", "background3", -5)
-        title.add_style("height: 20px")
-        title.add_style("font-weight: bold")
-        title.add_style("padding: 4px")
-        title.add_border()
-        title.add("Workflow")
-        div.add(title)
+        show_title = my.kwargs.get("show_title")
+        if show_title not in [False, 'false']:
+            title = DivWdg()
+            title.add_color("background", "background3", -5)
+            title.add_style("height: 20px")
+            title.add_style("font-weight: bold")
+            title.add_style("padding: 4px")
+            title.add_border()
+            title.add("Workflow")
+            div.add(title)
 
         kwargs = {
-            'width': 1280,
+            'width': "auto",
             'height': 500,
             'pipeline': pipeline_code,
-            'scale': 0.7,
+            'scale': 1.0,
             'is_editable': False,
         }
         pipeline = TaskDetailPipelineWdg(**kwargs)
@@ -1744,7 +1747,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
         var top = spt.pipeline.top;
         var text = top.getElement(".spt_pipeline_editor_current2");
-        spt.pipeline.load_triggers();
+        //spt.pipeline.load_triggers();
         spt.pipeline.fit_to_canvas(bvr.pipeline);
 
         var server = TacticServerStub.get();

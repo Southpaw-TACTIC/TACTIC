@@ -63,6 +63,23 @@ class PipelineToolWdg(BaseRefreshWdg):
         save_new_event = save_event
 
 
+        if my.kwargs.get("pipeline"):
+            inner.add_behavior( {
+            'type': 'load',
+            'pipeline_code': my.kwargs.get('pipeline'),
+            'cbjs_action': '''
+            setTimeout( function() {
+            var top = bvr.src_el;
+            var start = top.getElement(".spt_pipeline_editor_start");
+            start.setStyle("display", "none");
+
+            spt.pipeline.clear_canvas();
+            spt.pipeline.import_pipeline(bvr.pipeline_code);
+            }, 0);
+            '''
+            } )
+
+
         inner.add_behavior( {
         'type': 'listen',
         'event_name': save_event,
@@ -93,19 +110,25 @@ class PipelineToolWdg(BaseRefreshWdg):
         } )
 
 
+        my.settings = my.kwargs.get('settings') or []
+        if my.settings and isinstance(my.settings, basestring):
+            my.settings = my.settings.split("|")
+
 
 
         table.add_row()
-        left = table.add_cell()
-        left.add_style("width: 200px")
-        left.add_style("min-width: 100px")
-        left.add_style("vertical-align: top")
-        #left.add_border()
 
-        settings = my.kwargs.get('settings')
+        show_pipelines = my.kwargs.get("show_pipeline_list")
+        if show_pipelines not in [False, 'false']:
+            left = table.add_cell()
+            left.add_style("width: 200px")
+            left.add_style("min-width: 100px")
+            left.add_style("vertical-align: top")
+            #left.add_border()
 
-        pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=settings )
-        left.add(pipeline_list)
+
+            pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=my.settings )
+            left.add(pipeline_list)
 
 
         right = table.add_cell()
@@ -373,12 +396,9 @@ class PipelineListWdg(BaseRefreshWdg):
 
         my.save_new_event = my.kwargs.get("save_new_event")
 
-
-        my.settings = my.kwargs.get("settings")
-        if my.settings:
+        my.settings = my.kwargs.get("settings") or []
+        if my.settings and isinstance(my.settings, basestring):
             my.settings = my.settings.split("|")
-        else:
-            my.settings = []
 
 
     def get_display(my):
@@ -505,19 +525,43 @@ class PipelineListWdg(BaseRefreshWdg):
         try:
             #search = Search("config/pipeline")
             #pipelines = search.get_sobjects()
-            search = Search("sthpw/pipeline")
-            search.add_op("begin")
-            search.add_filter("project_code", project_code)
 
-            search.add_op("begin")
-            search.add_filter("search_type", "sthpw/task", op="!=")
-            # This pretty weird that != does not find NULL values
-            search.add_filter("search_type", "NULL", op='is', quoted=False)
-            search.add_op("or")
-            search.add_op("and")
-            search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
-            search.add_order_by("search_type")
-            pipelines = search.get_sobjects()
+            expression = my.kwargs.get("expression")
+            if expression:
+                result = Search.eval(expression)
+                if isinstance(result, Search):
+                    search = result
+                    search.add_op("begin")
+                    search.add_filter("project_code", project_code)
+
+                    search.add_op("begin")
+                    search.add_filter("search_type", "sthpw/task", op="!=")
+                    # This pretty weird that != does not find NULL values
+                    search.add_filter("search_type", "NULL", op='is', quoted=False)
+                    search.add_op("or")
+                    search.add_op("and")
+                    search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+                    search.add_order_by("search_type")
+                    pipelines = search.get_sobjects()
+                else:
+                    pipelines = result
+
+
+
+            else:
+                search = Search("sthpw/pipeline")
+                search.add_op("begin")
+                search.add_filter("project_code", project_code)
+
+                search.add_op("begin")
+                search.add_filter("search_type", "sthpw/task", op="!=")
+                # This pretty weird that != does not find NULL values
+                search.add_filter("search_type", "NULL", op='is', quoted=False)
+                search.add_op("or")
+                search.add_op("and")
+                search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+                search.add_order_by("search_type")
+                pipelines = search.get_sobjects()
 
             last_search_type = None
             for pipeline in pipelines:
@@ -826,9 +870,9 @@ class PipelineListWdg(BaseRefreshWdg):
         var group_name = bvr.pipeline_code;
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
             spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
-        }
-        else if (current_group_name == group_name) {
-            spt.confirm("Reload current workflow?", ok, null); 
+        //}
+        //else if (current_group_name == group_name) {
+        //    spt.confirm("Reload current workflow?", ok, null); 
         } else {
             ok();
         }
@@ -1350,6 +1394,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
                 var class_name = 'tactic.ui.tools.TableLayoutWdg';
                 var kwargs = {
                     search_type: bvr.search_type,
+                    view: 'table',
                     op_filters: [['pipeline_code',bvr.pipeline_code]],
                     show_shelf: false,
                 }
@@ -2153,7 +2198,7 @@ class DefaultInfoWdg(BaseInfoWdg):
                     pipeline_code: bvr.pipeline_code,
                     process: bvr.process
                 }
-                var popup = spt.panel.load_popup("Task Setup for ["+bvr.process+"]", class_name, kwargs);
+                var popup = spt.panel.load_popup("Task Setup", class_name, kwargs);
                 var nodes = spt.pipeline.get_selected_nodes();
                 var node = nodes[0];
                 spt.pipeline_properties.show_properties2(popup, node);
@@ -2909,6 +2954,44 @@ class ApprovalInfoWdg(BaseInfoWdg):
         input_output_wdg = my.get_input_output_wdg(pipeline, process)
         top.add( input_output_wdg )
 
+
+
+        has_tasks = True
+        if has_tasks:
+            div = DivWdg()
+            top.add(div)
+            div.add_style("padding: 10px")
+            div.add("<b>Task setup</b><br/>")
+            div.add("Task options allow you to control various default properties of tasks.")
+
+            process_key = process_sobj.get_search_key()
+
+            div.add("<br/>"*2)
+
+            button = ActionButtonWdg(title="Task Setup", size="block")
+            div.add(button)
+            button.add_class("btn-clock")
+            button.add_behavior( {
+                'type': 'click_up',
+                'pipeline_code': pipeline_code,
+                'process': process,
+                'search_key': process_sobj.get_search_key(),
+                'cbjs_action': '''
+                var class_name = "tactic.ui.tools.PipelinePropertyWdg";
+                var kwargs = {
+                    pipeline_code: bvr.pipeline_code,
+                    process: bvr.process
+                }
+                var popup = spt.panel.load_popup("Task Setup", class_name, kwargs);
+                var nodes = spt.pipeline.get_selected_nodes();
+                var node = nodes[0];
+                spt.pipeline_properties.show_properties2(popup, node);
+                '''
+            } )
+
+
+
+
         form_wdg = DivWdg()
         top.add(form_wdg)
         form_wdg.add_style("padding: 15px")
@@ -2922,7 +3005,8 @@ class ApprovalInfoWdg(BaseInfoWdg):
         text = LookAheadTextInputWdg(
                 name="assigned",
                 search_type="sthpw/login",
-                column="login"
+                value_column="login",
+                column="display_name"
         )
         form_wdg.add(text)
         text.add_style("width: 100%")
@@ -2934,12 +3018,11 @@ class ApprovalInfoWdg(BaseInfoWdg):
         form_wdg.add("<br/>")
 
 
-        save = ActionButtonWdg(title="Save", color="primary")
-
-        save.add_style("float: right")
-        form_wdg.add(save)
-        save.add_behavior( {
-            'type': 'click_up',
+        #save = ActionButtonWdg(title="Save", color="primary")
+        #save.add_style("float: right")
+        #form_wdg.add(save)
+        text.add_behavior( {
+            'type': 'blur',
             'pipeline_code': pipeline_code,
             'process': process,
             'cbjs_action': '''
@@ -4105,7 +4188,16 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row.add(button)
 
         button.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
+        'cbjs_action': '''
+        spt.named_events.fire_event('pipeline|save_button', bvr );
+        '''
+        } )
+
+
+        button.add_behavior( {
+        'type': 'listen',
+        'event_name': 'pipeline|save_button',
         'project_code': project_code,
         'save_event': my.save_new_event,
         'cbjs_action': '''
@@ -4151,9 +4243,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.named_events.fire_event('pipeline|save', {});
         } 
 
-
-
-        //spt.panel.refresh(editor_top);
 
         spt.app_busy.hide();
 
@@ -4977,6 +5066,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         #div.add_style("display", "none")
 
 
+        node_type = attrs.get("type")
+
 
         title_div = DivWdg()
         div.add(title_div)
@@ -5002,8 +5093,10 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
         # get a list of known properties
-        properties = ['group', "completion", "task_pipeline", 'assigned_login_group', 'supervisor_login_group',\
-                'duration', 'bid_duration']
+        if node_type == "approval":
+            properties = ['group', "completion", 'assigned_login_group', 'duration', 'bid_duration', 'color']
+        else:
+            properties = ['group', "completion", "task_pipeline", 'assigned_login_group', 'supervisor_login_group', 'duration', 'bid_duration', 'color']
 
 
         # show other properties
@@ -5047,62 +5140,63 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text_name = "spt_property_group"
         text = TextWdg(text_name)
         text.add_class(text_name)
-        #text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
-        th = table.add_cell(text)
-        th.add_style("height: 30px")
-        
-        # completion (visibility depends on sType)
-        table.add_row(css='spt_property_status_completion')
-        td = table.add_cell('Completion (0 to 100):')
-        td.add_attr("title", "Determines the completion level that this node represents.")
+        if "completion" in properties:
+            th = table.add_cell(text)
+            th.add_style("height: 30px")
+            
+            # completion (visibility depends on sType)
+            table.add_row(css='spt_property_status_completion')
+            td = table.add_cell('Completion (0 to 100):')
+            td.add_attr("title", "Determines the completion level that this node represents.")
 
-        text_name = "spt_property_completion"
-        text = TextWdg(text_name)
-        text.add_class(text_name)
-        #text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
+            text_name = "spt_property_completion"
+            text = TextInputWdg(name=text_name, type="number")
+            text.add_class(text_name)
 
-        th = table.add_cell(text)
-        th.add_style("height: 30px")
-        
-        # These searchs are needed for the task_pipeline select widget
-        task_pipeline_search = Search('sthpw/pipeline')
-        task_pipeline_search.add_filter('search_type', 'sthpw/task')
-        task_pipeline_search.add_project_filter()
-        task_pipelines = task_pipeline_search.get_sobjects()
-        
-        normal_pipeline_search = Search('sthpw/pipeline')
-        normal_pipeline_search.add_filter('search_type', 'sthpw/task', '!=')
-        normal_pipelines = normal_pipeline_search.get_sobjects()
-       
+            th = table.add_cell(text)
+            th.add_style("height: 30px")
 
-        # task_pipeline  (visibility depends on sType)
-        table.add_row(css='spt_property_task_status_pipeline')
-        td = table.add_cell('Task Status Workflow')
-        td.add_attr("title", "The task status workflow determines all of the statuses that occur within this process")
 
-        text_name = "spt_property_task_pipeline"
-        select = SelectWdg(text_name)
-        #select.append_option('<< sthpw/task pipelines >>', '')
+        if "task_pipeline" in properties: 
+            # These searchs are needed for the task_pipeline select widget
+            task_pipeline_search = Search('sthpw/pipeline')
+            task_pipeline_search.add_filter('search_type', 'sthpw/task')
+            task_pipeline_search.add_project_filter()
+            task_pipelines = task_pipeline_search.get_sobjects()
+            
+            normal_pipeline_search = Search('sthpw/pipeline')
+            normal_pipeline_search.add_filter('search_type', 'sthpw/task', '!=')
+            normal_pipelines = normal_pipeline_search.get_sobjects()
+           
 
-        
-        for pipeline in task_pipelines:
-            label = '%s (%s)' %(pipeline.get_value('name'), pipeline.get_value('code'))
-            select.append_option(label, pipeline.get_value('code'))
-        
-        select.add_empty_option('-- Select --')
-        select.add_class(text_name)
-        #select.add_event("onBlur", "spt.pipeline_properties.set_properties()")
+            # task_pipeline  (visibility depends on sType)
+            table.add_row(css='spt_property_task_status_pipeline')
+            td = table.add_cell('Task Status Workflow')
+            td.add_attr("title", "The task status workflow determines all of the statuses that occur within this process")
 
-        th = table.add_cell(select)
-        th.add_style("height: 40px")
-        
+            text_name = "spt_property_task_pipeline"
+            select = SelectWdg(text_name)
+
+            
+            for pipeline in task_pipelines:
+                label = '%s (%s)' %(pipeline.get_value('name'), pipeline.get_value('code'))
+                select.append_option(label, pipeline.get_value('code'))
+            
+            select.add_empty_option('-- Select --')
+            select.add_class(text_name)
+
+            th = table.add_cell(select)
+            th.add_style("height: 40px")
+
+           
+
         # The search needed for the login_group select widgets
         login_group_search = Search('sthpw/login_group')
         
         # assigned_login_group
         table.add_row()
-        td = table.add_cell('Assigned Login Group:')
+        td = table.add_cell('Assigned Group:')
         td.add_attr("title", "Used for limiting the users displayed when this process is chosen in a task view.")
 
         text_name = "spt_property_assigned_login_group"
@@ -5110,35 +5204,34 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         select.set_search_for_options(login_group_search, 'login_group', 'login_group')
         select.add_empty_option('-- Select --')
         select.add_class(text_name)
-        #select.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(select)
         th.add_style("height: 40px")
-        
-        # supervisor_login_group
-        table.add_row()
-        td = table.add_cell('Supervisor Login Group:')
-        td.add_attr("title", "Used for limiting the supervisors displayed when this process is chosen in a task view.")
-        text_name = "spt_property_supervisor_login_group"
-        select = SelectWdg(text_name)
-        select.set_search_for_options(login_group_search, 'login_group', 'login_group')
-        select.add_empty_option('-- Select --')
-        select.add_class(text_name)
-        #select.add_event("onBlur", "spt.pipeline_properties.set_properties()")
+       
+        if "supervisor_login_group" in properties:
+            # supervisor_login_group
+            table.add_row()
+            td = table.add_cell('Supervisor Group:')
+            td.add_attr("title", "Used for limiting the supervisors displayed when this process is chosen in a task view.")
+            text_name = "spt_property_supervisor_login_group"
+            select = SelectWdg(text_name)
+            select.set_search_for_options(login_group_search, 'login_group', 'login_group')
+            select.add_empty_option('-- Select --')
+            select.add_class(text_name)
 
-        th = table.add_cell(select)
-        th.add_style("height: 40px")
+            th = table.add_cell(select)
+            th.add_style("height: 40px")
         
         # duration
         table.add_row()
-        td = table.add_cell('Default Duration:')
+        td = table.add_cell('Default Start to End Duration:')
         td.add_attr("title", "The default duration determines the starting duration of a task that is generated for this process")
 
         text_name = "spt_property_duration"
         text = TextWdg(text_name)
         text.add_style("width: 40px")
         text.add_class(text_name)
-        #text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
+        text.add_style("text-align: center")
 
         th = table.add_cell(text)
         th.add_style("height: 40px")
@@ -5146,18 +5239,21 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         # bid duration in hours
         table.add_row()
-        td = table.add_cell('Default Bid Duration:')
+        td = table.add_cell('Expected Work Hours:')
         td.add_attr("title", "The default bid duration determines the estimated number of hours will be spent on this task.")
 
         text_name = "spt_property_bid_duration"
         text = TextWdg(text_name)
         text.add_style("width: 40px")
         text.add_class(text_name)
-        #text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
+        text.add_style("text-align: center")
 
         th = table.add_cell(text)
         th.add_style("height: 40px")
         th.add(" hours")
+
+        tr, td = table.add_row_cell()
+        td.add("<hr/>")
         
         # Color
         table.add_row()
@@ -5169,7 +5265,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         color = ColorInputWdg(text_name)
         color.set_input(text)
         text.add_class(text_name)
-        #text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         td = table.add_cell(color)
         th.add_style("height: 40px")
@@ -5181,22 +5276,23 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text_name = "spt_property_label"
         text = TextWdg(text_name)
         text.add_class(text_name)
-        #text.add_event("onChange", "spt.pipeline_properties.set_properties()")
 
         td = table.add_cell(text)
         td.add_style("height: 40px")
 
         tr, td = table.add_row_cell()
 
-        button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save workflow at the end.")
+        button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save workflow at the end.", color="primary", width=200)
         td.add("<hr/>")
         td.add(button)
-        button.add_style("float: right")
-        button.add_style("margin-right: 20px")
+        #button.add_style("float: right")
+        #button.add_style("margin-right: 20px")
+        button.add_style("margin: 15px auto")
         td.add("<br clear='all'/>")
         td.add("<br clear='all'/>")
         button.add_behavior( {
         'type': 'click_up',
+        'properties': properties,
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_pipeline_properties_top");
         var node = spt.pipeline.get_selected_node();
@@ -5204,13 +5300,15 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             alert("No node selected");
             return;
         }
-        spt.pipeline_properties.set_properties2(top, node);
+        spt.pipeline_properties.set_properties2(top, node, bvr.properties);
 
 
         var top = bvr.src_el.getParent(".spt_popup");
         spt.popup.close(top);
 
         spt.named_events.fire_event('pipeline|change', {});
+
+        spt.named_events.fire_event('pipeline|save_button', bvr );
         '''
         } )
 
@@ -5358,7 +5456,9 @@ spt.pipeline_properties.show_properties2 = function(prop_top, node) {
 
         // set the value on the element
         var el = prop_top.getElement(".spt_property_" + properties[i]);
-        if (typeof(value) == 'undefined') {
+        if (!el) continue;
+
+        if (typeof(value) == 'undefined' || value == null) {
             el.value = ""
         }
         else {
@@ -5372,9 +5472,7 @@ spt.pipeline_properties.show_properties2 = function(prop_top, node) {
 
 }
 
-spt.pipeline_properties.set_properties2 = function(prop_top, node) {
-
-    var properties = ['group', 'completion', 'task_pipeline', 'assigned_login_group', 'supervisor_login_group','duration', 'bid_duration','color', 'label'];
+spt.pipeline_properties.set_properties2 = function(prop_top, node, properties) {
 
     for ( var i = 0; i < properties.length; i++ ) {
         // get the value from the element

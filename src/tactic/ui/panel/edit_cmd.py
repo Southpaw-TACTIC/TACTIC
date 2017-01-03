@@ -83,6 +83,10 @@ class EditCmd(Command):
             my.input_prefix = ""
 
         my.extra_data = kwargs.get("extra_data") or {}
+        if isinstance(my.extra_data, basestring):
+            my.extra_data = jsonloads(my.extra_data)
+
+        my.extra_action = kwargs.get("extra_action") or {}
 
         super(EditCmd,my).__init__()
         my.search_type = None
@@ -216,10 +220,32 @@ class EditCmd(Command):
                 element_data = my.data.get(element_name)
                 action_handler.set_data(element_data)
 
-            for key,value in action_options.items():
+            for key, value in action_options.items():
                 action_handler.set_option(key, value)
 
             action_handlers.append(action_handler)
+
+
+
+        # handle extra_actions
+        for action_handler_class, data in my.extra_action.items():
+
+            element_name = action_handler_class
+
+            action_handler = Common.create_from_class_path(action_handler_class)
+            action_handler.set_name(element_name)
+            action_handler.set_input_prefix(my.input_prefix)
+
+            if my.data != None:
+                element_data = my.data.get(element_name)
+                action_handler.set_data(element_data)
+
+            for key, value in data.items():
+                action_handler.set_option(key, value)
+
+            action_handlers.append(action_handler)
+
+
 
 
 
@@ -397,7 +423,11 @@ class EditMultipleCmd(Command):
         # add the extra data
         extra_data = my.kwargs.get("extra_data")
         extra_data = jsonloads(extra_data)
-            
+
+        # add the extra action
+        extra_action = my.kwargs.get("extra_action")
+        extra_action = jsonloads(extra_action)
+
         edit_search_keys = []   # includes inserted ones
 
         # set the list of web_data coming in usually from inline edit element
@@ -432,7 +462,8 @@ class EditMultipleCmd(Command):
                 search_key=search_key,
                 view=view,
                 data=data,
-                input_prefix=input_prefix
+                input_prefix=input_prefix,
+                extra_action=extra_action[i],
             )
             cmd.execute()
 

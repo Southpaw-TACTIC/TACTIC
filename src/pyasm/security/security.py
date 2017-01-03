@@ -1190,7 +1190,6 @@ class Security(Base):
         return my._is_logged_in
 
     def is_admin(my):
-        
         return my._access_manager.is_admin()
 
     def set_admin(my, flag):
@@ -1215,27 +1214,14 @@ class Security(Base):
         return group_names
 
     def is_in_group(my, group_name):
-        
+        if group_name == "admin" and my.get_user_name() == "admin":
+            return True
+
         return group_name in my._group_names
 
 
     def get_login(my):
-        
         return my._login
-        if my.is_admin():
-            """
-            if not my._admin_login:
-                login = SearchType.create("sthpw/login")
-                login.set_value("login", "admin")
-                login.set_value("code", "admin")
-                login.set_value("first_name", "Adminstrator")
-                login.set_value("last_name", "")
-                login.set_value("display_name", "Administrator")
-                my._admin_login = login
-            return my._admin_login
-            """
-        else:
-            return my._login
 
     def get_user_name(my):
         if not my._login:

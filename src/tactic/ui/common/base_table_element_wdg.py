@@ -523,11 +523,9 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
         if sobject and SearchType.column_exists(sobject.get_search_type(), name):
             value_wdg = DivWdg()
-            value_wdg.add_update( {
-                'search_key': sobject.get_search_key(),
-                'column': name,
-                'interval': 4,
-            } )
+
+            my.add_value_update(value_wdg, sobject, name)
+
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)
 

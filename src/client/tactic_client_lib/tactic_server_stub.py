@@ -2955,7 +2955,7 @@ class TacticServerStub(object):
 
 
     def add_initial_tasks(my, search_key, pipeline_code=None, processes=[],
-                          skip_duplicate=True, offset=0):
+                          skip_duplicate=True, offset=0, start_date=None):
         '''API Function: add_initial_tasks(search_key, pipeline_code=None, processes=[], skip_duplicate=True, offset=0)
         
         Add initial tasks to an sobject
@@ -2969,13 +2969,14 @@ class TacticServerStub(object):
         pipeline_code - override the sobject's pipeline and use this one instead
         processes - create tasks for the given list of processes
         skip_duplicate - boolean to skip duplicated task
-        offset - a number to offset the start date from today's date
+        start_date - the date from which to start the tassk creation
+        offset - a number to offset the start date from the start date
 
         @return:
         list - tasks created
         '''
         return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code,
-                                           processes, skip_duplicate, offset)
+                                           processes, skip_duplicate, offset, start_date)
 
 
 
