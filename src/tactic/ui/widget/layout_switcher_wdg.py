@@ -20,6 +20,8 @@ from pyasm.widget import WidgetConfig, IconWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import IconButtonWdg
 
+from mako import exceptions
+
 class LayoutSwitcherWdg(BaseRefreshWdg):
 
     def has_config(cls):
@@ -66,15 +68,16 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         config_xml = my.kwargs.get("config_xml")
         target = my.kwargs.get("target")
         save_state = my.kwargs.get("save_state")
+        if save_state:
+            state_value = WidgetSettings.get_value_by_key(save_state)
+            if not state_value:
+                state_value = "Switch Layout"
+        else:
+            save_state = "switch_layout"
+            state_value = "Switch Layout"
+            
         mode = my.kwargs.get("mode")
         
-        # Layout switcher button displays menu and assumes right hand position of screen
-        state_value = WidgetSettings.get_value_by_key(save_state)
-        if not state_value:
-           state_value = "Switch Layout"
-
-        if not mode:
-            mode = "button"
         if mode == "button":
             activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % state_value)
         else:
@@ -186,7 +189,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             config = WidgetConfig.get(view=my.view, xml=config_xml)
             element_names = config.get_element_names()
             
-            if not WidgetSettings.get_value_by_key(save_state):
+            if not WidgetSettings.get_value_by_key(save_state) and save_state != "switch_layout":
                 WidgetSettings.set_value_by_key(save_state, element_names[0])
 
             for element_name in element_names:
@@ -211,8 +214,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 display_class = config.get_display_handler(element_name)
                 display_options = config.get_display_options(element_name)
                 
-                state_value =  WidgetSettings.get_value_by_key(save_state)
-                
+                if save_state == "switch_layout":
+                	state_value = element_names[0]
+            	else:
+            		state_value = WidgetSettings.get_value_by_key(save_state)
+
                 if element_name == state_value:
                     item_div.add_behavior( {
                         'type': 'load',
