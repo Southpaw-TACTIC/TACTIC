@@ -276,7 +276,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         # display a link if specified
         link_expr = "@SOBJECT(sthpw/login)"
-        if link_expr:
+        if my.sobject and link_expr:
             # using direct behavior because new_tab isn't working consistently
             #div.add_class("tactic_new_tab")
             div.add_style("text-decoration", "underline")

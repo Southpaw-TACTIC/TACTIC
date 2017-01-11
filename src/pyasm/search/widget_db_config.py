@@ -230,6 +230,12 @@ class WidgetDbConfig(SObject):
         return node_attrs
 
 
+    def get_element_attribute(my, element_name, name):
+        attrs = my.get_ellement_attributes(element_name)
+        return attrs.get(name)
+
+
+
     def get_element_title(my, element_name):
         return my.get_element_attributes(element_name).get("title")
 

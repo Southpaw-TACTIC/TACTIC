@@ -191,6 +191,10 @@ class WidgetConfig(Base):
         return node_attrs
 
 
+    def get_element_attribute(my, element_name, name):
+        attrs = my.get_element_attributes(element_name)
+        return attrs.get(name)
+
 
 
 
@@ -1049,6 +1053,15 @@ class WidgetConfigView(Base):
                         attrs[name] = value
 
         return attrs
+
+
+
+    def get_element_attribute(my, element_name, name):
+        attrs = my.get_element_attributes(element_name)
+        return attrs.get(name)
+
+
+
 
     def get_element_title(my, element_name):
         '''get the name of each element in a list '''

@@ -33,7 +33,8 @@ class SideBarPanelWdg(BaseRefreshWdg):
         views = []
         view = my.kwargs.get("view")
         if view:
-            views.append(view)
+            extra_views = view.split("|")
+            views.extend(extra_views)
 
         if not Project.get().is_admin():
             views.append('project_view')
@@ -1863,6 +1864,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     def get_config(cls, config_search_type, view,  default=False, personal=False):
 
+        #print "view: ", view
+
         config = None
         configs = []
         login = None
@@ -1919,8 +1922,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             config = search.get_sobject()
             if config:
                 configs.append(config)
+
             # then look for a file
-           
             SideBarBookmarkMenuWdg.add_internal_config(configs, [defined_view])
             
             logins = []
@@ -2074,8 +2077,17 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                subsection_div.add( div )
 
             else:
-                # assume LinkWdg, it's too loosely defined now
-                options = config.get_display_options(element_name)
+
+                view = config.get_element_attribute(element_name, "view")
+                if view:
+                    options = {}
+                    options['widget_key'] = 'custom_layout'
+                    options['view'] = view
+                else:
+                    # assume LinkWdg, it's too loosely defined now
+                    options = config.get_display_options(element_name)
+
+
                 options['path'] = '%s/%s' % (current_path, element_name)
 
                 # If is not link widget then remap dynamically

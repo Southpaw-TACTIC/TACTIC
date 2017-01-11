@@ -30,11 +30,14 @@ class SimpleSideBarWdg(SideBarPanelWdg):
         view = my.kwargs.get('view')
         if not view:
             view = "project_view"
+            views.append(view)
+        else:
+            extra_views = view.split("|")
+            views.extend(extra_views)
 
         #view = "my_view_%s" % Environment.get_user_name()
 
-        views.append(view)
-        return view
+        return views
 
 
     def get_subdisplay(my, views):

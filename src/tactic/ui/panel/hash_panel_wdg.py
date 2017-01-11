@@ -202,8 +202,16 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
-            options = config.get_display_options(link)
-            class_name = config.get_display_handler(link)
+
+            view = config.get_element_attribute(link, 'view')
+            if view:
+                options['widget_key'] = 'custom_layout'
+                options['view'] = view
+                class_name = None
+            else:
+                options = config.get_display_options(link)
+                class_name = config.get_display_handler(link)
+
 
             if not options:
 
@@ -283,6 +291,8 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
     def get_widget_from_hash(cls, hash, return_none=False, force_no_index=False, kwargs={}):
+
+        #print "hash: ", hash
 
         from pyasm.web import DivWdg
         if hash.startswith("//"):
