@@ -93,6 +93,11 @@ class SnapshotFileElementWdg(BaseTableElementWdg):
         if sobject:
             path = sobject.get_web_path_by_type()
             filename = os.path.basename(path)
+
+            if sobject.get_value("snapshot_type") == "sequence":
+                file_range = sobject.get_file_range()
+                filename = "%s (%s)" % (filename, file_range.get_display() )
+
             widget = HtmlElement.href(filename, ref=path, target="_blank")
         else:
             widget = ""

@@ -518,9 +518,9 @@ class GalleryWdg(BaseRefreshWdg):
                 for file_object in file_list:
                     path = file_object.get_web_path()
 
-                    #if path.find("#") != -1:
-                    #    expanded_paths = snapshot.get_expanded_web_paths()
-                    #    path = expanded_paths[0]
+                    if path.find("#") != -1:
+                        expanded_paths = snapshot.get_expanded_web_paths()
+                        path = "|".join(expanded_paths)
 
                     my.sobject_data[path] = sobject
                     paths.append(path)  

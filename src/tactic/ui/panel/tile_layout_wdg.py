@@ -282,10 +282,17 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
                 group_wdg = DivWdg()
-                inner.add(group_wdg)
-                group_wdg.add_style("margin: 0px 0px 5px 0px")
-                group_wdg.add_style("padding: 10px 10px 10px %spx" % (i*10))
+
+                if i == 0:
+                    group_wdg.add_style("margin: 10px 0px 5px 0px")
+                else:
+                    group_wdg.add_style("margin: 0px 0px 5px 0px")
+
+                group_wdg.add_style("padding: 0px 10px 0px %spx" % (i*10))
                 group_wdg.add_style("width: auto")
+
+
+                inner.add(group_wdg)
 
                 icon = IconWdg(name=title, icon="BS_FOLDER_OPEN")
                 group_wdg.add(icon)
@@ -298,7 +305,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 group_wdg.add(title_wdg)
                 title_wdg.add(title)
                 title_wdg.add_style("font-size: 1.2em")
-                title_wdg.add_style("font-weight: bold")
+                #title_wdg.add_style("font-weight: bold")
                 title_wdg.add_style("display: inline-block")
 
 

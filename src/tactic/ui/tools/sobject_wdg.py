@@ -1136,6 +1136,8 @@ class SnapshotDetailWdg(SObjectDetailWdg):
 
         title_wdg = DivWdg()
         title_wdg.add_style("margin: 20px")
+        title_wdg.add_style("font-size: 14px")
+        title_wdg.add_style("opacity: 0.7")
 
 
         my.sobject = my.get_sobject()
@@ -1147,6 +1149,7 @@ class SnapshotDetailWdg(SObjectDetailWdg):
         snapshot_div.add_style("font-size: 25px")
         snapshot_div.add(my.sobject.get_code())
 
+
  
         context = my.sobject.get_value("context", no_exception=True)
         process = my.sobject.get_value("process", no_exception=True)
@@ -1155,10 +1158,20 @@ class SnapshotDetailWdg(SObjectDetailWdg):
         context_wdg = DivWdg()
         title_wdg.add(context_wdg)
         context_wdg.add("Context: %s" % context)
+        context_wdg.add_style("margin: 5px 0px")
 
         version_wdg = DivWdg()
         title_wdg.add(version_wdg)
         version_wdg.add("Version: %0.3d" % version)
+        version_wdg.add_style("margin: 5px 0px")
+
+        show_lib_path = False
+        if show_lib_path:
+            lib_dir_wdg = DivWdg()
+            title_wdg.add(lib_dir_wdg)
+            lib_dir = my.sobject.get_lib_dir()
+            lib_dir_wdg.add("Path: %s" % lib_dir)
+            lib_dir_wdg.add_style("margin: 5px 0px")
 
 
         return title_wdg

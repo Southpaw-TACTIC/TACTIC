@@ -15,11 +15,11 @@ __init__ = ["FileTest"]
 
 import tacticenv
 
+import unittest
+
 from pyasm.security import *
 
-from file import *
-
-import unittest, os
+from file import FileRange
 
 
 class FileTest(unittest.TestCase):
@@ -36,39 +36,70 @@ class FileTest(unittest.TestCase):
 
 
     def test_all(my):
-        my._test_file_code()
+        my._test_sequence()
 
 
-    def _test_file_code(my):
+    def _test_sequence(my):
 
-        file_name = "/tmp/cow.ma"
-        file_code = "1238BAR"
-        full_path = "/tmp/cow_0001238BAR.ma"
+        data = '''
+        test001/IM-0001-0013.png
+        '''
+        data = [x.strip() for x in data.strip().split("\n") if x]
+        print data
+        FileRange.check(data)
 
-        full_file_name = File.add_file_code(file_name, file_code)
-        my.assertEquals(full_path, full_file_name)
+        data = '''
+        test001/IM-0001-0013.png
+        test001/IM-0001-0012.png
+        test001/IM-0001-0010.png
+        test001/IM-0001-0009.png
+        test001/IM-0001-0007.png
+        test001/IM-0001-0004.png
+        test001/IM-0001-0019.png
+        test001/IM-0001-0005.png
+        test001/IM-0001-0011.png
+        test001/IM-0001-0008.png
+        test001/IM-0001-0020.png
+        test001/IM-0001-0021.png
+        test001/IM-0001-0006.png
+        test001/IM-0001-0014.png
+        test001/IM-0001-0002.png
+        test001/IM-0001-0018.png
+        test001/IM-0001-0001.png
+        test001/IM-0001-0017.png
+        test001/IM-0001-0003.png
+        test001/IM-0001-0015.png
+        test001/IM-0001-0016.png
+        '''
+        data = [x.strip() for x in data.strip().split("\n") if x]
+        print data
+        FileRange.check(data)
 
-        extract_id = File.extract_file_code(full_path)
-        my.assertEquals(file_code, extract_id)
+        print
 
+        data = '''
+        Frame01.jpg
+        Frame02.jpg
+        Frame03.jpg
+        Frame004.jpg
+        Frame05.jpg
+        Frame07.jpg
+        '''
+        data = [x.strip() for x in data.strip().split("\n") if x]
+        FileRange.check(data)
 
+        print
 
-    def _test_icon_creator(my):
-
-        dir = os.path.dirname(file.__file__)
-        file_path = "%s/sthpw_maya.jpg" % dir
-        creator = IconCreator(file_path)
-
-        creator.create_icons()
-
-        web_path = creator.get_web_path()
-        icon_path = creator.get_icon_path()
-        
-        my.assertEquals( True, os.path.exists(web_path) )
-        my.assertEquals( True, os.path.exists(icon_path) )
-
-        os.unlink(web_path)
-        os.unlink(icon_path)
+        data = '''
+        Frame03.jpg
+        Frame04.jpg
+        Frame05.jpg
+        Frame06.jpg
+        Frame07.jpg
+        Frame08.jpg
+        '''
+        data = [x.strip() for x in data.strip().split("\n") if x]
+        FileRange.check(data)
 
 
 
