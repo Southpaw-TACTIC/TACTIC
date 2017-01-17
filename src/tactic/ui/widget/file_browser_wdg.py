@@ -881,6 +881,9 @@ class DirListWdg(BaseRefreshWdg):
         if my.info.get("file_type") == 'missing':
             icon_string = IconWdg.DELETE
             tip = 'Missing [%s]' %path
+        elif my.info.get("file_type") == 'sequence':
+            icon_string = "BS_FILM"
+            tip = 'Sequence [%s]' %path
         else:
             icon_string = my.get_file_icon(dirname, basename)
             tip = path

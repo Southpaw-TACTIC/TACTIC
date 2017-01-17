@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project, FileGroup
+from pyasm.biz import File, Project, FileGroup, FileRange
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -29,7 +29,7 @@ import os
 import os.path
 import re
 import shutil
-__all__ = ['IngestUploadWdg', 'IngestUploadCmd']
+__all__ = ['IngestUploadWdg', 'IngestCheckCmd', 'IngestUploadCmd']
 
 
 class IngestUploadWdg(BaseRefreshWdg):
@@ -281,7 +281,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         search_type_obj = SearchType.get(my.search_type)
         base_type = search_type_obj.get_base_key()
 
+
         pipeline_search = Search("sthpw/pipeline")
+        if my.sobject:
+            pipeline_code = my.sobject.get_value("pipeline_code")
+            if pipeline_code:
+                pipeline_search.add_filter("code", pipeline_code)
+
         pipeline_search.add_project_filter()
         pipeline_search.add_filter("search_type", base_type)
         pipelines = pipeline_search.get_sobjects()
@@ -320,7 +326,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         select = SelectWdg("process")
         process_wdg.add(select)
         select.set_option("values", process_names)
-        select.add_empty_option("- Select Ingest Process -")
+        select.add_empty_option("- Select Process to ingest to-")
         if selected_process:
             select.set_option("default", selected_process)
 
@@ -350,7 +356,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             ingest_data_view = my.kwargs.get('ingest_data_view')
 
-            sobject = SearchType.create(my.search_type)
+            if my.search_key:
+                sobject = SearchType.create("sthpw/snapshot")
+            else:
+                sobject = SearchType.create(my.search_type)
             
             if my.show_settings: 
                 edit = EditWdg(
@@ -405,8 +414,18 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode.add_style("margin-right: 5px")
             map_div.add(update_mode)
 
+            update_mode.add_behavior( {
+                "type": "listen",
+                "event_name": "set_ingest_update_mode",
+                "cbjs_action": '''
+                var value = bvr.firing_data.value;
+                bvr.src_el.value = value;
+                '''
+            } )
 
-        if "ext_option" not in hidden_options:
+
+
+        if not my.search_key and "ext_option" not in hidden_options:
             label_div = DivWdg()
             label_div.add("Ignore File Extension")
             map_div.add(label_div)
@@ -426,7 +445,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             map_div.add(ignore_ext)
 
 
-        if "column_option" not in hidden_options:
+        if not my.search_key and "column_option" not in hidden_options:
             label_div = DivWdg()
             label_div.add("Map file name to column")
             map_div.add(label_div)
@@ -469,7 +488,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        if "context_mode" not in hidden_options:
+        if not my.search_key and "context_mode" not in hidden_options:
             map_div.add("<br/>")
             map_div.add("<hr/>")
 
@@ -927,8 +946,42 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             }
 
-            var upload_button = top.getElement(".spt_upload_files_top");
-            upload_button.setStyle("display", "");
+            // get all of the current filenames
+            var filenames = []
+            var items = top.getElements(".spt_upload_file");
+            for (var i = 0; i < items.length; i++) {
+                var file = items[i].file;
+                filenames.push(file.name);
+            }
+
+
+            // check if this is a sequence or zip
+            var server = TacticServerStub.get();
+            var cmd = 'tactic.ui.tools.IngestCheckCmd';
+            var kwargs = {
+                file_names: filenames
+            };
+            var ret_val = server.execute_cmd(cmd, kwargs);
+            var info = ret_val.info;
+
+            var ok = function() {
+                var upload_button = top.getElement(".spt_upload_files_top");
+                upload_button.setStyle("display", "");
+            }
+
+            if (info.is_sequence == true) {
+                spt.confirm("Upload as a sequence?", function() {
+                    spt.named_events.fire_event("set_ingest_update_mode", {
+                        options: {
+                            value: 'sequence'
+                        }
+                    } );
+                });
+            }
+
+            ok();
+
+
 
         }
         '''
@@ -1252,9 +1305,16 @@ class IngestUploadWdg(BaseRefreshWdg):
             msg = JSON.parse(message.message);
             var percent = msg.progress;
             var description = msg.description;
+            var error = msg.error;
             info_el.innerHTML = description;
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
+
+            if (error) {
+                progress_el.setStyle("background", "#F00");
+                spt.message.stop_interval(message_key);
+            }
+
         }
         spt.message.set_interval(message_key, on_progress, 500, bvr.src_el);
 
@@ -1656,6 +1716,21 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
+class IngestCheckCmd(Command):
+
+    def execute(my):
+
+        from pyasm.biz import FileRange
+
+        file_names = my.kwargs.get("file_names")
+
+        info = FileRange.check(file_names)
+        my.info = info
+
+
+
+
+
 
 class IngestUploadCmd(Command):
 
@@ -1663,6 +1738,24 @@ class IngestUploadCmd(Command):
     FOLDER_LIMIT = 500
 
     def execute(my):
+        my.message_key = my.kwargs.get("message_key")        
+        try:
+            return my._execute()
+        except Exception, e:
+            if my.message_key:
+                msg = {
+                    'progress': 100,
+                    'error': '%s' % e,
+                    'description': 'Error: %s' % e
+                }
+
+                server = TacticServerStub.get()
+                server.log_message(my.message_key, msg, status="in progress")
+
+                raise
+
+
+    def _execute(my):
 
         library_mode = my.kwargs.get("library_mode")
         current_folder = 0
@@ -1696,8 +1789,6 @@ class IngestUploadCmd(Command):
             my.sobject = None
 
 
-        message_key = my.kwargs.get("message_key")        
-        
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
@@ -2086,7 +2177,7 @@ class IngestUploadCmd(Command):
                 file_range = '%s-%s' % (range_start, range_end)
 
                 file_path = "%s/%s" % (base_dir, filename)
-                server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
+                snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
             else: 
                 
                 if mode == "search_key":
@@ -2095,38 +2186,40 @@ class IngestUploadCmd(Command):
                     tmp_path = "%s/%s" % (tmp_dir, new_filename)
                     shutil.copy(file_path, tmp_path)
                     # auto create icon
-                    server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
+                    snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
                     
                 elif my.kwargs.get("base_dir"):
                     # auto create icon
-                    server.simple_checkin(search_key, context, file_path, process=process, mode='move')
+                    snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move')
                     
                 else:
-                    server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
+                    snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
 
+
+            #server.update(snapshot, {"user_keywords": "abc 123"} )
 
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 
 
-            if message_key:
+            if my.message_key:
                 msg = {
                     'progress': percent,
                     'description': 'Checking in file [%s]' % filename,
                 }
 
-                server.log_message(message_key, msg, status="in progress")
+                server.log_message(my.message_key, msg, status="in progress")
 
 
 
 
 
-        if message_key:
+        if my.message_key:
             msg = {
                 'progress': '100',
                 'description': 'Check-ins complete'
             }
-            server.log_message(message_key, msg, status="complete")
+            server.log_message(my.message_key, msg, status="complete")
 
         my.info = non_seq_filenames
         return non_seq_filenames

@@ -1244,6 +1244,90 @@ class FileRange(object):
         
 
 
+    def check(cls, files):
+        if len(files) == 1:
+            return {
+                "is_sequence": False,
+                "error": "",
+                "frame": 1
+            }
 
+        # copy it
+        files = files[:]
+        files.sort()
+
+        is_sequence = True
+        error = ""
+
+
+        templates = []
+        last_value = None
+        padding = None
+        for i, file in enumerate(files):
+            print file
+            #parts = re.split(r"[\/\-\.]", file)
+            parts = re.split(r"(\d+)", file)
+
+            if i == 0:
+                templates = parts
+                continue
+
+            # the number of parts needs to be the same
+            if len(parts) != len(templates):
+                is_sequence = False
+                break
+
+
+            # get the length of the template that corresponds to the diff
+            if padding == None:
+                s = set(parts)
+                last_diff = [x for x in templates if not x in s]
+                if last_diff:
+                    padding = len(last_diff[0])
+
+
+            # get the diff between the parts
+            s = set(templates)
+            diff = [x for x in parts if not x in s]
+
+            # there can only be one component that is different
+            if len(diff) != 1:
+                is_sequence = False
+                break
+
+            # figure out the difference between this and the last one
+            try:
+                value = int(diff[0])
+            except:
+                is_sequence = False
+                break
+
+
+            if padding != None and len(diff[0]) != padding:
+                is_sequence = False
+                error = "Frame [%s] has different padding" % diff[0]
+                break
+
+
+            if not last_value:
+                last_value = value
+                continue
+
+            if value - last_value != 1:
+                is_sequence = False
+                error = "Skipped frame between [%s] and [%s]" % (last_value, value)
+                break
+
+
+            last_value = value
+
+        info = {
+                'error': error,
+                'is_sequence': is_sequence,
+                'frame': i+1,
+        }
+        return info
+
+    check = classmethod(check)
 
 

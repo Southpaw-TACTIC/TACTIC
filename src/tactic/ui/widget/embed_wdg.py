@@ -106,7 +106,8 @@ class EmbedWdg(BaseRefreshWdg):
             embed.add_style("width: auto")
 
             if src.find("#") != -1:
-                file_range = "1-5"
+
+                file_range = my.kwargs.get("file_range")
                 for i in range(1, 16):
                     expand = src.replace("####", "%0.4d" % i)
                     item = HtmlElement.img(expand)
@@ -122,6 +123,17 @@ class EmbedWdg(BaseRefreshWdg):
                 #    new Scrollable(bvr.src_el)
                 #    '''
                 #} )
+
+
+            elif src.find("|") != -1:
+                paths = src.split("|")
+                for path in paths:
+                    item = HtmlElement.img(path)
+                    embed.add(item)
+                    item.add_style("width: 25%")
+
+                embed.add_style("overflow-y: auto")
+                embed.add_style("text-align: left")
 
             else:
 

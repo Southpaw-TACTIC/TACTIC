@@ -671,7 +671,7 @@ class Common(Base):
         count = 0
         dir_size = 0
 
-        if dir.find("###") != -1:
+        if dir.find("##") != -1:
             dir_size = 0
             file_type = 'sequence'
             if file_range:

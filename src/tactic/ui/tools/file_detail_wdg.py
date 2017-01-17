@@ -173,8 +173,10 @@ class FileDetailWdg(BaseRefreshWdg):
                     items_div.add(item)
                     item.add_style("max-height: 300px")
                     item.add_style("height: auto")
+                    item.add_style("width: 32%")
+                    item.add_style("margin: 2px")
                     item.add_style("display: inline-block")
-                    item.add_class("spt_resizable")
+                    #item.add_class("spt_resizable")
 
                 img.add_style("margin: 20px")
                 img.add_style("max-height: 400px")
