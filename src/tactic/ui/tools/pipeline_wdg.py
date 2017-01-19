@@ -624,9 +624,13 @@ class PipelineListWdg(BaseRefreshWdg):
                 if not last_search_type or last_search_type != search_type:
                     if last_search_type:
                         content_div.add("<hr/>")
-                    search_type_obj = SearchType.get(search_type)
-                    title = search_type_obj.get_title()
-                    title = Common.pluralize(title)
+
+                    if search_type:
+                        search_type_obj = SearchType.get(search_type)
+                        title = search_type_obj.get_title()
+                        title = Common.pluralize(title)
+                    else:
+                        title = ""
                     #inner.add(title)
 
                     stype_div = DivWdg()
