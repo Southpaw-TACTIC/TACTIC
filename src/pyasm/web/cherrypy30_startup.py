@@ -114,15 +114,7 @@ class CherryPyStartup(CherryPyStartup20):
         if site == "plugins":
             return
 
-        print "WARNING:"
-        print "    status: ", status
-        print "    message: ", message
-        print "    site: ", site
-        print "    project_code: ", project_code
 
-
-
-        # Dump out the error
         has_site = False
         try:
             from pyasm.security import TacticInit
@@ -152,7 +144,36 @@ class CherryPyStartup(CherryPyStartup20):
             config = startup.config
             startup.register_project(project_code, config, site=site)
 
-            return "ERROR"
+            if path.endswith("/UploadServer/"):
+                from pyasm.widget import UploadServerWdg
+                try:
+                    from pyasm.web import WebContainer
+                    from cherrypy30_adapter import CherryPyAdapter
+
+                    # clear the buffer
+                    WebContainer.clear_buffer()
+                    adapter = CherryPyAdapter()
+                    WebContainer.set_web(adapter)
+
+                    widget = UploadServerWdg().get_display()
+                except Exception, e:
+                    print "ERROR: ", e
+                    widget = e
+
+            else:
+                widget = "ERROR 404"
+
+
+            return widget
+
+
+
+
+        print "WARNING:"
+        print "    status: ", status
+        print "    message: ", message
+        print "    site: ", site
+        print "    project_code: ", project_code
 
 
 
