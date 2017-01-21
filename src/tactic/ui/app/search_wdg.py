@@ -122,7 +122,7 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<filter>\n")
 
         config.append('''
-        <element name='Combination'>
+        <element name='Keywords'>
           <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
             <search_type>%s</search_type>
             <prefix>quick</prefix>
@@ -164,7 +164,7 @@ class SearchWdg(BaseRefreshWdg):
         ''' % my.search_type)
         """
 
-
+        """
         config.append('''
         <element name='Parent'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
@@ -174,10 +174,11 @@ class SearchWdg(BaseRefreshWdg):
           </display>
         </element>
         ''' % my.search_type)
+        """
 
 
         config.append('''
-        <element name='Children'>
+        <element name='Related'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
             <prefix>children</prefix>
             <search_type>%s</search_type>
@@ -366,7 +367,7 @@ class SearchWdg(BaseRefreshWdg):
         my.filters = []
         security = Environment.get_security()
         element_names = my.config.get_element_names()
-        #element_names = ["children"]
+        #element_names = ["Keywords", "Related"]
 
         for element_name in element_names:
             filter = my.config.get_display_widget(element_name)

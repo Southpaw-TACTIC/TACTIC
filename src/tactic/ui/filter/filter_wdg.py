@@ -136,9 +136,14 @@ class GeneralFilterWdg(BaseFilterWdg):
             related_types = schema.get_related_search_types(my.search_type)
             parent_type = schema.get_parent_type(my.search_type)
 
+            remove_related = ['sthpw/clipboard','sthpw/sobject_list','sthpw/sobject_log','config/plugin_content','sthpw/connection']
+
             sthpw_types = []
 
             for related_type in related_types:
+                if related_type in remove_related:
+                    continue
+
                 if related_type in my.related_types or \
                         related_type in sthpw_types:
                     continue
@@ -153,13 +158,24 @@ class GeneralFilterWdg(BaseFilterWdg):
             my.related_types.extend(sthpw_types)
 
             for child_type in child_types:
+
+                if child_type in remove_related:
+                    continue
+
                 if child_type in my.related_types:
                     continue
                 my.related_types.append(child_type)
             if parent_type in my.related_types:
                 my.related_types.remove(parent_type)
 
+
+
+
+
+
             my.related_types.insert(0, my.search_type)
+
+
         elif my.mode == 'parent':
             schema = Schema.get()
             parent_type = schema.get_parent_type(my.search_type)
@@ -189,6 +205,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 # the table may have been deleted from the db
                 #columns = search_type_obj.get_columns(show_hidden=False)
                 columns = SearchType.get_columns(related_type)
+                columns = my.remove_columns(columns)
             except SqlException, e:
                 DbContainer.abort_thread_sql()
                 continue
@@ -247,6 +264,22 @@ class GeneralFilterWdg(BaseFilterWdg):
 
     def set_columns_from_search_type(my, search_type):
         my.columns = SearchType.get_columns(search_type)
+        my.columns = my.remove_columns(my.columns)
+
+
+    def remove_columns(my, columns):
+        columns2 = []
+
+        remove = ['s_status']
+        for column in columns:
+            if column in remove:
+                continue
+
+            columns2.append(column)
+
+        return columns2
+
+
 
 
     def get_display(my):
@@ -727,6 +760,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             if search_type and search_type != "*":
                 #columns = my.get_columns_from_search_type(search_type)
                 columns = SearchType.get_columns(search_type)
+                columns = my.remove_columns(columns)
                 related_search_type = search_type
             div.add( search_type_wdg )
 
