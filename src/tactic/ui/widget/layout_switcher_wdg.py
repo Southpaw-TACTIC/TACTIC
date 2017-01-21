@@ -126,7 +126,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         menu_wdg.add_style("display: none")
         menu_wdg.add_style("margin-top", "20px")
         menu_wdg.add_style("position", "absolute")
-        menu_wdg.add_style("z-index", "10")
+        menu_wdg.add_style("z-index", "100")
         menu_wdg.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''

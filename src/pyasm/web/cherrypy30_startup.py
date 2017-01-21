@@ -151,7 +151,9 @@ class CherryPyStartup(CherryPyStartup20):
             startup = cherrypy.startup
             config = startup.config
             startup.register_project(project_code, config, site=site)
-            return
+
+            return "ERROR"
+
 
 
 
