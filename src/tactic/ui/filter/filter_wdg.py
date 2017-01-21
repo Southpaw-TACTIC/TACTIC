@@ -488,6 +488,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         else:
             filter_container.add_class("spt_filter_container_with_op")
 
+
         if i != 0:
             spacing = DivWdg()
             spacing.add_class("spt_spacing")
@@ -527,11 +528,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 value_div.set_style("padding: 5px")
             else:
                 value_div.set_style("padding: 1px")
-            value_div.set_style("margin-top: -5px")
-            value_div.set_style("margin-bottom: -2px")
 
-            value_div.add_style("height: 3px")
-            #value_div.add_attr("spt_op_index", i)
 
             value_div.add_behavior( {
             'type': 'click_up',
@@ -673,9 +670,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         filter_id = "%s_%s" % (my.prefix, filter_name)
         div.set_id(filter_id)
-        #div.add_style("margin-left: 10px")
         div.add_class("spt_filter_wdg")
-        #div.add_style("width: 600px")
 
         # add the enable/disable checkbox
         checkbox = CheckboxWdg('%s_enabled' % my.prefix)
@@ -1100,8 +1095,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         elif type in ['expression']:
-            filter_span.add("- Results ")
-           
             relation_hidden = HiddenWdg("%s_relation" % my.prefix)
             relation_hidden.set_value("expression")
             filter_span.add(relation_hidden)
@@ -1120,8 +1113,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             value_text = TextAreaWdg("%s_value" % my.prefix)
             value_text.add_style("vertical-align: top")
-            value_text.set_option("rows", "2")
-            value_text.set_option("cols", "70")
+            value_text.add_style("height", "30px")
+            value_text.add_style("width", "250px")
+            value_text.add_style("margin-left", "5px")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index, default='@SOBJECT()')
             filter_span.add(value_text)
@@ -1243,7 +1237,10 @@ class GeneralFilterWdg(BaseFilterWdg):
         value_dict = {}
         for values in values_list:
             search_type = values.get("%s_search_type" % my.prefix)
-            if not search_type or search_type == '*':
+            if not search_type:
+                search_type = search.get_base_search_type()
+
+            if search_type == '*':
                 continue
            
             # NOTE: this is done here instead of the relevant_values_list in alter_search to work with Compound Search better
@@ -1331,15 +1328,22 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             search_type = values.get("%s_search_type" % my.prefix)
             if not search_type:
-                my._alter_sobject_search(search, [values], my.prefix)
-                child_search = None
-                last_search_type = None
-                continue
+                if my.filter_mode == "custom":
+                    search_type = search.get_base_search_type()
+                else:
+                    my._alter_sobject_search(search, [values], my.prefix)
+                    child_search = None
+                    last_search_type = None
+                    continue
+
+
             if not value_dict.get(search_type):
                 # set a new child search if there is any break
                 child_search = None
                 last_search_type = None
                 continue
+
+
             if search_type != last_search_type:
                 child_search = None
             
