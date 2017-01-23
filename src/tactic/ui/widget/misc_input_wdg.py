@@ -296,6 +296,8 @@ class TaskStatusSelectWdg(SelectWdg):
             my.task_pipelines.append(default_pipe)
             default_pipe = Pipeline.get_by_code('progress')
             my.task_pipelines.append(default_pipe)
+            default_pipe = Pipeline.get_by_code('milestone')
+            my.task_pipelines.append(default_pipe)
             
             
             my.task_mapping = {}

@@ -1175,7 +1175,6 @@ spt.tab.close = function(src_el) {
         top = my.top
         top.add_class("spt_tab_top")
 
-
         my.search_type = None
 
         my.view = my.kwargs.get("view")
@@ -1185,6 +1184,7 @@ spt.tab.close = function(src_el) {
         my.save_state = my.kwargs.get("save_state")
         if my.save_state in [True, 'true']:
             my.save_state = "save_state|main_tab"
+
         if my.save_state:
             saved_config_xml = WidgetSettings.get_value_by_key(my.save_state)
             if saved_config_xml:

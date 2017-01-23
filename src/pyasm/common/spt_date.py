@@ -47,6 +47,9 @@ class SPTDate(object):
 
 
     def strip_time(cls, date):
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
         date = datetime(date.year, date.month, date.day)
         return date
     strip_time = classmethod(strip_time)

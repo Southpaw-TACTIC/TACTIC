@@ -54,6 +54,16 @@ APPROVAL_PIPELINE = '''
 
 '''
 
+MILESTONE_PIPELINE = '''
+<pipeline type="serial">
+  <process completion="0" color="#8ad3e5" name="Pending"/>
+  <process completion="100" color="#a3d991" name="Complete"/>
+  <connect to="Pending" from="Complete"/>
+</pipeline>
+
+'''
+
+
 
 DEPENDENCY_PIPELINE = '''
 <pipeline type="serial">
@@ -176,6 +186,24 @@ class Task(SObject):
 
         return xml.to_string()
     get_default_progress_xml = staticmethod(get_default_progress_xml)
+
+
+    def get_default_milestone_xml():
+        global MILESTONE_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(MILESTONE_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            if color:
+                Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
+    get_default_milestone_xml = staticmethod(get_default_milestone_xml)
 
 
 
