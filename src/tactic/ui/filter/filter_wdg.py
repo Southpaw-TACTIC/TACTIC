@@ -88,7 +88,11 @@ class BaseFilterWdg(BaseRefreshWdg):
         return relevant_values_list
 
     get_search_data_list = staticmethod(get_search_data_list)
-    
+
+
+
+
+
 class GeneralFilterWdg(BaseFilterWdg):
     '''Represents a very generic filter matching a column to a value'''
 
@@ -852,7 +856,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         
         filter_id = "%s_search_type" % (my.prefix)
         search_type_select = SelectWdg(filter_id)
-        search_type_select.add_style("width: 110px")
+        search_type_select.add_style("width: 130px")
         search_type_select.add_empty_option('-- Related Type --')
         behavior = {
             'type': 'change',
@@ -865,7 +869,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         #schema = Schema.get()
         if my.mode in ['child', 'parent','related']:
-            my.labels = [x.split("/")[1] for x in my.related_types]
+            my.labels = [x.split("/")[1].title() for x in my.related_types]
             search_type_select.set_option("values", my.related_types)
             search_type_select.set_option("labels", my.labels)
             my.set_filter_value(search_type_select, filter_index)
@@ -1326,7 +1330,12 @@ class GeneralFilterWdg(BaseFilterWdg):
                 continue
 
             search_type = values.get("%s_search_type" % my.prefix)
-            if not search_type or not value_dict.get(search_type):
+            if not search_type:
+                my._alter_sobject_search(search, [values], my.prefix)
+                child_search = None
+                last_search_type = None
+                continue
+            if not value_dict.get(search_type):
                 # set a new child search if there is any break
                 child_search = None
                 last_search_type = None
@@ -1393,7 +1402,9 @@ class GeneralFilterWdg(BaseFilterWdg):
         begin_idx = len(search.get_select().get_wheres())
         
         for i, child_search in enumerate(child_searches):
+
             search.add_relationship_search_filter(child_search)
+
             # apply upper level op on custom mode
             if my.filter_mode == 'custom' and i > 0:
                 search.add_op( upper_ops[i-1] )

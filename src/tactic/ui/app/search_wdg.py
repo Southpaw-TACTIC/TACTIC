@@ -365,7 +365,10 @@ class SearchWdg(BaseRefreshWdg):
         # create the filters
         my.filters = []
         security = Environment.get_security()
-        for element_name in my.config.get_element_names():
+        element_names = my.config.get_element_names()
+        #element_names = ["children"]
+
+        for element_name in element_names:
             filter = my.config.get_display_widget(element_name)
 
             if filter and filter.is_visible():

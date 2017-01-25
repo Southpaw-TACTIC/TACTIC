@@ -287,6 +287,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             pipeline_code = my.sobject.get_value("pipeline_code")
             if pipeline_code:
                 pipeline_search.add_filter("code", pipeline_code)
+            else:
+                pipeline_search.set_null_filter()
 
         pipeline_search.add_project_filter()
         pipeline_search.add_filter("search_type", base_type)
