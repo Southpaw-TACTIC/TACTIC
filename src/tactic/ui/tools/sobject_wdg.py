@@ -1165,13 +1165,38 @@ class SnapshotDetailWdg(SObjectDetailWdg):
         version_wdg.add("Version: %0.3d" % version)
         version_wdg.add_style("margin: 5px 0px")
 
-        show_lib_path = False
+        show_lib_path = True
         if show_lib_path:
             lib_dir_wdg = DivWdg()
             title_wdg.add(lib_dir_wdg)
+
             lib_dir = my.sobject.get_lib_dir()
-            lib_dir_wdg.add("Path: %s" % lib_dir)
+            client_lib_dir = my.sobject.get_client_lib_dir()
+
+
             lib_dir_wdg.add_style("margin: 5px 0px")
+            lib_dir_wdg.add("Client Path:")
+
+            from tactic.ui.input import TextInputWdg
+            #text.add(client_lib_dir)
+            text = TextInputWdg()
+            text.set_value(client_lib_dir)
+            text.add_style("width", "100%")
+            text.add_class("form-control")
+            lib_dir_wdg.add(text)
+            text.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+                bvr.src_el.select();
+                try {
+                    document.execCommand('copy');
+                } catch(err) {
+                    alert("Cannot copy");
+                }
+                '''
+            } )
+
+
 
 
         return title_wdg

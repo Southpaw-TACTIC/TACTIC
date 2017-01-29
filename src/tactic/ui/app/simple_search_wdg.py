@@ -170,9 +170,20 @@ class SimpleSearchWdg(BaseRefreshWdg):
         table = Table()
         top.add(table)
 
+        tr, td = table.add_row_cell()
+
+        button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
+        td.add(button)
+        button.add_style("float: right")
+        button.add_style("margin: 10px")
+        button.add_behavior( {
+        'type': 'click',
+        'cbjs_action': '''
+        spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_filter_top"));
+        '''
+        } )
 
         title_div = DivWdg()
-        tr, td = table.add_row_cell()
         td.add(title_div)
         title_div.add("<div style='font-size: 16px'>Search Criteria</div>")
         title_div.add("<div>Select filters to refine your search</div>")

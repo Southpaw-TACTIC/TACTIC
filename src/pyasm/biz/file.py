@@ -1168,7 +1168,7 @@ class FileGroup(File):
     def is_sequence(path):
         if not path:
             return False
-        if path.find("###") != -1:
+        if path.find("##") != -1:
             return True
         else:
             return False

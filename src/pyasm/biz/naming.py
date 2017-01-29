@@ -681,6 +681,34 @@ class NamingUtil(object):
                 elif attr.startswith("id"):
                     value = "%0.5d" % sobject.get_id()
 
+                elif attr == "basefile":
+                    file_name = file.get_value("file_name")
+                    base_type = file.get_value("base_type")
+                    if base_type =='directory':
+                        value = file_name
+                    else:
+                        base, ext = os.path.splitext(file_name)
+                        value = base
+
+                    # Remove # signs as they cause problems
+                    value = value.replace("#","")
+
+                elif attr == "ext":
+                    if not ext:
+                        file_name = file.get_value("file_name")
+                        base_type = file.get_value("base_type")
+                        if base_type =='directory':
+                            value = ''
+                        else:
+                            base, ext = os.path.splitext(file_name)
+                            value = ext.lstrip(".")
+                    else:
+                        # external ext starts with a .
+                        ext = ext.lstrip(".")
+                        value = ext
+
+
+
                 elif attr in ["login","user"]:
                     login = Environment.get_login()
                     value = login.get_value("login")
