@@ -618,7 +618,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         title = my.kwargs.get("title")
-        title =  None
         if not title:
             if my.project_code:
                 project_title = Project.get_by_code(my.project_code).get_value("title")
@@ -694,7 +693,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin-top: -3px")
         shelf_div.add(button)
         button.add_behavior( {
-            'type': 'click_up',
+            'type': 'click',
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 

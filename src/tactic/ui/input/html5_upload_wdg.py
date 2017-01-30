@@ -142,10 +142,8 @@ spt.html5upload.select_files = function(onchange) {
         el.addEventListener("change", onchange, true);
     }
 
-    setTimeout( function() {
-        el.click();
-        spt.html5upload.events[event_name] = onchange;
-    }, 100 );
+    spt.html5upload.events[event_name] = onchange;
+    el.click();
 
     // FIXME: this is not very useful as the select file is async, but
     // is required for later code not to open a popup
