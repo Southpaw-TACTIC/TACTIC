@@ -282,7 +282,7 @@ class Project(SObject):
 
     def get_user_projects(cls):
         search = Search("sthpw/project")
-        search.add_filters("code", ['admin','tactic'], op='not in')
+        search.add_filters("code", ['admin','sthpw'], op='not in')
         projects = search.get_sobjects()
 
         security = Environment.get_security()
