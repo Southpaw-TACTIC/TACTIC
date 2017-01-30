@@ -164,7 +164,7 @@ class EmbedWdg(BaseRefreshWdg):
             source_types = ["video/mp4"]
             poster = thumb_path
             width = '100%'
-            height = '100%'
+            height = 'auto'
             #width = "640"
             #height = "480"
             video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)

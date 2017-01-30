@@ -87,6 +87,8 @@ class VideoWdg(BaseRefreshWdg):
             video.add_attr("width", width)
         if height:
             video.add_attr("height", height)
+        else:
+            video.add_attr("height", "auto")
 
         if poster:
             video.add_attr("poster", poster)

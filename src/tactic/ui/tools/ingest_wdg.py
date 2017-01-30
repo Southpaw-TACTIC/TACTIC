@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project, FileGroup, FileRange
+from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -29,6 +29,7 @@ import os
 import os.path
 import re
 import shutil
+
 __all__ = ['IngestUploadWdg', 'IngestCheckCmd', 'IngestUploadCmd']
 
 
@@ -1939,6 +1940,12 @@ class IngestUploadCmd(Command):
                     filename = os.path.basename(lib_path)
                     new_filename = re.sub(r"_v\d+", "", filename)
                 else:
+                    snapshot = Snapshot.get_latest_by_sobject(snapshot, process="publish")
+                    lib_path = snapshot.get_lib_path_by_type()
+                    filename = os.path.basename(lib_path)
+                    new_filename = re.sub(r"_v\d+", "", filename)
+
+                if not snapshot:
                     raise Exception("Must pass in snapshot search_key")
 
             else:
