@@ -918,13 +918,17 @@ class Search(Base):
                 my.add_filters(to_col, col_values, op=op )
         elif relationship in ['search_type','search_code','search_id']:
 
+            prefix = attrs.get("prefix")
+            if prefix:
+                prefix = "%s_" % prefix
+            else:
+                prefix = ""
+
             if my_is_from:
                 if not to_col:
                     attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), sobjects[0].get_search_type())
                     to_col = attrs.get("to_col")
-
                     from_col = attrs.get("from_col")
-
 
                 # quickly go through the sobjects to determine if the
                 # search types are the same
@@ -941,11 +945,11 @@ class Search(Base):
                 if not multi_stypes:
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
-                    my.add_filter("search_type", sobjects[0].get_search_type() )
+                    my.add_filter("%ssearch_type" % prefix, sobjects[0].get_search_type() )
                     if isinstance(col_values[0], int) or isinstance(col_values[0], long):
                         my.add_filters(from_col, col_values, op=op )
                     else:
-                        my.add_filters("search_code", col_values, op=op)
+                        my.add_filters("%ssearch_code" % prefix, col_values, op=op)
                 else:
                     if op != 'in':
                         raise SearchException("For searches with multi_stypes, op = 'in' must be used.");
@@ -963,6 +967,7 @@ class Search(Base):
                     my.add_where("( %s )" % " or ".join(filters))
 
 
+
             else:
                 # assume default search_type/search_id schema like task, snapshot
                 # filter out the sobjects that are not the same search type
@@ -970,17 +975,18 @@ class Search(Base):
                 search_type = my.get_search_type()
                 filtered_sobjects = []
                 for sobject in sobjects:
-                    if sobject.get_value("search_type") != search_type:
+                    if sobject.get_value("%ssearch_type" % prefix) != search_type:
                         continue
                     filtered_sobjects.append(sobject)
                 sobjects = filtered_sobjects
 
-                has_code = SearchType.column_exists(search_type, "code")
+                code_column = "%ssearch_code" % prefix
+                has_code = SearchType.column_exists(search_type, code_column)
                 if has_code:
-                    column = "search_code"
+                    column = "%ssearch_code" % prefix
                     column2 = "code"
                 else:
-                    column = "search_id"
+                    column = "%ssearch_id" % prefix
                     column2 = "id"
 
                 sobject_values = SObject.get_values(sobjects, column, unique=True)
@@ -2161,6 +2167,12 @@ class Search(Base):
         relationship = attrs.get("relationship")
         is_from = related_type == attrs.get("from")
 
+        prefix = attrs.get("prefix")
+        if prefix:
+            prefix = "%s_" % prefix
+        else:
+            prefix = ""
+
         # go through the related sobjects and map them
         for related_sobject in related_sobjects:
             if relationship == 'search_type':
@@ -2182,8 +2194,8 @@ class Search(Base):
 
             elif relationship in ['search_code']:
                 if is_from:
-                    search_type = related_sobject.get_value("search_type")
-                    search_code = related_sobject.get_value("search_code")
+                    search_type = related_sobject.get_value("%ssearch_type" % prefix)
+                    search_code = related_sobject.get_value("%ssearch_code" % prefix)
                     key = "%s&code=%s" % (search_type, search_code)
                 else:
                     search_type = related_sobject.get_search_type()
@@ -2192,8 +2204,8 @@ class Search(Base):
  
             elif relationship in ['search_id']:
                 if is_from:
-                    search_type = related_sobject.get_value("search_type")
-                    search_id = related_sobject.get_value("search_id")
+                    search_type = related_sobject.get_value("%ssearch_type" % prefix)
+                    search_id = related_sobject.get_value("%ssearch_id" % prefix)
                     key = "%s&id=%s" % (search_type, search_id)
                 else:
                     search_type = related_sobject.get_search_type()
@@ -2233,9 +2245,9 @@ class Search(Base):
 
                 else:
                     if relationship == 'search_code':
-                        key = "%s&code=%s" % (sobject.get_value("search_type"), sobject.get_value("search_code"))
+                        key = "%s&code=%s" % (sobject.get_value("%ssearch_type" % prefix), sobject.get_value("%ssearch_code" % prefix))
                     else:
-                        key = "%s&id=%s" % (sobject.get_value("search_type"), sobject.get_value("search_id"))
+                        key = "%s&id=%s" % (sobject.get_value("%ssearch_type" % prefix), sobject.get_value("%ssearch_id" % prefix))
 
             else:
                 raise TacticException("Relationship [%s] not supported" % relationship)
@@ -3530,7 +3542,7 @@ class SObject(object):
             my.set_value("search_code", sobject.get_code() )
             # maintain some backwards compatibility
             my.set_value("search_id", sobject.get_id() )
-        elif relationship == "search_code":
+        elif relationship == "search_id":
             my.set_value("search_type", sobject.get_search_type() )
             my.set_value("search_id", sobject.get_id() )
 

@@ -29,7 +29,13 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
     '''remaps the old BaseTableElementWdg to use BaseRefreshWdg'''
 
     def __init__(my, **kwargs):
-        BaseRefreshWdg.__init__(my, **kwargs)
+        # Handle the base refresh directly instead of calling __init__.
+        # This is because FormerBaseTableelementWdg also does the same
+        # thing causing a buch of function to be run twice
+        #BaseRefreshWdg.__init__(my, **kwargs)
+        my.top = DivWdg()
+        my.handle_args(kwargs)
+
         FormerBaseTableElementWdg.__init__(my, **kwargs)
         
     def get_args_keys(cls):

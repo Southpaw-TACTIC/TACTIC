@@ -175,11 +175,10 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
 
     def init(my):
-       
         my.hidden = False
         my.allow_email = my.kwargs.get('allow_email') != 'false'
         my.show_task_process = my.kwargs.get('show_task_process') == 'true'
-        my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,   **my.kwargs)
+        my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,**my.kwargs)
         
 
     def get_required_columns(my):
@@ -540,6 +539,52 @@ class DiscussionWdg(BaseRefreshWdg):
         })
 
 
+
+        gallery_div = DivWdg()
+        layout.add( gallery_div )
+        gallery_div.add_class("spt_note_gallery")
+        layout.add_relay_behavior( {
+            'type': 'click',
+            'width': "",
+            'align': "",
+            'bvr_match_class': 'spt_open_thumbnail',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_discussion_top");
+            var tile_tops = top.getElements(".spt_open_thumbnail");
+
+
+            var search_keys = [];
+            for (var i = 0; i < tile_tops.length; i++) {
+                var tile_top = tile_tops[i];
+                var tile_top = tile_top.getFirst();
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
+                var search_key = tile_top.getAttribute("id");
+                search_key = search_key.replace("thumb_", "");
+                search_keys.push(search_key);
+            }
+
+            var tile_top = bvr.src_el;
+            var tile_top = tile_top.getFirst();
+            var search_key = tile_top.getAttribute("spt_search_key_v2");
+            var search_key = tile_top.getAttribute("id");
+            search_key = search_key.replace("thumb_", "");
+
+            var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+            var kwargs = {
+                search_keys: search_keys,
+                search_key: search_key,
+                align: bvr.align
+            };
+            if (bvr.width) 
+                kwargs['width'] = bvr.width;
+            var gallery_el = top.getElement(".spt_note_gallery");
+            spt.panel.load(gallery_el, class_name, kwargs);
+
+            '''
+        } )
+
+
+
     add_layout_behaviors = classmethod(add_layout_behaviors)
 
 
@@ -650,7 +695,10 @@ class DiscussionWdg(BaseRefreshWdg):
         search.add_order_by("timestamp desc")
 
         if my.process:
+            search.add_op("begin")
             search.add_filter("process", my.process)
+            search.add_filter("process", "%s/%%" % my.process, op="like")
+            search.add_op("or")
 
         if my.contexts:
             search.add_filters("context", my.contexts)
@@ -677,6 +725,10 @@ class DiscussionWdg(BaseRefreshWdg):
                 process = note.get_value("process")
             else:
                 process = "publish"
+
+            # NOTE: this could be an issue if the process contains a "/" init
+            if process.endswith("/review"):
+                process = process.split("/")[0]
 
             search_type = note.get_value("search_type")
 
@@ -1230,7 +1282,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_wdg = my.get_context_wdg(process, context)
                 context_top.add(context_wdg)
                 context_top.add_style("min-width: 300px")
-                if context.endswith("/review"):
+                if context.startswith("review/"):
                     context_wdg.add_style("color: #F00")
 
 
@@ -1452,11 +1504,25 @@ class NoteCollectionWdg(BaseRefreshWdg):
                 xx.append(snapshot)
 
 
-            """ DISABLING untile we have a better process filtering for this widget
-            if parent:
-                parent_snapshots = Snapshot.get_by_sobject(parent, process="review")
+
+            if True and parent:
+
+                """
+                search = Search("sthpw/snapshot")
+                search.add_parent_filter(parent)
+                #search.add_filter("process", process)
+                search.add_filter("context", context)
+                parent_snapshots = search.get_sobjects()
+                #parent_snapshots = Snapshot.get_by_sobject(parent, process=process)
+                """
+
+                context = "attachment"
+                parent_snapshots = Search.eval("@SOBJECT(sthpw/note.connect['context','%s'].sthpw/snapshot)" % context, notes)
 
                 for note in notes:
+
+                    parent_snapshots = note.get_connections(context="attachment")
+
                     note_key = note.get_search_key()
                     xx = my.attachments.get(note_key)
 
@@ -1465,9 +1531,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
                         my.attachments[note_key] = xx
 
                     for snapshot in parent_snapshots:
-                        print "snapshot: ", snapshot.get("process"), snapshot.get_value("context")
                         xx.append(snapshot)
-            """
 
 
 
@@ -1900,6 +1964,8 @@ class NoteWdg(BaseRefreshWdg):
 
                 thumb = ThumbWdg()
                 thumb.set_icon_size("45")
+                thumb.add_style("border: solid 3px #000")
+                thumb.add_style("border-radius: 45px")
                 if login_sobj:
                     thumb.set_sobject(login_sobj)
                     left.add(thumb)
@@ -1952,7 +2018,7 @@ class NoteWdg(BaseRefreshWdg):
 
             for snapshot in snapshots:
                 thumb = ThumbWdg()
-                thumb.set_option('detail','false')
+                thumb.set_option('detail','none')
                 thumb.set_option('image_link_order' , 'main|web|icon')
                 thumb.set_icon_size(60)
                 thumb.set_sobject(snapshot)
@@ -2414,10 +2480,25 @@ class DiscussionAddNoteCmd(Command):
                     source_paths.append(icon_path)
 
             # specify strict checkin_type to prevent latest versionless generated
-            checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
+
+            checkin_mode = "parent"
+            if checkin_mode == "parent":
+                attachment_process = "%s/attachment" % process
+                attachment_context = "attachment/%s" % process
+                checkin = FileCheckin(sobject, file_paths= file_paths, file_types = file_types, \
+                    source_paths=source_paths,  process=attachment_process, \
+                    context=attachment_context, checkin_type='strict')
+
+                checkin.execute()
+
+                snapshot = checkin.get_snapshot()
+                snapshot.connect(note, context="attachment")
+
+            else:
+                checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
                     source_paths=source_paths,  context=context, checkin_type='strict')
 
-            checkin.execute()
+                checkin.execute()
 
 
 

@@ -1842,7 +1842,7 @@ class IngestUploadCmd(Command):
 
         context_mode = my.kwargs.get("context_mode")
         if not context_mode:
-            context_mode = "case_insensitive"
+            context_mode = "case_sensitive"
         update_mode = my.kwargs.get("update_mode")
         ignore_ext = my.kwargs.get("ignore_ext")
         column = my.kwargs.get("column")

@@ -163,17 +163,17 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
             relationship='code' from_col='login' to_col='login'/>
 
 
-    <connect to='*' from ='sthpw/connection'
-            relationship='search_type' type='hierarchy'
+    <connect to='*' from='sthpw/connection'
+            relationship='search_id' type='hierarchy'
             prefix='src'
     />
-    <connect to='*' from ='sthpw/connection'
-            relationship='search_type' type='hierarchy'
+    <connect to='*' from='sthpw/connection'
+            relationship='search_id' type='hierarchy'
             prefix='src' path='src'
     />
 
     <connect to='*' from ='sthpw/connection'
-            relationship='search_type'
+            relationship='search_id'
             prefix='dst' path='dst'
     />
 
@@ -283,6 +283,10 @@ SCHEMA_XML['prod'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
     <connect from="prod/shot_instance" to="prod/shot" relationship='code' from_col='shot_code' to_col='code'/>
     <connect from="prod/shot_instance" to="prod/asset" relationship='code' from_col='asset_code' to_col='code'/>
+
+
+    <connect from="sthpw/login" to="*"
+            relationship='code' from_col='login' to_col='login'/>
 
 
 
@@ -576,7 +580,7 @@ class Schema(SObject):
 
     def resolve_relationship_attrs(my, attrs, search_type, search_type2):
 
-        if attrs.get("relationship") != "search_type":
+        if attrs.get("relationship") not in ("search_type","search_code","search_id"):
             return attrs
 
 
@@ -599,7 +603,6 @@ class Schema(SObject):
         else:
             prefix = ""
 
-
         if my_is_from:
 
             if db_impl2.get_database_type() == "MongoDb":
@@ -607,7 +610,8 @@ class Schema(SObject):
                 attrs['to_col'] = db_impl2.get_id_col(db_resource2,search_type2)
                 attrs['relationship'] = 'search_code'
             else:
-                has_code = SearchType.column_exists(search_type2, "code")
+                code_column = "%ssearch_code" % prefix
+                has_code = SearchType.column_exists(search_type, code_column)
                 if has_code:
                     attrs['from_col'] = '%ssearch_code' % prefix
                     attrs['to_col'] = 'code'
@@ -619,13 +623,13 @@ class Schema(SObject):
 
         else:
 
-
             if db_impl.get_database_type() == "MongoDb":
                 attrs['to_col'] = '%ssearch_code' % prefix
                 attrs['from_col'] = db_impl.get_id_col(db_resource,search_type)
                 attrs['relationship'] = 'search_code'
             else:
-                has_code = SearchType.column_exists(search_type, "code")
+                code_column = "%ssearch_code" % prefix
+                has_code = SearchType.column_exists(search_type2, code_column)
                 if has_code:
                     attrs['from_col'] = 'code'
                     attrs['to_col'] = '%ssearch_code' % prefix
