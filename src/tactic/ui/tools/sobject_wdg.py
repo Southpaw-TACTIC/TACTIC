@@ -14,6 +14,7 @@ __all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'Sna
 
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.common import Environment, SPTDate
 from pyasm.biz import Snapshot
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
@@ -1154,24 +1155,82 @@ class SnapshotDetailWdg(SObjectDetailWdg):
         context = my.sobject.get_value("context", no_exception=True)
         process = my.sobject.get_value("process", no_exception=True)
         version = my.sobject.get_value("version", no_exception=True)
+        login = my.sobject.get_value("login", no_exception=True)
+        timestamp = my.sobject.get_datetime_value("timestamp")
+        timestamp = SPTDate.convert_to_local(timestamp)
+        time_ago = SPTDate.get_time_ago(timestamp)
 
         context_wdg = DivWdg()
         title_wdg.add(context_wdg)
-        context_wdg.add("Context: %s" % context)
+        context_wdg.add("Process: %s" % process)
         context_wdg.add_style("margin: 5px 0px")
+
+
+        context_wdg = DivWdg()
+        title_wdg.add(context_wdg)
+        context_wdg.add("User: %s" % login)
+        context_wdg.add_style("margin: 5px 0px")
+
+
+        context_wdg = DivWdg()
+        title_wdg.add(context_wdg)
+        context_wdg.add("Created: %s" % time_ago)
+        context_wdg.add_style("margin: 5px 0px")
+
+
+
 
         version_wdg = DivWdg()
         title_wdg.add(version_wdg)
         version_wdg.add("Version: %0.3d" % version)
         version_wdg.add_style("margin: 5px 0px")
 
-        show_lib_path = False
-        if show_lib_path:
+
+
+
+
+        # only show the client path if it is defined in the config file
+        from pyasm.biz import ProdSetting
+        from pyasm.common import Config
+        client_os = Environment.get_env_object().get_client_os()
+        if client_os == 'nt':
+            prefix = "win32"
+        else:
+            prefix = "linux"
+
+        key = '%s_client_repo_dir' % prefix
+        base_dir = Config.get_value("checkin", key)
+        if base_dir:
             lib_dir_wdg = DivWdg()
             title_wdg.add(lib_dir_wdg)
+
             lib_dir = my.sobject.get_lib_dir()
-            lib_dir_wdg.add("Path: %s" % lib_dir)
+            client_lib_dir = my.sobject.get_client_lib_dir()
+
+
             lib_dir_wdg.add_style("margin: 5px 0px")
+            lib_dir_wdg.add("Client Path:")
+
+            from tactic.ui.input import TextInputWdg
+            #text.add(client_lib_dir)
+            text = TextInputWdg()
+            text.set_value(client_lib_dir)
+            text.add_style("width", "100%")
+            text.add_class("form-control")
+            lib_dir_wdg.add(text)
+            text.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+                bvr.src_el.select();
+                try {
+                    document.execCommand('copy');
+                } catch(err) {
+                    alert("Cannot copy");
+                }
+                '''
+            } )
+
+
 
 
         return title_wdg

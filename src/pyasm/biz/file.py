@@ -100,7 +100,7 @@ class File(SObject):
 
     NORMAL_EXT = ['max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx',
             'gz', 'zip', 'rar',
-            'ini', 'db', 'py', 'pyd', 'spt'
+            'ini', 'db', 'py', 'pyd', 'spt', 'rpm', 'gz'
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
@@ -1168,7 +1168,7 @@ class FileGroup(File):
     def is_sequence(path):
         if not path:
             return False
-        if path.find("###") != -1:
+        if path.find("##") != -1:
             return True
         else:
             return False

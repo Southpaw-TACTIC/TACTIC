@@ -136,9 +136,14 @@ class GeneralFilterWdg(BaseFilterWdg):
             related_types = schema.get_related_search_types(my.search_type)
             parent_type = schema.get_parent_type(my.search_type)
 
+            remove_related = ['sthpw/clipboard','sthpw/sobject_list','sthpw/sobject_log','config/plugin_content','sthpw/connection']
+
             sthpw_types = []
 
             for related_type in related_types:
+                if related_type in remove_related:
+                    continue
+
                 if related_type in my.related_types or \
                         related_type in sthpw_types:
                     continue
@@ -153,13 +158,24 @@ class GeneralFilterWdg(BaseFilterWdg):
             my.related_types.extend(sthpw_types)
 
             for child_type in child_types:
+
+                if child_type in remove_related:
+                    continue
+
                 if child_type in my.related_types:
                     continue
                 my.related_types.append(child_type)
             if parent_type in my.related_types:
                 my.related_types.remove(parent_type)
 
+
+
+
+
+
             my.related_types.insert(0, my.search_type)
+
+
         elif my.mode == 'parent':
             schema = Schema.get()
             parent_type = schema.get_parent_type(my.search_type)
@@ -189,6 +205,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 # the table may have been deleted from the db
                 #columns = search_type_obj.get_columns(show_hidden=False)
                 columns = SearchType.get_columns(related_type)
+                columns = my.remove_columns(columns)
             except SqlException, e:
                 DbContainer.abort_thread_sql()
                 continue
@@ -247,6 +264,22 @@ class GeneralFilterWdg(BaseFilterWdg):
 
     def set_columns_from_search_type(my, search_type):
         my.columns = SearchType.get_columns(search_type)
+        my.columns = my.remove_columns(my.columns)
+
+
+    def remove_columns(my, columns):
+        columns2 = []
+
+        remove = ['s_status']
+        for column in columns:
+            if column in remove:
+                continue
+
+            columns2.append(column)
+
+        return columns2
+
+
 
 
     def get_display(my):
@@ -488,6 +521,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         else:
             filter_container.add_class("spt_filter_container_with_op")
 
+
         if i != 0:
             spacing = DivWdg()
             spacing.add_class("spt_spacing")
@@ -527,11 +561,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 value_div.set_style("padding: 5px")
             else:
                 value_div.set_style("padding: 1px")
-            value_div.set_style("margin-top: -5px")
-            value_div.set_style("margin-bottom: -2px")
 
-            value_div.add_style("height: 3px")
-            #value_div.add_attr("spt_op_index", i)
 
             value_div.add_behavior( {
             'type': 'click_up',
@@ -673,9 +703,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         filter_id = "%s_%s" % (my.prefix, filter_name)
         div.set_id(filter_id)
-        #div.add_style("margin-left: 10px")
         div.add_class("spt_filter_wdg")
-        #div.add_style("width: 600px")
 
         # add the enable/disable checkbox
         checkbox = CheckboxWdg('%s_enabled' % my.prefix)
@@ -732,6 +760,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             if search_type and search_type != "*":
                 #columns = my.get_columns_from_search_type(search_type)
                 columns = SearchType.get_columns(search_type)
+                columns = my.remove_columns(columns)
                 related_search_type = search_type
             div.add( search_type_wdg )
 
@@ -1100,8 +1129,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         elif type in ['expression']:
-            filter_span.add("- Results ")
-           
             relation_hidden = HiddenWdg("%s_relation" % my.prefix)
             relation_hidden.set_value("expression")
             filter_span.add(relation_hidden)
@@ -1120,8 +1147,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             value_text = TextAreaWdg("%s_value" % my.prefix)
             value_text.add_style("vertical-align: top")
-            value_text.set_option("rows", "2")
-            value_text.set_option("cols", "70")
+            value_text.add_style("height", "30px")
+            value_text.add_style("width", "250px")
+            value_text.add_style("margin-left", "5px")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index, default='@SOBJECT()')
             filter_span.add(value_text)
@@ -1243,7 +1271,10 @@ class GeneralFilterWdg(BaseFilterWdg):
         value_dict = {}
         for values in values_list:
             search_type = values.get("%s_search_type" % my.prefix)
-            if not search_type or search_type == '*':
+            if not search_type:
+                search_type = search.get_base_search_type()
+
+            if search_type == '*':
                 continue
            
             # NOTE: this is done here instead of the relevant_values_list in alter_search to work with Compound Search better
@@ -1331,15 +1362,22 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             search_type = values.get("%s_search_type" % my.prefix)
             if not search_type:
-                my._alter_sobject_search(search, [values], my.prefix)
-                child_search = None
-                last_search_type = None
-                continue
+                if my.filter_mode == "custom":
+                    search_type = search.get_base_search_type()
+                else:
+                    my._alter_sobject_search(search, [values], my.prefix)
+                    child_search = None
+                    last_search_type = None
+                    continue
+
+
             if not value_dict.get(search_type):
                 # set a new child search if there is any break
                 child_search = None
                 last_search_type = None
                 continue
+
+
             if search_type != last_search_type:
                 child_search = None
             

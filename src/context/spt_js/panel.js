@@ -16,11 +16,19 @@ spt.panel = {}
 // Method to refresh an element.  It will look for the closest parent panel
 // and refresh
 //
-spt.panel.refresh_element = function(element, values, kwargs) {
+spt.panel.refresh_element = function(element, data, kwargs) {
 
     var panel = spt.has_class(element, "spt_panel") ? element : $(element).getParent(".spt_panel");
     var fade = kwargs ? kwargs.fade : false;
-    spt.panel.refresh(panel, values, kwargs);
+
+    if (data) {
+        if (!kwargs) {
+            kwargs = {};
+        }
+        kwargs['data'] = data;
+    }
+
+    spt.panel._refresh_widget(panel, null, kwargs);
 }
 
 
@@ -39,9 +47,11 @@ spt.panel.refresh = function(panel_id, values, kwargs) {
         // go up the hierarchy to find the next panel
         panel = panel.getParent(".spt_panel");
     }
+
     if (values == null || values == undefined || values == {}) {
         values = spt.api.Utility.get_input_values(panel);
     }
+
     spt.panel._refresh_widget(panel, values, kwargs);
 
 }
@@ -369,6 +379,14 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     var options = spt.panel.get_element_options(element);
     // add an is_refresh option
     options['is_refresh'] = "true";
+
+
+    var data = kwargs ? kwargs.data : false;
+    if (data) {
+        for (var key in data) {
+            options[key] = data[key];
+        }
+    }
 
     var server = TacticServerStub.get();
     var wdg_kwargs = {'args': options, 'values': values};

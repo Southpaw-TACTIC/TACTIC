@@ -321,6 +321,7 @@ class EditWdg(BaseRefreshWdg):
                     ignore.append(element_name)
 
 
+        #extra_data = my.kwargs.get("extra_data") or {}
 
         for i, element_name in enumerate(my.element_names):
 
@@ -348,6 +349,9 @@ class EditWdg(BaseRefreshWdg):
                 my.skipped_element_names.append(element_name)
                 continue
             widget = my.config.get_display_widget(element_name, kbd_handler=False)
+
+            #if extra_data.get(element_name):
+            #    widget.set_value(extra_data.get(element_name))
 
             # some element could be disabled due to its data_type e.g. sql_timestamp
             if not widget:

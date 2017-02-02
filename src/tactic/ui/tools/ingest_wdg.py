@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project, FileGroup, FileRange
+from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -29,6 +29,7 @@ import os
 import os.path
 import re
 import shutil
+
 __all__ = ['IngestUploadWdg', 'IngestCheckCmd', 'IngestUploadCmd']
 
 
@@ -50,16 +51,28 @@ class IngestUploadWdg(BaseRefreshWdg):
         'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
         'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped',
         'update_process': 'Determines the update process for snapshots when the update_mode is set to true and one sobject is found',
-        'ignore_path_keywords': 'Comma separated string of path keywords to be hidden'
+        'ignore_path_keywords': 'Comma separated string of path keywords to be hidden',
+        'project_code': 'Publish to another project',
     }
 
 
     def get_display(my):
 
         my.sobjects = my.kwargs.get("sobjects")
+
+        # if search_keys are passed in, then these are used to copy
         search_keys = my.kwargs.get("search_keys")
+        # add a project to copy to.  Check that it is permitted
+        my.project_code = my.kwargs.get("project_code")
+
         if search_keys:
             my.sobjects = Search.get_by_search_keys(search_keys)
+
+            projects = Project.get_user_projects()
+            project_codes = [x.get_code() for x in projects]
+            if my.project_code not in project_codes:
+                my.project_code = None
+
 
 
         asset_dir = Environment.get_asset_dir()
@@ -244,11 +257,28 @@ class IngestUploadWdg(BaseRefreshWdg):
             thumb.set_sobject(sobject)
             lib_path = thumb.get_lib_path()
 
+
             name = os.path.basename(lib_path)
             name = re.sub(r"_v\d+", "", name)
+
+
+            if sobject.get_base_search_type() == "sthpw/snapshot":
+                if sobject.get("snapshot_type") == "sequence":
+                    paths = sobject.get_expanded_lib_paths()
+                    file_range = sobject.get_file_range()
+                    size = 0
+                    for path in paths:
+                        size += os.path.getsize(path)
+                    name = "%s (%s)" % (name, file_range.get_display())
+                else:
+                    size = os.path.getsize(lib_path)
+
+            else:
+                size = os.path.getsize(lib_path)
+
+
             name_div.add( name )
 
-            size = os.path.getsize(lib_path)
             size = FormatValue().get_format_value(size, "KB")
             size_div.add(size)
 
@@ -339,7 +369,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         # Metadata
-        hidden_options.append("metadata")
+        #hidden_options.append("metadata")
         if "metadata" not in hidden_options:
             process_wdg.add("<hr/>")
 
@@ -356,20 +386,28 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             from tactic.ui.panel import EditWdg
 
-            ingest_data_view = my.kwargs.get('ingest_data_view')
+            ingest_data_view = my.kwargs.get('metadata_view')
+            if not ingest_data_view:
+                ingest_data_view = my.kwargs.get('ingest_data_view')
+
+            metadata_element_names = my.kwargs.get("metadata_element_names")
 
             if my.search_key:
                 sobject = SearchType.create("sthpw/snapshot")
             else:
                 sobject = SearchType.create(my.search_type)
-            
+
             if my.show_settings: 
                 edit = EditWdg(
                         search_key=sobject.get_search_key(),
                         mode='view',
                         view=ingest_data_view,
+                        element_names=metadata_element_names,
                         show_header=False,
-                        width="auto",
+                        width="100%",
+                        display_mode="single_cell",
+                        extra_data=my.kwargs.get("extra_data"),
+                        default=my.kwargs.get("default"),
                 )
                 
                 div.add(edit)
@@ -512,7 +550,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             context_mode.add_style("margin-top: -3px")
             context_mode.add_style("margin-right: 5px")
             map_div.add(context_mode)
-                
+
+
 
 
         extra_data = my.kwargs.get("extra_data")
@@ -581,8 +620,15 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         title = my.kwargs.get("title")
         if not title:
-            title = "Ingest Files"
-        title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
+            if my.project_code:
+                project_title = Project.get_by_code(my.project_code).get_value("title")
+                title = "Copy files to '%s'" % project_title
+                title_description = "These will be copied to the asset library"
+            else:
+                title = "Ingest Files"
+                title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
+        else:
+            title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
        
         title_wdg = DivWdg()
         header_div.add(title_wdg)
@@ -648,7 +694,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin-top: -3px")
         shelf_div.add(button)
         button.add_behavior( {
-            'type': 'click_up',
+            'type': 'click',
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 
@@ -1179,6 +1225,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var library_mode = bvr.kwargs.library_mode;
         var dated_dirs = bvr.kwargs.dated_dirs;
+        var project_code = bvr.kwargs.project_code;
+        if (!project_code) {
+            project_code = null;
+        }
 
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
@@ -1288,7 +1338,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             library_mode: library_mode,
             dated_dirs: dated_dirs,
             context_mode: context_mode,
-            zip_mode: zip_mode
+            zip_mode: zip_mode,
+            project_code: project_code,
         }
         on_complete = function(rtn_data) {
 
@@ -1334,7 +1385,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         upload_div.add_class("spt_upload_files_top")
         div.add(upload_div)
-        button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
+        if my.sobjects:
+            button = ActionButtonWdg(title="Copy Files", width=200, color="primary")
+        else:
+            button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
         upload_div.add(button)
         #button.add_style("float: right")
         #upload_div.add_style("margin-bottom: 20px")
@@ -1351,6 +1405,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         context = my.kwargs.get("context")
         context_mode = my.kwargs.get("context_mode")
 
+
         button.add_behavior( {
             'type': 'click_up',
             'action_handler': action_handler,
@@ -1364,6 +1419,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'context_mode': context_mode,
                 'update_process': my.update_process,
                 'ignore_path_keywords': my.ignore_path_keywords,
+                'project_code': my.project_code
             },
             'cbjs_action': '''
 
@@ -1481,6 +1537,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         return div
 
 
+
+
+    """
     def get_data_wdg(my):
         div = DivWdg()
 
@@ -1608,14 +1667,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             category_div.add(" Categorize files by Year")
             category_div.add_style("margin-bottom: 5px")
 
-
-            """
-            checkbox = RadioWdg("category")
-            checkbox.set_option("value", "custom")
-            name_div.add(checkbox)
-            name_div.add(" Custom")
-            """
-
             name_div.add("<br/>")
 
 
@@ -1653,6 +1704,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         return div
 
 
+        """
 
 
     def get_select_files_button(my):
@@ -1739,7 +1791,23 @@ class IngestUploadCmd(Command):
     # FOLDER_LIMIT can be adjusted as desired.
     FOLDER_LIMIT = 500
 
+    def get_server(my):
+
+        if not my.server:
+            project_code = my.kwargs.get("project_code")
+            if not project_code:
+                my.server = TacticServerStub.get()
+
+            else:
+                my.server = TacticServerStub(protocol="local")
+                my.server.set_project(project_code)
+
+        return my.server
+
     def execute(my):
+
+        my.server = None
+
         my.message_key = my.kwargs.get("message_key")        
         try:
             return my._execute()
@@ -1751,7 +1819,7 @@ class IngestUploadCmd(Command):
                     'description': 'Error: %s' % e
                 }
 
-                server = TacticServerStub.get()
+                server = my.get_server()
                 server.log_message(my.message_key, msg, status="in progress")
 
                 raise
@@ -1797,7 +1865,7 @@ class IngestUploadCmd(Command):
             table = search_type_obj.get_table()
             relative_dir = "%s/%s" % (project_code, table)
 
-        server = TacticServerStub.get()
+        server = my.get_server()
 
         parent_key = my.kwargs.get("parent_key")
         category = my.kwargs.get("category")
@@ -1849,6 +1917,9 @@ class IngestUploadCmd(Command):
         if library_mode:
             relative_dir = "%s/001" % relative_dir
 
+
+        snapshots = []
+
         for count, filename in enumerate(filenames):
         # Check if files should be updated. 
         # If so, attempt to find one to update.
@@ -1869,6 +1940,12 @@ class IngestUploadCmd(Command):
                     filename = os.path.basename(lib_path)
                     new_filename = re.sub(r"_v\d+", "", filename)
                 else:
+                    snapshot = Snapshot.get_latest_by_sobject(snapshot, process="publish")
+                    lib_path = snapshot.get_lib_path_by_type()
+                    filename = os.path.basename(lib_path)
+                    new_filename = re.sub(r"_v\d+", "", filename)
+
+                if not snapshot:
                     raise Exception("Must pass in snapshot search_key")
 
             else:
@@ -2046,8 +2123,8 @@ class IngestUploadCmd(Command):
                 print "WARNING: ", e
             """
 
-
-            if not os.path.exists(file_path):
+            # check if the file exists 
+            if mode != "search_key" and not os.path.exists(file_path):
                 raise Exception("Path [%s] does not exist" % file_path)
 
             # get the metadata from this image
@@ -2180,28 +2257,35 @@ class IngestUploadCmd(Command):
 
                 file_path = "%s/%s" % (base_dir, filename)
                 snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
-            else: 
-                
-                if mode == "search_key":
+
+            
+            elif mode == "search_key":
+
+                if lib_path.find("##") != -1:
+                    file_range = snapshot.get_file_range().get_display()
+                    file_path = lib_path
+                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='copy')
+                else:
                     # copy the file to a temporary location
                     tmp_dir = Environment.get_tmp_dir()
                     tmp_path = "%s/%s" % (tmp_dir, new_filename)
                     shutil.copy(file_path, tmp_path)
                     # auto create icon
                     snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
-                    
-                elif my.kwargs.get("base_dir"):
-                    # auto create icon
-                    snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move')
-                    
-                else:
-                    snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
+                
+            elif my.kwargs.get("base_dir"):
+                # auto create icon
+                snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move')
+                
+            else:
+                snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
 
+
+            snapshots.append(snapshot)
 
             #server.update(snapshot, {"user_keywords": "abc 123"} )
 
             percent = int((float(count)+1) / len(filenames)*100)
-            print "checking in: ", filename, percent
 
 
             if my.message_key:
@@ -2213,6 +2297,44 @@ class IngestUploadCmd(Command):
                 server.log_message(my.message_key, msg, status="in progress")
 
 
+
+        # TEST Copy to a library as well
+        is_test = False # disabled
+        if is_test and mode != "search_key":
+
+            filenames = []
+            for snapshot in snapshots:
+                filenames.append('search_key:%s' % snapshot.get('__search_key__'))
+            project_code = ""
+            search_type = "workflow/asset"
+            keywords = ""
+            extra_data ={"user_keywords": "JOB00216", "order_code": "JOB00216"}
+
+            kwargs = {
+                'filenames': filenames,
+
+                'context_mode': context_mode,
+
+                'ignore_ext': ignore_ext,
+                'keywords': keywords,
+
+                'extra_data': extra_data,
+
+                'ignore_path_keywords': ignore_path_keywords,
+                'library_mode': library_mode,
+
+                'dated_dirs': 'true',
+                'relative_dir': 'workflow/asset/Ingest/2017-01-28/admin/15h',
+
+                'message_key': my.message_key,
+                'project_code': project_code,
+                'search_type': search_type,
+                'update_data': {   },
+                'update_mode': 'false',
+                'update_process': process,
+            }
+            cmd = IngestUploadCmd(**kwargs)
+            cmd.execute()
 
 
 
