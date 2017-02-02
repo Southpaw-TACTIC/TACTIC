@@ -20,6 +20,34 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a01
     #
+    def upgrade_v4_6_0_a01_008(my):
+        my.run_sql('''
+        ALTER TABLE "connection" ALTER COLUMN login TYPE varchar(256);
+        ''')
+
+    def upgrade_v4_6_0_a01_007(my):
+        my.run_sql('''
+        ALTER TABLE "connection" ALTER COLUMN project_code TYPE varchar(256);
+        ''')
+
+
+    def upgrade_v4_6_0_a01_006(my):
+        my.run_sql('''
+        ALTER TABLE "connection" ALTER COLUMN context TYPE varchar(256);
+        ''')
+
+
+    def upgrade_v4_6_0_a01_005(my):
+        my.run_sql('''
+        ALTER TABLE "connection" ADD COLUMN dst_search_code varchar(256);
+        ''')
+
+
+    def upgrade_v4_6_0_a01_004(my):
+        my.run_sql('''
+        ALTER TABLE "connection" ADD COLUMN src_search_code varchar(256);
+        ''')
+
     def upgrade_v4_6_0_a01_003(my):
         my.run_sql('''
         ALTER TABLE "task" ALTER COLUMN "task_+type" TYPE varchar(256);

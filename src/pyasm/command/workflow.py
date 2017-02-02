@@ -10,14 +10,14 @@
 #
 #
 
-__all__ = ['Workflow', 'BaseWorkflowNodeHandler', 'BaseProcessTrigger', 'ProcessStatusTrigger', 'CustomProcessConfig']
+__all__ = ['Workflow', 'WorkflowException', 'BaseWorkflowNodeHandler', 'BaseProcessTrigger', 'ProcessStatusTrigger', 'CustomProcessConfig']
 
 import tacticenv
 
-from pyasm.common import Common, Config, jsondumps, TacticException, Container
+from pyasm.common import Common, Config, jsondumps, TacticException, Container, Environment
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
-from pyasm.biz import Pipeline, Task
+from pyasm.biz import Pipeline, Task, Note
 
 '''
 "node" and "manual" type nodes are synonymous, but the latter 
@@ -35,6 +35,10 @@ PREDEFINED = [
         'revise',
         'error',
 ]
+
+
+class WorkflowException(Exception):
+    pass
 
 
 
@@ -271,7 +275,7 @@ class ProcessStatusTrigger(Trigger):
 
 class BaseProcessTrigger(Trigger):
 
-    def get_handler(my):
+    def get_handler(my, node_type):
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=my.input)
         elif node_type == "approval":
@@ -291,13 +295,11 @@ class BaseProcessTrigger(Trigger):
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=my.input)
 
-        elif node_type == "youtube":
+        elif node_type:
             extra_options = {
                     'input': my.input
             }
             handler = CustomProcessConfig.get_process_handler(node_type, extra_options)
-            #YouTubeNodeHandler(input=my.input)
-
         return handler
 
 
@@ -647,6 +649,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         super(BaseWorkflowNodeHandler, my).__init__(**kwargs)
         my.kwargs = kwargs
         my.input = kwargs.get("input")
+        my.name = kwargs.get("name")
 
         my.pipeline = my.input.get("pipeline")
         my.process = my.input.get("process")
@@ -661,6 +664,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             my.process_parts = parts[:-1]
         else:
             my.process_parts = []
+
+
+    def set_name(my, name):
+        my.name = name
+
         
 
     def check_inputs(my):
@@ -826,10 +834,13 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 input_process = "%s.%s" % (my.process_parts[0], input_process)
 
 
+            error = my.input.get("error")
+
             input = {
                 'pipeline': my.pipeline,
                 'sobject': my.sobject,
-                'process': input_process
+                'process': input_process,
+                'error': my.input.get("error") or "Reject from %s" % my.process,
             }
 
             event = "process|revise"
@@ -846,6 +857,35 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         process_obj = my.pipeline.get_process(my.process)
 
+        error = my.input.get("error")
+        print "error: ", error
+
+
+        """
+        if node_type in ["condition", "action", "approval"]:
+
+            my.set_all_tasks(sobject, process, "")
+
+            input_processes = pipeline.get_input_processes(process)
+            for input_process in input_processes:
+                input_process = input_process.get_name()
+
+                input = {
+                    'pipeline': pipeline,
+                    'sobject': sobject,
+                    'process': input_process
+                }
+
+                event = "process|revise"
+                Trigger.call(my, event, input)
+
+
+        else:
+            my.set_all_tasks(sobject, process, my.get_status())
+        """
+
+
+
         # send revise single to previous processes
         input_processes = my.pipeline.get_input_processes(my.process)
         for input_process in input_processes:
@@ -858,7 +898,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             input = {
                 'pipeline': my.pipeline,
                 'sobject': my.sobject,
-                'process': input_process
+                'process': input_process,
+                'error': my.input.get("error")
             }
 
             event = "process|revise"
@@ -960,7 +1001,6 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # Make sure all of the tasks are complete
         is_complete = True
-        print "tasks: ", tasks
         for task in tasks:
             #my.log_message(my.sobject, my.process, status)
 
@@ -979,7 +1019,26 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         return super(WorkflowManualNodeHandler, my).handle_complete()
 
 
-            
+       
+    def handle_reject(my):
+        my.input['error'] = "Rejected from '%s'" % my.process
+        return super(WorkflowManualNodeHandler, my).handle_reject()
+
+
+    def handle_revise(my):
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+        error = my.input.get("error")
+        if error:
+            context = "%s/error" % process
+            Note.create(sobject, error, context=context)
+
+        return super(WorkflowManualNodeHandler, my).handle_revise()
+
+
+
+     
 
 
 class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
@@ -1068,6 +1127,16 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         my.log_message(my.sobject, my.process, "action")
         # does nothing
         pass
+
+
+    def handle_reject(my):
+        login = Environment.get_login()
+        display_name = login.get("display_name")
+        if not display_name:
+            display_name = login.get_code()
+        my.input['error'] = "Approval from '%s' Rejected" % display_name
+
+        return super(WorkflowApprovalNodeHandler, my).handle_reject()
 
 
 
@@ -1485,7 +1554,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
 class ProcessPendingTrigger(BaseProcessTrigger):
 
-    
+  
     def execute(my):
         # set all task to pending
         
@@ -1526,6 +1595,10 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             return handler.handle_pending()
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=my.input)
+            return handler.handle_pending()
+
+        else:
+            handler = my.get_handler(node_type)
             return handler.handle_pending()
 
         """
@@ -1590,9 +1663,9 @@ class ProcessActionTrigger(BaseProcessTrigger):
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=my.input)
             return handler.handle_action()
-
-
-
+        else:
+            handler = my.get_handler(node_type)
+            return handler.handle_action()
 
         # Make sure the below is completely deprecated
         assert(False)
@@ -1653,6 +1726,8 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
             handler = WorkflowDependencyNodeHandler(input=my.input)
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=my.input)
+        else:
+            handler = my.get_handler(node_type)
 
 
         if handler:
@@ -1690,8 +1765,7 @@ class ProcessRejectTrigger(BaseProcessTrigger):
             return
 
 
-        reject_processes = my.input.get("reject_process")
-        print "reject process: ", reject_processes
+        #reject_processes = my.input.get("reject_process")
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
@@ -1705,7 +1779,12 @@ class ProcessRejectTrigger(BaseProcessTrigger):
             return handler.handle_reject()
 
 
+        else:
+            handler = my.get_handler(node_type)
+            return handler.handle_reject()
 
+
+        """
         my.run_callback(pipeline, process, "reject")
 
         my.set_all_tasks(sobject, process, my.get_status())
@@ -1726,6 +1805,7 @@ class ProcessRejectTrigger(BaseProcessTrigger):
 
             event = "process|revise"
             Trigger.call(my, event, input)
+        """
 
 
 
@@ -1744,9 +1824,11 @@ class ProcessReviseTrigger(ProcessRejectTrigger):
             parts = process.split(".")
             process = parts[-1]
 
+        print "---"
         print "input: ", my.input
         print "process: ", process
         print "pipeline: ", pipeline.get_code(), pipeline.get_value("name")
+        print "---"
 
 
         process_obj = pipeline.get_process(process)
@@ -1757,6 +1839,10 @@ class ProcessReviseTrigger(ProcessRejectTrigger):
             return handler.handle_revise()
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=my.input)
+            return handler.handle_revise()
+
+        else:
+            handler = my.get_handler(node_type)
             return handler.handle_revise()
 
 

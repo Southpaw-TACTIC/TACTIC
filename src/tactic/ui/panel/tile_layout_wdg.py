@@ -1399,6 +1399,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.show_drop_shadow:
             div.set_box_shadow()
 
+
         div.add_style("overflow: hidden")
         #div.add_style("float: left")
         div.add_style("display: inline-block")
@@ -2107,6 +2108,19 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         #bg_wdg.add_style("background: rgba(0,0,0,0.3)")
         bg_wdg.add_style("background: #000")
         bg_wdg.add_style("opacity: 0.3")
+
+        '''
+        status = sobject.get_value("status", no_exception=True)
+        if status == "Reject":
+            bg_wdg.add_style("background: #e84a4d")
+        elif status == "Final":
+            bg_wdg.add_style("background: #a3d991")
+        '''
+
+        bg_wdg.set_box_shadow(color="#000")
+        bg_wdg.add_style("opacity: 0.3")
+
+
         bg_wdg.add_style("z-index: 1")
         bg_wdg.add(" ")
 

@@ -684,7 +684,7 @@ class SearchWdg(BaseRefreshWdg):
 
             div.add_border()
             div.add_style("padding: 8px 5px")
-            div.add_style("whitespace: nowrap")
+            div.add_style("white-space: nowrap")
 
             
             if element_name in ["Parent", 'Children']:

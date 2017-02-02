@@ -793,7 +793,8 @@ class Project(SObject):
             try:
                 sobject = snapshot.get_sobject()
             except SObjectNotFoundException, e:
-                pass
+                print "Error: ", e
+                print "snapshot: ", snapshot.get_code()
 
         dir_naming = Project.get_dir_naming(sobject)
         dir_naming.set_sobject(sobject)

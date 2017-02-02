@@ -727,7 +727,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 process = "publish"
 
             # NOTE: this could be an issue if the process contains a "/" init
-            if process.endswith("/review"):
+            if process.endswith("/review") or process.endswith("/error"):
                 process = process.split("/")[0]
 
             search_type = note.get_value("search_type")
@@ -1263,7 +1263,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_top.add_attr("spt_state", 'closed')
 
             if mode == "icon":
-                if context.endswith("/review"):
+                if context.endswith("/review") or context.endswith("/error"):
                     context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
                     context_wdg.add_style("color: rgb(232, 74, 77)")
                     context_wdg.add_style("margin-top: 2px")
@@ -1282,7 +1282,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_wdg = my.get_context_wdg(process, context)
                 context_top.add(context_wdg)
                 context_top.add_style("min-width: 300px")
-                if context.startswith("review/"):
+                if context.endswith("/review") or context.endswith("/error"):
                     context_wdg.add_style("color: #F00")
 
 
@@ -1805,7 +1805,14 @@ class NoteWdg(BaseRefreshWdg):
 
 
         tr = content.add_row()
-        tr.add_color("background", "background", -10)
+
+        if context.endswith("/review") or context.endswith("/error"):
+            context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+            tr.add_style("background: rgba(232, 74, 77, 0.8)")
+
+        else:
+            tr.add_color("background", "background", -10)
+
         td = content.add_cell()
 
 

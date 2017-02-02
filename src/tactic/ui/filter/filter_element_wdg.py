@@ -1137,8 +1137,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         show_toggle = my.get_option("show_toggle")
         if show_toggle in ['true', True]:
-            icon = "BS_CHEVRON_DOWN"
-            icon_pos = "right"
+            icon = "BS_MENU_DOWN"
+            icon_pos = "left"
         else:
             icon = ""
             icon_pos = ""
@@ -1184,6 +1184,16 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
         }
         ''' } )
+
+
+        name = my.get_name()
+        text.add_behavior( {
+            'type': 'change',
+            'element_name': name,
+            'cbjs_action': my.get_set_js_action()
+        } )
+
+
 
 
         div.add(text)

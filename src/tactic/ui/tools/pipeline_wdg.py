@@ -1923,7 +1923,6 @@ class BaseInfoWdg(BaseRefreshWdg):
                 'condition',
                 'approval',
                 'hierarchy',
-                # Not supported yet
                 'dependency',
                 'progress',
             ]

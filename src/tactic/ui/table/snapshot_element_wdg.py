@@ -89,6 +89,8 @@ class SnapshotFileElementWdg(BaseTableElementWdg):
     def get_display(my):
 
         sobject = my.get_current_sobject()
+        if sobject.is_insert():
+            return ""
 
         if sobject:
             path = sobject.get_web_path_by_type()

@@ -492,8 +492,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
             icon_div = DivWdg()
             icon_td.add(icon_div)
             icon_div.add_style("width: 20px")
-            icon_div.add_style("margin-top: 2px")
-            icon_div.add_style("padding-left: 5px")
+            icon_div.add_style("margin-top: -2px")
+            icon_div.add_style("padding-left: 6px")
             icon_div.add_class("spt_filter_top")
 
 
@@ -529,7 +529,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             icon = IconWdg("Filter Set", "BS_ASTERISK")
-            icon.add_style("color", "#393")
+            #icon.add_style("color", "#393")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_attr("spt_element_name", element_name)

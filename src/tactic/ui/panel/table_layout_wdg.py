@@ -1991,7 +1991,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             if my.kwargs.get("wrap_headers") not in ["true", True]:
                 header_div.add_style("width: 10000%")
-                #header_div.add_style("whitespace: nowrap")
+                #header_div.add_style("white-space: nowrap")
 
 
 
