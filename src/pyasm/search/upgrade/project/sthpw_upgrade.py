@@ -28,7 +28,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_6_0_a01_002(my):
         my.run_sql('''
-        ALTER TABLE "pipeline" ALTER COLUMN "type" TYPE varchar(256);
+        ALTER TABLE "pipeline" ADD COLUMN "type" varchar(256);
         ''')
 
 
