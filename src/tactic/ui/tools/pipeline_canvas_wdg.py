@@ -35,6 +35,9 @@ class BaseNodeWdg(BaseRefreshWdg):
         title = Common.get_display_title(node_type)
         return title
 
+    def get_title_background(my):
+        return "rgba(0,0,0,0.5)"
+
     def get_width(my):
         return 120
 
@@ -65,14 +68,17 @@ class BaseNodeWdg(BaseRefreshWdg):
         if not title:
             return div
 
+        title_background = my.get_title_background()
+
         inner = DivWdg()
         div.add(inner)
 
+        print "title: ", title
 
         inner.add(title)
 
         inner.add_style("font-size: 8px")
-        inner.add_style("background: rgba(0,0,0,0.5)")
+        inner.add_style("background: %s" % title_background)
         inner.add_style("color: #FFF")
         inner.add_style("text-align: center")
 

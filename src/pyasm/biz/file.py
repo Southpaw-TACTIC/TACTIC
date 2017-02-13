@@ -1127,6 +1127,7 @@ class FileGroup(File):
 
         frange = []
         last_frame = None
+        last_diff = None
 
         p = re.compile("(\d{%s})" % padding)
         for path in paths:
@@ -1150,14 +1151,19 @@ class FileGroup(File):
             diff = frame - last_frame
             if diff == 1:
                 frange[-1] = frame
+            elif last_diff and diff != last_diff:
+                frange = []
+                break
             else:
                 frange.append(frame)
                 frange.append('-')
                 frange.append(frame)
 
             last_frame = frame
+            last_diff = diff
 
-        template = "%s/%s" % (dirname,template)
+        if dirname:
+            template = "%s/%s" % (dirname,template)
 
         frange = "".join([str(x) for x in frange])
 
@@ -1329,5 +1335,131 @@ class FileRange(object):
         return info
 
     check = classmethod(check)
+
+
+
+
+    def _compare(cls, a, b):
+        d = ""
+        for a1, b1 in zip(a, b):
+            if a1 == b1:
+                d = d + "1"
+            else:
+                d = d + "0"
+        return d
+    _compare = classmethod(_compare)
+
+
+
+
+    def get_sequences(cls, files):
+
+        if len(files) == 1:
+            return [{
+                "is_sequence": False,
+                "sequence": files,
+                "error": "",
+                "frame": 1
+            }]
+
+        # copy it
+        files = files[:]
+        files.sort()
+
+        errors = []
+        templates = []
+        sequences = []
+        last_frames = []
+        compares = []
+
+        for i, file in enumerate(files):
+            parts = re.split(r"(\d+)", file)
+
+            # find out which template this ia part of
+            template_found = False
+            for j, template in enumerate(templates):
+
+                # the number of parts needs to be the same
+                if len(parts) != len(template):
+                    continue
+
+
+                # find the places where the parts are different
+                c = cls._compare(parts, template)
+                #print c, compares[j], c.count("0")
+                if not compares[j]:
+                    compares[j] = c
+
+                else:
+                    if c.count("0") > 1:
+                        continue
+
+                    if c != compares[j]:
+                        continue
+
+                    
+
+
+                # figure out the difference between this and the last one
+                index = c.index("0")
+                diff = parts[index]
+
+                try:
+                    frame = int(diff)
+                except:
+                    continue
+
+
+                # find out padding of the differences
+                index = c.index("0")
+                if len( parts[index] ) != len( template[index] ):
+                    #errors[j] = "Frame [%s] has different padding" % frame
+                    continue
+
+
+                elif last_frames[j] and frame - last_frames[j] != 1:
+                    errors[j] = "Skipped frame between [%s] and [%s]" % (last_frames[j], frame)
+
+
+                # update the current template
+                last_frames[j] = frame
+                sequences[j].append(file)
+                template_found = True
+                break
+
+
+
+            if not template_found:
+                templates.append(parts)
+                sequences.append([file])
+                last_frames.append(None)
+                errors.append("")
+                compares.append(None)
+
+
+
+
+        data = []
+        for i, sequence in enumerate(sequences):
+            info = {
+                    'is_sequence': len(sequence) > 1,
+                    'error': errors[i],
+                    'filenames': sequence,
+                    'frame': last_frames[i],
+            }
+
+
+            if len(sequence) > 1:
+                template, frange = FileGroup.extract_template_and_range(sequence)
+                info['template'] = template
+                info['range'] = frange
+
+
+            data.append(info)
+
+        return data
+
+    get_sequences = classmethod(get_sequences)
+
 
 

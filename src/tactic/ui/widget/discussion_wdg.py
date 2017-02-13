@@ -1971,8 +1971,9 @@ class NoteWdg(BaseRefreshWdg):
 
                 thumb = ThumbWdg()
                 thumb.set_icon_size("45")
-                thumb.add_style("border: solid 3px #000")
+                thumb.add_style("border: solid 1px #DDD")
                 thumb.add_style("border-radius: 45px")
+                thumb.add_style("overflow: hidden")
                 if login_sobj:
                     thumb.set_sobject(login_sobj)
                     left.add(thumb)

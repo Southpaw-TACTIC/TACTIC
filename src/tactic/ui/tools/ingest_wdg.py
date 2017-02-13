@@ -448,7 +448,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode = SelectWdg(name="update mode")
             update_mode.add_class("spt_update_mode_select")
             update_mode.set_option("values", ["false", "true", "sequence"])
-            update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update as a sequence"])
+            update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update groups as sequences"])
             update_mode.set_option("default", update_mode_option)
             update_mode.add_style("margin-top: -3px")
             update_mode.add_style("margin-right: 5px")
@@ -1012,13 +1012,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             var ret_val = server.execute_cmd(cmd, kwargs);
             var info = ret_val.info;
 
+            var num_sequences = 0;
+            for (var i = 0; i < info.length; i++) {
+                if (info[i].is_sequence) {
+                    num_sequences += 1;
+                }
+            }
+
             var ok = function() {
                 var upload_button = top.getElement(".spt_upload_files_top");
                 upload_button.setStyle("display", "");
             }
 
-            if (info.is_sequence == true) {
-                spt.confirm("Upload as a sequence?", function() {
+            if (num_sequences > 0) {
+                spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
                     spt.named_events.fire_event("set_ingest_update_mode", {
                         options: {
                             value: 'sequence'
@@ -1778,7 +1785,10 @@ class IngestCheckCmd(Command):
 
         file_names = my.kwargs.get("file_names")
 
-        info = FileRange.check(file_names)
+
+        info = FileRange.get_sequences(file_names)
+
+        #info = FileRange.check(file_names)
         my.info = info
 
 
@@ -1896,23 +1906,22 @@ class IngestUploadCmd(Command):
             return date.split(" ")[0]
         """
 
+
+        # remap the filenames for seuqences
+        sequences = FileRange.get_sequences(filenames)
+        filenames = []
+        for sequence in sequences:
+            if sequence.get('is_sequence'):
+                filename = sequence.get("template")
+            else:
+                filename = sequence.get("filenames")[0]
+            filenames.append(filename)
+
+
+
         input_prefix = update_data.get('input_prefix')
         non_seq_filenames = []
 
-        # For sequence mode, take all filenames, and regenerate the filenames based on the function "find_sequences"
-        if update_mode == "sequence":
-            
-            non_seq_filenames_dict, seq_digit_length = my.find_sequences(filenames)
-            # non_seq_filenames is a list of filenames that are stored in the None key,
-            # which are the filenames that are not part of a sequence, or does not contain
-            # a sequence pattern.
-            non_seq_filenames = non_seq_filenames_dict[None]
-            
-            # delete the None key from list so filenames can be used in the latter for loop
-            del non_seq_filenames_dict[None]
-            filenames = non_seq_filenames_dict.keys()
-            if filenames == []:
-                raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
         if library_mode:
             relative_dir = "%s/001" % relative_dir
@@ -2103,9 +2112,9 @@ class IngestUploadCmd(Command):
             # extract metadata
             #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
             if update_mode == "sequence":
-                first_filename = non_seq_filenames_dict.get(filename)[0]
-                last_filename = non_seq_filenames_dict.get(filename)[-1]
-                file_path = "%s/%s" % (base_dir, first_filename)
+                sequence = sequences[count]
+                file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
+
             elif mode == "search_key":
                 file_path = path
             else:
@@ -2233,36 +2242,21 @@ class IngestUploadCmd(Command):
             
             if update_mode == "sequence":
 
-                pattern_expr = re.compile('^.*(\d{%d})\..*$'%seq_digit_length)
-                
-                m_first = re.match(pattern_expr, first_filename)
-                m_last = re.match(pattern_expr, last_filename)
-                # for files without extension
-                # abc_1001, abc.1123_1001
-                if not m_first: 
-                    no_ext_expr = re.compile('^.*(\d{%d})$'%seq_digit_length)
-                    m_first = re.match(no_ext_expr, first_filename)
-                    m_last = re.match(no_ext_expr, last_filename)
+                file_range = sequence.get("range")
+                if file_range == "":
+                    raise Exception("Error: %s" % sequence.get("error"))
 
-                # using second last index , to grab the set right before file type
-                groups_first = m_first.groups()
-                if groups_first:
-                    range_start = int(m_first.groups()[0])
-                    
-                groups_last = m_last.groups()
-                if groups_last:
-                    range_end = int(m_last.groups()[0])
-
-                file_range = '%s-%s' % (range_start, range_end)
-
-                file_path = "%s/%s" % (base_dir, filename)
-                snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
-
+                if sequence.get("is_sequence"):
+                    file_path = "%s/%s" % (base_dir, sequence.get("template"))
+                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
+                else:
+                    file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
+                    snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded')
             
             elif mode == "search_key":
 
                 if lib_path.find("##") != -1:
-                    file_range = snapshot.get_file_range().get_display()
+                    file_range = snapshot.get_file_range().get_display
                     file_path = lib_path
                     snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='copy')
                 else:
@@ -2345,8 +2339,8 @@ class IngestUploadCmd(Command):
             }
             server.log_message(my.message_key, msg, status="complete")
 
-        my.info = non_seq_filenames
-        return non_seq_filenames
+        
+        return
 
 
     def check_existing_file(my, search_type, new_filename, relative_dir, update_mode, sobjects):
@@ -2377,6 +2371,8 @@ class IngestUploadCmd(Command):
         alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
         return sorted(l, key = alphanum_key)
 
+
+    """
     def find_sequences(my, filenames):
         '''
         Parse a list of filenames into a dictionary of sequences.  Filenames not
@@ -2492,3 +2488,4 @@ class IngestUploadCmd(Command):
             sequences[None] += filenames
 
         return sequences, seq_digit_length
+    """
