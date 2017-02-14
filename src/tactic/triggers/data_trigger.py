@@ -36,7 +36,7 @@ class DataUpdateTrigger(Trigger):
             return
 
 
-        print "input: ", input
+        #print "input: ", input
         sobject = input.get("sobject")
 
         trigger_sobj = my.get_trigger_sobj()

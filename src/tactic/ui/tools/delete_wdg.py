@@ -424,7 +424,7 @@ class DeleteCmd(Command):
                 for path in sequence_paths:
                     paths.append(path)
             else:
-                paths.append(path)
+                paths.append(file_path)
 
 
 

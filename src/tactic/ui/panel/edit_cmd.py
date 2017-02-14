@@ -193,8 +193,6 @@ class EditCmd(Command):
 
         for element_name in my.element_names:
 
-            print "eleelelel: ", element_name
-
             action_handler_class = \
                     config.get_action_handler(element_name)
 

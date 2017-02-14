@@ -158,7 +158,6 @@ class EmbedWdg(BaseRefreshWdg):
             #    thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
 
-
             video_id = None
             sources = [src]
             source_types = ["video/mp4"]

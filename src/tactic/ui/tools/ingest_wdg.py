@@ -1157,8 +1157,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var percent = Math.round(evt.loaded * 100 / evt.total);
         progress_el.setStyle("width", percent + "%");
         progress_el.innerHTML = String(percent) + "%";
-
-
+        progress_el.setStyle("background", "#f0ad4e");
         '''
 
 
@@ -1220,6 +1219,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
+        progress_el.setStyle("background", "#337ab7");
 
 
         var info_el = top.getElement(".spt_upload_info");
@@ -1911,6 +1911,7 @@ class IngestUploadCmd(Command):
         sequences = FileRange.get_sequences(filenames)
         filenames = []
         for sequence in sequences:
+            print "sequence: ", sequence
             if sequence.get('is_sequence'):
                 filename = sequence.get("template")
             else:

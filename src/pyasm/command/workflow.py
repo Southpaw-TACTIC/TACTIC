@@ -1824,13 +1824,6 @@ class ProcessReviseTrigger(ProcessRejectTrigger):
             parts = process.split(".")
             process = parts[-1]
 
-        print "---"
-        print "input: ", my.input
-        print "process: ", process
-        print "pipeline: ", pipeline.get_code(), pipeline.get_value("name")
-        print "---"
-
-
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 

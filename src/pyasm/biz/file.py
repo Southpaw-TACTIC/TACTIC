@@ -1357,7 +1357,7 @@ class FileRange(object):
         if len(files) == 1:
             return [{
                 "is_sequence": False,
-                "sequence": files,
+                "filenames": files,
                 "error": "",
                 "frame": 1
             }]
