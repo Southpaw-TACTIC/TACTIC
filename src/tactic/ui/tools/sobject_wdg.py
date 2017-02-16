@@ -424,7 +424,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         detail_view = my.kwargs.get("detail_view")
         if not detail_view:
-            detail_view = ""
+            detail_view = "table"
 
         show_default_elements = True
         if my.kwargs.get("show_default_elements") in [False, 'False', 'false']:
@@ -980,7 +980,7 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
             td.add(sobject_info_wdg)
             td.add_style("vertical-align: top")
             td.add_style("overflow: hidden")
-            td.add_style("width: 30vw")
+            td.add_style("width: 50vw")
 
 
         td = table.add_cell()

@@ -1639,17 +1639,35 @@ class MethodMode(ExpressionParser):
 
         elif method in ['LATEST','CURRENT']:
             # get the file paths
-            first_arg = args[0]
-            expression = "@SOBJECT(%s)" % first_arg
-            mode = my.get_mode(expression)
-            sobjects = my.dive(mode, expression=expression)
+            if len(args):
+                first_arg = args[0]
+                expression = "@SOBJECT(%s)" % first_arg
+                mode = my.get_mode(expression)
+                sobjects = my.dive(mode, expression=expression)
+            else:
+                sobjects = my.sobjects
+                expression = "@SOBJECT()"
 
             results = []
             if sobjects:
-                context = args[1]
+                if len(args):
+                    context = args[1]
+                    if not context:
+                        context = "__ALL__"
+                else:
+                    context = "__ALL__"
                 #file_type = args[2]
 
-                base_dir = Environment.get_asset_dir()
+                if len(args) > 2:
+                    print args[2]
+                    if args[2] == "web":
+                        #base_dir = Environment.get_base_url().to_string()
+                        base_dir = Environment.get_web_dir()
+                    else:
+                        base_dir = Environment.get_asset_dir()
+                else:
+                    base_dir = Environment.get_asset_dir()
+
                 mode = my.get_mode(expression)
 
                 if method == 'LATEST':

@@ -1566,15 +1566,18 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #    search.add_filter(column,values[0], op='=')
                 #else:
                 #    search.add_startswith_keyword_filter(column, values)
-                search.add_startswith_keyword_filter(col, values, \
+                search.add_startswith_keyword_filter(col, values,
                    case_sensitive=case_sensitive)
                
-            
-            
             search.add_op(search_op)
+
+
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
+
+
             search.add_limit(my.LIMIT)
+
             results = search.get_sobjects()
             info_dict['results'] = results
    

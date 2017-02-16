@@ -84,6 +84,17 @@ PROGRESS_PIPELINE = '''
 '''
 
 
+SNAPSHOT_PIPELINE = '''
+<pipeline type="serial">
+  <process completion="20" color="#e9e386" name="In Progress"/>
+  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="100" color="#a3d991" name="Final"/>
+</pipeline>
+'''
+
+
+
+
 default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
@@ -150,6 +161,28 @@ class Task(SObject):
 
         return xml.to_string()
     get_default_approval_xml = staticmethod(get_default_approval_xml)
+
+
+
+    def get_default_snapshot_xml():
+        global SNAPSHOT_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(SNAPSHOT_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            if color:
+                Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
+    get_default_snapshot_xml = staticmethod(get_default_snapshot_xml)
+
+
+
 
 
 
@@ -950,8 +983,8 @@ class Task(SObject):
             bid_duration_unit = 'hour'
 
         # that's the date range in 5 days (not hours)
-        default_duration = 5
-        default_bid_duration = 8
+        default_duration = 3
+        default_bid_duration = 8 # hours
         if bid_duration_unit == 'minute':
             default_bid_duration = 60
         last_task = None

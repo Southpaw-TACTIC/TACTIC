@@ -1841,7 +1841,11 @@ class ProcessInfoWdg(BaseRefreshWdg):
 class BaseInfoWdg(BaseRefreshWdg):
 
     def get_description_wdg(my, process_sobj):
-        description = process_sobj.get_value("description")
+        if not process_sobj:
+            description = "N/A"
+        else:
+            description = process_sobj.get_value("description")
+
         desc_div = DivWdg()
         desc_div.add_style("margin: 20px 10px")
         desc_div.add("<div><b>Details:</b></div>")
@@ -1851,15 +1855,17 @@ class BaseInfoWdg(BaseRefreshWdg):
         text.add_style("height: 100px")
         text.add_style("padding: 10px")
         text.add(description)
-        text.add_behavior( {
-            'type': 'blur',
-            'search_key': process_sobj.get_search_key(),
-            'cbjs_action': '''
-            var desc = bvr.src_el.value;
-            var server = TacticServerStub.get();
-            server.update(bvr.search_key, {description: desc} );
-            '''
-        } )
+
+        if process_sobj:
+            text.add_behavior( {
+                'type': 'blur',
+                'search_key': process_sobj.get_search_key(),
+                'cbjs_action': '''
+                var desc = bvr.src_el.value;
+                var server = TacticServerStub.get();
+                server.update(bvr.search_key, {description: desc} );
+                '''
+            } )
 
         return desc_div
 
@@ -1923,7 +1929,6 @@ class BaseInfoWdg(BaseRefreshWdg):
                 'condition',
                 'approval',
                 'hierarchy',
-                # Not supported yet
                 'dependency',
                 'progress',
             ]

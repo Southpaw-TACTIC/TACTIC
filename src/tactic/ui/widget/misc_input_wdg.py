@@ -190,11 +190,17 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
 
     def handle_td(my, td):
         sobject = my.get_current_sobject()
+
+
         # find the pipeline code of the task
         pipeline_code = sobject.get_value('pipeline_code', no_exception=True)
         parent_pipeline_code = ''
         if my.parent:
             parent_pipeline_code = my.parent.get_value('pipeline_code', no_exception=True)
+
+        if sobject.get_base_search_type() == "sthpw/snapshot":
+            pipeline_code = "snapshot"
+
         # if not find the pipeline of the parent and match the process
         if not pipeline_code:
             task_process = sobject.get_value("process")
@@ -257,7 +263,7 @@ class TaskStatusSelectWdg(SelectWdg):
         from tactic.ui.panel import EditWdg
         if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
             task = my.get_current_sobject()
-            task_pipe_code = task.get_value('pipeline_code')
+            task_pipe_code = task.get_value('pipeline_code', no_exception=True)
 
             # if the current task has no pipeline, then search for
             # any task pipeline
@@ -297,6 +303,8 @@ class TaskStatusSelectWdg(SelectWdg):
             default_pipe = Pipeline.get_by_code('progress')
             my.task_pipelines.append(default_pipe)
             default_pipe = Pipeline.get_by_code('milestone')
+            my.task_pipelines.append(default_pipe)
+            default_pipe = Pipeline.get_by_code('snapshot')
             my.task_pipelines.append(default_pipe)
             
             

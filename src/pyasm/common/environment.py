@@ -597,11 +597,13 @@ class Environment(Base):
 
 
 
-    def get_base_url(my):
+    def get_base_url(cls):
         '''get the url to access tactic'''
         # first assume localhost
         from pyasm.web import Url
-        return Url("http://localhost")
+        server = Config.get_value("install", "hostname")
+        return Url("http://%s" % server)
+    get_base_url = classmethod(get_base_url)
 
 
 

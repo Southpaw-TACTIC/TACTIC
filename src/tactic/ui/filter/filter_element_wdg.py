@@ -1055,14 +1055,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
 
-        custom_cbk = {
-            'enter': '''
-            spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-            '''
-        }
-
-
-
         if my.show_title:
             title_div = DivWdg()
 
@@ -1145,11 +1137,21 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         show_toggle = my.get_option("show_toggle")
         if show_toggle in ['true', True]:
-            icon = "BS_CHEVRON_DOWN"
-            icon_pos = "right"
+            icon = "BS_MENU_DOWN"
+            icon_pos = "left"
         else:
             icon = ""
             icon_pos = ""
+
+
+        # NOTE: This calls the refresh twice for some reason
+        """
+        custom_cbk = {
+            'enter': '''
+            spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+            '''
+        }
+        """
 
 
 
@@ -1158,7 +1160,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 name="value",
                 do_search=my.do_search,
                 script_path=my.script_path,
-                custom_cbk=custom_cbk,
+                #custom_cbk=custom_cbk,
                 filter_search_type=my.filter_search_type,
                 search_type=search_type,
                 column=my.look_ahead_columns,
@@ -1174,7 +1176,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         if value:
             text.set_value(value)
 
-
         text.add_behavior( {
         'type': 'keyup',
         'cbjs_action': '''
@@ -1183,6 +1184,16 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
         }
         ''' } )
+
+
+        name = my.get_name()
+        text.add_behavior( {
+            'type': 'change',
+            'element_name': name,
+            'cbjs_action': my.get_set_js_action()
+        } )
+
+
 
 
         div.add(text)

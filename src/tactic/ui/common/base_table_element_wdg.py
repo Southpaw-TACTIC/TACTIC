@@ -29,7 +29,13 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
     '''remaps the old BaseTableElementWdg to use BaseRefreshWdg'''
 
     def __init__(my, **kwargs):
-        BaseRefreshWdg.__init__(my, **kwargs)
+        # Handle the base refresh directly instead of calling __init__.
+        # This is because FormerBaseTableelementWdg also does the same
+        # thing causing a buch of function to be run twice
+        #BaseRefreshWdg.__init__(my, **kwargs)
+        my.top = DivWdg()
+        my.handle_args(kwargs)
+
         FormerBaseTableElementWdg.__init__(my, **kwargs)
         
     def get_args_keys(cls):
@@ -528,6 +534,16 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)
+
+
+            value_wdg.add_style("overflow-x: hidden")
+            value_wdg.add_style("text-overflow: ellipsis")
+            #value_wdg.add_style("white-space: nowrap")
+            value_wdg.add_style("max-height: 100px")
+
+            #value_wdg.add_style("overflow-y: hidden")
+            #value_wdg.add_class("spt_scrollable")
+            #value_wdg.add_attr("title", value)
 
 
             link_expression = my.get_option("link_expression")

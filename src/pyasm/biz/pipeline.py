@@ -985,12 +985,17 @@ class Pipeline(SObject):
                 xml = Task.get_default_milestone_xml()
                 pipeline.set_value("pipeline", xml)
                 pipeline.set_pipeline(xml)
-                pipeline.set_value("search_type", "sthpw/task")
+                pipeline.set_value("search_type", "sthpw/milestone")
 
 
-
-
-
+            elif code == 'snapshot':
+                pipeline = SearchType.create("sthpw/pipeline")
+                pipeline.set_value("code", "snapshot")
+                from pyasm.biz import Task
+                xml = Task.get_default_snapshot_xml()
+                pipeline.set_value("pipeline", xml)
+                pipeline.set_pipeline(xml)
+                pipeline.set_value("search_type", "sthpw/snapshot")
 
 
 

@@ -417,13 +417,25 @@ class DeleteCmd(Command):
         # get all of the file paths
         file_paths = snapshot.get_all_lib_paths()
 
+        paths = []
+        for file_path in file_paths:
+            if file_path.find("##") != -1:
+                sequence_paths = snapshot.get_expanded_lib_paths()
+                for path in sequence_paths:
+                    paths.append(path)
+            else:
+                paths.append(file_path)
+
+
+
+
         files = snapshot.get_related_sobjects("sthpw/file")
         for file in files:
             print "Deleting file: ", file.get_search_key()
             file.delete()
 
         # remove the files from the repo
-        for file_path in file_paths:
+        for file_path in paths:
             print "Removing path: ", file_path
             FileUndo.remove(file_path)
 

@@ -1019,9 +1019,9 @@ class ThumbWdg(BaseTableElementWdg):
 
                     else:
                         href = HtmlElement.href(img, link_path)
-                        #href.set_attr("target", "_blank" )
                         href.add_class("spt_thumb_href")
                         href.add_attr("spt_href", link_path)
+                        href.add_attr("target", "_blank")
 
 
 
@@ -1030,6 +1030,8 @@ class ThumbWdg(BaseTableElementWdg):
 
             else:
                 div.add(img)
+        elif detail == "none":
+            div.add(img)
         else:
             div.add(img)
             div.add_class("hand")
