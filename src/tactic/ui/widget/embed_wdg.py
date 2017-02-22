@@ -158,12 +158,14 @@ class EmbedWdg(BaseRefreshWdg):
             #    thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
 
+            print "src: ", src
+
             video_id = None
             sources = [src]
             source_types = ["video/mp4"]
             poster = thumb_path
             width = '100%'
-            height = 'auto'
+            height = '100%'
             #width = "640"
             #height = "480"
             video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)

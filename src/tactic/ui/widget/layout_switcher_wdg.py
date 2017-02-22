@@ -107,6 +107,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 }
                 menu.position({position: 'upperleft', relativeTo: activator, offset: offset});
 
+                spt.body.add_focus_element(menu);
+
                 var pointer = menu.getElement(".spt_popup_pointer");
                 pointer.setStyle("margin-left", menu_size.x - button_size.x);
 
@@ -204,6 +206,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 if not title:
                     title = Common.get_display_title(element_name)
 
+
+                css_class = attrs.get("class")
+                if css_class:
+                    item_div.add_class(css_class)
+
                 item_div.add(title)
                 item_div.add_attr("spt_title", title)
 
@@ -227,56 +234,57 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         '''
                     } )
 
-                item_div.add_behavior( {
-                    'type': 'click_up',
-                    'display_class': display_class,
-                    'display_options': display_options,
-                    'element_name': element_name,
-                    'target': target,
-                    'save_state': save_state,
-                    'cbjs_action': '''
-                    var menu_item = bvr.src_el;
-                    var top = menu_item.getParent(".spt_switcher_top");
-                    var menu = menu_item.getParent(".spt_switcher_menu");
+                if display_class:
+                    item_div.add_behavior( {
+                        'type': 'click_up',
+                        'display_class': display_class,
+                        'display_options': display_options,
+                        'element_name': element_name,
+                        'target': target,
+                        'save_state': save_state,
+                        'cbjs_action': '''
+                        var menu_item = bvr.src_el;
+                        var top = menu_item.getParent(".spt_switcher_top");
+                        var menu = menu_item.getParent(".spt_switcher_menu");
+                        
+                        // Get target class
+                        var target_class = bvr.target;
+                        if (target_class.indexOf(".") != -1) {
+                            var parts = target_class.split(".");
+                            target_class = parts[1]; 
+                            target_top_class = parts[0];
+                        }
+                        else {
+                            target_top_class = null;
+                        }
                     
-                    // Get target class
-                    var target_class = bvr.target;
-                    if (target_class.indexOf(".") != -1) {
-                        var parts = target_class.split(".");
-                        target_class = parts[1]; 
-                        target_top_class = parts[0];
-                    }
-                    else {
-                        target_top_class = null;
-                    }
-                
-                    if (target_top_class) {
-                        var target_top = bvr.src_el.getParent("."+target_top_class);
-                    }
-                    else {
-                        var target_top = $(document.body);
-                    }
-                    var target = target_top.getElement("."+target_class);
-                    if (target) {
-                        spt.panel.load(target, bvr.display_class, bvr.display_options);
-                    }
+                        if (target_top_class) {
+                            var target_top = bvr.src_el.getParent("."+target_top_class);
+                        }
+                        else {
+                            var target_top = $(document.body);
+                        }
+                        var target = target_top.getElement("."+target_class);
+                        if (target) {
+                            spt.panel.load(target, bvr.display_class, bvr.display_options);
+                        }
 
-                    menu.setStyle("display", "none");
-                    top.removeClass("spt_selected");
+                        menu.setStyle("display", "none");
+                        top.removeClass("spt_selected");
 
-                    var title = bvr.src_el.getAttribute("spt_title");
+                        var title = bvr.src_el.getAttribute("spt_title");
 
-                    var title_el = top.getElement(".spt_title");
-                    if (title_el)
-                        title_el.innerHTML = title
+                        var title_el = top.getElement(".spt_title");
+                        if (title_el)
+                            title_el.innerHTML = title
 
 
-                    var server = TacticServerStub.get()
-                    server.set_widget_setting(bvr.save_state, bvr.element_name);
+                        var server = TacticServerStub.get()
+                        server.set_widget_setting(bvr.save_state, bvr.element_name);
 
-                    '''
-                } )
-        
+                        '''
+                    } )
+            
         return top
 
 

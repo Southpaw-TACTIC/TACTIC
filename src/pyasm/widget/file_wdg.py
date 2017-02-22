@@ -1318,8 +1318,8 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "adobe/SWF.png"
 
         #for web files
-        elif ext == "html":
-            icon = "html.png"
+        #elif ext == "html":
+        #    icon = "html.png"
         elif ext == "css":
             icon = "css.png"
         elif ext == "js":

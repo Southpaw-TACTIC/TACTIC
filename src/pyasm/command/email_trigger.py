@@ -795,7 +795,6 @@ class EmailTriggerTestCmd(Command):
             s.quit()
 
         except Exception, e:
-
             msg = []
             msg.append( "-"*60)
             msg.append( "WARNING: Error sending email:")
