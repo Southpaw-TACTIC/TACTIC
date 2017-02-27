@@ -75,7 +75,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         else:
             save_state = "switch_layout"
             state_value = "Switch Layout"
-            
+
+
+        title = my.kwargs.get("title")
+        if title:
+            state_value = title
+
         mode = my.kwargs.get("mode")
         
         if mode == "button":

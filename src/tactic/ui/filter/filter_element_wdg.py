@@ -838,8 +838,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 overall_search.add_op('or')
 
                 
-
-
         elif my.mode == 'keyword':
             if my.cross_db:
                 sub_search_list = []
@@ -855,9 +853,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             # db not supporting full text search
             single_col = len(my.columns) == 1
             partial_op = 'and'
-            op = '|'
-            if single_col:
-                op = '&'
+
             # in keyword mode where there could be multi column
             # keywords is kept as a string to maintain OR full-text search
             value = value.replace(",", " ")
@@ -869,12 +865,36 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             
             # keywords_list is used for add_keyword_filter()
             keywords_list = keywords.split(" ")
+            single_keyword = len(keywords_list) == 1
             
-            # use AND if more than 1 word is typed in
+            """
             if len(keywords_list) > 1:
-                multi_word_op = 'and'
+                multi_col_op = 'and'
             else:
-                multi_word_op = 'or'
+                multi_col_op = 'or'
+
+            op = '|'
+            if single_col:
+                op = '&'
+            """
+
+
+            if single_col:
+                if single_keyword:
+                    multi_col_op = 'or' # this doesn't really matter
+                    op = '|'            # this doesn't really matter
+                else: # multi_keyword, single column
+                    multi_col_op = 'or' # this doesn't really matter
+                    op = '&'
+
+            else:
+                if single_keyword:
+                    multi_col_op = 'or'
+                    op = '|'            # this doesn't really matter
+                else:
+                    multi_col_op = 'or'
+                    op = '&'
+
 
            
             for column in my.columns:
@@ -884,7 +904,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                
                 
             
-                # AND logic in full text search will be adopted if keywords is a list as oopposed to string
+                # AND logic in full text search will be adopted if keywords is a list as opposed to string
                 if single_col:
                     keywords = keywords_list
                 
@@ -1025,10 +1045,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 # if all the sub_search return false, set null filter
                 if not rtn_history:
                     overall_search.set_null_filter()
-                overall_search.add_op(multi_word_op)
+                overall_search.add_op(multi_col_op)
 
             else:
-                overall_search.add_op(multi_word_op)
+                overall_search.add_op(multi_col_op)
 
         else:
             raise TacticException('Mode [%s] in keyword search not support' % my.mode)

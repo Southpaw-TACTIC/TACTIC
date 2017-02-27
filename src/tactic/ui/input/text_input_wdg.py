@@ -1651,8 +1651,17 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 # use comprehension to handle the lower() function
                 keywords = " ".join(keywords)
 
-                # show the keyword that matched first
+                # split again
                 keywords = keywords.split(" ")
+
+                import string
+                for i, k in enumerate(keywords):
+                    leftovers = set(k) - set(string.ascii_letters+string.digits)
+                    if leftovers:
+                        k2 = k.strip("".join(leftovers))
+                        keywords[i] = k2
+
+                # show the keyword that matched first
                 if case_sensitive: 
                     keywords = [x.strip() for x in keywords if x]
                 else:

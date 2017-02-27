@@ -2164,6 +2164,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         pipeline_code = parent.get_value("pipeline_code", no_exception=True)
         if pipeline_code:
             pipeline = Pipeline.get_by_code(pipeline_code)
+        else:
+            pipeline = None
 
 
         # figure out which processes to show
@@ -2538,8 +2540,12 @@ class DiscussionAddNoteCmd(Command):
             checkin_mode = "parent"
             if checkin_mode == "parent":
                 attachment_process = "%s/attachment" % process
-                attachment_context = "attachment/%s" % process
-                checkin = FileCheckin(sobject, file_paths= file_paths, file_types = file_types, \
+
+                # NOTE: we may want to use a random key rather than the
+                # basename to ensure that there is never a duplicate
+                # context
+                attachment_context = "attachment/%s/%s" % (process, basename)
+                checkin = FileCheckin(sobject, file_paths=file_paths, file_types = file_types, \
                     source_paths=source_paths,  process=attachment_process, \
                     context=attachment_context, checkin_type='strict')
 
