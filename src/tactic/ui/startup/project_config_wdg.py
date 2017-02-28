@@ -979,7 +979,7 @@ class UserPanelWdg(BaseRefreshWdg):
                 show_select='false',
                 #height='700',
                 expression=expr,
-                simple_search_view='simple_manage_filter',
+                simple_search_view='login_filter',
                 show_column_manager='false',
                 show_layout_switcher='false',
                 show_expand='false',
