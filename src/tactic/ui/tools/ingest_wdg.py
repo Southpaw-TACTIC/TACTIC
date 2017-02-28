@@ -1908,15 +1908,16 @@ class IngestUploadCmd(Command):
 
 
         # remap the filenames for seuqences
-        sequences = FileRange.get_sequences(filenames)
-        filenames = []
-        for sequence in sequences:
-            print "sequence: ", sequence
-            if sequence.get('is_sequence'):
-                filename = sequence.get("template")
-            else:
-                filename = sequence.get("filenames")[0]
-            filenames.append(filename)
+        if update_mode == "sequence":
+            sequences = FileRange.get_sequences(filenames)
+            filenames = []
+            for sequence in sequences:
+                print "sequence: ", sequence
+                if sequence.get('is_sequence'):
+                    filename = sequence.get("template")
+                else:
+                    filename = sequence.get("filenames")[0]
+                filenames.append(filename)
 
 
 
@@ -2010,7 +2011,6 @@ class IngestUploadCmd(Command):
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
                         search.add_filter("relative_dir", relative_dir)
-                print "ssss: ", search.get_statement()
                 sobjects = search.get_sobjects()
                 if len(sobjects) > 1:
                     sobject = None
@@ -2021,8 +2021,10 @@ class IngestUploadCmd(Command):
                     sobject = None
 
             elif update_mode == "sequence":
-                if not FileGroup.is_sequence(filename):
-                    raise TacticException('Please modify sequence naming to have at least three digits.')
+                # This check is not needed anymore as the sequence analyzer
+                # can handle a mix of sequence and non sequences
+                #if not FileGroup.is_sequence(filename):
+                #    raise TacticException('Please modify sequence naming to have at least three digits [%s].' % filename)
                 search = Search(search_type)
                 search.add_filter(column, filename)
 
@@ -2133,6 +2135,7 @@ class IngestUploadCmd(Command):
             except Exception, e:
                 print "WARNING: ", e
             """
+
 
             # check if the file exists 
             if mode != "search_key" and not os.path.exists(file_path):
@@ -2250,7 +2253,7 @@ class IngestUploadCmd(Command):
 
                 if sequence.get("is_sequence"):
                     file_path = "%s/%s" % (base_dir, sequence.get("template"))
-                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
+                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='move')
                 else:
                     file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
                     snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded')
