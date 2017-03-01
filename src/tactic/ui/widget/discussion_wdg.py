@@ -349,10 +349,12 @@ class DiscussionWdg(BaseRefreshWdg):
                
                 // update note count
                 var note_count_div = group_top.getElement('.spt_note_count');
+                if (note_count_div) {
 
-                var s = TacticServerStub.get();
-                var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
-                note_count_div.innerHTML = '(' + note_count + ')';
+                    var s = TacticServerStub.get();
+                    var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
+                    note_count_div.innerHTML = '(' + note_count + ')';
+                }
 
             }
             else {
@@ -670,6 +672,7 @@ class DiscussionWdg(BaseRefreshWdg):
           
         else:
             my.process = my.kwargs.get("process")
+
             # TODO: this needs to be eval to be a list if it's a comma separated string
             my.contexts = my.kwargs.get("context")
             if my.contexts and isinstance(my.contexts, basestring):
@@ -691,7 +694,6 @@ class DiscussionWdg(BaseRefreshWdg):
         search = Search("sthpw/note") 
         search.add_relationship_filters(my.filtered_parents, type='hierarchy')
         search.add_order_by("process")
-        search.add_order_by("context")
         search.add_order_by("timestamp desc")
 
         if my.process:
@@ -702,7 +704,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
         if my.contexts:
             search.add_filters("context", my.contexts)
-
 
         notes = search.get_sobjects()
         has_process = my.sobjects[0].has_value('process')
@@ -873,7 +874,8 @@ class DiscussionWdg(BaseRefreshWdg):
             # remove any spaces
             my.contexts = [x.strip() for x in my.contexts]
        
-        
+
+
         # show context header
         my.show_context_header = my.kwargs.get("show_context_header")
         if my.show_context_header in ['true', True]:
@@ -1139,6 +1141,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 process_choice = my.process
             elif has_process:
                 process_choice = sobj.get_value('process')
+
             
             sk = my.parent.get_search_key(use_id=True)
             if isinstance(sk, unicode):
@@ -1174,6 +1177,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         # calculate the number for each context
         my.context_counts = {}
+        my.process_counts = {}
         for note in notes:
             process = note.get_value("process")
             context = note.get_value("context")
@@ -1183,6 +1187,17 @@ class DiscussionWdg(BaseRefreshWdg):
             else:
                 count += 1 
             my.context_counts[context] = count
+
+            count = my.process_counts.get(process)
+            if count == None:
+                count = 1
+            else:
+                count += 1 
+            my.process_counts[process] = count
+
+
+
+
 
         if my.show_context_header:
             contexts = set()
@@ -1240,15 +1255,30 @@ class DiscussionWdg(BaseRefreshWdg):
         #if mode == "icon":
         #    contexts = contexts[:1]
 
-        # go through every context and display notes
-        for context in contexts:
+        # go through every process and display notes.
+        #for context in contexts:
+        for process in process_notes:
+            #notes_list = context_notes.get(context)
 
-            notes_list = context_notes.get(context)
+            # This widget used to be context centric ... it is now process centric
+            # ... for now, make the context variable equal to process
+            context = process
+            notes_list = process_notes.get(context)
 
             note_keys = []
             for note in notes_list:
                 note_key = note.get_search_key()
                 note_keys.append(note_key)
+
+            count = len(notes_list)
+
+
+            # get the last context
+            if count:
+                last_context = notes_list[0].get("context")
+            else:
+                last_context = process
+
 
 
             context_top = DivWdg()
@@ -1263,7 +1293,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_top.add_attr("spt_state", 'closed')
 
             if mode == "icon":
-                if context.endswith("/review") or context.endswith("/error"):
+                if last_context.endswith("/review") or last_context.endswith("/error"):
                     context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
                     context_wdg.add_style("color: rgb(232, 74, 77)")
                     context_wdg.add_style("margin-top: 2px")
@@ -1272,17 +1302,23 @@ class DiscussionWdg(BaseRefreshWdg):
                     context_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL")
 
                 context_top.add(context_wdg)
-                if len(notes):
-                    context_top.add("<i> (%s) </i>" % len(note_keys))
+                if count:
+                    context_top.add("<i> (%s) </i>" % count)
+
                 context_wdg.add_style("margin-left: 5px")
+
+
             else:
                 context_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL", size="12")
                 context_top.add(context_wdg)
                 context_wdg.add_style("float: left")
-                context_wdg = my.get_context_wdg(process, context)
+
+                # process arg is meaningless
+                context_wdg = my.get_context_wdg(process, context, count)
+
                 context_top.add(context_wdg)
                 context_top.add_style("min-width: 300px")
-                if context.endswith("/review") or context.endswith("/error"):
+                if last_context.endswith("/review") or last_context.endswith("/error"):
                     context_wdg.add_style("color: #F00")
 
 
@@ -1331,6 +1367,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 sk = my.parent.get_search_key(use_id=True)
                 if isinstance(sk, unicode):
                     sk = sk.encode('utf-8')
+
+
                 kwargs = {
                         'search_key': sk,
                         'context': context_choices,
@@ -1363,7 +1401,7 @@ class DiscussionWdg(BaseRefreshWdg):
             
             # context and parent_key are for dynamic update
             context_wdg.add_behavior( {
-                'type': 'click_up',
+                'type': 'click',
                 'note_keys': note_keys,
                 'default_num_notes': my.default_num_notes,
                 'note_expandable': my.note_expandable,
@@ -1398,7 +1436,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def get_context_wdg(my, process, context):
+    def get_context_wdg(my, process, context, count):
         ''' this is drawn per process/context group of notes'''
         div = DivWdg()
         div.add_class("hand")
@@ -1438,7 +1476,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
         count_div = SpanWdg(css="spt_note_count")
         div.add(count_div)
-        count = my.context_counts.get(context)
         count_div.add("(%s)" % count)
         count_div.add_style("font-weight: normal")
         count_div.add_style("font-size: 1.0em")
@@ -2122,11 +2159,27 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add('''<hr/>''')
 
 
-        #if my.contexts:
-        #    process_names = my.contexts
-        
+
+        # get the pipeline if one is defined
+        pipeline_code = parent.get_value("pipeline_code", no_exception=True)
+        if pipeline_code:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+        else:
+            pipeline = None
+
+
+        # figure out which processes to show
         if my.process:
-            process_names = [my.process]
+            process_names = []
+            if pipeline:
+                process_obj = pipeline.get_process(my.process)
+                process_type = process_obj.get_type()
+                if process_type == "approval":
+                    input_processes = pipeline.get_input_processes(my.process)
+                    process_names.extend( [x.get_name() for x in input_processes] )
+                    process_obj = pipeline.get_process(my.process)
+
+            process_names.append(my.process)
         
         elif my.show_task_process:
             task_expr = "@GET(sthpw/task.process)"
@@ -2134,17 +2187,13 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             
             process_names = task_processes
         else:
-            pipeline_code = parent.get_value("pipeline_code", no_exception=True)
-            if pipeline_code:
-                pipeline = Pipeline.get_by_code(pipeline_code)
-                if pipeline:
-                    process_names = pipeline.get_process_names()
-                    if not process_names:
-                        process_names = ["publish"]
-                else:
-                    process_names = ["publish"] 
+            if pipeline:
+                process_names = pipeline.get_process_names()
+                if not process_names:
+                    process_names = ["publish"]
             else:
-                process_names = ["publish"]
+                process_names = ["publish"] 
+
 
         if my.append_processes:
             process_names.extend(my.append_processes)
@@ -2188,7 +2237,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         
             # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
-            wdg_label = "To Process:"
+            wdg_label = "Send To Process:"
             span = SpanWdg(wdg_label)
             span.add_style('padding-right: 4px')
             content_div.add(span)
@@ -2198,7 +2247,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             content_div.add(hidden)
             content_div.add("<b>%s</b>" % process_names[0])
         else:
-            wdg_label = "To Process:"
+            wdg_label = "Send To Process:"
             span = SpanWdg(wdg_label)
             span.add_style('padding-right: 4px')
             content_div.add(span)
@@ -2212,7 +2261,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         # add the context label if it is different from process in use_parent mode
         # this is a special case where we explicitly use processs/context for note
-        #if use_parent =='true' and my.contexts:
         if my.contexts:
             hidden = HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
@@ -2492,8 +2540,12 @@ class DiscussionAddNoteCmd(Command):
             checkin_mode = "parent"
             if checkin_mode == "parent":
                 attachment_process = "%s/attachment" % process
-                attachment_context = "attachment/%s" % process
-                checkin = FileCheckin(sobject, file_paths= file_paths, file_types = file_types, \
+
+                # NOTE: we may want to use a random key rather than the
+                # basename to ensure that there is never a duplicate
+                # context
+                attachment_context = "attachment/%s/%s" % (process, basename)
+                checkin = FileCheckin(sobject, file_paths=file_paths, file_types = file_types, \
                     source_paths=source_paths,  process=attachment_process, \
                     context=attachment_context, checkin_type='strict')
 

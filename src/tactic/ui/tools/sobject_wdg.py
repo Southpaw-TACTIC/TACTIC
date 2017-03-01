@@ -612,6 +612,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 </element>
                 ''' % values)
 
+
+
             elif tab == "checkin":
                 config_xml.append('''
                 <element name="checkin" title="Check-in">
@@ -1251,6 +1253,7 @@ class SnapshotDetailWdg(SObjectDetailWdg):
         parent = my.sobject.get_parent()
         #values['search_key'] = parent.get_search_key()
         values['search_key'] = ''
+        values['process'] = process
 
         values['expression'] = "@SEARCH(sthpw/snapshot['context','%s']['search_code','%s']['search_type','%s'])" % (context, my.sobject.get("search_code"), my.sobject.get("search_type"))
 
@@ -1279,6 +1282,40 @@ class SnapshotDetailWdg(SObjectDetailWdg):
           </display>
         </element>
         ''' % values)
+
+
+        values['expression2'] = "@SEARCH(sthpw/snapshot['process','%s/review']['search_code','%s']['search_type','%s'])" % (process, my.sobject.get("search_code"), my.sobject.get("search_type"))
+
+
+        config_xml.append('''
+        <element name="review" title="Review Feedback">
+          <display class='tactic.ui.panel.CustomLayoutWdg'>
+          <html>
+            <div style="padding: 20px">
+            <div style="font-size: 25px">Review Feedback</div>
+            <div>List of all of the Reviews for this item</div>
+            <hr/>
+            <br/>
+            <element>
+              <display class='tactic.ui.panel.ViewPanelWdg'>
+                <layout>tile</layout>
+                <search_type>sthpw/snapshot</search_type>
+                <view>table</view>
+                <width>100%%</width>
+                <show_shelf>false</show_shelf>
+                <expression>%(expression2)s</expression>
+              </display>
+            </element>
+            </div>
+          </html>
+          </display>
+        </element>
+        ''' % values)
+
+
+
+
+
 
 
 class TaskDetailWdg(SObjectDetailWdg):
@@ -1453,7 +1490,6 @@ class TaskDetailWdg(SObjectDetailWdg):
           </display>
         </element>
         ''' % values)
-
 
 
 

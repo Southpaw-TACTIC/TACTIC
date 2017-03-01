@@ -368,7 +368,7 @@ class GalleryWdg(BaseRefreshWdg):
             path_div.add_style("overflow-y: hidden")
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i)
+            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i, controls="true")
             path_div.add(embed)
 
 
@@ -501,7 +501,6 @@ class GalleryWdg(BaseRefreshWdg):
                 snapshots = sobj_snapshot_dict.values()
 
             file_dict = Snapshot.get_files_dict_by_snapshots(snapshots, file_type=file_type)
-
             for sobject in sobjects:
                 path = ''
                 snapshot = sobj_snapshot_dict.get(sobject.get_search_key())
@@ -513,8 +512,13 @@ class GalleryWdg(BaseRefreshWdg):
 
                 file_list = file_dict.get(snapshot.get_code())
                 if not file_list: 
+                    paths.append("")
                     continue
-                
+
+
+               
+                # NOTE: there should only be one file
+                tmp_paths = []
                 for file_object in file_list:
                     path = file_object.get_web_path()
 
@@ -522,8 +526,12 @@ class GalleryWdg(BaseRefreshWdg):
                         expanded_paths = snapshot.get_expanded_web_paths()
                         path = "|".join(expanded_paths)
 
-                    my.sobject_data[path] = sobject
-                    paths.append(path)  
+                    tmp_paths.append(path)  
+
+                path = "|".join(tmp_paths)
+                my.sobject_data[path] = sobject
+                paths.append(path)
+
 	            # set the current path the user clicks on
                 if not my.curr_path and sobject.get_search_key() == search_key and file_type=='main':
                     my.curr_path = path

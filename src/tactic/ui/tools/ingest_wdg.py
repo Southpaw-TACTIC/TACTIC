@@ -2010,6 +2010,7 @@ class IngestUploadCmd(Command):
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
                         search.add_filter("relative_dir", relative_dir)
+                print "ssss: ", search.get_statement()
                 sobjects = search.get_sobjects()
                 if len(sobjects) > 1:
                     sobject = None

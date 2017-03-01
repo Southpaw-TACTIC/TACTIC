@@ -3454,6 +3454,18 @@ class SObject(object):
                 else:
                     my.set_value("search_code", sobject.get_value("code") )
 
+        elif relationship in ['code']:
+
+            search_type = my.get_base_search_type()
+            is_from = attrs.get("to") == search_type
+            to_col = attrs.get("to_col")
+            from_col = attrs.get("from_col")
+
+            if is_from:
+                my.set_value( to_col, sobject.get_value(from_col) )
+            else:
+                my.set_value( from_col, sobject.get_value(to_col) )
+ 
         elif relationship in ['general']:
             print 'WARNING: relationship [%s] not supported' % relationship
 
