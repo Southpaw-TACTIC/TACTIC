@@ -226,6 +226,8 @@ class WidgetDbConfig(SObject):
         # we have a list of configs ... go through each to find the element
         attrs = {}
         node = my.get_element_node(element_name)
+        if node is None:
+            return {}
         node_attrs = Xml.get_attributes(node)
         return node_attrs
 
@@ -660,11 +662,13 @@ class WidgetDbConfig(SObject):
 
         # use the full search_type in the key
         key = '%s:%s' %(search_type, view)
-        widget_db_config = SObject.get_by_search(search, key)
-        # FIXME: removing caching for now.  Problems occur when cache is None
-        # and keeps returning None even when a new one is created
-        #widget_db_config = search.get_sobject()
-
+        if search.column_exists("priority"):
+            search.add_order_by("priority desc")
+        widget_db_configs = SObject.get_by_search(search, key, is_multi=True)
+        if widget_db_configs:
+            widget_db_config = cls.merge_configs(widget_db_configs)
+        else:
+            widget_db_config = None
 
         # if no config is found:
         if has_project and not widget_db_config and not project_code:
@@ -676,13 +680,75 @@ class WidgetDbConfig(SObject):
                     project_code = parts[-1]
                     widget_db_config = cls.get_by_search_type(search_type, view, project_code=project_code)
                 except Exception, e:
-                    print "e: ", e
+                    print "ERROR: ", e
                     # No widget config found in the other project of the stype
                     pass
 
         return widget_db_config
 
     get_by_search_type = classmethod(get_by_search_type)
+
+
+
+
+    def merge_configs(cls, configs):
+        # since we only return one widget config, we will merge these
+        # by cascading.  The rules are as follows:
+        # 1: element display and kwargs cascade in their entirety
+        # 2: attributes of the bubble up individually
+        if not configs:
+            return None
+
+        if len(configs) == 1:
+            return configs[0]
+
+        # annoyingly NULL is always higher than any number, so we have
+        # put them at the end
+        if configs[0].column_exists("priority"):
+            configs = sorted(configs, key=lambda x: x.get("priority"))
+            configs.reverse()
+
+        # the element names are determined by the first one
+        main_config = configs[0]
+        element_names = main_config.get_element_names()
+        main_xml = main_config.get_xml()
+
+        for element_name in element_names:
+            main_attrs = main_config.get_element_attributes(element_name)
+
+            xpath = "config//element[@name='%s']" % (element_name)
+            node = main_xml.get_node(xpath)
+
+            # if there is a display node
+            display_xpath = "config//element[@name='%s']/display" % (element_name)
+            main_display_node = main_xml.get_node(display_xpath)
+
+
+            for config in configs[1:]:
+                # copy the attrs
+                attrs = config.get_element_attributes(element_name)
+                keys = attrs.keys()
+                for key in keys:
+                    if not main_attrs.has_key(key):
+                        main_xml.set_attribute(node, key, attrs.get(key))
+
+                if main_display_node is not None:
+                    continue
+
+                xml = config.get_xml()
+                display_node = xml.get_node(display_xpath)
+                if display_node is None:
+                    continue
+
+                class_name = xml.get_attribute(display_node, "class")
+                options = config.get_display_options(element_name)
+
+                main_config.append_display_element(element_name, class_name, options)
+                
+        return main_config
+
+    merge_configs = classmethod(merge_configs)
+
 
 
 

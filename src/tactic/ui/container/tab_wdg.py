@@ -1385,12 +1385,12 @@ spt.tab.close = function(src_el) {
             else:
                 is_selected = False
 
-            header = my.get_tab_header(element_name, title, display_class, display_options, is_selected=is_selected, is_loaded=is_loaded, is_template=False)
+            header = my.get_tab_header(element_name, title, display_class, display_options, is_selected=is_selected, is_loaded=is_loaded, is_template=False, attrs=attrs)
             header_div.add(header)
 
 
 
-
+        # add widgets that have been manually added
         for i, widget in enumerate(my.widgets):
             name = widget.get_name()
             if not name:
@@ -2144,7 +2144,7 @@ spt.tab.close = function(src_el) {
 
 
 
-    def get_tab_header(my, element_name, title, class_name=None, kwargs=None, is_selected=False, is_loaded=False, is_template=False):
+    def get_tab_header(my, element_name, title, class_name=None, kwargs=None, is_selected=False, is_loaded=False, is_template=False, attrs={}):
 
 
         web = WebContainer.get_web()
@@ -2231,17 +2231,35 @@ spt.tab.close = function(src_el) {
         title_div = DivWdg()
 
         icon = None
-        badge = None
+        count = attrs.get("count")
         if icon:
             icon = IconWdg(name="whatever", icon=icon)
             title_div.add(icon)
-        if badge:
-            badge_wdg = SpanWdg("12")
-            badge_wdg.add_class("badge")
-            #title_div.add(badge_wdg)
-            #badge_wdg.add_update( {
-            #    'expression': "@COUNT(workflow/employee)"
-            #} )
+        if count:
+            count_color = attrs.get("count_color")
+
+            state = my.kwargs.get("state") or {}
+            search_key = state.get("search_key")
+            if search_key:
+                sobject = Search.get_by_search_key(search_key)
+            else:
+                sobject = None
+
+            if sobject:
+                value = Search.eval(count, sobject)
+                count_wdg = SpanWdg(value)
+                count_wdg.add_class("badge")
+                title_div.add(count_wdg)
+                count_wdg.add_style("float: right")
+                count_wdg.add_style("font-size: 0.7em")
+                if count_color:
+                    count_wdg.add_style("background", count_color)
+
+                count_wdg.add_update( {
+                    'expression': count,
+                    'search_key': search_key,
+                    'interval': 10,
+                } )
 
 
 

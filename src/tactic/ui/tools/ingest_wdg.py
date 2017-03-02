@@ -2002,7 +2002,7 @@ class IngestUploadCmd(Command):
             if my.sobject:
                 sobject = my.sobject
 
-            elif update_mode in ["true", True]:
+            elif update_mode in ["true", True, "update"]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 # ingested files into search type applies filename without i.e. _v001 suffix
@@ -2011,7 +2011,9 @@ class IngestUploadCmd(Command):
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
                         search.add_filter("relative_dir", relative_dir)
+
                 sobjects = search.get_sobjects()
+
                 if len(sobjects) > 1:
                     sobject = None
                 elif len(sobjects) == 1:
@@ -2043,7 +2045,7 @@ class IngestUploadCmd(Command):
 
             # Create a new entry
             if not sobject:
-                if update_mode not in ['true', True]:
+                if update_mode not in ['true', True, "update"]:
                     sobjects = []
 
                 my.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
@@ -2223,15 +2225,15 @@ class IngestUploadCmd(Command):
             sobject.commit()
             search_key = sobject.get_search_key()
 
+            status = sobject.get_value("status", no_exception=True)
+            is_verified = status in ['Verified']
+
             # use API to check in file
 
             process = my.kwargs.get("process")
             if not process:
                 process = "publish"
 
-
-            if update_process and update_sobject_found:
-                process = update_process
 
             context = my.kwargs.get("context")
             if not context:
@@ -2244,6 +2246,24 @@ class IngestUploadCmd(Command):
 
             if context_mode == "case_insensitive":
                 context = context.lower()                
+
+
+            version = None
+            if not is_verified and update_process and update_sobject_found:
+                process = update_process
+
+                # find what the version number should be
+                search = Search("sthpw/snapshot")
+                search.add_parent_filter(sobject)
+                search.add_filter("context", context)
+                search.add_order_by("version desc")
+                max_snapshot = search.get_sobject()
+                version = max_snapshot.get_value("version")
+                if not version:
+                    version = 1
+                else:
+                    version += 1
+
             
             if update_mode == "sequence":
 
@@ -2253,10 +2273,10 @@ class IngestUploadCmd(Command):
 
                 if sequence.get("is_sequence"):
                     file_path = "%s/%s" % (base_dir, sequence.get("template"))
-                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='move')
+                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='move', version=version)
                 else:
                     file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
-                    snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded')
+                    snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded', version=version)
             
             elif mode == "search_key":
 
@@ -2274,10 +2294,10 @@ class IngestUploadCmd(Command):
                 
             elif my.kwargs.get("base_dir"):
                 # auto create icon
-                snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move')
+                snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move', version=version)
                 
             else:
-                snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
+                snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded', version=version)
 
 
             snapshots.append(snapshot)
@@ -2294,46 +2314,6 @@ class IngestUploadCmd(Command):
                 }
 
                 server.log_message(my.message_key, msg, status="in progress")
-
-
-
-        # TEST Copy to a library as well
-        is_test = False # disabled
-        if is_test and mode != "search_key":
-
-            filenames = []
-            for snapshot in snapshots:
-                filenames.append('search_key:%s' % snapshot.get('__search_key__'))
-            project_code = ""
-            search_type = "workflow/asset"
-            keywords = ""
-            extra_data ={"user_keywords": "JOB00216", "order_code": "JOB00216"}
-
-            kwargs = {
-                'filenames': filenames,
-
-                'context_mode': context_mode,
-
-                'ignore_ext': ignore_ext,
-                'keywords': keywords,
-
-                'extra_data': extra_data,
-
-                'ignore_path_keywords': ignore_path_keywords,
-                'library_mode': library_mode,
-
-                'dated_dirs': 'true',
-                'relative_dir': 'workflow/asset/Ingest/2017-01-28/admin/15h',
-
-                'message_key': my.message_key,
-                'project_code': project_code,
-                'search_type': search_type,
-                'update_data': {   },
-                'update_mode': 'false',
-                'update_process': process,
-            }
-            cmd = IngestUploadCmd(**kwargs)
-            cmd.execute()
 
 
 
