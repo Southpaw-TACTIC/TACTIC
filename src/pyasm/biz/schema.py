@@ -147,6 +147,12 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <connect from="sthpw/login" to="sthpw/department"
             relationship='code' from_col='department' to_col='code'/>
 
+    <!-- to handle some cases where people have made a department relationship
+         through name instead of code -->
+    <connect from="sthpw/login" to="sthpw/department"
+            path="name" relationship='code' from_col='department' to_col='name'/>
+
+
 
     <connect from="sthpw/login_in_group" to="sthpw/login"
             relationship='code' from_col='login' to_col='login'/>
