@@ -239,6 +239,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     def get_config(my):
 
+
         my.view = my.kwargs.get("search_view")
         config = my.kwargs.get("search_config")
 
@@ -247,14 +248,17 @@ class SimpleSearchWdg(BaseRefreshWdg):
         #view = "custom_filter"
 
         project_code = Project.extract_project_code(my.search_type)
+
         search = Search("config/widget_config", project_code=project_code )
         search.add_filter("view", my.view)
         search.add_filter("search_type", my.base_search_type)
-        config_sobj = search.get_sobject()
+        config_sobjs = search.get_sobjects()
 
+        from pyasm.search import WidgetDbConfig
+        config_sobj = WidgetDbConfig.merge_configs(config_sobjs)
 
         if config_sobj:
-            config_xml = config_sobj.get_value("config")
+            config_xml = config_sobj.get_xml().to_string()
             config_xml = Common.run_mako(config_xml)
 
         elif config:
@@ -281,8 +285,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
                     config_xml = '<config>%s</config>' %xml.to_string(node=xml_node)
 
             
-
-
         from pyasm.widget import WidgetConfig
         config = WidgetConfig.get(view=my.view, xml=config_xml)
 
@@ -295,6 +297,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
         config = my.get_config()
         element_names = config.get_element_names()
         content_wdg = DivWdg()
+
+
 
 
         if not element_names:

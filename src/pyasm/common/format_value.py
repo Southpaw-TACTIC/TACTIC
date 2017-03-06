@@ -83,7 +83,9 @@ class FormatValue(object):
             value = "%0.0f" % my.convert_to_float(value)
 
         elif format == '-1,234':
-            if not value:
+            if value == None:
+                value = ""
+            elif not value:
                 value = 0
             # Group the value into three numbers seperated by a comma.
             value = my.number_format(value, places=0)

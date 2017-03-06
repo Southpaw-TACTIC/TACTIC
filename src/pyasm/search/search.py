@@ -3077,6 +3077,9 @@ class SObject(object):
         
         # if this xml value starts with "zlib:" then decompress
         value = my.get_value(name)
+        if value is None:
+            value = ''
+
         if value.startswith("zlib:"):
             import zlib, binascii
             value = zlib.decompress( binascii.unhexlify(value[5:]) )
@@ -4100,9 +4103,6 @@ class SObject(object):
 
 
         delimiter = ""
-        #reverse = False
-        #if reverse:
-        #    parts.reverse()
 
         search_code = delimiter.join(parts)
 

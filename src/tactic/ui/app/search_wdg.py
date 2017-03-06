@@ -319,7 +319,10 @@ class SearchWdg(BaseRefreshWdg):
                 search = Search('config/widget_config')
                 search.add_filter("view", my.view)
                 search.add_filter("search_type", my.search_type)
-                config_sobj = search.get_sobject()
+                config_sobjs = search.get_sobjects()
+                from pyasm.search import WidgetDbConfig
+                config_sobj = WidgetDbConfig.merge_configs(config_sobjs)
+                #config_sobj = config_sobjs[0]
             except SearchException, e:
                 print "WARNING: ", e
                 config_sobj = None

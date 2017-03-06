@@ -454,7 +454,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config_search = Search("config/widget_config")
         config_search.add_filter("view", "tab_element_names")
         config_search.add_filter("search_type", my.search_type)
-        config = config_search.get_sobject()
+        config_search.add_order_by("timestamp desc")
+        configs = config_search.get_sobjects()
+
+        from pyasm.search import WidgetDbConfig
+        config = WidgetDbConfig.merge_configs(configs)
 
         if tabs:
             tabs = [x.strip() for x in tabs.split(',')] 
@@ -690,7 +694,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 tab_values['search_type'] = tab
                 tab_values['search_key'] = my.search_key
 
-
                 config_xml.append('''
                 <element name="%(search_type)s" title="%(title)s">
                   <display class='tactic.ui.panel.ViewPanelWdg'>
@@ -705,12 +708,18 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
             else:
+
+                attrs = config.get_element_attributes(tab)
+
                 parts = tab.split(".")
                 name = parts[-1]
 
                 title = None
                 if config:
                     title = config.get_element_title(tab)
+
+                count = attrs.get("count") or ""
+                count_color = attrs.get("count_color") or ""
                 
                 if not title:
                     title = parts[-1].title().replace("_", " ")
@@ -718,10 +727,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
                         'title': title,
                         'name': name,
                         'search_key': search_key,
-                        'view': tab
+                        'view': tab,
+                        'count': count,
+                        'count_color': count_color
                 }
+
+
                 config_xml.append('''
-                <element name="%(name)s" title="%(title)s">
+                <element name="%(name)s" title="%(title)s" count="%(count)s" count_color="%(count_color)s">
                   <display class='tactic.ui.panel.CustomLayoutWdg'>
                     <view>%(view)s</view>
                     <parent_key>%(search_key)s</parent_key>
