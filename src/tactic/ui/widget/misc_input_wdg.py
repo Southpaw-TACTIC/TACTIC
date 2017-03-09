@@ -139,7 +139,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         'order': 0,
         'category': 'Options',
         'type': 'SelectWdg',
-        'values': 'all|user',
+        'values': 'all|assigned',
         'default': 'all',
     },
     }
@@ -203,7 +203,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         sobject = my.get_current_sobject()
 
         edit_scope = my.get_option("edit_scope")
-        if edit_scope == "user":
+        if edit_scope == "assigned":
             login = Environment.get_user_name()
             user = Environment.get_login()
             security = Environment.get_security()

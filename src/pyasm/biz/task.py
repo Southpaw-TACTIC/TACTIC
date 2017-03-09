@@ -36,6 +36,7 @@ TASK_PIPELINE = '''
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
   <process completion="80" color="#e84a4d" name="Revise"/>
   <process completion="80" color="#e84a4d" name="Reject"/>
+  <process completion="80" color="#e84a4d" name="Review"/>
   <process completion="100" color="#a3d991" name="Complete"/>
   <process completion="100" color="#a3d991" name="Approved"/>
 </pipeline>
@@ -104,6 +105,7 @@ OTHER_COLORS = {
     "Final":    "#a3d991",
     "Revise":   "#e84a4d",
     "Reject":   "#e84a4d",
+    "Review":   "#e84a4d",
     "Ready":    "#a3d991",
     "In_Progress":"#e9e386",
     "Cancelled":"#DDDDDD",
