@@ -133,6 +133,17 @@ class PipelineSelectWdg(SelectWdg):
 from tactic.ui.common import SimpleTableElementWdg
 class TaskStatusElementWdg(SimpleTableElementWdg):
 
+    ARGS_KEYS = {
+    'edit_scope': {
+        'description': 'Determines who can edit the status.',
+        'order': 0,
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'all|user',
+        'default': 'all',
+    },
+    }
+
     def preprocess(my):
         # This assumes the parent is the same
         sobject = my.get_current_sobject()
@@ -191,7 +202,15 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
     def handle_td(my, td):
         sobject = my.get_current_sobject()
 
+        edit_scope = my.get_option("edit_scope")
+        if edit_scope == "user":
+            login = Environment.get_user_name()
+            user = Environment.get_login()
+            security = Environment.get_security()
+            if not security.is_admin() and login != sobject.get_value("assigned"):
+                td.add_class("spt_cell_no_edit")
 
+ 
         # find the pipeline code of the task
         pipeline_code = sobject.get_value('pipeline_code', no_exception=True)
         parent_pipeline_code = ''
@@ -243,7 +262,6 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         if parent_pipeline_code:
             td.set_attr("spt_parent_pipeline_code", parent_pipeline_code)
         super(TaskStatusElementWdg, my).handle_td(td)
-
 
 
 

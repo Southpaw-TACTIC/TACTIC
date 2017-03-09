@@ -55,6 +55,11 @@ class EmailHandler(object):
             # go through each login and evaluate each
             logins = []
             for part in parts:
+                if part.startswith("#"):
+                    continue
+                if not part:
+                    continue
+
                 if part.startswith("@") or part.startswith("{"):
                     results = Search.eval(part, list=True, env_sobjects=env)
                     # clear the container after each expression eval

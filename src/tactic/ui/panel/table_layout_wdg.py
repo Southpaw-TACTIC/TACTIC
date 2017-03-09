@@ -3940,6 +3940,10 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
+    if (cell.hasClass("spt_cell_no_edit")) {
+        return;
+    }
+
     // if there was another edit open, then destroy it.
     if (spt.table.last_edit_wdg) {
         spt.table.last_edit_wdg.destroy();
@@ -3962,7 +3966,8 @@ spt.table.show_edit = function(cell) {
     
 
     // remove the first child
-    // FIXME: should we rely on firstChild?
+    // NOTE: this relies on a widget that has all components under the first
+    // child.
     var first_child = $(cell.firstChild);
 
     // get the size before the edit widget is added
@@ -3991,6 +3996,9 @@ spt.table.show_edit = function(cell) {
 
     // code to find the edit_wdg internally
     var edit_wdg = spt.table._find_edit_wdg(cell, edit_wdg);
+    if (edit_wdg == null) {
+        return;
+    }
 
 
     // add the edit to do the dom
@@ -4140,21 +4148,6 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
-    //clone.setStyle("position", "absolute");
-    //clone.setStyle("top", "0px");
-    //clone.setStyle("left", "0px");
-
-    /*
-    var size = cell.getSize();
-    if (typeof(size) != 'undefined') {
-        clone.setStyle("margin-top", (-3)+"px");
-    }
-    else {
-        clone.setStyle("margin-top", "-3px");
-    }
-    clone.setStyle("margin-left", "-3px");
-    */
-
 
     return clone;
 
@@ -4868,7 +4861,8 @@ spt.table.save_changes = function(kwargs) {
         update_data: JSON.stringify(update_data),
         extra_data: JSON.stringify(extra_data),
         extra_action: JSON.stringify(extra_action),
-        connect_key: connect_key
+        connect_key: connect_key,
+        trigger_mode: kwargs.trigger_mode,
     }
    
 

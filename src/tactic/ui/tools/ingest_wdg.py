@@ -390,8 +390,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             if not ingest_data_view:
                 ingest_data_view = my.kwargs.get('ingest_data_view')
 
-            metadata_element_names = my.kwargs.get("metadata_element_names")
-
             if my.search_key:
                 sobject = SearchType.create("sthpw/snapshot")
             else:

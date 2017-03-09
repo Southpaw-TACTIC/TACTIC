@@ -714,8 +714,6 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             show_color = show_color != 'false'
             if show_color:
                 color_wdg.set_checked()
-            #elif show_color == False:
-            #    color_wdg.set_option('disabled','disabled')
 
 
             # this is required if one is changing the View mode definition post creation
