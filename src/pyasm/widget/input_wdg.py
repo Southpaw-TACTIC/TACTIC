@@ -858,6 +858,12 @@ class CheckboxWdg(BaseInputWdg):
 
         my.add_class("spt_input")
 
+        my.add_style("display: inline-block")
+        my.add_style("vertical-align: middle")
+        my.add_style("margin: 0")
+
+
+
     def set_default_checked(my):
         ''' this is used for checkbox that has no value set'''
         my.set_option("default", "on")

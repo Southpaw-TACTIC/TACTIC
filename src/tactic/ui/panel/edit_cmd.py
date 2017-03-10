@@ -39,6 +39,19 @@ class EditCmd(Command):
 
         my.search_key = kwargs.get("search_key")
 
+
+
+
+        my.trigger_mode = kwargs.get("trigger_mode")
+        if my.trigger_mode == None:
+            my.trigger_mode = True
+
+
+        print
+        print "trigger_mode: ", my.trigger_mode
+        print
+
+
         # if data is passed in, then use this as the form values
         my.data = kwargs.get("data")
         if my.data != None:
@@ -91,7 +104,6 @@ class EditCmd(Command):
         super(EditCmd,my).__init__()
         my.search_type = None
         my.sobject = kwargs.get("sobject")
-
 
 
     def get_sobject(my):
@@ -351,7 +363,7 @@ class EditCmd(Command):
                 else:
                     is_insert = False
 
-                sobject.commit()
+                sobject.commit(triggers=my.trigger_mode)
          
 
                 # only connect on insert
@@ -420,6 +432,8 @@ class EditMultipleCmd(Command):
         update_data = my.kwargs.get("update_data")
         update_data = jsonloads(update_data)
 
+        trigger_mode = my.kwargs.get("trigger_mode")
+
         # add the extra data
         extra_data = my.kwargs.get("extra_data")
         extra_data = jsonloads(extra_data)
@@ -464,6 +478,7 @@ class EditMultipleCmd(Command):
                 data=data,
                 input_prefix=input_prefix,
                 extra_action=extra_action[i],
+                trigger_mode=trigger_mode,
             )
             cmd.execute()
 

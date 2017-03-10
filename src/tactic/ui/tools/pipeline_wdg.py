@@ -2103,6 +2103,43 @@ class DefaultInfoWdg(BaseInfoWdg):
             return top
 
 
+        has_tasks = True
+        if has_tasks:
+            div = DivWdg()
+            top.add(div)
+            div.add_style("padding: 10px")
+            div.add("<b>Task Setup</b><br/>")
+            div.add("Task options allow you to control various default properties of tasks.")
+
+            process_key = process_sobj.get_search_key()
+
+            div.add("<br/>"*2)
+
+            button = ActionButtonWdg(title="Task Setup", size="block")
+            div.add(button)
+            button.add_class("btn-clock")
+            button.add_behavior( {
+                'type': 'click_up',
+                'pipeline_code': pipeline_code,
+                'process': process,
+                'search_key': process_sobj.get_search_key(),
+                'cbjs_action': '''
+                var class_name = "tactic.ui.tools.PipelinePropertyWdg";
+                var kwargs = {
+                    pipeline_code: bvr.pipeline_code,
+                    process: bvr.process
+                }
+                var popup = spt.panel.load_popup("Task Setup", class_name, kwargs);
+                var nodes = spt.pipeline.get_selected_nodes();
+                var node = nodes[0];
+                spt.pipeline_properties.show_properties2(popup, node);
+                '''
+            } )
+
+
+
+
+
         process_code = process_sobj.get_value("code")
 
         # triggers
@@ -2131,6 +2168,15 @@ class DefaultInfoWdg(BaseInfoWdg):
             sobject_count = search.get_count()
         else:
             sobject_count = 0
+
+
+        top.add("<br/><hr/>")
+
+        depend_div = DivWdg()
+        top.add(depend_div)
+        depend_div.add("<b>Process Dependencies</b><br/>")
+        depend_div.add("A list of dependencies related to this process.")
+        depend_div.add_style("margin: 20px 10px 10px 10px")
 
 
         table = Table()
@@ -2250,40 +2296,6 @@ class DefaultInfoWdg(BaseInfoWdg):
             } )
 
 
-
-        has_tasks = True
-        if has_tasks:
-            div = DivWdg()
-            top.add(div)
-            div.add_style("padding: 10px")
-            div.add("<br/><hr/><br/>")
-            div.add("<b>Task setup</b><br/>")
-            div.add("Task options allow you to control various default properties of tasks.")
-
-            process_key = process_sobj.get_search_key()
-
-            div.add("<br/>"*2)
-
-            button = ActionButtonWdg(title="Task Setup", size="block")
-            div.add(button)
-            button.add_class("btn-clock")
-            button.add_behavior( {
-                'type': 'click_up',
-                'pipeline_code': pipeline_code,
-                'process': process,
-                'search_key': process_sobj.get_search_key(),
-                'cbjs_action': '''
-                var class_name = "tactic.ui.tools.PipelinePropertyWdg";
-                var kwargs = {
-                    pipeline_code: bvr.pipeline_code,
-                    process: bvr.process
-                }
-                var popup = spt.panel.load_popup("Task Setup", class_name, kwargs);
-                var nodes = spt.pipeline.get_selected_nodes();
-                var node = nodes[0];
-                spt.pipeline_properties.show_properties2(popup, node);
-                '''
-            } )
 
 
         has_checkins = True

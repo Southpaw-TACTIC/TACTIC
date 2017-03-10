@@ -19,7 +19,7 @@ from pyasm.search import SObject, Search, SearchType, Sql, DbContainer, SqlExcep
 from pyasm.security import LoginGroup
 
 from project import Project
-from prod_setting import ProdSetting
+from prod_setting import ProdSetting, ProjectSetting
 
 class PipelineException(Exception):
     pass
@@ -937,9 +937,15 @@ class Pipeline(SObject):
 
         if not pipeline:
             if code == 'task':
+
+                # Remap this to a default from projects settings
+                task_code = ProjectSetting.get_by_key("task_pipeline")
+                if not task_code:
+                    task_code = "task"
+
                 # Create a default task pipeline
                 pipeline = SearchType.create("sthpw/pipeline")
-                pipeline.set_value("code", "task")
+                pipeline.set_value("code", task_code)
                 from pyasm.biz import Task
                 xml = Task.get_default_task_xml()
                 pipeline.set_value("pipeline", xml)

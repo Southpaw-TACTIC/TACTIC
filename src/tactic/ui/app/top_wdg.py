@@ -917,14 +917,25 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-        # custom js files to include
-        includes = Config.get_value("install", "include_js")
-        includes = includes.split(",")
-        for include in includes:
-            include = include.strip()
-            if include:
-                print "include: ", include
-                Container.append_seq("Page:js", include)
+        from pyasm.biz import ProjectSetting
+        includes = ProjectSetting.get_value_by_key("js_libraries")
+        if includes:
+            includes = includes.split(",")
+            for include in includes:
+                include = include.strip()
+                if include:
+                    Container.append_seq("Page:js", include)
+        else:
+
+
+            # custom js files to include
+            includes = Config.get_value("install", "include_js")
+            includes = includes.split(",")
+            for include in includes:
+                include = include.strip()
+                if include:
+                    print "include: ", include
+                    Container.append_seq("Page:js", include)
 
 
         widget = Widget()
