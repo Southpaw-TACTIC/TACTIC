@@ -395,6 +395,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             else:
                 sobject = SearchType.create(my.search_type)
 
+            metadata_element_names = my.kwargs.get("metadata_element_names")
+
             if my.show_settings: 
                 edit = EditWdg(
                         search_key=sobject.get_search_key(),
