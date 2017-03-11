@@ -518,6 +518,7 @@ class PipelineListWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
+        print "settings: ", my.settings
 
 
 
@@ -546,26 +547,11 @@ class PipelineListWdg(BaseRefreshWdg):
 
         # project_specific pipelines
         from pyasm.widget import SwapDisplayWdg
-        #swap = SwapDisplayWdg(on_event_name='proj_pipe_on', off_event_name='proj_pipe_off')
-        # open by default
-        #inner.add(swap)
-        #swap.add_style("float: left")
-
-
-        #title = DivWdg("<b>Project Workflows</b>")
-        #title.add_style("padding-bottom: 2px")
-        #title.add_style("padding-top: 3px")
-        #inner.add(title)
         content_div = DivWdg()
         content_div.add_style('padding-top: 6px') 
-        #content_div.add_style('padding-left: 8px') 
-        #SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
         inner.add(content_div)
 
         try:
-            #search = Search("config/pipeline")
-            #pipelines = search.get_sobjects()
-
             expression = my.kwargs.get("expression")
             if expression:
                 result = Search.eval(expression)
@@ -587,6 +573,7 @@ class PipelineListWdg(BaseRefreshWdg):
                     search.add_op("or")
 
                     search.add_order_by("search_type")
+                    search.add_order_by("name")
                     pipelines = search.get_sobjects()
                 else:
                     pipelines = result
@@ -612,6 +599,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 search.add_op("or")
 
                 search.add_order_by("search_type")
+                search.add_order_by("name")
 
                 pipelines = search.get_sobjects()
 
@@ -1007,8 +995,6 @@ class PipelineListWdg(BaseRefreshWdg):
         """
 
 
-        
-
         menu_item = MenuItem(type='action', label='Edit Data')
         menu_item.add_behavior( {
             'save_event': my.save_event,
@@ -1029,6 +1015,36 @@ class PipelineListWdg(BaseRefreshWdg):
         } )
         menu.add(menu_item)
 
+        """
+        menu_item = MenuItem(type='action', label='Copy')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var code = activator.getAttribute("spt_pipeline");
+            var search_type = 'sthpw/pipeline';
+            var kwargs = {
+                'search_type': search_type,
+                //'code': code,
+                'view': 'pipeline_edit_tool',
+                'edit_event': bvr.save_event,
+                'title': "Save changes to Workflow (" + code + ")",
+                'default': {
+                    'name': '',
+                    'code': '',
+                }
+            };
+            //var class_name = 'tactic.ui.toosls.PipelineCopyCmd';
+            var class_name = 'tactic.ui.panel.EditWdg';
+            spt.panel.load_popup("Copy Workflow", class_name, kwargs);
+            '''
+        } )
+        menu.add(menu_item)
+        """
+
+
+        menu_item = MenuItem(type='separator')
+        menu.add(menu_item)
+        
 
         menu_item = MenuItem(type='action', label='Delete')
         menu_item.add_behavior( {
@@ -1778,14 +1794,18 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         node_type = my.kwargs.get("node_type")
 
+        top = my.top
+        top.add_class(".spt_process_info_top")
 
         pipeline_code = my.kwargs.get("pipeline_code")
         pipeline = Pipeline.get_by_code(pipeline_code)
+        if not pipeline:
+            return "N/A"
+
+
         search_type = pipeline.get("search_type")
 
 
-        top = my.top
-        top.add_class(".spt_process_info_top")
         
         widget = None
 
