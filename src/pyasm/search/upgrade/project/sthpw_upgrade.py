@@ -50,7 +50,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_6_0_a01_003(my):
         my.run_sql('''
-        ALTER TABLE "task" ALTER COLUMN "task_+type" TYPE varchar(256);
+        ALTER TABLE "task" ALTER COLUMN "task_type" TYPE varchar(256);
         ''')
 
 

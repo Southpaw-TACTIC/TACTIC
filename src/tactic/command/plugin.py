@@ -1043,8 +1043,18 @@ class PluginInstaller(PluginBase):
 
                 if my.verbose: 
                     print "Reading: ", path
+
+
+                ignore_columns = Xml.get_attribute(node, "ignore_columns")
+                if ignore_columns:
+                    ignore_columns = ignore_columns.split(",")
+                    ignore_columns = [x.strip() for x in ignore_columns]
+                else:
+                    ignore_columns = []
+
+
                 # jobs doesn't matter for sobject node
-                jobs = tools.import_data(path, unique=unique)
+                jobs = tools.import_data(path, unique=unique, ignore_columns=ignore_columns)
 
                 # reset it in case it needs to execute a PYTHON tag right after
                 Schema.get(reset_cache=True)
@@ -1487,6 +1497,14 @@ class PluginTools(PluginBase):
         path = my.xml.get_attribute(node, "path")
         search_type = my.xml.get_attribute(node, "search_type")
         seq_max = my.xml.get_attribute(node, "seq_max")
+
+        ignore_columns = Xml.get_attribute(node, "ignore_columns")
+        if ignore_columns:
+            ignore_columns = ignore_columns.split(",")
+            ignore_columns = [x.strip() for x in ignore_columns]
+        else:
+            ignore_columns = []
+
         try:
             if seq_max:
                 seq_max = int(seq_max)
@@ -1512,7 +1530,7 @@ class PluginTools(PluginBase):
         if my.verbose: 
             print "Reading: ", path
         # jobs doesn't matter for sobject node
-        jobs = tools.import_data(path, unique=unique)
+        jobs = tools.import_data(path, unique=unique, ignore_columns=ignore_columns)
 
         # reset it in case it needs to execute a PYTHON tag right after
         Schema.get(reset_cache=True)
@@ -1569,7 +1587,8 @@ class PluginTools(PluginBase):
 
 
 
-    def import_data(my, path, commit=True, unique=False):
+    def import_data(my, path, commit=True, unique=False, ignore_columns=[]):
+
         if not os.path.exists(path):
             # This is printed too often in harmless situations
             #print "WARNING: path [%s] does not exist" % path
@@ -1686,12 +1705,17 @@ class PluginTools(PluginBase):
                                 sobject.set_value('pipeline_code',new_code)
                                 
                     if base_search_type.startswith("sthpw/"):
+
                         project = Project.get()
                         project_code = project.get_value("code")
 
                         if SearchType.column_exists(sobject, "project_code"):
                             old_project_code = sobject.get_value("project_code")
-                            sobject.set_value("project_code", project_code)
+                            if "project_code" not in ignore_columns:
+                                sobject.set_value("project_code", project_code)
+                            else:
+                                sobject.set_value("project_code", "__TEMPLATE__")
+
                         else:
                             old_project_code = None
 
@@ -1706,8 +1730,8 @@ class PluginTools(PluginBase):
                                 if old_schema:
                                     old_schema.delete()
 
-
                             sobject.set_value("code", project_code)
+
 
                         if base_search_type == "sthpw/pipeline":
                             

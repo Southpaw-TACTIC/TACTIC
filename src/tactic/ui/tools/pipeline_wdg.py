@@ -518,12 +518,8 @@ class PipelineListWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
-        print "settings: ", my.settings
-
-
-
         # template pipeline
-        if not my.settings or "template" in my.settings:
+        if "template" in my.settings:
             search = Search("sthpw/pipeline")
             search.add_filter("project_code", project_code)
             search.add_filter("code", "%s/__TEMPLATE__" % project_code)
@@ -569,6 +565,7 @@ class PipelineListWdg(BaseRefreshWdg):
                     search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
                     search.add_op("begin")
                     search.add_filter("type", "sobject", op="!=")
+                    search.add_filter("type", "template", op="!=")
                     search.add_filter("type", "NULL", op="is", quoted=False)
                     search.add_op("or")
 
@@ -595,6 +592,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
                 search.add_op("begin")
                 search.add_filter("type", "sobject", op="!=")
+                search.add_filter("type", "template", op="!=")
                 search.add_filter("type", "NULL", op="is", quoted=False)
                 search.add_op("or")
 
@@ -609,6 +607,9 @@ class PipelineListWdg(BaseRefreshWdg):
                     continue
 
                 search_type = pipeline.get_value("search_type")
+                if not search_type:
+                    continue
+
                 if not last_search_type or last_search_type != search_type:
                     if last_search_type:
                         content_div.add("<hr/>")
@@ -618,7 +619,7 @@ class PipelineListWdg(BaseRefreshWdg):
                         title = search_type_obj.get_title()
                         title = Common.pluralize(title)
                     else:
-                        title = ""
+                        title = "Workflows"
                     #inner.add(title)
 
                     stype_div = DivWdg()
@@ -667,18 +668,6 @@ class PipelineListWdg(BaseRefreshWdg):
 
         # task status pipelines
         if not my.settings or "task" in my.settings:
-            swap = SwapDisplayWdg()
-            inner.add(swap)
-            swap.add_style("float: left")
-
-            title = DivWdg("<b>Task Status Workflows</b>")
-            title.add_style("padding-bottom: 2px")
-            title.add_style("padding-top: 3px")
-            inner.add(title)
-            content_div = DivWdg()
-            content_div.add_styles('padding-left: 8px; padding-top: 6px') 
-            SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
-            inner.add(content_div)
 
             search = Search("sthpw/pipeline")
             search.add_filter("project_code", project_code)
@@ -687,40 +676,47 @@ class PipelineListWdg(BaseRefreshWdg):
             #search.add_filter("search_type", "NULL", op='is', quoted=False)
             search.add_op("or")
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            search.add_filter("type", "template", op="!=")
             pipelines = search.get_sobjects()
 
-            colors = {}
-            for pipeline in pipelines:
-                pipeline_div = my.get_pipeline_wdg(pipeline)
-                content_div.add(pipeline_div)
-                colors[pipeline.get_code()] = pipeline.get_value("color")
+            if pipelines:
 
-            if not pipelines:
-                no_items = DivWdg()
-                no_items.add_style("padding: 3px 0px 3px 20px")
-                content_div.add(no_items)
-                no_items.add("<i>-- No Items --</i>")
+                swap = SwapDisplayWdg()
+                inner.add(swap)
+                swap.add_style("float: left")
+
+                title = DivWdg("<b>Task Status Workflows</b> <i>(%s)</i>" % len(pipelines))
+                title.add_style("padding-bottom: 2px")
+                title.add_style("padding-top: 3px")
+                inner.add(title)
+                content_div = DivWdg()
+                content_div.add_styles('padding-left: 8px; padding-top: 6px') 
+                SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
+                inner.add(content_div)
+
+
+                colors = {}
+                for pipeline in pipelines:
+                    pipeline_div = my.get_pipeline_wdg(pipeline)
+                    content_div.add(pipeline_div)
+                    colors[pipeline.get_code()] = pipeline.get_value("color")
+
+                if not pipelines:
+                    no_items = DivWdg()
+                    no_items.add_style("padding: 3px 0px 3px 20px")
+                    content_div.add(no_items)
+                    no_items.add("<i>-- No Items --</i>")
 
 
 
-            inner.add("<br clear='all'/>")
+                inner.add("<br clear='all'/>")
+
+
+
+
 
 
         if not my.settings or "misc" in my.settings:
-
-            # misc status pipelines
-            swap = SwapDisplayWdg()
-            inner.add(swap)
-            swap.add_style("float: left")
-
-            title = DivWdg("<b>Misc Workflows</b>")
-            title.add_style("padding-bottom: 2px")
-            title.add_style("padding-top: 3px")
-            inner.add(title)
-            content_div = DivWdg()
-            content_div.add_styles('padding-left: 8px; padding-top: 6px') 
-            SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
-            inner.add(content_div)
 
             search = Search("sthpw/pipeline")
             search.add_filter("project_code", project_code)
@@ -728,19 +724,36 @@ class PipelineListWdg(BaseRefreshWdg):
             search.add_filter("search_type", "NULL", op='is', quoted=False)
             search.add_op("or")
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            search.add_filter("type", "template", op="!=")
             pipelines = search.get_sobjects()
 
-            colors = {}
-            for pipeline in pipelines:
-                pipeline_div = my.get_pipeline_wdg(pipeline)
-                content_div.add(pipeline_div)
-                colors[pipeline.get_code()] = pipeline.get_value("color")
+            if pipelines:
 
-            if not pipelines:
-                no_items = DivWdg()
-                no_items.add_style("padding: 3px 0px 3px 20px")
-                content_div.add(no_items)
-                no_items.add("<i>-- No Items --</i>")
+                # misc status pipelines
+                swap = SwapDisplayWdg()
+                inner.add(swap)
+                swap.add_style("float: left")
+
+                title = DivWdg("<b>Misc Workflows</b>")
+                title.add_style("padding-bottom: 2px")
+                title.add_style("padding-top: 3px")
+                inner.add(title)
+                content_div = DivWdg()
+                content_div.add_styles('padding-top: 6px') 
+                SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
+                inner.add(content_div)
+
+                colors = {}
+                for pipeline in pipelines:
+                    pipeline_div = my.get_pipeline_wdg(pipeline)
+                    content_div.add(pipeline_div)
+                    colors[pipeline.get_code()] = pipeline.get_value("color")
+
+                if not pipelines:
+                    no_items = DivWdg()
+                    no_items.add_style("padding: 3px 0px 3px 20px")
+                    content_div.add(no_items)
+                    no_items.add("<i>-- No Items --</i>")
 
 
 
@@ -748,36 +761,71 @@ class PipelineListWdg(BaseRefreshWdg):
         show_site_wide_pipelines = True
 
         if (not my.settings or "misc" in my.settings) and show_site_wide_pipelines:
-
-            inner.add("<br clear='all'/>")
-
-
             # site-wide  pipelines
             search = Search("sthpw/pipeline")
             search.add_filter("project_code", "NULL", op="is", quoted=False)
             pipelines = search.get_sobjects()
 
-            swap = SwapDisplayWdg()
+            if pipelines:
+                inner.add("<br clear='all'/>")
 
-            title = DivWdg()
-            inner.add(swap)
-            swap.add_style("margin-top: -2px")
-            inner.add(title)
-            swap.add_style("float: left")
-            title.add("<b>Site Wide Workflows</b><br/>")
-          
-            site_wide_div = DivWdg()
-            site_wide_div.add_styles('padding-left: 8px; padding-top: 6px') 
-            SwapDisplayWdg.create_swap_title(title, swap, site_wide_div, is_open=False)
+                swap = SwapDisplayWdg()
 
-            colors = {}
-            inner.add(site_wide_div)
-            site_wide_div.add_class("spt_pipeline_list_site")
+                title = DivWdg()
+                inner.add(swap)
+                swap.add_style("margin-top: -2px")
+                inner.add(title)
+                swap.add_style("float: left")
+                title.add("<b>Site Wide Workflows</b> <i>(%s)</i><br/>" % len(pipelines))
+              
+                site_wide_div = DivWdg()
+                site_wide_div.add_styles('padding-top: 6px') 
+                SwapDisplayWdg.create_swap_title(title, swap, site_wide_div, is_open=False)
 
-            for pipeline in pipelines:
-                pipeline_div = my.get_pipeline_wdg(pipeline)
-                site_wide_div.add(pipeline_div)
-                colors[pipeline.get_code()] = pipeline.get_value("color")
+                colors = {}
+                inner.add(site_wide_div)
+                site_wide_div.add_class("spt_pipeline_list_site")
+
+                for pipeline in pipelines:
+                    pipeline_div = my.get_pipeline_wdg(pipeline)
+                    site_wide_div.add(pipeline_div)
+                    colors[pipeline.get_code()] = pipeline.get_value("color")
+
+
+        is_admin = Environment.get_security().is_admin()
+        if is_admin:
+
+            search = Search("sthpw/pipeline")
+            search.add_filter("type", "template")
+            pipelines = search.get_sobjects()
+
+            if pipelines:
+
+                # misc status pipelines
+                swap = SwapDisplayWdg()
+                inner.add(swap)
+                swap.add_style("float: left")
+
+                title = DivWdg("<b>Template Workflows</b> <i>(%s)</i>" % len(pipelines))
+                title.add_style("padding-bottom: 2px")
+                title.add_style("padding-top: 3px")
+                inner.add(title)
+                content_div = DivWdg()
+                content_div.add_styles('padding-top: 6px') 
+                SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
+                inner.add(content_div)
+
+                colors = {}
+                for pipeline in pipelines:
+                    pipeline_div = my.get_pipeline_wdg(pipeline)
+                    content_div.add(pipeline_div)
+                    colors[pipeline.get_code()] = pipeline.get_value("color")
+
+                if not pipelines:
+                    no_items = DivWdg()
+                    no_items.add_style("padding: 3px 0px 3px 20px")
+                    content_div.add(no_items)
+                    no_items.add("<i>-- No Items --</i>")
 
 
         return top
@@ -4660,7 +4708,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-
         if show_gear not in ['false', False]:
             button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row.add(button)
@@ -5635,7 +5682,7 @@ class PipelineSaveCbk(Command):
         process_sobjs = search.get_sobjects()
         existing_names = SObject.get_values(process_sobjs, 'process')
 
-        pipeline.on_insert()
+        pipeline.update_dependencies()
         
         my.description = "Updated workflow [%s]" % pipeline_code
         

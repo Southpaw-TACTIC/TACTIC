@@ -293,13 +293,96 @@ class Pipeline(SObject):
         project_code = Project.get_project_code()
         defaults['project_code'] = project_code
 
-        my.on_insert()
+        my.update_dependencies()
 
         return defaults
 
- 
+
+
+    def on_update(my):
+
+
+        # initialize the triggers for the workflow
+        """
+        event = "change|sthpw/pipeline"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProjectPipelineTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=startup)
+        """
+
+
+        if my.SEARCH_TYPE == "config/pipeline":
+            return
+
+        code = my.get_value("code")
+        search = Search("config/pipeline")
+        search.add_filter("code", code )
+        pipeline = search.get_sobject()
+
+        if not pipeline:
+            pipeline = SearchType.create("config/pipeline")
+
+        items = my.data.items()
+
+        for name, value in items:
+            if name.startswith("__"):
+                continue
+            if name in ["id", "project_code"]:
+                continue
+            if not value:
+                continue
+            pipeline.set_value(name, value)
+
+        pipeline.commit(triggers="none")
+
 
     def on_insert(my):
+
+        # Copy this to the config/pipeline table.  Currently this table
+        # is not being used, however, pipelines really should be defined
+        # there.  It is an unfortunate historical wart that pipelines
+        # are stored in the sthpw database.  In some future release of
+        # TACTIC, the pipeline table in the sthpw database will be deprecated
+        # This copy will ensure that over time, the impact of this move over
+        # will be minimized
+        if my.SEARCH_TYPE == "config/pipeline":
+            return
+        search = Search("config/pipeline")
+        search.add_filter("code", my.get_code() )
+        pipeline = search.get_sobject()
+
+        if not pipeline:
+            pipeline = SearchType.create("config/pipeline")
+        for name, value in my.get_data().items():
+            if name.startswith("__"):
+                continue
+            if name in ["id", "project_code"]:
+                continue
+            if not value:
+                continue
+
+            pipeline.set_value(name, value)
+
+        pipeline.commit(triggers="none")
+
+
+    def on_delete(my):
+        if my.SEARCH_TYPE == "config/pipeline":
+            return
+
+        search = Search("config/pipeline")
+        search.add_filter("code", my.get_code() )
+        pipeline = search.get_sobject()
+        if pipeline:
+            pipeline.delete()
+
+
+
+
+
+    def update_dependencies(my):
         '''Function that should be run on insert/update. It's already automatically called during insert.
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
@@ -350,6 +433,7 @@ class Pipeline(SObject):
                     sobject.set_value("pipeline_code", my.get_value("code") )
                     sobject.commit(triggers=False)
             """
+
 
     def update_process_table(my, search_type=None):
         ''' make sure to update process table'''
@@ -1247,10 +1331,12 @@ class Pipeline(SObject):
 
 class ProjectPipeline(Pipeline):
 
+    SEARCH_TYPE = "config/pipeline"
+
     def get_defaults(my):
         defaults = {}
 
-        my.on_insert()
+        my.update_dependencies()
 
         return defaults
 

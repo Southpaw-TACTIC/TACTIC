@@ -66,6 +66,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 if widget:
                     widget.kwargs['parent'] = my.parent
                     widget.kwargs['sobject'] = my.sobject
+                    widget.kwargs['search_key'] = my.sobject.get_search_key()
                     return widget
  
 
