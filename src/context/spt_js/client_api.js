@@ -1010,8 +1010,18 @@ TacticServerStub = function() {
         return this._delegate("get_related_types", arguments);
     }
 
-    this.query = function(search_type, kwargs) {
-        var value = this._delegate("query", arguments, kwargs, "string");
+    this.query = function(search_type, kwargs, on_complete, on_error) {
+        var newArgs = Array.prototype.slice.call(arguments).slice(0,2);
+        if(on_complete){
+          if(!on_error){
+            on_error = function(err){
+                console.log(err);
+            };
+          }
+          return this._delegate("query", newArgs, kwargs, "string", on_complete, on_error);
+        }
+
+        var value = this._delegate("query", newArgs, kwargs, "string");
         //return this._delegate("query", arguments, kwargs);
         value = JSON.parse(value);
         return value
@@ -1040,16 +1050,35 @@ TacticServerStub = function() {
         
     }
 
-    this.update = function(search_type, data, kwargs) {
-        return this._delegate("update", arguments, kwargs);
+    this.update = function(search_type, data, kwargs, on_complete, on_error) {
+        var newArgs = Array.prototype.slice.call(arguments).slice(0,3);
+        if(on_complete){
+          if(!on_error){
+            on_error = function(err){
+              console.log(err);
+            };
+          }
+          return this._delegate("update", newArgs, kwargs, undefined, on_complete, on_error);
+        }
+
+        return this._delegate("update", newArgs, kwargs);
     }
 
 
 
-    this.update_multiple = function(data, kwargs) {
+    this.update_multiple = function(data, kwargs, on_complete, on_error) {
+        var newArgs = Array.prototype.slice.call(arguments).slice(0,2);
         data = JSON.stringify(data);
+        if(on_complete){
+          if(!on_error){
+            on_error = function(err){
+              console.log(err);
+            };
+          }
+          return this._delegate("update_multiple", arguments, kwargs, undefined, on_complete, on_error);
+        }
+
         return this._delegate("update_multiple", arguments, kwargs);
-        
     }
 
 
