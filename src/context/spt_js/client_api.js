@@ -682,7 +682,7 @@ TacticServerStub = function() {
             kwargs = {__empty__:true};
         }
         if (!kwargs.mode) {
-            kwargs.mode = 'copy';
+            kwargs.mode = 'preallocate';
         }
         var mode = kwargs.mode;
         if ( !(mode in {'copy':'', 'move':'', 'preallocate':'', 'manual': '', 'upload': '', 'uploaded': ''}) ) {
@@ -730,6 +730,71 @@ TacticServerStub = function() {
         kwargs.use_handoff_dir = use_handoff_dir;
         return this._delegate("add_file", arguments, kwargs )
     }
+
+
+    this.add_sequence = function(snapshot_code, file, file_type, file_range, kwargs) {
+        return this.add_group(snapshot_code, file, file_type, file_range, kwargs);
+    }
+
+    this.add_group = function(snapshot_code, file_pattern, file_type, file_range, kwargs) {
+        // If no mode is specified, set the default mode to 'copy'.
+        if (!kwargs) {
+            kwargs = {__empty__:true};
+        }
+        if (!kwargs.mode) {
+            kwargs.mode = 'preallocate';
+        }
+        var mode = kwargs.mode;
+        if ( !(mode in {'copy':'', 'move':'', 'preallocate':'', 'manual': '', 'upload': '', 'uploaded': ''}) ) {
+            throw("Mode '" + mode + "' must be in [copy, move, preallocate, manual, upload, uploaded]");
+        }
+        
+        //file = spt.path.get_filesystem_path(file); 
+        var use_handoff_dir;
+        var handoff_dir;
+
+        if (mode in {'copy':'', 'move':''}) {
+            var applet = spt.Applet.get();
+
+            handoff_dir = this.get_handoff_dir()
+
+            // make sure that handoff dir is empty
+            applet.rmtree(handoff_dir);
+            applet.makedirs(handoff_dir);
+
+            // copy or move the file
+            var basename = spt.path.get_basename(file);
+             
+            if (mode == 'move') {
+                applet.move(file, handoff_dir + "/" + basename);
+            }
+            else if (mode == 'copy') {
+                applet.copy_file(file, handoff_dir + "/" + basename);
+            }
+            use_handoff_dir = true;
+            mode = 'create';
+        }
+        else if (mode in {'manual':''}) {
+            // files are already in handoff
+            use_handoff_dir = true;
+        }
+        else if (mode == 'upload') {
+            var ticket = this.transaction_ticket;
+            this.upload_file(file, ticket);
+            use_handoff_dir = false;
+        }
+        else { // preallocate
+            use_handoff_dir = false;
+        }
+
+
+
+        kwargs.use_handoff_dir = use_handoff_dir;
+        return this._delegate("add_group", arguments, kwargs )
+    }
+
+
+
 
 
     // DEPRECATED: use checkout_snapshot

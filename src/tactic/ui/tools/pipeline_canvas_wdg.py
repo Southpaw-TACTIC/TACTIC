@@ -3357,7 +3357,6 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
     var scale = spt.pipeline.get_scale();
     dx = dx/scale;
     dy = dy/scale;
-    spt.pipeline.last_node_pos = mouse_pos;
 
 
     if (Math.abs(mouse_pos.x - spt.pipeline.orig_node_pos.x) > 5 ||
@@ -3365,6 +3364,9 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
     {
         spt.pipeline.changed = true;
     }
+
+
+    spt.pipeline.last_node_pos = mouse_pos;
 
     if (node.spt_is_selected == true) {
         // get all selected nodes and record their positions

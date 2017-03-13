@@ -2088,7 +2088,7 @@ class TacticServerStub(object):
     def group_checkin(my, search_key, context, file_path, file_range,
                       snapshot_type="sequence", description="",
                       file_type='main', metadata={}, mode=None,
-                      is_revision=False , info={} ):
+                      is_revision=False , info={}, version=None, process=None ):
         '''API Function: group_checkin(search_key, context, file_path, file_range, snapshot_type="sequence", description="", file_type='main', metadata={}, mode=None, is_revision=False, info={} )
 
         Check in a range of files.  A range of file is defined as any group
@@ -2118,6 +2118,8 @@ class TacticServerStub(object):
             compatibility)
         is_revision - flag to set this as a revision instead of a version
         info - dict of info to pass to the ApiClientCmd
+        version - explicitly set a version
+        process - explicitly set a process
 
         @return:
         dictionary - snapshot

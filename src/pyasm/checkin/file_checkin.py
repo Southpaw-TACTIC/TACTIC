@@ -784,12 +784,13 @@ class FileGroupCheckin(FileCheckin):
 
     def __init__(my, sobject, file_paths, file_types, file_range, \
             context="publish", snapshot_type="file", column="snapshot", \
-            description="", keep_file_name=False, is_revision=False, mode=None, checkin_type=''):
+            description="", keep_file_name=False, is_revision=False, mode=None, checkin_type='', version=None):
 
         super(FileGroupCheckin,my).__init__(sobject, file_paths, file_types, \
             context=context, snapshot_type=snapshot_type, column=column,\
             description=description, keep_file_name=keep_file_name, \
-            is_revision=is_revision, mode=mode , checkin_type=checkin_type)
+            is_revision=is_revision, mode=mode , checkin_type=checkin_type, \
+            version=version)
        
         my.file_range = file_range
         my.expanded_paths = []
