@@ -600,8 +600,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         keywords = my.kwargs.get('keywords')
         if keywords:
-            keywords_column = 'keywords'
-            search.add_text_search_filter(keywords_column, keywords)
+            keywords_columns = my.kwargs.get('keywords_columns')
+            if not keywords_columns:
+                keywords_column = 'keywords'
+                search.add_text_search_filter(keywords_column, keywords)
+            else:
+                search.add_text_search_filters(keywords_columns, keywords)
 
         if my.connect_key == "__NONE__":
             search.set_null_filter()
@@ -692,6 +696,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     	my.element_process_sobjects(search)
+
+
+        print "ssss: ", search.get_statement()
 
 
 

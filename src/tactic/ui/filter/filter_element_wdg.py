@@ -867,18 +867,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             keywords_list = keywords.split(" ")
             single_keyword = len(keywords_list) == 1
             
-            """
-            if len(keywords_list) > 1:
-                multi_col_op = 'and'
-            else:
-                multi_col_op = 'or'
-
-            op = '|'
-            if single_col:
-                op = '&'
-            """
-
-
             if single_col:
                 if single_keyword:
                     multi_col_op = 'or' # this doesn't really matter
@@ -904,7 +892,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                
                 
             
-                # AND logic in full text search will be adopted if keywords is a list as opposed to string
+                # AND logic in full text search will be adopted if keywords
+                # is a list as opposed to string
                 if single_col:
                     keywords = keywords_list
                 

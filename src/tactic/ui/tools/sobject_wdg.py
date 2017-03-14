@@ -1032,20 +1032,51 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         td.add("<hr/>")
 
 
-        notes_div = DivWdg()
-        td.add(notes_div)
-        from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False,\
-            show_note_expand=False, show_task_process=my.show_task_process)
-        
-        notes_div.add(discussion_wdg)
-        #menu = discussion_wdg.get_menu_wdg(notes_div)
-        #notes_div.add(menu)
+        # write out all the notes totals
+        from pyasm.biz import Schema
+        schema = Schema.get()
+        related_types = schema.get_related_search_types(my.sobject.get_base_search_type())
+        related_types = list(set(related_types))
 
-        notes_div.add_style("min-width: 300px")
-        notes_div.add_style("height: 200")
-        notes_div.add_style("overflow-y: auto")
-        notes_div.add_class("spt_resizable")
+        sobjects = []
+        for related_type in related_types:
+            related_sobjects = Search.eval("@SOBJECT(%s)" % related_type, my.sobject)
+            sobjects.extend(related_sobjects)
+
+        sobjects.insert(0, my.sobject)
+
+        from tactic.ui.widget.discussion_wdg import DiscussionWdg
+        for sobject in sobjects:
+            search_key = sobject.get_search_key()
+
+            if len(sobjects) > 1:
+                name = sobject.get_value("name", no_exception=True)
+                if name:
+                    td.add("<b>%s</b> - %s" % (sobject.get_code(), name))
+                else:
+                    td.add("<b>%s</b>" % sobject.get_code())
+
+            notes_div = DivWdg()
+            td.add(notes_div)
+
+
+            discussion_wdg = DiscussionWdg(search_key=search_key,
+                    context_hidden=False, show_note_expand=False,
+                    show_task_process=my.show_task_process)
+            
+            notes_div.add(discussion_wdg)
+            #menu = discussion_wdg.get_menu_wdg(notes_div)
+            #notes_div.add(menu)
+
+            notes_div.add_style("min-width: 300px")
+            notes_div.add_style("height: auto")
+            notes_div.add_style("min-height: 20")
+            notes_div.add_style("overflow-y: auto")
+            notes_div.add_class("spt_resizable")
+
+            if len(sobjects) > 1:
+                notes_div.add_style("margin: 10px 10px")
+                td.add("<hr/>")
 
         return top
 

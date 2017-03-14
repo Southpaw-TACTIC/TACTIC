@@ -1455,9 +1455,72 @@ class Search(Base):
             my.select.add_op("or")
 
 
+
+
     def add_text_search_filter(my, column, keywords, table=None, op='&'):
 
         my.select.add_text_search_filter(column, keywords, table=table, op=op)
+
+
+
+    def add_text_search_filters(my, columns, keywords, table=None):
+        '''function that searches keywords across multiple columns'''
+
+        single_col = len(columns) == 1
+        partial_op = 'and'
+
+        if not keywords:
+            return
+
+        # keywords is kept as a string to maintain OR full-text search
+        if isinstance(keywords,basestring):
+            keywords = keywords.replace(",", " ")
+            keywords = re.sub(' +', ' ', keywords)
+            keywords = keywords.strip()
+
+            # keywords_list is used for add_keyword_filter()
+            keywords_list = keywords.split(" ")
+        else:
+            keywords_list = keywords
+
+        if not keywords_list:
+            return
+
+        single_keyword = len(keywords_list) == 1
+
+        if isinstance(columns,basestring):
+            columns = columns.split(",")
+
+
+        if single_col:
+            if single_keyword:
+                multi_col_op = 'or' # this doesn't really matter
+                op = '|'            # this doesn't really matter
+            else: # multi_keyword, single column
+                multi_col_op = 'or' # this doesn't really matter
+                op = '&'
+
+        else:
+            if single_keyword:
+                multi_col_op = 'or'
+                op = '|'            # this doesn't really matter
+            else:
+                multi_col_op = 'or'
+                op = '&'
+
+
+        search_type = my.get_search_type()
+        search_type_obj = SearchType.get(search_type)
+
+        if not table:
+            table = search_type_obj.get_table()
+
+        my.add_op("begin")
+
+        for column in columns:
+            my.add_text_search_filter(column, keywords, table=table, op=op)
+
+        my.add_op(multi_col_op)
 
 
 
