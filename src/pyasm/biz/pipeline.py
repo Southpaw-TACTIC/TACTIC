@@ -299,7 +299,7 @@ class Pipeline(SObject):
 
 
 
-    def on_update(my):
+    def on_updateX(my):
 
 
         # initialize the triggers for the workflow
@@ -338,7 +338,7 @@ class Pipeline(SObject):
         pipeline.commit(triggers="none")
 
 
-    def on_insert(my):
+    def on_insertX(my):
 
         # Copy this to the config/pipeline table.  Currently this table
         # is not being used, however, pipelines really should be defined
@@ -368,7 +368,7 @@ class Pipeline(SObject):
         pipeline.commit(triggers="none")
 
 
-    def on_delete(my):
+    def on_deleteX(my):
         if my.SEARCH_TYPE == "config/pipeline":
             return
 
