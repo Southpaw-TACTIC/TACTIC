@@ -29,6 +29,21 @@ class EmailHandler(object):
         my.parent = parent
         my.input = input
 
+        # Introduce an environment that can be reflected
+        my.env_sobjects = {
+            'sobject': my.sobject
+        }
+
+        snapshot = my.input.get('snapshot')
+        if snapshot:
+            my.env_sobjects['snapshot'] = Search.get_by_code("sthpw/snapshot", snapshot.get("code"))
+        note = my.input.get('note')
+        if note:
+            my.env_sobjects['note'] = Search.get_by_code("sthpw/note", note.get("code"))
+
+
+
+
     def check_rule(my):
         '''determine whether an email should be sent'''
         return True
@@ -42,10 +57,8 @@ class EmailHandler(object):
         expr = my.notification.get_value(column, no_exception=True)
         if expr:
             sudo = Sudo()
-            # Introduce an environment that can be reflected
-            env = {
-                'sobject': my.sobject
-            }
+
+            env_sobjects = my.env_sobjects.copy()
 
             #if expr.startswith("@"):
             #    logins = Search.eval(expr, list=True, env_sobjects=env)
@@ -55,13 +68,14 @@ class EmailHandler(object):
             # go through each login and evaluate each
             logins = []
             for part in parts:
+
                 if part.startswith("#"):
                     continue
                 if not part:
                     continue
 
                 if part.startswith("@") or part.startswith("{"):
-                    results = Search.eval(part, list=True, env_sobjects=env)
+                    results = Search.eval(part, list=True, env_sobjects=env_sobjects)
                     # clear the container after each expression eval
                     ExpressionParser.clear_cache()
                     # these can just be login names, get the actual Logins
@@ -134,7 +148,6 @@ class EmailHandler(object):
             sudo = Sudo()
             parser = ExpressionParser()
             snapshot = my.input.get('snapshot')
-            env_sobjects = {}
 
             # turn prev_data and update_data from input into sobjects
             prev_data = SearchType.create("sthpw/virtual")
@@ -163,18 +176,11 @@ class EmailHandler(object):
                         update_data.set_value(name, value)
 
 
-
-            if snapshot:
-
-                env_sobjects = {
-                'snapshot': snapshot
-            }
-
-
+            env_sobjects = my.env_sobjects.copy()
             env_sobjects['prev_data'] = prev_data
             env_sobjects['update_data'] = update_data
 
-            notification_message  = parser.eval(notification_message, my.sobject, env_sobjects=env_sobjects, mode='string')
+            notification_message  = parser.eval(notification_message, my.sobject, env_sobjects=my.env_sobjects, mode='string')
             del sudo
             return notification_message
 
