@@ -4149,6 +4149,8 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
 
+    spt.body.add_focus_element(clone);
+
     return clone;
 
 }

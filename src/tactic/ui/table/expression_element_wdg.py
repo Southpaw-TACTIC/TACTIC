@@ -158,7 +158,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.cache_results = None
 
 
-  
+
     def preprocess(my):
         order_by = my.get_option("order_by")
         # for backward compatibility when order_by used to be true/false

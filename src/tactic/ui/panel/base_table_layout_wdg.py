@@ -698,8 +698,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     	my.element_process_sobjects(search)
 
 
-        print "ssss: ", search.get_statement()
-
 
 
 
@@ -793,7 +791,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             "layour_switcher": True,
         }
         #settings = None
-        #settings = "ssave|insert|search|keyword_search"
+        #settings = "save|insert|search|keyword_search"
         """
 
 

@@ -510,12 +510,39 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         my.mode = ''
 
 
+    def add_value_update(my, value_wdg, sobject, name):
+        value_wdg.add_update( {
+            'search_key': sobject.get_search_key(),
+            'column': name,
+            'interval': 2,
+            'cbjs_action': '''
+            spt.panel.refresh_element(bvr.src_el, {}, {
+              callback: function() {
+                var td = bvr.src_el.getParent("td");
+                var el = bvr.src_el.getElement(".spt_background");
+                if (!td || !el) return;
+                var color = el.getAttribute("spt_color");
+                var background = el.getAttribute("spt_background");
+                td.setStyle("color", color);
+                td.setStyle("background", background);
+              }
+            } );
+            '''
+        } )
+
+
     def init_data(my):
 
         sobject = my.get_current_sobject()
+        if not sobject:
+            sobject = my.sobject
+
         value = sobject.get_value(my.due_date_col)
         if not value:
             my.mode = ""
+            my.diff = ""
+            my.date_today = None
+            my.date_due = None
             return
 
         DAY = my.DAY
@@ -566,13 +593,35 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
 
 
-
-
-    def handle_td(my, td):
+    def get_colors(my):
 
         my.init_data()
 
+        color = "#000"
+
+        if my.mode == 'critical':
+            background = "#e84a4d"
+            color = "#FFF"
+        elif my.mode == 'today':
+            background = "#a3d991"
+            color = "#FFF"
+        elif my.mode == 'warning_1':
+            background = "#e9e386"
+        elif my.mode == 'warning_2':
+            background = "#ecbf7f"
+        elif my.mode == 'done':
+            background = ""
+        else:
+            background = ""
+
+        return color, background 
+
+
+    def handle_td(my, td):
         '''background color is better handled on td directly'''
+
+        my.init_data()
+
         if my.mode == 'critical':
             td.add_style("background: #e84a4d")
         elif my.mode == 'today':
@@ -589,15 +638,68 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         super(TaskDaysDueElementWdg, my).handle_td(td)
            
 
+    def get_text_value(my):
+        my.init_data()
+
+        sobject = my.get_current_sobject()
+        value = sobject.get_value(my.due_date_col)
+        if not value:
+            return "no date"
+
+        mode = my.mode
+        date_today = my.date_today
+        date_due = my.date_due
+
+
+        if mode == "critical":
+            days = abs((date_due - date_today).days)
+            msg = "%s Days Overdue" % (days)
+            if days == 0:
+                value = "Today"
+            elif days == 1:
+                value = "1 Day Overdue"
+            else:
+                value = msg
+        elif mode == "today":
+            value = "Today"
+        elif mode == "warning_1":
+            value = "< 2 Hours"
+        elif mode == "warning_2":
+            value = "< 1 Hour"
+        elif mode == "done":
+            value = ""
+        else:
+            days = abs((date_due - date_today).days)
+            if days == 1:
+                value = "1 Day"
+            else:
+                value = "%s Days" % days
+
+        return value
 
 
     def get_display(my):
 
-        my.init_data()
+        sobject = my.get_current_sobject()
+        if not sobject:
+            search_key = my.kwargs.get("search_key")
+            sobject = Search.get_by_search_key(search_key)
+        else:
+            search_key = sobject.get_search_key()
+            my.kwargs['search_key'] = search_key
+
+        my.sobject = sobject
 
         div = DivWdg()
+        my.set_as_panel(div)
 
-        sobject = my.get_current_sobject()
+        color, background = my.get_colors()
+        div.add_attr("spt_background" , background)
+        div.add_attr("spt_color", color)
+        div.add_class("spt_background")
+
+        #my.init_data()
+
         value = sobject.get_value(my.due_date_col)
         if not value:
             div.add("<div style='margin: 0px auto; opacity: 0.3; text-align: center'>no date</div>")
@@ -609,6 +711,8 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         diff = my.diff
         date_today = my.date_today
         date_due = my.date_due
+
+        my.add_value_update(div, sobject, my.due_date_col)
 
         if mode == "critical":
             div.add_style("color: #FFF")
