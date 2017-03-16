@@ -401,6 +401,23 @@ class TopWdg(Widget):
         my.body.add_smart_style( "tactic_load", "cursor", "pointer" )
 
 
+        # check version of the database
+        project = Project.get()
+        version = project.get_value("last_version_update")
+        release = Environment.get_release_version()
+        if version < release:
+            try:
+                from pyasm.security import Site
+                site = Site.get_site()
+                install_dir = Environment.get_install_dir()
+                cmd = '''python "%s/src/bin/upgrade_db.py" -f -s "%s" --quiet --yes &''' % (install_dir, site)
+                print cmd
+                os.system(cmd)
+                pass
+            except Exception, e:
+                print "WARNING: ", e
+
+
 
 
 

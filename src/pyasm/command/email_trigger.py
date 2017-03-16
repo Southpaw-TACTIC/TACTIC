@@ -560,14 +560,12 @@ class EmailTrigger2(EmailTrigger):
             my.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
             return
 
-        print "sending email!!!"
 
         # if all rules are met then get the groups for this notification
         try:
             to_users = handler.get_to()
             cc_users = handler.get_cc()
             bcc_users = handler.get_bcc()
-
 
             subject = handler.get_subject()
             if len(subject) > 60:
@@ -576,6 +574,10 @@ class EmailTrigger2(EmailTrigger):
         except SObjectValueException, e:
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
+
+        if not to_users:
+            return
+        print "sending email: ", to_users
 
         #sobj_data = main_sobject.get_aux_data()
         #email_info = sobj_data.get('__tactic_email_info__')

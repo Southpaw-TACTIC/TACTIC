@@ -47,11 +47,6 @@ class EditCmd(Command):
             my.trigger_mode = True
 
 
-        print
-        print "trigger_mode: ", my.trigger_mode
-        print
-
-
         # if data is passed in, then use this as the form values
         my.data = kwargs.get("data")
         if my.data != None:

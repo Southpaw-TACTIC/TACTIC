@@ -22,6 +22,19 @@ class ConfigUpgrade(BaseUpgrade):
     #
     #
     #
+    def upgrade_v4_6_0_a02_001(my):
+        my.run_sql('''
+        ALTER TABLE spt_pipeline ADD COLUMN type varchar(256);
+        ''')
+
+
+
+    def upgrade_v4_6_0_a01_003(my):
+        my.run_sql('''
+        ALTER TABLE spt_pipeline ADD COLUMN name varchar(256);
+        ''')
+
+
     def upgrade_v4_6_0_a01_002(my):
         my.run_sql('''
         ALTER TABLE widget_config ADD COLUMN priority integer;

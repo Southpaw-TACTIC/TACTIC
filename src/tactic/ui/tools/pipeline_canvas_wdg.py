@@ -3322,9 +3322,12 @@ spt.pipeline.move_all_folders = function(rel_x, rel_y) {
 
 spt.pipeline.last_node_pos = null;
 spt.pipeline.last_nodes_pos = {};
+spt.pipeline.orig_node_pos = null;
+spt.pipeline.changed = true;;
 spt.pipeline.node_drag_setup = function( evt, bvr, mouse_411) {
     spt.pipeline.init(bvr);
     spt.pipeline.last_node_pos = spt.pipeline.get_mouse_position(mouse_411);
+    spt.pipeline.orig_node_pos = spt.pipeline.last_node_pos;
 
     var node = bvr.src_el;
     node.addClass("move");
@@ -3343,6 +3346,7 @@ spt.pipeline.node_drag_setup = function( evt, bvr, mouse_411) {
         // This is handle on the regular click
         //spt.pipeline.select_single_node(node);
     }
+    spt.pipeline.changed = false;
 }
 
 spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
@@ -3354,6 +3358,13 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
     dx = dx/scale;
     dy = dy/scale;
     spt.pipeline.last_node_pos = mouse_pos;
+
+
+    if (Math.abs(mouse_pos.x - spt.pipeline.orig_node_pos.x) > 5 ||
+            Math.abs(mouse_pos.y - spt.pipeline.orig_node_pos.y) > 5 )
+    {
+        spt.pipeline.changed = true;
+    }
 
     if (node.spt_is_selected == true) {
         // get all selected nodes and record their positions
@@ -3376,6 +3387,11 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
     var node = bvr.drag_el;
     node.removeClass("move");
+
+    if (!spt.pipeline.changed) {
+        return;
+    }
+
     spt.named_events.fire_event('pipeline|change', {});
 
     var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");

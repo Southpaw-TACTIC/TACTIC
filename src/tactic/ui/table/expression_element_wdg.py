@@ -619,6 +619,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                 div.add( display_result )
                 div.add_style("min-height: 15px")
+                div.add_style("width: 100%")
 
 
 
@@ -630,7 +631,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 # specified then use it for the 'spt_input_value' of the td ...
                 #if my.td and alt_result:
                 #    my.td.set_attr("spt_input_value", str(alt_result))
-
                 justify = my.get_option("justify")
                 if justify and justify != 'default':
                     div.add_style("text-align: %s" % justify)

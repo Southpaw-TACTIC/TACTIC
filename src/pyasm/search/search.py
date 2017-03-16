@@ -3610,6 +3610,22 @@ class SObject(object):
         return True
 
 
+    def on_insert(my):
+        '''executed when an item is inserted'''
+        pass
+
+
+    def on_update(my):
+        '''executed when an item is updated'''
+        pass
+
+
+    def on_delete(my):
+        '''executed when an item is deleted'''
+        pass
+
+
+
     def handle_commit_security(my):
 
         return True
@@ -3820,8 +3836,6 @@ class SObject(object):
 
 
         Container.increment('Search:sql_commit')
-
-
 
         # Fill the data back in (autocreate of ids)
         # The only way to do this reliably is to query the database
@@ -4054,6 +4068,17 @@ class SObject(object):
 
         if prev_code and triggers == "all":
             my._update_code_dependencies(prev_code)
+
+
+
+        if is_insert:
+            my.on_insert()
+        else:
+           my.on_update()
+
+
+
+
 
 
 
@@ -4603,11 +4628,13 @@ class SObject(object):
             if sobject:
                 sobject.delete(log=log)
 
+        my.on_delete()
+
        
 
 
 
-    def clone(my, recursive=True, related_types=[], parent=None):
+    def clone(my, recursive=True, related_types=[], parent=None, extra_data={}):
         '''copy an sobject'''
         search_type = my.get_base_search_type()
         clone = SearchType.create(search_type)
@@ -4623,6 +4650,9 @@ class SObject(object):
 
         if parent:
             clone.set_parent(parent)
+
+        for name, value in extra_data.items():
+            clone.set_value(name, value)
 
         clone.commit(triggers=False)
 

@@ -115,6 +115,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <connect from="sthpw/task" to="sthpw/pipeline"
         relationship="code" from_col="pipeline_code" to_col="code"/>
 
+
     <connect from="sthpw/task" to="sthpw/milestone" relationship='code'/>
 
     <!-- <connect from="sthpw/task" to="config/process" relationship='code' from_col='process' to_col='process'/> -->
@@ -388,6 +389,8 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <search_type name='config/plugin_content'/>
    <search_type name='config/translation'/>
    <search_type name='config/authenticate'/>
+
+
 
    <connect from="config/ingest_rule" to="config/ingest_session" type="code" from_col="spt_ingest_session_code" to_col="code"/>
 
