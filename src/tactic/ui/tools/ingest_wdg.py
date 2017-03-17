@@ -336,10 +336,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             process_names = []
 
+        """
         if process_names:
             process_names.append("---")
         process_names.append("publish")
         process_names.append("icon")
+        """
 
 
         hidden_options = my.kwargs.get("hidden_options").split(',')
@@ -364,7 +366,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         process_wdg.add("<br/>")
 
-        if "process" in hidden_options:
+        if not process_names or "process" in hidden_options:
             process_wdg.set_style("display: none")
 
 

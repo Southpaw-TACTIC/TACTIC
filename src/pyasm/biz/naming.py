@@ -457,6 +457,8 @@ class NamingUtil(object):
                     else:
                         base, ext = os.path.splitext(file_name)
                         value = base
+
+
                 elif attr == "ext":
                     if not ext:
                         file_name = file.get_value("file_name")
@@ -691,7 +693,13 @@ class NamingUtil(object):
                         value = base
 
                     # Remove # signs as they cause problems
-                    value = value.replace("#","")
+                    index = value.find("#")
+                    if index != -1:
+                        if value[index-1] in '-._':
+                            value = value[:index-1] + value[index+1:]
+                        value = value.replace("#", "")
+
+
 
                 elif attr == "ext":
                     if not ext:

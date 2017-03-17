@@ -3277,7 +3277,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @params
         ticket - authentication ticket
         snapshot_code - the code of a preallocated snapshot.  This can be
-            create by get_snapshot()
+            created by get_snapshot()
         file_type - the type of file that will be checked in.  Some naming
             conventions make use of this information to separate directories
             for different file types
@@ -3646,7 +3646,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def group_checkin(my, ticket, search_key, context, file_path, file_range_val, snapshot_type='sequence', description="", file_type='main', metadata={}, mode=None, is_revision=False, info={}):
+    def group_checkin(my, ticket, search_key, context, file_path, file_range_val, snapshot_type='sequence', description="", file_type='main', metadata={}, mode=None, is_revision=False, info={}, version=None, process=None):
         '''checkin a range of files
 
         @params
@@ -3666,6 +3666,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
         metadata - add metadata to snapshot
         is_revision - flag to set this as a revision instead of a version
         info - dictionary for ApiClientCmd
+        version - explicitly set a version
+        process - explicitly set a process
 
 
         @return
@@ -3721,7 +3723,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         checkin = FileGroupCheckin(sobject, file_paths, file_types,\
             file_range, context=context, snapshot_type=snapshot_type, \
-            description=description, is_revision=is_revision, mode=mode)
+            description=description, is_revision=is_revision, mode=mode, \
+            version=version, process=process)
         
         checkin.execute()
 
@@ -4025,6 +4028,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             #lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
             #upload_path = "%s/%s" % (lib_dir, filename) 
             upload_path = file_path
+
         elif mode == 'inplace':
             upload_path = os.path.dirname(file_path) + '/' + filename
             keep_file_name = True
