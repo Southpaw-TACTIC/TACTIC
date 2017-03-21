@@ -1460,7 +1460,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
         if isinstance(column, basestring):
-            columns = [column]
+            columns = column.split(",")
         else:
             columns = column
 

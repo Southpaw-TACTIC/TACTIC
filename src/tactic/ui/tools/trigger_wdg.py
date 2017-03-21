@@ -509,10 +509,13 @@ class TriggerDetailWdg(BaseRefreshWdg):
             script_path = trigger.get_value("script_path")
 
             data = trigger.get_json_value("data")
-            if data:
+            if data and isinstance(data,dict):
                 class_path = data.get("class_path")
                 if class_path:
                     class_name = class_path
+            else:
+                class_name = None
+                class_path = None
 
             # TODO: should use trigger_type in database
             if class_name == 'tactic.command.PipelineTaskStatusTrigger' and not script_path:

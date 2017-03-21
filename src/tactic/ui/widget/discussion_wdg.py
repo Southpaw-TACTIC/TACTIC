@@ -1115,10 +1115,11 @@ class DiscussionWdg(BaseRefreshWdg):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
 
             else:
-                add_wdg = IconWdg("Add Note", "BS_PLUS")
+                add_wdg = IconWdg("Add Note", "BS_PLUS", size=12)
                 no_notes_msg.add(add_wdg)
+                add_wdg.add_style("display: inline-block")
                 msg = "No notes."
-                no_notes_msg.add("<i> %s </i>" % _(msg))
+                no_notes_msg.add("<div style='display: inline-block'><i> %s </i></div>" % _(msg))
                 no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
 
@@ -2173,7 +2174,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             process_names = []
             if pipeline:
                 process_obj = pipeline.get_process(my.process)
-                process_type = process_obj.get_type()
+                if process_obj:
+                    process_type = process_obj.get_type()
+                else:
+                    process_type = ""
                 if process_type == "approval":
                     input_processes = pipeline.get_input_processes(my.process)
                     process_names.extend( [x.get_name() for x in input_processes] )

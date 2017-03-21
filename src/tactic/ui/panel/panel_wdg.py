@@ -3221,6 +3221,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
+        keywords_columns = my.kwargs.get("keywords_columns")
         init_load_num = my.kwargs.get("init_load_num")
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
@@ -3314,6 +3315,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "mode": mode,
             "height": height,
             "keywords": keywords,
+            "keywords_columns": keywords_columns,
             "filter": filter,
             "expand_mode": expand_mode,
             "show_name_hover": show_name_hover,
