@@ -19,6 +19,13 @@ TacticServerStub = function() {
     this.site = null;
     this.project = null;
 
+    this.get_promise = function() {
+        promise = new Promise( function(resolve, reject) {
+           resolve();
+        })
+        return promise;
+    }
+
     this.set_transaction_ticket = function(ticket) {
         this.transaction_ticket = ticket;
     }
@@ -1075,6 +1082,8 @@ TacticServerStub = function() {
         return this._delegate("get_related_types", arguments);
     }
 
+
+
     this.query = function(search_type, kwargs, on_complete, on_error) {
         var newArgs = Array.prototype.slice.call(arguments).slice(0,2);
         if(on_complete){
@@ -1091,6 +1100,38 @@ TacticServerStub = function() {
         value = JSON.parse(value);
         return value
     }
+
+
+
+    /* TEST Promises */
+    this.query2 = function(search_type, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        on_complete2 = (value) => {
+            value = JSON.parse(value);
+            on_complete(value);
+        }
+
+        var value = this._delegate("query", arguments, kwargs, "string", on_complete2, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        value = JSON.parse(value);
+        return value
+    }
+
+
+    this.p_query = function(expression, kwargs) {
+        return new Promise((resolve, reject) => {
+            if (!kwargs) kwargs = {};
+            kwargs.on_complete = (x) => { resolve(x); }
+            return this.query2(expression, kwargs);
+        } )
+    }
+
+
+
 
     this.get_by_search_key = function(search_key) {
         return this._delegate("get_by_search_key", arguments);
@@ -1131,6 +1172,19 @@ TacticServerStub = function() {
 
 
 
+    this.p_update = function(expression, kwargs) {
+        return new Promise((resolve, reject) => {
+            if (!kwargs) kwargs = {};
+            kwargs.on_complete = (x) => { resolve(x); }
+            return this.query2(expression, kwargs);
+        } )
+    }
+
+
+
+
+
+
     this.update_multiple = function(data, kwargs, on_complete, on_error) {
         var newArgs = Array.prototype.slice.call(arguments).slice(0,2);
         data = JSON.stringify(data);
@@ -1151,9 +1205,32 @@ TacticServerStub = function() {
     //
     // Expression methods
     //
-    this.eval = function(expression, kwargs) {
-        return this._delegate("eval", arguments, kwargs);
+    this.eval = function(exprssion, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("eval", arguments, kwargs, null, on_complete, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        // synchronouse
+        if (ret_val && ret_val.status == "ERROR") {
+            throw ret_val;
+        }
+        return ret_val;
     }
+
+
+    /* Test promises */
+    this.p_eval = function(expression, kwargs) {
+        return new Promise((resolve, reject) => {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = (x) => { resolve(x); }
+            this.eval(expression, kwargs);
+        } )
+    }
+
+
 
     //
     // SObject methods
@@ -1308,28 +1385,31 @@ TacticServerStub = function() {
     }
 
 
-    this.execute_cmd = function(class_name, args, values, kwargs) {
-        if (kwargs) {
-            callback = kwargs.on_complete;
-            on_error = kwargs.on_error;
-            delete kwargs.on_error;
-            delete kwargs.on_complete;
-        }
-        else { 
-            callback = null;
-            on_error = null;
-        }
-        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback, on_error);
-        if (callback) {
+    this.execute_cmd = function(class_name, args, values, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, on_complete, on_error);
+        if (on_complete) {
             return;
         }
         if (ret_val && ret_val.status == "ERROR") {
-            // FIXME: put in a proper error here
-            //alert("ERROR: " + ret_val.msg);
             throw ret_val;
         }
         return ret_val;
     }
+
+
+    /* Test promises */
+    this.p_execute_cmd = function(expression, args, kwargs) {
+        return new Promise((resolve, reject) => {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = (x) => { resolve(x); }
+            this.execute_cmd(expression, args, {}, kwargs);
+        } )
+    }
+
+
+
 
 
     this.execute_class_method = function(class_name, method, kwargs) {
@@ -1488,6 +1568,43 @@ TacticServerStub = function() {
         }
         this._delegate("eval", arguments, kwargs, null, callback);
         return;
+    }
+
+
+    // methed that handles asynchronous callbacks.
+    // It allows for on_complete to be called in the kwargs as well.
+    // It also handles a flag "promise" which can be used with promises which
+    // defines an oncomplete that is passed to the "then" function of the
+    // promise
+    //
+    this._handle_callbacks = function(kwargs, on_complete, on_error) {
+        if (typeof(kwargs) != 'undefined' && kwargs != null) {
+
+            if (!on_complete) {
+                on_complete = kwargs.on_complete;
+            }
+            if (!on_error) {
+                on_error = kwargs.on_error;
+            }
+
+            delete kwargs.on_error;
+            delete kwargs.on_complete;
+        }
+        else {
+            on_complete = null;
+            on_error = null;
+        }
+
+        if (on_complete) {
+            if (!on_error) {
+                on_error = function(err){
+                    throw(err);
+                };
+            }
+        }
+
+        return [on_complete, on_error];
+            
     }
 
 

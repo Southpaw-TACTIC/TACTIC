@@ -2497,9 +2497,9 @@ class DiscussionAddNoteCmd(Command):
 
 
         from pyasm.biz import Note
-        note = Note.create(sobject, note, context=context, process=process)
+        note_sobj = Note.create(sobject, note, context=context, process=process)
         subject = 'Added Note'
-        message = 'The following note has been added for [%s]:\n%s '%(sobject.get_code(), note.get_value('note'))
+        message = 'The following note has been added for [%s]:\n%s '%(sobject.get_code(), note_sobj.get_value('note'))
         project_code = Project.get_project_code()
         users = []
         users.extend(mail_cc)
@@ -2556,13 +2556,59 @@ class DiscussionAddNoteCmd(Command):
                 checkin.execute()
 
                 snapshot = checkin.get_snapshot()
-                snapshot.connect(note, context="attachment")
+                snapshot.connect(note_sobj, context="attachment")
 
             else:
-                checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
+                checkin = FileCheckin(note_sobj, file_paths= file_paths, file_types = file_types, \
                     source_paths=source_paths,  context=context, checkin_type='strict')
 
                 checkin.execute()
+
+
+        my.call_triggers(note_sobj)
+
+
+    def call_triggers(my, note_sobj):
+
+        prefix = "note"
+        sobject = note_sobj.get_parent()
+        context = note_sobj.get("context")
+        process = note_sobj.get("process")
+
+        my.sobjects = [sobject]
+
+        # call the done trigger for checkin
+        from pyasm.command import Trigger
+        output = {}
+        output['search_key'] = SearchKey.build_by_sobject(note_sobj)
+        output['update_data'] = note_sobj.data.copy()
+        output['note'] = note_sobj.get_sobject_dict()
+        #output['files'] = [x.get_sobject_dict() for x in my.file_objects]
+
+
+        # Add the checkin triggers
+        base_search_type = sobject.get_base_search_type()
+        Trigger.call(my, prefix, output)
+        Trigger.call(my, "%s|%s" % (prefix, base_search_type), output)
+        Trigger.call(my, "%s|%s|%s" % (prefix, base_search_type, context), output)
+        
+        # get the process (assumption here) and call both on process and process code
+        pipeline = None
+        if process:
+            Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=process)
+        
+            pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
+            if pipeline_code:
+                pipeline = Pipeline.get_by_code(pipeline_code)
+
+            if pipeline and process:
+                search = Search("config/process")
+                search.add_filter("pipeline_code", pipeline_code)
+                search.add_filter("process", process)
+                process_sobj = search.get_sobject()
+                if process_sobj:
+                    process_code = process_sobj.get_code()
+                    Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=process_code)
 
 
 

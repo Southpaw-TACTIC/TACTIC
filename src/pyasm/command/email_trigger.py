@@ -474,7 +474,7 @@ class EmailTrigger2(EmailTrigger):
         else:
             sobjects = caller.get_sobjects()
             if not sobjects:
-                msg = "Caller '%s' has no sobjects.  Triggers cannot be called" % class_name
+                msg = "Caller has no sobjects.  Triggers cannot be called" 
                 Environment.add_warning("Caller has no sobjects", msg)
 
 
@@ -498,9 +498,11 @@ class EmailTrigger2(EmailTrigger):
         snapshot = input.get('snapshot')
         env_sobjects = {}
         if snapshot:
-            env_sobjects = {
-                'snapshot': snapshot
-            }
+            env_sobjects['snapshot'] = snapshot
+        note = input.get('note')
+        if note:
+            env_sobjects['note'] = note
+
         
         # get the rules from the database
         rules_xml = notification.get_xml_value("rules")

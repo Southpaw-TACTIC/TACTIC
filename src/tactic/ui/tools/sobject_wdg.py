@@ -1033,10 +1033,32 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
 
 
         # write out all the notes totals
-        from pyasm.biz import Schema
-        schema = Schema.get()
-        related_types = schema.get_related_search_types(my.sobject.get_base_search_type())
-        related_types = list(set(related_types))
+        search_type = my.sobject.get_base_search_type()
+
+        parts = search_type.split("/")
+        from pyasm.biz import ProjectSetting
+        related_types = ProjectSetting.get_value_by_key("notes/%s/related_types" % parts[1])
+
+
+        # hard code some built in stypes
+        if search_type in ['sthpw/snapshot']:
+            parent = my.sobject.get_parent()
+            related_types = [parent.get_base_search_type()]
+
+        elif search_type.startswith("sthpw/"):
+            related_types = []
+
+        else:
+            if related_types:
+                related_types = related_types.split(",")
+
+            else:
+                from pyasm.biz import Schema
+                schema = Schema.get()
+                related_types = schema.get_related_search_types(my.sobject.get_base_search_type())
+                related_types = list(set(related_types))
+
+
 
         sobjects = []
         for related_type in related_types:
