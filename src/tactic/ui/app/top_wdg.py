@@ -1134,16 +1134,10 @@ class SitePage(AppServer):
 
     def set_templates(my):
 
-        #if my.project_code:
-        #    project_code = my.project_code
-        #else:
-        #    project_code = WebContainer.get_web().get_full_context_name()
         project_code = WebContainer.get_web().get_full_context_name()
         if project_code == "default":
             project_code = Project.get_default_project()
 
-        #if not project_code:
-        #    project_code = my.project_code
 
         try:
             SearchType.set_global_template("project", project_code)
@@ -1286,7 +1280,8 @@ class CustomTopWdg(BaseRefreshWdg):
         headers = web.get_request_headers()
         accept = headers.get("Accept")
         expression = url.get_value("url")
-        
+       
+        # extract values from custom url
         kwargs = Common.extract_dict(hash, expression)
         
         # Does the URL listen to specific Accept values?
@@ -1304,7 +1299,7 @@ class CustomTopWdg(BaseRefreshWdg):
 
         # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
-        # class to determine what is or isn't implemented, not is it the
+        # class to determine what is or isn't implemented, nor is it the
         # responsibility of this class to convert the data.  So, it
         # returns whatever is given.
         try:
@@ -1352,6 +1347,7 @@ class CustomTopWdg(BaseRefreshWdg):
                 web.set_content_type("text/html")
 
         widget.add(value)
+
         return widget
 
 

@@ -30,6 +30,10 @@ class RestTest(unittest.TestCase):
         test_env = UnittestEnvironment()
         test_env.create()
 
+
+        my.server = "http://localhost"
+        my.server = "http://192.168.205.180"
+
         try:
             my._setup()
             print
@@ -43,7 +47,8 @@ class RestTest(unittest.TestCase):
             print
 
         finally:
-            test_env.delete()
+            #test_env.delete()
+            pass
 
 
     def send_request(my, url, headers, data={} ):
@@ -58,6 +63,7 @@ class RestTest(unittest.TestCase):
             request = urllib2.Request(url, data)
         else:
             url = "%s?login_ticket=%s" % (url, ticket)
+            print "url: ", url
             request = urllib2.Request(url)
 
         for key,value in headers.items():
@@ -87,7 +93,7 @@ class RestTest(unittest.TestCase):
         url = SearchType.create("config/url")
         url.set_value("url", "/rest/{code}")
         url.set_value('widget', '''
-        <element>
+        <element widget="true">
           <display class='tactic.protocol.PythonRestHandler'>
             <script_path>rest/test</script_path>
           </display>
@@ -99,7 +105,7 @@ class RestTest(unittest.TestCase):
         url = SearchType.create("config/url")
         url.set_value("url", "/rest2")
         url.set_value('widget', '''
-        <element>
+        <element widget="true">
           <display class='tactic.protocol.TestCustomRestHandler'>
           </display>
         </element>
@@ -111,7 +117,7 @@ class RestTest(unittest.TestCase):
         url = SearchType.create("config/url")
         url.set_value("url", "/rest3/{method}/{data}")
         url.set_value('widget', '''
-        <element>
+        <element widget="true">
           <display class='tactic.protocol.SObjectRestHandler'>
           </display>
         </element>
@@ -164,8 +170,9 @@ else:
 
     def _test_accept(my):
 
+
         # try json
-        url = "http://localhost/tactic/unittest/rest"
+        url = "%s/tactic/default/unittest/rest" % my.server
         headers = {
             "Accept": "application/json"
         }
@@ -174,7 +181,7 @@ else:
 
 
         # try xml
-        url = "http://localhost/tactic/unittest/rest"
+        url = "%s/tactic/default/unittest/rest" % my.server
         headers = {
             "Accept": "application/xml"
         }
@@ -185,7 +192,7 @@ else:
 
 
         # try json
-        url = "http://localhost/tactic/unittest/rest/CODE0123"
+        url = "%s/tactic/default/unittest/rest/CODE0123" % my.server
         headers = {
             "Accept": "application/json"
         }
@@ -198,7 +205,7 @@ else:
     def _test_method(my):
 
         # try json
-        url = "http://localhost/tactic/unittest/rest"
+        url = "%s/tactic/default/unittest/rest" % my.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"
@@ -211,7 +218,7 @@ else:
     def _test_custom_handler(my):
 
         # try json
-        url = "http://localhost/tactic/unittest/rest2"
+        url = "%s/tactic/default/unittest/rest2" % my.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"
@@ -221,7 +228,7 @@ else:
 
 
         # try json
-        url = "http://localhost/tactic/unittest/rest3/expression"
+        url = "%s/tactic/default/unittest/rest3/expression" % my.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"
@@ -235,7 +242,7 @@ else:
 
     def _test_update(my):
         # try json
-        url = "http://localhost/tactic/unittest/rest3/person/CODE0123"
+        url = "%s/tactic/default/unittest/rest3/person/CODE0123" % my.server
         headers = {
             "Accept": "application/json",
             "Method": "PUT"

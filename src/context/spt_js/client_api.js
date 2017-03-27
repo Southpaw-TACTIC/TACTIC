@@ -33,7 +33,6 @@ TacticServerStub = function() {
 
     this.set_ticket = function(login_ticket) {
         this.login_ticket = login_ticket;
-        //this.transaction_ticket = login_ticket;
     }
 
     this.get_login_ticket = function() {
@@ -88,8 +87,84 @@ TacticServerStub = function() {
     }
 
 
+    this.get_server = function() {
+        return this.server_name;
+    }
+
+
+
+
     this.get_transaction_ticket = function() {
         return this.transaction_ticket;
+    }
+
+
+    // a key is an encoded
+    this.set_key = function(key) {
+
+        var hex = key.toString();
+        var str = '';
+        for (var i = 0; i < hex.length; i += 2)
+            str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+
+        
+        // The format of key is as follows
+        // https://portal.southpawtech.com/tegna/tank/key/ABCDEFG
+        var parts = str.split("/");
+
+        var login_ticket = parts[5];
+        var project = parts[4];
+        var site = parts[3];
+        var server = parts[0] + "/" + parts[1] + "/" + parts[2];
+
+        var env = spt.Environment.get();
+        var url = env.get_api_url(server);
+
+
+        console.log(str);
+        console.log("server: " + server);
+        console.log("site: " + site);
+        console.log("project: " + project);
+        console.log("ticket: " + login_ticket);
+
+        /*
+        env.set_server_url(server);
+        env.set_site(site)
+        env.set_project(project);
+        env.set_ticket(login_ticket);
+        */
+
+        this.set_url(url);
+        this.set_ticket(login_ticket);
+        this.set_site(site);
+        this.set_project(project);
+
+    }
+
+    this.get_key = function(key) {
+
+        var env = spt.Environment.get();
+
+        var server = env.get_server_url();
+        var site = this.get_site();
+        var project = this.get_project();
+        var ticket = this.get_login_ticket();
+
+        var str = [];
+        str.push(server);
+        if (site)
+            str.push(site)
+        str.push(project)
+        str.push(ticket)
+
+        str = str.join("/");
+
+        var hex = '';
+        for(var i=0;i<str.length;i++) {
+            hex += ''+str.charCodeAt(i).toString(16);
+        }
+
+        return hex;
     }
 
 
@@ -1133,14 +1208,42 @@ TacticServerStub = function() {
 
 
 
-    this.get_by_search_key = function(search_key) {
-        return this._delegate("get_by_search_key", arguments);
+    this.get_by_search_key = function(search_key, kwargs, on_complete, on_error) {
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var value = this._delegate("get_by_search_key", arguments, kwargs, null, on_complete, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        return value
+
     }
+
+    this.p_get_by_search_key = function(search_key, kwargs) {
+        return new Promise((resolve, reject) => {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = (x) => { resolve(x); }
+            this.get_by_search_key(search_key, kwargs);
+        } )
+    }
+
+
 
 
     this.get_by_code = function(search_type, code) {
         return this._delegate("get_by_code", arguments);
     }
+
+    this.p_get_by_code = function(search_type, code, kwargs) {
+        return new Promise((resolve, reject) => {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = (x) => { resolve(x); }
+            this.get_by_search_key(expression, args, {}, kwargs);
+        } )
+    }
+
+
+
 
 
 
@@ -1380,6 +1483,48 @@ TacticServerStub = function() {
         }
     }
 
+
+
+    // Test load view
+    this.load_view = function(el, view, kwargs, on_complete, on_error) {
+
+        if (!kwargs) kwargs = {};
+        kwargs['view'] = view;
+
+        var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+        var wdg_kwargs = {
+            args: kwargs,
+            cbjs_action: function(widget) {
+                var node = document.createElement("div");
+
+                node.innerHTML = widget;
+
+                el.appendChild(node);
+
+                var scripts = node.getElementsByTagName("script");
+                for (var i = 0; i < scripts.length; i++) {
+                    var func = function() {
+                        eval(scripts[i].innerHTML);
+
+                    };
+                    func();
+                    scripts[i].remove();
+                }
+
+                if (on_complete)
+                    on_complete(node);
+            }
+
+
+        };
+        this.async_get_widget(class_name, wdg_kwargs);
+    }
+
+
+
+
+
+
     this.class_exists = function(class_path) {
         return this._delegate("class_exists", arguments);
     }
@@ -1546,6 +1691,9 @@ TacticServerStub = function() {
         var callback = kwargs['cbjs_action'];
         if (!callback) {
             callback = kwargs['callback'];
+        }
+        if (!callback) {
+            callback = kwargs['on_complete'];
         }
         var on_error = function(e) {
             if (e == 0)
@@ -1913,6 +2061,7 @@ TacticServerStub.get = function() {
 }
 
 
+TACTIC = TacticServerStub;
 
 
 

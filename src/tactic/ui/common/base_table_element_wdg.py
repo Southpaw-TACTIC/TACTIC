@@ -539,7 +539,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value_wdg.add_style("overflow-x: hidden")
             value_wdg.add_style("text-overflow: ellipsis")
             #value_wdg.add_style("white-space: nowrap")
-            value_wdg.add_style("max-height: 100px")
+
+            #value_wdg.add_style("max-height: 100px")
 
             #value_wdg.add_style("overflow-y: hidden")
             #value_wdg.add_class("spt_scrollable")
