@@ -22,6 +22,8 @@ class BaseRestHandler(BaseRefreshWdg):
     def get_display(my):
 
         method = my.kwargs.get("Method")
+        if not method:
+            raise Exception("No method specified")
 
         if method == "GET":
             ret_val = my.GET()
@@ -31,6 +33,8 @@ class BaseRestHandler(BaseRefreshWdg):
             ret_val = my.PUT()
         elif method == "DELETE":
             ret_val = my.PUT()
+        else:
+            ret_val = my.GET()
 
         return ret_val
 
@@ -106,11 +110,8 @@ class APIRestHandler(BaseRestHandler):
         return "application/json"
 
     def GET(my):
-        print "GET"
-        print
-        print my.kwargs
 
-        return "OOOOH"
+        return "TACTIC REST Interface"
 
 
 
@@ -118,8 +119,6 @@ class APIRestHandler(BaseRestHandler):
 
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
-
-        print "---"
 
         method = web.get_form_value("method")
         print "method: ", method
@@ -151,8 +150,6 @@ class APIRestHandler(BaseRestHandler):
                     kwargs[name] = value
             else:
                 kwargs[key] = web.get_form_value(key)
-
-        print "kwargs: ", kwargs
 
         call = "server.%s(**kwargs)" % method
 

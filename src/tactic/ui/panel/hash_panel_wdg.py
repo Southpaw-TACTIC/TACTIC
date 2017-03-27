@@ -70,12 +70,14 @@ class HashPanelWdg(BaseRefreshWdg):
         if key == 'link':
             return None
 
-        # look up the expression
-        search = Search("config/url")
-        search.add_filter("url", "/%s/%%"%key, "like")
-        search.add_filter("url", "/%s"%key)
-        search.add_where("or")
-        sobject = search.get_sobject()
+        sobject = cls._get_predefined_url(key, hash)
+        if not sobject:
+            # look up the expression
+            search = Search("config/url")
+            search.add_filter("url", "/%s/%%"%key, "like")
+            search.add_filter("url", "/%s"%key)
+            search.add_where("or")
+            sobject = search.get_sobject()
 
         return sobject
 
@@ -281,7 +283,22 @@ class HashPanelWdg(BaseRefreshWdg):
             sobject.set_value("widget", xml )
 
             return sobject
- 
+
+
+        elif key == "rest":
+
+            xml = '''<element widget='true'>
+  <display class='tactic.protocol.APIRestHandler'>
+  </display>
+</element>'''
+
+            sobject = SearchType.create("config/url")
+            sobject.set_value("url", "/rest")
+            sobject.set_value("widget", xml )
+
+            return sobject
+
+
         else:
             return None
 
@@ -291,8 +308,6 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
     def get_widget_from_hash(cls, hash, return_none=False, force_no_index=False, kwargs={}):
-
-        #print "hash: ", hash
 
         from pyasm.web import DivWdg
         if hash.startswith("//"):
