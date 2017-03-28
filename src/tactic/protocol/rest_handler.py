@@ -10,10 +10,12 @@
 #
 #
 
-__all__ = ['BaseRestHandler', 'TestCustomRestHandler', 'SObjectRestHandler']
+__all__ = ['BaseRestHandler', 'TestCustomRestHandler', 'SObjectRestHandler','APIRestHandler']
 
-
+from pyasm.common import jsonloads
 from tactic.ui.common import BaseRefreshWdg
+
+import re
 
 class BaseRestHandler(BaseRefreshWdg):
 
@@ -95,6 +97,69 @@ class SObjectRestHandler(BaseRestHandler):
 
 
         return {}
+
+
+
+
+class APIRestHandler(BaseRestHandler):
+    def get_content_type(my):
+        return "application/json"
+
+    def GET(my):
+        print "GET"
+        print
+        print my.kwargs
+
+        return "OOOOH"
+
+
+
+    def POST(my):
+
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+
+        print "---"
+
+        method = web.get_form_value("method")
+        print "method: ", method
+
+        # make sure there are no special characters in there ie: ()
+        p = re.compile('^\w+$')
+        if not re.match(p, method):
+            raise Exception("Mathod [%s] does not exist" % method)
+
+
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+
+        if not eval("server.%s" % method):
+            raise Exception("Mathod [%s] does not exist" % method)
+
+
+        keys = web.get_form_keys()
+
+        kwargs = {}
+        for key in keys:
+            if key in ["method", "login_ticket", "password"]:
+                continue
+
+            if key == 'kwargs':
+                args = web.get_form_value(key)
+                args = jsonloads(args)
+                for name, value in args.items():
+                    kwargs[name] = value
+            else:
+                kwargs[key] = web.get_form_value(key)
+
+        print "kwargs: ", kwargs
+
+        call = "server.%s(**kwargs)" % method
+
+
+        return eval(call)
+
+
 
 
 

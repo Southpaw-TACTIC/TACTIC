@@ -143,7 +143,7 @@ class CsvExportWdg(BaseRefreshWdg):
         top.add(HtmlElement.br())
 
         div  = DivWdg(css='spt_csv_export', id='csv_export_action')
-        div.add_color("background", "background", -10)
+        div.add_color("background", "background", -5)
         div.add_style("padding: 10px")
         div.add_style("margin: 5px")
         
@@ -175,9 +175,11 @@ class CsvExportWdg(BaseRefreshWdg):
         tr = table.add_row()
         tr.add_style('border-bottom: 1px groove #777')
         td = table.add_cell(master_cb)
+        td.add_style("padding: 5px 0px")
         label = HtmlElement.i('toggle all')
         label.add_style('color: #888')
-        table.add_cell(label)
+        td = table.add_cell(label)
+        td.add_style("padding: 3px")
 
 
         col1 = table.add_col()
@@ -233,7 +235,8 @@ class CsvExportWdg(BaseRefreshWdg):
             
             
             title = titles[idx]
-            table.add_cell('<b>%s</b> (%s) '%(title, column))
+            td = table.add_cell('<b>%s</b> (%s) '%(title, column))
+            td.add_style("padding: 3px")
 
         action_div = DivWdg()
         widget = DivWdg()
@@ -243,6 +246,7 @@ class CsvExportWdg(BaseRefreshWdg):
         cb.set_default_checked()
         widget.add(cb)
         hint = HintWdg('To update entries with specific ID later, please check this option. For new inserts in this or other table later on, uncheck this option.') 
+        widget.add(" ")
         widget.add(hint)
 
         label = string.capwords(my.mode.replace('_', ' '))

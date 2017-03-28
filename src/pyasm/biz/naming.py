@@ -684,20 +684,25 @@ class NamingUtil(object):
                     value = "%0.5d" % sobject.get_id()
 
                 elif attr == "basefile":
-                    file_name = file.get_value("file_name")
-                    base_type = file.get_value("base_type")
-                    if base_type =='directory':
-                        value = file_name
-                    else:
-                        base, ext = os.path.splitext(file_name)
-                        value = base
 
-                    # Remove # signs as they cause problems
-                    index = value.find("#")
-                    if index != -1:
-                        if value[index-1] in '-._':
-                            value = value[:index-1] + value[index+1:]
-                        value = value.replace("#", "")
+                    if file:
+                        file_name = file.get_value("file_name")
+                        base_type = file.get_value("base_type")
+                        if base_type =='directory':
+                            value = file_name
+                        else:
+                            base, ext = os.path.splitext(file_name)
+                            value = base
+
+                        # Remove # signs as they cause problems
+                        index = value.find("#")
+                        if index != -1:
+                            if value[index-1] in '-._':
+                                value = value[:index-1] + value[index+1:]
+                            value = value.replace("#", "")
+
+                    else:
+                        value = ""
 
 
 

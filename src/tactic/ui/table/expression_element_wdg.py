@@ -158,7 +158,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.cache_results = None
 
 
-  
+
     def preprocess(my):
         order_by = my.get_option("order_by")
         # for backward compatibility when order_by used to be true/false
@@ -565,7 +565,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
         outer = DivWdg()
-        for result in results:
+        for i, result in enumerate(results):
             div = DivWdg()
             outer.add(div)
             if len(results) == 1:
@@ -574,9 +574,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
             if my.sobject:
                 div.add_class( "spt_%s_expr_id%s" % ( name, my.sobject.get_id() ) )
                 div.add_class( "spt_%s_expr" % name )
-
-
-
 
 
             # by default, the value is added
@@ -594,7 +591,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     if return_type == 'single':
                         single = True
                         _list = False
-                    elif return_type== 'list':
+                    elif return_type in ['list']:
                         single = False
                         _list = True
                     else:
@@ -617,13 +614,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     display_result = result
 
+                return_type = my.kwargs.get("return")
+                if return_type in ['list']:
+                    div.add( "%s: " % (i+1) )
+                    div.add_style("max-width: 400px")
+
                 div.add( display_result )
                 div.add_style("min-height: 15px")
                 div.add_style("width: 100%")
-
-
-
-
 
 
 

@@ -220,8 +220,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         main_menu = my.get_main_menu()
         menus = [
             main_menu,
-            my.get_edit_menu(),
             my.get_file_menu(),
+            my.get_edit_menu(),
             my.get_clipboard_menu(),
             my.get_view_menu(),
             my.get_print_menu(),
@@ -236,7 +236,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menus.append(my.get_custom_menu())
 
         # Something to do with custom menus
-        menu_idx_map = { 'Edit': 1, 'File': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8, 'Custom': 9 }
+        menu_idx_map = { 'File': 1, 'Edit': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8, 'Custom': 9 }
 
 
         # add custom gear menu items if specified in configuration ...
@@ -252,8 +252,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 custom_menu_error = True
             if custom_menu_error:
                 menus = [ main_menu, 
-                           my.get_edit_menu(),
                            my.get_file_menu(), 
+                           my.get_edit_menu(),
                            my.get_clipboard_menu(),
                             my.get_view_menu(),
                             my.get_print_menu(),
@@ -295,8 +295,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if my.is_admin:
         
             opt_spec_list = [
-            { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
             { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" },
+            { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
             { "type": "submenu", "label": "Clipboard", "submenu_tag_suffix": "CLIPBOARD" },
             { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" },
             { "type": "submenu", "label": "Print", "submenu_tag_suffix": "PRINT" },
@@ -322,15 +322,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         else:
             opt_spec_list = []
-            if access_keys_dict.get('Edit'):
-                opt_spec_list.append(
-                    { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" }
-                )
 
             if access_keys_dict.get('File'):
                 opt_spec_list.append(
                     { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" }
                 )
+
+
+            if access_keys_dict.get('Edit'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" }
+                )
+
 
             if access_keys_dict.get('Clipboard'):
                 opt_spec_list.append(
@@ -375,6 +378,34 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
         return menu
 
+
+    def matches(my, a, b):
+        if my.is_admin:
+            return True
+
+        if set(a) & set(b):
+            return True
+
+        print a, b
+
+        for aa in a:
+            for bb in b:
+                if aa.startswith("*") and aa.endswith("*") and bb.find(aa.strip("*")) != -1:
+                    return True
+
+                if aa.endswith("*") and bb.startswith(aa[:-1]):
+                    return True
+
+                if aa.startswith("*") and bb.endswith(aa[1:]):
+                    return True
+
+                if aa == "__ALL__":
+                    return True
+
+        return False
+
+
+
     
 
     def get_edit_menu(my):
@@ -388,6 +419,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('Edit'):
             label_list = access_keys_dict['Edit']
 
+        label_set = set(label_list)
         
 
         if my.is_admin:
@@ -437,14 +469,16 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
 
         else:
-            if 'Retire Selected Items' in label_list:
+            accept = {"Retire Selcted Items"}
+            if my.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Retire Selected Items",
                         "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
                     }
                 )
 
-            if 'Delete Selected Items' in label_list:
+            accept = {"Delete Selcted Items"}
+            if my.matches(label_set, accept):
                 opt_spec_list.extend([
                     { "type": "action", "label": "Delete Selected Items",
                         "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);"}
@@ -456,7 +490,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 ])
             
 
-            if 'Show Server Transaction Log' in label_list:
+            accept = {"Show Server Transaction Log"}
+            if my.matches(label_set, accept):
                 opt_spec_list.extend([
 
                     { "type": "action", "label": "Show Server Transaction Log",
@@ -472,14 +507,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                     { "type": "separator" },
                 ])
-            if 'Undo Last Server Transaction' in label_list:
+
+
+            accept = {"Undo Last Server Transaction"}
+            if my.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Undo Last Server Transaction",
                         "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
                     }
                 )
 
-            if 'Redo Last Server Transaction' in label_list:
+            accept = {"Redo Last Server Transaction"}
+            if my.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Redo Last Server Transaction",
                     "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
@@ -504,10 +543,12 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if access_keys_dict.get('File'):
             label_list = access_keys_dict['File']
 
+        label_set = set(label_list)
+
         #access_keys = my._get_access_keys("export_all_csv",  project_code)
         
-        #if security.check_access("builtin", access_keys, "allow") or 'Export All ...' in label_list:
-        if 'Export All ...' in label_list:
+        accept = {"Export All", "Export All ..."}
+        if my.matches(label_set, accept):
             menu_items.append(
                 { "type": "action", "label": "Export All ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);',
@@ -516,8 +557,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             )
 
         show_export_separator = False
-        if not my.layout or my.layout.can_add_columns():
-            if my.is_admin or 'Export Selected ...' in label_list:
+        if my.layout.can_add_columns():
+            accept = {"Export Selected", "Export Selected ..."}
+            if my.is_admin or my.matches(label_set, accept):
                 menu_items.append(
                     { "type": "action", "label": "Export Selected ...",
                         "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
@@ -526,7 +568,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 )
                 show_export_separator = True
 
-        if my.is_admin or 'Export Matched ...' in label_list:
+        
+        accept = {"Export Matched", "Export Matched ..."}
+        if my.matches(label_set, accept):
             menu_items.append( 
                  { "type": "action", "label": "Export Matched ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
@@ -535,7 +579,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             )
             show_export_separator = True
 
-        if my.is_admin or 'Export Displayed ...' in label_list:
+
+        accept = {"Export Displayed", "Export Displayed ..."}
+        if my.matches(label_set, accept):
             menu_items.append( 
                  { "type": "action", "label": "Export Displayed ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
@@ -549,14 +595,16 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_items.append( {"type": "separator"} )
 
 
-        if 'Import CSV' in label_list:
+        accept = {"Import CSV"}
+        if my.matches(label_set, accept):
             menu_items.append(
                 { "type": "action", "label": "Import CSV",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_import_cbk(evt,bvr);' }
                 } )
 
 
-        if 'Ingest Files' in label_list:
+        accept = {"Ingest Files"}
+        if my.matches(label_set, accept):
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Ingest Files",
@@ -586,7 +634,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     spt.tab.add_new("ingest_" + search_type, title, class_name, kwargs);  
                                    '''}
                 } )
-        if 'Check-out Files' in label_list:
+
+
+        accept = {"Check-out Files"}
+        if my.matches(label_set, accept):
             menu_items.append(
                 { "type": "action", "label": "Check-out Files",
                     "bvr_cb": { 'cbjs_action': '''

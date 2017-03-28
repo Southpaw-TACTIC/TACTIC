@@ -86,6 +86,7 @@ class BaseAppServer(Base):
 
         value = WebContainer.get_buffer().getvalue()
         WebContainer.clear_buffer()
+
         return value
 
 
@@ -136,7 +137,7 @@ class BaseAppServer(Base):
 
             except Exception, e:
                 stack_trace = ExceptionLog.get_stack_trace(e)
-                print stack_trace
+                #print stack_trace
                 my.writeln("<pre>")
                 my.writeln(stack_trace)
                 my.writeln("</pre>")
@@ -182,7 +183,7 @@ class BaseAppServer(Base):
                 my.writeln("An Error has occurred.  Please see your Tactic Administrator<br/>")
                 my.writeln( "Error Message: %s" % log.get_value("message") )
                 my.writeln("Error Id: %s" % log.get_id() )
-                my.writeln( log.get_value("stack_trace") )
+                #my.writeln( log.get_value("stack_trace") )
                 my.writeln("</pre>")
 
 
@@ -192,7 +193,6 @@ class BaseAppServer(Base):
             # clear the container
             Container.delete()
             WebContainer.get_buffer().write( my.buffer.getvalue() )
-
 
 
 
