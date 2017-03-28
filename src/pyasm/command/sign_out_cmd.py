@@ -56,10 +56,20 @@ class SignOutCmd(Command):
         print "Signing out: ", login_name
 
         # expire the ticket
-        from pyasm.search import Sql, DbContainer
-        sql = DbContainer.get("sthpw")
-        ticket.set_value("expiry", sql.get_timestamp_now(), quoted=False)
-        ticket.commit()
+
+        from pyasm.security import Site
+        site = Site.get()
+        if site:
+            Site.set_site("default")
+
+        try:
+            from pyasm.search import Sql, DbContainer
+            sql = DbContainer.get("sthpw")
+            ticket.set_value("expiry", sql.get_timestamp_now(), quoted=False)
+            ticket.commit()
+        except:
+            if site:
+                Site.pop_site()
 
 
 
