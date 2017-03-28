@@ -1857,8 +1857,6 @@ class Search(Base):
             if not statement:
                 statement = my.select.get_statement()
 
-            #print "SQL: ", statement
-
             from pyasm.security import Site
             results = sql.do_query(statement)
 

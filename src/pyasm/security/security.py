@@ -1022,13 +1022,43 @@ class Ticket(SObject):
         '''class method to get Ticket sobject by it's key.  The key must be
         valid in that it has not yet expired.'''
         # find the ticket in the database
-        search = Search("sthpw/ticket")
-        search.add_filter("ticket", key)
-        now = search.get_database_impl().get_timestamp_now()
-        search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
-        ticket = search.get_sobject()
+
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site:
+            Site.set_site("default")
+
+        ticket = None
+        try:
+            search = Search("sthpw/ticket")
+            search.add_filter("ticket", key)
+            now = search.get_database_impl().get_timestamp_now()
+            search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
+            ticket = search.get_sobject()
+        finally:
+            if site:
+                Site.pop_site()
+
+        if not ticket:
+            #raise Exception("Ticket [%s] is not valid" % key)
+            print "WARNING: Ticket [%s] is not valid" % key
+
+        # This is an extra test which we may enable later.
+        # if we have a ticket, then look for the user in the login table.  It ensures
+        # that the ticket belongs to a valid user.
+        """
+        search = Search("sthpw/login")
+        search.add_filter("login", ticket.get("login") )
+        user = search.get_sobject()
+        if not ticket:
+            raise Exception("Permission denied for site [%s]" % site)
+        """
+
         return ticket
     get_by_valid_key = staticmethod(get_by_valid_key)
+ 
+
+
       
 
 
