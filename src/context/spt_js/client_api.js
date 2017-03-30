@@ -102,19 +102,36 @@ TacticServerStub = function() {
     // a key is an encoded
     this.set_key = function(key) {
 
-        var hex = key.toString();
         var str = '';
-        for (var i = 0; i < hex.length; i += 2)
-            str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+        if (key.indexOf("http") == 0) {
+            str = key;
+        }
+        else {
+            var hex = key.toString();
+            for (var i = 0; i < hex.length; i += 2)
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+        }
 
         
         // The format of key is as follows
         // https://portal.southpawtech.com/tegna/tank/key/ABCDEFG
         var parts = str.split("/");
+        if (parts.length == 7) {
+            var login_ticket = parts[6];
+            var hash = parts[5];
+            var project = parts[4];
+            var site = parts[3];
+        }
+        else {
+            var login_ticket = parts[5];
+            var hash = parts[4];
+            var project = parts[3];
+        }
 
-        var login_ticket = parts[5];
-        var project = parts[4];
-        var site = parts[3];
+        if (hash != "ticket" && hash != "login_ticket") {
+            throw("Malformed key [http<s>://<server>/<site>/<project>/ticket/<ticket>]");
+        }
+
         var server = parts[0] + "/" + parts[1] + "/" + parts[2];
 
         var env = spt.Environment.get();
@@ -136,7 +153,8 @@ TacticServerStub = function() {
 
         this.set_url(url);
         this.set_ticket(login_ticket);
-        this.set_site(site);
+        if (site)
+            this.set_site(site);
         this.set_project(project);
 
     }

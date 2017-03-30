@@ -143,9 +143,9 @@ class XmlRpcInit(Environment):
             allow_guest = False
 
         security = Environment.get_security()
-        ticket = security.login_with_ticket(my.ticket, allow_guest=allow_guest)
+        login = security.login_with_ticket(my.ticket, allow_guest=allow_guest)
 
-        if not ticket:
+        if not login:
             raise SecurityException("Cannot login with key: %s. Session may have expired." % my.ticket)
 
 

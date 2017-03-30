@@ -87,6 +87,7 @@ class BaseAppServer(Base):
         value = WebContainer.get_buffer().getvalue()
         WebContainer.clear_buffer()
 
+
         return value
 
 
@@ -100,6 +101,7 @@ class BaseAppServer(Base):
 
     def execute(my):
         my.buffer = cStringIO.StringIO()
+        error = None
 
         try:
             try:
@@ -126,6 +128,7 @@ class BaseAppServer(Base):
                 my.writeln("<pre>" )
                 my.writeln(e.__str__() )
                 my.writeln("</pre>" )
+                error = "405: TACTIC Setup Error"
 
             except DatabaseException, e:
                 from tactic.ui.startup import DbConfigPanelWdg
@@ -133,6 +136,7 @@ class BaseAppServer(Base):
                 my.writeln("<pre>")
                 my.writeln(config_wdg.get_buffer_display())
                 my.writeln("</pre>")
+                error = "405: TACTIC Database Error"
 
 
             except Exception, e:
@@ -141,6 +145,7 @@ class BaseAppServer(Base):
                 my.writeln("<pre>")
                 my.writeln(stack_trace)
                 my.writeln("</pre>")
+                error = "405 %s" % str(e)
 
                 # it is possible that the security object was not set
                 security = Environment.get_security()
@@ -193,6 +198,12 @@ class BaseAppServer(Base):
             # clear the container
             Container.delete()
             WebContainer.get_buffer().write( my.buffer.getvalue() )
+
+            if error:
+                import cherrypy
+                print "error: ", error
+                cherrypy.response.status = error
+                #raise Exception(error)
 
 
 
@@ -468,12 +479,11 @@ class BaseAppServer(Base):
 
 
                     # find the guest views
-                    # FIXME: this doesn't work!!!  It resets the home page
-                    search = Search("config/url")
-                    urls = search.get_sobjects()
-                    open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
-                    link = "/%s" % "/".join(my.hash)
+                    #search = Search("config/url")
+                    #urls = search.get_sobjects()
+                    #open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
 
+                    link = "/%s" % "/".join(my.hash)
 
                     # guest views
                     open_hashes = site_obj.get_guest_hashes()

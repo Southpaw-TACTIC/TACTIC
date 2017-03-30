@@ -138,7 +138,7 @@ class CherryPyStartup(CherryPyStartup20):
             has_site = True
 
 
-        # only set this if there a site ... neded for UploadServerWdg
+        # only set this if there a site ... needed for UploadServerWdg
         if has_site and project_code in ['default']:
             startup = cherrypy.startup
             config = startup.config
@@ -188,16 +188,39 @@ class CherryPyStartup(CherryPyStartup20):
                 print "WARNING: ", e
                 raise
 
+
         if not has_project and project and project.get_value("type") != 'resource':
 
+            # register the project
             startup = cherrypy.startup
             config = startup.config
             startup.register_project(project_code, config, site=site)
-            #cherrypy.config.update( config )
 
-            # give some time to refresh
-            #import time
-            #time.sleep(1)
+            # This is an issue ... if the project is not registered, then on a web
+            # page, it is simple just to refresh, but on requests like REST, this is not
+            # so feasible ... need a way to return the request after registering the
+            # project
+
+            """
+            # if there is hash, then attempt to get it
+            hash = "/rest"
+            if hash:
+                # clear the buffer
+                from pyasm.web import WebContainer
+                WebContainer.clear_buffer()
+                html = ""
+                try:
+                    from tactic.ui.panel import HashPanelWdg
+                    widget = HashPanelWdg.get_widget_from_hash(hash)
+                    if widget:
+                        html = widget.get_buffer_display()
+                except Exception, e:
+                    return "ERROR: %s" % str(e)
+
+                if html:
+                    return html
+            """
+
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
@@ -214,9 +237,8 @@ class CherryPyStartup(CherryPyStartup20):
             return html_response
      
 
-        # check to see if this project exists in the database?
-        #project = Project.get_by_code(project_code)
-        #print project
+
+        # return 404 error
         try:
         
             from pyasm.web import WebContainer, DivWdg
