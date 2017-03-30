@@ -189,7 +189,6 @@ class CheckinWdg(BaseRefreshWdg):
     def get_title_wdg(my):
         
         title_div = DivWdg()
-        #title_div.add_class("maq_search_bar")
         title_div.add_color("background", "background", -10)
         title_div.add_style("height: 30px")
         title_div.add_style("padding: 5px")

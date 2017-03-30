@@ -225,3 +225,21 @@ hr
 
 
 
+.maq_select_td_unchecked
+{
+    background-image: url('/context/ui_proto/icons/interface/checkbox_unchecked.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: default;
+}
+
+.maq_select_td_checked
+{
+    background-image: url('/context/ui_proto/icons/interface/checkbox_checked.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: default;
+}
+
+
+
