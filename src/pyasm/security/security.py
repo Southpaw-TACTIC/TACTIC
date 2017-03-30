@@ -1040,7 +1040,6 @@ class Ticket(SObject):
                 Site.pop_site()
 
         if not ticket:
-            #raise Exception("Ticket [%s] is not valid" % key)
             print "WARNING: Ticket [%s] is not valid" % key
 
         # This is an extra test which we may enable later.
@@ -1580,6 +1579,7 @@ class Security(Base):
         if not auth_class:
             auth_class = "pyasm.security.TacticAuthenticate"
 
+
         #from security import Site
         #site_obj = Site.get()
         #site_auth_class = site_obj.get_authenticate_class()
@@ -1792,7 +1792,16 @@ class Security(Base):
 
         ticket_key = Site.get().build_ticket(ticket_key)
 
-        ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+        # make sure the ticket is always generated on the default site
+        site = Site.get_site()
+        if site:
+            Site.set_site("default")
+        try:
+            ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+        finally:
+            if site:
+                Site.pop_site()
+
         return ticket
 
 

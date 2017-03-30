@@ -95,6 +95,7 @@ class WebLoginCmd(Command):
                     "Passwords do not match.") 
                 return False
 
+        # check to see if the login exists in the database
         login_sobject = None
         if SearchType.column_exists("sthpw/login", "upn"):
             search = Search("sthpw/login")
@@ -104,6 +105,11 @@ class WebLoginCmd(Command):
             search2 = Search("sthpw/login")              
             search2.add_filter('login',my.login)
             login_sobject = search2.get_sobject()
+        if not login_sobject:
+            search2 = Search("sthpw/login")              
+            search2.add_filter('email',my.login)
+            login_sobject = search2.get_sobject()
+
 
         # FIXME: need to only be able to do this if admin password is empty
         if verify_password:
@@ -111,7 +117,13 @@ class WebLoginCmd(Command):
                 login_sobject.set_password(verify_password)
 
         try:
-            security.login_user(my.login, my.password, domain=my.domain)
+            # always use the login column regardless of what the user entered
+            if login_sobject:
+                login = login_sobject.get_value("login")
+            else:
+                login = my.login
+
+            security.login_user(login, my.password, domain=my.domain)
         except SecurityException, e:
             msg = str(e)
             if not msg:
