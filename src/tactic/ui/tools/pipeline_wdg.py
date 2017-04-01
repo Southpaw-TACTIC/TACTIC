@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptCreateWdg', 'ScriptEditWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptCreateWdg', 'ScriptEditWdg', 'ScriptSettingsWdg']
 
 import re
 import os
@@ -2433,7 +2433,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         return top
 
 
-
+# DEPRECATED
 class ScriptEditWdg(BaseRefreshWdg):
     ''' Text area for Existing Script Edit '''
     def get_display(my):
@@ -2490,7 +2490,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         script_path_div.add_style("width: 100%")
         script_path_div.add_style("height: 60px")
         div.add(script_path_div)
-        run_title = DivWdg("Use Existing Script Path (Folder / Title):")
+        run_title = DivWdg("Script Path (Folder / Title):")
         run_title.add_style('margin-bottom: 3px')
         script_path_div.add(run_title)
         #script_path_div.add()
@@ -2762,7 +2762,7 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         return div
 
-
+# DEPRECATED
 class ScriptCreateWdg(BaseRefreshWdg):
     ''' Blank Text area for New Script Creation '''
     def get_display(my):
@@ -2791,12 +2791,11 @@ class ScriptCreateWdg(BaseRefreshWdg):
         return div
 
 
-__all__.append("ScriptSettingsWdg")
 class ScriptSettingsWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        action = my.kwargs.get("action") or ""
+        action = my.kwargs.get("action") or "create_new"
 
         is_admin = Environment.get_security().is_admin()
 
@@ -2814,12 +2813,13 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             script_wdg = my.get_command_script_wdg(on_action_class)
 
         elif action == "create_new":
-            script_wdg = my.get_new_script_wdg()
+            script_wdg = my.get_new_script_wdg(is_admin)
         else:
             script_path = my.kwargs.get("script_path")
             script = my.kwargs.get("script")
+            language = my.kwargs.get("language")
 
-            script_wdg = my.get_existing_script_wdg(script_path, script, is_admin)
+            script_wdg = my.get_existing_script_wdg(script_path, script, language, is_admin)
 
         div.add(script_wdg)
 
@@ -2845,7 +2845,9 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         return cmd_div
 
 
-    def get_existing_script_wdg(my, script_path, script, is_admin):
+    def get_existing_script_wdg(my, script_path, script, language, is_admin):
+
+        div = DivWdg()
 
         script_path_folder = ''
         script_path_title = ''
@@ -2859,12 +2861,18 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
 
         script_path_div = DivWdg()
+        div.add(script_path_div)
         script_path_div.add_style("width: 100%")
         script_path_div.add_style("min-width: 400px")
         script_path_div.add_style("margin-top: 20px")
+        script_path_div.add_style("margin-bottom: 20px")
 
 
-        run_title = DivWdg("Use Existing Script Path (Folder / Title):")
+        if not is_admin:
+            script_path_div.add_style("display: none")
+
+
+        run_title = DivWdg("Script Path (Folder / Title):")
         run_title.add_style('margin-bottom: 3px')
         script_path_div.add(run_title)
         #script_path_div.add()
@@ -2958,9 +2966,12 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             '''
         } )
 
+        script_path_div.add("<br clear='all'/>")
 
-        script_path_div.add("<br clear='all'/>"*2)
-
+        if language == "python":
+            div.add("Language: <b>Python</b>")
+        else:
+            div.add("Language: <b>Server Javascript</b>")
 
         if script_path:
 
@@ -2968,7 +2979,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             edit_label = "Click to enable Edit"
 
             enable_edit_button = DivWdg()
-            script_path_div.add(enable_edit_button)
+            div.add(enable_edit_button)
             enable_edit_button.add(edit_label)
             enable_edit_button.add_class("hand")
             enable_edit_button.add_style("text-decoration: underline")
@@ -2991,7 +3002,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             script_text.add_style("background", "#EEE");
             script_text.add_class("form-control")
             script_text.add_class("spt_python_script_text")
-            script_path_div.add(script_text)
+            div.add(script_text)
                     
             if script:
                 script_text.set_value(script)
@@ -2999,23 +3010,29 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             script_text.add_style("width: auto")
 
 
-        return script_path_div
+        return div
 
 
 
-    def get_new_script_wdg(my):
+    def get_new_script_wdg(my, is_admin):
 
         div = DivWdg()
 
 
-        div.add("Language:")
-        select = SelectWdg("language")
-        div.add(select)
-        select.set_option("labels", "Python|Server Javascript")
-        select.set_option("values", "python|server_js")
-        div.add("<br/>")
+        if is_admin:
+            div.add("Language:")
+            select = SelectWdg("language")
+            div.add(select)
+            select.set_option("labels", "Python|Server Javascript")
+            select.set_option("values", "python|server_js")
+
+        else:
+            div.add("Language: <b>Server Javascript</b>")
 
 
+            div.add("<br/>")
+            div.add("<br/>")
+            div.add("<br/>")
 
 
 
@@ -3042,10 +3059,9 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
 
 
-
 class ActionInfoWdg(BaseInfoWdg):
 
-
+    """
     def add_script_wdgX(my, div, script_path,  is_admin, pipeline_code, process_code, on_action_class, language):
 
         config_xml = []
@@ -3076,6 +3092,7 @@ class ActionInfoWdg(BaseInfoWdg):
         config_xml = "".join(config_xml)
         tab = TabWdg(config_xml=config_xml, width="400px", show_add=False, show_remove=False, mode="hidden")
         div.add(tab)
+    """
 
 
 
@@ -3131,6 +3148,8 @@ class ActionInfoWdg(BaseInfoWdg):
                     action = "script_path"
                 elif on_action_class:
                     action = "command"
+                else:
+                    action = "create_new"
 
 
     
@@ -3146,6 +3165,9 @@ class ActionInfoWdg(BaseInfoWdg):
                         language = custom_script.get("language")
 
 
+
+        if not action:
+            action = "create_new"
 
 
 
@@ -3183,8 +3205,23 @@ class ActionInfoWdg(BaseInfoWdg):
         form_wdg.add("Select which action to take:")
         select = SelectWdg("action")
         form_wdg.add(select)
-        select.set_option("labels", "Use Existing Script Path|Use Python Command Class|Create New Script")
-        select.set_option("values", "script_path|command|create_new")
+
+
+        options = []
+        labels = []
+
+
+        labels.append("Use Existing Script")
+        options.append("script_path") 
+        labels.append("Create New Script")
+        options.append("create_new") 
+
+        if is_admin:
+            labels.append("Use Python Command Class")
+            options.append("command") 
+                    
+        select.set_option("labels", labels)
+        select.set_option("values", options)
 
         if action:
             select.set_value(action)
@@ -3206,11 +3243,10 @@ class ActionInfoWdg(BaseInfoWdg):
             on_action_class=on_action_class,
             script_path=script_path,
             script=script,
+            language=language,
 
         )
         form_wdg.add(script_wdg)
-
-        #my.add_script_wdg(form_wdg, script_path, is_admin, pipeline_code, process_code, on_action_class, language)
 
 
         form_wdg.add("<br clear='all'/>")
@@ -3227,6 +3263,7 @@ class ActionInfoWdg(BaseInfoWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_action_info_top");
             var input = spt.api.get_input_values(top, null, false);
+            var action = input.action;
             var script_new = input.script_new;
             var script_path_folder = input.script_path_folder;
             var script_path_title = input.script_path_title;
@@ -3258,6 +3295,7 @@ class ActionInfoWdg(BaseInfoWdg):
             var class_name = 'tactic.ui.tools.ProcessInfoCmd';
             var kwargs = {
                 node_type: 'action',
+                action: action,
                 pipeline_code: bvr.pipeline_code,
                 process: bvr.process,
                 script: script,
@@ -4201,11 +4239,11 @@ class ProcessInfoCmd(Command):
 
     def handle_action(my):
 
+        action = my.kwargs.get("action") or "create_new"
         script = my.kwargs.get("script")
         script_path = my.kwargs.get("script_path")
         on_action_class = my.kwargs.get("on_action_class")
-        if not script and not on_action_class:
-            return
+
 
 
         pipeline_code = my.kwargs.get("pipeline_code")
@@ -4217,7 +4255,7 @@ class ProcessInfoCmd(Command):
             language = "server_js"
 
         pipeline = Pipeline.get_by_code(pipeline_code)
-        print "??: ", pipeline.get_value("pipeline")
+
 
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
@@ -4243,16 +4281,26 @@ class ProcessInfoCmd(Command):
             trigger.set_value("process", process_sobj.get_code())
             trigger.set_value("mode", "same process,same transaction")
 
-        if script_path:
-            
-            folder, title = os.path.split(script_path)
-        else:
-            script_path = "%s/%s" % (folder, title)
-        
-        if script:
-            trigger.set_value("script_path", script_path)
-        else:
+
+        print "action: ", action
+        if action == "command":
+            print "ssdssfd: ", on_action_class
+            trigger.set_value("script_path", "NULL", quoted=False)
             trigger.set_value("class_name", on_action_class)
+
+        else:
+            if script_path:
+                folder, title = os.path.split(script_path)
+            else:
+                script_path = "%s/%s" % (folder, title)
+            
+            if script:
+                trigger.set_value("script_path", script_path)
+            else:
+                trigger.set_value("class_name", on_action_class)
+
+            trigger.set_value("class_name", "NULL", quoted=False)
+
         trigger.commit()
 
         if script:

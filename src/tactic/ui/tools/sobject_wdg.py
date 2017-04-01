@@ -710,7 +710,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             else:
 
-                attrs = config.get_element_attributes(tab)
+                if config:
+                    attrs = config.get_element_attributes(tab)
+                else:
+                    attrs = {}
 
                 parts = tab.split(".")
                 name = parts[-1]
@@ -1036,6 +1039,8 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         search_type = my.sobject.get_base_search_type()
 
         parts = search_type.split("/")
+
+
         from pyasm.biz import ProjectSetting
         related_types = ProjectSetting.get_value_by_key("notes/%s/related_types" % parts[1])
 
@@ -1048,6 +1053,9 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         elif search_type.startswith("sthpw/"):
             related_types = []
 
+
+        # This is too broad
+        """
         else:
             if related_types:
                 related_types = related_types.split(",")
@@ -1057,6 +1065,7 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
                 schema = Schema.get()
                 related_types = schema.get_related_search_types(my.sobject.get_base_search_type())
                 related_types = list(set(related_types))
+        """
 
 
 

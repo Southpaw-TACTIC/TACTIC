@@ -1452,42 +1452,15 @@ spt.tab.close = function(src_el) {
             content_top.add_style("border: 1px solid %s" % border)
 
         inner.add(content_top)
-        content_top.add_style("min-height: 500px")
 
         height = my.kwargs.get("height")
-        #height = 600
-        #height = None
         if height:
             content_top.add_style("height: %s" % height)
             content_top.add_style("overflow-y: auto")
-            #content_top.add_style("overflow-x: hidden")
-        """
-        else:
-            content_top.add_style("overflow-y: auto")
-            content_top.add_style("border: solid 1px red")
-            content_top.add_behavior( {
-                'type': 'load',
-                'unique_id': my.unique_id,
-                'cbjs_action': '''
-                var el = $(bvr.unique_id);
-                if (!el) {
-                    return;
-                }
-                //el.setStyle("border", "solid 1px blue");
-                var size = el.getSize();
-                bvr.src_el.setStyle("height", size.y);
-                bvr.src_el.setStyle("max-height", size.y);
-                bvr.src_el.setStyle("border", "solid 1px blue");
 
-                window.onresize = function() {
-                    var size = el.getSize();
-                    bvr.src_el.setStyle("height", size.y);
-                    bvr.src_el.setStyle("max-height", size.y);
-                }
+            content_top.add_style("min-height: %s" % height)
 
-                '''
-            } )
-        """
+
 
         width = my.kwargs.get("width")
         if not width:

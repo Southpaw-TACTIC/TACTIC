@@ -518,7 +518,6 @@ class DynamicUpdateCmd(Command):
                         sobject = Search.get_by_search_key(expr_key)
                     else:
                         sobject = None
-                   
                     cmp_result = Search.eval(compare, sobject, single=True)
                     if cmp_result == True:
                         continue
