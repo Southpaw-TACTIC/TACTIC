@@ -2432,19 +2432,48 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         return top
 
+
+
 class ScriptEditWdg(BaseRefreshWdg):
     ''' Text area for Existing Script Edit '''
     def get_display(my):
 
         script = my.kwargs.get('script')
         script_path = my.kwargs.get('script_path')
+        on_action_class = my.kwargs.get('on_action_class')
         is_admin = my.kwargs.get('is_admin') in ['true', True]
+
+        action = my.kwargs.get("action") or "script_path"
+        language = my.kwargs.get("language")
+
        
-        #is_admin  = False
-        div = DivWdg()
+        div = my.top
+        my.set_as_panel(div)
         div.add_class("spt_script_edit")
-        div.add(HtmlElement.br())
-        div.add_style('padding: 5px')
+
+
+
+
+        # Python command class
+        if action == "command":
+            cmd_div = DivWdg()
+            div.add(cmd_div)
+            cmd_title = DivWdg("Python Command Class (eg: tactic.command.MyCommand)")
+            cmd_title.add_style('margin-bottom: 3px')
+            cmd_div.add_style('margin-bottom: 20px')
+            cmd_div.add(cmd_title)
+     
+            cmd_text = TextInputWdg(name="on_action_class")
+            cmd_text.add_style("width: 100%")
+            if on_action_class:
+                cmd_text.set_value(on_action_class)
+
+            cmd_div.add(cmd_text)
+            return div
+
+
+
+
 
         script_path_folder = ''
         script_path_title = ''
@@ -2456,20 +2485,26 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         if script_path:
             script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
+
         script_path_div = DivWdg()
-        script_path_div.add_styles('width: 100%; height: 60px; padding: 2px')
+        script_path_div.add_style("width: 100%")
+        script_path_div.add_style("height: 60px")
         div.add(script_path_div)
-        run_title = DivWdg("Run Script Path:")
-        run_title.add_styles('margin-left: 3px; margin-bottom: 3px')
+        run_title = DivWdg("Use Existing Script Path (Folder / Title):")
+        run_title.add_style('margin-bottom: 3px')
         script_path_div.add(run_title)
         #script_path_div.add()
         filters = ""
+
+        if action != "script_path":
+            script_path_div.add_style("display: none")
+
+
         
         if not is_admin:
             filters = '[["language","server_js"]]'
         script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
         script_path_folder_text.add_class("spt_script_path_folder")
-        script_path_folder_text.add_style("margin-left: 4px")
         script_path_div.add(script_path_folder_text)
    
         script_path_folder_text.add_behavior( {
@@ -2513,9 +2548,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         script_path_title_text.add_class("spt_script_path_title")
 
         script_path_div.add(script_path_title_text)
-        hr = HtmlElement.hr()
-        hr.add_style('margin-top: -2px')
-        div.add(hr)
+
         script_path_title_text.add_style("float: left")
         if script_obj:
             script_path_title_text.set_value(script_path_title)
@@ -2556,6 +2589,12 @@ class ScriptEditWdg(BaseRefreshWdg):
         } )
 
 
+
+
+
+
+
+
         can_edit = True
         if script_obj:
             script = script_obj.get_value('script')
@@ -2563,21 +2602,59 @@ class ScriptEditWdg(BaseRefreshWdg):
             if not is_admin and language == 'python':
                 can_edit = False
 
+
+        div.add("Language:")
+        select = SelectWdg("language")
+        div.add(select)
+        select.set_option("labels", "Python|Server Javascript")
+        select.set_option("values", "python|server_js")
+        select.set_value(language)
+        div.add("<br/>")
+
+
+
+
+
+
+
+
+
         # in case the script obj is deleted, it will just let you create new
         if script_path and script_obj:
             edit_mode = True
-            edit_label = "Edit"
+            edit_label = "Click to enable Edit"
+            show_script = True
+
+            create_edit_button = DivWdg()
+            create_edit_button.add(edit_label)
+            create_edit_button.add_class("hand")
+            create_edit_button.add_style("text-decoration: underline")
+            create_edit_button.add_style("margin-bottom: -20px")
+
+
+            #create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label, width="300")
+
         else:
+            if on_action_class:
+                show_script = False
+            else:
+                show_script = True
+
             edit_mode = False
-            edit_label = "Create New"
+            edit_label = "Or Create a New Script"
             script_path_title_text.set_readonly(True)
-        
-        create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label)
-        create_edit_button.add_style("float: left")
-        create_edit_button.add_style("margin: 0px 0px 10px 5px")
+
+            create_edit_button = DivWdg()
+            create_edit_button.add(edit_label)
+            create_edit_button.add_class("hand")
+            create_edit_button.add_style("text-decoration: underline")
+            
+            #create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label, width="300", color="warning")
+            #create_edit_button.add_style("margin: 20px auto")
+
+
 
         buttons_div = DivWdg(css='spt_script_edit_buttons')
-        buttons_div.add_style('margin-top: -5px')
         div.add(buttons_div)
         
         if (can_edit and edit_mode == True) or edit_mode == False: 
@@ -2634,10 +2711,9 @@ class ScriptEditWdg(BaseRefreshWdg):
         # if they do, there is no point to show Create New
         expected_script_path = my.kwargs.get('expected_script_path')
         
-        if script_path and script_path != expected_script_path:
-            create_new_button = ActionButtonWdg(title="Create New", tip="Create New Script")
-            create_new_button.add_style("float: left")
-            create_new_button.add_style("margin: 0px 0px 10px 10px")
+        if script_path and script_path != expected_script_path and show_script:
+            create_new_button = ActionButtonWdg(title="Create New", tip="Create New Script", width=200)
+            create_new_button.add_style("margin: 10px auto")
             buttons_div.add(create_new_button)
 
             create_new_button.add_behavior( {
@@ -2668,6 +2744,7 @@ class ScriptEditWdg(BaseRefreshWdg):
       
         div.add(HtmlElement.br(2))
 
+
         script_text = TextAreaWdg("script")
         script_text.add_style('padding-top: 10px')
         if edit_mode:
@@ -2693,7 +2770,7 @@ class ScriptCreateWdg(BaseRefreshWdg):
         script_path = ''
         div = DivWdg()
         div.add(HtmlElement.br())
-        title = DivWdg('Script:')
+        title = DivWdg('Add Script Code to be executed:')
         title.add_style('padding: 2px')
 
         div.add(title)
@@ -2714,9 +2791,262 @@ class ScriptCreateWdg(BaseRefreshWdg):
         return div
 
 
+__all__.append("ScriptSettingsWdg")
+class ScriptSettingsWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        action = my.kwargs.get("action") or ""
+
+        is_admin = Environment.get_security().is_admin()
+
+        div = my.top
+        my.set_as_panel(div)
+        div.add_class("spt_script_edit")
+
+        if not action:
+            return div
+
+
+
+        if action == "command":
+            on_action_class = my.kwargs.get("on_action_class")
+            script_wdg = my.get_command_script_wdg(on_action_class)
+
+        elif action == "create_new":
+            script_wdg = my.get_new_script_wdg()
+        else:
+            script_path = my.kwargs.get("script_path")
+            script = my.kwargs.get("script")
+
+            script_wdg = my.get_existing_script_wdg(script_path, script, is_admin)
+
+        div.add(script_wdg)
+
+        return div
+
+
+
+    def get_command_script_wdg(my, on_action_class):
+        cmd_div = DivWdg()
+        cmd_div.add_style('margin-bottom: 20px')
+        cmd_div.add_style('margin-top: 20px')
+
+        cmd_title = DivWdg("Python Command Class (eg: tactic.command.MyCommand)")
+        cmd_title.add_style('margin-bottom: 3px')
+        cmd_div.add(cmd_title)
+ 
+        cmd_text = TextInputWdg(name="on_action_class")
+        cmd_text.add_style("width: 100%")
+        if on_action_class:
+            cmd_text.set_value(on_action_class)
+
+        cmd_div.add(cmd_text)
+        return cmd_div
+
+
+    def get_existing_script_wdg(my, script_path, script, is_admin):
+
+        script_path_folder = ''
+        script_path_title = ''
+
+        if script_path:
+            script_path_folder, script_path_title = os.path.split(script_path)
+
+        script_obj = None
+
+        if script_path:
+            script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
+
+        script_path_div = DivWdg()
+        script_path_div.add_style("width: 100%")
+        script_path_div.add_style("min-width: 400px")
+        script_path_div.add_style("margin-top: 20px")
+
+
+        run_title = DivWdg("Use Existing Script Path (Folder / Title):")
+        run_title.add_style('margin-bottom: 3px')
+        script_path_div.add(run_title)
+        #script_path_div.add()
+        filters = ""
+
+        
+        if not is_admin:
+            filters = '[["language","server_js"]]'
+        script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
+        script_path_folder_text.add_class("spt_script_path_folder")
+        script_path_div.add(script_path_folder_text)
+   
+        script_path_folder_text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+             setTimeout( function() {
+
+                var script_path_folder = bvr.src_el.value;
+                var code;
+                if (script_path_folder) {
+                    var server = TacticServerStub.get();
+                    code = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].code)", {single: true});
+                }
+
+                var top = bvr.src_el.getParent(".spt_script_edit");
+                var script_path_title = top.getElement(".spt_script_path_title");
+                var is_read_only = script_path_title.getAttribute('readonly');
+                
+                //var bkgd = script_path_title.getStyle('background');
+                
+                if (code) {
+                    if (is_read_only) {
+                        buttons_div = top.getElement(".spt_script_edit_buttons");
+                        if (buttons_div.getAttribute('edit') != 'true' )
+                            script_path_title.removeAttribute('readonly');
+                    }
+                } else {
+                    script_path_title.setAttribute('readonly','readonly');
+                }
+             }, 250);
+            '''
+        } )
+        slash = DivWdg('/')
+        slash.add_styles('font-size: 1.7em; margin: 4px 5px 0 3px; float: left')
+        script_path_div.add(slash)
+        script_path_folder_text.add_styles("width: 120px; float: left")
+        if script_obj:
+            script_path_folder_text.set_value(script_path_folder)
+        
+        script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='240')
+        script_path_title_text.add_class("spt_script_path_title")
+
+        script_path_div.add(script_path_title_text)
+
+        script_path_title_text.add_style("float: left")
+        if script_obj:
+            script_path_title_text.set_value(script_path_title)
+        script_path_title_text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+             setTimeout( function() {
+
+                var script_path_title = bvr.src_el.value;
+                var top = bvr.src_el.getParent(".spt_script_edit");
+                var buttons_div = top.getElement(".spt_script_edit_buttons");
+
+                spt.show(buttons_div);
+
+                var script_path_folder = top.getElement(".spt_script_path_folder").value;
+                var script_path = script_path_folder + '/' + script_path_title;
+                var el = top.getElement(".spt_python_script_text");
+                var script = '';
+                if (script_path_folder && script_path_title) {
+                    var popup = false;
+                    script = spt.CustomProject.get_script_by_path(script_path, popup);
+                }
+                if (script_path_folder && script_path_title) { 
+                    if (script) {
+                        el.value = script;
+                        spt.show(el);
+                    }
+                    else {
+                        el.value = '';
+                    }
+                }
+
+
+                
+            
+             }, 250);
+            '''
+        } )
+
+
+        script_path_div.add("<br clear='all'/>"*2)
+
+
+        if script_path:
+
+
+            edit_label = "Click to enable Edit"
+
+            enable_edit_button = DivWdg()
+            script_path_div.add(enable_edit_button)
+            enable_edit_button.add(edit_label)
+            enable_edit_button.add_class("hand")
+            enable_edit_button.add_style("text-decoration: underline")
+            enable_edit_button.add_style("margin-top: 10px")
+            enable_edit_button.add_style("margin-bottom: 3px")
+            enable_edit_button.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_script_edit");
+                var el = top.getElement(".spt_python_script_text");
+                el.removeAttribute("readonly");
+                el.setStyle("background", "");
+                '''
+            } )
+
+
+            script_text = TextAreaWdg("script")
+            script_text.add_style('padding-top: 10px')
+            script_text.set_option("read_only", "true")
+            script_text.add_style("background", "#EEE");
+            script_text.add_class("form-control")
+            script_text.add_class("spt_python_script_text")
+            script_path_div.add(script_text)
+                    
+            if script:
+                script_text.set_value(script)
+            script_text.add_style("height: 300px")
+            script_text.add_style("width: auto")
+
+
+        return script_path_div
+
+
+
+    def get_new_script_wdg(my):
+
+        div = DivWdg()
+
+
+        div.add("Language:")
+        select = SelectWdg("language")
+        div.add(select)
+        select.set_option("labels", "Python|Server Javascript")
+        select.set_option("values", "python|server_js")
+        div.add("<br/>")
+
+
+
+
+
+
+        run_title = DivWdg("Enter new script_code")
+        run_title.add_style('margin-bottom: 3px')
+        div.add(run_title)
+
+
+
+        script_text = TextAreaWdg("script")
+        script_text.add_style('padding-top: 10px')
+        script_text.add_class("form-control")
+        script_text.add_class("spt_python_script_text")
+ 
+        script_text.add_style("height: 300px")
+        script_text.add_style("width: auto")
+
+        div.add(script_text)
+
+        return div
+
+
+
+
+
+
 class ActionInfoWdg(BaseInfoWdg):
 
-    def add_script_wdg(my, div, script_path,  is_admin, pipeline_code, process_code):
+
+    def add_script_wdgX(my, div, script_path,  is_admin, pipeline_code, process_code, on_action_class, language):
 
         config_xml = []
 
@@ -2733,16 +3063,18 @@ class ActionInfoWdg(BaseInfoWdg):
               <script_path>%s</script_path>
               <is_admin>%s</is_admin>
               <expected_script_path>%s</expected_script_path>
+              <on_action_class>%s</on_action_class>
+              <language>%s</language>
           </display>
         </element>
-        '''%(script_path,  str(is_admin).lower(), expected_script_path))
+        '''%(script_path,  str(is_admin).lower(), expected_script_path, on_action_class, language))
         
         config_xml.append('''
         </tab>
         </config>
         ''')
         config_xml = "".join(config_xml)
-        tab = TabWdg(config_xml=config_xml, width="400px", show_add=False)
+        tab = TabWdg(config_xml=config_xml, width="400px", show_add=False, show_remove=False, mode="hidden")
         div.add(tab)
 
 
@@ -2761,6 +3093,11 @@ class ActionInfoWdg(BaseInfoWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
 
+        search = Search("sthpw/pipeline")
+        search.add_filter("code", pipeline_code)
+        pipeline = search.get_sobject()
+
+
         # get the process sobject
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
@@ -2776,6 +3113,8 @@ class ActionInfoWdg(BaseInfoWdg):
         script = None
         script_path = ""
         process_code = ""
+        on_action_class = ""
+        action = ""
 
         if process_sobj:
             process_code = process_sobj.get_code()
@@ -2786,6 +3125,14 @@ class ActionInfoWdg(BaseInfoWdg):
             # get the custom script 
             if trigger:
                 script_path = trigger.get("script_path")
+                on_action_class = trigger.get("class_name")
+
+                if script_path:
+                    action = "script_path"
+                elif on_action_class:
+                    action = "command"
+
+
     
                 if script_path:
                     folder, title = os.path.split(script_path)
@@ -2799,19 +3146,12 @@ class ActionInfoWdg(BaseInfoWdg):
                         language = custom_script.get("language")
 
 
+
+
+
         title_wdg = my.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
-        """
-        title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px 0px 10px 0px")
-        top.add(title_wdg)
-        title_wdg.add("%s: %s" % (node_type.title(), process))
-        title_wdg.add_style("font-size: 1.2em")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px")
-        """
 
 
 
@@ -2822,55 +3162,61 @@ class ActionInfoWdg(BaseInfoWdg):
         form_wdg = DivWdg()
         top.add(form_wdg)
         form_wdg.add_style("padding: 10px")
+        form_wdg.add_class("spt_form_top")
 
         is_admin = Environment.get_security().is_admin()
 
         if node_type == "action":
-
             form_wdg.add("<b>Action:</b><br/>")
             form_wdg.add("This will be the automatically executed action for this process.")
-            form_wdg.add("<br/>")
-            form_wdg.add("<br/>")
-
-            if is_admin:
-                form_wdg.add("Language:")
-                select = SelectWdg("language")
-                form_wdg.add(select)
-                select.set_option("labels", "Python|Server Javascript")
-                select.set_option("values", "python|server_js")
-                select.set_value(language)
-                form_wdg.add("<br/>")
-
-
-
-
 
         else:
             form_wdg.add("<b>Check Condition</b><br/>")
             form_wdg.add("This will be executed on the completion event of an input process.  The condition check should either return True or False or a list of the output streams.")
 
 
-            form_wdg.add("<br/>")
-            form_wdg.add("<br/>")
+        form_wdg.add("<br/>")
+        form_wdg.add("<br/>")
 
 
-            if is_admin:
-                form_wdg.add("Language:")
-                select = SelectWdg("language")
-                form_wdg.add(select)
-                select.set_option("labels", "Python|Server Javascript")
-                select.set_option("values", "python|server_js")
-                select.set_value(language)
-                form_wdg.add("<br/>")
-         
+
+        form_wdg.add("Select which action to take:")
+        select = SelectWdg("action")
+        form_wdg.add(select)
+        select.set_option("labels", "Use Existing Script Path|Use Python Command Class|Create New Script")
+        select.set_option("values", "script_path|command|create_new")
+
+        if action:
+            select.set_value(action)
+        form_wdg.add("<br/>")
+
+        select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_form_top");
+            var script_el = top.getElement(".spt_script_edit");
+            var value = bvr.src_el.value;
+            spt.panel.refresh_element(script_el, {action: value});
+            '''
+        } )
 
 
-        my.add_script_wdg(form_wdg, script_path, is_admin, pipeline_code, process_code)
+        script_wdg = ScriptSettingsWdg(
+            action=action,
+            on_action_class=on_action_class,
+            script_path=script_path,
+            script=script,
+
+        )
+        form_wdg.add(script_wdg)
+
+        #my.add_script_wdg(form_wdg, script_path, is_admin, pipeline_code, process_code, on_action_class, language)
 
 
+        form_wdg.add("<br clear='all'/>")
 
         save = ActionButtonWdg(title="Save", color="primary")
-        save.add_styles("float: right; margin-right: 10px")
+        save.add_style("float: right")
         
         top.add(save)
         top.add(HtmlElement.br(2))
@@ -3871,6 +4217,7 @@ class ProcessInfoCmd(Command):
             language = "server_js"
 
         pipeline = Pipeline.get_by_code(pipeline_code)
+        print "??: ", pipeline.get_value("pipeline")
 
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
@@ -3904,8 +4251,8 @@ class ProcessInfoCmd(Command):
         
         if script:
             trigger.set_value("script_path", script_path)
-        #else:
-        #    trigger.set_value("class_name", on_action_class)
+        else:
+            trigger.set_value("class_name", on_action_class)
         trigger.commit()
 
         if script:
