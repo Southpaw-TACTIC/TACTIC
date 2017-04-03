@@ -152,10 +152,6 @@ def get_full_cmd(my, meth, ticket, args):
                 return transaction
 
             state = TransactionState.get_by_ticket(ticket)
-            # FIXME: do we really need to restore the state?  This is not needed
-            # becasue the ticket now has a project
-            #state.restore_state()
-
             transaction_id = state.get_state("transaction")
             if not transaction_id:
                 return Command.get_transaction(my2)
@@ -2717,7 +2713,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     # Directory methods
     #
     @xmlrpc_decorator
-    def get_paths(my, ticket, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None):
+    def get_paths(my, ticket, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None, path_types=[]):
         '''method to get paths from an sobject
 
         @params
@@ -2732,6 +2728,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             this is useful if it is know that there is only one file in the
             snapshot
         versionless - boolean to return the versionless snapshot, which takes a version of -1 (latest)  or 0 (current)
+        path_types - on of web, client, sandbox, relative
 
         @return
         A dictionary of lists representing various paths.  The paths returned
@@ -2799,27 +2796,46 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         else:
-            client_lib_path = snapshot.get_client_lib_path_by_type(file_type)
-            if not client_lib_path:
-                raise ApiException("File of type [%s] does not exist in snapshot [%s]" % (file_type, snapshot.get_code()) )
+            if "client" in path_types or not path_types:
+                client_lib_path = snapshot.get_client_lib_path_by_type(file_type)
+                if not client_lib_path:
+                    raise ApiException("File of type [%s] does not exist in snapshot [%s]" % (file_type, snapshot.get_code()) )
+                if single:
+                    paths['client_lib_path'] = client_lib_path
+                else:
+                    paths['client_lib_paths'] = [client_lib_path]
 
-            sandbox_path = snapshot.get_sandbox_path_by_type(file_type)
-            web_path = snapshot.get_remote_web_path_by_type(file_type)
-            lib_path = snapshot.get_lib_path_by_type(file_type)
-            relative_path = snapshot.get_web_path_by_type(file_type)
+            if "sandbox" in path_types or not path_types:
+                sandbox_path = snapshot.get_sandbox_path_by_type(file_type)
+                if single:
+                    paths['sandbox_path'] = sandbox_path
+                else:
+                    paths['sandbox_paths'] = [sandbox_path]
 
-            if single:
-                paths['client_lib_path'] = client_lib_path
-                paths['sandbox_path'] = sandbox_path
-                paths['web_path'] = web_path
-                paths['lib_path'] = lib_path
-                paths['relative_path'] = relative_path
-            else:
-                paths['client_lib_paths'] = [client_lib_path]
-                paths['sandbox_paths'] = [sandbox_path]
-                paths['web_paths'] = [web_path]
-                paths['lib_paths'] = [lib_path]
-                paths['relative_path'] = [relative_path]
+
+            if "web" in path_types or not path_types:
+                web_path = snapshot.get_remote_web_path_by_type(file_type)
+                if single:
+                    paths['web_path'] = web_path
+                else:
+                    paths['web_paths'] = [web_path]
+
+
+            if "lib" in path_types or not path_types:
+                lib_path = snapshot.get_lib_path_by_type(file_type)
+                if single:
+                    paths['lib_path'] = lib_path
+                else:
+                    paths['lib_paths'] = [lib_path]
+
+            if "relative" in path_types or not path_types:
+                relative_path = snapshot.get_web_path_by_type(file_type)
+                if single:
+                    paths['relative_path'] = relative_path
+                else:
+                    paths['relative_path'] = [relative_path]
+
+
         return paths
 
 
@@ -6231,7 +6247,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
             
             # create a transaction ticket
             user = Environment.get_user_name()
-            Ticket.create(transaction_ticket, user, interval='7 day')
+
+            site = Site.get()
+            if site:
+                Site.set_site("default")
+            try:
+                Ticket.create(transaction_ticket, user, interval='7 day')
+            finally:
+                if site:
+                    Site.pop_site()
 
             if not description:
                 description = "Client API (No description)"

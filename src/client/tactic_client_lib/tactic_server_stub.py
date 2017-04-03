@@ -3163,8 +3163,8 @@ class TacticServerStub(object):
     #
     # Directory methods
     #
-    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None):
-        '''API Function: get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False)
+    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=None, path_types=[]):
+        '''API Function: get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False, process=False, path_types=[])
         Get paths from an sobject
 
         @params:
@@ -3179,6 +3179,7 @@ class TacticServerStub(object):
         single - If set to True, the first of each path set is returned
         versionless - boolean to return the versionless snapshot, which takes a version of -1 (latest)  or 0 (current)
         process - the process of the snapshot
+        path_types - on of web, client, sandbox, relative
 
         @return
         A dictionary of lists representing various paths.  The paths returned
@@ -3192,7 +3193,7 @@ class TacticServerStub(object):
         '''
         return my.server.get_paths(my.ticket, search_key, context, version,
                                    file_type, level_key, single, versionless,
-                                   process
+                                   process, path_types
                                )
 
 

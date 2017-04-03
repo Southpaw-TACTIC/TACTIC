@@ -2,8 +2,6 @@
 
 
 
-
-
 function executeREST($data) {
     $login_ticket = "south123paw";
     $url = "http://192.168.205.180/workflow/workflow/rest"

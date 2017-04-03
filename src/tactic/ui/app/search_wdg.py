@@ -509,7 +509,6 @@ class SearchWdg(BaseRefreshWdg):
         if not my.filters:
             return Widget()
 
-        #filter_top = DivWdg(css="maq_search_bar")
         filter_top = DivWdg()
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
