@@ -206,7 +206,7 @@ hr
 
 .look_dg_row_select_box
 {
-    background-image: url('/context/ui_proto/icons/interface/checkbox_unchecked.png');
+    background-image: url('/context/icons/common/checkbox_unchecked.png');
     background-position: center center;
     background-repeat: no-repeat;
     background-color: inherit;
@@ -215,7 +215,7 @@ hr
 
 .look_dg_row_select_box_selected
 {
-    background-image: url('/context/ui_proto/icons/interface/checkbox_checked.png');
+    background-image: url('/context/icons/common/checkbox_checked.png');
     background-position: center center;
     background-repeat: no-repeat;
     background-color: inherit;
@@ -227,7 +227,7 @@ hr
 
 .maq_select_td_unchecked
 {
-    background-image: url('/context/ui_proto/icons/interface/checkbox_unchecked.png');
+    background-image: url('/context/icons/common/checkbox_unchecked.png');
     background-position: center center;
     background-repeat: no-repeat;
     cursor: default;
@@ -235,7 +235,7 @@ hr
 
 .maq_select_td_checked
 {
-    background-image: url('/context/ui_proto/icons/interface/checkbox_checked.png');
+    background-image: url('/context/icons/common/checkbox_checked.png');
     background-position: center center;
     background-repeat: no-repeat;
     cursor: default;
