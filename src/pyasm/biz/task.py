@@ -761,7 +761,8 @@ class Task(SObject):
 
     def create(cls, sobject, process, description="", assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
-            start_date=None, end_date=None, context='', bid_duration=8):
+            start_date=None, end_date=None, context='', bid_duration=8, \
+            task_type=None):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
@@ -813,6 +814,9 @@ class Task(SObject):
         if task.has_value('login'):
             user = Environment.get_user_name()
             task.set_value('login', user)
+
+        if task.has_value('task_type') and task_type:
+            task.set_value("task_type", task_type)
 
         task.commit(triggers=True)
         # log the status creation event

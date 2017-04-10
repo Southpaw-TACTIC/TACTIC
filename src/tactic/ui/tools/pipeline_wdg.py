@@ -5648,7 +5648,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         # get a list of known properties
         if node_type == "approval":
-            properties = ['group', "completion", 'assigned_login_group', 'duration', 'bid_duration', 'color']
+            properties = ['group', "completion", 'task_pipeline', 'assigned_login_group', 'duration', 'bid_duration', 'color']
         else:
             properties = ['group', "completion", "task_pipeline", 'assigned_login_group', 'supervisor_login_group', 'duration', 'bid_duration', 'color']
 
