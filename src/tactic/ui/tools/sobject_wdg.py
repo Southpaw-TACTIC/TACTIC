@@ -1043,6 +1043,11 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
 
         from pyasm.biz import ProjectSetting
         related_types = ProjectSetting.get_value_by_key("notes/%s/related_types" % parts[1])
+        if related_types:
+            related_types = related_types.split(",")
+        else:
+            related_types = []
+
 
 
         # hard code some built in stypes
