@@ -405,7 +405,10 @@ class TopWdg(Widget):
         project = Project.get()
         version = project.get_value("last_version_update")
         release = Environment.get_release_version()
-        if version < release:
+        #if version < release:
+        # FIXME: can't do this ... TACTIC cannot be running when the database
+        # is upgrading.
+        if False:
             try:
                 from pyasm.security import Site
                 site = Site.get_site()

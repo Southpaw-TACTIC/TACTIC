@@ -50,19 +50,19 @@ def startup(port, server=""):
     except IOError, e:
         if e.errno == 13:
             print
-            print "Permission error opening the file [%s/pid.%s]." % (log_dir,port)
+            print("Permission error opening the file [%s/pid.%s]." % (log_dir,port))
             print
             if os.name=='nt':
-                print "You may need to run this shell as the Administrator."
+                print("You may need to run this shell as the Administrator.")
             else:
-                print "The file should be owned by the same user that runs this startup_dev.py process."
+                print("The file should be owned by the same user that runs this startup_dev.py process.")
             sys.exit(2)
 
 
 
     if os.name != 'nt' and os.getuid() == 0:
         print 
-        print "You should not run this as root. Run it as the Web server process's user. e.g. apache"
+        print("You should not run this as root. Run it as the Web server process's user. e.g. apache")
         print 
         sys.exit(0)
 
