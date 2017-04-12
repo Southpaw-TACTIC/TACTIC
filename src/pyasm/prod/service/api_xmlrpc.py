@@ -2401,6 +2401,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - a dictionary that represents values of the sobject in the
             form name/value pairs
         '''
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+
         sobject = SearchKey.get_by_search_key(search_key)
         if not sobject:
             raise ApiException("SObject [%s] does not exist" % search_key)
@@ -2423,6 +2426,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - a dictionary that represents values of the sobject in the
             form name/value pairs
         '''
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+
         sobject = SearchKey.get_by_search_key(search_key)
         if not sobject:
             raise ApiException("SObject [%s] does not exist" % search_key)
@@ -2501,7 +2507,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     #
 
     @xmlrpc_decorator
-    def get_parent(my, ticket, search_key, columns=[], show_retired=False):
+    def get_parent(my, ticket, search_key, columns=[], show_retired=True):
         '''gets the parent of an sobject
 
         @params:

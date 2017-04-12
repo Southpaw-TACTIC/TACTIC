@@ -386,8 +386,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if set(a) & set(b):
             return True
 
-        print a, b
-
         for aa in a:
             for bb in b:
                 if aa.startswith("*") and aa.endswith("*") and bb.find(aa.strip("*")) != -1:

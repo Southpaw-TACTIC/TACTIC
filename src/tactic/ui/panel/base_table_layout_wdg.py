@@ -580,23 +580,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
-        keyword_values = filter_data.get_values_by_prefix("keyword")
-
-        if keyword_values:
-
-            keyword_value = keyword_values[0].get('value')
-            if keyword_value:
-                from tactic.ui.filter import KeywordFilterElementWdg
-                keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
-                keyword_filter.set_values(keyword_values[0])
-                keyword_filter.alter_search(search)
-
-
-        if my.no_results:
-            search.set_null_filter()
-
-        if expr_search:
-            search.add_relationship_search_filter(expr_search)
 
         keywords = my.kwargs.get('keywords')
         if keywords:
@@ -606,6 +589,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 search.add_text_search_filter(keywords_column, keywords)
             else:
                 search.add_text_search_filters(keywords_columns, keywords)
+
+        else:
+
+            keyword_values = filter_data.get_values_by_prefix("keyword")
+
+            if keyword_values:
+
+                keyword_value = keyword_values[0].get('value')
+                if keyword_value:
+                    from tactic.ui.filter import KeywordFilterElementWdg
+                    keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
+                    keyword_filter.set_values(keyword_values[0])
+                    keyword_filter.alter_search(search)
+
+
+        if my.no_results:
+            search.set_null_filter()
+
+        if expr_search:
+            search.add_relationship_search_filter(expr_search)
+
 
         if my.connect_key == "__NONE__":
             search.set_null_filter()
@@ -984,16 +988,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             hidden = HiddenWdg("prefix", "keyword")
             keyword_div.add(hidden)
 
-            values_list = filter_data.get_values_by_prefix("keyword")
-            if values_list:
-                values = values_list[0]
+
+            keywords = my.kwargs.get("keywords")
+            if keywords:
+                values = {
+                    "value": keywords
+                }
+
             else:
-                values = {}
+
+                values_list = filter_data.get_values_by_prefix("keyword")
+                if values_list:
+                    values = values_list[0]
+                else:
+                    values = {}
+
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
             my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
             my.keyword_hint_text = SimpleSearchWdg.get_hint_text(my.search_type, my.simple_search_view)
-
 
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(
@@ -1004,7 +1017,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     width="100",
                     show_partial=False,
                     show_toggle=True,
-                    hint_text=my.keyword_hint_text
+                    hint_text=my.keyword_hint_text,
+
             )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)

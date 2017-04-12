@@ -1521,12 +1521,12 @@ class TextInputResultsWdg(BaseRefreshWdg):
             # relevant is ON, then only search for stuff that is relevant in the current table
            
 
-            #search.add_text_search_filter(column, values)
             if search_type == 'sthpw/sobject_list':
                 search.add_filter("project_code", project_code)
 
-            if search_type == 'sthpw/sobject_list' and filter_search_type and filter_search_type != 'None':
+            if search_type == 'sthpw/sobject_list' and filter_search_type and filter_search_type != 'None' and filter_search_type != 'sthpw/sobject_list':
                 search.add_filter("search_type", filter_search_type)
+
             if filters:
                 search.add_op_filters(filters)
             
@@ -1579,6 +1579,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             search.add_limit(my.LIMIT)
 
             results = search.get_sobjects()
+
             info_dict['results'] = results
    
         mode = my.kwargs.get("mode")

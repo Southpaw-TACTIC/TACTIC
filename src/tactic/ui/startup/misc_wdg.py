@@ -89,14 +89,14 @@ class QuickLinksWdg(BaseRefreshWdg):
         top.add(title)
         top.add_color("background", "background")
         top.add_style("margin: 0px 10px 15px 10px")
-        top.set_box_shadow()
+        #top.set_box_shadow()
 
         title.add("More Information")
         title.add_style("font-size: 16px")
         title.add_style("padding: 5px")
-        title.add_gradient("background", "background")
+        title.add_color("background", "background", -5)
         title.add_border()
-        title.set_round_corners(corners=['TL','TR'])
+        #title.set_round_corners(corners=['TL','TR'])
 
         content_wdg = DivWdg()
         top.add(content_wdg)

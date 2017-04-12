@@ -1299,7 +1299,7 @@ class DbContainer(Base):
     else:
         pool_max_connections = Config.get_value("database", "pool_max_connections")
     if pool_max_connections != 0 and not pool_max_connections:
-        pool_max_connections = 1
+        pool_max_connections = 0
     else:
         pool_max_connections = int(pool_max_connections)
 

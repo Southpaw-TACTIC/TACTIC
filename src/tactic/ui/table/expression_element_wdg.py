@@ -616,7 +616,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                 return_type = my.kwargs.get("return")
                 if return_type in ['list']:
-                    div.add( "%s: " % (i+1) )
+                    div.add( "- " )
                     div.add_style("max-width: 400px")
 
                 div.add( display_result )
