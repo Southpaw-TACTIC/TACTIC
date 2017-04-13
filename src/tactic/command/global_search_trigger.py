@@ -14,7 +14,7 @@ __all__ = ['GlobalSearchTrigger', 'FolderTrigger']
 import tacticenv
 
 from pyasm.common import Common, Environment, TacticException
-from pyasm.biz import Project
+from pyasm.biz import Project, ProjectSetting
 from pyasm.search import SearchType, Search, SearchKey
 from pyasm.command import Command, Trigger
 
@@ -33,6 +33,18 @@ class GlobalSearchTrigger(Trigger):
 
         sobj_id = input.get('id')
         sobj = Search.get_by_search_key(search_key)
+
+
+        # see if this sobject is the list of sobjects that need to be in the
+        # sobject list
+        search_types = ProjectSetting.get_value_by_key("global_search/search_types")
+        if search_types:
+            search_types = search_types.split(",")
+            if sobj.get_base_search_type() not in search_types:
+                return
+
+        
+
         
         if not sobj_id:
             sobj_id = sobj.get_id()

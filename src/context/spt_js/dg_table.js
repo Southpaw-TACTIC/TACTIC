@@ -4706,6 +4706,8 @@ spt.dg_table.get_show_retired_flag = function( table_child_el )
     var el = spt.get_cousin( table_child_el, ".spt_view_panel", ".spt_search_show_retired" );
     if (!el) 
         el = spt.get_cousin( table_child_el, ".spt_layout", ".spt_search_show_retired" );
+    if (!el) return false;
+
     return spt.is_TRUE(el.value);
 }
 
@@ -4973,6 +4975,9 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
+
+        console.log(search_key);
+
 
         var server = TacticServerStub.get();
         var show_retired = spt.dg_table.get_show_retired_flag( row );

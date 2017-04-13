@@ -18,6 +18,15 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
     #
+    # 4.6.0.a02
+    #
+    def upgrade_v4_6_0_a02_001(my):
+        my.run_sql('''
+        ALTER TABLE "retire_log" ADD COLUMN search_code varchar(256);
+        ''')
+
+
+    #
     # 4.6.0.a01
     #
     def upgrade_v4_6_0_a01_008(my):

@@ -34,14 +34,14 @@ class ProjectStartWdg(BaseRefreshWdg):
     def get_main_section_wdg(my, title, description, image, behavior):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
         #section_wdg.add_style("height: 200px")
 	section_wdg.add_style("height: 310px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("1px 1px 2px 2px")
+        #section_wdg.set_round_corners()
+        #section_wdg.set_box_shadow("1px 1px 2px 2px")
 
 
         title_wdg = DivWdg()
@@ -88,13 +88,13 @@ class ProjectStartWdg(BaseRefreshWdg):
     def get_small_section_wdg(my, title, description, image, behavior):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
+        #section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("1px 1px 1px 1px")
+        #section_wdg.set_box_shadow("1px 1px 1px 1px")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)

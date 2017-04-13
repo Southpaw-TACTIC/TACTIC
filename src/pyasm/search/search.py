@@ -4547,7 +4547,7 @@ class SObject(object):
         my.commit()
 
         from sobject_log import RetireLog
-        RetireLog.create(my.get_search_type(), my.get_id() )
+        RetireLog.create(my.get_search_type(), search_code=my.get_code() )
 
         # remember the data
         data = my.data.copy()

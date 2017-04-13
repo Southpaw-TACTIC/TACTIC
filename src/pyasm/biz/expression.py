@@ -1560,6 +1560,36 @@ class MethodMode(ExpressionParser):
                 results.append(result)
 
 
+        elif method == 'STARTSWITH':
+
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            mode = my.get_mode(expression)
+            results = my.dive(mode, expression=expression)
+            if not results:
+                return False
+
+            result = results[0]
+            return result.startswith(args[1])
+
+        elif method == 'ENDSWITH':
+
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            mode = my.get_mode(expression)
+            results = my.dive(mode, expression=expression)
+            if not results:
+                return False
+
+            result = results[0]
+            return result.endswith(args[1])
+
+
+
         elif method == 'BASENAME':
             if len(args) < 1:
                 raise SyntaxError("Method @%s must have at least 1 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
