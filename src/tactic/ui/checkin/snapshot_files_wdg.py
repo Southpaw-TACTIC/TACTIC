@@ -1185,6 +1185,7 @@ class PathMetadataWdg(BaseRefreshWdg):
             title = key
 
             tr = table.add_row()
+            tr.add_class("tactic_hover")
 
             if i % 2:
                 tr.add_color("background", "background", -2)
