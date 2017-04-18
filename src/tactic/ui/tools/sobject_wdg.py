@@ -582,7 +582,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "file_detail":
                 config_xml.append('''
-                <element name="file_detail" title="File Detail">
+                <element name="file_detail" title="File Metadata">
                   <display class='tactic.ui.tools.FileDetailWdg'>
                     <search_key>%(search_key)s</search_key>
                   </display>

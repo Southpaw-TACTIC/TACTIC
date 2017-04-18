@@ -25,7 +25,13 @@ class GlobalSearchTrigger(Trigger):
     def get_title(my):
         return "Added entry to global search"
 
+
+
+
     def execute(my):
+
+        my.handle_keywords()
+
 
         input = my.get_input()
         search_key = input.get("search_key")
@@ -35,15 +41,16 @@ class GlobalSearchTrigger(Trigger):
         sobj = Search.get_by_search_key(search_key)
 
 
+        # Why not user caller???? 
+        caller = my.get_caller()
+
         # see if this sobject is the list of sobjects that need to be in the
         # sobject list
         search_types = ProjectSetting.get_value_by_key("global_search/search_types")
         if search_types:
             search_types = search_types.split(",")
-            if sobj.get_base_search_type() not in search_types:
+            if sobj and sobj.get_base_search_type() not in search_types:
                 return
-
-        
 
         
         if not sobj_id:
@@ -62,14 +69,7 @@ class GlobalSearchTrigger(Trigger):
         input_search_type = input.get("search_type")
         base_search_type = input_search_type.split("?")[0]
 
-        has_keywords_data = False
-        rename_collection = False
-        if sobj:
-            has_keywords_data = sobj.column_exists("keywords_data")
-
-        is_collection = input.get("sobject").get("_is_collection")
-
-        # find the old sobject
+        # find the old sobject list entry
         if sobj_id != -1:
             search = Search("sthpw/sobject_list")
             search.add_filter( "search_type", search_type )
@@ -80,20 +80,13 @@ class GlobalSearchTrigger(Trigger):
             sobject = search.get_sobject()
         else:
             sobject = None
-        
-        
+
+
+        # delete the sobject list
         if input.get("is_delete") == True:
-            # Collection relationships being removed
-            mode = "delete"
-            my.update_collection_keywords(mode, base_search_type, input)
             if sobject:
                 sobject.delete()
             return
-
-        # Collection relationships being created or added
-        elif input.get("is_insert"):
-            mode = "insert"
-            my.update_collection_keywords(mode, base_search_type, input)
 
         if not sobject:
             sobject = SearchType.create("sthpw/sobject_list")
@@ -107,14 +100,55 @@ class GlobalSearchTrigger(Trigger):
         sobject.set_value("project_code", project_code)
 
 
-        caller = my.get_caller()
 
+        # build up a data set for sobject list
         data = set()
 
         data.update( my.cleanup(caller.get_value("code", no_exception=True) ))
         data.update( my.cleanup(caller.get_value("name", no_exception=True) ))
         data.update( my.cleanup(caller.get_value("description", no_exception=True) ))
         data.update( my.cleanup(caller.get_value("keywords", no_exception=True) ))
+
+        # commit the information
+        keywords = " ".join(data)
+        sobject.set_value("keywords", keywords)
+
+        sobject.set_parent(caller)
+        sobject.commit(triggers=False)
+
+
+
+
+
+    def handle_keywords(my):
+
+        input = my.get_input()
+        caller = my.get_caller()
+
+        sobj = caller
+
+        base_search_type = sobj.get_base_search_type()
+
+
+        has_keywords_data = False
+        rename_collection = False
+        if sobj:
+            has_keywords_data = sobj.column_exists("keywords_data")
+
+        is_collection = input.get("sobject").get("_is_collection")
+        
+        if input.get("is_delete") == True:
+            # Collection relationships being removed
+            mode = "delete"
+            my.update_collection_keywords(mode, base_search_type, input)
+            return
+
+
+        # Collection relationships being created or added
+        elif input.get("is_insert"):
+            mode = "insert"
+            my.update_collection_keywords(mode, base_search_type, input)
+
 
 
         # If keywords_data column exists and collection is being changed 
@@ -206,24 +240,13 @@ class GlobalSearchTrigger(Trigger):
 
                         my.update_user_keywords(sobj, user_keywords, base_search_type)
 
-        
-        # extra columns to add
-        columns = []
-        for column in columns:
-            data.append( my.cleanup(caller.get_value(column) ))
-
-        
-        keywords = " ".join(data)
-        sobject.set_value("keywords", keywords)
-
-        sobject.set_parent(caller)
-        sobject.commit(triggers=False)
 
 
 
     def cleanup(my, data):
         #is_ascii = my.is_ascii(data)
         return Common.extract_keywords(data)
+
      
     def set_searchable_keywords(my, sobj):
         '''
@@ -253,6 +276,7 @@ class GlobalSearchTrigger(Trigger):
                 collection_keywords_data_values = [x.encode('utf-8','replace') for x in collection_keywords_data.values() if x]
                 collection_keywords = " ".join(collection_keywords_data_values)
                 collection_keywords = " ".join(set(collection_keywords.split(" ")))
+                collection_keywords = collection_keywords.lower()
 
             if path:
                 if isinstance(path, unicode):
@@ -279,8 +303,15 @@ class GlobalSearchTrigger(Trigger):
                 else:
                     searchable_keywords.extend(collection_keywords)
             
-            
+            searchable_keywords = list(set(searchable_keywords))
             searchable_keywords = " ".join(searchable_keywords) 
+
+            # remove duplicates
+            searchable_keywords = searchable_keywords.split(" ")
+            searchable_keywords = list(set(searchable_keywords))
+            searchable_keywords = " ".join(searchable_keywords) 
+
+
             sobj.set_value("keywords", searchable_keywords)
             sobj.commit(triggers=False)
 
@@ -303,6 +334,7 @@ class GlobalSearchTrigger(Trigger):
 
             # Always append collection name to keywords_data['user']
             user_keywords = "%s %s" %(sobj.get("name"), user_keywords)
+            user_keywords = user_keywords.lower()
             child_codes = my.get_child_codes(sobj.get_code(), search_type)
             
             if child_codes:
@@ -350,6 +382,7 @@ class GlobalSearchTrigger(Trigger):
 
         return search_codes
 
+
     def update_collection_keywords(my, mode, base_search_type, input):
         '''
         When there is an entry being added or removed in the asset_in_asset table
@@ -357,17 +390,20 @@ class GlobalSearchTrigger(Trigger):
         a collection), the "collection" data set in the keywords_data needs to be
         updated.
         '''
-        
+
+        # this is only for collections types
         stype_obj = SearchType.get(base_search_type)
-        if stype_obj.get_value('type') == 'collection':
-            asset_in_asset_sobject = input.get("sobject")
-            asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
-            if not asset_stypes:
-                return
-            else:
-                asset_stype = asset_stypes[0]
-        else:
+        if stype_obj.get_value('type') != 'collection':
             return
+
+
+        asset_in_asset_sobject = input.get("sobject")
+        asset_stypes = SearchType.get_related_types(base_search_type, direction="parent")
+        if not asset_stypes:
+            return
+
+
+        asset_stype = asset_stypes[0]
 
         parent_code = asset_in_asset_sobject.get("parent_code")
         search_code = asset_in_asset_sobject.get("search_code")

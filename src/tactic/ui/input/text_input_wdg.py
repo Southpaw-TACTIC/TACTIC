@@ -117,6 +117,11 @@ class TextInputWdg(BaseInputWdg):
 
         my.text.set_attr('autocomplete','off')
 
+        ignore = my.kwargs.get("ignore")
+        if ignore in [True, 'true']:
+            my.text.remove_class("spt_input")
+
+
         class_name = kwargs.get("class")
         if class_name:
             my.text.add_class(class_name)
@@ -158,7 +163,7 @@ class TextInputWdg(BaseInputWdg):
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
                 else if (!last_value && last_value != value) {
-                    bvr.src_el.setStyle("background", bvr.bgcolor2);
+                    //bvr.src_el.setStyle("background", bvr.bgcolor2);
                 }
                 else {
                     bvr.src_el.setStyle("background", bvr.bgcolor);
@@ -780,6 +785,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         else {
             // This should not attempt to "correct" the data
             src_el.removeClass("spt_invalid");
+            hidden_el.value = data;
         }
 
        // run client trigger
@@ -801,8 +807,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     value_expr = display_value;
        
 
-
-    var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+    if (value) {
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+    }
+    else {
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "'].code)";
+    }
     var kw = {
         single: true,
         cbjs_action: cbk
@@ -863,7 +873,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         } )
 
         my.hidden = HiddenWdg(my.name)
-        #my.hidden = TextWdg(my.name)
         my.top.add(my.hidden)
         my.hidden.add_class("spt_text_value")
 

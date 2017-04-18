@@ -43,6 +43,13 @@ try:
 except:
     HAS_EXIF = False
 
+try:
+    import iptcinfo
+    HAS_IPTC = True
+except:
+    HAS_IPTC = False
+
+
 
 
 class CheckinMetadataHandler():
@@ -211,6 +218,10 @@ class BaseMetadataParser(object):
     def __init__(my, **kwargs):
         my.kwargs = kwargs
 
+
+    def get_title(my):
+        return "Base"
+
     def get_media_type(my):
         return "image"
 
@@ -279,6 +290,8 @@ class BaseMetadataParser(object):
     def get_parser(cls, parser_str, path):
         if parser_str == "EXIF":
             parser = ExifMetadataParser(path=path)
+        elif parser_str == "IPTC":
+            parser = IPTCMetadataParser(path=path)
         elif parser_str == "ImageMagick":
             parser = ImageMagickMetadataParser(path=path)
         elif parser_str == "PIL":
@@ -298,6 +311,9 @@ class PILMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+
+    def get_title(my):
+        return "PIL"
 
     def get_initial_data(my):
         return {
@@ -351,6 +367,11 @@ class ExifMetadataParser(BaseMetadataParser):
         my.kwargs = kwargs
 
 
+    def get_title(my):
+        return "EXIF"
+
+
+
     def get_initial_data(my):
         return {
             'media_type': 'image',
@@ -373,11 +394,60 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
 
+class IPTCMetadataParser(BaseMetadataParser):
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+    def get_title(my):
+        return "IPTC"
+
+    def get_initial_data(my):
+        return {
+            'media_type': 'image',
+            'parser': 'IPTC'
+        }
+
+
+
+    def get_metadata(my):
+        path = my.kwargs.get("path")
+
+        from pyasm.checkin.iptcinfo import IPTCInfo, c_datasets, c_datasets_r
+
+        try:
+
+            info = IPTCInfo(path)
+            data = info.data 
+
+            metadata = {}
+            for key, value in data.items():
+                real_key = c_datasets.get(key)
+                if not real_key:
+                    real_key = key
+                metadata[real_key] = value
+
+
+            return metadata
+        except Exception, e:
+            info = {
+                    "Message": str(e)
+            }
+            return info
+
+
+
+
+
 
 class ImageMagickMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+
+    def get_title(my):
+        return "ImageMagick"
+
 
     def get_initial_data(my):
         return {
@@ -489,6 +559,10 @@ class FFProbeMetadataParser(BaseMetadataParser):
             'parser': 'FFProbe'
         }
 
+
+    def get_title(my):
+        return "FFProbe"
+
     def get_metadata(my):
         path = my.kwargs.get("path")
         
@@ -568,7 +642,8 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
 
 
-class IPTCMetadataParser(BaseMetadataParser):
+# DEPRECATED: use python one
+class IPTCMetadataParserX(BaseMetadataParser):
     '''Grab IPTC data from files. This requires use of exif metadata extractor.
     Basically read xmp metadata of a file and consider IPTC data points'''
 
