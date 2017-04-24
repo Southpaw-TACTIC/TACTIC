@@ -410,7 +410,7 @@ class Common(Base):
 
         is_ascii = Common.is_ascii(data)
 
-        data = re.sub(r'([_|,\n])+', ' ', data)
+        data = re.sub(r'([\/_|,\n])+', ' ', data)
         if is_ascii:
             # other non ASCII languages don't need these
             data = re.sub(r'([^\s\w\'/\.])+', '', data)

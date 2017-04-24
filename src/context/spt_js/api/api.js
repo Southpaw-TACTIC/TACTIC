@@ -35,6 +35,10 @@ spt.api.get_input_values = function(element, filter, return_array, return_labels
 }
 
 
+spt.api.clear_inputs = function(element, filter) {
+    return spt.api.Utility.clear_inputs(element, filter);
+}
+
 
 // DOM navigation methods.  Uses the mootools frameworks DOM navigation
 // method
@@ -68,6 +72,10 @@ spt.api.set_attribute = function(el, name, value) {
 
 
 
+// Provide a destroy function which cleans up the behaviors before destroying
+spt.api.destroy_element = function(el) {
+    return spt.behavior.destroy(el)
+}
 
 
 // Loading methods

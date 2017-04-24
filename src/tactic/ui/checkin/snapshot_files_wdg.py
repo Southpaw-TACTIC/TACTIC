@@ -1061,7 +1061,7 @@ class PathMetadataWdg(BaseRefreshWdg):
         use_tactic_tags = my.kwargs.get("use_tactic_tags")
 
 
-        from pyasm.checkin import PILMetadataParser, ImageMagickMetadataParser, ExifMetadataParser, BaseMetadataParser
+        from pyasm.checkin import BaseMetadataParser
 
         #parser_str = "EXIF"
         if parser_str:
@@ -1078,13 +1078,55 @@ class PathMetadataWdg(BaseRefreshWdg):
             metadata = {}
 
 
+        parser_title = parser.get_title()
+
+
         top = my.top
         top.add_color("background", "background")
+        top.add_class("spt_metadata_top")
+
+
+        shelf = DivWdg()
+        top.add(shelf)
+        from tactic.ui.widget import ActionButtonWdg
+        button = ActionButtonWdg(title="Add Selected to Keywords", width="200")
+        shelf.add(button)
+        shelf.add_style("margin: 10px 0px")
+        button.add_behavior( {
+            'search_key': search_key,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_metadata_top");
+            var values = spt.api.get_input_values(top, null, true);
+            var searchables = values.searchable;
+            var items = [];
+            for (var i = 0; i < searchables.length; i++) {
+                if (searchables[i] == "") {
+                    continue;
+                }
+                items.push(searchables[i]);
+            }
+
+            var server = TacticServerStub.get();
+
+            var class_name = 'spt.modules.workflow.AssetAddMetadataToKeywordsCmd';
+            var kwargs = {
+                search_key: bvr.search_key,
+                items: items,
+            };
+            server.p_execute_cmd(class_name, kwargs)
+            .then( function() {
+                spt.api.clear_inputs(top);
+                spt.notify.show_message("Added Keywords");
+            } )
+
+
+            '''
+        } )
 
 
         table = Table()
         table.add_style("width: 100%")
-        table.add_style("table-layout: fixed")
+        #table.add_style("table-layout: fixed")
         top.add(table)
         table.set_unique_id()
 
@@ -1093,7 +1135,19 @@ class PathMetadataWdg(BaseRefreshWdg):
         } )
 
 
+        tr, td = table.add_row_cell()
+        td.add(parser_title)
+        td.add_style("height: 20px")
+        td.add_style("font-weight: bold")
+        td.add_style("padding: 5px 3px")
+        td.add_color("background", "background", -5)
+        border_color = td.get_color("border")
+        td.add_color("border-bottom", "solid 1px %s" % border_color)
 
+        tr.add_class("tactic_hover")
+
+
+        """
         tr = table.add_row()
         tr.add_color("background", "background", -5)
         th = table.add_header("Property")
@@ -1102,6 +1156,7 @@ class PathMetadataWdg(BaseRefreshWdg):
         th = table.add_header("Value")
         #th.add_style("min-width: 400px")
         th.add_style("padding: 5px")
+        """
 
         keys = metadata.get("__keys__")
         if not keys:
@@ -1115,24 +1170,35 @@ class PathMetadataWdg(BaseRefreshWdg):
                 'height': '20px'
             } )
 
+        keys.sort()
+
 
         for i, key in enumerate(keys):
             value = metadata.get(key)
 
-            title = Common.get_display_title(key)
+            value = Common.process_unicode_string(value)
+
+
+            if not isinstance(key, basestring):
+                key = str(key)
+            #title = Common.get_display_title(key)
+            title = key
 
             tr = table.add_row()
+            tr.add_class("tactic_hover")
 
             if i % 2:
-                tr.add_color("background", "background")
+                tr.add_color("background", "background", -2)
                 tr.add_color("color", "color")
             else:
-                tr.add_color("background", "background", -2)
+                tr.add_color("background", "background")
                 tr.add_color("color", "color")
 
             td = table.add_cell()
             td.add_class("spt_cell")
             td.add(title)
+            td.add_style("width: 300px")
+            td.add_style("min-width: 200px")
 
             td = table.add_cell()
             td.add_class("spt_cell")
@@ -1145,6 +1211,41 @@ class PathMetadataWdg(BaseRefreshWdg):
                 inside.add_style("max-width: 600px")
             else:
                 td.add(value)
+            td.add_style("max-width: 600px")
+
+            td.add_style("overflow: hidden")
+            td.add_style("text-overflow: ellipsis")
+            td.add_style("white-space: nowrap")
+
+
+
+
+
+            td = table.add_cell()
+            td.add_class("spt_cell")
+
+            try:
+                is_ascii = True
+                for c in str(value):
+                    if ord(c) > 128:
+                        is_ascii = False
+                        break
+                if not is_ascii:
+                    continue
+            except Exception, e:
+                print "WARNING: ", e
+                continue
+
+
+
+            from pyasm.widget import CheckboxWdg
+            checkbox = CheckboxWdg("searchable")
+            checkbox.add_attr("spt_is_multiple", "true")
+            td.add(checkbox)
+            td.add_style("width: 40px")
+            td.add_style("max-width: 30px")
+            checkbox.set_option("value", "%s|%s|%s" % (parser_title,key,value))
+
 
 
         if empty:

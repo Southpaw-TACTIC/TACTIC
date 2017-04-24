@@ -385,6 +385,8 @@ class TopWdg(Widget):
             'type': 'mouseenter',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
+            var bgcolor = bvr.src_el.getStyle("background");
+            bvr.src_el.setAttribute("spt_bgcolor", bgcolor);
             bvr.src_el.setStyle("background", "#EEE");
             '''
             } )
@@ -393,7 +395,10 @@ class TopWdg(Widget):
             'type': 'mouseleave',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
-            bvr.src_el.setStyle("background", "");
+            var bgcolor = bvr.src_el.getAttribute("spt_bgcolor");
+            if (!bgcolor) bgcolor = "";
+            //var bgcolor = ""
+            bvr.src_el.setStyle("background", bgcolor);
             '''
             } )
 

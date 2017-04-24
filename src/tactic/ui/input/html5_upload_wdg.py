@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['Html5UploadWdg', 'UploadButtonWdg', 'CheckinButtonWdg', 'TestHtml5UploadWdg']
+__all__ = ['Html5UploadWdg', 'UploadButtonWdg', 'CheckinButtonWdg', 'TestHtml5UploadWdg', 'HtmlUploadWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -274,7 +274,7 @@ spt.html5upload.upload_file = function(kwargs) {
 
 
 
-class UploadButtonWdg(BaseRefreshWdg):
+class BaseUploadWdg(BaseRefreshWdg):
 
     def init(my):
         my.ticket = my.kwargs.get("ticket")
@@ -283,7 +283,7 @@ class UploadButtonWdg(BaseRefreshWdg):
         if not my.on_complete:
             my.on_complete_kwargs = {}
         my.upload_id = my.kwargs.get("upload_id")
-        super(UploadButtonWdg,my).init()
+        super(BaseUploadWdg,my).init()
 
 
     def set_on_complete(my, on_complete, **kwargs):
@@ -293,6 +293,15 @@ class UploadButtonWdg(BaseRefreshWdg):
 
     def get_on_complete(my):
         return my.on_complete
+
+    def get_activator_wdg(my, title):
+        div = DivWdg()
+        if not title:
+            html = my.kwargs.get("html")
+            div.add(html)
+        else:
+            div.add(title)
+        return div
 
 
     def get_display(my):
@@ -332,13 +341,7 @@ class UploadButtonWdg(BaseRefreshWdg):
             upload_id = upload.get_upload_id()
 
 
-
-        color = my.kwargs.get("color")
-        width = my.kwargs.get("width")
-
-        from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title, color=color, width=width, size='b')
-
+        button = my.get_activator_wdg(title)
 
         button_id = my.kwargs.get("id")
         if button_id:
@@ -460,6 +463,28 @@ class UploadButtonWdg(BaseRefreshWdg):
         } )
 
         return top
+
+
+
+
+class HtmlUploadWdg(BaseUploadWdg):
+    pass
+
+
+class UploadButtonWdg(BaseUploadWdg):
+
+    def get_activator_wdg(my, title):
+
+        color = my.kwargs.get("color")
+        width = my.kwargs.get("width")
+ 
+        from tactic.ui.widget import ActionButtonWdg
+        button = ActionButtonWdg(title=title, color=color, width=width, size='b')
+        return button
+
+
+
+
 
 
 
