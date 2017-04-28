@@ -109,8 +109,10 @@ class PipelineToolWdg(BaseRefreshWdg):
             }
 
 
-            editor_top.removeClass("spt_has_changes");
-
+            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            if (editor_top) {
+                editor_top.removeClass("spt_has_changes");
+            }
 
 
             }, 0);
@@ -164,8 +166,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             left.add_style("vertical-align: top")
             #left.add_border()
 
+            expression = my.kwargs.get("expression")
 
-            pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=my.settings )
+            pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=my.settings, expression=expression )
             left.add(pipeline_list)
 
 
@@ -553,7 +556,6 @@ class PipelineListWdg(BaseRefreshWdg):
                 result = Search.eval(expression)
                 if isinstance(result, Search):
                     search = result
-                    search.add_op("begin")
                     search.add_filter("project_code", project_code)
 
                     search.add_op("begin")
@@ -561,16 +563,16 @@ class PipelineListWdg(BaseRefreshWdg):
                     # This pretty weird that != does not find NULL values
                     search.add_filter("search_type", "NULL", op='is', quoted=False)
                     search.add_op("or")
-                    search.add_op("and")
+
                     search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
                     search.add_op("begin")
-                    search.add_filter("type", "sobject", op="!=")
-                    search.add_filter("type", "template", op="!=")
+                    search.add_filters("type", ["sobject","template"], op="not in")
                     search.add_filter("type", "NULL", op="is", quoted=False)
                     search.add_op("or")
 
                     search.add_order_by("search_type")
                     search.add_order_by("name")
+
                     pipelines = search.get_sobjects()
                 else:
                     pipelines = result
@@ -579,7 +581,6 @@ class PipelineListWdg(BaseRefreshWdg):
 
             else:
                 search = Search("sthpw/pipeline")
-                search.add_op("begin")
                 search.add_filter("project_code", project_code)
 
                 search.add_op("begin")
@@ -587,12 +588,11 @@ class PipelineListWdg(BaseRefreshWdg):
                 # This pretty weird that != does not find NULL values
                 search.add_filter("search_type", "NULL", op='is', quoted=False)
                 search.add_op("or")
-                search.add_op("and")
+
                 search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
 
                 search.add_op("begin")
-                search.add_filter("type", "sobject", op="!=")
-                search.add_filter("type", "template", op="!=")
+                search.add_filters("type", ["sobject","template"], op="not in")
                 search.add_filter("type", "NULL", op="is", quoted=False)
                 search.add_op("or")
 
@@ -1497,6 +1497,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
 
         top.add( my.get_description_wdg(pipeline) )
+        top.add( my.get_color_wdg(pipeline) )
 
 
         # sobject count
@@ -1574,6 +1575,42 @@ class PipelineInfoWdg(BaseRefreshWdg):
         } )
 
         return desc_div
+
+
+
+
+    def get_color_wdg(my, pipeline):
+        color = pipeline.get_value("color")
+        div = DivWdg()
+        div.add_style("margin: 5px 10px 20px 5px")
+        div.add("<div><b>Color:</b></div>")
+        from tactic.ui.input import ColorInputWdg
+        text = ColorInputWdg()
+        div.add(text)
+        text.add_style("width: 100%")
+        text.add_style("height: 100px")
+        text.add_style("padding: 10px")
+        text.set_value(color)
+        text.add_behavior( {
+            'type': 'blur',
+            'search_key': pipeline.get_search_key(),
+            'cbjs_action': '''
+            var color = bvr.src_el.value;
+            var server = TacticServerStub.get();
+            server.update(bvr.search_key, {color: color} );
+
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+
+            var group_name = spt.pipeline.get_current_group();
+            var group = spt.pipeline.get_group(group_name);
+            group.set_color(color);
+ 
+            '''
+        } )
+
+        return div
 
 
 
@@ -1968,12 +2005,48 @@ class BaseInfoWdg(BaseRefreshWdg):
     def get_title_wdg(my, process, node_type, show_node_type_select=True):
 
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px 0px 10px 0px")
-        title_wdg.add("%s" % (process))
+        title_wdg.add_style("margin: -20px 0px 0px 0px")
+        title_wdg.add_class("spt_title_top")
         title_wdg.add_style("font-size: 16px")
-        #title_wdg.add_style("font-weight: bold")
-        #title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px 5px 10px")
+        title_wdg.add_style("padding: 8px 10px 5px 10px")
+
+        title_edit_text = TextInputWdg(name="process")
+        title_wdg.add(title_edit_text)
+        title_edit_text.add_class("spt_title_edit")
+        title_edit_text.add_style("width: auto")
+        title_edit_text.add_style("border: none")
+
+        title_edit_text.set_value(process)
+
+
+        title_edit_text.add_behavior( {
+            'type': 'focus',
+            'cbjs_action': '''
+            bvr.src_el.select();
+            '''
+        } )
+
+        title_edit_text.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+            if (evt.key == 'enter') {
+                bvr.src_el.blur();
+            }
+            '''
+        } )
+
+
+
+
+        title_edit_text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var node = spt.pipeline.get_selected_node();
+            spt.pipeline.rename_node(node, bvr.src_el.value);
+
+            '''
+        } )
+
 
 
         if not show_node_type_select:
@@ -2083,7 +2156,9 @@ class BaseInfoWdg(BaseRefreshWdg):
                 '''
             } )
             select.add_style("float: right")
-            select.add_style("margin-top: -5px")
+            select.add_style("margin-top: -33px")
+            select.add_style("position: relative")
+            select.add_style("z-index: 10")
 
         title_wdg.add("<br clear='all'/>")
         title_wdg.add("<hr/>")
@@ -4612,6 +4687,31 @@ class PipelineEditorWdg(BaseRefreshWdg):
         spt.named_events.fire_event('pipeline|change', {});
         '''
         } )
+ 
+
+        # open connection dialog everytime a connection is made
+        event_name = "%s|unselect_all" % my.unique_id
+        div.add_behavior( {
+        'type': 'listen',
+        'event_name': event_name,
+        'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var info = top.getElement(".spt_pipeline_tool_info");
+            if (info) {
+                var group_name = spt.pipeline.get_current_group();
+
+                var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+                var kwargs = {
+                    pipeline_code: group_name,
+                }
+
+                spt.panel.load(info, class_name, kwargs);
+            }
+
+
+
+        ''' } )
+
  
 
 

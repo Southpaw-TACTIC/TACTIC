@@ -1930,17 +1930,32 @@ class IngestUploadCmd(Command):
 
             new_file_keywords = ""
 
+
+
+            # handle setting keywords to parent
             if SearchType.column_exists(search_type, "keywords"):
+
+                old_keywords = sobject.get_value("keywords")
+
                 if keywords:
                     new_file_keywords = "%s %s" % (keywords, file_keywords)
                 else:
                     new_file_keywords = file_keywords
 
+                if new_file_keywords:
+                    new_file_keywords = "%s %s" % (old_keywords, new_file_keywords)
+
+                # remove duplicated
+                new_file_keywords = set( new_file_keywords.split(" ") )
+                new_file_keywords = " ".join(new_file_keywords)
+
                 sobject.set_value("keywords", new_file_keywords)
+
 
             if SearchType.column_exists(search_type, "user_keywords"):
                 if keywords:
                     sobject.set_value("user_keywords", keywords)
+
 
             if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
