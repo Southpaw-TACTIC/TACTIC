@@ -290,7 +290,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
             my.is_admin = True
 
-        my.is_admin = False
 
         if my.is_admin:
         

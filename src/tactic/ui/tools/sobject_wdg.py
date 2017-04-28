@@ -1844,15 +1844,16 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         top.add_color("background", "background")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
+        if pipeline:
 
-        update_wdg = DivWdg()
-        top.add(update_wdg)
-        update_wdg.add_update( {
-            'search_key': pipeline.get_search_key(),
-            'interval': 3,
-            'value': True,
-            'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
-        } )
+            update_wdg = DivWdg()
+            top.add(update_wdg)
+            update_wdg.add_update( {
+                'search_key': pipeline.get_search_key(),
+                'interval': 3,
+                'value': True,
+                'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
+            } )
 
 
 
