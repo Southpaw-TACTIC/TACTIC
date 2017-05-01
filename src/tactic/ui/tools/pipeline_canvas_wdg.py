@@ -73,8 +73,6 @@ class BaseNodeWdg(BaseRefreshWdg):
         inner = DivWdg()
         div.add(inner)
 
-        print "title: ", title
-
         inner.add(title)
 
         inner.add_style("font-size: 8px")
@@ -210,7 +208,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
         canvas_title.add_style("left: 0px")
-        canvas_title.add_style("z-index: 200")
+        canvas_title.add_style("z-index: 50")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
         canvas_title.add_relay_behavior( {
@@ -303,7 +301,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
        
 
         outer.add_style("overflow: hidden")
-        outer.add_border()
+
+        if my.kwargs.get("show_border") not in [False, 'false']:
+            outer.add_border()
 
         # set the size limit
         outer.add_style("width: %s" % my.width)
@@ -388,21 +388,20 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
-        """
-        canvas.add_behavior( {
-        "type": 'wheel',
-        "cbjs_action": '''
-            spt.pipeline.init(bvr);
-            var scale = spt.pipeline.get_scale();
-            if (evt.wheel < 0) {
-                spt.pipeline.set_scale( scale / 1.1 );
-            }
-            else {
-                spt.pipeline.set_scale( scale * 1.1 );
-            }
-        '''
-        } )
-        """
+        if my.kwargs.get("use_mouse_wheel") in [True, 'true']:
+            canvas.add_behavior( {
+            "type": 'wheel',
+            "cbjs_action": '''
+                spt.pipeline.init(bvr);
+                var scale = spt.pipeline.get_scale();
+                if (evt.wheel < 0) {
+                    spt.pipeline.set_scale( scale / 1.1 );
+                }
+                else {
+                    spt.pipeline.set_scale( scale * 1.1 );
+                }
+            '''
+            } )
 
 
         canvas.add_behavior( {
@@ -464,19 +463,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.zoom_drag'
         } )
-        paint.add_behavior( {
-        "type": 'wheel',
-        "cbjs_action": '''
-            spt.pipeline.init(bvr);
-            var scale = spt.pipeline.get_scale();
-            if (evt.wheel < 0) {
-                spt.pipeline.set_scale( scale / 1.1 );
-            }
-            else {
-                spt.pipeline.set_scale( scale * 1.1 );
-            }
-        '''
-        } )
+
+
+        if my.kwargs.get("use_mouse_wheel") in [True, 'true']:
+            paint.add_behavior( {
+            "type": 'wheel',
+            "cbjs_action": '''
+                spt.pipeline.init(bvr);
+                var scale = spt.pipeline.get_scale();
+                if (evt.wheel < 0) {
+                    spt.pipeline.set_scale( scale / 1.1 );
+                }
+                else {
+                    spt.pipeline.set_scale( scale * 1.1 );
+                }
+            '''
+            } )
 
 
 
@@ -615,7 +617,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             'scale': scale,
             'cbjs_action': '''
                 spt.pipeline.init(bvr);
-                spt.pipeline.set_scale(bvr.scale);
+                setTimeout( function() {
+                    spt.pipeline.set_scale(bvr.scale);
+                }, 0 )
             '''
             } )
 
@@ -680,9 +684,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         div.add_style("left: 100px")
         div.add_style("position: relative")
         div.add_style("z-index: 150")
-        #div.set_round_corners(corners=['TR','BR','BL'])
         div.set_round_corners(size=5, corners=['TR','BR','BL', 'TL'])
-        div.add_gradient("background", "background", -10)
+        div.add_gradient("background", "background")
 
         lip_div = DivWdg()
         div.add(lip_div)
@@ -737,6 +740,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         div.add(content_div)
         content_div.add_style("padding: 10px")
         content_div.add_style("height: 60px")
+        content_div.add_style("text-align: center")
 
 
         color_div = DivWdg()
@@ -751,14 +755,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         group_div = DivWdg()
         content_div.add(group_div)
         group_div.add_class("spt_group")
+
         group_div.add(group_name)
+
         group_div.add_style("font-weight: bold")
 
-        button = IconButtonWdg(title="Create First Node", icon=IconWdg.ADD)
+
+        content_div.add("<br/>")
+        content_div.add("(no processes)")
+        content_div.add("<br/>")
+
+        button = DivWdg("Click to Add")
         content_div.add( button )
 
-        button.add_behavior( {
-        'type': 'click_up',
+
+        content_div.add_behavior( {
+        'type': 'click',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
 
@@ -766,8 +778,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         var group_name = folder.spt_group;
         spt.pipeline.set_current_group(group_name);
 
-        var parts = group_name.split("/");
-        node_name = parts[parts.length-1];
+        //var parts = group_name.split("/");
+        //node_name = parts[parts.length-1];
+
+        node_name = "node0";
         spt.pipeline.add_node(node_name);
 
 
@@ -776,17 +790,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.redraw_canvas();
         '''
         } )
-        button.add_style("float: right")
 
 
-        content_div.add("<br/>")
-        #div.add("There are no nodes in this pipeline")
-        #div.add("<br/><br/>")
-
-
-
-        #content_div.add("0 nodes")
-        content_div.add("(no processes)")
 
         div.add_behavior( {
         "type": 'drag',
@@ -2494,6 +2499,10 @@ spt.pipeline.unselect_all_nodes = function() {
         var node = nodes[i];
         spt.pipeline.unselect_node(node);
     }
+
+    var top = bvr.src_el.getParent(".spt_pipeline_top");
+    var event_name = top.getAttribute("id") + "|unselect_all";
+    spt.named_events.fire_event(event_name);
 }
 
 
@@ -4003,8 +4012,12 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    //scale = scale * 0.85;
-    scale = 1.0
+    scale = scale * 0.85;
+    //scale = 1.0
+    if (scale > 1.0) {
+        scale = 1.0;
+    }
+    spt.pipeline.set_scale(scale);
 
     // zero position at the specified scale
     //var zero_pos_x = size.x/2 - size.x/2 * scale;
@@ -4017,12 +4030,11 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var zero_pos_x = size.x/2 - hsize/2 - 100;
     var zero_pos_y = size.y/2 - vsize/2;
 
-    var dx = - left + zero_pos_x; 
+    var dx = - left + zero_pos_x + 100;
     var dy = - top + zero_pos_y;
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
 
-    spt.pipeline.set_scale(scale);
 
 }
 

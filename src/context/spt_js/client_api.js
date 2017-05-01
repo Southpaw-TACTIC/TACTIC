@@ -452,77 +452,60 @@ TacticServerStub = function() {
             kwargs = {__empty__:true};
         }
         var mode_options = ['upload','uploaded', 'copy', 'move', 'inplace','local'];
+
+        // mode is no uploaded by default
         var mode = kwargs['mode'];
-        if (mode == undefined) mode = "upload";
+        if (mode == undefined) mode = "uploaded";
         if (typeof(file_path) != 'string') {
             spt.alert("file_path should be a string instead of an array.");
             return;
         }
-        var applet = null;
-        if (mode != 'uploaded') {
-            // put in a check for Perforce for the moment because file.exists()
-            // is very slow when looking for //depot
-            if (file_path.substr(0, 2) != '//') {
-                var applet = spt.Applet.get();
-                if (applet.is_dir(file_path)){
-                    alert('[' + file_path + '] is a directory. Exiting...');
-                    return;
-                }
-            }
-        }
 
-        if (mode == 'upload') {
-            var ticket = this.transaction_ticket;
-            
-            this.upload_file(file_path, ticket);
-            //file_path = spt.path.get_filesystem_path(file_path); 
-            kwargs.use_handoff_dir = false;
-        }
+
         // already uploaded
-        else if (mode == 'uploaded') {
+        if (mode == 'uploaded') {
             kwargs.use_handoff_dir = false;
             //file_path = spt.path.get_filesystem_path(file_path); 
         }
-        else if (['copy', 'move'].contains(mode)) {
-            var handoff_dir = this.get_handoff_dir();
-            kwargs.use_handoff_dir = true;
-            applet.makedirs(handoff_dir);
-            applet.exec("chmod 777 " + handoff_dir);
-            var basename = spt.path.get_basename(file_path);
 
-            if (mode == 'move') {
-                applet.move_file(file_path, handoff_dir + '/' +  basename);
-            }
-            else if (mode == 'copy') {
-                applet.copy_file(file_path, handoff_dir + '/' +  basename);
-                // it moves from handoff to repo during check-in
-            }
-            mode = 'create';
 
-            // this is meant for 3.8, commented out for now
-            /*
-            var delayed = true;
-            if (delayed) {
-                mode = 'local'; // essentially, local just means delayed
-                kwargs.mode = 'local';
-            }*/
+
+        // NOTE: the modes upload, copy, move and local require local access
+        // either by a java applet or some other applet like pyApplet.
+        // Otherwise, these modes should not be used
+        else {
+            var applet = spt.Applet.get();
+            if (!applet) {
+                spt.alert("Mode ["+mode+"] requires a valid applet (either Java or Python or equivalent).  None found")
+            }
+
+
+            if (mode == 'upload') {
+                var ticket = this.transaction_ticket;
+                
+                this.upload_file(file_path, ticket);
+                kwargs.use_handoff_dir = false;
+            }
+
+            else if (['copy', 'move'].contains(mode)) {
+                var handoff_dir = this.get_handoff_dir();
+                kwargs.use_handoff_dir = true;
+                applet.makedirs(handoff_dir);
+                applet.exec("chmod 777 " + handoff_dir);
+                var basename = spt.path.get_basename(file_path);
+
+                if (mode == 'move') {
+                    applet.move_file(file_path, handoff_dir + '/' +  basename);
+                }
+                else if (mode == 'copy') {
+                    applet.copy_file(file_path, handoff_dir + '/' +  basename);
+                    // it moves from handoff to repo during check-in
+                }
+                mode = 'create';
+            }
+
         }
 
-
-        // find the source path
-        // DISABLING for now until client can recognize this
-        //var source_path = this._find_source_path(file_path);
-        //console.log("source_path: " + source_path);
-        //kwargs['source_path'] = source_path;
-
-        /* Test check-in to SCM
-        if (spt.scm) {
-            var editable = true;
-            var scm_info = spt.scm.run("commit_file", [file_path, description, editable]);
-            return;
-        }
-
-        */
 
 
         // do the checkin
@@ -898,6 +881,7 @@ TacticServerStub = function() {
 
 
     // DEPRECATED: use checkout_snapshot
+    /*
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -977,6 +961,7 @@ TacticServerStub = function() {
         return to_paths
    
     }
+    */
 
 
 

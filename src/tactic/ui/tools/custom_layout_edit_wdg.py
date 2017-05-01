@@ -493,8 +493,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         } )
 
 
-        bg_color = left_div.get_color("background3")
-        bg_color2 = left_div.get_color("background3", -10)
+        bg_color = left_div.get_color("background")
+        bg_color2 = left_div.get_color("background", -10)
 
         left_div.add_relay_behavior( {
             'type': 'mouseover',
@@ -655,18 +655,29 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     parent_wdg = folder_wdg
 
                     # fill it in
-                    icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
-                    icon.add_style("margin-top: -2px")
-                    icon.add_style("margin-left: -5px")
+                    #icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
+                    #icon.add_style("margin-top: -2px")
+                    #icon.add_style("margin-left: -5px")
+
+                    icon = IconWdg(folder, "BS_FOLDER_OPEN", inline=False, size=12)
+                    icon.add_style("margin-top: 0px")
+                    icon.add_style("margin-left: 0px")
+                    icon.add_style("margin-right: 3px")
+
 
                     folder_header = DivWdg()
                     folder_content = DivWdg()
 
 
+                    folder_item = DivWdg()
+                    folder_wdg.add(folder_item)
+                    folder_item.add_class("tactic_hover")
+
                     from tactic.ui.widget import SwapDisplayWdg
                     swap = SwapDisplayWdg()
-                    folder_wdg.add(swap)
+                    folder_item.add(swap)
                     swap.set_title_wdg(folder_header)
+
                     folder_wdg.add_widget(folder_content, "content")
                     swap.add_class("spt_folder")
                     swap.add_attr("spt_folder", folder)
@@ -706,7 +717,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 config_div.add_style("padding-left: 5px")
 
             config_div.add_class("spt_custom_layout_item")
-            icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
+            #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
+            icon = IconWdg("Custom Layout View", "BS_FILE", inline=False, size=12)
+            icon.add_style("margin-left: 3px")
+            icon.add_style("margin-right: 1px")
+            icon.add_style("opacity: 0.8")
             config_div.add(icon)
 
             config_div.add(display_view)

@@ -15,7 +15,7 @@ __all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'Sna
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, SPTDate
-from pyasm.biz import Snapshot
+from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
 from tactic.ui.panel import TableLayoutWdg
@@ -1837,10 +1837,26 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         my.sobject = Search.get_by_search_key(search_key)
         my.parent = my.sobject.get_parent()
         pipeline_code = my.kwargs.get("pipeline")
+
         top = my.top
+        my.set_as_panel(top)
         top.add_class("spt_pipeline_wrapper")
         top.add_color("background", "background")
-  
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        if pipeline:
+
+            update_wdg = DivWdg()
+            top.add(update_wdg)
+            update_wdg.add_update( {
+                'search_key': pipeline.get_search_key(),
+                'interval': 3,
+                'value': True,
+                'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
+            } )
+
+
+
         # it's ok to not have a parent unless it's a task, then just exit early
         if not my.parent and my.sobject.get_base_search_type() == 'sthpw/task':
             top.add('Parent of this task cannot be found.')
@@ -1851,6 +1867,8 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
     def get_pipeline_wdg(my, pipeline_code):
         div = DivWdg()
+
+        height = my.kwargs.get("height") or 500
 
         show_title = my.kwargs.get("show_title")
         if show_title not in [False, 'false']:
@@ -1865,10 +1883,11 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
         kwargs = {
             'width': "auto",
-            'height': 500,
+            'height': height,
             'pipeline': pipeline_code,
-            'scale': 1.0,
             'is_editable': False,
+            'use_mouse_wheel': True,
+            'show_border': False,
         }
         pipeline = TaskDetailPipelineWdg(**kwargs)
         div.add(pipeline)
@@ -1932,7 +1951,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         }
 
 
-        spt.pipeline.set_status_color(bvr.search_key);
+        //spt.pipeline.set_status_color(bvr.search_key);
 
         var top = spt.pipeline.top;
         var text = top.getElement(".spt_pipeline_editor_current2");

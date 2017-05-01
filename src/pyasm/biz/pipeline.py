@@ -957,7 +957,7 @@ class Pipeline(SObject):
     # Static methods
     #
 
-    def create(name, desc, search_type, xml=None, code=None):
+    def create(name, desc, search_type, xml=None, code=None, color=None):
         '''will only create if it does not exist, otherwise it just updates'''
 
         if code:
@@ -989,6 +989,10 @@ class Pipeline(SObject):
         sobject.set_value('name', name.strip())
         sobject.set_value('search_type', search_type)
         sobject.set_value('description', desc)
+
+        if color:
+            sobject.set_value("color", color)
+
         sobject.commit()
 
 
