@@ -2393,7 +2393,11 @@ spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index,
                 spt.app_busy.show( 'Column Manager', 'Adding Column');
                 setTimeout(function() { 
                     spt.table.add_column(element_name);
-                    spt.dg_table.search_cbk( {}, {'src_el': layout} ), 50}); 
+                    //spt.dg_table.search_cbk( {}, {'src_el': layout} )
+                    // need to do this twice
+                    spt.table.expand_table();
+                    spt.table.expand_table();
+                }, 50);
             }
             spt.app_busy.hide();
         } catch(e) {
@@ -2481,9 +2485,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
         
 
-        //for (var i = 0; i < table.rows.length; i++) {
         for (var i = 0; i < 1; i++) {
-        //for (var i = 0; i < widgets_html.length; i++) {
             var row = table.rows[i];
             // skip empty rows
             var search_key = row.getAttribute("spt_search_key");

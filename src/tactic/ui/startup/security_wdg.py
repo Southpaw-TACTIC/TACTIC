@@ -116,7 +116,11 @@ class UserAssignWdg(BaseRefreshWdg):
             if login_name == 'admin':
                 continue
 
-            full_name = login.get_full_name()
+            display_name = login.get("display_name")
+            if not display_name:
+                display_name = login.get_full_name()
+            if not display_name:
+                display_name = login.get_code()
 
             login_div = DivWdg()
             logins_div.add(login_div)
@@ -134,7 +138,7 @@ class UserAssignWdg(BaseRefreshWdg):
             login_div.set_round_corners()
 
             login_div.add("&nbsp;")
-            login_div.add(full_name)
+            login_div.add(display_name)
 
         return top
 

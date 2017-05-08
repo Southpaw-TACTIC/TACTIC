@@ -1465,6 +1465,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             outer.add(my.view_save_dialog)
 
         outer.add_style("min-width: 750px")
+        outer.add_style("white-space: nowrap")
         div.add_style("height: %s" % height)
         
         return outer
