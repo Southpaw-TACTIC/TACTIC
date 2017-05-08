@@ -1554,8 +1554,8 @@ class NoteCollectionWdg(BaseRefreshWdg):
                 #parent_snapshots = Snapshot.get_by_sobject(parent, process=process)
                 """
 
-                context = "attachment"
-                parent_snapshots = Search.eval("@SOBJECT(sthpw/note.connect['context','%s'].sthpw/snapshot)" % context, notes)
+                #context = "attachment"
+                #parent_snapshots = Search.eval("@SOBJECT(sthpw/note.connect['context','%s'].sthpw/snapshot)" % context, notes)
 
                 for note in notes:
 

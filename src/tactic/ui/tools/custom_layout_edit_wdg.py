@@ -957,7 +957,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view_wdg.add("<div style='margin: 5px 5px 5px 20px; float: left'><b>View: &nbsp;</b></div>")
             text = TextInputWdg(name="view", height="30px")
             view_wdg.add(text)
-            text.add_style("width: 350px")
+            text.add_style("width: 400px")
             view_wdg.add_style("margin-top: 4px")
             view_wdg.add_style("margin-left: 10px")
             view_wdg.add_style("padding-left: 230px")
@@ -968,6 +968,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 text.set_value(view.replace(".", "/"))
 
             type_wdg = DivWdg()
+            # Hide this ... never really used
+            type_wdg.add_style("display: none")
             shelf_wdg.add(type_wdg)
             type_wdg.add_style("float: left")
             type_wdg.add_style("margin: 0px 5px 5px 20px")

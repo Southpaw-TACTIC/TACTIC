@@ -12,7 +12,8 @@
 __all__ = ["EmbedWdg"]
 
 from pyasm.common import Environment
-from pyasm.biz import File
+from pyasm.biz import File, Snapshot
+from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -39,10 +40,22 @@ class EmbedWdg(BaseRefreshWdg):
 
         top = my.top
 
-        src = my.kwargs.get("src")
+        layout = my.kwargs.get("layout") or "landscape"
+
+        search_key = my.kwargs.get("search_key")
         file = my.kwargs.get("file")
-        if file:
+
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+            if sobject.get_base_search_type() == "sthpw/snapshot":
+                snapshot = sobject
+            else:
+                snapshot = Snapshot.get_latest_by_sobject(sobject)
+            src = snapshot.get_web_path_by_type()
+        elif file:
             src = file.get_web_path()
+        else:
+            src = my.kwargs.get("src")
 
         opacity = 1.0
         if not src:
@@ -100,10 +113,15 @@ class EmbedWdg(BaseRefreshWdg):
 
             embed = DivWdg()
             embed.add_style("display: inline-block")
-            #embed.add_style("overflow-y: auto")
             embed.add_style("vertical-align: top")
-            embed.add_style("height: 100%")
-            embed.add_style("width: auto")
+
+            if layout == "landscape":
+                embed.add_style("width: auto")
+                embed.add_style("height: 100%")
+            else:
+                embed.add_style("width: 100%")
+                embed.add_style("height: auto")
+
 
             if src.find("#") != -1:
 
@@ -144,9 +162,13 @@ class EmbedWdg(BaseRefreshWdg):
 
                 img = HtmlElement.img(src)
                 embed.add(img)
-                img.add_class("BIG_PIG")
-                img.add_style("width: auto")
-                img.add_style("height: 100%")
+
+                if layout == "landscape":
+                    img.add_style("width: auto")
+                    img.add_style("height: 100%")
+                else:
+                    img.add_style("width: 100%")
+                    img.add_style("height: auto")
 
 
         elif ext in File.VIDEO_EXT:
@@ -157,8 +179,6 @@ class EmbedWdg(BaseRefreshWdg):
             #if not thumb_path:
             #    thumb_path = "/context/icons/logo/tactic_sml.png"
             controls = my.kwargs.get("controls")
-
-            print "src: ", src
 
             video_id = None
             sources = [src]
