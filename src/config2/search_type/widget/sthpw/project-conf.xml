@@ -26,7 +26,7 @@
         <display class="tactic.ui.table.ProjectWdg"/>
     </element>
 
-    <element name="is_template" edit="false">
+    <element name="is_template" edit="true">
         <display widget='format'>
             <format>Checkbox</format>
         </display>
