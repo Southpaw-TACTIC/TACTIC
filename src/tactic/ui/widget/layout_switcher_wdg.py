@@ -82,11 +82,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             state_value = title
 
         mode = my.kwargs.get("mode")
-        
         if mode == "button":
-            activator = DivWdg("<button class='btn btn-default dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % state_value)
+            color = my.kwargs.get("color") or "default"
+            activator = DivWdg("<button class='btn btn-%s dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, state_value))
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
+
 
         top.add(activator)
         activator.add_class("spt_switcher_activator")

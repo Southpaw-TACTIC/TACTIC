@@ -2959,6 +2959,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
+    var group_label_expr = target.getAttribute("spt_group_label_expr");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";

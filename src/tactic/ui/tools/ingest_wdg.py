@@ -2043,6 +2043,7 @@ class IngestUploadCmd(Command):
                 name = name.replace("%s|"%input_prefix, "")
                 new_data[name] = value
 
+
             if new_data:
                 from tactic.ui.panel import EditCmd
                 cmd = EditCmd(

@@ -164,7 +164,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             left.add_style("width: 200px")
             left.add_style("min-width: 100px")
             left.add_style("vertical-align: top")
-            #left.add_border()
 
             expression = my.kwargs.get("expression")
 
@@ -240,6 +239,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         # DEPRECATED: moved to a gear menu
+        """
         show_info_tab = False
       
         if show_info_tab:
@@ -254,6 +254,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             tab = PipelineTabWdg(search_type=my.search_type,search_key=my.search_key)
             bottom.add(tab)
+        """
 
 
 
@@ -835,6 +836,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
     def get_pipeline_wdg(my, pipeline):
         '''build each pipeline menu item'''
+
         pipeline_div = DivWdg()
         pipeline_div.add_class('spt_pipeline_link')
         pipeline_div.add_attr('spt_pipeline', pipeline.get_code())
@@ -844,9 +846,6 @@ class PipelineListWdg(BaseRefreshWdg):
         description = pipeline.get_value("description")
         if not description:
             description = pipeline.get_code()
-        
-        # remove weird symbols in description
-        #description = re.sub(r'\W', '', description)
         
         pipeline_div.add_attr("title", description)
 

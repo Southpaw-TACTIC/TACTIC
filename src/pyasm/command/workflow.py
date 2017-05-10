@@ -861,6 +861,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         print "error: ", error
 
 
+
         """
         if node_type in ["condition", "action", "approval"]:
 
@@ -1025,7 +1026,9 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         return super(WorkflowManualNodeHandler, my).handle_reject()
 
 
+
     def handle_revise(my):
+
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
@@ -1034,7 +1037,13 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             context = "%s/error" % process
             Note.create(sobject, error, context=context)
 
-        return super(WorkflowManualNodeHandler, my).handle_revise()
+        my.log_message(my.sobject, my.process, "revise")
+        my.run_callback(my.pipeline, my.process, "revise")
+        # set all tasks in the process to revise
+        my.set_all_tasks(my.sobject, my.process, "revise")
+
+        # Manual tasks stop here
+        #return super(WorkflowManualNodeHandler, my).handle_revise()
 
 
 

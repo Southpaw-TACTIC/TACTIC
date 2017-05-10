@@ -54,6 +54,16 @@ class SPTDate(object):
         return date
     strip_time = classmethod(strip_time)
 
+
+    def strip_timezone(cls, date):
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        date = date.replace(tzinfo=None)
+        return date
+    strip_timezone = classmethod(strip_timezone)
+
+
     def set_noon(cls, date):
         date = datetime(date.year, date.month, date.day, hour=12, minute=0, second=0)
         return date
@@ -250,12 +260,15 @@ class SPTDate(object):
 
 
 
-    def get_time_ago(cls, date):
+    def get_time_ago(cls, date, convert=False):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
 
-        date = cls.convert(date)
+        if convert:
+            date = cls.convert(date)
+        else:
+            date = cls.strip_timezone(date)
 
         now = cls.now()
 
@@ -267,7 +280,7 @@ class SPTDate(object):
             txt = "ago"
 
         if diff.days >= 7:
-            value = date.strftime("%b %d at %I:%m %p")
+            value = date.strftime("%b %d at %I:%M %p")
 
         elif diff.days == 1:
             value = "1 day %s" % txt

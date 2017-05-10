@@ -280,6 +280,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                             timestamp = datetime(int(labels[0]),int(labels[1]),1)
                             title = timestamp.strftime("%Y %b")
 
+ 
 
                 group_wdg = DivWdg()
 
@@ -292,7 +293,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                 group_wdg.add_style("width: auto")
 
 
-                inner.add(group_wdg)
+                group_levels = len(my.group_columns)
+                #group_levels = 1
+                if i+1 >= group_levels:
+                    inner.add(group_wdg)
 
                 icon = IconWdg(name=title, icon="BS_FOLDER_OPEN")
                 group_wdg.add(icon)
@@ -305,7 +309,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 group_wdg.add(title_wdg)
                 title_wdg.add(title)
                 title_wdg.add_style("font-size: 1.2em")
-                #title_wdg.add_style("font-weight: bold")
                 title_wdg.add_style("display: inline-block")
 
 

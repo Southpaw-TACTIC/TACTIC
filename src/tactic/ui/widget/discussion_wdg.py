@@ -1093,6 +1093,7 @@ class DiscussionWdg(BaseRefreshWdg):
         # This only shows up if there are no notes
         else:
             no_notes_div = DivWdg()
+
             top.add(no_notes_div)
             if my.show_border:
                 no_notes_div.add_color("background", "background")
@@ -1159,6 +1160,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             note_dialog = DialogWdg(display=False)
+            note_dialog.add_style("font-size: 12px")
             note_dialog.add_title("Add Note")
             note_dialog.add_style("overflow-y: auto")
             no_notes_div.add(note_dialog)
@@ -1338,9 +1340,13 @@ class DiscussionWdg(BaseRefreshWdg):
                        
 
             context_count = 0
+
+            note_dialog_div = DivWdg()
+            context_top.add(note_dialog_div)
+            note_dialog_div.add_style("font-size: 12px")
            
             note_dialog = DialogWdg(display=False)
-            context_top.add(note_dialog)
+            note_dialog_div.add(note_dialog)
             note_dialog.add_title("Notes for: %s" % context)
             note_dialog.add_style("overflow-y: auto")
             #note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
