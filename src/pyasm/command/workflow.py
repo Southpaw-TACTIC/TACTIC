@@ -757,6 +757,21 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         for output_process in output_processes:
             output_process = output_process.get_name()
 
+            # Check if all input processes of the output process currently being evaluated are completed
+            all_input_processes_completed = True
+            input_processes = my.pipeline.get_input_processes(output_process)
+            for input_process in input_processes:
+                input_process = input_process.get_name()
+                if input_process == my.process:
+                    continue
+
+                tasks = Task.get_by_sobject(my.sobject, process=input_process)
+                if tasks and tasks[0].data['status'] != 'Complete':
+                    all_input_processes_completed = False
+
+            if not all_input_processes_completed:
+                continue
+
             if my.process_parts:
                 output_process = "%s.%s" % (my.process_parts[0], output_process)
 
