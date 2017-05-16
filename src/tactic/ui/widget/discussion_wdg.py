@@ -2573,6 +2573,10 @@ class DiscussionAddNoteCmd(Command):
 
         my.call_triggers(note_sobj)
 
+        my.info = {
+                "note": note_sobj.get_sobject_dict()
+        }
+
 
     def call_triggers(my, note_sobj):
 
