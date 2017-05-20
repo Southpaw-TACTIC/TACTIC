@@ -508,6 +508,10 @@ class CheckinCmd(object):
             f.write(pre_log)
             f.close()
 
+            # Invoke Trigger:called_triggers
+            from pyasm.command import Trigger
+            Trigger.call_all_triggers()
+
             # Delete the source file after check-in step.
             print "File handled."
             if os.path.exists(file_path):
