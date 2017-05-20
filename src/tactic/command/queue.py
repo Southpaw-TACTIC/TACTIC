@@ -111,7 +111,7 @@ class JobTask(SchedulerTask):
 
     def __init__(my, **kwargs):
 
-        #print "JobTask: init"
+        #print("JobTask: init")
         my.job = None
         my.jobs = []
 
@@ -176,7 +176,7 @@ class JobTask(SchedulerTask):
                 if current_state not in ['locked']:
                     continue
 
-                #print "setting to pending"
+                #print("setting to pending")
                 job.set_value("state", "pending")
                 job.set_value("host", "")
                 job.commit()
@@ -184,7 +184,7 @@ class JobTask(SchedulerTask):
             my.jobs = []
 
         except Exception, e:
-            print "Exception: ", e.message
+            print("Exception: ", e.message)
             count += 1
             my.cleanup(count)
             
@@ -205,7 +205,7 @@ class JobTask(SchedulerTask):
             if my.max_jobs_completed != -1 and my.jobs_completed > my.max_jobs_completed:
                 Common.restart()
                 while 1:
-                    print "Waiting to restart..."
+                    print("Waiting to restart...")
                     time.sleep(1)
 
 
@@ -219,14 +219,14 @@ class JobTask(SchedulerTask):
             job = search.get_sobject()
 
             if not job:
-                print "Cancel ...."
+                print("Cancel ....")
                 scheduler = Scheduler.get()
                 scheduler.cancel_task(job_code)
                 continue
 
             state = job.get_value("state")
             if state == 'cancel':
-                print "Cancel task [%s] ...." % job_code
+                print("Cancel task [%s] ...." % job_code)
                 scheduler = Scheduler.get()
                 scheduler.cancel_task(job_code)
 
@@ -244,7 +244,7 @@ class JobTask(SchedulerTask):
 
         num_jobs = len(my.jobs)
         if num_jobs >= my.max_jobs:
-            print "Already at max jobs [%s]" % my.max_jobs
+            print("Already at max jobs [%s]" % my.max_jobs)
             return
       
         my.job = my.get_next_job(queue_type)
@@ -298,8 +298,8 @@ class JobTask(SchedulerTask):
         # add the job to the kwargs
         kwargs['job'] = my.job
 
-        #print "command: ", command
-        #print "kwargs: ", kwargs
+        #print("command: ", command)
+        #print("kwargs: ", kwargs)
 
 
         # Because we started a new thread, the environment may not
@@ -318,7 +318,7 @@ class JobTask(SchedulerTask):
 
         stop_on_error = False
 
-        print "Running job: ", my.job.get_value("code") 
+        print("Running job: ", my.job.get_value("code") )
 
         if queue_type == 'inline':
 
@@ -364,7 +364,7 @@ class JobTask(SchedulerTask):
 
                     # This is an error on this server, so just exit
                     # and don't bother retrying
-                    print "Error: ", e
+                    print("Error: ", e)
                     my.job.set_value("state", "error")
                     break
 
@@ -372,14 +372,14 @@ class JobTask(SchedulerTask):
                 except Exception, e:
                     if stop_on_error:
                         raise
-                    print "WARNING in Queue: ", e
+                    print("WARNING in Queue: ", e)
                     import time
                     time.sleep(retry_interval)
                     attempts += 1
-                    print "Retrying [%s]...." % attempts
+                    print("Retrying [%s]...." % attempts)
 
                     if attempts >= max_attempts:
-                        print "ERROR: reached max attempts"
+                        print("ERROR: reached max attempts")
                         my.job.set_value("state", "error")
                         break
 
@@ -405,12 +405,12 @@ class JobTask(SchedulerTask):
                     my.kwargs['job'] = search.get_sobject()
 
                     if not job:
-                        print "Cancelling ..."
+                        print("Cancelling ...")
                         return
 
                     state = job.get_value("state")
                     if state == "cancel":
-                        print "Cancelling 2 ...."
+                        print("Cancelling 2 ....")
                         return
                     """
 

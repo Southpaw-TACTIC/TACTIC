@@ -589,7 +589,7 @@ class SideBarSectionWdg(BaseSectionWdg):
             error_list = Container.get_seq(cls.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(cls.ERR_MSG, msg)
-                print e.__str__()
+                print(e.__str__())
 
 
     add_internal_config = classmethod(add_internal_config)

@@ -676,7 +676,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 repo_type = file_object.get_value("repo_type")
                 if repo_type == 'perforce':
-                    print "PERFORCE: ", file_object.get_code(), file_name
+                    print("PERFORCE: ", file_object.get_code(), file_name)
                     #continue
 
 
@@ -709,7 +709,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 my.search_keys_dict[path] = search_key
 
                 if not file_name:
-                    #print search_type, relative_dir
+                    #print(search_type, relative_dir)
                     continue
 
                 """
@@ -900,10 +900,10 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
         #for path in paths:
-        #    print "path: ", path
-        #print "---"
+        #    print("path: ", path)
+        #print("---")
         #for name, value in num_sobjects.items():
-        #    print value, name
+        #    print(value, name)
 
 
         return paths
@@ -2597,7 +2597,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             for i in range(len(parts)+1, 0, -1):
                 tmp_rel_dir = "/".join(parts[:i])
                 tmp_dir = "%s/%s" % (my.base_dir, tmp_rel_dir)
-                print "tmp: ", tmp_dir
+                print("tmp: ", tmp_dir)
                 search_type = search_types.get("%s/" % tmp_dir)
         """
 
@@ -2702,7 +2702,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def get_file_icon(my, dir, item):
         path = "%s/%s" % (dir, item)
-        #print "code: ", my.kwargs.get("file_codes").get(path)
+        #print("code: ", my.kwargs.get("file_codes").get(path))
         if not os.path.exists(path):
             return IconWdg.ERROR
         return IconWdg.DETAILS
@@ -3260,7 +3260,7 @@ class RepoBrowserCbk(Command):
                 # Build the paths and check if new path already exists
                 old_path = "%s/%s/%s" % (base_dir, file_relative_dir, file_name)
                 if not os.path.exists(old_path):
-                    print "WARNING: [%s] not found." % old_path
+                    print("WARNING: [%s] not found." % old_path)
 
                 new_path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
                 if os.path.exists(new_path):
@@ -3390,11 +3390,11 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
                 snapshot = file.get_parent()
                 if not snapshot:
                     parent = None
-                    print "Dangling file [%s]" % file.get_code()
+                    print("Dangling file [%s]" % file.get_code())
                 else:
                     parent = snapshot.get_parent()
                     if not parent:
-                        print "Dangling snapshot [%s]" % snapshot.get_code()
+                        print("Dangling snapshot [%s]" % snapshot.get_code())
                     else:
                         good_file = file
         

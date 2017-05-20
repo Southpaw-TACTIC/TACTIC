@@ -296,7 +296,7 @@ class SearchWdg(BaseRefreshWdg):
                         filter_data.set_to_cgi()
 
                 except XmlException, e:
-                    print "WARNING: non-xml filter detected!! %s" %filter
+                    print("WARNING: non-xml filter detected!! %s" % filter0)
 
         
         # NOTE: this is only used to maintain backwards compatibility
@@ -324,7 +324,7 @@ class SearchWdg(BaseRefreshWdg):
                 config_sobj = WidgetDbConfig.merge_configs(config_sobjs)
                 #config_sobj = config_sobjs[0]
             except SearchException, e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
                 config_sobj = None
 
 
@@ -409,7 +409,7 @@ class SearchWdg(BaseRefreshWdg):
             key = SearchWdg._get_key(my.search_type, my.view)
             WidgetSettings.set_value_by_key(key, json)
         #value = WidgetSettings.get_value_by_key(key)
-        #print "value: ", value
+        #print("value: ", value)
         return
 
 
@@ -752,7 +752,7 @@ class SearchWdg(BaseRefreshWdg):
             search.add_filter("search_type", my.search_type)
             configs = search.get_sobjects()
         except SearchException, e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
             configs = []
         except:
             my.clear_search_data(my.search_type)
@@ -920,8 +920,8 @@ class SearchWdg(BaseRefreshWdg):
                     filter_data = FilterData(data)
                     filter_data.set_to_cgi()
                 except SetupException, e:
-                    print "This filter data is causing error:", data
-                    print e
+                    print("This filter data is causing error:", data)
+                    print(e)
 
 
     set_filter_data = staticmethod(set_filter_data)

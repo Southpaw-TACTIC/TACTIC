@@ -422,7 +422,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             try:
                 widget = config_view.get_display_widget(element_name)
             except Exception, e:
-                print "ERROR: ", e
+                print("ERROR: ", e)
                 widget = None
             is_editable = False
             if hasattr(widget, 'is_editable'):
@@ -1401,7 +1401,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
             try:
                 widget = config_view.get_display_widget(element_name)
             except Exception, e:
-                print "ERROR: ", e
+                print("ERROR: ", e)
                 widget = None
             is_editable = False
             if hasattr(widget, 'is_editable'):
@@ -2281,8 +2281,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                         data = jsondumps(xml_value)
                         data = jsonloads(data)
                     except Exception, e:
-                        print "Error loading kwargs", xml_value
-                        print e
+                        print("Error loading kwargs", xml_value)
+                        print(e)
                         data = {}
                         value = {}
                         value['category'] = 'kwargs'
@@ -2605,7 +2605,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     if value and hasattr(edit_wdg,'set_value'):
                         edit_wdg.set_value(value)
                 except Exception, e:
-                    print "Cannot create widget: [%s]" % widget_type, e, e.message
+                    print("Cannot create widget: [%s]" % widget_type, e, e.message)
 
             if not edit_wdg:
                 edit_wdg = TextWdg(name)
@@ -2985,7 +2985,7 @@ class SimpleElementDefinitionCbk(Command):
         try:
             widget = config.get_display_widget(element_name)
         except:
-            print "Warning: Cannot create widget for [%s]" % element_name
+            print("Warning: Cannot create widget for [%s]" % element_name)
             #raise
             #return
 
@@ -3000,15 +3000,15 @@ class SimpleElementDefinitionCbk(Command):
                 if my.is_insert: # will be caught in AlterTableCmd
                     raise
                 else: # in edit mode, it's ok for now
-                    print "WARNING when creating required columns: ", e.message
+                    print("WARNING when creating required columns: ", e.message)
                     pass
                 #raise
             except AttributeError:
                 # this is meant for the definition display, not for edit_definition view
-                print "Warning: [%s] does not have create_required_columns method"%element_name
+                print("Warning: [%s] does not have create_required_columns method"%element_name)
                 raise
             except Exception, e:
-                print "Warning: ", e.message
+                print("Warning: ", e.message)
                 raise
 
         # commit the config_sobj at the end if no exception is raised during insert

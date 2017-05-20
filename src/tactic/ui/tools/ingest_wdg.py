@@ -1747,7 +1747,7 @@ class IngestUploadCmd(Command):
             sequences = FileRange.get_sequences(filenames)
             filenames = []
             for sequence in sequences:
-                print "sequence: ", sequence
+                print("sequence: ", sequence)
                 if sequence.get('is_sequence'):
                     filename = sequence.get("template")
                 else:
@@ -1985,7 +1985,7 @@ class IngestUploadCmd(Command):
                     cmd = ConvertCbk(**convert)
                     cmd.execute()
             except Exception, e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
             """
 
 

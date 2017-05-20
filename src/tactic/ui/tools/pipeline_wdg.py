@@ -656,7 +656,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 no_items.add("<i>-- No Items --</i>")
 
         except Exception, e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
             none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
             none_wdg.add("<div>%s</div>" % str(e))
             none_wdg.add_style("font-size: 11px")
@@ -4356,9 +4356,8 @@ class ProcessInfoCmd(Command):
             trigger.set_value("mode", "same process,same transaction")
 
 
-        print "action: ", action
+        print("action: ", action)
         if action == "command":
-            print "ssdssfd: ", on_action_class
             trigger.set_value("script_path", "NULL", quoted=False)
             trigger.set_value("class_name", on_action_class)
 

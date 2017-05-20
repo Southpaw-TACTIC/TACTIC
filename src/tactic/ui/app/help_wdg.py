@@ -165,7 +165,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                     count += 1
             f.close()
         except Exception, e:
-            print "Error processing: ", e
+            print("Error processing: ", e)
             html.append("Error processing document: %s<br/><br/>" % str(e))
         
         html = "\n".join(html)
@@ -244,7 +244,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
 
         #node = xml.get_node("//body")
         #html = xml.to_string(node)
-        ##print html
+        ##print(html)
         #inner.add(html)
 
         nodes = xml.get_nodes("//body/*")
@@ -347,10 +347,10 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 im = Image.open(path)
                 size = im.size
             except IOError, e:
-                print "Error importing Image: ", e
+                print("Error importing Image: ", e)
                 
             except:
-                print "Error in opening image path:", path
+                print("Error in opening image path:", path)
                 #continue
                 size = [0,0]
 
@@ -391,9 +391,9 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             else:
                 new_src = "/doc/%s" % (src)
 
-            #print "src: ", src
-            #print "new_src: ", new_src
-            #print "---"
+            #print("src: ", src)
+            #print("new_src: ", new_src)
+            #print("---")
             xml.set_attribute(node, "src", new_src)
 
 
