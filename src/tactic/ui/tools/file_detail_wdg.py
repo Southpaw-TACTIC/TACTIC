@@ -246,7 +246,7 @@ class FileDetailWdg(BaseRefreshWdg):
         select.add_empty_option("-- Metadata --")
         td.add(select)
         select.add_style("float: right")
-        select.set_option("values", ["IPTC","EXIF","ImageMagick","PIL"])
+        select.set_option("values", ["IPTC","EXIF","XMP","ImageMagick","PIL"])
         select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''

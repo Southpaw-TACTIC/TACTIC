@@ -1575,7 +1575,8 @@ class NoteCollectionWdg(BaseRefreshWdg):
                         my.attachments[note_key] = xx
 
                     for snapshot in parent_snapshots:
-                        xx.append(snapshot)
+                        if snapshot:
+                            xx.append(snapshot)
 
 
 
