@@ -289,7 +289,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             
 
         top.add_style("position: relative")
-        top.add(my.get_canvas_title())
+
+        show_title = my.kwargs.get("show_title")
+        if show_title not in ['false', False]:
+            top.add(my.get_canvas_title())
 
 
         # outer is used to resize canvas
@@ -1093,9 +1096,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             var top = spt.pipeline.top;
             var text = top.getElement(".spt_pipeline_editor_current2");
-
-            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
-            text.innerHTML = text.innerHTML + " / " + html;
+            if (text) {
+                var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
+                text.innerHTML = text.innerHTML + " / " + html;
+            }
 
             evt.stopPropagation();
             '''
@@ -2077,7 +2081,10 @@ spt.pipeline._init = function() {
 
     // FIXME: need this delay because the table seems to resize itself somewhere
     setTimeout( function() {
-        var size = canvas.getSize()
+        var size = canvas.getSize();
+        if (size.x == 0 || size.y == 0) {
+            return;
+        }
         spt.pipeline.set_size(size.x, size.y);
     }, 500);
 }

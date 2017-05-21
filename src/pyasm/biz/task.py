@@ -815,7 +815,7 @@ class Task(SObject):
             user = Environment.get_user_name()
             task.set_value('login', user)
 
-        if task.has_value('task_type') and task_type:
+        if task_type:
             task.set_value("task_type", task_type)
 
         task.commit(triggers=True)
@@ -1086,9 +1086,13 @@ class Task(SObject):
             if not process_obj:
                 continue
 
+            process_type = process_obj.get_type()
+            task_type = None
+            if process_type in ['approval']:
+                task_type = "approval"
 
-            # depend_id is pretty much deprecated ... dependencies are usually set
-            # by the workflow engined
+            # depend_id is pretty much deprecated ...
+            # dependencies are usually set by the workflow engine
             if last_task:
                 depend_id = last_task.get_id()
             else:
@@ -1147,9 +1151,6 @@ class Task(SObject):
 
 
 
-
-
-
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
                 output_contexts = [process_name]
@@ -1176,7 +1177,7 @@ class Task(SObject):
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
 
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned)
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )

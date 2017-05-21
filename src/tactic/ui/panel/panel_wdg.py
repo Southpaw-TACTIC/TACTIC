@@ -3228,6 +3228,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         ingest_data_view = my.kwargs.get("ingest_data_view")
         ingest_custom_view = my.kwargs.get("ingest_custom_view")
         group_elements = my.kwargs.get("group_elements")
+        group_label_expr = my.kwargs.get("group_label_expr")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
@@ -3312,6 +3313,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "ingest_data_view" : ingest_data_view,
             "ingest_custom_view": ingest_custom_view,
             "group_elements" : group_elements,
+            "group_label_expr" : group_label_expr,
             "mode": mode,
             "height": height,
             "keywords": keywords,

@@ -1185,7 +1185,7 @@ TacticServerStub = function() {
     this.query2 = function(search_type, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        on_complete2 = (value) => {
+        on_complete2 = function(value) {
             value = JSON.parse(value);
             on_complete(value);
         }
@@ -1201,9 +1201,9 @@ TacticServerStub = function() {
 
 
     this.p_query = function(expression, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             return this.query2(expression, kwargs);
         } )
     }
@@ -1223,9 +1223,9 @@ TacticServerStub = function() {
     }
 
     this.p_get_by_search_key = function(search_key, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             this.get_by_search_key(search_key, kwargs);
         } )
     }
@@ -1238,9 +1238,9 @@ TacticServerStub = function() {
     }
 
     this.p_get_by_code = function(search_type, code, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             this.get_by_search_key(expression, args, {}, kwargs);
         } )
     }
@@ -1279,9 +1279,9 @@ TacticServerStub = function() {
 
 
     this.p_update = function(expression, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             return this.query2(expression, kwargs);
         } )
     }
@@ -1311,7 +1311,7 @@ TacticServerStub = function() {
     //
     // Expression methods
     //
-    this.eval = function(exprssion, kwargs, on_complete, on_error) {
+    this.eval = function(expression, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
         var ret_val = this._delegate("eval", arguments, kwargs, null, on_complete, on_error);
@@ -1329,9 +1329,9 @@ TacticServerStub = function() {
 
     /* Test promises */
     this.p_eval = function(expression, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             this.eval(expression, kwargs);
         } )
     }
@@ -1468,12 +1468,14 @@ TacticServerStub = function() {
     /*
      * Widget methods
      */
-    this.get_widget = function(class_name, kwargs) {
+    this.get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+
         try {
-            var ret_val = this._delegate("get_widget", arguments, kwargs, "string");
+            var ret_val = this._delegate("get_widget", arguments, kwargs, "string", on_complete, on_error);
             return ret_val;
         }
         catch(e) {
@@ -1549,9 +1551,9 @@ TacticServerStub = function() {
 
     /* Test promises */
     this.p_execute_cmd = function(expression, args, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             this.execute_cmd(expression, args, {}, kwargs);
         } )
     }
@@ -1687,7 +1689,7 @@ TacticServerStub = function() {
 
     // async functions
 
-    this.async_get_widget = function(class_name, kwargs) {
+    this.async_get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
@@ -1698,7 +1700,10 @@ TacticServerStub = function() {
         if (!callback) {
             callback = kwargs['on_complete'];
         }
-        var on_error = function(e) {
+        if (!callback) {
+            callback = on_complete;
+        }
+        var err_callback = function(e) {
             if (e == 0)
                 e = 'Received an error (Error 0)';
             else if (e == 502)
@@ -1706,9 +1711,18 @@ TacticServerStub = function() {
             else if (e == 503)
                 e = 'Service is unavailable (Error 503)';
 
-            spt.alert(e); 
+            if (!on_error) {
+                on_error = kwargs['on_error'];
+            }
+
+            if (on_error) {
+                on_error(e);
+            }
+            else {
+                spt.alert(e);
+            }
         };
-        this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);
+        this._delegate("get_widget", arguments, kwargs, "string", callback, err_callback);
         return;
     }
 

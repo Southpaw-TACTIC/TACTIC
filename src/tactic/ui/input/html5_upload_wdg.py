@@ -468,7 +468,41 @@ class BaseUploadWdg(BaseRefreshWdg):
 
 
 class HtmlUploadWdg(BaseUploadWdg):
-    pass
+
+    def get_on_complete(my):
+
+        process = my.kwargs.get("process")
+        if not process:
+            process= "publish"
+
+
+        search_key = my.kwargs.get("search_key")
+
+        checkin_type = my.kwargs.get("checkin_type")
+        if not checkin_type:
+            checkin_type = 'auto'
+
+        return '''
+            var server = TacticServerStub.get();
+            var file = spt.html5upload.get_file();
+
+            if (file) {
+                var search_key = "%s";
+                var file_name = file.name;
+
+                var context = "%s/" + file_name;
+
+                server.simple_checkin(search_key, context, file_name, {mode:'uploaded', checkin_type:'%s'});
+                spt.notify.show_message("Check-in of ["+file_name+"] successful");
+            }
+            else  {
+              alert('Error: file object cannot be found.')
+            }
+            spt.app_busy.hide();
+        ''' % (search_key, process, checkin_type)
+
+
+
 
 
 class UploadButtonWdg(BaseUploadWdg):

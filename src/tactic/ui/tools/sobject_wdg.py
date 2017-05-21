@@ -1835,7 +1835,11 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
     def get_display(my):
         search_key = my.kwargs.get("search_key")
         my.sobject = Search.get_by_search_key(search_key)
-        my.parent = my.sobject.get_parent()
+        if my.sobject:
+            my.parent = my.sobject.get_parent()
+        else:
+            my.parent = None
+
         pipeline_code = my.kwargs.get("pipeline")
 
         top = my.top
@@ -1858,10 +1862,14 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
 
         # it's ok to not have a parent unless it's a task, then just exit early
-        if not my.parent and my.sobject.get_base_search_type() == 'sthpw/task':
+        if not my.parent and my.sobject and my.sobject.get_base_search_type() == 'sthpw/task':
             top.add('Parent of this task cannot be found.')
             return top
+
+
         top.add(my.get_pipeline_wdg(pipeline_code) )
+
+
         return top
 
 
@@ -1869,6 +1877,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         div = DivWdg()
 
         height = my.kwargs.get("height") or 500
+        show_title = my.kwargs.get("show_title")
 
         show_title = my.kwargs.get("show_title")
         if show_title not in [False, 'false']:
@@ -1884,6 +1893,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         kwargs = {
             'width': "auto",
             'height': height,
+            'show_title': show_title,
             'pipeline': pipeline_code,
             'is_editable': False,
             'use_mouse_wheel': True,
@@ -1904,69 +1914,71 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             tasks = Task.get_by_sobject(my.parent)
             if my.sobject.has_value("process"):
                 process = my.sobject.get_value("process")
-        else:
+        elif my.sobject:
             tasks = Task.get_by_sobject(my.sobject)
+        else:
+            tasks = []
 
         for task in tasks:
             enabled_tasks.add(task.get_value("process"))
 
         enabled_tasks = list(enabled_tasks)
 
+        if pipeline_code:
+            load_div.add_behavior( { 
+            'type': 'load',
+            'process': process,
+            'enabled_tasks': enabled_tasks,
+            'pipeline': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(top);
 
-        load_div.add_behavior( { 
-        'type': 'load',
-        'process': process,
-        'enabled_tasks': enabled_tasks,
-        'search_key': my.sobject.get_search_key(),
-        'pipeline': pipeline_code,
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(top);
+            /*
+            var nodes = spt.pipeline.get_nodes_by_group(bvr.pipeline);
+            for (var i = 0; i < nodes.length; i++) {
+                var has_task = false;
+                var node = nodes[i];
+                var node_name = spt.pipeline.get_node_name(node);
+                for (var j = 0; j < bvr.enabled_tasks.length; j++) {
+                    if (node_name == bvr.enabled_tasks[j]) {
+                        has_task = true;
+                        break;
+                    }
+                }
 
-        var nodes = spt.pipeline.get_nodes_by_group(bvr.pipeline);
-        for (var i = 0; i < nodes.length; i++) {
-            var has_task = false;
-            var node = nodes[i];
-            var node_name = spt.pipeline.get_node_name(node);
-            for (var j = 0; j < bvr.enabled_tasks.length; j++) {
-                if (node_name == bvr.enabled_tasks[j]) {
-                    has_task = true;
-                    break;
+                if (!has_task && node) {
+                    spt.pipeline.disable_node(node);
                 }
             }
+            */
 
-            if (!has_task && node) {
-                spt.pipeline.disable_node(node);
+            spt.pipeline.unselect_all_nodes();
+
+            var node = spt.pipeline.get_node_by_name(bvr.process);
+            if (node) {
+                node.setStyle("font-weight", "bold");
+                spt.pipeline.select_node(node);
             }
-        }
 
-        spt.pipeline.unselect_all_nodes();
-
-        var node = spt.pipeline.get_node_by_name(bvr.process);
-        //process and node name could be different
-        if (node) {
-            node.setStyle("font-weight", "bold");
-            spt.pipeline.select_node(node);
-            //spt.pipeline.center_node(node);
-        }
+            spt.pipeline.fit_to_canvas(bvr.pipeline);
 
 
-        //spt.pipeline.set_status_color(bvr.search_key);
+            var top = spt.pipeline.top;
+            var text = top.getElement(".spt_pipeline_editor_current2");
+            if (!text) {
+                return;
+            }
 
-        var top = spt.pipeline.top;
-        var text = top.getElement(".spt_pipeline_editor_current2");
-        //spt.pipeline.load_triggers();
-        spt.pipeline.fit_to_canvas(bvr.pipeline);
-
-        var server = TacticServerStub.get();
-        var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
-        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
-        text.innerHTML = html;
+            var server = TacticServerStub.get();
+            var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
+            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
+            text.innerHTML = html;
 
 
 
-        '''
-        } )
+            '''
+            } )
 
 
         #div.add_style("padding: 10px")

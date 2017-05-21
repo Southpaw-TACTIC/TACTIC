@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser']
+__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser']
 
 
 import os, sys, re, subprocess
@@ -48,6 +48,12 @@ try:
     HAS_IPTC = True
 except:
     HAS_IPTC = False
+
+try:
+    import libxmp
+    HAS_XMP = True
+except:
+    HAS_XMP = False
 
 
 
@@ -292,6 +298,8 @@ class BaseMetadataParser(object):
             parser = ExifMetadataParser(path=path)
         elif parser_str == "IPTC":
             parser = IPTCMetadataParser(path=path)
+        elif parser_str == "XMP":
+            parser = XMPMetadataParser(path=path)
         elif parser_str == "ImageMagick":
             parser = ImageMagickMetadataParser(path=path)
         elif parser_str == "PIL":
@@ -426,6 +434,50 @@ class IPTCMetadataParser(BaseMetadataParser):
                 if not real_key:
                     real_key = key
                 metadata[real_key] = value
+
+
+            return metadata
+        except Exception, e:
+            info = {
+                    "Message": str(e)
+            }
+            return info
+
+
+
+class XMPMetadataParser(BaseMetadataParser):
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+    def get_title(my):
+        return "XMP"
+
+    def get_initial_data(my):
+        return {
+            'media_type': 'image',
+            'parser': 'XMP'
+        }
+
+
+
+    def get_metadata(my):
+        path = my.kwargs.get("path")
+
+        from libxmp.utils import file_to_dict
+        from libxmp import consts
+
+        try:
+
+            metadata = {}
+
+            xmp = file_to_dict(path)
+            for space in xmp.keys():
+                #dc = xmp[consts.XMP_NS_DC]
+                dc = xmp[space]
+
+                for key, value, options in dc:
+                    metadata[key] = value
 
 
             return metadata
