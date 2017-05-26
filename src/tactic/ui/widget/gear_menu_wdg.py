@@ -89,18 +89,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         builtin = False
         builtin_key = False
 
-        if label == "Export All ...":
+
+        if my.matches(label, "Export All ..."):
             builtin_key = "export_all_csv"
-        elif label == "Import CSV":
+        elif my.matches(label, "Import CSV"):
             builtin_key = "import_csv"
-        elif label == "Ingest Files":
+        elif my.matches(label, "Ingest Files"):
             builtin_key = "ingest"
-        elif label == 'Check-out Files':
+        elif my.matches(label, "Check-out Files"):
             # this appeared to be redundant
             builtin_key = "ingest"
-        elif label == "Column Manager":
+        elif my.matches(label, "Column Manager"):
             builtin_key = "view_column_manager"
-
 
         if builtin_key:
 
@@ -133,8 +133,11 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         }
         """
 
+
+        menus = None
         if menus:
             for submenu, labels in menus.items():
+
                 if labels == True:
                     continue
                 for label in labels:
@@ -143,6 +146,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                     access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
                     local_access = security.check_access("gear_menu", access_keys, "allow")
+
 
                     if builtin_access or local_access:
 

@@ -844,11 +844,19 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         search.add_filter("view", my.view)
 
-        config = search.get_sobject()
-        if config:
+        configs = search.get_sobjects()
+
+        # annoyingly NULL is always higher than any number, so we have
+        # put them at the end
+        if configs and configs[0].column_exists("priority"):
+            configs = sorted(configs, key=lambda x: x.get("priority"))
+            configs.reverse()
+
+        if configs:
+            config = configs[0]
             return config
+
         # if it is not defined in the database, look at a config file
-        
         includes = my.kwargs.get("include")
         if includes:
             includes = includes.split("|")
