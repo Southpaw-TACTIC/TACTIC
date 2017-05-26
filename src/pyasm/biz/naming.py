@@ -582,8 +582,6 @@ class NamingUtil(object):
              
             index = -1
 
-            print "part: ", part
-
             if part.startswith(("@","$")):
                 env_sobjects = {
                     'snapshot': snapshot,
