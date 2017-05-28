@@ -303,7 +303,16 @@ class TaskElementWdg(BaseTableElementWdg):
         'values': 'true|false',
         'category': 'Display',
         'order': '18'
+    },
+    'collate_columns': {
+        'description': 'Flag to collate columns that have the same processes together .',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'category': 'Display',
+        'order': '18'
     }
+
+
     }
 
     LAYOUT_WIDTH = 130
@@ -616,7 +625,6 @@ class TaskElementWdg(BaseTableElementWdg):
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
-
                     # put the processes found into a set to avoid duplicates.
                     my.all_processes_set.add(process.get_name())
                     process_dict = my.label_dict.get(pipeline_code)
@@ -629,8 +637,6 @@ class TaskElementWdg(BaseTableElementWdg):
             default_pipeline_processes = [x.get_name() for x in default_pipeline]
 
             
-
-
 
             # this will add every process in default pipeline to sorted processes 
             # (in the correct order)
@@ -666,6 +672,35 @@ class TaskElementWdg(BaseTableElementWdg):
                 for process in process_data_list:
                     if process not in my.sorted_processes:
                         my.sorted_processes.append(process)
+
+
+        # get all of the assigned logins for each process
+        my.assigned_login_groups = {}
+        for pipeline in pipelines:
+            for process in pipeline.get_processes():
+                assigned_login_group = process.get_attribute("assigned_login_group")
+
+                if not assigned_login_group:
+                    continue
+
+                key = "%s|%s" % (pipeline.get_code(), process.get_name())
+                exists = my.assigned_login_groups.get(key)
+                if exists is None:
+                    search = Search("sthpw/login_in_group")
+                    search.add_filter("login_group", assigned_login_group)
+                    users = search.get_sobjects()
+                    if users:
+                        users = [x.get("login") for x in users]
+                    else:
+                        users = []
+                    my.assigned_login_groups[key] = users
+
+
+        my.assigned_login_groups_labels = {}
+        for value, label in zip(my.assignee, my.assignee_labels):
+            my.assigned_login_groups_labels[value] = label
+
+
 
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -1169,7 +1204,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 process_obj = process_pipeline.get_process(process)
 
                 if not process_obj:
-                    #print("WARNING: process[%s] not in pipeline [%s]" % (process, pipeline.get_code()))
+                    #print("WARNING: process[%s] not in pipeline [%s]" % (proc
                     continue
 
 
@@ -1341,8 +1376,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 has_misc_processes = pipeline.get_processes(type=['progress','hierarchy','dependency'])
         if not pipeline:
             no_pipeline_div = DivWdg()
-            no_pipeline_div.add("<i>You must select a pipeline to manage tasks.</i>")
-            no_pipeline_div.add("<br/>"*2)
+            no_pipeline_div.add("<i>You must select a workflow to manage tasks.</i>")
+            no_pipeline_div.add_style("margin: 3px 5px")
+            no_pipeline_div.add_style("opacity: 0.5")
             return no_pipeline_div 
         
  
@@ -1471,7 +1507,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             pipeline_processes = []
 
             if pipeline:
-                pipeline_processes = pipeline[0].get_processes()
+                #pipeline_processes = pipeline[0].get_processes()
+                pipeline_processes = pipeline[0].get_processes(type=[
+                        #"node",
+                        "manual",
+                        "approval",
+                        "hierarchy",
+                        #"dependency",
+                        "progress"
+                ])
+
 
 
             # all the processes to be drawn so that the user can see it
@@ -1490,14 +1535,18 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 supprocess = my.kwargs.get("parent_process")
 
+                collate = my.kwargs.get("collate_columns")
+                if collate in [False, 'false']:
+                    processes = pipeline_processes_list
+                else:
+                    processes = my.sorted_processes
+
                 # go through each sorted process
-                for idx, process in enumerate(my.sorted_processes):
+                for idx, process in enumerate(processes):
 
                     if supprocess:
                         process = "%s.%s" % (supprocess, process)
 
-                    if my.layout in ['vertical']:
-                        table.add_row()
 
                     last_one = False
                     if idx == last:
@@ -1531,13 +1580,20 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     if process_obj:
                         node_type = process_obj.get_type()
                     else:
+                        # collate the columns or bunch them up as the come
+                        collate = my.kwargs.get("collate_columns")
+                        if collate in [False, 'false']:
+                            continue
+                        if my.layout in ['vertical']:
+                            continue
 
                         node_type = "node"
 
-                        continue
-
 
                     # draw the cell
+                    if my.layout in ['vertical']:
+                        table.add_row()
+
                     td = table.add_cell()
                     td.add_style("vertical-align: top")
 
@@ -2030,7 +2086,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         elif my.bg_color_mode == 'process':
             div.add_style("background-color: %s" % process_color)
 
-        div.add_style("opacity: 0.75")
+        #div.add_style("opacity: 0.75")
 
 
 
@@ -2086,7 +2142,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 div.add(process_div)
 
-            process_div.add_style("font-weight: bold")
+            #process_div.add_style("font-weight: bold")
             process_div.add_style("font-size: %spx" % my.font_size)
             if my.text_color:
                 process_div.add_style("color", my.text_color)
@@ -2108,7 +2164,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 div.add(context_div)
 
-            context_div.add_style("font-weight: bold")
+            #context_div.add_style("font-weight: bold")
             context_div.add_style("font-size: %spx" % my.font_size)
             if my.text_color:
                 context_div.add_style("color", my.text_color)
@@ -2347,17 +2403,33 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         name = 'assigned|EDIT|%s' % task.get_id()
                     select = SelectWdg(name)
-                    #select = SelectWdg('assigned_%s' %subtask.get_id())
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
                     select.add_style("height: 22px")
                     select.add_style("padding: 0px")
                     select.add_style("margin: 2px 0px 2px 5px")
 
+                    key = "%s|%s" % (pipeline_code, process)
+                    if my.assigned_login_groups.get(key):
+                        assignee = my.assigned_login_groups.get(key)
+                        assignee_labels = []
+                        for a in assignee:
+                            label = my.assigned_login_groups_labels.get(a) or a
+                            assignee_labels.append(label)
+
+                        if assigned and assigned not in assignee:
+                            assignee.append(assigned)
+                            label = my.assigned_login_groups_labels.get(assigned) or assigned
+                            assignee_labels.append(label)
+
+                    else:
+                        assignee = my.assignee
+                        assignee_labels = my.assignee_labels
+
                     select.add_class('spt_task_status_select')
                     select.add_empty_option('-- Assigned --')
-                    select.set_option('values', my.assignee) 
-                    select.set_option('labels', my.assignee_labels) 
+                    select.set_option('values', assignee) 
+                    select.set_option('labels', assignee_labels) 
                     select.set_value(assigned)
                     select.add_class("spt_task_element_assigned")
                     if my.layout == 'vertical':
