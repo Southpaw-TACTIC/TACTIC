@@ -5664,7 +5664,7 @@ spt.table.set_column_width = function(element_name, width) {
 
         //layout.setStyle("width", layout_width);
         layout.setStyle("width", "auto");
-        layout.setStyle("overflow-x", "auto");
+        //layout.setStyle("overflow-x", "auto");
     }
 
     curr_header.setStyle("width", width);
@@ -6254,6 +6254,69 @@ spt.table.operate_selected = function(action)
 }
 
 
+// Search methods
+
+spt.table.save_search = function(search_view, kwargs) {
+
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    var layout = spt.table.get_layout();
+    var search_type = layout.getAttribute("spt_search_type");
+
+    var top = layout.getParent(".spt_view_panel");
+    var search_top = top.getElement(".spt_search");
+
+    var json_values = spt.table.get_search_values(search_top);
+
+
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view,
+        'unique': kwargs.unique,
+        'personal': kwargs.personal
+    };
+
+    // replace the search widget
+    var server = TacticServerStub.get();
+
+    var class_name = "tactic.ui.app.SaveSearchCbk";
+    server.execute_cmd(class_name, options, json_values);
+
+}
+
+
+
+spt.table.load_search = function(search_view, kwargs) {
+    var layout = spt.table.get_layout();
+    var search_type = layout.getAttribute("spt_search_type");
+
+    var top = layout.getParent(".spt_view_panel");
+    var search_top = top.getElement(".spt_search_top");
+
+    var class_name = "tactic.ui.app.SearchWdg";
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view
+    };
+
+    // replace the search widget
+    var server = TacticServerStub.get();
+    var kwargs = {'args': options};
+    var widget_html = server.get_widget(class_name, kwargs);
+
+    spt.behavior.replace_inner_html( search_top, widget_html );
+
+    // store the search view that was just loaded
+    search_top.setAttribute("spt_search_view", search_view);
+
+}
+
+
+
 // Tools
 
 
@@ -6423,92 +6486,6 @@ spt.table.open_ingest_tool = function(search_type) {
 
 
 
-    """
-    def handle_sub_search2(my):
-
-        # level 1 search
-        #level1_sobjects_dict = Search.get_related_by_sobjects(my.sobjects, "sthpw/snapshot")
-        level1_sobjects_dict = Search.get_related_by_sobjects(my.sobjects, "ut/asset_in_asset")
-
-        tt = []
-        for name, items in level1_sobjects_dict.items():
-            tt.extend(items)
-
-        # level 2 search
-        level2_sobjects_dict = Search.get_related_by_sobjects(tt, "ut/asset", path='sub')
-
-        tt = []
-        for name, items in level2_sobjects_dict.items():
-            tt.extend(items)
-
-        # level 3 search
-        level3_sobjects_dict = Search.get_related_by_sobjects(tt, "ut/asset_in_asset")
-
-        tt = []
-        for name, items in level3_sobjects_dict.items():
-            tt.extend(items)
-
-        level4_sobjects_dict = Search.get_related_by_sobjects(tt, "ut/asset", path='sub')
-
-
-
-
-        new_sobjects = []
-        my.sobject_levels = []
-
-        relationship = 'code'
-
-        for sobject in my.sobjects:
-            new_sobjects.append(sobject)
-            my.sobject_levels.append(0)
-
-            if relationship == 'code':
-                search_key = sobject.get_code()
-
-            else:
-                search_key = "%s&id=%s" % (sobject.get_search_type(), sobject.get_id())
-            level1_sobjects = level1_sobjects_dict.get(search_key )
-            if level1_sobjects:
-                for i, level1_sobject in enumerate(level1_sobjects):
-                    #new_sobjects.append(level1_sobject)
-                    #my.sobject_levels.append(1)
-
-                    if relationship == 'code':
-                        #search_key = level1_sobject.get_code()
-                        search_key = level1_sobject.get_value("b_asset_code")
-                    else:
-                        search_key = "%s&id=%s" % (level1_sobject.get_search_type(), level1_sobject.get_id())
-
-                    level2_sobjects = level2_sobjects_dict.get(search_key)
-                    if level2_sobjects:
-                        for i, level2_sobject in enumerate(level2_sobjects):
-                            new_sobjects.append(level2_sobject)
-                            my.sobject_levels.append(1)
-
-
-                            search_key = level2_sobject.get_value("code")
-                            level3_sobjects = level3_sobjects_dict.get(search_key )
-                            if level3_sobjects:
-                                for i, level3_sobject in enumerate(level3_sobjects):
-                                    #new_sobjects.append(level3_sobject)
-                                    #my.sobject_levels.append(1)
-
-                                    if relationship == 'code':
-                                        #search_key = level3_sobject.get_code()
-                                        search_key = level3_sobject.get_value("b_asset_code")
-                                    else:
-                                        search_key = "%s&id=%s" % (level3_sobject.get_search_type(), level3_sobject.get_id())
-
-                                    level4_sobjects = level4_sobjects_dict.get(search_key)
-                                    if level4_sobjects:
-                                        for i, level4_sobject in enumerate(level4_sobjects):
-                                            new_sobjects.append(level4_sobject)
-                                            my.sobject_levels.append(2)
-
-
-        my.sobjects = new_sobjects
-        my.items_found = len(my.sobjects)
-        """
 
 
 class TableLayoutWdg(FastTableLayoutWdg):

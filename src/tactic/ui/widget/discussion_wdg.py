@@ -407,9 +407,11 @@ class DiscussionWdg(BaseRefreshWdg):
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
 
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
+                if (spt.table) {
+                    var layout = spt.table.get_layout();
+                    var upload_id = layout.getAttribute('upload_id')
+                    kwargs.upload_id = upload_id; 
+                }
                 kwargs.hidden = bvr.hidden;
                 kwargs.allow_email = bvr.allow_email;
                 kwargs.show_task_process = bvr.show_task_process;

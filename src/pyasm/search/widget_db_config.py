@@ -138,9 +138,12 @@ class WidgetDbConfig(SObject):
         view = my.update_data.get('view')
         if not view:
             view = my.get_view()
-       
+      
         if xml.to_string().strip() != '<config/>':
-            if view and not view.startswith('link_search'):
+
+            is_filter = xml.get_node("config/filter") is not None
+
+            if view and not view.startswith('link_search') and not is_filter:
                 if view.find('@') != -1:
                     view_node = xml.get_node("config/view[@name='%s']" %view)
                     

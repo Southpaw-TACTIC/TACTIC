@@ -509,7 +509,11 @@ class SearchWdg(BaseRefreshWdg):
         if not my.filters:
             return Widget()
 
+        top = my.top
+        top.add_class("spt_search_top")
+
         filter_top = DivWdg()
+        top.add(filter_top)
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
         filter_top.add_style("padding: 5px")
@@ -733,22 +737,31 @@ class SearchWdg(BaseRefreshWdg):
 
         filter_top.add(filter_div)
 
-        return filter_top
+        if my.kwargs.get("is_refresh"):
+            return filter_top
+        else:
+            return top
 
 
     def get_retrieve_wdg(my):
 
         # add the popup
         popup = PopupWdg(id='retrieve_search_wdg')
-        popup.add("Retrieve Saved Search", "title")
+        popup.add("Load Saved Search", "title")
 
         div = DivWdg()
         div.add("List of Saved Searches: ")
         div.add(HtmlElement.br(2))
+        div.add_style("margin: 20px")
+        div.add_style("width: 200px")
+        div.add_class("spt_saved_search_top")
         
         try:
             search = Search("config/widget_config")
-            search.add_where("\"view\" like 'saved_search:%'")
+            search.add_op("begin")
+            search.add_filter("view", 'saved_search:%', op="like")
+            search.add_filter("category", 'search_filter')
+            search.add_op("or")
             search.add_filter("search_type", my.search_type)
             configs = search.get_sobjects()
         except SearchException, e:
@@ -761,23 +774,42 @@ class SearchWdg(BaseRefreshWdg):
 
         select = SelectWdg("saved_search")
         select.set_id("saved_search")
+        select.add_class("spt_saved_search_input")
         select.add_empty_option("-- Select --")
         #select.set_option("query", "config/widget_config|view|view")
         select.set_option("values", views)
         #select.set_option("query_filter", "\"view\" like 'saved_search:%'")
         div.add(select)
 
-        retrieve_button = ButtonWdg("Retrieve Search")
+        retrieve_button = ActionButtonWdg(title="Load Search")
         behavior = {
             'type':         'click',
-            'cbjs_action':  'spt.dg_table.retrieve_search_cbk(evt, bvr);'
+            #'cbjs_action':  'spt.dg_table.retrieve_search_cbk(evt, bvr);'
+            'cbjs_action':  '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top")
+            var input = top.getElement(".spt_saved_search_input");
+            var value = input.value;
+            if (!value) {
+                spt.alert("Please select a saved search to load.");
+                return;
+            }
+            spt.table.load_search(value);
+            spt.table.do_search();
+            '''
         }
         retrieve_button.add_behavior( behavior )
+        retrieve_button.add_style("display: inline-block")
 
 
 
-        cancel_button = ButtonWdg("Cancel")
-        cancel_button.add_event("onclick", "$('retrieve_search_wdg').style.display = 'none'")
+        cancel_button = ActionButtonWdg(title="Cancel")
+        cancel_button.add_behavior( {
+            'cbjs_action': '''
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+            '''
+        } )
+        cancel_button.add_style("display: inline-block")
 
         div.add(HtmlElement.hr())
         button_div = DivWdg()
@@ -1024,24 +1056,11 @@ class SaveSearchCbk(Command):
 
         # create the filters
         my.filters = []
-        """
-        for element_name in my.config.get_element_names():
-            
-            filter = my.config.get_display_widget(element_name)
-            my.filters.append(filter)
 
-        # make sure there is at least one filter defined
-        assert my.filters
-
-        """
         config = "<config>\n"
         config += "<filter>\n"
 
         # get all of the serialized versions of the filters
-        """
-        for filter in my.filters:
-            config += filter.serialize() + "\n"
-        """
         filter_data = FilterData.get()
         json = filter_data.serialize()
         value_type = "json"
@@ -1079,6 +1098,7 @@ class SaveSearchCbk(Command):
             if my.personal:
                 config.set_user()
 
+        config.set_value("category", "search_filter")
         config.set_value("config", xml.to_string())
         config.commit()
 
