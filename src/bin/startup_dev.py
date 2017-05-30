@@ -47,7 +47,7 @@ def startup(port, server=""):
         pid = os.getpid()
         file.write(str(pid))
         file.close()
-    except IOError, e:
+    except IOError as e:
         if e.errno == 13:
             print
             print("Permission error opening the file [%s/pid.%s]." % (log_dir,port))

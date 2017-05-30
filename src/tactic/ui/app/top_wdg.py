@@ -419,11 +419,11 @@ class TopWdg(Widget):
                 site = Site.get_site()
                 install_dir = Environment.get_install_dir()
                 cmd = '''python "%s/src/bin/upgrade_db.py" -f -s "%s" --quiet --yes &''' % (install_dir, site)
-                print cmd
+                print("cmd: ", cmd)
                 os.system(cmd)
                 pass
             except Exception, e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
 
 
 
@@ -902,7 +902,7 @@ class TopWdg(Widget):
         for include in includes:
             include = include.strip()
             if include:
-                print "include: ", include
+                print("include: ", include)
                 widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
 
         return widget
@@ -959,7 +959,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
             for include in includes:
                 include = include.strip()
                 if include:
-                    print "include: ", include
+                    print("include: ", include)
                     Container.append_seq("Page:js", include)
 
 
@@ -1040,7 +1040,7 @@ class TitleTopWdg(TopWdg):
         try:
             project = Project.get()
         except Exception, e:
-            print "ERROR: ", e
+            print("ERROR: ", e)
             # if the project doesn't exist, then use the admin project
             project = Project.get_by_code("admin")
         project_code = project.get_code()
@@ -1150,7 +1150,7 @@ class SitePage(AppServer):
         try:
             SearchType.set_global_template("project", project_code)
         except SecurityException, e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
 
 
@@ -1280,7 +1280,7 @@ class CustomTopWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
 
         #content_type = my.kwargs.get("content_type")
-        #print "content_type: ", content_type
+        #print("content_type: ", content_type)
 
         hash = my.kwargs.get("hash")
         ticket = web.get_form_value("ticket")

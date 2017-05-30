@@ -1341,9 +1341,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 has_misc_processes = pipeline.get_processes(type=['progress','hierarchy','dependency'])
         if not pipeline:
             no_pipeline_div = DivWdg()
-            icon = IconWdg("WARNING", IconWdg.WARNING)
-            no_pipeline_div.add(icon)
-            no_pipeline_div.add("<b>You must select a pipeline to manage tasks.</b>")
+            no_pipeline_div.add("<i>You must select a pipeline to manage tasks.</i>")
             no_pipeline_div.add("<br/>"*2)
             return no_pipeline_div 
         
@@ -1500,8 +1498,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     if my.layout in ['vertical']:
                         table.add_row()
-                    td = table.add_cell()
-                    td.add_style("vertical-align: top")
+
                     last_one = False
                     if idx == last:
                         last_one = True
@@ -1527,19 +1524,23 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         tasks.append(items[0])
 
 
-
-                    if pipeline_code:
-                        pipeline = my.pipelines_dict.get(pipeline_code)
-                    else:
-                        pipeline = None
-
+                    pipeline = my.pipelines_dict.get(pipeline_code)
 
 
                     process_obj = pipeline.get_process(process)
                     if process_obj:
                         node_type = process_obj.get_type()
                     else:
+
                         node_type = "node"
+
+                        continue
+
+
+                    # draw the cell
+                    td = table.add_cell()
+                    td.add_style("vertical-align: top")
+
 
                     for task in tasks:
                         # make the task slightly opaque
@@ -1586,7 +1587,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         value_wdg.set_value("unknown")
         div.add(value_wdg)
 
- 
         return div
 
 
@@ -1911,111 +1911,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             return div
 
 
-            """
-            if node_type == "dependency":
-
-                dependency_div = DivWdg()
-                div.add(dependency_div)
-                dependency_div.add_style("margin: 8px 0px 8px -8px")
-                dependency_div.add_class("spt_dependency_top")
-
-                dependency_div.add("H!H!H!")
-
-
-                return div
-            """
-
-
-            key = "%s|%s|status" % (sobject.get_search_key(), process)
-            message_sobj = Search.get_by_code("sthpw/message", key)
-            if message_sobj:
-                status = message_sobj.get("message")
-            else:
-                status = 'pending'
-
-            display_status = Common.get_display_title(status)
-
-            color = Task.get_default_color(status)
-
-
-            div.add_behavior( {
-                'type': 'click_up',
-                'code': code,
-                'scope': related_scope,
-                'search_type': search_type,
-                'related_type': related_type,
-                'cbjs_action': '''
-                var class_name = 'tactic.ui.panel.ViewPanelWdg';
-                if (bvr.scope == "global") {
-                    var expression = "@SOBJECT("+ bvr.related_type + ")";
-                }
-                else {
-                    var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
-                }
-                var kwargs = {
-                    search_type: bvr.related_type,
-                    expression: expression,
-                    element_names: 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
-                }
-                var server = TacticServerStub.get();
-                var sobject = server.get_by_code(bvr.search_type, bvr.code);
-                spt.tab.set_main_body_tab();
-                var name = sobject.name;
-                if (!name) {
-                    name = sobject.code;
-                }
-                name = "Related: " + name
-                var title = name;
-                spt.tab.add_new(name, title, class_name, kwargs);
-                '''
-            } )
-
-
-
-            complete = my.get_complete(sobject, related_type, related_process, related_scope)
-
-            num_complete = 0
-            for key, value in complete.items():
-                if value:
-                    num_complete += 1
-
-            count = num_complete
-            total = len(complete)
-
-
-
-            progress_wdg = RadialProgressWdg(
-                total=total,
-                count=count,
-                color=color
-            )
-
-
-            #if my.layout in ['horizontal',  'vertical']:
-            progress_div.add("<b>%s</b>" % display_status)
-
-            progress_div.add(progress_wdg)
-            progress_div.add_style("margin: 0px auto")
-            progress_div.add_style("width: 70px")
-            progress_div.add_style("text-align: center")
-
-
-            return div
-
-
-        """
-        if node_type == "dependency":
-
-            dependency_div = DivWdg()
-            div.add(dependency_div)
-            dependency_div.add_style("margin: 8px 0px 8px -8px")
-            dependency_div.add_class("spt_dependency_top")
-
-            dependency_div.add("H!H!H!")
-
-
-            return div
-        """
 
         if node_type == "hierarchy":
 
@@ -2311,6 +2206,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 #select = SelectWdg('status_%s'%task_id)
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
+                select.add_style("height: 22px")
+                select.add_style("padding: 0px")
+                select.add_style("margin: 2px 0px 2px 5px")
 
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
@@ -2452,13 +2350,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     #select = SelectWdg('assigned_%s' %subtask.get_id())
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
+                    select.add_style("height: 22px")
+                    select.add_style("padding: 0px")
+                    select.add_style("margin: 2px 0px 2px 5px")
+
                     select.add_class('spt_task_status_select')
                     select.add_empty_option('-- Assigned --')
                     select.set_option('values', my.assignee) 
                     select.set_option('labels', my.assignee_labels) 
                     select.set_value(assigned)
                     select.add_class("spt_task_element_assigned")
-                    select.add_style("margin: 1px 0px 1px 0px")
                     if my.layout == 'vertical':
                         select.add_style("width", '%spx'%my.LAYOUT_WIDTH)
                     else:

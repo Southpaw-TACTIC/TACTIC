@@ -1250,7 +1250,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
         #use_parent = True
         #search_type = my.pipeline.get_value("search_type")
-        #print "search_type: ", search_type
+        #print("search_type: ", search_type)
         #from pyasm.biz import Schema
         #schema = Schema.get()
         #related_types  = schema.get_related_search_types(search_type)

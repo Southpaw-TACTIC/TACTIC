@@ -17,7 +17,9 @@ import re
 import threading
 import smtplib
 import types
+from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.MIMEImage import MIMEImage
 from email.Utils import formatdate
 from command import CommandException
 
@@ -376,11 +378,13 @@ class SendEmail(Command):
         subject - string, email header
         cc - list of cc in email header
         bcc - list of strings, email header
+        paths - paths of files to attach
     '''
     def execute(my):
         
         sender_email = my.kwargs.get('sender_email')
         sender_name = my.kwargs.get('sender_name')
+        paths = my.kwargs.get("paths")
 
         if not sender_email:
             sender_email = Environment.get_login().get_full_email()
@@ -391,8 +395,8 @@ class SendEmail(Command):
         recipient_emails = my.kwargs.get('recipient_emails')
         message = my.kwargs.get('msg')
 
-        is_uni = False
-        if "<html>" in message:
+        is_unicode = False
+        if "<html>" in message or paths:
             st = 'html'
         else:
             st = 'plain'
@@ -410,23 +414,40 @@ class SendEmail(Command):
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
-            is_uni = True
+            is_unicode = True
 
-        msg = MIMEText(message, _subtype=st, _charset=charset)
+
+        msg = MIMEMultipart()
+        msg.add_header('Reply-To', sender_email)
+        msg.add_header('To',  ','.join(recipient_emails))
+        msg.add_header('Date', formatdate(localtime=True))
+        msg.add_header('Cc', ','.join(cc))
+        msg.add_header('Bcc', ','.join(bcc))
+
+
+        msg_text = MIMEText(message, _subtype=st, _charset=charset)
+        msg.attach(msg_text)
+
+        for path in paths:
+            #message = '''<div style="text-align: center"><img src="cid:%s"/></div>''' % path
+            #msg_text = MIMEText(message, _subtype=st, _charset=charset)
+            #msg.attach(msg_text)
+
+            fp = open(path, "rb")
+            img = MIMEImage(fp.read())
+            fp.close()
+            img.add_header('Content-ID', '<{}>'.format(path))
+            msg.attach(img)
+
+       
+
         msg.add_header('Subject', subject)
         if sender_name:
             msg.add_header('From', "%s <%s>" % (sender_name, sender_email))
         else:
             msg.add_header('From', "%s" % sender_email)
 
-        msg.add_header('Reply-To', sender_email)
-        msg.add_header('To',  ','.join(recipient_emails))
-        msg.add_header('Date', formatdate(localtime=True))
-        msg.add_header('Cc', ','.join(cc))
-        msg.add_header('Bcc', ','.join(bcc))
-       
-
-        if is_uni:
+        if is_unicode:
             msg.add_header('html_encoding', 'base64')
 
         recipient_emails = set(recipient_emails)
@@ -728,7 +749,7 @@ class EmailTriggerTestCmd(Command):
         my.recipient_emails = my.kwargs.get('recipient_emails')
         message = my.kwargs.get('msg')
 
-        is_uni = False
+        is_unicode = False
         st = 'plain'
         charset = 'us-ascii'
         subject = "Email Test"
@@ -740,7 +761,7 @@ class EmailTriggerTestCmd(Command):
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
-            is_uni = True
+            is_unicode = True
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
@@ -750,7 +771,7 @@ class EmailTriggerTestCmd(Command):
         msg.add_header('Date', formatdate(localtime=True))
        
 
-        if is_uni:
+        if is_unicode:
             msg.add_header('html_encoding', 'base64')
         my.msg = msg
         

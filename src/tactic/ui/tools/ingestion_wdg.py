@@ -444,7 +444,7 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
                 ignore = jsonloads( f.read() )
                 f.close()
             except Exception, e:
-                print "Error: ", e.message
+                print("Error: ", e.message)
                 ignore = None
         else:
             ignore = None
@@ -632,8 +632,8 @@ class IngestionToolWdg(BaseRefreshWdg):
         else:
             if sobject:
                 session = sobject.get_related_sobject("config/ingest_session")
-                print "sobject: ", sobject.get_code(), sobject.get_value("spt_ingest_session_code")
-                print "parent: ", session
+                print("sobject: ", sobject.get_code(), sobject.get_value("spt_ingest_session_code"))
+                print("parent: ", session)
             else:
                 session = None
 
