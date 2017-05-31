@@ -384,7 +384,7 @@ class SendEmail(Command):
         
         sender_email = my.kwargs.get('sender_email')
         sender_name = my.kwargs.get('sender_name')
-        paths = my.kwargs.get("paths")
+        paths = my.kwargs.get("paths") or []
 
         if not sender_email:
             sender_email = Environment.get_login().get_full_email()
