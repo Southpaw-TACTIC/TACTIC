@@ -1680,7 +1680,7 @@ class MethodMode(ExpressionParser):
 
             results = []
             if sobjects:
-                if len(args):
+                if len(args) > 1:
                     context = args[1]
                     if not context:
                         context = "__ALL__"
