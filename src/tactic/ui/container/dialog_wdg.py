@@ -384,18 +384,17 @@ class DialogWdg(BaseRefreshWdg):
 
         drag_div.add_style("text-align: left")
         drag_div.add_class("spt_popup_width")
-        drag_div.add_style("border-style: solid")
-        drag_div.add_color("border-color", "border")
-        drag_div.add_style("border-size: 0 0 1 0")
+        #drag_div.add_style("border-style: solid")
+        #drag_div.add_color("border-color", "border")
+        #drag_div.add_style("border-size: 0 0 1 0")
 
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
         drag_div.add( drag_handle_div )
-        drag_handle_div.add_style("padding: 3px;")
         #drag_handle_div.add_gradient("background", "background", +10)
-        drag_handle_div.add_color("background", "background", -10)
+        drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
-        drag_handle_div.add_style("padding: 8px 5px 8px 8px")
+        drag_handle_div.add_style("padding: 8px 5px 5px 8px")
 
         drag_handle_div.add_behavior({
             'type': 'double_click',

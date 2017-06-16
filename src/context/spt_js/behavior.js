@@ -252,8 +252,10 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
-    
-    if (spt.behavior.mode == "dev") {        
+   
+    // basically disable js_logger for this because we loose the origin
+    // of the error and chrome handles it really well now
+    if (true || spt.behavior.mode == "dev") {        
         run_bvr();
     }
     else {
@@ -268,7 +270,7 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
             log.error( cbjs_str );
             log.error( " " );
             log.error( "___________________________________________________________________________________________" );
-            //throw(e)
+            throw(e);
         }
     }
 }

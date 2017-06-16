@@ -1836,7 +1836,11 @@ class NoteWdg(BaseRefreshWdg):
 
         from pyasm.security import Login
         user = Login.get_by_code(login)
-        display_name = user.get_value("display_name")
+        if not user:
+            display_name = login
+        else:
+            display_name = user.get_value("display_name")
+
         if not display_name:
             display_name = login
 
@@ -1879,7 +1883,8 @@ class NoteWdg(BaseRefreshWdg):
 
 
         current_login = Environment.get_user_name()
-        if current_login == login:
+        security = Environment.get_security()
+        if security.is_admin() or current_login == login:
 
             icon = IconButtonWdg(title="Options", icon="BS_PENCIL")
             title.add(icon)

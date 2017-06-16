@@ -6293,8 +6293,28 @@ spt.table.load_search = function(search_view, kwargs) {
     var layout = spt.table.get_layout();
     var search_type = layout.getAttribute("spt_search_type");
 
+    // maybe easier just to refresh the entire widget with a new
+    // search
+    var top = layout.getParent(".spt_view_panel_top");
+    top.setAttribute("spt_search_view", search_view);
+
+    // keep any changes that have been made to the element names
+    var element_names = spt.table.get_element_names();
+    element_names = element_names.join(",");
+    top.setAttribute("spt_element_names", element_names);
+
+    spt.panel.refresh(top, {}, { callback: function() {
+        var layout = top.getElement(".spt_layout");
+        spt.table.set_layout(layout);
+    } } );
+
+    return;
+
+/*
     var top = layout.getParent(".spt_view_panel");
     var search_top = top.getElement(".spt_search_top");
+    var simple_search_top = top.getElement(".spt_simple_search_top");
+    var simple_search_top = top.getElement(".spt_simple_search");
 
     var class_name = "tactic.ui.app.SearchWdg";
     var options = {
@@ -6303,16 +6323,27 @@ spt.table.load_search = function(search_view, kwargs) {
         'view': search_view
     };
 
-    // replace the search widget
-    var server = TacticServerStub.get();
-    var kwargs = {'args': options};
-    var widget_html = server.get_widget(class_name, kwargs);
 
-    spt.behavior.replace_inner_html( search_top, widget_html );
+    // replace the search widget
+    spt.panel.load(search_top, class_name, options, {}, {
+        callback: function() {
+        }
+    });
+
 
     // store the search view that was just loaded
     search_top.setAttribute("spt_search_view", search_view);
 
+    if (simple_search_top) {
+        var class_name = "tactic.ui.app.SimpleSearchWdg";
+        var options = {
+            'search_type': search_type,
+            'filter_view': search_view,
+            'search_view': "order_filter"
+        };
+        spt.panel.load(simple_search_top, class_name, options);
+    }
+*/
 }
 
 

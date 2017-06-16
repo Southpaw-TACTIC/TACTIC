@@ -151,6 +151,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_sobject_top")
+        top.add_class("spt_layout_top")
 
         inner = DivWdg()
         top.add(inner)
