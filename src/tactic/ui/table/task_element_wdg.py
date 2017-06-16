@@ -17,7 +17,7 @@ from dateutil import rrule
 from dateutil import parser
 import datetime
 
-from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException
+from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
@@ -2200,10 +2200,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             start_date = task.get_value("bid_start_date")
             if start_date:
                 start_date = parser.parse(start_date)
+                start_date = SPTDate.convert_to_local(start_date)
                 start_date = start_date.strftime("%m/%d")
             end_date = task.get_value("bid_end_date")
             if end_date:
                 end_date = parser.parse(end_date)
+                end_date = SPTDate.convert_to_local(end_date)
                 end_date = end_date.strftime("%m/%d")
 
             if not start_date and not end_date:
