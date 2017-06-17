@@ -3988,7 +3988,8 @@ spt.table.show_edit = function(cell) {
     }
 
 
-    // clear the cell
+    // clear the cell and remember it
+    var html = cell.innerHTML;
     cell.innerHTML = '';
 
 
@@ -4006,9 +4007,16 @@ spt.table.show_edit = function(cell) {
     // add the edit to do the dom
     var table = spt.table.get_table();
     table.appendChild(edit_wdg);
+    spt.body.add_focus_element(edit_wdg);
 
     // store a reference to the cell it represents
     edit_wdg.cell = cell;
+    edit_wdg.html = html;
+
+    edit_wdg.on_complete = function() {
+        spt.behavior.replace_inner_html( this.cell, this.html );
+        spt.behavior.destroy_element(this);
+    }
 
     //cell.appendChild(edit_wdg);
 
@@ -4162,8 +4170,6 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
 
-    spt.body.add_focus_element(clone);
-
     return clone;
 
 }
@@ -4228,8 +4234,14 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             edit_wdg.setStyle( "min-height", '300px');
             edit_wdg.setStyle( "min-width", '300px');
         }
-        if (size.y > 100)
+        if (size.y > 500) {
+            input.setStyle( "height", '500px');
+            input.setStyle( "position", 'relative');
+            input.setStyle( "display", 'block');
+        }
+        else if (size.y > 100) {
             input.setStyle( "height", size.y+'px');
+        }
         else
             input.setStyle( "height", '100px');
 
@@ -4237,8 +4249,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             input.setStyle( "width", size.x+'px');
         else
             input.setStyle( "width", '250px');
+
         input.setStyle('font-family', 'courier new');
-        input.setStyle('font-size', '1.0em');
+        input.setStyle('font-size', '1.1em');
         input.setStyle('padding', '5px');
 
         input.value = value;
@@ -4252,6 +4265,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         set_focus = true;
         input.setStyle( "width", size.x+'px');
         input.setStyle( "height", size.y+'px');
+
+        if (size.y > 500) {
+            input.setStyle( "height", '500px');
+        }
+
         input.value = value;
         // for calendar input 
         if (spt.has_class(input, 'spt_calendar_input')){
@@ -4367,6 +4385,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (set_focus == true) {
         input.focus();
         input.value = input.value;
+        input.setSelectionRange(0,0);
     }
 
     
@@ -4540,8 +4559,10 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg;
     }
     else {
-        //edited_cell = edit_wdg.getParent(".spt_cell_edit");
         edited_cell = edit_wdg.cell;
+        if (edited_cell == null) {
+            edited_cell = edit_wdg.getParent(".spt_cell_edit");
+        }
     }
 
     var old_value = edited_cell.getAttribute("spt_input_value");

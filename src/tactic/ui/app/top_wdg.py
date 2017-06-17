@@ -148,8 +148,13 @@ class TopWdg(Widget):
         
                 if (hit)
                     break;
-                else{
-                    spt.hide(el);
+                else {
+                    if ( el.on_complete ) {
+                        el.on_complete();
+                    }
+                    else {
+                        spt.hide(el);
+                    }
       
                 }
             }

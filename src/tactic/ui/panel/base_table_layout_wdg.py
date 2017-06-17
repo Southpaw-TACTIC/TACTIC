@@ -3283,6 +3283,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add("<br clear='all'/>")
         td.add("<br clear='all'/>")
 
+
+
     def add_no_results_bvr(my, tr):
         ''' This adds a default drag and drop behavior to an empty table.
         Override it in classes that extend BaseTableLayoutWdg to handle

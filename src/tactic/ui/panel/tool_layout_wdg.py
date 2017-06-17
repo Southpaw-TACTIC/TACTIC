@@ -106,6 +106,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         my.expand_mode = my.kwargs.get("expand_mode")
         my.process = my.kwargs.get("process")
        
+
+
+    def handle_no_results(my, table):
+        super(ToolLayoutWdg, my).handle_no_results(table)
+        table.add_style("width: 100%")
+        return
+
         
     def get_display(my):
 
