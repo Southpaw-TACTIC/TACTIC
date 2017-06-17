@@ -3965,7 +3965,7 @@ spt.table.show_edit = function(cell) {
 
     
 
-    // remove the first child
+    // Remove the first child
     // NOTE: this relies on a widget that has all components under the first
     // child.
     var first_child = $(cell.firstChild);
@@ -3987,8 +3987,6 @@ spt.table.show_edit = function(cell) {
         spt.table.last_data_wdg = first_child;
     }
 
-    // get the size before the edit widget is added
-    var size = cell.getSize();
 
     // clear the cell
     cell.innerHTML = '';
@@ -4001,14 +3999,29 @@ spt.table.show_edit = function(cell) {
     }
 
 
-    // add the edit to do the dom
     cell.setStyle("position", "relative");
     cell.setStyle("overflow", "");
 
-    cell.appendChild(edit_wdg);
+
+    // add the edit to do the dom
+    var table = spt.table.get_table();
+    table.appendChild(edit_wdg);
+
+    // store a reference to the cell it represents
+    edit_wdg.cell = cell;
+
+    //cell.appendChild(edit_wdg);
+
     edit_wdg.setStyle("position", "absolute");
-    edit_wdg.setStyle("top", "0px");
-    edit_wdg.setStyle("left", "0px");
+    //edit_wdg.setStyle("top", "0px");
+    //edit_wdg.setStyle("left", "0px");
+    edit_wdg.position( {
+        position: {x: 0, y:0},
+        relativeTo: cell,
+        position: "upperLeft",
+        offset: {x: 1, y: 1}
+    } );
+
     edit_wdg.setStyle("margin", "-1px");
     edit_wdg.setStyle("z-index", 500);
 
@@ -4527,7 +4540,8 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg;
     }
     else {
-        edited_cell = edit_wdg.getParent(".spt_cell_edit");
+        //edited_cell = edit_wdg.getParent(".spt_cell_edit");
+        edited_cell = edit_wdg.cell;
     }
 
     var old_value = edited_cell.getAttribute("spt_input_value");
