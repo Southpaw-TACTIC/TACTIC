@@ -212,7 +212,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         # look for a custom view for the sobject detail
         custom_view = my.kwargs.get("view")
-        if not custom_view:
+        use_default = my.kwargs.get("use_default")
+        if use_default not in ['true', True] and not custom_view:
             from pyasm.biz import ProjectSetting
             key = "sobject_detail_view"
             custom_view = ProjectSetting.get_value_by_key(key, search_type=my.sobject.get_base_search_type())
@@ -452,8 +453,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         tabs = my.kwargs.get("tab_element_names")
 
+        tab_view = my.kwargs.get("tab_view")
+        if not tab_view:
+            tab_view = "tab_element_names"
+
+
         config_search = Search("config/widget_config")
-        config_search.add_filter("view", "tab_element_names")
+        config_search.add_filter("view", tab_view)
         config_search.add_filter("search_type", my.search_type)
         config_search.add_order_by("timestamp desc")
         configs = config_search.get_sobjects()
@@ -715,8 +721,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 else:
                     attrs = {}
 
-                parts = tab.split(".")
-                name = parts[-1]
+                view = attrs.get("view")
+                if view:
+                    name = tab
+                else:
+                    view = tab
+                    parts = tab.split(".")
+                    name = parts[-1]
 
                 title = None
                 if config:
@@ -726,23 +737,31 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 count_color = attrs.get("count_color") or ""
                 
                 if not title:
-                    title = parts[-1].title().replace("_", " ")
+                    title = name.title().replace("_", " ")
                 tab_values = {
                         'title': title,
                         'name': name,
-                        'search_key': search_key,
-                        'view': tab,
+                        'parent_key': search_key,
+                        'view': view,
                         'count': count,
                         'count_color': count_color
                 }
+
+                attr_config = []
+                for attr, value in attrs.items():
+                    attr_config.append("<%s>%s</%s>" % (attr, value, attr) )
+                attr_str = "\n".join(attr_config)
+                tab_values['attrs'] = attr_str
+
 
 
                 config_xml.append('''
                 <element name="%(name)s" title="%(title)s" count="%(count)s" count_color="%(count_color)s">
                   <display class='tactic.ui.panel.CustomLayoutWdg'>
                     <view>%(view)s</view>
-                    <parent_key>%(search_key)s</parent_key>
+                    <parent_key>%(parent_key)s</parent_key>
                     <width>100%%</width>
+                    %(attrs)s
                   </display>
                 </element>
                 ''' % tab_values)

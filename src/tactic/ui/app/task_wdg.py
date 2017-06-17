@@ -66,10 +66,11 @@ class AddTaskWdg(BaseRefreshWdg):
             div = DivWdg()
             my.set_as_panel(div)
             div.add_style('padding','6px')
-            min_width = '300px'
+            min_width = '400px'
             div.add_style('min-width', min_width)
             div.add_color('background','background')
             div.add_class('spt_add_task_panel')
+            div.add_style("padding: 20px")
 
 
         from tactic.ui.app import HelpButtonWdg
@@ -94,15 +95,16 @@ class AddTaskWdg(BaseRefreshWdg):
         msg_div = DivWdg()
         msg_div.add_style('margin-left: 4px')
         div.add(msg_div, 'info')
-        msg_div.add('Total: %s items to add tasks to' %len(my.search_key_list))
+        msg_div.add('Total: %s item/s to add tasks to' %len(my.search_key_list))
         div.add(HtmlElement.br())
         hint = HintWdg('Tasks are added according to the assigned pipeline.')
+        msg_div.add(" &nbsp; ")
         msg_div.add(hint)
         msg_div.add(HtmlElement.br())
         
         
         option_div = DivWdg(css='spt_ui_options')
-        option_div.add_style('margin-left: 12px')
+        #option_div.add_style('margin-left: 12px')
         
         sel = SelectWdg('pipeline_mode', label='Create tasks by: ')
         sel.set_option('values', ['simple process','context', 'standard'])
@@ -205,7 +207,10 @@ class AddTaskWdg(BaseRefreshWdg):
             pipelines = [pipeline]
 
         for pipeline in pipelines:
-            span = SpanWdg("Pipeline: %s" % pipeline.get_code())
+            name = pipeline.get_value("name")
+            if not name:
+                name = pipeline.get_code()
+            span = SpanWdg("Pipeline: %s" % name)
             span.add_style('font-weight: bold')
             v_div = FloatDivWdg(span)
             v_div.add_style('margin: 20px')
@@ -280,14 +285,9 @@ class AddTaskWdg(BaseRefreshWdg):
         content_div.add("<br clear='all'/>")
 
         skipped = [] 
-        #if len(skipped) == len(sobjects):
-        #if skipped:
-        #    msg_div = DivWdg('WARNING: No valid item to add task for.')
-        #    msg_div.add_style('margin-left: 10px')
-        #    div.add(msg_div, 'info')
-        #else:
+
         if True:
-            #btn = TextBtnWdg(size='medium', label='Add Tasks', horiz_aligh='center')
+            div.add("<br/>")
             btn = ActionButtonWdg(title='Add Tasks')
             btn.add_behavior({'type' : 'click_up',
             'post_event': 'search_table_%s'% my.table_id,
@@ -296,12 +296,10 @@ class AddTaskWdg(BaseRefreshWdg):
             ''',
             'search_key_list': my.search_key_list
             })
-            cb = CheckboxWdg('skip_duplicated', label='skip duplicated')
+            cb = CheckboxWdg('skip_duplicated', label='Skip Duplicates')
             cb.set_checked()
             option_div =DivWdg(cb)
             option_div.add_style('width', '130px')
-            hint = HintWdg("If checked, it won't add the task if a task for the checked process has already been created.")
-            option_div.add(hint)
             option_div.add_style('align: left')
             div.add(option_div)
             div.add(HtmlElement.br())

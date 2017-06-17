@@ -1602,7 +1602,7 @@ class SearchTypeCreatorCmd(Command):
             # add view if there is a pipeline
             if my.has_pipeline and view == 'table':
                 element = xml.create_element("element")
-                Xml.set_attribute(element, "name", "task_edit")
+                Xml.set_attribute(element, "name", "pipeline")
                 xml.append_child(view_node, element)
 
                 element = xml.create_element("element")
@@ -1855,8 +1855,11 @@ class SearchTypeCreatorCmd(Command):
 
         pipeline_code = "%s/%s" % (project_code, table)
 
+        title = table.replace("_", " ").title()
+
         # create a pipeline
         search = Search("sthpw/pipeline")
+        search.add_filter("code", title)
         search.add_filter("code", pipeline_code)
         pipeline = search.get_sobject()
 
