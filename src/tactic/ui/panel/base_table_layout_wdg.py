@@ -1082,9 +1082,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 7 0 7")
-            spacing_div.add_style("border-style: solid")
-            spacing_div.add_style("border-width: 0 0 0 1")
-            spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
+            #spacing_div.add_style("border-style: solid")
+            #spacing_div.add_style("border-width: 0 0 0 1")
+            #spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
 
 
         # -- Button Rows
@@ -1185,14 +1185,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_layout_wdg:
             layout_wdg = my.get_layout_wdg()
 
-
-        """
-        show_expand = my.kwargs.get("show_expand")
-        if show_expand in ['false', False]:
-            show_expand = False
-        else:
-            show_expand = True
-        """
 
         show_expand = my.get_setting("expand")
 
@@ -1797,7 +1789,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if my.can_use_gear() and my.get_setting("gear"):
-            #button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
             button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row_wdg.add(button)
 

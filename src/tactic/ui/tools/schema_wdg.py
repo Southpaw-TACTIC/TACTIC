@@ -667,7 +667,6 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         # Note this is a copy of the context menu
         button.add_behavior( {
         'type': 'click_up',
-        #'dialog_id': my.dialog_id,
         'cbjs_action': '''
         var nodes = spt.pipeline.get_selected_nodes();
         if (nodes.length == 0) {
@@ -687,24 +686,12 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         var search_type = spt.pipeline.get_node_name(node);
 
-        /*
-        var dialog = $(bvr.dialog_id);
-
-        var pos = node.getPosition();
-        dialog.setStyle("top", pos.y + 50);
-        dialog.setStyle("left", pos.x - 100);
-        */
-
 
         var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
-        var content = dialog.getElement(".spt_dialog_content");
 
         var kwargs = {
             'search_type': search_type,
         }
-
-        //spt.show(dialog);
-        //spt.panel.load(content, class_name, kwargs);
 
         spt.panel.load_popup("Register a new sType", class_name, kwargs);
 
@@ -1982,23 +1969,11 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
 
         var search_type = spt.pipeline.get_node_name(node);
 
-        /*
-        var dialog = $(bvr.dialog_id);
-        var pos = node.getPosition();
-        dialog.setStyle("top", pos.y + 50);
-        dialog.setStyle("left", pos.x - 100);
-        var content = dialog.getElement(".spt_dialog_content");
-        */
-
-
         var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
 
         var kwargs = {
             'search_type': search_type,
         }
-
-        //spt.show(dialog);
-        //spt.panel.load(content, class_name, kwargs);
 
         spt.panel.load_popup("Register a new sType", class_name, kwargs);
 
@@ -2331,33 +2306,6 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
         '''
         } )
 
-
-
-
-
-
-        """
-        menu_item = MenuItem(type='action', label='Show Detail')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var node = spt.smenu.get_activator(bvr);
-        spt.pipeline.init(node);
-
-        var top = node.getParent(".spt_schema_tool_top");
-        var tab_top = top.getElement(".spt_tab_top");
-        spt.tab.set_tab_top(tab_top);
-
-        var search_type = spt.pipeline.get_node_name(node);
-
-        var element_name = 'detail_' + search_type;
-        var title = 'Detail [' + search_type + ']';
-        var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
-        spt.tab.add_new(element_name, title, class_name);
-        '''
-        } )
-        """
 
         return menu
 
