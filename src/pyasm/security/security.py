@@ -801,7 +801,7 @@ class Site(object):
         return None
 
 
-    def init_site(cls, site):
+    def init_site(cls, site, options={}):
         pass
     init_site = classmethod(init_site)
  
