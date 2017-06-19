@@ -15,7 +15,7 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, SpanWdg
 from pyasm.widget import BaseInputWdg, SelectWdg
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -271,6 +271,16 @@ class LoginTableElementWdg(SimpleTableElementWdg):
         #return value
 
         my.sobject = my.get_current_sobject()
+
+        if my.is_editable() and not value:
+            empty = SpanWdg()
+            div.add(empty)
+            div.add_style("text-align: center")
+            div.add_style("width: 100%")
+            div.add_style("white-space: nowrap" )
+            empty.add("--Select--")
+            empty.add_style("opacity: 0.5")
+            return div
 
         div.add(value)
 

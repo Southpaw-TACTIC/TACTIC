@@ -138,10 +138,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'values': 'default|left|right|center',
         'order': 91,
         'category': 'Options'
+    },
+    'empty': {
+        'description': "vAlue to display if empty"
     }
-
-
-
 
     }
   
@@ -557,6 +557,16 @@ class ExpressionElementWdg(TypeTableElementWdg):
             my.value = result
             results = [result]
 
+        if not results or (len(results) == 1 and results[0] == ''):
+            empty = my.get_option("empty")
+            if empty:
+                div = DivWdg()
+                div.add_style("white-space: nowrap")
+                div.add(empty)
+                div.add_style("opacity: 0.5")
+                return div
+            
+
 
         if my.sobject:
             # only set if the value does not exist as a key.  This widget should
@@ -621,7 +631,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                 div.add( display_result )
                 div.add_style("min-height: 15px")
-                div.add_style("width: 100%")
+                outer.add_style("width: 100%")
 
 
 
@@ -631,6 +641,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 #    my.td.set_attr("spt_input_value", str(alt_result))
                 justify = my.get_option("justify")
                 if justify and justify != 'default':
+                    if justify != "left":
+                        div.add_style("width: 100%")
+                    if justify == "right":
+                        div.add_style("margin-right: 10px")
                     div.add_style("text-align: %s" % justify)
 
                 elif isinstance(result, datetime.datetime):

@@ -855,7 +855,7 @@ class Site(object):
  
 
 
-    def set_site(cls, site, store_security=True):
+    def set_site(cls, site, store_security=True, options={}):
         '''Set the global site for this "session"'''
 
         if not site:
@@ -864,7 +864,7 @@ class Site(object):
 
         # first get the site object
         site_obj = Site.get()
-        site_obj.init_site(site)
+        site_obj.init_site(site, options=options)
 
 
         sites = Container.get("sites")

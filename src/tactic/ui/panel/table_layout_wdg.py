@@ -4385,7 +4385,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (set_focus == true) {
         input.focus();
         input.value = input.value;
-        input.setSelectionRange(0,0);
+        try {
+            input.setSelectionRange(0,0);
+        }
+        catch(e) {}
+
     }
 
     
@@ -4604,7 +4608,13 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         if (set_display) {
             edited_cell.innerHTML = "";
             edited_cell.setStyle("overflow", "hidden");
-            spt.table.set_display(edited_cell, display_value, input_type);
+
+            if (!changed && edit_wdg.html) {
+                spt.behavior.replace_inner_html(edited_cell, edit_wdg.html);
+            }
+            else {
+                spt.table.set_display(edited_cell, display_value, input_type);
+            }
         }
 
     }
