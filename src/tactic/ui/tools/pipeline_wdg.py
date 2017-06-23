@@ -52,6 +52,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         #table = Table()
         table = ResizableTableWdg()
+        table.add_style("width: 100%")
 
         table.add_color("background", "background")
         table.add_color("color", "color")
@@ -172,7 +173,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         right = table.add_cell()
-        right.add_style("width: 500px")
+        #right.add_style("width: 500px")
 
         show_help = my.kwargs.get('show_help') or True
 

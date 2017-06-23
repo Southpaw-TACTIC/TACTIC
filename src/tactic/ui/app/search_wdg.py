@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["SearchWdg","SearchBoxPopupWdg", "LocalSearchWdg", "SaveSearchCbk"]
+__all__ = ["SearchWdg","SearchBoxPopupWdg", "LocalSearchWdg", "SaveSearchCbk","LoadSearchWdg"]
 
 import os, types
 
@@ -21,8 +21,8 @@ from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, TextWdg, Butt
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import RoundedCornerDivWdg, PopupWdg, HorizLayoutWdg
 from tactic.ui.filter import FilterData
-from tactic.ui.widget import TextBtnSetWdg
-from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.widget import TextBtnSetWdg, ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 #from search_limit_wdg import SearchLimitWdg
 
@@ -509,7 +509,11 @@ class SearchWdg(BaseRefreshWdg):
         if not my.filters:
             return Widget()
 
+        top = my.top
+        top.add_class("spt_search_top")
+
         filter_top = DivWdg()
+        top.add(filter_top)
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
         filter_top.add_style("padding: 5px")
@@ -539,11 +543,8 @@ class SearchWdg(BaseRefreshWdg):
         for name, value in my.kwargs.items():
             filter_top.set_attr("spt_%s" % name, value)
 
-        #filter_top.add(my.statement)
-        popup = my.get_retrieve_wdg()
-        filter_top.add(popup)
-        popup = my.get_save_wdg()
-        filter_top.add(popup)
+
+
 
         display = my.kwargs.get('display')
        
@@ -733,71 +734,14 @@ class SearchWdg(BaseRefreshWdg):
 
         filter_top.add(filter_div)
 
-        return filter_top
+        if my.kwargs.get("is_refresh"):
+            return filter_top
+        else:
+            return top
 
-
-    def get_retrieve_wdg(my):
-
-        # add the popup
-        popup = PopupWdg(id='retrieve_search_wdg')
-        popup.add("Retrieve Saved Search", "title")
-
-        div = DivWdg()
-        div.add("List of Saved Searches: ")
-        div.add(HtmlElement.br(2))
-        
-        try:
-            search = Search("config/widget_config")
-            search.add_where("\"view\" like 'saved_search:%'")
-            search.add_filter("search_type", my.search_type)
-            configs = search.get_sobjects()
-        except SearchException, e:
-            print("WARNING: ", e)
-            configs = []
-        except:
-            my.clear_search_data(my.search_type)
-            raise
-        views = SObject.get_values(configs, "view")
-
-        select = SelectWdg("saved_search")
-        select.set_id("saved_search")
-        select.add_empty_option("-- Select --")
-        #select.set_option("query", "config/widget_config|view|view")
-        select.set_option("values", views)
-        #select.set_option("query_filter", "\"view\" like 'saved_search:%'")
-        div.add(select)
-
-        retrieve_button = ButtonWdg("Retrieve Search")
-        behavior = {
-            'type':         'click',
-            'cbjs_action':  'spt.dg_table.retrieve_search_cbk(evt, bvr);'
-        }
-        retrieve_button.add_behavior( behavior )
-
-
-
-        cancel_button = ButtonWdg("Cancel")
-        cancel_button.add_event("onclick", "$('retrieve_search_wdg').style.display = 'none'")
-
-        div.add(HtmlElement.hr())
-        button_div = DivWdg()
-        button_div.add_style("text-align: center")
-        button_div.add(retrieve_button)
-        button_div.add("&nbsp;&nbsp;")
-        button_div.add(cancel_button)
-        div.add(button_div)
-
-        popup.add(div, "content")
-
-        return popup
 
 
     def get_save_wdg(my):
-
-        # add the popup
-        popup = PopupWdg(id='save_search_wdg')
-        popup.add("Save Search", "title")
-
 
         div = DivWdg()
         div.add("Save current search as: ")
@@ -810,9 +754,7 @@ class SearchWdg(BaseRefreshWdg):
 
         save_button = ButtonWdg("Save Search")
         behavior = {
-            'type':         'click',
-            'mouse_btn':    'LMB',
-            'cbjs_action':  'spt.dg_table.save_search_cbk(evt, bvr);'
+            'cbjs_action':  'spt.table.save_search();'
         }
         save_button.add_behavior( behavior )
 
@@ -828,9 +770,8 @@ class SearchWdg(BaseRefreshWdg):
         button_div.add(cancel_button)
         div.add(button_div)
 
-        popup.add(div, "content")
+        return div
 
-        return popup
 
 
     def get_action_wdg(my):
@@ -850,7 +791,7 @@ class SearchWdg(BaseRefreshWdg):
 
     def get_search_wdg(my):
         filter_div = DivWdg()
-        filter_div.add_style("width: 200px")
+        filter_div.add_style("width: 300px")
 
         search_button = ActionButtonWdg(title='Search', tip='Run search with this criteria')
 
@@ -884,15 +825,38 @@ class SearchWdg(BaseRefreshWdg):
         spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_search"), '.spt_input:not(select.spt_search_filter_mode)');
         '''
         } )
-        #    {'label': 'Clear', 'tip': 'Clear all search criteria', 'width': 45,
-        #        'bvr': {'cbjs_action': 'spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_search"))'} }
-        #]
-        #txt_btn_set = TextBtnSetWdg(buttons=buttons_list, spacing=6, size='small', side_padding=4 )
+
+
+
+        # add the load wdg
+        saved_button = ActionButtonWdg(title='Saved', tip='Load Saved Searches')
+        saved_button.add_behavior( {
+            #'type': 'load',
+            'search_type': my.search_type,
+            'cbjs_action': '''
+            // close the search
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+
+            var class_name = 'tactic.ui.app.LoadSearchWdg';
+            var kwargs = {
+                search_type: bvr.search_type
+            }
+            var layout = spt.table.get_layout();
+            var panel = layout.getParent(".spt_view_panel_top");
+            var popup = spt.panel.load_popup("Saved Searches", class_name, kwargs);
+            popup.activator = panel;
+            '''
+        } )
+
+
 
         filter_div.add(search_button)
         search_button.add_style("float: left")
         filter_div.add(clear_button)
         clear_button.add_style("float: left")
+        filter_div.add(saved_button)
+        saved_button.add_style("float: left")
         filter_div.add("<br clear='all'/>")
 
         return filter_div
@@ -931,6 +895,176 @@ class SearchWdg(BaseRefreshWdg):
         key = SearchWdg._get_key(search_type, view)
         WidgetSettings.set_value_by_key(key, '')
     clear_search_data = staticmethod(clear_search_data)   
+
+
+
+class LoadSearchWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        search_type = my.kwargs.get("search_type")
+
+        div = my.top
+
+        div.add("List of Saved Searches: ")
+        div.add(HtmlElement.br(2))
+        div.add_style("margin: 20px")
+        div.add_style("width: 400px")
+        div.add_class("spt_saved_search_top")
+        
+        try:
+            search = Search("config/widget_config")
+            search.add_op("begin")
+            search.add_filter("view", 'saved_search:%', op="like")
+            search.add_filter("category", 'search_filter')
+            search.add_op("or")
+            search.add_op("begin")
+            search.add_user_filter()
+            search.add_filter("login", "NULL", op="is", quoted=False)
+            search.add_op("or")
+            search.add_filter("search_type", search_type)
+            configs = search.get_sobjects()
+        except SearchException, e:
+            print("WARNING: ", e)
+            configs = []
+        except:
+            SearchWdg.clear_search_data(search_type)
+            raise
+
+        """
+        from tactic.ui.panel import TableLayoutWdg
+        element_names = ['view','name','description','delete']
+        table = TableLayoutWdg(
+                search_type=search_type,
+                element_names=element_names,
+                search=search,
+                show_shelf=False,
+                show_border=False,
+                show_search_limit=False,
+                height="auto",
+
+        )
+        div.add(table)
+        """
+
+        values = [x.get("view") for x in configs]
+        labels = [x.get("title") or x.get("view") for x in configs]
+
+        select = SelectWdg("saved_search")
+        div.add(select)
+        select.set_id("saved_search")
+        select.add_class("spt_saved_search_input")
+        select.add_empty_option("-- Select --")
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+
+        retrieve_button = ActionButtonWdg(title="Load")
+        behavior = {
+            'type':         'click',
+            #'cbjs_action':  'spt.dg_table.retrieve_search_cbk(evt, bvr);'
+            'cbjs_action':  '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top")
+            var input = top.getElement(".spt_saved_search_input");
+            var value = input.value;
+            if (!value) {
+                spt.alert("Please select a saved search to load.");
+                return;
+            }
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var activator = popup.activator;
+            var layout = activator.getElement(".spt_layout");
+            spt.table.set_layout(layout);
+
+            spt.table.load_search(value);
+            '''
+        }
+        retrieve_button.add_behavior( behavior )
+        retrieve_button.add_style("display: inline-block")
+
+
+        remove_button = ActionButtonWdg(title="Remove")
+        remove_button.add_behavior( {
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top")
+            var input = top.getElement(".spt_saved_search_input");
+            var value = input.value;
+            if (!value) {
+                spt.alert("Please select a saved search to remove.");
+                return;
+            }
+
+            spt.alert("Remove: " + value);
+
+
+
+            '''
+        } )
+        remove_button.add_style("display: inline-block")
+
+
+
+        cancel_button = ActionButtonWdg(title="Cancel")
+        cancel_button.add_behavior( {
+            'cbjs_action': '''
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+            '''
+        } )
+        cancel_button.add_style("display: inline-block")
+
+        div.add("<br/>")
+        button_div = DivWdg()
+        button_div.add_style("text-align: center")
+        button_div.add(retrieve_button)
+        button_div.add("&nbsp;&nbsp;")
+        button_div.add(remove_button)
+        button_div.add("&nbsp;&nbsp;")
+        button_div.add(cancel_button)
+        div.add(button_div)
+
+
+
+        div.add("<hr/>")
+
+        save_div = DivWdg()
+        div.add(save_div)
+        save_div.add("Save Current Search")
+        save_div.add("<br/>")
+        save_div.add("<br/>")
+
+        text = TextInputWdg(name="new_search_name")
+        save_div.add(text)
+        text.add_class("spt_new_search_name")
+
+        save_div.add("<br/>")
+
+
+        save_button = ActionButtonWdg(title="Save Search", width="200")
+        save_div.add(save_button)
+        save_button.add_behavior( {
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top");
+            var input = top.getElement(".spt_new_search_name");
+            var value = input.value;
+            if (!value) {
+                spt.alert("No view name specified");
+                return;
+            }
+            spt.table.save_search(value, {personal: true});
+
+            spt.notify.show_message("Search saved");
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+            '''
+        } )
+        save_button.add_style("display: inline-block")
+
+        return div
+
+
+
 
 
 
@@ -1024,24 +1158,11 @@ class SaveSearchCbk(Command):
 
         # create the filters
         my.filters = []
-        """
-        for element_name in my.config.get_element_names():
-            
-            filter = my.config.get_display_widget(element_name)
-            my.filters.append(filter)
 
-        # make sure there is at least one filter defined
-        assert my.filters
-
-        """
         config = "<config>\n"
         config += "<filter>\n"
 
         # get all of the serialized versions of the filters
-        """
-        for filter in my.filters:
-            config += filter.serialize() + "\n"
-        """
         filter_data = FilterData.get()
         json = filter_data.serialize()
         value_type = "json"
@@ -1079,6 +1200,7 @@ class SaveSearchCbk(Command):
             if my.personal:
                 config.set_user()
 
+        config.set_value("category", "search_filter")
         config.set_value("config", xml.to_string())
         config.commit()
 

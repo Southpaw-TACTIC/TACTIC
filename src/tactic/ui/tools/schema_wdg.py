@@ -70,15 +70,16 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         inner.add_color("background", "background")
         inner.add_border()
 
-        dialog = my.get_create_dialog()
+        #dialog = my.get_create_dialog()
         inner.add( my.get_shelf_wdg() )
 
-        inner.add(dialog)
+        #inner.add(dialog)
 
         table = ResizableTableWdg()
         #table = Table()
         inner.add(table)
         table.add_row()
+        table.add_style("width: 100%")
 
         canvas_wrapper = DivWdg()
         td = table.add_cell(canvas_wrapper)
@@ -365,7 +366,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         shelf_wdg = DivWdg()
         shelf_wdg.add_style("padding: 5px 5px 0px 5px")
         #shelf_wdg.add_style("margin-bottom: -3px")
-        shelf_wdg.add_color("background", "background", -10)
+        shelf_wdg.add_color("background", "background")
         shelf_wdg.add_border()
 
 
@@ -596,7 +597,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
 
-
+    """
     def get_create_dialog(my):
 
         dialog = DialogWdg(display=False, offset={'x':-100,'y':0})
@@ -606,6 +607,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         div = DivWdg()
         dialog.add( div )
         return dialog
+    """
 
 
 
@@ -649,7 +651,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         if not my.height:
             my.height = 400
         my.width = my.kwargs.get("width")
-        return SchemaToolCanvasWdg(height=my.height, width=my.width, dialog_id=my.dialog_id, nob_mode="dynamic", line_mode='line', has_prefix=True, filter_node_name=True)
+        return SchemaToolCanvasWdg(height=my.height, width=my.width, nob_mode="dynamic", line_mode='line', has_prefix=True, filter_node_name=True)
 
 
 
@@ -665,7 +667,6 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         # Note this is a copy of the context menu
         button.add_behavior( {
         'type': 'click_up',
-        'dialog_id': my.dialog_id,
         'cbjs_action': '''
         var nodes = spt.pipeline.get_selected_nodes();
         if (nodes.length == 0) {
@@ -684,22 +685,15 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         }
 
         var search_type = spt.pipeline.get_node_name(node);
-        var dialog = $(bvr.dialog_id);
-
-        var pos = node.getPosition();
-        dialog.setStyle("top", pos.y + 50);
-        dialog.setStyle("left", pos.x - 100);
 
 
         var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
-        var content = dialog.getElement(".spt_dialog_content");
 
         var kwargs = {
             'search_type': search_type,
         }
 
-        spt.show(dialog);
-        spt.panel.load(content, class_name, kwargs);
+        spt.panel.load_popup("Register a new sType", class_name, kwargs);
 
         //spt.pipeline.enable_node(node);
         '''
@@ -1927,7 +1921,7 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
 
     def get_node_context_menu(my):
 
-        dialog_id = my.kwargs.get('dialog_id')
+        #dialog_id = my.kwargs.get('dialog_id')
 
         #menu = super(PipelineToolCanvasWdg, my).get_node_context_menu()
 
@@ -1959,17 +1953,11 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
       
 
 
-
-
-      
-
-
-
         menu_item = MenuItem(type='action', label='Register sType')
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'dialog_id': dialog_id,
+        #'dialog_id': dialog_id,
         'cbjs_action': '''
         var node = spt.smenu.get_activator(bvr);
 
@@ -1980,22 +1968,14 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
         }
 
         var search_type = spt.pipeline.get_node_name(node);
-        var dialog = $(bvr.dialog_id);
-
-        var pos = node.getPosition();
-        dialog.setStyle("top", pos.y + 50);
-        dialog.setStyle("left", pos.x - 100);
-
 
         var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
-        var content = dialog.getElement(".spt_dialog_content");
 
         var kwargs = {
             'search_type': search_type,
         }
 
-        spt.show(dialog);
-        spt.panel.load(content, class_name, kwargs);
+        spt.panel.load_popup("Register a new sType", class_name, kwargs);
 
         //spt.pipeline.enable_node(node);
 
@@ -2326,33 +2306,6 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
         '''
         } )
 
-
-
-
-
-
-        """
-        menu_item = MenuItem(type='action', label='Show Detail')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var node = spt.smenu.get_activator(bvr);
-        spt.pipeline.init(node);
-
-        var top = node.getParent(".spt_schema_tool_top");
-        var tab_top = top.getElement(".spt_tab_top");
-        spt.tab.set_tab_top(tab_top);
-
-        var search_type = spt.pipeline.get_node_name(node);
-
-        var element_name = 'detail_' + search_type;
-        var title = 'Detail [' + search_type + ']';
-        var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
-        spt.tab.add_new(element_name, title, class_name);
-        '''
-        } )
-        """
 
         return menu
 

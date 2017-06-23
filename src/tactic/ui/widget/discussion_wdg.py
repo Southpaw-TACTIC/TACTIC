@@ -407,9 +407,11 @@ class DiscussionWdg(BaseRefreshWdg):
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
 
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
+                if (spt.table) {
+                    var layout = spt.table.get_layout();
+                    var upload_id = layout.getAttribute('upload_id')
+                    kwargs.upload_id = upload_id; 
+                }
                 kwargs.hidden = bvr.hidden;
                 kwargs.allow_email = bvr.allow_email;
                 kwargs.show_task_process = bvr.show_task_process;
@@ -1834,7 +1836,11 @@ class NoteWdg(BaseRefreshWdg):
 
         from pyasm.security import Login
         user = Login.get_by_code(login)
-        display_name = user.get_value("display_name")
+        if not user:
+            display_name = login
+        else:
+            display_name = user.get_value("display_name")
+
         if not display_name:
             display_name = login
 
@@ -1877,7 +1883,8 @@ class NoteWdg(BaseRefreshWdg):
 
 
         current_login = Environment.get_user_name()
-        if current_login == login:
+        security = Environment.get_security()
+        if security.is_admin() or current_login == login:
 
             icon = IconButtonWdg(title="Options", icon="BS_PENCIL")
             title.add(icon)
