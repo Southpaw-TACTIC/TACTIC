@@ -2332,7 +2332,9 @@ class ThumbWdg2(BaseRefreshWdg):
                         # handle sequence
                         lib_dir = my.snapshot.get_lib_dir()
                         my.lib_path = "%s/%s" % (lib_dir, paths[0])
-                        image_size = os.path.getsize(my.lib_path)
+
+                    if not os.path.exists(my.lib_path):
+                        image_size = 0
                     else:
                         image_size = os.path.getsize(my.lib_path)
 

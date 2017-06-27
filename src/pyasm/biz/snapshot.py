@@ -432,9 +432,11 @@ class Snapshot(SObject):
     def get_file_range(my, type='main'):
         xml = my.get_snapshot_xml()
         node = xml.get_node("snapshot/file[@type='%s']"%type)
-        file_name = my._get_file_name(node)
-
-        file_range_str = Xml.get_attribute(node, "file_range")
+        if node is None:
+            file_range_str = "0-0"
+        else:
+            file_name = my._get_file_name(node)
+            file_range_str = Xml.get_attribute(node, "file_range")
 
         file_range = FileRange.get(file_range_str)
         return file_range

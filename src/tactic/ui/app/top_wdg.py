@@ -149,7 +149,7 @@ class TopWdg(Widget):
                 if (hit)
                     break;
                 else {
-                    if ( el.on_complete ) {
+                    if ( el.isVisible() && el.on_complete ) {
                         el.on_complete();
                     }
                     else {
