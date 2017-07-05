@@ -1200,12 +1200,12 @@ TacticServerStub = function() {
     }
 
 
-    this.p_query = function(expression, kwargs) {
+    this.p_query = function(search_type, kwargs) {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
             kwargs.on_complete = function(x) { resolve(x); }
-            return this.query2(expression, kwargs);
-        } )
+            return this.query2(search_type, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1227,7 +1227,7 @@ TacticServerStub = function() {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
             this.get_by_search_key(search_key, kwargs);
-        } )
+        }.bind(this) )
     }
 
 
@@ -1241,8 +1241,8 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
-            this.get_by_search_key(expression, args, {}, kwargs);
-        } )
+            this.get_by_code(search_type, code, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1278,12 +1278,12 @@ TacticServerStub = function() {
 
 
 
-    this.p_update = function(expression, kwargs) {
+    this.p_update = function(search_type, data, kwargs) {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
             kwargs.on_complete = function(x) { resolve(x); }
-            return this.query2(expression, kwargs);
-        } )
+            return this.query2(search_type, data, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1333,7 +1333,7 @@ TacticServerStub = function() {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
             this.eval(expression, kwargs);
-        } )
+        }.bind(this) )
     }
 
 
@@ -1550,12 +1550,12 @@ TacticServerStub = function() {
 
 
     /* Test promises */
-    this.p_execute_cmd = function(expression, args, kwargs) {
+    this.p_execute_cmd = function(class_name, args, kwargs) {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
-            this.execute_cmd(expression, args, {}, kwargs);
-        } )
+            this.execute_cmd(class_name, args, {}, kwargs);
+        }.bind(this) )
     }
 
 

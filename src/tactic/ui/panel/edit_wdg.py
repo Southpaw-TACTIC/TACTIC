@@ -1318,7 +1318,7 @@ spt.Environment.get().add_library("spt_edit");
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content, search_key, extra_data, values) {
+spt.edit.save_changes = function(content, search_key, extra_data, values, trigger_mode) {
 
     if (!values) {
         values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
@@ -1343,6 +1343,9 @@ spt.edit.save_changes = function(content, search_key, extra_data, values) {
     kwargs['view'] = bvr.view;
     if (extra_data) {
         kwargs['extra_data'] = extra_data;
+    }
+    if (trigger_mode) {
+        kwargs['trigger_mode'] = trigger_mode;
     }
 
     var server = TacticServerStub.get();
