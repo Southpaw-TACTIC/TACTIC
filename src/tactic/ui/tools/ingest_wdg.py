@@ -319,9 +319,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 pipeline_search.add_filter("code", pipeline_code)
             else:
                 pipeline_search.set_null_filter()
+        else:
+            pipeline_search.add_project_filter()
+            pipeline_search.add_filter("search_type", base_type)
 
-        pipeline_search.add_project_filter()
-        pipeline_search.add_filter("search_type", base_type)
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
             process_names.update(pipeline.get_process_names())

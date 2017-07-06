@@ -103,6 +103,8 @@ class TopWdg(Widget):
         spt.body.hide_focus_elements = function(evt) {
             var mouse = evt.client;
             var target = evt.target;
+
+
             
             var targets = [];
             var count = 0;
@@ -130,6 +132,12 @@ class TopWdg(Widget):
                     break;
                 }
 
+            }
+
+
+            var dialog = evt.target.getParent(".MooDialog");
+            if (dialog) {
+                targets.push(dialog);
             }
 
             // find out if any of the parents of target is the focus element
@@ -468,6 +476,22 @@ class TopWdg(Widget):
         # add the copyright
         widget.add( my.get_copyright_wdg() )
         widget.add(html)
+
+        # handle redirect
+        request_url = web.get_request_url().get_info().path
+        if request_url in ["/tactic/Index", "/Index", "/"]:
+            # if we have the root path name, provide the ability for the site to
+            # redirect
+            from pyasm.security import Site
+            site_obj = Site.get()
+            redirect = site_obj.get_site_redirect()
+            if redirect:
+                widget.add('''<meta http-equiv="refresh" content="0; url=%s">''' % redirect)
+                return widget
+
+
+
+
 
 
         # create the header

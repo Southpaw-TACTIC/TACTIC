@@ -743,6 +743,9 @@ class Site(object):
     def break_up_request_path(my, path):
         return {}
 
+    def get_site_redirect(my):
+        return
+
     def register_sites(my, startup, config):
         return
     

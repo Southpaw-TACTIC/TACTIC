@@ -1623,8 +1623,6 @@ spt.tab.close = function(src_el) {
 
 
 
-
-
         top.add(template_div)
         content_div = DivWdg()
         content_div.add_class("spt_tab_content")
