@@ -544,9 +544,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-        gallery_div = DivWdg()
-        layout.add( gallery_div )
-        gallery_div.add_class("spt_note_gallery")
         layout.add_relay_behavior( {
             'type': 'click',
             'width': "",
@@ -981,6 +978,10 @@ class DiscussionWdg(BaseRefreshWdg):
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
+
+            gallery_div = DivWdg()
+            gallery_div.add_class("spt_note_gallery")
+            top.add( gallery_div )
 
 
         context_str = ",".join(contexts)
@@ -2057,19 +2058,21 @@ class NoteWdg(BaseRefreshWdg):
         # Snapshot thumbnail code
         if snapshots:
             #attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
-            
+           
+            """
             attached_div.add_relay_behavior( {         
             'type': 'click',
             'mouse_btn': 'LMB',
             'bvr_match_class': 'spt_open_thumbnail',
             'cbjs_action': '''
-            
+
             var src_el = bvr.src_el;
             var thumb_href = src_el.getElement('.spt_thumb_href');
             var thumb_path = thumb_href.getAttribute('href');
             window.open(thumb_path);
             '''
             } )
+            """
 
             right.add("<hr/>")
             right.add('''
