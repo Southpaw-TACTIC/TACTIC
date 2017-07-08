@@ -296,7 +296,7 @@ class SearchWdg(BaseRefreshWdg):
                         filter_data.set_to_cgi()
 
                 except XmlException, e:
-                    print("WARNING: non-xml filter detected!! %s" % filter0)
+                    print("WARNING: non-xml filter detected!!")
 
         
         # NOTE: this is only used to maintain backwards compatibility

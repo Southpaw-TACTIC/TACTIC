@@ -6518,6 +6518,12 @@ class SObjectUndo:
             Xml.set_attribute(sobject_node,"prev_search_code", prev_code)
 
 
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site:
+            Xml.set_attribute(sobject_node,"site", site)
+
+
         if is_insert:
             Xml.set_attribute(sobject_node,"action","insert")
 
