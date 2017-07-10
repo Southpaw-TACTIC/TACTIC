@@ -893,6 +893,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             height = my.kwargs.get("height")
             if height:
                 scroll.add_style("height: %s" % height)
+
             scroll.add_class("spt_table_scroll")
 
             # Always adding a scroll bar, but using margin-right to hide it
