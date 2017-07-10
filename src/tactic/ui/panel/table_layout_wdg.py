@@ -2842,7 +2842,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
-            icon = IconWdg("New", IconWdg.NEW)
+            #icon = IconWdg("New", IconWdg.NEW)
+            icon = IconWdg("New", "BS_ASTERISK") 
             icon_div.add(icon)
             #td.add_style("padding: 1 0 0 10")
             icon_div.add_style("float: left")
@@ -3265,6 +3266,8 @@ spt.table.get_all_rows = function(embedded) {
     var table = spt.table.get_table();
     var css = embedded ? ".spt_table_row" : ".spt_table_row_" + table.getAttribute('id');
     var rows = table.getElements(css);
+    // remove last row because it is the insert
+    rows.pop();
     return rows;
 }
 

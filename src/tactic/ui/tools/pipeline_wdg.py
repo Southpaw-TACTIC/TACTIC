@@ -68,57 +68,58 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         if pipeline_code:
             pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
-            pipeline_name = pipeline.get("name")
-            inner.add_behavior( {
-            'type': 'load',
-            'pipeline_code': pipeline_code,
-            'pipeline_name': pipeline_name,
-            'cbjs_action': '''
-            setTimeout( function() {
-            var top = bvr.src_el;
-            var start = top.getElement(".spt_pipeline_editor_start");
-            start.setStyle("display", "none");
+            if pipeline:
+                pipeline_name = pipeline.get("name")
+                inner.add_behavior( {
+                'type': 'load',
+                'pipeline_code': pipeline_code,
+                'pipeline_name': pipeline_name,
+                'cbjs_action': '''
+                setTimeout( function() {
+                var top = bvr.src_el;
+                var start = top.getElement(".spt_pipeline_editor_start");
+                start.setStyle("display", "none");
 
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
-            spt.pipeline.init_cbk(wrapper);
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var wrapper = top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
 
-            spt.pipeline.clear_canvas();
-            spt.pipeline.import_pipeline(bvr.pipeline_code);
+                spt.pipeline.clear_canvas();
+                spt.pipeline.import_pipeline(bvr.pipeline_code);
 
-            var value = bvr.pipeline_code;
-            var title = bvr.pipeline_name;
+                var value = bvr.pipeline_code;
+                var title = bvr.pipeline_name;
 
-            var text = top.getElement(".spt_pipeline_editor_current2");
-            //text.value = title;
-            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+title+"</span>";
-            text.innerHTML = html;
+                var text = top.getElement(".spt_pipeline_editor_current2");
+                //text.value = title;
+                var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+title+"</span>";
+                text.innerHTML = html;
 
-            spt.pipeline.set_current_group(value);
+                spt.pipeline.set_current_group(value);
 
 
-            var info = top.getElement(".spt_pipeline_tool_info");
-            if (info) {
-                var group_name = spt.pipeline.get_current_group();
+                var info = top.getElement(".spt_pipeline_tool_info");
+                if (info) {
+                    var group_name = spt.pipeline.get_current_group();
 
-                var class_name = 'tactic.ui.tools.PipelineInfoWdg';
-                var kwargs = {
-                    pipeline_code: group_name,
+                    var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+                    var kwargs = {
+                        pipeline_code: group_name,
+                    }
+
+                    spt.panel.load(info, class_name, kwargs);
                 }
 
-                spt.panel.load(info, class_name, kwargs);
-            }
+
+                var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+                if (editor_top) {
+                    editor_top.removeClass("spt_has_changes");
+                }
 
 
-            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            if (editor_top) {
-                editor_top.removeClass("spt_has_changes");
-            }
-
-
-            }, 0);
-            '''
-            } )
+                }, 0);
+                '''
+                } )
 
 
         inner.add_behavior( {
