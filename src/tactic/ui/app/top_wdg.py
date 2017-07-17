@@ -1241,13 +1241,19 @@ class SitePage(AppServer):
             through the ProjectSetting key top_wdg_cls, this class is used 
             except for TACTIC admin pages.
          3. The default widget used is tactic.ui.app.TopWdg.'''
-         
+
+
         top_wdg_cls = None
        
         if not my.hash and not my.custom_url:
             search = Search("config/url")
             search.add_filter("url", "/index")
             my.custom_url = search.get_sobject()
+
+        # TEST Using X-SendFile
+        #if my.hash and my.hash[0] == 'assets':
+        #    my.top = XSendFileTopWdg()
+        #    return my.top
         
         if my.custom_url:
             xml = my.custom_url.get_xml_value("widget")
@@ -1387,6 +1393,38 @@ class CustomTopWdg(BaseRefreshWdg):
 
         return widget
 
+
+
+class XSendFileTopWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        rel_path = "workflow/assets/workflow/asset/Fantasy/Castle/54d45150c61251f65687d716cc3951f1_v001.jpg"
+
+        parts = rel_path.split("/")
+
+        site = parts[0]
+
+        parts = rel_path.split("/")
+
+        base_dir = "/spt/data/sites"
+        path = "%s/%s" % (base_dir, rel_path)
+
+        filename = os.path.basename(rel_path)
+
+        # determine the mimetype automatically
+        import mimetypes
+        base, ext = os.path.splitext(path)
+        mimetype = mimetypes.types_map[ext]
+
+        web = WebContainer.get_web()
+        response = web.get_response()
+        headers = response.headers
+        response.headers['Content-Type'] = mimetype
+        response.headers['Content-Disposition'] = 'inline; filename={0}'.format(filename)
+        response.headers['X-Sendfile'] = path
+
+        return Widget(path)
 
 
 

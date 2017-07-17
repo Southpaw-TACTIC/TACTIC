@@ -145,6 +145,9 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
     }
 
     def preprocess(my):
+
+        my.set_option("empty", "true")
+
         # This assumes the parent is the same
         sobject = my.get_current_sobject()
         my.parent = None

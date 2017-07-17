@@ -14,7 +14,7 @@ __all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'Sna
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, SPTDate
+from pyasm.common import Environment, SPTDate, Common, FormatValue
 from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
@@ -1284,8 +1284,22 @@ class SnapshotDetailWdg(SObjectDetailWdg):
 
         version_wdg = DivWdg()
         title_wdg.add(version_wdg)
-        version_wdg.add("Version: %0.3d" % version)
+        version_wdg.add("Latest Version: %0.3d" % version)
         version_wdg.add_style("margin: 5px 0px")
+
+
+        lib_path = my.sobject.get_lib_path_by_type()
+        lib_path_info = Common.get_dir_info(lib_path)
+        if lib_path_info.get("file_type") == "file":
+            size = lib_path_info.get("size")
+            size_str = FormatValue().get_format_value(size, "KB")
+
+            size_wdg = DivWdg()
+            title_wdg.add(size_wdg)
+            size_wdg.add("File Size: %s" % size_str)
+            size_wdg.add_style("margin: 5px 0px")
+
+            media_type = "image"
 
 
 
@@ -1425,12 +1439,10 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         title = DivWdg()
 
-        title.add_color("background", "background3")
         title.add_style("height: 20px")
         title.add_style("padding: 6px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
 
         if not my.parent:
             title.add("Parent not found")
@@ -1443,7 +1455,19 @@ class TaskDetailWdg(SObjectDetailWdg):
         task_code = my.sobject.get("code")
 
         bgcolor = title.get_color("background")
-        title.add("<span style='font-size: 1.2em; padding: 4px; margin: 0px 20px 0px 0px; background-color: %s'>%s</span>  Task  <i style='font-size: 0.8em'>(%s)</i> for %s <i style='font-size: 0.8em'>(%s)</i>" % (bgcolor, process, task_code, name, code))
+        title.add("<span style='font-size: 1.2em; padding: 4px; margin: 0px 20px 0px 0px;'>%s</span>  Task <i>(%s)</i>" % (process, code))
+
+
+        # Test adding this ... need to find a place for it
+        #notes_div = DivWdg()
+        #title.add(notes_div)
+        #from tactic.ui.widget.discussion_wdg import DiscussionWdg
+        #discussion_wdg = DiscussionWdg(search_key=my.parent.get_search_key(), process=process, context_hidden=True, show_note_expand=True)
+        #notes_div.add(discussion_wdg)
+
+        title.add("<hr/>")
+
+
         return title
 
 
@@ -1693,6 +1717,7 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
         from tactic.ui.panel import TableLayoutWdg
 
         search_key = my.sobject.get_search_key()
+
 
 
         thumb = ThumbWdg2()

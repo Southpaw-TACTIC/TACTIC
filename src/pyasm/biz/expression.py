@@ -1553,7 +1553,10 @@ class MethodMode(ExpressionParser):
                 values_list.append(values)
 
             # transpose the values
-            values_list = zip(*values_list)
+            if len(values_list) == 1:
+                pass
+            else:
+                values_list = zip(*values_list)
             results = []
             for values in values_list:
                 result = args[0] % values

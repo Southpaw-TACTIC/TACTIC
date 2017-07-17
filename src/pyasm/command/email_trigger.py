@@ -253,7 +253,8 @@ class EmailTrigger(Trigger):
         else:
             user_email = Environment.get_login().get_full_email()
             if not user_email:
-                raise TacticException("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+                print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+                return
             sender.add(user_email)
 
         for x in to_users:
@@ -389,8 +390,8 @@ class SendEmail(Command):
         if not sender_email:
             sender_email = Environment.get_login().get_full_email()
             if not sender_email:
-                raise TacticException("Sender's email is empty. Please check the email \
-                    attribute of [%s]." %Environment.get_user_name())
+                print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+                return
 
         recipient_emails = my.kwargs.get('recipient_emails')
         message = my.kwargs.get('msg')
