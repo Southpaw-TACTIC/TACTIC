@@ -415,25 +415,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "cb_set_prefix": 'spt.pipeline.select_drag'
         } )
 
-        canvas.add_behavior( {
-        "type": 'click_up',
-        "cbjs_action": '''
-        spt.pipeline.init(bvr);
-        spt.pipeline.unselect_all_nodes();
-        spt.pipeline.hit_test_mouse(mouse_411);
-        '''
-        } )
-
-        """
-        canvas.add_behavior( {
-        "type": 'click_up',
-        "cbjs_action": '''
-        // Add edited flag
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        editor_top.addClass("spt_has_changes");
-        '''
-        }) 
-        """
 
         # create the paint where all the connectors are drawn
         paint = my.get_paint()
@@ -492,19 +473,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.select_drag'
         } )
-
-
-        paint.add_behavior( {
-        "type": 'click_up',
-        "cbjs_action": '''
-        spt.pipeline.init(bvr);
-        spt.pipeline.unselect_all_nodes();
-        spt.pipeline.hit_test_mouse(mouse_411);
-        '''
-        } )
-
-
-
 
 
 
@@ -2217,7 +2185,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
     var ctx = spt.pipeline.get_ctx();
     ctx.clearRect(left,top,width,height);
 
-    spt.pipeline.clear_selected();
+    //spt.pipeline.clear_selected();
 
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
@@ -3805,6 +3773,7 @@ spt.pipeline.draw_arrow = function(halfway, point0, size) {
 
 
 // Pan functionality
+spt.pipeline.orig_mouse_position = null;
 spt.pipeline.last_mouse_position = null;
 spt.pipeline.canvas_drag_disable = false;
 
@@ -3824,6 +3793,7 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     bvr.src_el.setStyle("cursor", "move");
     spt.pipeline.init(bvr);
     spt.pipeline.last_mouse_position = pos;
+    spt.pipeline.orig_mouse_position = pos;
 
 }
 
@@ -3853,6 +3823,16 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
     spt.pipeline.canvas_drag_disable = false;
+
+
+    var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
+    var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
+    var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+        spt.pipeline.unselect_all_nodes();
+    }
+
+
 
     bvr.src_el.setStyle("cursor", "");
     var nodes = spt.pipeline.get_all_nodes();
