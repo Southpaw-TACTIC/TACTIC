@@ -129,7 +129,6 @@ class WebLoginCmd(Command):
             else:
                 login = my.login
 
-            print "password: ", my.password, type(my.password)
             security.login_user(login, my.password, domain=my.domain)
         except SecurityException, e:
             msg = str(e)

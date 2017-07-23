@@ -1047,12 +1047,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_message(my, ticket, key):
-        print "key: ", key
         message = Search.get_by_code("sthpw/message", key)
-        print "message: ", message
         sobject_dict = my._get_sobject_dict(message)
-        print "dict: ", sobject_dict
-        print "---"
         return sobject_dict
 
 
@@ -4977,20 +4973,75 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #
-    # triger methods
+    # trigger methods
     #
-    def call_trigger(my, ticket, event, input):
+    @xmlrpc_decorator
+    def call_trigger(my, ticket, search_key, event, input={}, process=None):
         '''Calls a trigger with input package
-        
         
         @params
         ticket - authentication ticket
+        search_key - the sobject that contains the trigger
+        event - name of event
+        input - input data to send to the trigger
         '''
-        return Trigger.call(my, event, input)
+        sobjects = my._get_sobjects(search_key)
+
+        # make sure input is never None
+        if input is None:
+            input = {}
+
+        count = 0
+        for sobject in sobjects:
+            triggers = Trigger.call(sobject, event, input, process)
+            count += len(triggers)
+
+        return count
 
 
 
+    @xmlrpc_decorator
+    def set_workflow_status(my, ticket, search_key, process, status, data={}):
+        '''Set the status of a process in a workflow.
 
+        @params
+        ticket - authentication ticket
+        search_key - the sobject that contains the trigger
+        process - the process node of the workflow of the sobject
+        status - the status to be set
+        data - dictionary data that needs to be sent to the process
+        '''
+
+        sobjects = my._get_sobjects(search_key)
+
+        for sobject in sobjects:
+            pipeline_code = sobject.get_value("pipeline_code")
+            pipeline = Pipeline.get_by_code(pipeline_code)
+
+            input = {
+                'pipeline': pipeline,
+                'sobject': sobject,
+                'process': process,
+                'data': data
+            }
+
+            event = "process|%s" % status
+            Trigger.call(my, event, input)
+
+
+    @xmlrpc_decorator
+    def get_workflow_status(my, ticket, search_key, process):
+        '''Get the status of a process in a workflow.
+
+        @params
+        ticket - authentication ticket
+        search_key - the sobject that contains the trigger
+        process - the process node of the workflow of the sobject
+        '''
+
+        key = "%s|%s|status" % (search_key, process)
+        message = my.get_message(ticket, key)
+        return message.get("message")
 
 
     #

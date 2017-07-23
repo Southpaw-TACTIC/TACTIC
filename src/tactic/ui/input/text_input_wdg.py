@@ -778,7 +778,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         if (!data && data != 0) {
             hidden_el.value = '';
             if (kwargs.validate != false) {
-                src_el.setStyle("background", "#A99");
+                //src_el.setStyle("background", "#A99");
                 src_el.addClass("spt_invalid");
             }
         }

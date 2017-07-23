@@ -286,6 +286,25 @@ class TopWdg(Widget):
 
 
 
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_link',
+            'cbjs_action': '''
+            var href = bvr.src_el.getAttribute("href");
+            if (!href) {
+                spt.alert("No href defined for this link");
+                return;
+            }
+            var target = bvr.src_el.getAttribute("target");
+            if (!target) {
+                target = "_self";
+            }
+            window.open(href, target);
+            '''
+        } )
+
+
+
 
 
         my.body.add_relay_behavior( {

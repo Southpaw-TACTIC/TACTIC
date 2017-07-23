@@ -251,13 +251,16 @@ class CherryPyStartup(CherryPyStartup20):
             WebContainer.set_web(adapter)
 
             top = DivWdg()
-            top.add_style("background: #444")
+            top.add_color("background", "background", -5)
+            top.add_color("color", "color")
+            #top.add_style("background", "#444")
             top.add_style("height: 300")
             top.add_style("width: 500")
             top.add_style("margin: 150px auto")
-            top.add_style("border: solid 1px black")
-            top.add_style("border-radius: 15px")
-            top.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
+            top.add_border()
+            #top.add_style("border: solid 1px black")
+            #top.add_style("border-radius: 15px")
+            #top.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 
             widget = Error404Wdg()

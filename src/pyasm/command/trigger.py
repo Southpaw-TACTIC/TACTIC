@@ -521,7 +521,7 @@ class Trigger(Command):
             # create a package
             # transfer outputs to inputs.  This allows a command to deliver
             # from one process to another
-            if output:
+            if output or output == {}:
                 input = output.copy()
             else:
                 input = caller.get_info()

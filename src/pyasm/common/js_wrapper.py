@@ -132,12 +132,14 @@ class JsWrapper(object):
         if HAS_PYV8:
             with PyV8.JSLocker():
                 my.ctx.enter()
+                try:
 
-                for name, value in kwargs.items():
-                    my.ctx.locals[name] = value
+                    for name, value in kwargs.items():
+                        my.ctx.locals[name] = value
 
-                data = my.ctx.eval(js)
-                my.ctx.leave()
+                    data = my.ctx.eval(js)
+                finally:
+                    my.ctx.leave()
             return data
 
 
@@ -152,6 +154,7 @@ class JsWrapper(object):
         ret_val = JSON.stringify(ret_val);
         ''' % js
         ret_val = my.execute(js, kwargs)
+        ret_val = jsonloads(ret_val)
 
         return ret_val
 

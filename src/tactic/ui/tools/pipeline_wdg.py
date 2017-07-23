@@ -4327,6 +4327,8 @@ class ProcessInfoCmd(Command):
         is_admin = Environment.get_security().is_admin()
         if is_admin:
             language = my.kwargs.get("language")
+            if not language:
+                language = "python"
         else:
             language = "server_js"
 
@@ -4348,17 +4350,17 @@ class ProcessInfoCmd(Command):
 
         # check to see if the trigger already exists
         search = Search("config/trigger")
-        search.add_filter("process", process_sobj.get_code())
         search.add_filter("event", event)
+        search.add_filter("process", process_sobj.get_code())
         trigger = search.get_sobject()
         if not trigger:
+            # create a new one
             trigger = SearchType.create("config/trigger")
             trigger.set_value("event", event)
             trigger.set_value("process", process_sobj.get_code())
             trigger.set_value("mode", "same process,same transaction")
 
 
-        print("action: ", action)
         if action == "command":
             trigger.set_value("script_path", "NULL", quoted=False)
             trigger.set_value("class_name", on_action_class)

@@ -949,9 +949,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             embedded_table =  my.kwargs.get("__hidden__") == 'true'
 
+            gear_settings = my.get_setting("gear")
+            if not gear_settings:
+                gear_settings = my.get_setting("gear_settings")
+
            
             btn_dd = DgTableGearMenuWdg(
-                menus=my.get_setting("gear"),
+                menus=gear_settings,
                 layout=my,
                 table_id=my.get_table_id(),
                 search_type=my.search_type, view=my.view,

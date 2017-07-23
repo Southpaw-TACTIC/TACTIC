@@ -56,6 +56,7 @@ class JsCmd(PythonCmd):
         wrapper = JsWrapper.get()
         results = wrapper.execute_func(code, my.kwargs)
 
+
         return results
 
 

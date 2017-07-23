@@ -93,6 +93,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         if mode == "button":
             color = my.kwargs.get("color") or "default"
             activator = DivWdg("<button class='btn btn-%s dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
+        elif mode == "div":
+            color = my.kwargs.get("color") or ""
+            background = my.kwargs.get("background") or "transparent"
+            activator = DivWdg("<button class='btn dropdown-toggle' style='width: 160px; background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
+
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
 
@@ -123,16 +128,23 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                 spt.body.add_focus_element(menu);
 
-                var pointer = menu.getElement(".spt_popup_pointer");
+                var pointer = menu.getElement(".spt_switcher_popup_pointer");
                 pointer.setStyle("margin-left", menu_size.x - button_size.x);
 
             } 
             '''
         } )
+
+
+        outer_wdg = DivWdg()
+        top.add(outer_wdg)
             
         # menu_wdg 
+
+
         menu_wdg = DivWdg()
-        top.add(menu_wdg)
+        outer_wdg.add(menu_wdg)
+        menu_wdg.add_color("color", "color")
         menu_wdg.add_color("background", "background")
         menu_wdg.add_border()
         menu_wdg.add_class("spt_switcher_menu")
@@ -156,20 +168,20 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         pointer_wdg = DivWdg()
         menu_wdg.add(pointer_wdg)
         pointer_wdg.add('''
-            <div class="spt_first_arrow_div"> </div>
-            <div class="spt_second_arrow_div"> </div>
+            <div class="spt_switcher_first_arrow_div"> </div>
+            <div class="spt_switcher_second_arrow_div"> </div>
         ''')
-        pointer_wdg.add_class("spt_popup_pointer")
+        pointer_wdg.add_class("spt_switcher_popup_pointer")
 
         style = HtmlElement.style('''
-            .spt_switcher_menu .spt_popup_pointer {
+            .spt_switcher_menu .spt_switcher_popup_pointer {
                 z-index: 10;
                 position: absolute;
                 top: -15px;
                 right: 15px;
             }
 
-            .spt_switcher_menu .spt_first_arrow_div {
+            .spt_switcher_menu .spt_switcher_first_arrow_div {
                 border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) %s;
                 top: -15px;
                 z-index: 1;
@@ -180,7 +192,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 left: 15px;
             }
 
-            .spt_switcher_menu .spt_second_arrow_div{
+            .spt_switcher_menu .spt_switcher_second_arrow_div{
                 border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #fff;
                 z-index: 1;
                 border-width: 0 15px 15px;
@@ -189,6 +201,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 border-style: dashed dashed solid;
                 margin-top: -14px;
                 position: absolute;
+                left: 0px;
+                top: 15px;
             }
         ''' % border_color)
         pointer_wdg.add(style)
@@ -205,8 +219,14 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             config = WidgetConfig.get(view=my.view, xml=config_xml)
             element_names = config.get_element_names()
 
+            if not element_names:
+                outer_wdg.add_style("display: none")
+
             if not state_value:
-                state_value = element_names[0]
+                if not element_names:
+                    state_value = ""
+                else:
+                    state_value = element_names[0]
 
 
             for element_name in element_names:
@@ -216,10 +236,19 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 item_div.add_class("spt_switcher_item")
                 item_div.add_class("tactic_hover")
 
+                item_div.add_style("width: 100%")
+
                 attrs = config.get_element_attributes(element_name)
                 title = attrs.get("title")
                 if not title:
                     title = Common.get_display_title(element_name)
+
+
+                for name, value in attrs.items():
+                    if name in ['title', 'class']:
+                        continue
+                    item_div.add_attr(name, value)
+
 
 
                 css_class = attrs.get("class")
