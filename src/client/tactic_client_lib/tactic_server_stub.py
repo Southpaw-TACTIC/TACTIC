@@ -4027,6 +4027,26 @@ class TacticServerStub(object):
         return my.server.get_doc_link(my.ticket, alias);
 
 
+    #
+    # Access to some useful external functions
+    #
+    def send_rest_request(my, method, url, params={}):
+
+        import requests
+
+        method = method.lower()
+        if method == "post":
+            r = requests.post(url, params)
+        else:
+            r = requests.get(url, params)
+
+        return r.json()
+
+
+        #return my.server.send_post(my.ticket, search_type, title)
+
+
+
 
     #
     # API/Server Version functions

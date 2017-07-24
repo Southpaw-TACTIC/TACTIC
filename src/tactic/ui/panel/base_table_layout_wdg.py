@@ -599,7 +599,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 keyword_value = keyword_values[0].get('value')
                 if keyword_value:
                     from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
+                    keyword_filter = KeywordFilterElementWdg(
+                            column=my.keyword_column,
+                            mode="keyword",
+                    )
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
 
