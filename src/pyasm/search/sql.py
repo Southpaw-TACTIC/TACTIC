@@ -32,7 +32,12 @@ except ImportError, e:
     pass
 
 try:
-    import psycopg2
+    try:
+        import psycopg2
+    except ImportError, e:
+        # if psycopg2 is not installed we try to use psycopg2cffi (useful for pypy compatibility)
+        from psycopg2cffi import compat
+        compat.register()
     # set to return only unicode
     import psycopg2.extensions
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
