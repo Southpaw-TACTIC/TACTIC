@@ -136,7 +136,7 @@ class SthpwUpgrade(BaseUpgrade):
             return zonenames
 
         # add time zone names to timezone prefernce if it does not exist
-        from dateutil.tz import *
+        from dateutil import tz
         from pyasm.search import Search
         pref_list_id = Search.eval("@GET(sthpw/pref_list['key','timezone'].id)")
         if not pref_list_id:
@@ -144,7 +144,7 @@ class SthpwUpgrade(BaseUpgrade):
             timezones = []
             for name in names:
                 try:
-                    gettz(name)
+                    tz.gettz(name)
                     timezones.append(name)
                 except:
                     continue
