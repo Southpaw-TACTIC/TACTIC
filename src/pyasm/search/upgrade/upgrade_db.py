@@ -18,6 +18,10 @@ import sys, re, getopt, os, shutil
 from pyasm.search import Search, SObject, DbContainer, Sql
 from pyasm.common import Container, Environment
 
+# load all the default modules
+from pyasm.search.upgrade.project import *
+
+ 
 __all__ = ['Upgrade']
 
 class Upgrade(object):
@@ -104,10 +108,6 @@ class Upgrade(object):
                 class_name = "%s%sUpgrade" % (database_type,namespace.capitalize())
                 exec("%s = module.%s" % (class_name, class_name) )
 
-
-
-        # load all the default modules
-        from pyasm.search.upgrade.project import *
 
         for project in projects:
             
@@ -247,9 +247,4 @@ class Upgrade(object):
                     print "Default project template files have been updated."
                 else:
                     print "There was a problem copying the default template files to <TACTIC_DATA_DIR>/templates."
-
-
-    
-
-
 
