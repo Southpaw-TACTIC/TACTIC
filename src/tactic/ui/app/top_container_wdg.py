@@ -41,8 +41,6 @@ class TopContainerWdg(BaseRefreshWdg):
             hash = "/index"
 
         if not hash:
-            # NOTE: this really doesn't get call anymore because an empty
-            # hash gets remapped to "/index"
             widget = my.get_default_wdg()
             top.add(widget)
 
