@@ -474,7 +474,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             tabs = my.get_default_tabs()
         
-        if "info" not in tabs:
+        if len(tabs) == 0:
             tabs.insert(0, "info")
 
         #if my.sobject.get_value("pipeline_code", no_exception=True):
@@ -689,6 +689,35 @@ class SObjectDetailWdg(BaseRefreshWdg):
                   </display>
                 </element>
                 ''' % values)
+
+
+
+            elif tab == "notes":
+                config_xml.append('''
+                <element name="notes" title="Notes" count="@COUNT(sthpw/note)">
+                  <display class='tactic.ui.panel.CustomLayoutWdg'>
+                  <html>
+                    <div style="padding: 20px">
+                    <div style="font-size: 25px">Notes</div>
+                    <div>List of all of the notes for this item</div>
+                    <hr/>
+                    <br/>
+                    <div style="min-height: 200px">
+                    <element>
+                      <display class='tactic.ui.widget.DiscussionWdg'>
+                        <search_key>%(search_key)s</search_key>
+                        <width>100%%</width>
+                      </display>
+                    </element>
+                    </div>
+                    </div>
+                  </html>
+                  </display>
+                </element>
+                ''' % values)
+
+
+
 
 
 

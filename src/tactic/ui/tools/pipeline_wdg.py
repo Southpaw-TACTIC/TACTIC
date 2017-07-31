@@ -4315,6 +4315,9 @@ class ProcessInfoCmd(Command):
 
     def handle_action(my):
 
+        is_admin = Environment.get_security().is_admin()
+
+
         action = my.kwargs.get("action") or "create_new"
         script = my.kwargs.get("script")
         script_path = my.kwargs.get("script_path")
@@ -4324,9 +4327,12 @@ class ProcessInfoCmd(Command):
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")
-        is_admin = Environment.get_security().is_admin()
+
+
         if is_admin:
             language = my.kwargs.get("language")
+            if not language:
+                language = "python"
         else:
             language = "server_js"
 
@@ -4348,17 +4354,17 @@ class ProcessInfoCmd(Command):
 
         # check to see if the trigger already exists
         search = Search("config/trigger")
-        search.add_filter("process", process_sobj.get_code())
         search.add_filter("event", event)
+        search.add_filter("process", process_sobj.get_code())
         trigger = search.get_sobject()
         if not trigger:
+            # create a new one
             trigger = SearchType.create("config/trigger")
             trigger.set_value("event", event)
             trigger.set_value("process", process_sobj.get_code())
             trigger.set_value("mode", "same process,same transaction")
 
 
-        print("action: ", action)
         if action == "command":
             trigger.set_value("script_path", "NULL", quoted=False)
             trigger.set_value("class_name", on_action_class)
@@ -4379,19 +4385,28 @@ class ProcessInfoCmd(Command):
         trigger.commit()
 
         if script:
-            # check to see if the script already exists
-            search = Search("config/custom_script")
-            search.add_filter("folder", folder)
-            search.add_filter("title", "%s" % title)
-            script_obj = search.get_sobject()
-            if not script_obj:
-                script_obj = SearchType.create("config/custom_script")
-                script_obj.set_value("folder", folder)
-                script_obj.set_value("title", "%s" % title)
 
-            script_obj.set_value("language", language)
-            script_obj.set_value("script", script)
-            script_obj.commit()
+            from pyasm.security import Sudo
+
+            sudo = Sudo()
+            try:
+
+                # check to see if the script already exists
+                search = Search("config/custom_script")
+                search.add_filter("folder", folder)
+                search.add_filter("title", "%s" % title)
+                script_obj = search.get_sobject()
+                if not script_obj:
+                    script_obj = SearchType.create("config/custom_script")
+                    script_obj.set_value("folder", folder)
+                    script_obj.set_value("title", "%s" % title)
+
+                script_obj.set_value("language", language)
+                script_obj.set_value("script", script)
+                script_obj.commit()
+
+            finally:
+                sudo.exit()
 
 
     def handle_dependency(my):

@@ -3689,15 +3689,22 @@ class SObject(object):
 
     def handle_commit_security(my):
 
-        return True
+        # certain tables can only be written by admin
+        security = Environment.get_security()
+        if security.is_admin():
+            return True
 
         search_type = my.get_base_search_type()
 
         login = Environment.get_user_name()
 
-        if search_type == "sthpw/login":
-            if login != "admin":
-                return False
+
+        admin_types = [
+                'config/custom_script'
+        ]
+        if search_type in admin_types:
+            return False
+
 
         return True
 

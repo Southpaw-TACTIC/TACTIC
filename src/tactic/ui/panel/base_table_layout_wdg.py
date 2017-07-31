@@ -599,7 +599,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 keyword_value = keyword_values[0].get('value')
                 if keyword_value:
                     from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
+                    keyword_filter = KeywordFilterElementWdg(
+                            column=my.keyword_column,
+                            mode="keyword",
+                    )
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
 
@@ -949,9 +952,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             embedded_table =  my.kwargs.get("__hidden__") == 'true'
 
+            gear_settings = my.get_setting("gear")
+            if not gear_settings:
+                gear_settings = my.get_setting("gear_settings")
+
            
             btn_dd = DgTableGearMenuWdg(
-                menus=my.get_setting("gear"),
+                menus=gear_settings,
                 layout=my,
                 table_id=my.get_table_id(),
                 search_type=my.search_type, view=my.view,

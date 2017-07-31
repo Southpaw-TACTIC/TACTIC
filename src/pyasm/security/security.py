@@ -770,6 +770,10 @@ class Site(object):
     get_by_ticket = classmethod(get_by_ticket)
 
 
+    def validate_ticket(cls, ticket):
+        return True
+    validate_ticket = classmethod(validate_ticket)
+
     def get_connect_data(cls, site):
         return {}
     get_connect_data = classmethod(get_connect_data)
@@ -1416,6 +1420,12 @@ class Security(Base):
         ticket = Ticket.get_by_valid_key(key)
         if ticket is None:
             # if ticket does not exist, make sure we are signed out and leave
+            return None
+
+
+        # make sure the ticket is valid for this site
+        site = Site.get()
+        if not site.validate_ticket(ticket):
             return None
 
 

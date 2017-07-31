@@ -39,7 +39,7 @@ class ErrorWdg(Widget):
         div.add_style("margin: 0px 0px")
         div.add_class("centered")
 
-        div.add( HtmlElement.br(6) )
+        div.add( HtmlElement.br(3) )
 
         div.add(my.get_error_wdg() )
         box.add(div)
@@ -81,16 +81,27 @@ class Error404Wdg(ErrorWdg):
         super(Error404Wdg, my).__init__()
 
     def get_error_wdg(my):
+
+        kwargs = {
+        }
+        from tactic.ui.panel import HashPanelWdg 
+        widget = HashPanelWdg.get_widget_from_hash("/error404", return_none=True, kwargs=kwargs)
+        if widget:
+            return widget
+
         div = DivWdg()
         error_div = DivWdg()
+        error_div.add("<hr/>")
         error_div.add("Error %s" % my.status)
+        error_div.add("<hr/>")
         div.add(error_div)
         error_div.add_style("font-size: 18px")
         error_div.add_style("font-weight: bold")
         error_div.add_style("padding: 10px")
         error_div.add_style("width: auto")
-        error_div.add_gradient("background", "background")
-        error_div.add_border()
+        error_div.add_color("background", "background", -3)
+        error_div.add_color("color", "color")
+        #error_div.add_border()
         error_div.add_style("margin-left: 5px")
         error_div.add_style("margin-right: 5px")
         error_div.add_style("margin-top: -10px")
@@ -100,7 +111,7 @@ class Error404Wdg(ErrorWdg):
 
         span = DivWdg()
         #span.add_color("color", "color")
-        span.add_style("color", "#FFF")
+        #span.add_style("color", "#FFF")
         if my.status == 404:
             span.add(HtmlElement.b("You have tried to access a url that is not recognized."))
         else:
@@ -137,28 +148,6 @@ class Error404Wdg(ErrorWdg):
         return div
 
 
-"""
-class Error403Wdg(ErrorWdg):
-    def get_error_wdg(my):
-        div = DivWdg()
-        #div.add_color("color", "color3")
-        div.add_style("color", "white")
-        div.add("<h3>Error 403: Permission Denied</h3>")
-        span = SpanWdg()
-        span.add("<b>You have tried to access a url that is not permitted.</b>")
-        span.add(HtmlElement.br(2))
-        #inner_div = DivWdg(my._get_project_switch())
-        inner_div.add_style('margin-right', '130px')
-        span.add(inner_div)
-        #span.add(SignOutLinkWdg())
-        div.add(span)
-        return div
-
-    def _get_project_switch(my):
-        # can't use anything relying on behavior here
-        widget = ProjectSwitchWdg()
-        return widget
-"""
 
 
 
@@ -175,12 +164,14 @@ class Error403Wdg(ErrorWdg):
         div = DivWdg()
 
         error_div = DivWdg()
+        error_div.add("<hr/>")
         error_div.add("Error %s - Permission Denied" % my.status)
+        error_div.add("<hr/>")
         div.add(error_div)
         error_div.add_style("font-size: 16px")
         error_div.add_style("font-weight: bold")
         error_div.add_style("width: 97%")
-        error_div.add_gradient("background", "background")
+        error_div.add_color("background", "background", -3)
         error_div.add_border()
         error_div.add_style("margin-left: 5px")
         error_div.add_style("margin-top: -10px")
@@ -190,7 +181,7 @@ class Error403Wdg(ErrorWdg):
 
         span = DivWdg()
         #span.add_color("color", "color")
-        span.add_style("color", "#FFF")
+        #span.add_style("color", "#FFF")
         if my.status == 403:
             span.add("<b>You have tried to access a url that is not permitted.</b>")
         else:

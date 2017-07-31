@@ -372,9 +372,20 @@ class CsvImportWdg(BaseRefreshWdg):
         show_title = my.kwargs.get("show_title") not in [False, 'false']
 
         if show_title and not my.is_refresh:
-            from tactic.ui.widget import TitleWdg
-            title = TitleWdg(name_of_title='Import CSV', help_alias='importing-csv-data')
-            widget.add(title)
+            title_div = DivWdg()
+            widget.add(title_div)
+            title_div.add_style("margin: 10px 20px")
+
+            title_wdg = DivWdg()
+            title_div.add(title_wdg)
+            title_wdg.add_style("font-size: 25px")
+            title_wdg.add("Import Data")
+
+            title_wdg = DivWdg()
+            title_div.add(title_wdg)
+            title_wdg.add("Bulk upload data using a CSV file or copy data directly from a spreadsheet")
+            title_wdg.add("<hr/>")
+
 
         widget.add_style('padding: 10px')
         widget.add_style('font-size: 12px')
@@ -409,38 +420,6 @@ class CsvImportWdg(BaseRefreshWdg):
         stype_div = DivWdg()
         widget.add(stype_div)
 
-
-        # DEPRECATED
-        # handle new search_types
-        """
-        new_search_type = CheckboxWdg("new_search_type_checkbox")
-        new_search_type.add_event("onclick", "toggle_display('new_search_type_div')")
-        new_search_type_div = DivWdg()
-        new_search_type_div.set_id("new_search_type_div")
-
-        name_input = TextWdg("asset_name")
-        title = TextWdg("asset_title")
-        description = TextAreaWdg("asset_description")
-
-        table = Table()
-        table.set_id('csv_main_body')
-        table.add_style("margin: 10px 10px")
-        table.add_col().set_attr('width','140')
-        table.add_col().set_attr('width','400')
-        
-        table.add_row()
-        table.add_header("Search Type: ").set_attr('align','left')
-        table.add_cell(name_input)
-        table.add_row()
-        table.add_header("Title: ").set_attr('align','left')
-        table.add_cell(title)
-        table.add_row()
-        table.add_header("Description: ").set_attr('align','left')
-        table.add_cell(description)
-        new_search_type_div.add(table)
-        new_search_type_div.add_style("display: none")
-        #widget.add(new_search_type_div)
-        """
 
 
         show_stype_select = my.kwargs.get("show_stype_select")
@@ -479,11 +458,12 @@ class CsvImportWdg(BaseRefreshWdg):
                 widget.add(SpanWdg('WARNING: Import Error encountered. Please choose another search type.', css='warning')) 
                 return widget
 
+            extra_data = my.kwargs.get("extra_data")
+
             required_columns = sobj.get_required_columns()
-           
             if required_columns:
                 widget.add(HtmlElement.br())
-                req_span = SpanWdg("Required Columns: ", css='med')
+                req_span = DivWdg("Required Columns: ", css='med')
                 req_span.add_color('color','color')
                 widget.add(req_span)
                 #required_columns = ['n/a']
@@ -496,23 +476,9 @@ class CsvImportWdg(BaseRefreshWdg):
             if my.file_path:
                 hidden = HiddenWdg("file_path", my.file_path)
                 widget.add(hidden)
-                
-                if my.web_url:
-                    file_span = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %my.web_url, css='med')
 
-                else:
-                    if not my.data:
-                        file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
-                    else:
-                        lines = len(my.data.split("\n"))
-                        file_span = FloatDivWdg("Uploaded [%s] lines of entries: &nbsp; " % lines)
-                file_span.add_color('color','color')
-                file_span.add_style('margin: 8px 0 0 10px')
-                file_span.add_style('font-size: 14px')
-                widget.add(file_span)
-
-                button = ActionButtonWdg(title='Change')
-                button.add_style('float','left')
+                button = ActionButtonWdg(title='Start Again')
+                button.add_style('float','right')
                 button.add_behavior( {
                     'type': 'click_up', 
                     'columns': "|".join(my.columns),
@@ -526,6 +492,24 @@ class CsvImportWdg(BaseRefreshWdg):
                     });''' %(Common.get_full_class_name(my), my.search_type)
                 } )
                 widget.add(button)
+
+
+                
+                if my.web_url:
+                    file_div = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %my.web_url, css='med')
+
+                else:
+                    if not my.data:
+                        file_div = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                    else:
+                        lines = len(my.data.split("\n"))
+                        file_div = DivWdg("Found <b>%s</b> entries." % lines)
+
+                file_div.add_color('color','color')
+                file_div.add_style('margin: 8px 0 0 10px')
+                file_div.add_style('font-size: 14px')
+                widget.add(file_div)
+
                 widget.add("<br clear='all'/>")
                 widget.add(HtmlElement.br())
                 return widget
@@ -536,12 +520,9 @@ class CsvImportWdg(BaseRefreshWdg):
             widget.add(msg)
             msg.add_border()
             msg.add_style("width: 500px")
-            msg.add_color("background", "background3")
+            msg.add_color("background", "background", -3)
             msg.add_style("padding: 30px")
             msg.add_style("margin: 10 auto")
-            #msg.add_style("text-align: center")
-
-            #msg.add( "<div style='float: left; padding-top: 6px; margin-right: 105px'><b>Upload a csv file: </b></div>")
 
             ticket = Environment.get_security().get_ticket_key()
 
@@ -583,24 +564,15 @@ class CsvImportWdg(BaseRefreshWdg):
 
             
             # this is now only used in the copy and paste Upload button for backward-compatibility
+            upload_div = DivWdg()
+            msg.add(upload_div)
+            upload_div.add_style("display: none")
             upload_wdg = SimpleUploadWdg(key=key, show_upload=False)
-            upload_wdg.add_style('display: none')
-            msg.add(upload_wdg)
+            upload_div.add(upload_wdg)
 
 
             msg.add("<br/>")
           
-            """
-            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
-
-            msg.add("<b>Published URL: </b><br/>") 
-            from tactic.ui.input import TextInputWdg
-            text = TextInputWdg(name="web_url")
-            text.add_style("width: 100%")
-            msg.add(text)
-            """
- 
-
 
             msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
@@ -714,25 +686,9 @@ class CsvImportWdg(BaseRefreshWdg):
             raise TacticException("Path '%s' does not exist" % my.file_path)
 
         
-        div.add(HtmlElement.br(2))
 
 
-
-        # NOT NEEDED:  clear the widget settings before drawing
-        #expr = "@SOBJECT(sthpw/wdg_settings['key','EQ','pyasm.widget.input_wdg.CheckboxWdg|column_enabled_']['login','$LOGIN']['project_code','$PROJECT'])"
-        #sobjs = Search.eval(expr)
-        #for sobj in sobjs:
-        #    sobj.delete(log=False)
-
-
-        div.add( HtmlElement.b("The following is taken from the first line in the uploaded csv file.  Select the appropriate column to match.") )
-        div.add(HtmlElement.br())
-        """
-        text =  HtmlElement.b("Make sure you have all the required columns** in the csv.")
-        text.add_style('text-align: left')
-        div.add(text)
-        """
-        div.add(HtmlElement.br(2))
+        div.add(HtmlElement.br(3))
         option_div_top = DivWdg()
         option_div_top.add_color('color','color')
         option_div_top.add_color('background','background', -5)
@@ -968,9 +924,9 @@ class PreviewDataWdg(BaseRefreshWdg):
             labels_wdg.set_value("|".join(my.labels))
 
 
-        div.add( IconWdg("Important", IconWdg.CREATE) )
-        div.add("Use the sample row to match which columns the data will be imported into TACTIC<br/><br/>")
-        
+
+        div.add( "The following is taken from the first line in the uploaded csv file.  Select the appropriate column to match." )
+
         table = Table()
         table.add_class("spt_csv_table")
         table.add_color('background','background')
@@ -1007,7 +963,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         th.add_style("padding: 5px")
         
         # Preview column value
-        th = table.add_header("CSV Column Value")
+        th = table.add_header("Column Value")
         th.add_style("padding: 5px")
         th.add_class('smaller')
  
@@ -1017,7 +973,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         th.add_class('smaller')
     
         # Settings activator 
-        th = table.add_header("<div class='glyphicon glyphicon-cog'/>")
+        th = table.add_header("&nbsp;")
         th.add_style("padding: 5px")
         th.add_style('min-width: 10px')
         th.add_class('smaller')
@@ -1085,7 +1041,9 @@ class PreviewDataWdg(BaseRefreshWdg):
             sel_val = column_select.get_value()
             
             
-            table.add_row()
+            tr = table.add_row()
+            tr.add_class("tactic_hover")
+
             cb = CheckboxWdg('column_enabled_%s' %j) 
             cb.add_style("margin-left: 5px")
             cb.set_default_checked()
@@ -1107,7 +1065,10 @@ class PreviewDataWdg(BaseRefreshWdg):
                 if sel_val != '' or not my.is_refresh:
                     cb.set_default_checked()
 
-            table.add_cell(cb) 
+            td = table.add_cell(cb) 
+            td.add_style("padding-left: 5px")
+
+
             td = table.add_cell(cell)
             td.add_style("padding: 3px")
             
@@ -1175,6 +1136,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             # Secondary column options - column type or note process
             column_option_div = IconWdg(icon="BS_COG")
             td = table.add_cell( column_option_div )
+            td.add_style("padding: 3px 3px 3px 10px")
             if sel_val == '(note)' or sel_val == '':
                 options_form = DivWdg(id="column_options_form")
                 options_form.add_style("width", "250px")
@@ -1186,9 +1148,10 @@ class PreviewDataWdg(BaseRefreshWdg):
                 options_form.add(options_form_inputs)
                 options_form_inputs.add_style("display", "inline-block")
                 
-                save = ActionButtonWdg(title="Save")
-                save.add_style("display", "inline-block")
-                save.add_style("padding", "5px")
+                save = ActionButtonWdg(title="OK")
+                save.add_style("display", "block")
+                save.add_style("width", "150px")
+                save.add_style("margin", "5px auto")
                 options_form.add(save)
                 save.add_behavior( {
                     'type': 'click_up',
@@ -1227,7 +1190,10 @@ class PreviewDataWdg(BaseRefreshWdg):
                     '''
                 } )
                 
-                offset = {'x':20, 'y': 0}
+                options_form.add("<br clear='all'/>")
+                options_form.add("<br clear='all'/>")
+
+                offset = {'x':10, 'y': 0}
                 dialog = DialogWdg(offset=offset)
                 dialog.add(options_form, name="content")
                 dialog.set_as_activator(column_option_div)
@@ -1326,8 +1292,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_name_input = TextWdg("new_column_name_%s" % j)
                 column_name_group.add(column_name_input)
                 column_name_input.add_class("form-control")
-                column_name_input.add_style('border-color: #8DA832')
-                column_name_input.add_style("width", "150px")
+                #column_name_input.add_style("width", "150px")
                 column_name_input.set_value(processed_title)
 
                 column_type_group = DivWdg()
@@ -1342,8 +1307,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type_input.set_option("labels", "Varchar(256)|Text|Integer|Float|Date|Boolean")
                 column_type_input.set_option("values", "varchar(256)|text|integer|float|timestamp|boolean")
                 column_type_input.add_class("form-control")
-                column_type_input.add_style('border-color: #8DA832')
-                column_type_input.add_style("width", "150px")
+                #column_type_input.add_style("width", "150px")
                 column_type_input.set_option("default", processed_type)
 
         if skipped_columns:
@@ -1443,9 +1407,12 @@ class PreviewDataWdg(BaseRefreshWdg):
         
         refresh_button = ActionButtonWdg(title="Refresh")
 
-        refresh_button.add_behavior({'type' : 'click_up',
-                    'cbjs_action': "spt.panel.refresh('preview_data',\
-                    spt.api.Utility.get_input_values('csv_import_main'))"})
+        refresh_button.add_behavior({
+            'type' : 'click_up',
+            'cbjs_action': '''
+            spt.panel.refresh('preview_data', spt.api.Utility.get_input_values('csv_import_main'))
+            '''
+        })
 
         refresh_button.add_style("float: left")
         div.add(refresh_button)

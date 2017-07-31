@@ -206,12 +206,18 @@ class TacticServerStub(object):
             # Python 2.7.9 made ssl certificates required and will not allow
             # an unsigned certificate.  This disables that check
             import ssl
-            context = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
-            my.server = xmlrpclib.ServerProxy(
-                        url, allow_none=True,
-                        verbose=False, use_datetime=False, 
-                        transport=xmlrpclib.SafeTransport(context=context)
-             )
+            try:
+                context = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
+                my.server = xmlrpclib.ServerProxy(
+                            url, allow_none=True,
+                            verbose=False, use_datetime=False, 
+                            transport=xmlrpclib.SafeTransport(context=context)
+                 )
+            except:
+                my.server = xmlrpclib.ServerProxy(
+                            url, allow_none=True,
+                            verbose=False, use_datetime=False, 
+                 )
 
         else:
             my.server = xmlrpclib.Server(url, allow_none=True)
@@ -3137,7 +3143,54 @@ class TacticServerStub(object):
         return interpreter
 
 
+
+    #
+    # trigger methods
+    #
+    def call_trigger(my, search_key, event, input={}, process=None):
+        '''Calls a trigger with input package
+        
+        @params
+        ticket - authentication ticket
+        event - name of event
+        input - input data to send to the trigger
+        '''
+        return my.server.call_trigger(my.ticket, search_key, event, input, process)
+
+
+
+    def set_workflow_status(my, search_key, process, status, data={}):
+        '''Set the status of a process in a workflow.
+
+        @params
+        search_key - the sobject that contains the trigger
+        process - the process node of the workflow of the sobject
+        status - the status to be set
+        data - dictionary data that needs to be sent to the process
+        '''
+        return my.server.set_workflow_status(my.ticket, search_key, process, status, data)
+
+
+    def get_workflow_status(my, search_key, process):
+        '''Set the status of a process in a workflow.
+
+        @params
+        search_key - the sobject that contains the trigger
+        process - the process node of the workflow of the sobject
+        '''
+        return my.server.get_workflow_status(my.ticket, search_key, process)
+
+
+
+
+
+
+    #
+    # session methods
+    #
     def commit_session(my, session_xml, pid):
+        # DEPRECATED
+
         '''Takes a session xml and commits it.  Also handles transfer to old
         style xml data.  Generally, this is executed through the application
         package: tactic_client_lib/application/common/introspect.py. However,
@@ -3974,6 +4027,26 @@ class TacticServerStub(object):
         return my.server.get_doc_link(my.ticket, alias);
 
 
+    #
+    # Access to some useful external functions
+    #
+    def send_rest_request(my, method, url, params={}):
+
+        import requests
+
+        method = method.lower()
+        if method == "post":
+            r = requests.post(url, params)
+        else:
+            r = requests.get(url, params)
+
+        return r.json()
+
+
+        #return my.server.send_post(my.ticket, search_type, title)
+
+
+
 
     #
     # API/Server Version functions
@@ -4085,6 +4158,11 @@ class TacticServerStub(object):
 
 
 
+
+
+class TACTIC(TacticServerStub):
+    '''Alternate simpler name for this class'''
+    pass
 
 
 #

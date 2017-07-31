@@ -31,7 +31,6 @@ class PythonCmd(Command):
         script_path = my.kwargs.get("script_path")
         file_path = my.kwargs.get("file_path")
 
-
         # if a script path is specified, then get it from the custom_script
         # table
         if script_path:
@@ -182,6 +181,7 @@ class PythonTrigger(Trigger):
         ret_val = cmd.execute()
 
         my.ret_val = ret_val
+        my.info['result'] = ret_val
 
         #print "input: ", my.input
         #print "output: ", my.output

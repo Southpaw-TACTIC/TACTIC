@@ -134,7 +134,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         """
 
 
-        menus = None
+        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+            see_all = True
+        else:
+            see_all = False
+
+
+        # Admin ignores the menus definition
+        if security.check_access("builtin", "view_site_admin", "allow"):
+            menus = None
+
+
         if menus:
             for submenu, labels in menus.items():
 
@@ -145,7 +155,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     builtin_access = my.get_builtin_access(label)
 
                     access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                    local_access = security.check_access("gear_menu", access_keys, "allow")
+                    local_access = see_all or security.check_access("gear_menu", access_keys, "allow")
 
 
                     if builtin_access or local_access:
@@ -290,9 +300,11 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             my.is_admin = True
         else:
             my.is_admin = False
-        
-        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
-            my.is_admin = True
+       
+       
+        # see all menu items
+        #if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+        #    my.is_admin = True
 
 
         if my.is_admin:
