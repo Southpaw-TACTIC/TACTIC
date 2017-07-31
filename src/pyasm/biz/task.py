@@ -1069,7 +1069,6 @@ class Task(SObject):
         # get all of the process_sobjects
         process_sobjects = pipeline.get_process_sobjects()
 
-        from pyasm.common import SPTDate
         if not start_date:
             start_date = SPTDate.today()
         else:
@@ -1080,7 +1079,7 @@ class Task(SObject):
         start_date = SPTDate.set_noon(start_date)
 
         if start_offset:
-            start_date.add_days(start_offset)
+            start_date = SPTDate.add_business_days(start_date, start_offset)
       
 
         for process_name in process_names:
