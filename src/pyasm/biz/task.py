@@ -18,7 +18,7 @@ from pyasm.common import Xml, Environment, Common, SPTDate, Config
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
 from prod_setting import ProdSetting, ProjectSetting
 from pipeline import Pipeline
-from pyasm.common import Environment, Date
+from pyasm.common import Environment
 from project import Project
 from status import StatusLog
 
@@ -1003,8 +1003,8 @@ class Task(SObject):
         # this is the explicit mode for creating task for a specific process:context combo
         if mode == 'context':
 
-            start_date = Date()
-            start_date.add_days(start_offset)
+            start_date= SPTDate.today()
+            start_date = SPTDate.add_business_days(start_date, start_offset)
 
             for context_combo in contexts:
                 process_name, context = context_combo.split(':')               
@@ -1042,13 +1042,12 @@ class Task(SObject):
                     bid_duration = int(bid_duration)
 
 
-                end_date = start_date.copy()
                 # for a task to be x days long, we need duration x-1.
-                end_date.add_days(duration-1)
+                end_date = SPTDate.add_business_days(start_date, duration-1)
 
                 
-                start_date_str = start_date.get_db_date()
-                end_date_str = end_date.get_db_date()
+                start_date_str = start_date.strftime("%Y-%m-%d")
+                end_date_str = end_date.strftime("%Y-%m-%d")
 
                 # Create the task
                 last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
@@ -1059,9 +1058,8 @@ class Task(SObject):
                 # for backward compatibility, if the process has been created, we will skip later below
 
                 tasks.append(last_task)
-                start_date = end_date.copy()
                 # start the day after
-                start_date.add_days(1)
+                start_date = SPTDate.add_business_days(end_date, 1)
 
             return tasks
 
@@ -1069,7 +1067,6 @@ class Task(SObject):
         # get all of the process_sobjects
         process_sobjects = pipeline.get_process_sobjects()
 
-        from pyasm.common import SPTDate
         if not start_date:
             start_date = SPTDate.today()
         else:
@@ -1080,7 +1077,7 @@ class Task(SObject):
         start_date = SPTDate.set_noon(start_date)
 
         if start_offset:
-            start_date.add_days(start_offset)
+            start_date = SPTDate.add_business_days(start_date, start_offset)
       
 
         for process_name in process_names:
