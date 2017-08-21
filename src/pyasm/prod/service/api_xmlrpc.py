@@ -6088,8 +6088,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def send_rest_request(my, ticket, method, url, params={}):
 
-        print "url: ", url
-
         import requests
 
         method = method.lower()

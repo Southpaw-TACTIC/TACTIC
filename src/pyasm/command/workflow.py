@@ -788,8 +788,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     contexts = context.split(",")
                     context = contexts[0]
                     snapshot = Snapshot.get_latest_by_sobject(my.sobject, context=context)
-                    print "snapshto: ", snapshot
-
 
                 else:
                     # else get the latest checkin from the process
@@ -870,8 +868,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process_obj = my.pipeline.get_process(my.process)
 
         error = my.input.get("error")
-        print "error: ", error
-
 
 
         """
