@@ -53,6 +53,7 @@ class Dataflow(object):
         if not input_processes:
             return {}
 
+        # get the first process for now
         p = input_processes[0]
 
         process_name = p.get_name()
@@ -75,6 +76,7 @@ class Dataflow(object):
 
 
     def get_input_path(my, sobject, process):
+        '''Assumes a single input path'''
 
         state = my.get_input_state(sobject, process)
         if not state:
@@ -82,6 +84,10 @@ class Dataflow(object):
 
         path = state.get("path")
         return path
+
+
+    def get_output_path(my, sobject, process):
+        pass
 
 
 
@@ -134,9 +140,9 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_file()
+            #my._test_file()
             #my._test_checkin()
-            #my._test_manual()
+            my._test_context_output()
         except Exception, e:
             print "Error: ", e
             raise
@@ -381,7 +387,7 @@ class WorkflowCmd(Command):
         process.commit()
 
 
-        # the process takes the path from the prvious process
+        # the process takes the path from the previous process
         process = processes.get("b")
         process.set_json_value("workflow", {
             'output': {
@@ -390,6 +396,8 @@ class WorkflowCmd(Command):
             'on_action': r'''
             data = input.get("data")
             path = data.get("path")
+
+            print "path: ", path
 
             f = open(path, "r")
             content = f.read()
@@ -449,7 +457,7 @@ class WorkflowCmd(Command):
         Trigger.call(my, "process|pending", output)
 
 
-    def _test_manual(my):
+    def _test_context_output(my):
 
         # create a dummy sobject
         sobject = my.setup()
@@ -473,7 +481,7 @@ class WorkflowCmd(Command):
         process = processes.get("a")
         process.set_json_value("workflow", {
             'output': {
-                'context': 'test',
+                'context': 'test,test2',
             },
             'on_action': r'''
 
@@ -482,13 +490,17 @@ class WorkflowCmd(Command):
             f.write("OMG\n")
             f.close()
 
+            path2 = "/tmp/test2.txt"
+            f = open(path2, 'w')
+            f.write("OMG2\n")
+            f.close()
+
+
+
             sobject = input.get("sobject")
             search_key = sobject.get("__search_key__")
-            print "running process: a"
-
             server.simple_checkin(search_key, "test", path, mode="move")
-
-
+            server.simple_checkin(search_key, "test2", path2, mode="move")
 
             '''
         } )
@@ -498,11 +510,6 @@ class WorkflowCmd(Command):
 
         # create a task for b
         task = Task.create(sobject, process="b")
-
-
-        #dataflow = Dataflow()
-        #path = dataflow.get_input_path(sobject, "b")
-        #my.assertEquals("", path)
 
 
         # Run the pipeline, this will stop at b
@@ -515,28 +522,15 @@ class WorkflowCmd(Command):
         Trigger.call(my, "process|pending", output)
 
 
-        # check status of a and b
-        key = "%s|%s|status" % (sobject.get_search_key(), "a")
-        search = Search("sthpw/message")
-        search.add_filter("code", key)
-        message = search.get_sobject()
-        print "mmmm: ", message.get_data()
-
-
-
+        # use data flow to get the input path.  Basically, this states
+        # "get me whatever my input is delivering"
         dataflow = Dataflow()
         path = dataflow.get_input_path(sobject, "b")
-        print "path: ", path
 
+        print "path: ", path
 
         task.set_value("status", "complete")
         task.commit()
-
-
-        fasfds
-
-
-        return
 
 
 

@@ -577,7 +577,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         
         top.add_color("background", "background", -2)
         top.add_color("color", "color3")
-        top.add_style("margin: -1px 0px 10px 0px")
+        top.add_style("margin: 0px 0px 10px 0px")
         #top.add_border(color="table_border")
         top.add_style("padding-right: 30px")
         top.add_style("padding-left: 8px")

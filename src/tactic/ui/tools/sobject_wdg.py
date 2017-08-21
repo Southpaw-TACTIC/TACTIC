@@ -1482,6 +1482,10 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         process = my.sobject.get("process")
         task_code = my.sobject.get("code")
+        status = my.sobject.get("status")
+        description = my.sobject.get("description")
+        start_date = my.sobject.get("bid_start_date")
+        end_date = my.sobject.get("bid_end_date")
 
         bgcolor = title.get_color("background")
         title.add("<span style='font-size: 1.2em; padding: 4px; margin: 0px 20px 0px 0px;'>%s</span>  Task <i>(%s)</i>" % (process, code))
@@ -1496,6 +1500,32 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         title.add("<hr/>")
 
+
+        table = Table()
+        title.add(table)
+        table.add_style("width: 100%")
+        table.add_style("margin-right: 30px")
+
+        if description:
+            table.add_row()
+            table.add_cell("Description:")
+            table.add_cell(description)
+
+
+
+        if start_date:
+            table.add_row()
+            table.add_cell("Start Date:")
+            table.add_cell(start_date)
+
+        if end_date:
+            table.add_row()
+            table.add_cell("End Date:")
+            table.add_cell(end_date)
+
+        table.add_row()
+        table.add_cell("Status:")
+        table.add_cell(status)
 
         return title
 
@@ -1540,22 +1570,23 @@ class TaskDetailWdg(SObjectDetailWdg):
             parent_type = my.parent.get_base_search_type()
             config_xml.append( '''
             <element name="info" title="Info">
-             <display class='tactic.ui.container.ContentBoxWdg'>
-                  <title>Info</title>
-                  <content_height>auto</content_height>
-                  <content_width>600px</content_width>
-                  <config>
-                    <element name="content">
-                      <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
-                        <search_type>%s</search_type>
-                        <search_key>%s</search_key>
-                        <width>600px</width>
-                        <mode>view</mode>
-                        <view>detail</view>
-                      </display>
-                    </element>
-                  </config>
-                </display>
+              <display class='tactic.ui.panel.CustomLayoutWdg'>
+              <html>
+                <div style="margin: 20px">
+                  <div style="font-size: 16px">Detailed Info</div>
+                  <hr/>
+                  <element name="content">
+                    <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
+                      <search_type>%s</search_type>
+                      <search_key>%s</search_key>
+                      <width>600px</width>
+                      <mode>view</mode>
+                      <view>detail</view>
+                    </display>
+                  </element>
+                  </div>
+              </html>
+              </display>
             </element>
             ''' % (parent_type, parent_key) )
 

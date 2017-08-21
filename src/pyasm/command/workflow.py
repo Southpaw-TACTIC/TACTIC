@@ -779,9 +779,22 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 my.output_data['snapshot'] = None
                 my.output_data['path'] = process_output.get("path")
 
+            # default is snapshot
             else:
                 from pyasm.biz import Snapshot
-                snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+
+                context = process_output.get("context")
+                if context:
+                    contexts = context.split(",")
+                    context = contexts[0]
+                    snapshot = Snapshot.get_latest_by_sobject(my.sobject, context=context)
+                    print "snapshto: ", snapshot
+
+
+                else:
+                    # else get the latest checkin from the process
+                    snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+
                 if snapshot:
                     my.output_data['snapshot'] = snapshot
                     my.output_data['path'] = snapshot.get_lib_path_by_type()

@@ -1141,7 +1141,7 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
     def handle_layout_behaviors(my, layout):
         name = Common.get_filesystem_name(my.get_name())
         layout.add_relay_behavior( {
-        'type': 'mouseup',
+        'type': 'click',
         #'propagate_evt': True,
         'bvr_match_class': 'spt_format_checkbox_%s' %name.replace("/","_") ,
 
@@ -1151,12 +1151,14 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         var value_wdg = bvr.src_el;
         var checkbox = value_wdg.getElement(".spt_input");
         // FIXME: Not sure why we have to replicate checkbox basic behavior ...
+        /*
         if (checkbox && checkbox.type =='checkbox'){
             if (checkbox.checked) 
                 checkbox.checked = false;
             else
                 checkbox.checked = true;
         }
+        */
         /*
         var cell = bvr.src_el.getParent(".spt_cell_edit");
         var element_name = spt.table.get_element_name_by_cell(cell);
@@ -1318,8 +1320,24 @@ class ProjectSecurityWdg(BaseRefreshWdg):
                 search.add_op("or")
         else:
             groups = LoginGroup.get_by_project()
-            group_names = [x.get_value("login_group") for x in groups]
+
+
+            ignore = my.kwargs.get("ignore_groups")
+            if ignore:
+                ignore = ignore.split(",")
+
+
+            group_names = []
+            for group in groups:
+                login_group = group.get_value("login_group")
+                if login_group in ignore:
+                    continue
+
+                group_names.append(login_group)
+
+
             search.add_filters("login_group", group_names)
+
 
         groups = search.get_sobjects()
 
@@ -1470,11 +1488,43 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         } )
 
 
+
+        show_add = my.kwargs.get("show_add")
+        if show_add in [True, 'true']:
+            project_code = Project.get_project_code()
+
+            add_button = ButtonNewWdg(tip="Refresh", icon="BS_PLUS")
+            button_row.add(add_button)
+            add_button.add_behavior( {
+                'type': 'click_up',
+                'project_code': project_code,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.EditWdg';
+                var kwargs = {
+                    search_type: 'sthpw/login_group',
+                    view: 'project_edit',
+                    extra_data: {
+                        project_code: bvr.project_code,
+                    },
+
+                }
+
+                spt.panel.load_popup("Add New Group", class_name, kwargs);
+                '''
+
+            } )
+
+
+
+
         sobjects = my.get_sobjects(group_names)
 
         my.set_access_levels(sobjects, group_names)
 
         # these are virtual sobjects, don't show search limit to avoid pagination 
+
+        group_elements = my.get_group_elements()
+
         layout = FastTableLayoutWdg(
             search_type='sthpw/virtual', view='table',
             show_shelf=False,
@@ -1484,7 +1534,10 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             save_class_name=my.get_save_cbk(),
             init_load_num = -1,
             expand_on_load=True,
-            show_context_menu=False
+            show_context_menu=False,
+            group_elements=group_elements,
+            #show_border=False,
+
         )
         layout.set_sobjects(sobjects)
         top.add(layout)
@@ -1495,6 +1548,9 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
     def get_display_columns(my):
         return ['preview', 'title']
+
+    def get_group_elements(my):
+        return []
 
 
     def get_save_cbk(my):
@@ -1798,10 +1854,25 @@ class LinkSecurityWdg(ProjectSecurityWdg):
 
 
     def get_display_columns(my):
-        return ['title', 'name']
+        show_name = my.kwargs.get("show_name")
+        show_description = my.kwargs.get("show_description")
+
+        columns = ['title']
+
+        if show_name not in [False, 'false']:
+            columns.append('name')
+
+        if show_description in [True, 'true']:
+            columns.append('description')
+
+        return columns
 
 
-    def get_info(my, config, names, links, titles, icons, level):
+    def get_group_elements(my):
+        return ['category']
+
+
+    def get_info(my, config, names, links, titles, descriptions, icons, level):
 
         element_names = config.get_element_names()
         for element_name in element_names:
@@ -1818,8 +1889,14 @@ class LinkSecurityWdg(ProjectSecurityWdg):
             if not title:
                 title = Common.get_display_title(element_name)
 
+            description = attrs.get("description")
+            if not description:
+                description = ""
+
+
             links.append(element_name)
             titles.append(title)
+            descriptions.append(description)
 
             icon = DivWdg()
             icons.append(icon)
@@ -1844,21 +1921,27 @@ class LinkSecurityWdg(ProjectSecurityWdg):
                     folder_view = element_name
                 # usually folder_view = element_name , but it could be manually changed 
                 sub_config = SideBarBookmarkMenuWdg.get_config( "SideBarWdg", folder_view)
-                my.get_info(sub_config, names, links, titles, icons, level+1)
+                my.get_info(sub_config, names, links, titles, descriptions, icons, level+1)
             
 
     def get_sobjects(my, group_names):
         #from pyasm.widget import WidgetConfig, WidgetConfigView
         #from pyasm.search import WidgetDbConfig
 
-        config = SideBarBookmarkMenuWdg.get_config( "SideBarWdg", "project_view")
+        base = my.kwargs.get("base")
+        if not base:
+            base = "project_view"
+
+        config = SideBarBookmarkMenuWdg.get_config( "SideBarWdg", base)
 
         names = []
         links = []
         titles = []
+        descriptions = []
+        categories = []
         icons = []
         level = 0
-        my.get_info(config, names, links, titles, icons, level)
+        my.get_info(config, names, links, titles, descriptions, icons, level)
             
 
         rules_dict = {}
@@ -1866,10 +1949,14 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         project = Project.get()
         project_code = project.get_code()
 
+
+
         my_admin_links = ['manage_my_views', 'my_preference']
         for my_admin_link in my_admin_links:
             names.insert(0, my_admin_link)
-            titles.insert(0, my_admin_link)
+            titles.insert(0, my_admin_link.replace("_", " ").title())
+            descriptions.insert(0, "")
+            categories.insert(0, "Admin")
             icons.insert(0, "")
             links.insert(0, my_admin_link)
 
@@ -1877,11 +1964,18 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         names.insert(0, "*")
         links.insert(0, "*")
         titles.insert(0, "ALL LINKS")
+        descriptions.insert(0, "Able to see all links")
         icons.insert(0, "")
+
+        show_icon = my.kwargs.get("show_icon")
+        if show_icon in [False, 'false']:
+            show_icon = False
+        else:
+            show_icon = True
 
       
         sobjects = []
-        for name, link, title, icon in zip(names, links, titles, icons):
+        for name, link, title, description, icon in zip(names, links, titles, descriptions, icons):
 
             sobject = SearchType.create("sthpw/virtual")
 
@@ -1889,13 +1983,17 @@ class LinkSecurityWdg(ProjectSecurityWdg):
                 sobject.set_value("_extra_data", {"is_all": True})
 
             title_wdg = DivWdg()
-            title_wdg.add(icon)
+
+            if show_icon:
+                title_wdg.add(icon)
             title_wdg.add(title)
 
             sobject.set_value("id", 1)
             sobject.set_value("code", link)
             sobject.set_value("title", title_wdg)
             sobject.set_value("name", name)
+            sobject.set_value("description", description)
+            sobject.set_value("category", "Sidebar Links")
             sobject.set_value("_extra_data", {"link": link})
             for group_name in group_names:
 

@@ -6082,6 +6082,28 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
+    #
+    # Access to some useful external functions
+    #
+    @xmlrpc_decorator
+    def send_rest_request(my, ticket, method, url, params={}):
+
+        print "url: ", url
+
+        import requests
+
+        method = method.lower()
+        if method == "post":
+            r = requests.post(url, params)
+        else:
+            r = requests.get(url, params)
+
+        return r.json()
+
+
+
+
+
 
     # FIXME: this method should not be in the API.  It is way too specific to
     # a single use and cannot be used for any other purpose.  We
