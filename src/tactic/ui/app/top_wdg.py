@@ -98,6 +98,13 @@ class TopWdg(Widget):
             spt.body.focus_elements.push(el);
         }
 
+        spt.body.remove_focus_element = function(el) {
+            var index = spt.body.focus_elements.indexOf(el);
+            if (index != -1) {
+                spt.body.focus_elements.splice(index, 1);
+            }
+        }
+
         // find all of the registered popups and close them
         // NOTE: logic can handle more than 1 focus element should it happen ...
         spt.body.hide_focus_elements = function(evt) {

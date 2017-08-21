@@ -201,6 +201,10 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         if attributes.get("is_visible") == "false":
             return
 
+        if options.get("popup") in [True, 'true']:
+            popup = True
+        else:
+            popup = False
 
         #display_options = config.get_display_options(element_name)
         #class_name = display_options.get("class_name")
@@ -291,6 +295,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             } )
         elif link_mode == 'tab':
             # find the tab below the target
+
             li.add("<a>%s</a>" % title)
             li.add_behavior( {
                 'type': 'click',
@@ -298,6 +303,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 'title': title,
                 'link': link,
                 'element_name': element_name,
+                'popup': popup,
                 'target': target,
                 'cbjs_action': '''
 
@@ -325,11 +331,6 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     tab_top = spt.tab.set_tab_top(content);
                 }
                 if (tab_top) {
-                    setTimeout( function() {
-                    spt.app_busy.show("Loading link "+bvr.title);
-                    }, 0 );
-
-
 
                     var link = bvr.src_el.getAttribute("spt_link");
                     var class_name = 'tactic.ui.panel.HashPanelWdg';
@@ -338,14 +339,18 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     }
                     // Note: hash is different from link
                     hash = "/link/" + bvr.element_name;
-                    spt.tab.add_new(bvr.element_name,bvr.title,class_name,kwargs, null, hash);
+
+                    if (bvr.popup) {
+                        spt.panel.load_popup(bvr.title, class_name, kwargs)
+                    }
+                    else {
+                        spt.tab.add_new(bvr.element_name,bvr.title,class_name,kwargs, null, hash);
+                    }
                 }
                 else {
-                    spt.app_busy.show("Loading link "+bvr.title);
                     spt.panel.load_link(content, bvr.link);
                 }
 
-                spt.app_busy.hide();
                 '''
             } )
  

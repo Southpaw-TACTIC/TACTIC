@@ -3266,8 +3266,13 @@ spt.table.get_all_rows = function(embedded) {
     var table = spt.table.get_table();
     var css = embedded ? ".spt_table_row" : ".spt_table_row_" + table.getAttribute('id');
     var rows = table.getElements(css);
+
     // remove last row because it is the insert
-    rows.pop();
+    if (rows.length > 0 && rows[rows.length-1].hasClass("spt_table_insert_row")) {
+        rows.pop();
+    }
+
+
     return rows;
 }
 
@@ -3944,6 +3949,8 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
+
+
     if (cell.hasClass("spt_cell_no_edit")) {
         return;
     }
@@ -4004,6 +4011,7 @@ spt.table.show_edit = function(cell) {
     }
 
 
+
     cell.setStyle("position", "relative");
     cell.setStyle("overflow", "");
 
@@ -4016,6 +4024,7 @@ spt.table.show_edit = function(cell) {
     // store a reference to the cell it represents
     edit_wdg.cell = cell;
     edit_wdg.html = html;
+    edit_wdg.addClass("spt_edit_widget");
 
     edit_wdg.on_complete = function() {
         spt.behavior.replace_inner_html( this.cell, this.html );
@@ -4568,7 +4577,16 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     }
     else {
         edited_cell = edit_wdg.cell;
-        if (edited_cell == null) {
+        if (!edited_cell) {
+            edit_wdg_top = edit_wdg.getParent(".spt_edit_widget");
+            // if this is not inline
+            if (edit_wdg_top) {
+                edited_cell = edit_wdg_top.cell;
+            }
+        }
+
+        // for inline cells
+        if (!edited_cell) {
             edited_cell = edit_wdg.getParent(".spt_cell_edit");
         }
     }
@@ -4718,6 +4736,7 @@ spt.table.set_changed_color = function(row, cell) {
 
 spt.table._accept_single_edit = function(cell, new_value) {
     var old_value = cell.getAttribute("spt_input_value");
+
     if (old_value != new_value) {
 
         // remember the original value

@@ -4031,19 +4031,7 @@ class TacticServerStub(object):
     # Access to some useful external functions
     #
     def send_rest_request(my, method, url, params={}):
-
-        import requests
-
-        method = method.lower()
-        if method == "post":
-            r = requests.post(url, params)
-        else:
-            r = requests.get(url, params)
-
-        return r.json()
-
-
-        #return my.server.send_post(my.ticket, search_type, title)
+        return my.server.send_rest_request(my.ticket, method, url, params)
 
 
 

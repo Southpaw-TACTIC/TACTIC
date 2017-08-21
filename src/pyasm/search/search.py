@@ -3069,6 +3069,17 @@ class SObject(object):
         return value
 
 
+    def get_datetime_display(my, name, format):
+        value = my.get_value(name)
+        if value:
+            value = parser.parse(value)
+            value = value.strftime(format)
+        else:
+            value = ""
+        return value
+
+
+
 
     def get_json_value(my, name, default=None):
         '''get the value that is stored as a json data structure'''

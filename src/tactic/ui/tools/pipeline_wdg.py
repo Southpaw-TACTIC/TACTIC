@@ -3185,7 +3185,7 @@ class ActionInfoWdg(BaseInfoWdg):
 
         pipeline = Pipeline.get_by_code(pipeline_code)
 
-
+        # get the pipeline
         search = Search("sthpw/pipeline")
         search.add_filter("code", pipeline_code)
         pipeline = search.get_sobject()
@@ -4670,6 +4670,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         }
         var server = TacticServerStub.get();
         server.get_unique_sobject( "config/process", data );
+
+        // save the pipeline when a new node is added
+        spt.named_events.fire_event('pipeline|save_button', bvr );
 
         node.click();
         '''

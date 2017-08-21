@@ -662,48 +662,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         div.add(lip_div)
         lip_div.add_class("spt_lip")
         lip_div.add_style("display: none")
-        # disable for now
-        """
-        lip_div.add_color("background", "background", -10)
-        lip_div.add_style("margin-left: -1px")
-        lip_div.add_style("margin-top: -12px")
-        lip_div.add_style("width: 30px")
-        lip_div.add_style("height: 10px")
-        lip_div.add_style("position: absolute")
-        lip_div.add_border()
-        lip_div.set_round_corners(corners=['TR','TL'])
-        """
 
 
         expand_div = DivWdg()
         div.add(expand_div)
         expand_div.add_style("display: none")
-        # disable for now
-        """
-        expand_div.add_style("position: absolute")
-        expand_div.add_style("width: 10px")
-        expand_div.add_style("height: 80px")
-        expand_div.add_style("top: -1px")
-        expand_div.add_style("left: 129px")
-        expand_div.add_border()
-        expand_div.add("<br/>"*2)
-        expand_div.set_round_corners(corners=['TR','BR'])
-        expand_div.add_style("vertical-align: middle")
-        icon = IconWdg("Expand", IconWdg.ARROWHEAD_DARK_RIGHT)
-        expand_div.add(icon)
-        icon.add_style("margin-left: -3")
-        expand_div.add_attr("title", "Click to expand group")
-
-        expand_div.add_behavior( {
-        'type': 'hover',
-        'cbjs_action_over': '''
-        bvr.src_el.setStyle("background", "#F00");
-        ''',
-        'cbjs_action_out': '''
-        bvr.src_el.setStyle("background", "");
-        '''
-        } )
-        """
         
 
         content_div = DivWdg()
@@ -733,10 +696,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         content_div.add("<br/>")
-        content_div.add("(no processes)")
         content_div.add("<br/>")
 
-        button = DivWdg("Click to Add")
+        button = DivWdg("Click to Start")
         content_div.add( button )
 
 
@@ -2861,6 +2823,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     }
 
     return new_node;
+
 }
 
 
@@ -2974,14 +2937,6 @@ spt.pipeline.set_color = function(node, color) {
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
     var color2 = spt.css.modify_color_value(color, -10);
-    /*
-    if( spt.browser.is_Firefox() ) {
-        content.setStyle("background", "-moz-linear-gradient(top, "+color1+" 30%, "+color2+" 95%)");
-    } 
-    else {
-        content.setStyle("background", "-webkit-gradient(linear, 0% 0%, 0% 100%, from("+color1+"), to("+color2+"))");
-    }
-    */
 
     if (spt.pipeline.get_node_type(node) == "condition") {
         angle = 225;
@@ -3136,7 +3091,7 @@ spt.pipeline.get_all_folders = function() {
     return folders;
 }
 
-spt.pipeline.add_folder = function(group_name, color) {
+spt.pipeline.add_folder = function(group_name, color, title) {
 
     if (typeof(color) == 'undefined') {
         color = '#999';
@@ -3153,8 +3108,10 @@ spt.pipeline.add_folder = function(group_name, color) {
 
     var group_label = new_folder.getElement(".spt_group");
 
-    var parts = group_name.split("/");
-    var title = parts[parts.length-1];
+    if (!title) {
+        var parts = group_name.split("/");
+        title = parts[parts.length-1];
+    }
 
     group_label.innerHTML = title;
     canvas.appendChild(new_folder);
@@ -3178,9 +3135,9 @@ spt.pipeline.set_folder_color = function(folder, color) {
     var swatch = folder.getElement(".spt_color_swatch");
     swatch.setStyle("background", color);
 
-    color = '#999'
-    var color1 = spt.css.modify_color_value(color, +5);
-    var color2 = spt.css.modify_color_value(color, -5);
+    color = '#CCC'
+    var color1 = spt.css.modify_color_value(color, +3);
+    var color2 = spt.css.modify_color_value(color, -3);
 
     var content = folder.getElement(".spt_content");
     if( spt.browser.is_Firefox() ) {
@@ -4455,6 +4412,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var pipeline_xml = pipeline.pipeline;
     var pipeline_stype = pipeline.search_type;
     var xml_doc = spt.parse_xml(pipeline_xml);
+    var pipeline_name = pipeline.name;
 
     // first check if the group already there
     var group = spt.pipeline.get_group(pipeline_code);
@@ -4495,7 +4453,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     if (xml_nodes.length == 0) {
-        spt.pipeline.add_folder(pipeline_code, color);
+        spt.pipeline.add_folder(pipeline_code, color, pipeline_name);
     }
     else {
         spt.pipeline.import_nodes(pipeline_code, xml_nodes, 'node');

@@ -631,7 +631,7 @@ class PluginCreator(PluginBase):
         # the new pipeline and not the original ... 
         sobjects = my.get_sobjects_by_node(node)
         if not sobjects:
-            print "Skipping as no sobjects found for [%s]" %search_type
+            #print "Skipping as no sobjects found for [%s]" %search_type
             return []
 
 
@@ -1185,7 +1185,7 @@ class PluginUninstaller(PluginBase):
 
         sobjects = my.get_sobjects_by_node(node)
         if not sobjects:
-            print "Skipping as no sobjects found for: ", node
+            #print "Skipping as no sobjects found for: ", node
             return
 
         # delete all the sobjects present in the plugin
@@ -1328,7 +1328,7 @@ class PluginTools(PluginBase):
         # the new pipeline and not the original ... 
         sobjects = my.get_sobjects_by_node(node)
         if not sobjects:
-            print "Skipping as no sobjects found for [%s]" %search_type
+            #print "Skipping as no sobjects found for [%s]" %search_type
             return []
 
 

@@ -1675,6 +1675,12 @@ TacticServerStub = function() {
     }
 
 
+    // Access to some useful external functions
+    this.send_rest_request = function(method, url, kwargs) {
+        return this._delegate("send_rest_request", arguments, null);
+    }
+
+
 
     // Misc
     this.get_path_from_snapshot = function(snapshot_code, kwargs) {

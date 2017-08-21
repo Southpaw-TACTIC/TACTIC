@@ -18,7 +18,7 @@ import subprocess
 from subprocess import Popen
 
 from pyasm.common import Config, Common, jsonloads, jsondumps
-
+from pyasm.security import Site
 from tactic_client_lib import TacticServerStub
 from tactic_client_lib.interpreter import Handler
 
@@ -45,6 +45,10 @@ class SubprocessTrigger(Handler):
         input_data = my.get_input_data()
         data = my.data
 
+        site = Site.get_site()
+        if site and not data.get("site"):
+            data['site'] = site
+
         # input data for the handler
         if my.mode == 'separate process,blocking':
             input_data_str = jsondumps(input_data)
@@ -54,6 +58,7 @@ class SubprocessTrigger(Handler):
             py_exec = Config.get_value("services", "python")
             if not py_exec:
                 py_exec = "python"
+
 
             retcode = subprocess.call([py_exec, file, data_str, input_data_str])
 
@@ -75,15 +80,6 @@ class SubprocessTrigger(Handler):
             trigger.execute()
 
 
-        # DEPRECATED MMS mode
-        elif my.mode == 'MMS':
-            # run it inline
-            trigger = MMSScriptTrigger()
-            trigger.set_data(data)
-            trigger.set_input(input_data)
-            trigger.execute()
-
-
 
 
 
@@ -94,6 +90,8 @@ class ScriptTrigger(Handler):
 
     def execute(my):
         #protocol = 'xmlrpc'
+
+
         protocol = 'local'
         if protocol == 'local':
             server = TacticServerStub.get()
@@ -125,61 +123,6 @@ class ScriptTrigger(Handler):
 
 
 
-class MMSScriptTrigger(Handler):
-
-    def set_data(my, data):
-        my.data = data
-
-    def execute(my):
-        #protocol = 'xmlrpc'
-        protocol = 'local'
-        if protocol == 'local':
-            server = TacticServerStub.get()
-        else:
-            server = TacticServerStub(protocol=protocol,setup=False)
-            TacticServerStub.set(server)
-
-            project = my.data.get("project")
-            ticket = my.data.get("ticket")
-            assert project
-            assert ticket
-            server.set_server("localhost")
-            server.set_project(project)
-            server.set_ticket(ticket)
-
-        my.class_name = my.data.get('class_name')
-        assert my.class_name
-
-        # get the script to run
-        script_code = my.data.get("script_code")
-        if script_code:
-            search_type = "config/custom_script"
-            search_key = server.build_search_key(search_type, script_code)
-            script_obj = server.get_by_search_key(search_key)
-            script = script_obj.get('script')
-            my.run_script(script)
-        else:
-            print "Nothing to run"
-
-
-    def run_script(my, script):
-        # load and compile the file
-        script = script.lstrip()
-        try:
-            exec(script)
-        except Exception, e:
-            print "-"*20
-            print script
-            print "-"*20
-            raise
-
-        trigger = eval("%s()" % my.class_name)
-
-        input_data = my.get_input_data()
-
-        trigger.set_input(input_data)
-        trigger.execute()
-
 
 #
 # This main function is called from the SubprocessTrigger class defined in
@@ -194,10 +137,12 @@ if __name__ == '__main__':
     data_str = args[0]
     data = jsonloads(data_str)
 
+    site = data.get("site")
+
     from pyasm.security import Batch
     project = data.get("project")
     assert project
-    Batch(project_code=project)
+    Batch(project_code=project, site=site)
 
     input_data_str = args[1]
     input_data = jsonloads(input_data_str)
