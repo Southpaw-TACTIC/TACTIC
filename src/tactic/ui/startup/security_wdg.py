@@ -1325,6 +1325,8 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             ignore = my.kwargs.get("ignore_groups")
             if ignore:
                 ignore = ignore.split(",")
+            else:
+                ignore = []
 
 
             group_names = []
