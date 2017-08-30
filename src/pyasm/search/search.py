@@ -7139,6 +7139,12 @@ class SearchKey(object):
             return []
 
         sobject = sobjects[0]
+
+        # if sobject is none, then this function will not work.
+        # Not sure if this is the right response
+        if not sobject:
+            return [None for x in sobjects]
+
         search_type = sobject.get_base_search_type()
         if isinstance(sobject, SearchType):
             search_type = "sthpw/search_object"
@@ -7153,6 +7159,11 @@ class SearchKey(object):
 
         search_keys = []
         for sobject in sobjects:
+
+            if not sobject:
+                search_keys.append(None)
+                continue
+
             code = sobject.get_value('code', no_exception=True)
             if not use_id and code:
                 search_key = cls.build_search_key(search_type, code, project_code=project_code)

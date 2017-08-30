@@ -733,6 +733,8 @@ class BaseApiXMLRPC(XmlrpcServer):
     def get_sobject_dict(my, sobject, columns=None, use_id=False):
         return my._get_sobject_dict(sobject,columns,use_id)
     def _get_sobject_dict(my, sobject, columns=None, use_id=False):
+        if not sobject:
+            return {}
 
         sobjects = my._get_sobjects_dict([sobject], columns=columns, use_id=use_id)
         if not sobjects:
@@ -2528,7 +2530,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         parent = sobject.get_parent(show_retired=show_retired)
         # this check is for the condition if parent_type is * and the parent is retrieved by Search.get_by_id()
         if show_retired == False and parent and parent.is_retired():
-            parent = None
+            return {}
 
         return my._get_sobject_dict(parent, columns)
 

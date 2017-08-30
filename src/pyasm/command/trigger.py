@@ -136,56 +136,67 @@ class Trigger(Command):
         if not triggers:
             return
 
-        
-        prev_called_triggers = Container.get_seq("Trigger:prev_called_triggers")
+        GlobalContainer.put("KillThreadCmd:allow", "false")
+        try:
+            
+            prev_called_triggers = Container.get_seq("Trigger:prev_called_triggers")
+            # run each trigger in a separate transaction
+            for trigger in triggers:
 
-        # run each trigger in a separate transaction
-        for trigger in triggers:
-        
-            # prevent recursive triggers shutting down the system
-            input = trigger.get_input()
+                try:
+                
+                    # prevent recursive triggers shutting down the system
+                    input = trigger.get_input()
+                    input_json = jsondumps(input)
 
-            # remove timestamp (Why was it commented out? i.e. sync related?)
-            #sobject = input.get('sobject')
-            #if sobject and sobject.has_key('timestamp'):
-            #    del sobject['timestamp']
-            input_json = jsondumps(input)
+                    class_name = Common.get_full_class_name(trigger)
 
-            class_name = Common.get_full_class_name(trigger)
+                    event = trigger.get_event()
 
-            event = trigger.get_event()
+                    if class_name == 'pyasm.command.subprocess_trigger.SubprocessTrigger':
+                        class_name = trigger.get_class_name()
 
-            if class_name == 'pyasm.command.subprocess_trigger.SubprocessTrigger':
-                class_name = trigger.get_class_name()
+                    if (event, class_name, input_json) in prev_called_triggers:
+                        # handle the emails, which can have multiple per event
+                        if class_name in [
+                            "pyasm.command.email_trigger.EmailTrigger",
+                            "pyasm.command.email_trigger.EmailTrigger2"
+                        ]:
+                            pass
+                        else:
+                            #print("Recursive trigger (event: %s,  class: %s)" % (event, class_name))
+                            continue
 
-            if (event, class_name, input_json) in prev_called_triggers:
-                # handle the emails, which can have multiple per event
-                if class_name in [
-                    "pyasm.command.email_trigger.EmailTrigger",
-                    "pyasm.command.email_trigger.EmailTrigger2"
-                ]:
-                    pass
-                else:
-                    #print("Recursive trigger (event: %s,  class: %s)" % (event, class_name))
+                    # store previous called triggers
+                    prev_called_triggers.append( (event, class_name, input_json) )
+
+                    # set call_trigger to false to prevent infinite loops
+                    if not issubclass(trigger.__class__, Trigger):
+                        # if this is not a trigger, then wrap in a command
+                        handler_cmd = HandlerCmd(trigger)
+                        handler_cmd.add_description(trigger.get_description())
+                        trigger = handler_cmd
+
+
+                    # triggers need to run in their own transaction when
+                    # they get here.
+                    Trigger.execute_cmd(trigger, call_trigger=False)
+
+                except Exception, e:
+                    # if there is an error in calling this trigger for some
+                    # reason, carry on with the other triggers
+                    # print the stacktrace
+                    tb = sys.exc_info()[2]
+                    stacktrace = traceback.format_tb(tb)
+                    stacktrace_str = "".join(stacktrace)
+                    print "-"*50
+                    print stacktrace_str
+                    print str(e)
+                    print "-"*50
                     continue
 
-            # store previous called triggers
-            prev_called_triggers.append( (event, class_name, input_json) )
-
-            # set call_trigger to false to prevent infinite loops
-            if not issubclass(trigger.__class__, Trigger):
-                # if this is not a trigger, then wrap in a command
-                handler_cmd = HandlerCmd(trigger)
-                handler_cmd.add_description(trigger.get_description())
-                trigger = handler_cmd
-
-
-            # triggers need to run in their own transaction when
-            # they get here.
-            Trigger.execute_cmd(trigger, call_trigger=False)
-            # DEPRECATED
-            #in_transaction = trigger.is_in_transaction()
-
+        finally:
+            GlobalContainer.remove("KillThreadCmd:allow")
 
     call_all_triggers = staticmethod(call_all_triggers)
 
@@ -557,11 +568,6 @@ class Trigger(Command):
 
                 raise
            
-            # DEPRECATED
-            #try:
-            #    exec("trigger.handle_%s()" % event)
-            #except AttributeError:
-            #    pass
 
         return triggers
 

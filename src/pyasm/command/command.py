@@ -361,29 +361,8 @@ class Command(Base):
                     print "-"*50
                     raise
 
-                from trigger import Trigger
-
-                # every command automatically calls the email trigger
-                # DEPRECATED
-                """
-                if call_trigger:
-                    try:
-                        if not cmd.__class__.__name__ == "EmailTrigger":
-                            print cmd.__class__.__name__
-                            Trigger.call(cmd, "email")
-                    except Exception, e:
-                        # print the stacktrace
-                        tb = sys.exc_info()[2]
-                        stacktrace = traceback.format_tb(tb)
-                        stacktrace_str = "".join(stacktrace)
-                        print "-"*50
-                        print stacktrace_str
-                        print str(e)
-                        print "-"*50
-                        raise
-                """
-
                 # call all registered triggers 
+                from trigger import Trigger
                 Trigger.call_all_triggers()
 
 
