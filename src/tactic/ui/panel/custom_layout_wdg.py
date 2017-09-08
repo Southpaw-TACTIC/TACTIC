@@ -1285,26 +1285,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-        """
-        use_container = attrs.get('use_container') == 'true'
-        if use_container:
-            # DEPRECATED
-            container = my.get_container(xml)
-        else:
-            container = DivWdg()
-
-        # add in attribute from the element definition
-        # DEPRECATED: does this make any sense to have this here?
-        for name, value in attrs.items():
-            if name == 'name':
-                continue
-            container.add_style(name, value)
-        """
-
-
-
-
-
         # add the content
         try:
             view_node = xml.get_node("config/tmp/element/display/view")

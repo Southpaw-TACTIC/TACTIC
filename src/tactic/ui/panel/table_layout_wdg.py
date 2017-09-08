@@ -862,8 +862,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             h_scroll.add(scroll)
-            #scroll.add_style("overflow-y: hidden")
-            #scroll.add_style("overflow-x: none")
 
 
             padding = DivWdg()
@@ -883,6 +881,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             my.header_table.add_class("spt_table_with_headers")
+            my.header_table.set_id("spt_table_with_headers")
             my.header_table.set_unique_id()
             my.handle_headers(my.header_table)
             if table_width:
@@ -895,12 +894,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_style("height: %s" % height)
 
             scroll.add_class("spt_table_scroll")
+            scroll.add_attr( "onScroll", '''$(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
+            # Scroll event not implemented in behaviors yet
+            """
+            scroll.add_behavior( {
+                'type': 'scroll',
+                'cbjs_action': '''
+                console.log(bvr.src_el.scrollLeft);
+                '''
+            } )
+            """
 
-            # Always adding a scroll bar, but using margin-right to hide it
-            #scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
-            #scroll.add_style("overflow-y: scroll")
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")  
+
+            # new
+            scroll.add_style("overflow-x: auto")  
+
+
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -919,8 +930,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 table.add_style("font-size: %s" % font_size)
                 my.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
-            if table_width:
-                table.add_style("width: %s" % table_width)
+            #if table_width:
+            #    table.add_style("width: %s" % table_width)
 
             table.add_color("color", "color")
 
