@@ -487,6 +487,14 @@ class Trigger(Command):
                     else:
                         kwargs = {}
 
+                    # add any data to the kwargs
+                    trigger_data = trigger_sobj.get_value("data")
+                    if trigger_data:
+                        trigger_data = jsonloads(trigger_data)
+                        for name, value in trigger_data.items():
+                            kwargs[name] = value
+
+
                     from subprocess_trigger import SubprocessTrigger
                     trigger = SubprocessTrigger()
                     trigger.set_mode(mode)

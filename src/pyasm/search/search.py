@@ -2999,8 +2999,7 @@ class SObject(object):
         # then look at the old data
         try:
             value = my.data[name]
-            # FIXME: not sure about this being here (was in constructor)
-            # We should support datetime natively
+            # NOTE: We should support datetime natively
             if value and isinstance(value, datetimeclass):
                 value = str(value)
                 return value

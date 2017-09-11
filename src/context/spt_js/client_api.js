@@ -1600,6 +1600,16 @@ TacticServerStub = function() {
         return this._delegate("check_access", arguments, kwargs);
     }
 
+
+    //
+    // Queue Manager
+    //
+    this.add_queue_item = function(class_name, args, kwargs) {
+        return this._delegate("add_queue_item", arguments, kwargs);
+    }
+
+
+
     this.get_column_names = function(search_type) {
         return this._delegate("get_column_names", arguments, null);
     }
@@ -1641,6 +1651,25 @@ TacticServerStub = function() {
     this.set_application_state = function() {
         return this._delegate("set_application_state", arguments, null, null, function() {});
     }
+
+
+    //
+    // Trigger methods
+    //
+    this.call_trigger = function(search_key, event, kwargs) {
+        return this._delegate("call_trigger", arguments, kwargs);
+    }
+
+
+    this.call_pipeline_event = function(search_key, process, event, data) {
+        return this._delegate("call_pipeline_event", arguments)
+    }
+
+    this.get_pipeline_status = function(search_key, process) {
+        return this._delegate("get_pipeline_status", argumnets);
+    }
+
+
 
 
     //
