@@ -477,12 +477,9 @@ class Search(Base):
         search_type_obj = SearchType.get(search_type)
         related_type_obj = SearchType.get(related_type)
 
-        if search_type_obj.get_database() != related_type_obj.get_database():
-            cross_db = True
-        else:
-            cross_db = False
 
-        if cross_db:
+        can_join = DatabaseImpl.can_search_types_join(search_type, related_type)
+        if not can_join:
             column = select.columns[0]
             sobjects = search.get_sobjects()
             values = SObject.get_values(sobjects, column, unique=True)
