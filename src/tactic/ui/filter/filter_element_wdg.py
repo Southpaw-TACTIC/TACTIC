@@ -202,7 +202,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             if search_type_str:
                 expr = '''@SEARCH(%s["%s","%s"].%s)'''%(top_search_type, column, value, search_type_str)
                 sub_search = Search.eval(expr)
-               
+
          
             '''
             for search_type in search_types:
