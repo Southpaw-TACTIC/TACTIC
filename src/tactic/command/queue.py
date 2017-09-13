@@ -386,13 +386,13 @@ class JobTask(SchedulerTask):
                     import time
                     time.sleep(retry_interval)
                     attempts += 1
-                    print("Retrying [%s]...." % attempts)
 
                     if attempts >= max_attempts:
                         print("ERROR: reached max attempts")
                         my.job.set_value("state", "error")
                         break
 
+                    print("Retrying [%s]...." % attempts)
 
             my.job.commit()
             my.jobs.remove(my.job)
