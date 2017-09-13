@@ -1952,8 +1952,10 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         project_code = project.get_code()
 
 
-
+        # not sure why these are added here. 
         my_admin_links = ['manage_my_views', 'my_preference']
+        my_admin_links = []
+
         for my_admin_link in my_admin_links:
             names.insert(0, my_admin_link)
             titles.insert(0, my_admin_link.replace("_", " ").title())
@@ -1990,12 +1992,15 @@ class LinkSecurityWdg(ProjectSecurityWdg):
                 title_wdg.add(icon)
             title_wdg.add(title)
 
+
+            category = "Sidebar Links"
+
             sobject.set_value("id", 1)
             sobject.set_value("code", link)
             sobject.set_value("title", title_wdg)
             sobject.set_value("name", name)
             sobject.set_value("description", description)
-            sobject.set_value("category", "Sidebar Links")
+            sobject.set_value("category", category)
             sobject.set_value("_extra_data", {"link": link})
             for group_name in group_names:
 
