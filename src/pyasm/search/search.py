@@ -455,27 +455,6 @@ class Search(Base):
 
 
 
-    # DEPRECATED
-    """
-    def get_filters(my, name, values, table='', op='in'):
-        assert op in ['in', 'not in']
-        filter = ''
-        if not values or values == ['']:
-            #filter = "%s is NULL" % name
-            filter = "NULL"
-        else:
-            list = [ Sql.quote(value) for value in values ]
-            if table:
-                filter = '"%s"."%s" %s (%s)' % ( table, name, op, ", ".join(list) )
-            else:
-                filter = '"%s" %s (%s)' % ( name, op, ", ".join(list) )
-        return filter
-    """
-
-
-
-
-
 
 
     def add_null_filter(my, name):
@@ -491,7 +470,22 @@ class Search(Base):
         SELECT * FROM "request" WHERE "id" in ( SELECT "request_id" FROM "job" WHERE "code" = '123MMS' )
         '''
         select = search.get_select()
-        my.select.add_select_filter(name, select, op, table=table)
+
+        search_type = my.get_search_type()
+        related_type = search.get_search_type()
+
+        search_type_obj = SearchType.get(search_type)
+        related_type_obj = SearchType.get(related_type)
+
+
+        can_join = DatabaseImpl.can_search_types_join(search_type, related_type)
+        if not can_join:
+            column = select.columns[0]
+            sobjects = search.get_sobjects()
+            values = SObject.get_values(sobjects, column, unique=True)
+            my.add_filters(name, values)
+        else:
+            my.select.add_select_filter(name, select, op, table=table)
 
     def add_op(my, op, idx=None):
         '''add operator like begin, and, or. with an idx number, it will be inserted instead of appended'''
