@@ -4517,7 +4517,8 @@ spt.table.open_link = function(bvr) {
     if (view) {
         var cls = "tactic.ui.panel.CustomLayoutWdg";
         var kwargs = {
-            view: view
+            view: view,
+            search_key: search_key
         }
     }
     else if (search_key) {

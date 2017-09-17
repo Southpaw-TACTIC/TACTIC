@@ -148,7 +148,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def get_paths(my):
-        raise Exception("What runs this??")
+        #raise Exception("What runs this??")
         return my.paths
 
 

@@ -53,6 +53,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'order': 4,
         'category': 'Options',
     },
+    'link_view': {
+        'description': 'View to link result to another view',
+        'type': 'TextWdg',
+        'order': 4,
+        'category': 'Options',
+    },
     'inline_styles': 'Styles to add to the DIV generated that contains the result of the expression',
     'return':   {
         'descripton' : 'Determines what the expression return type should be',
@@ -666,9 +672,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 link_expr = my.kwargs.get("link_expression")
                 if link_expr:
                     # using direct behavior because new_tab isn't working consistently
-                    #div.add_class("tactic_new_tab")
                     div.add_style("text-decoration", "underline")
-                    #div.add_class("tactic_new_tab")
                     div.add_attr("search_key", my.sobject.get_search_key())
                     div.add_attr("expression", link_expr)
                     div.add_class("hand")
@@ -687,6 +691,32 @@ class ExpressionElementWdg(TypeTableElementWdg):
                         spt.table.open_link(bvr);
                         '''
                     } )
+
+                link_view = my.kwargs.get("link_view")
+                if link_view:
+                    # using direct behavior because new_tab isn't working consistently
+                    div.add_style("text-decoration", "underline")
+                    div.add_attr("search_key", my.sobject.get_search_key())
+                    div.add_attr("view", link_view)
+                    div.add_class("hand")
+
+                    search_type_sobj = my.sobject.get_search_type_obj()
+                    sobj_title = search_type_sobj.get_title()
+
+
+                    #div.add_attr("name", "%s: %s" % (sobj_title, name))
+                    div.add_attr("name", display_result)
+
+                    # click up blocks any other behavior
+                    div.add_behavior( {
+                        'type': 'click_up',
+                        'cbjs_action': '''
+                        spt.table.open_link(bvr);
+                        '''
+                    } )
+
+
+
 
 
 

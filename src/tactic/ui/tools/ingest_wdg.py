@@ -104,7 +104,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             my.search_type = my.sobject.get_search_type()
 
             my.show_settings = my.kwargs.get("show_settings")
-            if not my.show_settings:
+            if my.show_settings in [False, 'false']:
                 my.show_settings = False
 
 
@@ -157,6 +157,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 line.add(" ")
 
 
+
             right = table.add_cell()
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
@@ -167,10 +168,16 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             if my.orig_sobject and my.orig_sobject.column_exists("process"):
                 hidden = HiddenWdg(name="process")
-                #hidden = TextWdg(name="process")
                 top.add(hidden)
                 hidden.add_class("spt_process")
                 process = my.orig_sobject.get_value("process")
+                hidden.set_value(process)
+
+            elif my.kwargs.get("process"):
+                process = my.kwargs.get("process")
+                hidden = HiddenWdg(name="process")
+                top.add(hidden)
+                hidden.add_class("spt_process")
                 hidden.set_value(process)
 
 

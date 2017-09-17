@@ -46,7 +46,7 @@ class BaseInputWdg(HtmlElement):
     get_args_keys = classmethod(get_args_keys)
 
 
-    #def __init__(my,name=None, type=None, label=None):
+    #def __init__(my, name=None, type=None, label=None):
     def __init__(my, name=None, type=None, label=None, **kwargs):
         super(BaseInputWdg,my).__init__(type)
 

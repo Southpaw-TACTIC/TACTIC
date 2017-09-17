@@ -1539,6 +1539,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             show_context_menu=False,
             group_elements=group_elements,
             #show_border=False,
+            #height="auto",
 
         )
         layout.set_sobjects(sobjects)
