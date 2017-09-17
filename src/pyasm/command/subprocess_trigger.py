@@ -31,11 +31,28 @@ class SubprocessTrigger(Handler):
     '''Utility class that calls a trigger by external process'''
     def __init__(my):
         my.mode = "same process,new transaction"
+        my.info = {}
         super(SubprocessTrigger,my).__init__()
 
     def set_data(my, data):
         my.data = data
         my.class_name = data.get("class_name")
+
+        # Since the trigger will run separate somewhere else, we do not
+        # know if the the workflow should stop of not.  The trigger
+        # can define a result in the data
+        kwargs = data.get("kwargs")
+        if kwargs and kwargs.get("result"):
+            my.info['result'] = kwargs.get("result")
+        else:
+            my.info['result'] = True
+
+
+
+
+    def get_info(my):
+        return my.info
+
 
     def get_class_name(my):
         return my.class_name
@@ -52,6 +69,8 @@ class SubprocessTrigger(Handler):
         if site and not data.get("site"):
             data['site'] = site
 
+
+
         # input data for the handler
         if my.mode == 'separate process,blocking':
             input_data_str = jsondumps(input_data)
@@ -64,6 +83,8 @@ class SubprocessTrigger(Handler):
 
 
             retcode = subprocess.call([py_exec, file, data_str, input_data_str])
+
+
 
         elif my.mode == 'separate process,non-blocking':
             input_data_str = jsondumps(input_data)
@@ -94,7 +115,6 @@ class SubprocessTrigger(Handler):
             queue_item = Queue.add(class_name, kwargs, queue_type=queue_type, priority=priority, description=description)
 
 
-
         elif my.mode == 'same process,new transaction':
             # run it inline
             trigger = ScriptTrigger()
@@ -103,8 +123,7 @@ class SubprocessTrigger(Handler):
             trigger.execute()
 
 
-
-
+ 
 class QueueTrigger(Command):
     '''Simple command which is executed from a queue'''
     def execute(my):
