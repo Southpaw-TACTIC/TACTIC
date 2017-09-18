@@ -1892,7 +1892,7 @@ class BaseInfoWdg(BaseRefreshWdg):
         text = TextAreaWdg()
         desc_div.add(text)
         text.add_style("width: 100%")
-        text.add_style("height: 70px")
+        text.add_style("height: 60px")
         text.add_style("padding: 10px")
         text.add(description)
 
@@ -1939,17 +1939,33 @@ class BaseInfoWdg(BaseRefreshWdg):
 
     def get_title_wdg(my, process, node_type, show_node_type_select=True):
 
+        div = DivWdg()
+        div.add_style("margin-top: -25px")
+
+        table = Table()
+        table.add_style("width: 100%")
+        div.add(table)
+        table.add_row()
+        left = table.add_cell()
+        left.add_style("vertical-align: top")
+        left.add_style("padding-left: 10px")
+
+        left.add("<b>Name: </b>")
+
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px 0px 0px 0px")
+        left.add(title_wdg)
+
+        title_wdg.add_style("margin: 0px 0px 0px 0px")
         title_wdg.add_class("spt_title_top")
         title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("padding: 8px 10px 5px 10px")
+        title_wdg.add_style("padding: 0px 10px 0px 0px")
 
-        title_edit_text = TextInputWdg(name="process")
+
+        title_edit_text = TextInputWdg(name="process", height="30px")
         title_wdg.add(title_edit_text)
         title_edit_text.add_class("spt_title_edit")
         title_edit_text.add_style("width: auto")
-        title_edit_text.add_style("border: none")
+        #title_edit_text.add_style("border: none")
 
         title_edit_text.set_value(process)
 
@@ -1995,9 +2011,13 @@ class BaseInfoWdg(BaseRefreshWdg):
 
         else:
 
+            right = table.add_cell()
+            right.add_style("vertical-align: top")
+
+            right.add("<b>Type: </b>")
 
             select = SelectWdg("node_type")
-            title_wdg.add(select)
+            right.add(select)
 
             node_types = [
                 'manual',
@@ -2090,15 +2110,13 @@ class BaseInfoWdg(BaseRefreshWdg):
 
                 '''
             } )
-            select.add_style("float: right")
-            select.add_style("margin-top: -33px")
             select.add_style("position: relative")
             select.add_style("z-index: 10")
 
-        title_wdg.add("<br clear='all'/>")
-        title_wdg.add("<hr/>")
+        div.add("<br clear='all'/>")
+        div.add("<hr/>")
 
-        return title_wdg
+        return div
 
 
 
