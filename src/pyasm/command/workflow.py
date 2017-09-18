@@ -1128,7 +1128,9 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
                     print "WARNING: trigger [%s] does not support get_info" % trigger
                     continue
 
-                ret_val = info.get("result") or True
+                ret_val = info.get("result")
+                if ret_val == None:
+                    ret_val = True
 
                 # as soon as one trigger specifies a value other than
                 # true, that will take precedence
