@@ -1122,7 +1122,12 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
             # for now set it to true
             ret_val = True
             for trigger in triggers:
-                info = trigger.get_info()
+                try:
+                    info = trigger.get_info()
+                except Exception, e:
+                    print "WARNING: trigger [%s] does not support get_info" % trigger
+                    continue
+
                 ret_val = info.get("result") or True
 
                 # as soon as one trigger specifies a value other than
@@ -1130,12 +1135,15 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
                 if ret_val not in [True, 'true']:
                     break
 
-        if ret_val == False:
+        if ret_val in [False, 'false']:
             Trigger.call(my, "process|reject", my.input)
+        elif ret_val in [True, 'true']:
+            Trigger.call(my, "process|complete", my.input)
         elif ret_val in ["block", "wait"]:
+            # NOTE: consider adding a "wait" message directly in the workflow
             pass
         else:
-            Trigger.call(my, "process|complete", my.input)
+            Trigger.call(my, "process|%s" % ret_val, my.input)
 
 
 

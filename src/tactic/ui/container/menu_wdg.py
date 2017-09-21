@@ -425,6 +425,8 @@ class GearMenuWdg(BaseRefreshWdg):
 
         # create the gear menu
         btn_dd = my.btn_dd
+
+        """
         btn_dd.add_styles("width: 36px; height: 18px; padding: none; padding-top: 1px;")
 
         btn_dd.add( "<img src='/context/icons/common/transparent_pixel.gif' alt='' " \
@@ -440,6 +442,18 @@ class GearMenuWdg(BaseRefreshWdg):
         btn_dd.add_behavior( { 'type': 'hover',
                     'mod_styles': 'background-image: url(/context/icons/common/gear_menu_btn_bkg_hilite.png); ' \
                                     'background-repeat: no-repeat;' } )
+
+
+
+        """
+
+        from pyasm.widget import IconWdg
+        from tactic.ui.widget import IconButtonWdg
+        icon = IconButtonWdg(name="Settings", icon="BS_COG", show_arrow="true")
+        btn_dd.add(icon)
+
+
+
         smenu_set = SmartMenu.add_smart_menu_set( btn_dd, { 'DG_TABLE_GEAR_MENU': my.menus } )
         SmartMenu.assign_as_local_activator( btn_dd, "DG_TABLE_GEAR_MENU", True )
         return btn_dd
