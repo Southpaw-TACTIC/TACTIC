@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptCreateWdg', 'ScriptEditWdg', 'ScriptSettingsWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 'ScriptSettingsWdg']
 
 import re
 import os
@@ -238,25 +238,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             show_info_tab = False
         else:
             show_info_tab = True
-
-
-        # DEPRECATED: moved to a gear menu
-        """
-        show_info_tab = False
-      
-        if show_info_tab:
-
-            tr = table.add_row()
-            td = table.add_cell()
-            td.add_attr("colspan", "3")
-            bottom = DivWdg()
-            td.add(bottom)
-
-            bottom.add_style("min-height: 200px")
-
-            tab = PipelineTabWdg(search_type=my.search_type,search_key=my.search_key)
-            bottom.add(tab)
-        """
 
 
 
@@ -1002,16 +983,6 @@ class PipelineListWdg(BaseRefreshWdg):
              '''
              })
 
-        """
-        search_type = pipeline.get_value("search_type")
-        if search_type:
-            span = SpanWdg()
-            span.add_style("font-size: 11px")
-            span.add_style("opacity: 0.75")
-            pipeline_div.add(span)
-            span.add(" (%s)" % search_type)
-        """
-
         pipeline_div.add("<br clear='all'/>")
 
         pipeline_div.add_attr("spt_element_name", pipeline_code)
@@ -1032,16 +1003,6 @@ class PipelineListWdg(BaseRefreshWdg):
 
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
-
-        """
-        menu_item = MenuItem(type='action', label='Copy to Project')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            spt.alert('Not implemented');
-            '''
-        } )
-        menu.add(menu_item)
-        """
 
 
         menu_item = MenuItem(type='action', label='Edit Data')
@@ -1257,18 +1218,6 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
         menu_item = MenuItem(type='title', label='Details')
         menu.add(menu_item)
-
-        """
-        menu_item = MenuItem(type='action', label='Edit Properties')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var node = spt.smenu.get_activator(bvr);
-            spt.named_events.fire_event('pipeline|show_properties', {src_el: node});
-
-            '''
-        } )
-        """
 
 
         menu_item = MenuItem(type='action', label='Edit Process Data')
@@ -1688,22 +1637,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         td.add("<br/>Using Attributes:")
         td.add_style("padding: 5px")
 
-        """
-        connects = pipeline.get_output_connects(from_node)
-        for connect in connects:
-            to = connect.get_to()
-            if to == to_node:
-                break;
-
-        from_attr = connect.get_attr("from_attr")
-        if not from_attr:
-            from_attr = "output"
-        to_attr = connect.get_attr("to_attr")
-        if not to_attr:
-            to_attr = "input"
-
-        """
-
 
         left_selected = my.kwargs.get("from_attr")
         if not left_selected:
@@ -1882,6 +1815,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_class(".spt_process_info_top")
+        my.set_as_panel(top)
 
         pipeline_code = my.kwargs.get("pipeline_code")
         pipeline = Pipeline.get_by_code(pipeline_code)
@@ -1958,7 +1892,7 @@ class BaseInfoWdg(BaseRefreshWdg):
         text = TextAreaWdg()
         desc_div.add(text)
         text.add_style("width: 100%")
-        text.add_style("height: 100px")
+        text.add_style("height: 60px")
         text.add_style("padding: 10px")
         text.add(description)
 
@@ -2005,17 +1939,33 @@ class BaseInfoWdg(BaseRefreshWdg):
 
     def get_title_wdg(my, process, node_type, show_node_type_select=True):
 
+        div = DivWdg()
+        div.add_style("margin-top: -25px")
+
+        table = Table()
+        table.add_style("width: 100%")
+        div.add(table)
+        table.add_row()
+        left = table.add_cell()
+        left.add_style("vertical-align: top")
+        left.add_style("padding-left: 10px")
+
+        left.add("<b>Name: </b>")
+
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px 0px 0px 0px")
+        left.add(title_wdg)
+
+        title_wdg.add_style("margin: 0px 0px 0px 0px")
         title_wdg.add_class("spt_title_top")
         title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("padding: 8px 10px 5px 10px")
+        title_wdg.add_style("padding: 0px 10px 0px 0px")
 
-        title_edit_text = TextInputWdg(name="process")
+
+        title_edit_text = TextInputWdg(name="process", height="30px")
         title_wdg.add(title_edit_text)
         title_edit_text.add_class("spt_title_edit")
         title_edit_text.add_style("width: auto")
-        title_edit_text.add_style("border: none")
+        #title_edit_text.add_style("border: none")
 
         title_edit_text.set_value(process)
 
@@ -2061,9 +2011,13 @@ class BaseInfoWdg(BaseRefreshWdg):
 
         else:
 
+            right = table.add_cell()
+            right.add_style("vertical-align: top")
+
+            right.add("<b>Type: </b>")
 
             select = SelectWdg("node_type")
-            title_wdg.add(select)
+            right.add(select)
 
             node_types = [
                 'manual',
@@ -2156,15 +2110,13 @@ class BaseInfoWdg(BaseRefreshWdg):
 
                 '''
             } )
-            select.add_style("float: right")
-            select.add_style("margin-top: -33px")
             select.add_style("position: relative")
             select.add_style("z-index: 10")
 
-        title_wdg.add("<br clear='all'/>")
-        title_wdg.add("<hr/>")
+        div.add("<br clear='all'/>")
+        div.add("<hr/>")
 
-        return title_wdg
+        return div
 
 
 
@@ -2476,35 +2428,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-        #show error message if the node has not been registered 
-        """
-        if not process_sobj:
-            warning_div = DivWdg()
-            #width = 16 makes the icon smaller
-            warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
-            warning_msg = "This process node has not been registered in the process table, please save your changes."
-           
-            warning_div.add(warning_icon)
-            warning_div.add(warning_msg)
-            top.add(warning_div)
-            warning_div.add_style("padding: 20px 30px")
-            warning_div.add_style("font-size: 15px")
-           
-        else:
-            from tactic.ui.panel import EditWdg
-            edit = EditWdg(
-                    search_type="config/process",
-                    show_header=False,
-                    width="400px",
-                    #view="pipeline_tool_edit",
-                    search_key=process_sobj.get_search_key(),
-            )
-            top.add(edit)
-
-            top.add("<br clear='all'/>")
-        """
-
-
 
         return top
 
@@ -2545,6 +2468,8 @@ class ScriptEditWdg(BaseRefreshWdg):
                 cmd_text.set_value(on_action_class)
 
             cmd_div.add(cmd_text)
+
+
             return div
 
 
@@ -2839,6 +2764,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         return div
 
 # DEPRECATED
+"""
 class ScriptCreateWdg(BaseRefreshWdg):
     ''' Blank Text area for New Script Creation '''
     def get_display(my):
@@ -2865,6 +2791,7 @@ class ScriptCreateWdg(BaseRefreshWdg):
         script_text.add_style("width: 100%")
 
         return div
+"""
 
 
 class ScriptSettingsWdg(BaseRefreshWdg):
@@ -2899,6 +2826,30 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
         div.add(script_wdg)
 
+
+
+        div.add("<br/>")
+
+
+        # Execute mode
+
+        cmd_title = DivWdg("Execute Mode")
+        cmd_title.add_style('margin-bottom: 3px')
+        div.add(cmd_title)
+
+        execute_mode = my.kwargs.get("execute_mode")
+
+        cmd_text = SelectWdg(name="execute_mode")
+        cmd_text.set_option("labels", "In Process|Blocking Separate Process|Non-Blocking Separate Process|Queued")
+        cmd_text.set_option("values", "same process,same transaction|separate process,blocking|separate process,non-blocking|separate process,queued")
+        cmd_text.add_style("width: 100%")
+        if execute_mode:
+            cmd_text.set_value(execute_mode)
+        div.add(cmd_text)
+
+
+
+
         return div
 
 
@@ -2919,6 +2870,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
         cmd_div.add(cmd_text)
         return cmd_div
+
 
 
     def get_existing_script_wdg(my, script_path, script, language, is_admin):
@@ -3137,42 +3089,6 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
 class ActionInfoWdg(BaseInfoWdg):
 
-    """
-    def add_script_wdgX(my, div, script_path,  is_admin, pipeline_code, process_code, on_action_class, language):
-
-        config_xml = []
-
-        from trigger_wdg import TriggerToolWdg
-        expected_script_path = "%s/%s/%s" %(TriggerToolWdg.FOLDER_PREFIX, pipeline_code, process_code)
-
-        config_xml.append('''
-        <config>
-        <tab>
-        ''')
-        config_xml.append('''
-        <element name='script_path'>
-          <display class='tactic.ui.tools.ScriptEditWdg'>
-              <script_path>%s</script_path>
-              <is_admin>%s</is_admin>
-              <expected_script_path>%s</expected_script_path>
-              <on_action_class>%s</on_action_class>
-              <language>%s</language>
-          </display>
-        </element>
-        '''%(script_path,  str(is_admin).lower(), expected_script_path, on_action_class, language))
-        
-        config_xml.append('''
-        </tab>
-        </config>
-        ''')
-        config_xml = "".join(config_xml)
-        tab = TabWdg(config_xml=config_xml, width="400px", show_add=False, show_remove=False, mode="hidden")
-        div.add(tab)
-    """
-
-
-
-
     def get_display(my):
 
         top = my.top
@@ -3208,6 +3124,7 @@ class ActionInfoWdg(BaseInfoWdg):
         process_code = ""
         on_action_class = ""
         action = ""
+        execute_mode = ""
 
         if process_sobj:
             process_code = process_sobj.get_code()
@@ -3219,6 +3136,7 @@ class ActionInfoWdg(BaseInfoWdg):
             if trigger:
                 script_path = trigger.get("script_path")
                 on_action_class = trigger.get("class_name")
+                execute_mode = trigger.get("mode")
 
                 if script_path:
                     action = "script_path"
@@ -3252,9 +3170,19 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
 
+        info_div = DivWdg()
+        top.add(info_div)
+        info_div.add("A action process is a automated process which can execute a script or Python command when invoded from a previous process.")
+        info_div.add_style("margin: 10px 10px 20px 10px")
 
-        input_output_wdg = my.get_input_output_wdg(pipeline, process)
-        top.add(input_output_wdg)
+
+        desc_div = my.get_description_wdg(process_sobj)
+        top.add(desc_div)
+
+
+
+        #input_output_wdg = my.get_input_output_wdg(pipeline, process)
+        #top.add(input_output_wdg)
 
 
         form_wdg = DivWdg()
@@ -3320,6 +3248,7 @@ class ActionInfoWdg(BaseInfoWdg):
             script_path=script_path,
             script=script,
             language=language,
+            execute_mode=execute_mode,
 
         )
         form_wdg.add(script_wdg)
@@ -3377,6 +3306,7 @@ class ActionInfoWdg(BaseInfoWdg):
                 script: script,
                 script_path: script_path,
                 on_action_class: input.on_action_class,
+                execute_mode: input.execute_mode,
                 script_path: script_path,
                 language: input.language,
             }
@@ -4323,7 +4253,7 @@ class ProcessInfoCmd(Command):
         script_path = my.kwargs.get("script_path")
         on_action_class = my.kwargs.get("on_action_class")
 
-
+        execute_mode = my.kwargs.get("execute_mode")
 
         pipeline_code = my.kwargs.get("pipeline_code")
         process = my.kwargs.get("process")
@@ -4362,7 +4292,6 @@ class ProcessInfoCmd(Command):
             trigger = SearchType.create("config/trigger")
             trigger.set_value("event", event)
             trigger.set_value("process", process_sobj.get_code())
-            trigger.set_value("mode", "same process,same transaction")
 
 
         if action == "command":
@@ -4381,6 +4310,13 @@ class ProcessInfoCmd(Command):
                 trigger.set_value("class_name", on_action_class)
 
             trigger.set_value("class_name", "NULL", quoted=False)
+
+
+
+
+        if execute_mode:
+            trigger.set_value("mode", execute_mode)
+
 
         trigger.commit()
 
@@ -4832,29 +4768,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row = ButtonRowWdg(show_title=True)
 
         project_code = Project.get_project_code()
-
-
-        # Do we even need a refresh button?
-        """
-        button = ButtonNewWdg(title="REFRESH", icon="BS_REFRESH")
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            var ok = function () { 
-                editor_top.removeClass("spt_has_changes");
-                spt.panel.refresh(editor_top); 
-            }
-            if (editor_top && editor_top.hasClass("spt_has_changes")) {
-                spt.confirm("Current workflow has changes.  Do you wish to continue?", ok, null);
-            } else {
-                ok();
-            }
-        '''
-        } )
-        """
 
 
         button = ButtonNewWdg(title="Save Current Workflow", icon="BS_SAVE")
@@ -6199,44 +6112,6 @@ class PipelineSaveCbk(Command):
         
         my.description = "Updated workflow [%s]" % pipeline_code
         
-        """
-        count = 0
-        for process_name in process_names:
-
-            exists = False
-            for process_sobj in process_sobjs:
-                # if it already exist, then update
-                if process_sobj.get_value("process") == process_name:
-                    exists = True
-                    break
-            if not exists:
-                process_sobj = SearchType.create("config/process")
-                process_sobj.set_value("pipeline_code", pipeline_code)
-                process_sobj.set_value("process", process_name)
-            
-            attrs = pipeline.get_process_attrs(process_name)
-            color = attrs.get('color')
-            if color:
-                process_sobj.set_value("color", color)
-
-            process_sobj.set_value("sort_order", count)
-            process_sobj.commit()
-            count += 1
-
-
-        # delete obsolete
-        obsolete = set(existing_names) - set(process_names)
-        if obsolete:
-            for obsolete_name in obsolete:
-                for process_sobj in process_sobjs:
-                    # delete it
-                    if process_sobj.get_value("process") == obsolete_name:
-                        process_sobj.delete()
-                        break
-
-        """
-
-
 
 
 class ProcessCopyCmd(Command):
