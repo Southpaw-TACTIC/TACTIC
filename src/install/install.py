@@ -272,6 +272,15 @@ class Install:
             print "Environment variable TACTIC_DATA_DIR '%s' does not exist" % data_dir
             return
 
+
+        # create the dist folder
+        dist_dir = Environment.get_dist_dir()
+        if not os.path.exists(dist_dir):
+            os.makedirs(dist_dir)
+
+
+
+
         my.create_temp_directory()
 
         my.change_directory_ownership()
