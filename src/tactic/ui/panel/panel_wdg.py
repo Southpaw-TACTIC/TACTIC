@@ -2038,28 +2038,6 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-            # TESTING: backwards compatibility
-            """
-            access = security.get_access("link", keys)
-            # if an access is not defined, then check
-            if access != None:
-                allowed = security.compare_access(access, "view")
-            else:
-                # otherwise check for "side_bar" rule for backwards
-                # compatibility
-                access = security.get_access("side_bar", keys)
-                allowed = security.compare_access(access, "view")
-                if allowed == None:
-                    allowed = False
-
-            if not allowed:
-                return
-            """
-
-
-
-
-
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
                 div = my.get_separator_wdg(element_name, config, options)
