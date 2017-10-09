@@ -2299,7 +2299,13 @@ class Select(object):
     def add_order_by(my, order_by, direction='', table=''):
         if order_by == "": return
 
-        if table:
+        if order_by.find("->") != -1:
+            parts = order_by.split(" ")
+            parts2 = parts[0].split("->")
+            parts2[1] = parts2[1].strip("'")
+            order_by = '"%s"->\'%s\'' % (parts2[0], parts2[1])
+
+        elif table:
             order_by = '"%s"."%s"' % (table, order_by)
 
         # we need to store the order_by_column name to maintain uniqueness so MS SQL doesn't error 
@@ -2547,7 +2553,7 @@ class Select(object):
                 for order_by in my.order_bys:
                     if order_by.startswith("( CASE"):
                         order_bys.append(order_by)
-                    elif regex_asc.search(order_by) or regex_desc.search(order_by) :
+                    elif regex_asc.search(order_by) or regex_desc.search(order_by) and order_by.find("->") == -1:
                         parts = order_by.split(" ")
                         parts[0] = parts[0].strip('"')
                         parts[0] = '"%s"' % parts[0]
@@ -2557,7 +2563,9 @@ class Select(object):
                         order_bys.append('"%s"' % order_by)
 
                     else:
-                        if order_by.find(".") == -1:
+                        if order_by.find("->") != -1:
+                            order_bys.append('"%s".%s' % (my.tables[0],order_by))
+                        elif order_by.find(".") == -1:
                             order_bys.append('"%s"."%s"' % (my.tables[0],order_by))
                         else:
                             order_bys.append(order_by)

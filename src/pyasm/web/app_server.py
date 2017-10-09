@@ -390,7 +390,6 @@ class BaseAppServer(Base):
             # you always have access to the default project
             access = True
 
-
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg

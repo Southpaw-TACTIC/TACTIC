@@ -1602,7 +1602,7 @@ class Search(Base):
 
 
     def add_order_by(my, order_str, direction='', join="LEFT OUTER"):
-         
+
         # check if it is valid
         if ',' in order_str:
             order_bys = order_str.split(",")
@@ -1611,7 +1611,7 @@ class Search(Base):
                
                 my.add_order_by(order_by, direction)
             return
-    
+
         order_str = order_str.strip()
         # extract the column: in case of: "code desc"
         strs = order_str.split(' ', 1)
@@ -1623,13 +1623,11 @@ class Search(Base):
         if column in my.order_bys:
             return
 
-
         parts = column.split(".")
         parts = [x for x in parts if x]
         
         if "connect" in parts:
             return
-
 
         if len(parts) >= 2:
             # Add joins to order by another search_type
@@ -1674,26 +1672,17 @@ class Search(Base):
 
             return True
         else:
-            my.order_bys.append(column)
 
             table = my.search_type_obj.get_table()
 
             impl = my.get_database_impl()
             if impl.is_column_sortable(my.get_db_resource(), table, column):
                 my.select.add_order_by(order_str, direction)
+                my.order_bys.append(column)
                 return True
             else:
                 return False
-            """
-            # check to see if the column exists in the table
-            columns = my.get_columns(table)
-            if column in columns:
-                my.select.add_order_by(order_str, direction)
-                return True
-            else:
-                print "WARNING: [%s] cannot be ordered by [%s]" % (my.get_base_search_type(), order_str)
-                return False
-            """
+
 
     def add_enum_order_by(my, column, values, table=None):
         my.select.add_enum_order_by(column, values, table)
@@ -2981,6 +2970,13 @@ class SObject(object):
         #if value != None:
         #    return value
 
+        is_data = False
+        if name.find("->") != -1:
+            parts = name.split("->")
+            is_data = True
+            name = parts[0]
+            attr = parts[1]
+
         from pyasm.biz import Translation
         lang = Translation.get_language()
         if lang:
@@ -2993,14 +2989,22 @@ class SObject(object):
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
         if my.has_updates and my.update_data.has_key(name):
-            
-            return my.update_data[name]
+            if is_data:
+                return my.update_data.get(name).get(attr)
+            else:
+                return my.update_data[name]
 
         # then look at the old data
         try:
             value = my.data[name]
-            # FIXME: not sure about this being here (was in constructor)
-            # We should support datetime natively
+
+            if is_data:
+                value = value.get(attr)
+
+
+            # NOTE: We should support datetime natively, however a lot
+            # of basic operations don't work with datetime so we would always
+            # have to check
             if value and isinstance(value, datetimeclass):
                 value = str(value)
                 return value
@@ -3169,10 +3173,13 @@ class SObject(object):
     def skip_invalid_column(my):
         my._skip_invalid_column = True
 
-    def set_value(my, name, value, quoted=1, temp=False):
+    def set_value(my, name, value, quoted=True, temp=False):
         '''set the value of this sobject. It is
         not commited to the database'''
 
+        if name.find("->") != -1:
+            parts = name.split("->")
+            return my.set_data_value(parts[0], parts[1], value)
 
         from pyasm.biz import Translation
         lang = Translation.get_language()
@@ -3213,6 +3220,8 @@ class SObject(object):
         if isinstance(value, Xml):
             value.clear_xpath_cache()
             value = value.to_string()
+        elif type(value) in [types.DictType]:
+            value = value
         elif type(value) in [types.ListType, types.TupleType]:
             if len(value) == 0:
                 # This check added to handle cases where a list is empty, as 'value[0]' is not defined
@@ -3286,10 +3295,10 @@ class SObject(object):
 
 
 
-    def _set_value(my,  name, value, quoted=1):
+    def _set_value(my,  name, value, quoted=True):
         '''called by set_value()'''
-        if my.update_data.has_key(name) or not my.data.has_key(name) or value != my.data[name]:
 
+        if my.update_data.has_key(name) or not my.data.has_key(name) or value != my.data[name]:
             # FIXME: this may be necessary with MySQL
             #if isinstance(value, basestring):
             #    value = value.replace("\\", "\\\\")
@@ -3298,6 +3307,15 @@ class SObject(object):
             my.quoted_flag[name] = quoted
 
         my.has_updates = True
+
+
+
+    def set_data_value(my, column, name, value, quoted=True):
+        data = my.get_value(column) or {}
+
+        # TODO: make sure the column is a json type
+        data[name] = value
+        my.set_value(column, data)
 
 
 

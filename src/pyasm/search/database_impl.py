@@ -635,6 +635,12 @@ class DatabaseImpl(DatabaseImplInterface):
 class BaseSQLDatabaseImpl(DatabaseImpl):
     
     def is_column_sortable(my, db_resource, table, column):
+
+        # support -> operator
+        if column.find("->"):
+            parts = column.split("->")
+            column = parts[0]
+
         from sql import DbContainer
         sql = DbContainer.get(db_resource)
         columns = sql.get_columns(table)
