@@ -305,6 +305,7 @@ class BaseProcessTrigger(Trigger):
 
 
     def set_all_tasks(my, sobject, process, status):
+
         # prevent for instance TaskStatusChangeTrigger setting a custom task status back to complete
         if not hasattr(my, "internal"):
             my.internal = my.input.get("internal") or False
@@ -354,7 +355,7 @@ class BaseProcessTrigger(Trigger):
             if action:
                 cmd = PythonCmd(code=action, input=input, **kwargs)
             else:
-                cmd = PythonCmd(script_path=script_path, input=input, **kwargs)
+                cmd = PythonCmd(script_path=action_path, input=input, **kwargs)
 
             ret_val = cmd.execute()
 
@@ -744,8 +745,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
     def handle_complete(my):
 
 
-        #print "complete: ", my.process
- 
         # run a nodes complete trigger
         status = "complete"
         my.log_message(my.sobject, my.process, status)
@@ -780,9 +779,20 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 my.output_data['snapshot'] = None
                 my.output_data['path'] = process_output.get("path")
 
+            # default is snapshot
             else:
                 from pyasm.biz import Snapshot
-                snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+
+                context = process_output.get("context")
+                if context:
+                    contexts = context.split(",")
+                    context = contexts[0]
+                    snapshot = Snapshot.get_latest_by_sobject(my.sobject, context=context)
+
+                else:
+                    # else get the latest checkin from the process
+                    snapshot = Snapshot.get_latest_by_sobject(my.sobject, process=process_output.get("process"))
+
                 if snapshot:
                     my.output_data['snapshot'] = snapshot
                     my.output_data['path'] = snapshot.get_lib_path_by_type()
@@ -858,7 +868,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process_obj = my.pipeline.get_process(my.process)
 
         error = my.input.get("error")
-        print "error: ", error
 
 
         """
@@ -1025,7 +1034,9 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         return super(WorkflowManualNodeHandler, my).handle_reject()
 
 
+
     def handle_revise(my):
+
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
@@ -1034,7 +1045,13 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             context = "%s/error" % process
             Note.create(sobject, error, context=context)
 
-        return super(WorkflowManualNodeHandler, my).handle_revise()
+        my.log_message(my.sobject, my.process, "revise")
+        my.run_callback(my.pipeline, my.process, "revise")
+        # set all tasks in the process to revise
+        my.set_all_tasks(my.sobject, my.process, "revise")
+
+        # Manual tasks stop here
+        #return super(WorkflowManualNodeHandler, my).handle_revise()
 
 
 
@@ -1043,10 +1060,23 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
+
+    def handle_pending(my):
+
+        # DISABLE for now
+        #if not my.check_inputs():
+        #    return
+
+        # simply calls action
+        Trigger.call(my, "process|action", output=my.input)
+
+
+
     def handle_action(my):
         #print "action: ", my.process
 
         my.log_message(my.sobject, my.process, "in_progress")
+        my.set_all_tasks(my.sobject, my.process, "in_progress")
 
         process_obj = my.pipeline.get_process(my.process)
 
@@ -1088,9 +1118,34 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
             ret_val = cmd.execute()
         else:
             # or call an action trigger
-            Trigger.call(my, "process|action", input, process=process_sobj.get_code())
+            triggers = Trigger.call(my, "process|action", input, process=process_sobj.get_code())
+            # for now set it to true
+            ret_val = True
+            for trigger in triggers:
+                try:
+                    info = trigger.get_info()
+                except Exception, e:
+                    print "WARNING: trigger [%s] does not support get_info" % trigger
+                    continue
 
-        Trigger.call(my, "process|complete", my.input)
+                ret_val = info.get("result")
+                if ret_val == None:
+                    ret_val = True
+
+                # as soon as one trigger specifies a value other than
+                # true, that will take precedence
+                if ret_val not in [True, 'true']:
+                    break
+
+        if ret_val in [False, 'false']:
+            Trigger.call(my, "process|reject", my.input)
+        elif ret_val in [True, 'true']:
+            Trigger.call(my, "process|complete", my.input)
+        elif ret_val in ["block", "wait"]:
+            # NOTE: consider adding a "wait" message directly in the workflow
+            pass
+        else:
+            Trigger.call(my, "process|%s" % ret_val, my.input)
 
 
 

@@ -1293,6 +1293,9 @@ spt.tab.close = function(src_el) {
         header_div.add_style("position: relative")
         header_div.add_style("z-index: 2")
 
+        #header_div.add_style("width: 100%")
+        header_div.add_style("margin-bottom: -1px")
+
 
         subheader_div = DivWdg()
         subheader_div.add_class("spt_tab_subheader_top")
@@ -1439,7 +1442,7 @@ spt.tab.close = function(src_el) {
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
         content_top.add_style("z-index: 1")
-        content_top.add_style("margin-top: -1px")
+        #content_top.add_style("margin-top: -1px")
 
         # add a div so that it breaks correctly
         if my.mode == 'default':
@@ -1620,8 +1623,6 @@ spt.tab.close = function(src_el) {
 
             '''
         } )
-
-
 
 
 

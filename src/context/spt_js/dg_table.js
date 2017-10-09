@@ -206,31 +206,6 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 
     return
 
-
-
-    // DEPRECATED: leaving until it is determined that the above implementation
-    // is correct (and much much faster)
-    /*
-    // now filter out subtables ### FIXME: need a mechanism to do this.
-    // get the children ...
-    var children = el.getChildren();
-
-    // check the children and recurse ...
-    for( var c=0; c < children.length; c++ ) {
-        var child = children[c];
-        // check the child ...
-        if( child.get('tag') == 'table' && child.hasClass("spt_table") ) {
-            // STOP here ... skip this element ... don't recurse to it's children!
-            continue;
-        }
-        if( child.get('tag') == 'td' && child.hasClass( "SPT_ROW_SELECT_TD" ) ) {
-            row_select_tds.push(child);
-        }
-
-        // now recurse to children ...
-        spt.dg_table.gather_row_select_tds( child, row_select_tds );
-    }
-    */
 }
 
 
@@ -1040,6 +1015,9 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 //
 // resize column callbacks
 //
+
+/* DEPRECATED
+
 spt.dg_table.width = 0;
 spt.dg_table.table_width = 0;
 spt.dg_table.xpos_start = 0;
@@ -1733,6 +1711,8 @@ spt.dg_table._move_column = function(table, drag_idx, drop_idx, insert_after)
     }
 }
 
+*/
+
 
 //
 // Extract the size and order of the table columns
@@ -2079,7 +2059,9 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 }
 
 
+
 // Callback that gets executed when "Save My/Project View As" is selected
+// DEPRECATED: this has been moved inline
 spt.dg_table.save_view_cbk = function(table_id, login) {
 
     var table = $(table_id);
@@ -2205,8 +2187,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         }
         
         var table_search_type = table.getAttribute("spt_search_type");
-        
-        // TODO: extract the appropriate display class name
+
 
         var dis_options = {};
 
@@ -2234,7 +2215,6 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             element_name = kwargs.element_name;
         }
         var new_title = kwargs.new_title;
-        //var save_a_link = kwargs.save_a_link;
 
 
         var last_element_name = kwargs.last_element_name;
@@ -2289,6 +2269,9 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         kwargs['display_options'] = dis_options;
         
         kwargs['unique'] = unique;
+
+
+        // these are the server oprations
 
 
         // Copy the value of the "icon" attribute from the previous XML widget
@@ -2393,7 +2376,11 @@ spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index,
                 spt.app_busy.show( 'Column Manager', 'Adding Column');
                 setTimeout(function() { 
                     spt.table.add_column(element_name);
-                    spt.dg_table.search_cbk( {}, {'src_el': layout} ), 50}); 
+                    //spt.dg_table.search_cbk( {}, {'src_el': layout} )
+                    // need to do this twice
+                    spt.table.expand_table();
+                    spt.table.expand_table();
+                }, 50);
             }
             spt.app_busy.hide();
         } catch(e) {
@@ -2481,9 +2468,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
         
 
-        //for (var i = 0; i < table.rows.length; i++) {
         for (var i = 0; i < 1; i++) {
-        //for (var i = 0; i < widgets_html.length; i++) {
             var row = table.rows[i];
             // skip empty rows
             var search_key = row.getAttribute("spt_search_key");
@@ -2957,6 +2942,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
+    var group_label_expr = target.getAttribute("spt_group_label_expr");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
@@ -3289,33 +3275,25 @@ spt.dg_table.get_search_values = function(search_top) {
 
 
 spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
-    //var panel_id = 'main_body';
-    //var search_id = panel_id + "_search";
 
     var json_values = spt.dg_table.get_search_values(search_wdg);
-
-  
-    // convert to json
-    //spt.js_log.info("json_values");
-    //spt.js_log.info(json_values);
-
-
 
     // build the search view
     var search_type = search_wdg.getAttribute("spt_search_type");
 
+    /*
     var view_text = $('save_search_text');
     if (search_view == undefined) {
         search_view = view_text.value;
     }
+    */
     if (search_view == "") {
         search_view = search_wdg.getAttribute("spt_search_view");
     }
+
     if (search_view == "") {
-        // Not sure about leaving this empty
         spt.alert("No name specified for saved search");
         return;
-        //view = "saved_search:admin"
     }
 
 
@@ -3333,14 +3311,18 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
     var class_name = "tactic.ui.app.SaveSearchCbk";
     server.execute_cmd(class_name, options, json_values);
 
+    /*
     if ($('save_search_wdg'))
         $('save_search_wdg').style.display = 'none';
+    */
 
  
 }
 
 
 // retrieve the parameters of the search
+// DEPRECATD: use spt.table.load_search
+/*
 spt.dg_table.retrieve_search_cbk = function() {
 
     var panel_id = 'main_body';
@@ -3380,6 +3362,7 @@ spt.dg_table.retrieve_search_cbk = function() {
     $('retrieve_search_wdg').style.display = 'none';
 
 }
+*/
 
 
 spt.dg_table.add_filter = function(element) {
@@ -3926,9 +3909,12 @@ spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
 }
 
 
-
+// DEPRPECATED
 spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
 {
+
+    alert("spt.dg_table.adopt_edit_wdg is DEPRECATED")
+
     var element_name = cell_to_edit.getAttribute( 'spt_element_name' );
     // get the second row
     var table = $(table_id);
@@ -4706,6 +4692,8 @@ spt.dg_table.get_show_retired_flag = function( table_child_el )
     var el = spt.get_cousin( table_child_el, ".spt_view_panel", ".spt_search_show_retired" );
     if (!el) 
         el = spt.get_cousin( table_child_el, ".spt_layout", ".spt_search_show_retired" );
+    if (!el) return false;
+
     return spt.is_TRUE(el.value);
 }
 
@@ -4973,6 +4961,9 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
+
+        console.log(search_key);
+
 
         var server = TacticServerStub.get();
         var show_retired = spt.dg_table.get_show_retired_flag( row );

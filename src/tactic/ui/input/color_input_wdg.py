@@ -119,6 +119,10 @@ class ColorInputWdg(BaseInputWdg):
         my.kwargs = kwargs
         super(ColorInputWdg, my).__init__(name)
 
+        if not my.input:
+            my.input = TextInputWdg(name=my.get_input_name())
+
+
 
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
@@ -135,11 +139,14 @@ class ColorInputWdg(BaseInputWdg):
         my.top.add(widget)
 
 
+    def add_behavior(my, behavior):
+        return my.input.add_behavior(behavior)
+
+
+
     def get_display(my):
         top = my.top
 
-        if not my.input:
-            my.input = TextInputWdg(name=my.get_input_name())
 
         value = my.get_value()
         if value:
@@ -149,22 +156,25 @@ class ColorInputWdg(BaseInputWdg):
 
         start_color = my.kwargs.get("start_color")
 
-        if not value and (not start_color or start_color == "random"):
-            #'rgba(188, 207, 215, 1.0)',
-            import random
-            colors = [
-                '#bccfd7',
-                '#bcd7cf',
-                '#d7bccf',
-                '#d7cfbc',
-                '#cfbcd7',
-                '#cfd7bc',
-            ]
+        if not value:
+            if start_color and start_color.find(","):
+                colors = start_color.split(",")
 
+            elif not start_color or start_color == "random":
+                #'rgba(188, 207, 215, 1.0)',
+                colors = [
+                    '#bccfd7',
+                    '#bcd7cf',
+                    '#d7bccf',
+                    '#d7cfbc',
+                    '#cfbcd7',
+                    '#cfd7bc',
+                ]
+
+            import random
             num = random.randint(0,len(colors)-1)
             start_color = colors[num]
-            start_color = top.get_color(start_color, -10)
- 
+            #start_color = top.get_color(start_color, -10)
 
 
         if start_color:
@@ -183,7 +193,7 @@ class ColorInputWdg(BaseInputWdg):
             start_color = [r, g, b]
 
         behavior = {
-            'type': 'click_up',
+            'type': 'click',
             'name': my.get_name(),
             'start_color': start_color,
             'cbjs_action': '''
@@ -214,9 +224,14 @@ class ColorInputWdg(BaseInputWdg):
             var cbk = function(color) {
                 input.value = color.hex;
                 input.setStyle("background-color", color.hex);
-                input.blur();
-                if (cell_edit)
+                if (cell_edit) {
+                    input.blur();
                     spt.table.accept_edit(cell_edit, input.value, true);
+                }
+                else {
+                    input.focus();
+                    input.blur();
+                }
             };
 
             var rainbow = null;

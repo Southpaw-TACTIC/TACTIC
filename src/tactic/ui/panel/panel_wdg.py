@@ -9,11 +9,12 @@
 #
 #
 #
-__all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPanelSaveWdg"]
+__all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPanelSaveWdg", "ViewPanelSaveCbk"]
 
 import os, types
 import random
 from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config, SetupException
+from pyasm.command import Command
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
@@ -3228,6 +3229,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         ingest_data_view = my.kwargs.get("ingest_data_view")
         ingest_custom_view = my.kwargs.get("ingest_custom_view")
         group_elements = my.kwargs.get("group_elements")
+        group_label_expr = my.kwargs.get("group_label_expr")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
         op_filters = my.kwargs.get("op_filters")
@@ -3312,6 +3314,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "ingest_data_view" : ingest_data_view,
             "ingest_custom_view": ingest_custom_view,
             "group_elements" : group_elements,
+            "group_label_expr" : group_label_expr,
             "mode": mode,
             "height": height,
             "keywords": keywords,
@@ -3633,11 +3636,102 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
        
         js_action = "spt.dg_table.save_view_cbk('%s','%s')" % (my.table_id, Environment.get_user_name())
 
+        js_actionX = '''
+
+    var table_id = bvr.table_id;
+    var table = $(table_id);
+    var top = table.getParent(".spt_view_panel");
+    // it may not always be a View Panel top
+    if (!top) top = table.getParent(".spt_table_top");
+    
+    var view_info = top.getElement(".spt_save_top");
+
+    var values = spt.api.Utility.get_input_values(view_info , null, false);
+
+    // rename view
+    var new_view = values["save_view_name"];
+    var new_title = values["save_view_title"];
+    var same_as_title = values["same_as_title"] == 'on';
+    //var save_a_link = values["save_a_link"] == 'on';
+  
+    var save_mode = values['save_mode'];
+    if (!save_mode) {
+        var save_project_views = values['save_project_views'] == 'on';
+        if (save_project_views) {
+            save_mode = 'save_project_views';
+        }
+        var save_my_views = values['save_my_views'] == 'on';
+        if (save_my_views) {
+            save_mode = 'save_my_views';
+        }
+        var save_view_only = values['save_view_only'] == 'on';
+        if (save_view_only) {
+            save_mode = 'save_view_only';
+        }
+    }
+
+    if (same_as_title) {
+        new_view = new_title;
+    }
+
+    if (spt.input.has_special_chars(new_view)) {
+        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        return;
+    }
+    if (new_view == "") {
+        spt.alert("Empty view name not permitted");
+        return;
+    }
+    
+    if ((/^(saved_search|link_search)/i).test(new_view)) {
+        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
+        return;
+    }
+    var table = document.getElementById(table_id);
+    if (!table) {
+        spt.alert('This command requires a Table in the main viewing area');
+        return;
+    }
+    var table_search_type = table.getAttribute("spt_search_type");
+    var table_view = table.getAttribute("spt_view");
+    var last_element = top.getAttribute("spt_element_name");
+
+
+    var kwargs = {
+        'new_title' : new_title, 
+        'element_name': new_view,
+        'last_element_name': last_element,
+        'save_mode': save_mode,
+    } 
+
+
+    var class_name = 'tactic.ui.panel.ViewPanelSaveCbk';
+    var server = TacticServerStub.get();
+    var rtn = server.execute_cmd(class_name, kwargs);
+
+
+    if (!rtn)
+        return;
+
+
+    spt.hide($(bvr.dialog_id));
+    var top = bvr.src_el.getParent(".spt_new_view_top");
+    spt.api.Utility.clear_inputs(top);
+    
+    return true;
+
+
+        '''
+
+
+
         # create the buttons
         save_button = ActionButtonWdg(title='Save')
         behavior = {
         'type': 'click_up',
         'dialog_id': my.kwargs.get("dialog_id"),
+        'table_id': my.table_id,
+        #'cbjs_action': js_action,
         'cbjs_action':  '''
             var ret_val = %s;
             if (ret_val) {
@@ -3815,6 +3909,77 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         return new_views
 
     get_existing_views = staticmethod(get_existing_views)
+
+
+class ViewPanelSaveCbk(Command):
+    '''Callback to save views'''
+
+    def execute(my):
+
+        save_mode = my.kwargs.get("save_mode")
+        new_title = my.kwargs.get("new_title")
+        new_view = my.kwargs.get("new_view")
+        last_element_name = my.kwargs.get("last_element_name")
+
+        login = my.kwargs.get("login")
+        if login != Environment.get_user_name():
+            raise Exception("Cannot create a personal view for others")
+
+
+        dis_options = {}
+
+        save_as_personal = save_mode == 'save_my_views'
+
+        if save_as_personal:
+            side_bar_view = 'my_view_' + login
+        else:
+            side_bar_view = 'project_view'
+
+        element_name = new_view
+        unique = kwargs.unique
+
+
+        # Save My View allows to save over the current view if it is
+        # already a personal view or if the user is admin, he can save
+        # over anything
+        if kwargs.element_name:
+            element_name = kwargs.element_name
+
+
+        # If it is saving as a new personal view, we try to append login name
+        if save_as_personal:
+            # only do this to search_view to make it easier to retrieve a search for my_view_<user>
+            if login and element_name.index(".") != -1:
+                element_name = login + '.' + element_name
+
+
+
+
+        # Copy the value of the "icon" attribute from the previous XML widget
+        # config.
+        icon = null
+        widget_config_before = server.get_config_definition(search_type, "definition", last_element_name)
+        # Skip if there is no previous matching XML widget config.
+        if widget_config_before != "":
+            xmlDoc = spt.parse_xml(widget_config_before)
+            elem_nodes = xmlDoc.getElementsByTagName("element")
+
+            if (elem_nodes.length > 0):
+                attr_node = elem_nodes[0].getAttributeNode("icon")
+
+                # Skip if there is no icon to copy over from the old link.
+                if (attr_node != null):
+                    icon = attr_node.nodeValue
+
+                # keep title
+                if save_mode == 'save_view_only':
+                    title_node = elem_nodes[0].getAttributeNode("title")
+                    if title_node:
+                        new_title = title_node.nodeValue
+
+
+
+
 
 
 

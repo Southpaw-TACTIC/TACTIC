@@ -1111,6 +1111,8 @@ class XmlWdg(BaseTableElementWdg):
         widget.add_style("min-width: 300px")
         widget.add_style("width: auto")
         widget.add_style("overflow-x: hidden")
+        widget.add_style("overflow-y: auto")
+        widget.add_style("max-height: 600px")
 
         # parse the xml to see if it is valid
         try:

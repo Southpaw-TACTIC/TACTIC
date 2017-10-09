@@ -358,6 +358,8 @@ class CollectionAddCmd(Command):
 
     def execute(my):
 
+        # NOTE: keywords_data is handled in GlobalSearchTrigger
+
         collection_keys = my.kwargs.get("collection_keys")
         search_keys = my.kwargs.get("search_keys")
         message = {} 
@@ -421,14 +423,7 @@ class CollectionAddCmd(Command):
                     message['parent_collection_names'] = parent_collection_names
                     my.info['message'] = message
                     return
-            '''
-            has_keywords = SearchType.column_exists(search_type, "keywords")
 
-            if has_keywords:
-                collection_keywords = collection.get_value("keywords", no_exception=True)
-                collection_keywords = collection_keywords.split(" ")
-                collection_keywords = set(collection_keywords)
-            '''
 
 
             # create new items
@@ -444,21 +439,8 @@ class CollectionAddCmd(Command):
                 new_item.set_value("search_code", sobject.get_code())
                 new_item.commit()
                 has_inserted = True
-                '''
-                # copy the metadata of the collection
-                if has_keywords:
-                    keywords = sobject.get_value("keywords")
 
-                    keywords = keywords.split(" ")
-                    keywords = set(keywords)
 
-                    keywords = keywords.union(collection_keywords)
-                    keywords = " ".join(keywords)
-
-                    sobject.set_value("keywords", keywords)
-                    sobject.commit()
-                '''
-        
             if not has_inserted:
                 message[collection_name] = "No insert"
             else:
@@ -466,6 +448,8 @@ class CollectionAddCmd(Command):
 
         my.info['message'] = message
         my.add_description("Add [%s] item(s) to [%s] collection(s)" % (len(search_keys), len(collection_keys)))
+
+
 
     def get_parent_codes(my):
 

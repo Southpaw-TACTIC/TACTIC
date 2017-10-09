@@ -397,7 +397,10 @@ class ChartGrid(BaseRefreshWdg):
                     var length = (label+"").length;
                     //var offset = length * 2;
                     var offset_x = 5;
-                    var offset_y = 10;
+                    if (bvr.rotate_x_axis)
+                        var offset_y = 5;
+                    else
+                        var offset_y = 10;
                     
 
                     ctx.save();

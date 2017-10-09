@@ -14,11 +14,13 @@ __all__ = ['CacheStartup']
 
 import tacticenv
 
-from pyasm.common import Config, Common
+from pyasm.common import Config, Common, Container, GlobalContainer
 from pyasm.search import DbContainer
 from tactic.command import Scheduler, SchedulerTask
 from pyasm.security import Batch
 from pyasm.biz import BaseCache, CacheContainer, SearchTypeCache
+
+import time
 
 # custom cache class
 class TableInfoCache(BaseCache):
@@ -144,7 +146,6 @@ class CacheStartup(object):
         # do a full cache refresh every 180 seconds
         class RefreshTask(SchedulerTask):
             def execute(my):
-                import time
                 start = time.time()
                 #Batch()
 
@@ -184,6 +185,12 @@ class CacheStartup(object):
         #
         class KillTacticTask(SchedulerTask):
             def execute(my):
+                # wait until KillThread is premitted
+                while GlobalContainer.get("KillThreadCmd:allow") == "false":
+                    print "Kill locked ... waiting 5 seconds"
+                    time.sleep(5)
+                    continue
+
                 import cherrypy
                 print
                 print "Stopping TACTIC ..."

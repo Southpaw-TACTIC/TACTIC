@@ -862,8 +862,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             h_scroll.add(scroll)
-            #scroll.add_style("overflow-y: hidden")
-            #scroll.add_style("overflow-x: none")
 
 
             padding = DivWdg()
@@ -883,6 +881,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             my.header_table.add_class("spt_table_with_headers")
+            my.header_table.set_id("spt_table_with_headers")
             my.header_table.set_unique_id()
             my.handle_headers(my.header_table)
             if table_width:
@@ -893,13 +892,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             height = my.kwargs.get("height")
             if height:
                 scroll.add_style("height: %s" % height)
-            scroll.add_class("spt_table_scroll")
 
-            # Always adding a scroll bar, but using margin-right to hide it
-            #scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
-            #scroll.add_style("overflow-y: scroll")
+            scroll.add_class("spt_table_scroll")
+            scroll.add_attr( "onScroll", '''$(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
+            # Scroll event not implemented in behaviors yet
+            """
+            scroll.add_behavior( {
+                'type': 'scroll',
+                'cbjs_action': '''
+                console.log(bvr.src_el.scrollLeft);
+                '''
+            } )
+            """
+
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")  
+
+            # new
+            scroll.add_style("overflow-x: auto")  
+
+
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -918,8 +930,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 table.add_style("font-size: %s" % font_size)
                 my.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
-            if table_width:
-                table.add_style("width: %s" % table_width)
+            #if table_width:
+            #    table.add_style("width: %s" % table_width)
 
             table.add_color("color", "color")
 
@@ -2841,7 +2853,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
-            icon = IconWdg("New", IconWdg.NEW)
+            #icon = IconWdg("New", IconWdg.NEW)
+            icon = IconWdg("New", "BS_ASTERISK") 
             icon_div.add(icon)
             #td.add_style("padding: 1 0 0 10")
             icon_div.add_style("float: left")
@@ -3264,6 +3277,13 @@ spt.table.get_all_rows = function(embedded) {
     var table = spt.table.get_table();
     var css = embedded ? ".spt_table_row" : ".spt_table_row_" + table.getAttribute('id');
     var rows = table.getElements(css);
+
+    // remove last row because it is the insert
+    if (rows.length > 0 && rows[rows.length-1].hasClass("spt_table_insert_row")) {
+        rows.pop();
+    }
+
+
     return rows;
 }
 
@@ -3940,6 +3960,8 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
+
+
     if (cell.hasClass("spt_cell_no_edit")) {
         return;
     }
@@ -3965,7 +3987,7 @@ spt.table.show_edit = function(cell) {
 
     
 
-    // remove the first child
+    // Remove the first child
     // NOTE: this relies on a widget that has all components under the first
     // child.
     var first_child = $(cell.firstChild);
@@ -3987,10 +4009,9 @@ spt.table.show_edit = function(cell) {
         spt.table.last_data_wdg = first_child;
     }
 
-    // get the size before the edit widget is added
-    var size = cell.getSize();
 
-    // clear the cell
+    // clear the cell and remember it
+    var html = cell.innerHTML;
     cell.innerHTML = '';
 
 
@@ -4001,14 +4022,38 @@ spt.table.show_edit = function(cell) {
     }
 
 
-    // add the edit to do the dom
+
     cell.setStyle("position", "relative");
     cell.setStyle("overflow", "");
 
-    cell.appendChild(edit_wdg);
+
+    // add the edit to do the dom
+    var table = spt.table.get_table();
+    table.appendChild(edit_wdg);
+    spt.body.add_focus_element(edit_wdg);
+
+    // store a reference to the cell it represents
+    edit_wdg.cell = cell;
+    edit_wdg.html = html;
+    edit_wdg.addClass("spt_edit_widget");
+
+    edit_wdg.on_complete = function() {
+        spt.behavior.replace_inner_html( this.cell, this.html );
+        spt.behavior.destroy_element(this);
+    }
+
+    //cell.appendChild(edit_wdg);
+
     edit_wdg.setStyle("position", "absolute");
-    edit_wdg.setStyle("top", "0px");
-    edit_wdg.setStyle("left", "0px");
+    //edit_wdg.setStyle("top", "0px");
+    //edit_wdg.setStyle("left", "0px");
+    edit_wdg.position( {
+        position: {x: 0, y:0},
+        relativeTo: cell,
+        position: "upperLeft",
+        offset: {x: 1, y: 1}
+    } );
+
     edit_wdg.setStyle("margin", "-1px");
     edit_wdg.setStyle("z-index", 500);
 
@@ -4149,8 +4194,6 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
 
-    spt.body.add_focus_element(clone);
-
     return clone;
 
 }
@@ -4215,8 +4258,14 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             edit_wdg.setStyle( "min-height", '300px');
             edit_wdg.setStyle( "min-width", '300px');
         }
-        if (size.y > 100)
+        if (size.y > 500) {
+            input.setStyle( "height", '500px');
+            input.setStyle( "position", 'relative');
+            input.setStyle( "display", 'block');
+        }
+        else if (size.y > 100) {
             input.setStyle( "height", size.y+'px');
+        }
         else
             input.setStyle( "height", '100px');
 
@@ -4224,8 +4273,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             input.setStyle( "width", size.x+'px');
         else
             input.setStyle( "width", '250px');
+
         input.setStyle('font-family', 'courier new');
-        input.setStyle('font-size', '1.0em');
+        input.setStyle('font-size', '1.1em');
         input.setStyle('padding', '5px');
 
         input.value = value;
@@ -4239,6 +4289,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         set_focus = true;
         input.setStyle( "width", size.x+'px');
         input.setStyle( "height", size.y+'px');
+
+        if (size.y > 500) {
+            input.setStyle( "height", '500px');
+        }
+
         input.value = value;
         // for calendar input 
         if (spt.has_class(input, 'spt_calendar_input')){
@@ -4354,6 +4409,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (set_focus == true) {
         input.focus();
         input.value = input.value;
+        try {
+            input.setSelectionRange(0,0);
+        }
+        catch(e) {}
+
     }
 
     
@@ -4457,7 +4517,8 @@ spt.table.open_link = function(bvr) {
     if (view) {
         var cls = "tactic.ui.panel.CustomLayoutWdg";
         var kwargs = {
-            view: view
+            view: view,
+            search_key: search_key
         }
     }
     else if (search_key) {
@@ -4527,7 +4588,19 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         edited_cell = edit_wdg;
     }
     else {
-        edited_cell = edit_wdg.getParent(".spt_cell_edit");
+        edited_cell = edit_wdg.cell;
+        if (!edited_cell) {
+            edit_wdg_top = edit_wdg.getParent(".spt_edit_widget");
+            // if this is not inline
+            if (edit_wdg_top) {
+                edited_cell = edit_wdg_top.cell;
+            }
+        }
+
+        // for inline cells
+        if (!edited_cell) {
+            edited_cell = edit_wdg.getParent(".spt_cell_edit");
+        }
     }
 
     var old_value = edited_cell.getAttribute("spt_input_value");
@@ -4569,7 +4642,13 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         if (set_display) {
             edited_cell.innerHTML = "";
             edited_cell.setStyle("overflow", "hidden");
-            spt.table.set_display(edited_cell, display_value, input_type);
+
+            if (!changed && edit_wdg.html) {
+                spt.behavior.replace_inner_html(edited_cell, edit_wdg.html);
+            }
+            else {
+                spt.table.set_display(edited_cell, display_value, input_type);
+            }
         }
 
     }
@@ -4669,6 +4748,7 @@ spt.table.set_changed_color = function(row, cell) {
 
 spt.table._accept_single_edit = function(cell, new_value) {
     var old_value = cell.getAttribute("spt_input_value");
+
     if (old_value != new_value) {
 
         // remember the original value
@@ -5664,7 +5744,7 @@ spt.table.set_column_width = function(element_name, width) {
 
         //layout.setStyle("width", layout_width);
         layout.setStyle("width", "auto");
-        layout.setStyle("overflow-x", "auto");
+        //layout.setStyle("overflow-x", "auto");
     }
 
     curr_header.setStyle("width", width);
@@ -6254,6 +6334,100 @@ spt.table.operate_selected = function(action)
 }
 
 
+// Search methods
+
+spt.table.save_search = function(search_view, kwargs) {
+
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    var layout = spt.table.get_layout();
+    var search_type = layout.getAttribute("spt_search_type");
+
+    var top = layout.getParent(".spt_view_panel");
+    var search_top = top.getElement(".spt_search");
+
+    var json_values = spt.table.get_search_values(search_top);
+
+
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view,
+        'unique': kwargs.unique,
+        'personal': kwargs.personal
+    };
+
+    // replace the search widget
+    var server = TacticServerStub.get();
+
+    var class_name = "tactic.ui.app.SaveSearchCbk";
+    server.execute_cmd(class_name, options, json_values);
+
+}
+
+
+
+spt.table.load_search = function(search_view, kwargs) {
+    var layout = spt.table.get_layout();
+    var search_type = layout.getAttribute("spt_search_type");
+
+    // maybe easier just to refresh the entire widget with a new
+    // search
+    var top = layout.getParent(".spt_view_panel_top");
+    top.setAttribute("spt_search_view", search_view);
+
+    // keep any changes that have been made to the element names
+    var element_names = spt.table.get_element_names();
+    element_names = element_names.join(",");
+    top.setAttribute("spt_element_names", element_names);
+
+    spt.panel.refresh(top, {}, { callback: function() {
+        var layout = top.getElement(".spt_layout");
+        spt.table.set_layout(layout);
+    } } );
+
+    return;
+
+/*
+    var top = layout.getParent(".spt_view_panel");
+    var search_top = top.getElement(".spt_search_top");
+    var simple_search_top = top.getElement(".spt_simple_search_top");
+    var simple_search_top = top.getElement(".spt_simple_search");
+
+    var class_name = "tactic.ui.app.SearchWdg";
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view
+    };
+
+
+    // replace the search widget
+    spt.panel.load(search_top, class_name, options, {}, {
+        callback: function() {
+        }
+    });
+
+
+    // store the search view that was just loaded
+    search_top.setAttribute("spt_search_view", search_view);
+
+    if (simple_search_top) {
+        var class_name = "tactic.ui.app.SimpleSearchWdg";
+        var options = {
+            'search_type': search_type,
+            'filter_view': search_view,
+            'search_view': "order_filter"
+        };
+        spt.panel.load(simple_search_top, class_name, options);
+    }
+*/
+}
+
+
+
 // Tools
 
 
@@ -6423,92 +6597,6 @@ spt.table.open_ingest_tool = function(search_type) {
 
 
 
-    """
-    def handle_sub_search2(my):
-
-        # level 1 search
-        #level1_sobjects_dict = Search.get_related_by_sobjects(my.sobjects, "sthpw/snapshot")
-        level1_sobjects_dict = Search.get_related_by_sobjects(my.sobjects, "ut/asset_in_asset")
-
-        tt = []
-        for name, items in level1_sobjects_dict.items():
-            tt.extend(items)
-
-        # level 2 search
-        level2_sobjects_dict = Search.get_related_by_sobjects(tt, "ut/asset", path='sub')
-
-        tt = []
-        for name, items in level2_sobjects_dict.items():
-            tt.extend(items)
-
-        # level 3 search
-        level3_sobjects_dict = Search.get_related_by_sobjects(tt, "ut/asset_in_asset")
-
-        tt = []
-        for name, items in level3_sobjects_dict.items():
-            tt.extend(items)
-
-        level4_sobjects_dict = Search.get_related_by_sobjects(tt, "ut/asset", path='sub')
-
-
-
-
-        new_sobjects = []
-        my.sobject_levels = []
-
-        relationship = 'code'
-
-        for sobject in my.sobjects:
-            new_sobjects.append(sobject)
-            my.sobject_levels.append(0)
-
-            if relationship == 'code':
-                search_key = sobject.get_code()
-
-            else:
-                search_key = "%s&id=%s" % (sobject.get_search_type(), sobject.get_id())
-            level1_sobjects = level1_sobjects_dict.get(search_key )
-            if level1_sobjects:
-                for i, level1_sobject in enumerate(level1_sobjects):
-                    #new_sobjects.append(level1_sobject)
-                    #my.sobject_levels.append(1)
-
-                    if relationship == 'code':
-                        #search_key = level1_sobject.get_code()
-                        search_key = level1_sobject.get_value("b_asset_code")
-                    else:
-                        search_key = "%s&id=%s" % (level1_sobject.get_search_type(), level1_sobject.get_id())
-
-                    level2_sobjects = level2_sobjects_dict.get(search_key)
-                    if level2_sobjects:
-                        for i, level2_sobject in enumerate(level2_sobjects):
-                            new_sobjects.append(level2_sobject)
-                            my.sobject_levels.append(1)
-
-
-                            search_key = level2_sobject.get_value("code")
-                            level3_sobjects = level3_sobjects_dict.get(search_key )
-                            if level3_sobjects:
-                                for i, level3_sobject in enumerate(level3_sobjects):
-                                    #new_sobjects.append(level3_sobject)
-                                    #my.sobject_levels.append(1)
-
-                                    if relationship == 'code':
-                                        #search_key = level3_sobject.get_code()
-                                        search_key = level3_sobject.get_value("b_asset_code")
-                                    else:
-                                        search_key = "%s&id=%s" % (level3_sobject.get_search_type(), level3_sobject.get_id())
-
-                                    level4_sobjects = level4_sobjects_dict.get(search_key)
-                                    if level4_sobjects:
-                                        for i, level4_sobject in enumerate(level4_sobjects):
-                                            new_sobjects.append(level4_sobject)
-                                            my.sobject_levels.append(2)
-
-
-        my.sobjects = new_sobjects
-        my.items_found = len(my.sobjects)
-        """
 
 
 class TableLayoutWdg(FastTableLayoutWdg):

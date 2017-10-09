@@ -14,8 +14,8 @@ __all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'Sna
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, SPTDate
-from pyasm.biz import Snapshot
+from pyasm.common import Environment, SPTDate, Common, FormatValue
+from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
 from tactic.ui.panel import TableLayoutWdg
@@ -212,7 +212,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         # look for a custom view for the sobject detail
         custom_view = my.kwargs.get("view")
-        if not custom_view:
+        use_default = my.kwargs.get("use_default")
+        if use_default not in ['true', True] and not custom_view:
             from pyasm.biz import ProjectSetting
             key = "sobject_detail_view"
             custom_view = ProjectSetting.get_value_by_key(key, search_type=my.sobject.get_base_search_type())
@@ -452,8 +453,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         tabs = my.kwargs.get("tab_element_names")
 
+        tab_view = my.kwargs.get("tab_view")
+        if not tab_view:
+            tab_view = "tab_element_names"
+
+
         config_search = Search("config/widget_config")
-        config_search.add_filter("view", "tab_element_names")
+        config_search.add_filter("view", tab_view)
         config_search.add_filter("search_type", my.search_type)
         config_search.add_order_by("timestamp desc")
         configs = config_search.get_sobjects()
@@ -468,7 +474,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         else:
             tabs = my.get_default_tabs()
         
-        if "info" not in tabs:
+        if len(tabs) == 0:
             tabs.insert(0, "info")
 
         #if my.sobject.get_value("pipeline_code", no_exception=True):
@@ -582,7 +588,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "file_detail":
                 config_xml.append('''
-                <element name="file_detail" title="File Detail">
+                <element name="file_detail" title="File Metadata">
                   <display class='tactic.ui.tools.FileDetailWdg'>
                     <search_key>%(search_key)s</search_key>
                   </display>
@@ -686,6 +692,35 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+            elif tab == "notes":
+                config_xml.append('''
+                <element name="notes" title="Notes" count="@COUNT(sthpw/note)">
+                  <display class='tactic.ui.panel.CustomLayoutWdg'>
+                  <html>
+                    <div style="padding: 20px">
+                    <div style="font-size: 25px">Notes</div>
+                    <div>List of all of the notes for this item</div>
+                    <hr/>
+                    <br/>
+                    <div style="min-height: 200px">
+                    <element>
+                      <display class='tactic.ui.widget.DiscussionWdg'>
+                        <search_key>%(search_key)s</search_key>
+                        <width>100%%</width>
+                      </display>
+                    </element>
+                    </div>
+                    </div>
+                  </html>
+                  </display>
+                </element>
+                ''' % values)
+
+
+
+
+
+
             elif tab.find("/") != -1:
                 parts = tab.split("/")
                 name = parts[-1]
@@ -715,8 +750,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 else:
                     attrs = {}
 
-                parts = tab.split(".")
-                name = parts[-1]
+                view = attrs.get("view")
+                if view:
+                    name = tab
+                else:
+                    view = tab
+                    parts = tab.split(".")
+                    name = parts[-1]
 
                 title = None
                 if config:
@@ -726,23 +766,31 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 count_color = attrs.get("count_color") or ""
                 
                 if not title:
-                    title = parts[-1].title().replace("_", " ")
+                    title = name.title().replace("_", " ")
                 tab_values = {
                         'title': title,
                         'name': name,
-                        'search_key': search_key,
-                        'view': tab,
+                        'parent_key': search_key,
+                        'view': view,
                         'count': count,
                         'count_color': count_color
                 }
+
+                attr_config = []
+                for attr, value in attrs.items():
+                    attr_config.append("<%s>%s</%s>" % (attr, value, attr) )
+                attr_str = "\n".join(attr_config)
+                tab_values['attrs'] = attr_str
+
 
 
                 config_xml.append('''
                 <element name="%(name)s" title="%(title)s" count="%(count)s" count_color="%(count_color)s">
                   <display class='tactic.ui.panel.CustomLayoutWdg'>
                     <view>%(view)s</view>
-                    <parent_key>%(search_key)s</parent_key>
+                    <parent_key>%(parent_key)s</parent_key>
                     <width>100%%</width>
+                    %(attrs)s
                   </display>
                 </element>
                 ''' % tab_values)
@@ -1265,8 +1313,22 @@ class SnapshotDetailWdg(SObjectDetailWdg):
 
         version_wdg = DivWdg()
         title_wdg.add(version_wdg)
-        version_wdg.add("Version: %0.3d" % version)
+        version_wdg.add("Latest Version: %0.3d" % version)
         version_wdg.add_style("margin: 5px 0px")
+
+
+        lib_path = my.sobject.get_lib_path_by_type()
+        lib_path_info = Common.get_dir_info(lib_path)
+        if lib_path_info.get("file_type") == "file":
+            size = lib_path_info.get("size")
+            size_str = FormatValue().get_format_value(size, "KB")
+
+            size_wdg = DivWdg()
+            title_wdg.add(size_wdg)
+            size_wdg.add("File Size: %s" % size_str)
+            size_wdg.add_style("margin: 5px 0px")
+
+            media_type = "image"
 
 
 
@@ -1406,12 +1468,10 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         title = DivWdg()
 
-        title.add_color("background", "background3")
         title.add_style("height: 20px")
         title.add_style("padding: 6px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add_border(color="#DDD")
 
         if not my.parent:
             title.add("Parent not found")
@@ -1422,9 +1482,51 @@ class TaskDetailWdg(SObjectDetailWdg):
 
         process = my.sobject.get("process")
         task_code = my.sobject.get("code")
+        status = my.sobject.get("status")
+        description = my.sobject.get("description")
+        start_date = my.sobject.get("bid_start_date")
+        end_date = my.sobject.get("bid_end_date")
 
         bgcolor = title.get_color("background")
-        title.add("<span style='font-size: 1.2em; padding: 4px; margin: 0px 20px 0px 0px; background-color: %s'>%s</span>  Task  <i style='font-size: 0.8em'>(%s)</i> for %s <i style='font-size: 0.8em'>(%s)</i>" % (bgcolor, process, task_code, name, code))
+        title.add("<span style='font-size: 1.2em; padding: 4px; margin: 0px 20px 0px 0px;'>%s</span>  Task <i>(%s)</i>" % (process, code))
+
+
+        # Test adding this ... need to find a place for it
+        #notes_div = DivWdg()
+        #title.add(notes_div)
+        #from tactic.ui.widget.discussion_wdg import DiscussionWdg
+        #discussion_wdg = DiscussionWdg(search_key=my.parent.get_search_key(), process=process, context_hidden=True, show_note_expand=True)
+        #notes_div.add(discussion_wdg)
+
+        title.add("<hr/>")
+
+
+        table = Table()
+        title.add(table)
+        table.add_style("width: 100%")
+        table.add_style("margin-right: 30px")
+
+        if description:
+            table.add_row()
+            table.add_cell("Description:")
+            table.add_cell(description)
+
+
+
+        if start_date:
+            table.add_row()
+            table.add_cell("Start Date:")
+            table.add_cell(start_date)
+
+        if end_date:
+            table.add_row()
+            table.add_cell("End Date:")
+            table.add_cell(end_date)
+
+        table.add_row()
+        table.add_cell("Status:")
+        table.add_cell(status)
+
         return title
 
 
@@ -1468,22 +1570,23 @@ class TaskDetailWdg(SObjectDetailWdg):
             parent_type = my.parent.get_base_search_type()
             config_xml.append( '''
             <element name="info" title="Info">
-             <display class='tactic.ui.container.ContentBoxWdg'>
-                  <title>Info</title>
-                  <content_height>auto</content_height>
-                  <content_width>600px</content_width>
-                  <config>
-                    <element name="content">
-                      <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
-                        <search_type>%s</search_type>
-                        <search_key>%s</search_key>
-                        <width>600px</width>
-                        <mode>view</mode>
-                        <view>detail</view>
-                      </display>
-                    </element>
-                  </config>
-                </display>
+              <display class='tactic.ui.panel.CustomLayoutWdg'>
+              <html>
+                <div style="margin: 20px">
+                  <div style="font-size: 16px">Detailed Info</div>
+                  <hr/>
+                  <element name="content">
+                    <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
+                      <search_type>%s</search_type>
+                      <search_key>%s</search_key>
+                      <width>600px</width>
+                      <mode>view</mode>
+                      <view>detail</view>
+                    </display>
+                  </element>
+                  </div>
+              </html>
+              </display>
             </element>
             ''' % (parent_type, parent_key) )
 
@@ -1676,6 +1779,7 @@ class SObjectTaskStatusDetailWdg(BaseRefreshWdg):
         search_key = my.sobject.get_search_key()
 
 
+
         thumb = ThumbWdg2()
         title.add(thumb)
         thumb.set_sobject(my.sobject)
@@ -1835,22 +1939,49 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
     def get_display(my):
         search_key = my.kwargs.get("search_key")
         my.sobject = Search.get_by_search_key(search_key)
-        my.parent = my.sobject.get_parent()
+        if my.sobject:
+            my.parent = my.sobject.get_parent()
+        else:
+            my.parent = None
+
         pipeline_code = my.kwargs.get("pipeline")
+
         top = my.top
+        my.set_as_panel(top)
         top.add_class("spt_pipeline_wrapper")
         top.add_color("background", "background")
-  
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        if pipeline:
+
+            update_wdg = DivWdg()
+            top.add(update_wdg)
+            update_wdg.add_update( {
+                'search_key': pipeline.get_search_key(),
+                'interval': 3,
+                'value': True,
+                'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
+            } )
+
+
+
         # it's ok to not have a parent unless it's a task, then just exit early
-        if not my.parent and my.sobject.get_base_search_type() == 'sthpw/task':
+        if not my.parent and my.sobject and my.sobject.get_base_search_type() == 'sthpw/task':
             top.add('Parent of this task cannot be found.')
             return top
+
+
         top.add(my.get_pipeline_wdg(pipeline_code) )
+
+
         return top
 
 
     def get_pipeline_wdg(my, pipeline_code):
         div = DivWdg()
+
+        height = my.kwargs.get("height") or 500
+        show_title = my.kwargs.get("show_title")
 
         show_title = my.kwargs.get("show_title")
         if show_title not in [False, 'false']:
@@ -1865,10 +1996,12 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
         kwargs = {
             'width': "auto",
-            'height': 500,
+            'height': height,
+            'show_title': show_title,
             'pipeline': pipeline_code,
-            'scale': 1.0,
             'is_editable': False,
+            'use_mouse_wheel': True,
+            'show_border': False,
         }
         pipeline = TaskDetailPipelineWdg(**kwargs)
         div.add(pipeline)
@@ -1885,69 +2018,71 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             tasks = Task.get_by_sobject(my.parent)
             if my.sobject.has_value("process"):
                 process = my.sobject.get_value("process")
-        else:
+        elif my.sobject:
             tasks = Task.get_by_sobject(my.sobject)
+        else:
+            tasks = []
 
         for task in tasks:
             enabled_tasks.add(task.get_value("process"))
 
         enabled_tasks = list(enabled_tasks)
 
+        if pipeline_code:
+            load_div.add_behavior( { 
+            'type': 'load',
+            'process': process,
+            'enabled_tasks': enabled_tasks,
+            'pipeline': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(top);
 
-        load_div.add_behavior( { 
-        'type': 'load',
-        'process': process,
-        'enabled_tasks': enabled_tasks,
-        'search_key': my.sobject.get_search_key(),
-        'pipeline': pipeline_code,
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(top);
+            /*
+            var nodes = spt.pipeline.get_nodes_by_group(bvr.pipeline);
+            for (var i = 0; i < nodes.length; i++) {
+                var has_task = false;
+                var node = nodes[i];
+                var node_name = spt.pipeline.get_node_name(node);
+                for (var j = 0; j < bvr.enabled_tasks.length; j++) {
+                    if (node_name == bvr.enabled_tasks[j]) {
+                        has_task = true;
+                        break;
+                    }
+                }
 
-        var nodes = spt.pipeline.get_nodes_by_group(bvr.pipeline);
-        for (var i = 0; i < nodes.length; i++) {
-            var has_task = false;
-            var node = nodes[i];
-            var node_name = spt.pipeline.get_node_name(node);
-            for (var j = 0; j < bvr.enabled_tasks.length; j++) {
-                if (node_name == bvr.enabled_tasks[j]) {
-                    has_task = true;
-                    break;
+                if (!has_task && node) {
+                    spt.pipeline.disable_node(node);
                 }
             }
+            */
 
-            if (!has_task && node) {
-                spt.pipeline.disable_node(node);
+            spt.pipeline.unselect_all_nodes();
+
+            var node = spt.pipeline.get_node_by_name(bvr.process);
+            if (node) {
+                node.setStyle("font-weight", "bold");
+                spt.pipeline.select_node(node);
             }
-        }
 
-        spt.pipeline.unselect_all_nodes();
-
-        var node = spt.pipeline.get_node_by_name(bvr.process);
-        //process and node name could be different
-        if (node) {
-            node.setStyle("font-weight", "bold");
-            spt.pipeline.select_node(node);
-            //spt.pipeline.center_node(node);
-        }
+            spt.pipeline.fit_to_canvas(bvr.pipeline);
 
 
-        spt.pipeline.set_status_color(bvr.search_key);
+            var top = spt.pipeline.top;
+            var text = top.getElement(".spt_pipeline_editor_current2");
+            if (!text) {
+                return;
+            }
 
-        var top = spt.pipeline.top;
-        var text = top.getElement(".spt_pipeline_editor_current2");
-        //spt.pipeline.load_triggers();
-        spt.pipeline.fit_to_canvas(bvr.pipeline);
-
-        var server = TacticServerStub.get();
-        var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
-        var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
-        text.innerHTML = html;
+            var server = TacticServerStub.get();
+            var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
+            var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
+            text.innerHTML = html;
 
 
 
-        '''
-        } )
+            '''
+            } )
 
 
         #div.add_style("padding: 10px")

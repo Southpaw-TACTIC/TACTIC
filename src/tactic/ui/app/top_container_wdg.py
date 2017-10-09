@@ -31,6 +31,8 @@ class TopContainerWdg(BaseRefreshWdg):
         top = DivWdg()
 
         hash = my.kwargs.get("hash")
+        pathname = my.kwargs.get("pathname")
+
         Container.put("url_hash", hash)
 
         security = Environment.get_security()
@@ -39,8 +41,6 @@ class TopContainerWdg(BaseRefreshWdg):
             hash = "/index"
 
         if not hash:
-            # NOTE: this really doesn't get call anymore because an empty
-            # hash gets remapped to "/index"
             widget = my.get_default_wdg()
             top.add(widget)
 
@@ -57,10 +57,7 @@ class TopContainerWdg(BaseRefreshWdg):
                 widget = my.get_default_wdg()
 
             else:
-                #print "HASH: ", hash
-                #print "project: ", project_code
                 from pyasm.security import Site
-                #print "site: ", Site.get_site()
                 widget = HashPanelWdg.get_widget_from_hash(hash, return_none=True)
 
             if not widget:

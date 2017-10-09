@@ -407,7 +407,7 @@ class IconWdg(DivWdg):
 
 
     def init(my):
-        if my.icon_path.startswith("BS"):
+        if my.icon_path.startswith("BS") or my.icon_path.startswith("FA"):
             icon_path = my.icon_path
         elif not my.icon_path.startswith("/"):
             # icon_path = "/context/icons/oo/%s" % my.icon_path
@@ -429,6 +429,21 @@ class IconWdg(DivWdg):
             icon.add_style("font-size: %s" % my.size)
             if not my.opacity:
                 my.opacity = 0.6
+
+        elif icon_path.startswith("FA"):
+            icon = HtmlElement.i()
+            icon.add_class("fa")
+            part = icon_path.replace("FA_", "")
+            part = part.lower()
+            part = part.replace("_","-")
+            icon.add_class("fa-%s" % part)
+            if not my.size:
+                my.size = "16px"
+            icon.add_style("font-size: %s" % my.size)
+            if not my.opacity:
+                my.opacity = 0.6
+
+
         else:
             icon = HtmlElement.img(icon_path)
 

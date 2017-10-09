@@ -46,7 +46,7 @@ class BaseInputWdg(HtmlElement):
     get_args_keys = classmethod(get_args_keys)
 
 
-    #def __init__(my,name=None, type=None, label=None):
+    #def __init__(my, name=None, type=None, label=None):
     def __init__(my, name=None, type=None, label=None, **kwargs):
         super(BaseInputWdg,my).__init__(type)
 
@@ -601,12 +601,7 @@ class TextWdg(BaseTextWdg):
     def __init__(my,name=None, label=None):
         super(TextWdg,my).__init__(name,"input", label=label)
         my.css = "inputfield"
-        #my.add_class(my.css)
         my.add_class("spt_input")
-        #my.add_class("form-control")
-        #my.add_color("background", "background", 10)
-        #my.add_color("color", "color")
-        #my.add_border()
     
    
 

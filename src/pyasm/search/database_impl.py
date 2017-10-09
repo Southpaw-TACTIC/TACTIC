@@ -572,7 +572,7 @@ class DatabaseImpl(DatabaseImplInterface):
         columns = []
         for description in sql.description:
             # convert to unicode
-            value = unicode(description[0], 'utf-8')
+            value = description[0].decode('utf-8')
             columns.append(value)
 
         return columns

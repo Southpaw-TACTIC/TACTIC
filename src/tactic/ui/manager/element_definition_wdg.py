@@ -51,7 +51,6 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         top.add_class("spt_element_top")
         top.add_color("color", "color")
         top.add_color("background", "background")
-        top.add_border()
 
        
 
@@ -422,7 +421,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             try:
                 widget = config_view.get_display_widget(element_name)
             except Exception, e:
-                print "ERROR: ", e
+                print("ERROR: ", e)
                 widget = None
             is_editable = False
             if hasattr(widget, 'is_editable'):
@@ -492,9 +491,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         # add in the mode selected
         mode_wdg = DivWdg()
-        mode_wdg.add("<div style='float: left; margin-right: 10px'>Mode: </div>")
+        mode_wdg.add("<div style='float: left; display: inline-block; margin-right: 10px'>Mode: </div>")
         mode_select = SelectWdg("mode")
-        mode_select.add_style("width: 100px")
+        mode_select.add_style("width: 120px")
         mode_select.add_class('spt_element_def_mode')
         mode_select.set_option("labels", "Form|XML")
         mode_select.set_option("values", "form|xml")
@@ -536,9 +535,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': my._get_save_cbjs_action()
         } )
+
+
         title_div = DivWdg()
-        top.add(title_div)
-        title_div.add_color("background", "background", -10 )
+        #top.add(title_div)
+        title_div.add_color("background", "background", -3 )
         title_div.add_style("margin: 0 -1 10 -1")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
@@ -546,8 +547,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         title_div.add_style("height: 30px")
         title_div.add_border()
         if my.is_insert:
-            title_div.add(IconWdg("New Element", IconWdg.NEW))
-            title_div.add("New Column")
+            title_div.add("Add New Column")
         else:
             title_div.add("Edit Column Definition")
 
@@ -555,6 +555,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             title_div.add(mode_wdg)
             gear = my.get_gear_menu(view)
             gear.add_style("float: right")
+            gear.add_style("margin: 5px 0px 5px 10px")
                 
             # add gear menu 
             top.add(gear)
@@ -563,7 +564,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 
 
-        top.add("<br clear='all'/>")
+        #top.add("<br clear='all'/>")
 
 
 
@@ -593,7 +594,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
 
         attr_wdg = DivWdg()
-        attr_wdg.add_color("background", "background", -10)
+        attr_wdg.add_color("background", "background", -3)
         attr_wdg.add_style("margin: 10px -2px 10px -2px")
         attr_wdg.add_style("padding: 10px")
         attr_wdg.add_border()
@@ -613,8 +614,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td = attr_table.add_cell("Title: ")
         td.add_style("padding: 5px")
         title_text = TextWdg("attr|title")
+        title_text.add_class("form-control")
         title_text.add_class("spt_element_definition_title")
+        title_text.add_style("margin-bottom: 8px")
         title_text.add_attr("size", "50")
+        title_text.add_style("height: 25px")
         if title:
             title_text.set_value(title)
         attr_table.add_cell(title_text)
@@ -643,7 +647,10 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         name = my.kwargs.get("element_name")
         if my.is_insert:
             name_text = TextWdg("name")
+            name_text.add_style("margin-bottom: 8px")
+            name_text.add_class("form-control")
             name_text.add_class("spt_element_definition_name")
+            name_text.add_style("height: 25px")
             name_text.add_attr("size", "50")
 
             td.add(name_text)
@@ -695,6 +702,10 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td = attr_table.add_cell("Width: ")
         td.add_style("padding: 5px")
         width_text = TextWdg("attr|width")
+        width_text.add_class("form-control")
+        width_text.add_style("height: 25px")
+        width_text.add_style("width: 75px")
+        width_text.add_style("margin-bottom: 8px")
         if width:
             width_text.set_value(width)
         width_text.add_attr("size", "3")
@@ -739,13 +750,13 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             tr, td = table.add_row_cell()
             td.add(HtmlElement.br())
             attr_wdg = DivWdg()
-            attr_wdg.add_color("background", "background", -10)
+            attr_wdg.add_color("background", "background", -3)
             attr_wdg.add_style("margin-top: 5px")
             attr_wdg.add_style("padding: 10px")
             attr_wdg.add_border()
             attr_wdg.add_style("margin: 10px -2px 10px -2px")
             title_wdg = DivWdg()
-            title_wdg.add("Display")
+            title_wdg.add("Display Options")
             title_wdg.add_style("margin-top: -25px")
             title_wdg.add_style("font-size: 1.2em")
             attr_wdg.add(title_wdg)
@@ -782,7 +793,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             SwapDisplayWdg.create_swap_title(title_wdg, swap, color_wdg, is_open=False)
             color_wdg.add_class("spt_element_colors")
             color_wdg.add_style("display: none")
-            color_wdg.add_color("background", "background", -10)
+            color_wdg.add_color("background", "background", -3)
             color_wdg.add_style("margin-left: 5px")
             color_wdg.add_style("margin-bottom: 10px")
             color_wdg.add_style("padding: 10px")
@@ -1135,7 +1146,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         config_wdg.add(content_div)
         content_div.add_class("spt_element_definitions")
         content_div.add_style("display: none")
-        content_div.add_color("background", "background", -10)
+        content_div.add_color("background", "background", -3)
         content_div.add_style("margin-left: 5px")
         content_div.add_style("margin-bottom: 10px")
         content_div.add_style("padding: 10px")
@@ -1262,8 +1273,8 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
        
         title_div = DivWdg()
-        widget.add(title_div)
-        title_div.add_color("background", "background", -10 )
+        #widget.add(title_div)
+        title_div.add_color("background", "background", -3 )
         title_div.add_style("margin-bottom: 10px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
@@ -1333,7 +1344,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         title_wdg = DivWdg()
         swap = SwapDisplayWdg.get_triangle_wdg()
         title_wdg.add(swap)
-        title_wdg.add("Edit")
+        title_wdg.add("Edit Options")
         td.add(title_wdg)
      
 
@@ -1343,7 +1354,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         attr_wdg.add_class("spt_element_edit")
         
         #attr_wdg.add_style("display: none")
-        attr_wdg.add_color("background", "background", -10)
+        attr_wdg.add_color("background", "background", -3)
         #attr_wdg.add_style("margin-top: 5px")
         attr_wdg.add_style("margin-left: 5px")
         attr_wdg.add_style("padding: 10px")
@@ -1401,7 +1412,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
             try:
                 widget = config_view.get_display_widget(element_name)
             except Exception, e:
-                print "ERROR: ", e
+                print("ERROR: ", e)
                 widget = None
             is_editable = False
             if hasattr(widget, 'is_editable'):
@@ -1463,6 +1474,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         mode_select.add_style("width: 100px")
         mode_select.add_style("float: right")
         mode_select.add_style("margin-top: -5px")
+        mode_select.add_style("margin-left: 5px")
         mode_wdg.add_style("float: right")
         
         mode_select.add_class('spt_element_def_mode')
@@ -1510,7 +1522,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         title_div = DivWdg()
         top.add(title_div)
-        title_div.add_color("background", "background", -10)
+        title_div.add_color("background", "background", -3)
         title_div.add_style("margin-bottom: 10px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 8px")
@@ -1573,7 +1585,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         tr, td = table.add_row_cell()
 
         attr_wdg = DivWdg()
-        attr_wdg.add_color("background", "background", -10)
+        attr_wdg.add_color("background", "background", -3)
         attr_wdg.add_style("margin-top: 10px")
         attr_wdg.add_style("padding: 10px")
         attr_wdg.add_border()
@@ -1608,8 +1620,10 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
             name_text.add_attr("size", "50")
 
         else:
-            name_text = SpanWdg(element_name)
+            name_text = DivWdg(element_name)
             name_text.add_style('font-weight: bold')
+            name_text.add_style('display: inline-block')
+            name_text.add_style('vertical-align: middle')
             hidden = HiddenWdg("name", element_name)
             td.add(hidden)
             if name:
@@ -1659,10 +1673,10 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         td.add(color_wdg)
 
         """
-        tr, td = table.add_row_cell()
-        td.add(SpanWdg("Widget Definition", css='small'))
-        td.add("<hr>")
-        td.add_style("padding-top: 20px")
+        #tr, td = table.add_row_cell()
+        #td.add(SpanWdg("Widget Definition", css='small'))
+        #td.add("<hr>")
+        #td.add_style("padding-top: 20px")
 
 
 
@@ -1686,7 +1700,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         attr_wdg.add_class("spt_element_edit")
         
         #attr_wdg.add_style("display: none")
-        attr_wdg.add_color("background", "background", -10)
+        attr_wdg.add_color("background", "background", -3)
         #attr_wdg.add_style("margin-top: 5px")
         attr_wdg.add_style("margin-left: 5px")
         attr_wdg.add_style("padding: 10px")
@@ -2281,8 +2295,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                         data = jsondumps(xml_value)
                         data = jsonloads(data)
                     except Exception, e:
-                        print "Error loading kwargs", xml_value
-                        print e
+                        print("Error loading kwargs", xml_value)
+                        print(e)
                         data = {}
                         value = {}
                         value['category'] = 'kwargs'
@@ -2371,9 +2385,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 category_div = DivWdg()
                 current_div.add(category_div)
                 #category_div.add_color("background", "background3", -2)
-                category_div.add_style("margin-bottom", "5px")
+                #category_div.add_style("margin-bottom", "5px")
                 category_div.add_style("padding-top", "2px")
-                category_div.add("<hr/>")
+                #category_div.add("<hr/>")
+                category_div.add_class("tactic_hover")
 
                 script = '''
                 var top = bvr.src_el.getParent(".spt_widget_section_top");
@@ -2605,7 +2620,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     if value and hasattr(edit_wdg,'set_value'):
                         edit_wdg.set_value(value)
                 except Exception, e:
-                    print "Cannot create widget: [%s]" % widget_type, e, e.message
+                    print("Cannot create widget: [%s]" % widget_type, e, e.message)
 
             if not edit_wdg:
                 edit_wdg = TextWdg(name)
@@ -2985,7 +3000,7 @@ class SimpleElementDefinitionCbk(Command):
         try:
             widget = config.get_display_widget(element_name)
         except:
-            print "Warning: Cannot create widget for [%s]" % element_name
+            print("Warning: Cannot create widget for [%s]" % element_name)
             #raise
             #return
 
@@ -3000,15 +3015,15 @@ class SimpleElementDefinitionCbk(Command):
                 if my.is_insert: # will be caught in AlterTableCmd
                     raise
                 else: # in edit mode, it's ok for now
-                    print "WARNING when creating required columns: ", e.message
+                    print("WARNING when creating required columns: ", e.message)
                     pass
                 #raise
             except AttributeError:
                 # this is meant for the definition display, not for edit_definition view
-                print "Warning: [%s] does not have create_required_columns method"%element_name
+                print("Warning: [%s] does not have create_required_columns method"%element_name)
                 raise
             except Exception, e:
-                print "Warning: ", e.message
+                print("Warning: ", e.message)
                 raise
 
         # commit the config_sobj at the end if no exception is raised during insert

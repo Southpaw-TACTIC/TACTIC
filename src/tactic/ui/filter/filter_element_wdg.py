@@ -202,7 +202,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             if search_type_str:
                 expr = '''@SEARCH(%s["%s","%s"].%s)'''%(top_search_type, column, value, search_type_str)
                 sub_search = Search.eval(expr)
-               
+
          
             '''
             for search_type in search_types:
@@ -360,8 +360,9 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         elif op == 'is on':
             div.add("&nbsp;&nbsp;&nbsp;is on&nbsp;&nbsp;&nbsp;")
             div.add(HiddenWdg("op", "is on"))
-        elif op == '~':
+        elif op in ['~', 'contains']:
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "~"))
         elif op == 'is':
             #TODO: have this style apply to everything else and get rid of &nbsps
             op_div = DivWdg('is')
@@ -483,8 +484,9 @@ class TextFilterElementWdg(SelectFilterElementWdg):
         if op == 'exists':
             div.add("&nbsp;&nbsp;&nbsp;is&nbsp;&nbsp;&nbsp;")
             div.add(HiddenWdg("op", "exists"))
-        elif op == '~':
+        elif op in ['~', 'contains']:
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "~"))
         else:
             op_select = SelectWdg("op")
             op_select.set_option("labels", "is|is not|contains")

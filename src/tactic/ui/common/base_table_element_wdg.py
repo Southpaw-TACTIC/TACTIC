@@ -485,6 +485,21 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         
         value = my.get_value(name=name)
 
+        empty = my.get_option("empty")
+        if empty and my.is_editable() and not value:
+            from pyasm.web import SpanWdg
+            div = DivWdg()
+            div.add_style("text-align: center")
+            div.add_style("width: 100%")
+            div.add_style("white-space: nowrap" )
+            if empty in [True, 'true']:
+                div.add("--Select--")
+            div.add_style("opacity: 0.5")
+            return div
+
+
+
+
         if sobject:
             data_type = SearchType.get_column_type(sobject.get_search_type(), name)
         else:
@@ -559,6 +574,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
             return value_wdg
+
+
 
         return value
 

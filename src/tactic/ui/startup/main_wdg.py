@@ -120,13 +120,13 @@ class SectionWdg(BaseRefreshWdg):
     def get_small_section_wdg(my, title, description, image, behavior):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
+        #section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("0px 0px 5px")
+        #section_wdg.set_box_shadow("0px 0px 5px")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -135,7 +135,7 @@ class SectionWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 3px")
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -5)
 
         section_wdg.add_color("background", "background")
         #section_wdg.add_gradient("background", "background", 0, -3)
@@ -496,8 +496,8 @@ class MainWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
-        title = "Manage Plugin"
-        image = IconWdg("Manage Plugin", IconWdg.PLUGIN_32)
+        title = "Manage Plugins"
+        image = IconWdg("Manage Plugins", IconWdg.PLUGIN_32)
         #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
         description = '''Upload, install, remove and create TACTIC plugins.'''
 

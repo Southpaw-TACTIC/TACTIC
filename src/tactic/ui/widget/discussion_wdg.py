@@ -407,9 +407,11 @@ class DiscussionWdg(BaseRefreshWdg):
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
 
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
+                if (spt.table) {
+                    var layout = spt.table.get_layout();
+                    var upload_id = layout.getAttribute('upload_id')
+                    kwargs.upload_id = upload_id; 
+                }
                 kwargs.hidden = bvr.hidden;
                 kwargs.allow_email = bvr.allow_email;
                 kwargs.show_task_process = bvr.show_task_process;
@@ -542,9 +544,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-        gallery_div = DivWdg()
-        layout.add( gallery_div )
-        gallery_div.add_class("spt_note_gallery")
         layout.add_relay_behavior( {
             'type': 'click',
             'width': "",
@@ -980,6 +979,10 @@ class DiscussionWdg(BaseRefreshWdg):
                 top.add_style("max-height: %spx" % max_height)
 
 
+            gallery_div = DivWdg()
+            gallery_div.add_class("spt_note_gallery")
+            top.add( gallery_div )
+
 
         context_str = ",".join(contexts)
         update_div = DivWdg()
@@ -1093,6 +1096,7 @@ class DiscussionWdg(BaseRefreshWdg):
         # This only shows up if there are no notes
         else:
             no_notes_div = DivWdg()
+
             top.add(no_notes_div)
             if my.show_border:
                 no_notes_div.add_color("background", "background")
@@ -1159,6 +1163,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             note_dialog = DialogWdg(display=False)
+            note_dialog.add_style("font-size: 12px")
             note_dialog.add_title("Add Note")
             note_dialog.add_style("overflow-y: auto")
             no_notes_div.add(note_dialog)
@@ -1338,9 +1343,13 @@ class DiscussionWdg(BaseRefreshWdg):
                        
 
             context_count = 0
+
+            note_dialog_div = DivWdg()
+            context_top.add(note_dialog_div)
+            note_dialog_div.add_style("font-size: 12px")
            
             note_dialog = DialogWdg(display=False)
-            context_top.add(note_dialog)
+            note_dialog_div.add(note_dialog)
             note_dialog.add_title("Notes for: %s" % context)
             note_dialog.add_style("overflow-y: auto")
             #note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
@@ -1554,8 +1563,8 @@ class NoteCollectionWdg(BaseRefreshWdg):
                 #parent_snapshots = Snapshot.get_by_sobject(parent, process=process)
                 """
 
-                context = "attachment"
-                parent_snapshots = Search.eval("@SOBJECT(sthpw/note.connect['context','%s'].sthpw/snapshot)" % context, notes)
+                #context = "attachment"
+                #parent_snapshots = Search.eval("@SOBJECT(sthpw/note.connect['context','%s'].sthpw/snapshot)" % context, notes)
 
                 for note in notes:
 
@@ -1569,7 +1578,8 @@ class NoteCollectionWdg(BaseRefreshWdg):
                         my.attachments[note_key] = xx
 
                     for snapshot in parent_snapshots:
-                        xx.append(snapshot)
+                        if snapshot:
+                            xx.append(snapshot)
 
 
 
@@ -1827,7 +1837,11 @@ class NoteWdg(BaseRefreshWdg):
 
         from pyasm.security import Login
         user = Login.get_by_code(login)
-        display_name = user.get_value("display_name")
+        if not user:
+            display_name = login
+        else:
+            display_name = user.get_value("display_name")
+
         if not display_name:
             display_name = login
 
@@ -1870,7 +1884,8 @@ class NoteWdg(BaseRefreshWdg):
 
 
         current_login = Environment.get_user_name()
-        if current_login == login:
+        security = Environment.get_security()
+        if security.is_admin() or current_login == login:
 
             icon = IconButtonWdg(title="Options", icon="BS_PENCIL")
             title.add(icon)
@@ -2043,19 +2058,21 @@ class NoteWdg(BaseRefreshWdg):
         # Snapshot thumbnail code
         if snapshots:
             #attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
-            
+           
+            """
             attached_div.add_relay_behavior( {         
             'type': 'click',
             'mouse_btn': 'LMB',
             'bvr_match_class': 'spt_open_thumbnail',
             'cbjs_action': '''
-            
+
             var src_el = bvr.src_el;
             var thumb_href = src_el.getElement('.spt_thumb_href');
             var thumb_path = thumb_href.getAttribute('href');
             window.open(thumb_path);
             '''
             } )
+            """
 
             right.add("<hr/>")
             right.add('''
@@ -2566,6 +2583,10 @@ class DiscussionAddNoteCmd(Command):
 
 
         my.call_triggers(note_sobj)
+
+        my.info = {
+                "note": note_sobj.get_sobject_dict()
+        }
 
 
     def call_triggers(my, note_sobj):

@@ -52,7 +52,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         #inner.add_style("background: rgba(0,0,0,0.5)")
         inner.add_style("background: rgba(0,0,0,1)")
-        inner.add_style("z-index: 1000")
+        inner.add_style("z-index: 2000")
 
 
         width = my.kwargs.get("width")

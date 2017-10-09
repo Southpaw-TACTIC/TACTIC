@@ -106,18 +106,6 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
             var size = $(panel).getSize();
 
-            /*
-            panel.innerHTML = '<div style="width: '+size.x+'; height: '+size.y+'"><div style="margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div></div>';
-
-            wdg_kwargs.cbjs_action = function(widget_html) {
-                panel.setStyle("opacity", "0.5");
-                spt.behavior.replace_inner_html(panel, widget_html);
-                new Fx.Tween(panel, {duration: "short"}).start('opacity', '1');
-                if (callback) callback();
-            }
-            */
-
-
             var env = spt.Environment.get();
             var colors = env.get_colors();
             var fade_color = "#FFF";
@@ -157,6 +145,11 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
                 if (callback) callback(panel);
+            }
+            wdg_kwargs.on_error = function(error) {
+                xelement.destroy();
+                element.destroy();
+                spt.alert(error);
             }
 
 

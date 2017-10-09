@@ -16,6 +16,7 @@ import re
 
 from pyasm.search import Search, SearchKey
 from pyasm.command import Trigger
+from pyasm.biz import Project
 from tactic_client_lib import TacticServerStub
 
 
@@ -36,6 +37,16 @@ class LoginGroupTrigger(Trigger):
 
         search_key = input.get("search_key")
         sobj = SearchKey.get_by_search_key(search_key)
+
+
+        # this logic makes the login name take precedence and determines the
+        # code and login_group column
+
+        # the problem is that groups are global and sometimes you want to have
+        # the project_code prepended to the group in order to scope it
+        # correctly.  However, you don't necessarily want the name of the
+        # project to prepend the name
+
 
         if mode == "insert":
             login_group_name = sobj.get_value('login_group')
@@ -58,12 +69,23 @@ class LoginGroupTrigger(Trigger):
         login_group = login_group.lower()
         login_group_name = sobj.get_value('login_group')
 
+
+
+        # make sure the project code is prepended to the login_group
+        if sobj.get_value("project_code"):
+            project_code = Project.get_project_code()
+            if not login_group.startswith("%s_" % project_code):
+                login_group = "%s_%s" % (project_code, login_group)
+
+
         sobj.set_value('login_group', login_group)
         sobj.set_value('code', login_group)
 
         sobj.commit(triggers=False)
 
         my.update_related(login_group, login_group_name)
+
+
 
     def update_related(my, login_group, prev_login_group):
         '''Update related table login_in_group''' 

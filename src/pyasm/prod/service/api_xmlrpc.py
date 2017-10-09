@@ -733,6 +733,8 @@ class BaseApiXMLRPC(XmlrpcServer):
     def get_sobject_dict(my, sobject, columns=None, use_id=False):
         return my._get_sobject_dict(sobject,columns,use_id)
     def _get_sobject_dict(my, sobject, columns=None, use_id=False):
+        if not sobject:
+            return {}
 
         sobjects = my._get_sobjects_dict([sobject], columns=columns, use_id=use_id)
         if not sobjects:
@@ -1047,12 +1049,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_message(my, ticket, key):
-        print "key: ", key
         message = Search.get_by_code("sthpw/message", key)
-        print "message: ", message
         sobject_dict = my._get_sobject_dict(message)
-        print "dict: ", sobject_dict
-        print "---"
         return sobject_dict
 
 
@@ -2401,6 +2399,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - a dictionary that represents values of the sobject in the
             form name/value pairs
         '''
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+
         sobject = SearchKey.get_by_search_key(search_key)
         if not sobject:
             raise ApiException("SObject [%s] does not exist" % search_key)
@@ -2423,6 +2424,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - a dictionary that represents values of the sobject in the
             form name/value pairs
         '''
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+
         sobject = SearchKey.get_by_search_key(search_key)
         if not sobject:
             raise ApiException("SObject [%s] does not exist" % search_key)
@@ -2501,7 +2505,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     #
 
     @xmlrpc_decorator
-    def get_parent(my, ticket, search_key, columns=[], show_retired=False):
+    def get_parent(my, ticket, search_key, columns=[], show_retired=True):
         '''gets the parent of an sobject
 
         @params:
@@ -2526,7 +2530,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         parent = sobject.get_parent(show_retired=show_retired)
         # this check is for the condition if parent_type is * and the parent is retrieved by Search.get_by_id()
         if show_retired == False and parent and parent.is_retired():
-            parent = None
+            return {}
 
         return my._get_sobject_dict(parent, columns)
 
@@ -4971,20 +4975,75 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #
-    # triger methods
+    # trigger methods
     #
-    def call_trigger(my, ticket, event, input):
+    @xmlrpc_decorator
+    def call_trigger(my, ticket, search_key, event, input={}, process=None):
         '''Calls a trigger with input package
-        
         
         @params
         ticket - authentication ticket
+        search_key - the sobject that contains the trigger
+        event - name of event
+        input - input data to send to the trigger
         '''
-        return Trigger.call(my, event, input)
+        sobjects = my._get_sobjects(search_key)
+
+        # make sure input is never None
+        if input is None:
+            input = {}
+
+        count = 0
+        for sobject in sobjects:
+            triggers = Trigger.call(sobject, event, input, process)
+            count += len(triggers)
+
+        return count
 
 
 
+    @xmlrpc_decorator
+    def call_pipeline_event(my, ticket, search_key, process, event, data={}):
+        '''Call an even in a process in a pipeline
 
+        @params
+        ticket - authentication ticket
+        search_key - the sobject that contains the trigger
+        process - the process node of the workflow of the sobject
+        event - the event to be set
+        data - dictionary data that needs to be sent to the process
+        '''
+
+        sobjects = my._get_sobjects(search_key)
+
+        for sobject in sobjects:
+            pipeline_code = sobject.get_value("pipeline_code")
+            pipeline = Pipeline.get_by_code(pipeline_code)
+
+            input = {
+                'pipeline': pipeline,
+                'sobject': sobject,
+                'process': process,
+                'data': data
+            }
+
+            event = "process|%s" % event
+            Trigger.call(my, event, input)
+
+
+    @xmlrpc_decorator
+    def get_pipeline_status(my, ticket, search_key, process):
+        '''Get the status of a process in a workflow.
+
+        @params
+        ticket - authentication ticket
+        search_key - the sobject that contains the trigger
+        process - the process node of the workflow of the sobject
+        '''
+
+        key = "%s|%s|status" % (search_key, process)
+        message = my.get_message(ticket, key)
+        return message.get("message")
 
 
     #
@@ -5555,6 +5614,34 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
+    #
+    # Queue Manager
+    #
+    @xmlrpc_decorator
+    def add_queue_item(my, ticket, class_name, args={}, queue=None, priority=9999, description=None, message_code=None):
+        '''API Function: Add an item to the job queue
+
+        @param
+        class_name - Fully qualified command class derived from pyasm.command.Command
+        args - Keyword arguments to pass to the command
+        priority - NOT USED ... priority of the job
+        queue - Named queue which categorizes a job.  Some queue managers only look
+                at one type of queue
+        description - a description of the job
+        message_code - message log code where messages from the job can be added.
+
+        @return
+        queue_item
+
+        '''
+        from tactic.command import Queue
+        queue_item = Queue.add(class_name, args, queue, priority, description, message_code)
+        sobject_dict = my._get_sobject_dict(queue_item)
+        return sobject_dict
+
+
+
+
     @xmlrpc_decorator
     def check_access(my, ticket, access_group, key, access, value=None, is_match=False, default="edit"):
         '''check the access for a specified access_group name like search_type, sobject, project, 
@@ -6022,6 +6109,26 @@ class ApiXMLRPC(BaseApiXMLRPC):
             return "none_found"
         else:
             return path
+
+
+
+    #
+    # Access to some useful external functions
+    #
+    @xmlrpc_decorator
+    def send_rest_request(my, ticket, method, url, params={}):
+
+        import requests
+
+        method = method.lower()
+        if method == "post":
+            r = requests.post(url, params)
+        else:
+            r = requests.get(url, params)
+
+        return r.json()
+
+
 
 
 

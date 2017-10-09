@@ -217,6 +217,10 @@ class TransactionLog(SObject):
         ])
 
 
+        from pyasm.security import Site
+        current_site = Site.get_site()
+
+
         for node in nodes:
             node_name = xml.get_node_name(node)
             if node_name == "sobject":
@@ -230,6 +234,8 @@ class TransactionLog(SObject):
 
                 search_id = Xml.get_attribute(node,"search_id")
                 search_code = Xml.get_attribute(node,"search_code")
+                site = Xml.get_attribute(node,"site")
+
 
                 if search_code:
                     search_key = "%s?code=%s" % (search_type, search_code)
@@ -247,30 +253,47 @@ class TransactionLog(SObject):
                 if action == "delete":
                     continue
 
-                if search_code:
-                    sobject = Search.get_by_code(search_type, search_code)
-                else:
-                    sobject = Search.get_by_id(search_type, search_id)
 
-
-                if sobject:
-                    SObjectLog.create(sobject, log, action)
-                else:
-                    # record has been deleted
-                    if search_code:
-                        print("Skipped SObject log creation for [%s?code=%s]" %(search_type, search_code))
-                    else:
-                        print("Skipped SObject log creation for [%s|%s]" %(search_type, search_id))
-
-                if search_type_obj.get_base_key() in find_parent:
+                has_site = False
+                if site:
                     try:
-                        if sobject:
-                            sobject = sobject.get_parent()
-                    except (SearchException, SqlException):
-                        # don't worry if this parent can't be found.
-                        pass
+                        Site.set_site(site)
+                        has_site = True
+                    except:
+                        print "Site [%s] does not exist" % site
+                        continue
+
+
+                try:
+
+                    if search_code:
+                        sobject = Search.get_by_code(search_type, search_code)
+                    else:
+                        sobject = Search.get_by_id(search_type, search_id)
+
+
                     if sobject:
-                        SObjectLog.create(sobject, log, "child_%s" % action)
+                        SObjectLog.create(sobject, log, action)
+                    else:
+                        # record has been deleted
+                        if search_code:
+                            print("Skipped SObject log creation for [%s?code=%s]" %(search_type, search_code))
+                        else:
+                            print("Skipped SObject log creation for [%s|%s]" %(search_type, search_id))
+
+                    if search_type_obj.get_base_key() in find_parent:
+                        try:
+                            if sobject:
+                                sobject = sobject.get_parent()
+                        except (SearchException, SqlException):
+                            # don't worry if this parent can't be found.
+                            pass
+                        if sobject:
+                            SObjectLog.create(sobject, log, "child_%s" % action)
+                finally:
+                    if has_site:
+                        Site.pop_site()
+
 
     create_sobject_log = classmethod(create_sobject_log)
 

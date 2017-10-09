@@ -14,16 +14,17 @@ __all__ = ["Task", "Timecard", "Milestone"]
 
 import types
 import re
-from pyasm.common import Xml, Environment, Common, SPTDate
+from pyasm.common import Xml, Environment, Common, SPTDate, Config
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
-from prod_setting import ProdSetting
+from prod_setting import ProdSetting, ProjectSetting
 from pipeline import Pipeline
-from pyasm.common import Environment, Date
+from pyasm.common import Environment
 from project import Project
 from status import StatusLog
 
 from datetime import datetime, timedelta
 from dateutil import parser
+from dateutil.relativedelta import relativedelta
 
 
 
@@ -815,7 +816,7 @@ class Task(SObject):
             user = Environment.get_user_name()
             task.set_value('login', user)
 
-        if task.has_value('task_type') and task_type:
+        if task_type:
             task.set_value("task_type", task_type)
 
         task.commit(triggers=True)
@@ -899,7 +900,11 @@ class Task(SObject):
     sort_shot_tasks = staticmethod(sort_shot_tasks)
 
 
-    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[], skip_duplicate=True, mode='standard',start_offset=0,assigned=None,start_date=None):
+    def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[],
+            skip_duplicate=True, mode='standard',start_offset=0,assigned=None,
+            start_date=None, schedule_mode=None
+
+        ):
         '''add initial tasks based on the pipeline of the sobject'''
         from pipeline import Pipeline
 
@@ -996,10 +1001,10 @@ class Task(SObject):
         last_task = None
 
         # this is the explicit mode for creating task for a specific process:context combo
-        if mode=='context':
+        if mode == 'context':
 
-            start_date = Date()
-            start_date.add_days(start_offset)
+            start_date= SPTDate.today()
+            start_date = SPTDate.add_business_days(start_date, start_offset)
 
             for context_combo in contexts:
                 process_name, context = context_combo.split(':')               
@@ -1037,13 +1042,12 @@ class Task(SObject):
                     bid_duration = int(bid_duration)
 
 
-                end_date = start_date.copy()
                 # for a task to be x days long, we need duration x-1.
-                end_date.add_days(duration-1)
+                end_date = SPTDate.add_business_days(start_date, duration-1)
 
                 
-                start_date_str = start_date.get_db_date()
-                end_date_str = end_date.get_db_date()
+                start_date_str = start_date.strftime("%Y-%m-%d")
+                end_date_str = end_date.strftime("%Y-%m-%d")
 
                 # Create the task
                 last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
@@ -1054,9 +1058,8 @@ class Task(SObject):
                 # for backward compatibility, if the process has been created, we will skip later below
 
                 tasks.append(last_task)
-                start_date = end_date.copy()
                 # start the day after
-                start_date.add_days(1)
+                start_date = SPTDate.add_business_days(end_date, 1)
 
             return tasks
 
@@ -1064,7 +1067,6 @@ class Task(SObject):
         # get all of the process_sobjects
         process_sobjects = pipeline.get_process_sobjects()
 
-        from pyasm.common import SPTDate
         if not start_date:
             start_date = SPTDate.today()
         else:
@@ -1075,7 +1077,7 @@ class Task(SObject):
         start_date = SPTDate.set_noon(start_date)
 
         if start_offset:
-            start_date.add_days(start_offset)
+            start_date = SPTDate.add_business_days(start_date, start_offset)
       
 
         for process_name in process_names:
@@ -1086,9 +1088,13 @@ class Task(SObject):
             if not process_obj:
                 continue
 
+            process_type = process_obj.get_type()
+            task_type = None
+            if process_type in ['approval']:
+                task_type = "approval"
 
-            # depend_id is pretty much deprecated ... dependencies are usually set
-            # by the workflow engined
+            # depend_id is pretty much deprecated ...
+            # dependencies are usually set by the workflow engine
             if last_task:
                 depend_id = last_task.get_id()
             else:
@@ -1147,9 +1153,6 @@ class Task(SObject):
 
 
 
-
-
-
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
                 output_contexts = [process_name]
@@ -1176,7 +1179,7 @@ class Task(SObject):
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
 
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned)
+                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1188,11 +1191,206 @@ class Task(SObject):
             start_date = end_date + timedelta(days=1)
 
 
+        # the default was to calculate the task dates starting from the start date
+        # and move forward.
+
+        # look at project setting
+        schedule_mode = ProjectSetting.get_value_by_key("schedule/mode")
+
+        # see if there is a global schdule mode
+        if not schedule_mode:
+            schedule_mode = Config.get_value("schedule", "mode")
+
+        # We can recalculae at this point using different modes
+        if schedule_mode:
+            cmd = TaskAutoSchedule(sobject=sobject, tasks=tasks, mode=schedule_mode)
+            cmd.execute()
+
+            # commit all of the tasks
+            for task in tasks:
+                task.commit()
+
+
         return tasks
 
     add_initial_tasks = staticmethod(add_initial_tasks)
             
 
+
+
+class TaskAutoSchedule(object):
+    '''Class to handle various auto schedule methods'''
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+    def get_diff_seconds(start_date, end_date):
+
+        if isinstance(start_date, basestring):
+            start = parser.parse(start_date, fuzzy=True)
+        else:
+            start = start_date
+        if isinstance(end_date, basestring):
+            end = parser.parse(end_date, fuzzy=True)
+        else:
+            end = end_date
+        diff = end - start
+
+        diff = (diff.days*60*60*24) + diff.seconds
+        return diff
+    get_diff_seconds = staticmethod(get_diff_seconds)
+
+
+    def get_diff_days(start_date, end_date):
+        if isinstance(start_date, basestring):
+            start = parser.parse(start_date, fuzzy=True)
+        else:
+            start = start_date
+        if isinstance(end_date, basestring):
+            end = parser.parse(end_date, fuzzy=True)
+        else:
+            end = end_date
+
+        diff = end - start
+        diff = float(diff.days) + float(diff.seconds) / (24*60*60)
+        return diff
+    get_diff_days = staticmethod(get_diff_days)
+
+
+    def round_second(mydate):
+        
+        if isinstance(mydate, basestring):
+            mydate = parser.parse(mydate, fuzzy=True)
+
+        microS = mydate.microsecond
+        new_date = mydate - relativedelta(microseconds = microS)
+        
+        if round(microS * 0.000001) == 1:
+            new_date = new_date + relativedelta(seconds = 1)
+            
+        return new_date
+    round_second = staticmethod(round_second)
+
+
+    def set_from_end_date_schedule(my, tasks, end_date):
+        # make a copy
+        reverse_tasks = tasks[:]
+        reverse_tasks.reverse()
+
+        tmp_end_date = end_date
+
+        for task in reverse_tasks:
+
+            # use the current length
+            task_start_date = task.get_datetime_value("bid_start_date")
+            task_end_date = task.get_datetime_value("bid_end_date")
+            diff = task_end_date - task_start_date
+
+            tmp_start_date = tmp_end_date - diff
+
+            task.set_value("bid_end_date", tmp_end_date)
+            task.set_value("bid_start_date", tmp_start_date)
+
+            tmp_end_date = tmp_start_date
+
+
+
+
+
+    def set_even_schedule(my, tasks, start_date, end_date):
+        '''sets an even schedule for all tasks using all 24 hours.  This is a
+        simple implementation that ignores the workday and is most suited
+        for jobs that usually take less than a day to complete.
+        '''
+
+        num_tasks = len(tasks)
+
+        diff = my.get_diff_seconds(start_date, end_date)
+        interval = diff / float(num_tasks)
+
+
+        tmp_start_date = start_date
+        for task in tasks:
+
+            tmp_end_date = tmp_start_date + relativedelta(seconds=interval)
+
+            #print tmp_start_date, tmp_end_date
+            #print round_second(tmp_start_date), round_second(tmp_end_date)
+            start = my.round_second(tmp_start_date)
+            end = my.round_second(tmp_end_date)
+
+            task.set_value("bid_start_date", start)
+            task.set_value("bid_end_date", end)
+
+            tmp_start_date = tmp_end_date
+
+
+
+
+    def set_even_day_schedule(my, tasks, start_date, end_date, workday=8):
+        '''sets an even day schedule which ignores time.  Each task is
+        given an equal number of days.  They are allowed to overlap
+        a single day'''
+
+        tmp_start_date = start_date
+
+        diff = my.get_diff_days(start_date, end_date)
+        interval = diff / float(len(tasks))
+
+        for task in tasks:
+
+            tmp_end_date = tmp_start_date + relativedelta(days=interval)
+            start = SPTDate.set_noon(tmp_start_date)
+            end = SPTDate.set_noon(tmp_end_date)
+            #diff = end - start
+
+            task.set_value("bid_start_date", start)
+            task.set_value("bid_end_date", end)
+
+            tmp_start_date = tmp_end_date
+
+
+
+    def execute(my):
+
+        search_key = my.kwargs.get("search_key")
+        sobject = my.kwargs.get("sobject")
+        tasks = my.kwargs.get("tasks")
+        mode = my.kwargs.get("mode")
+        if not mode:
+            return
+
+        assert mode in ['even', 'even_day', 'from_end_date']
+
+        if sobject:
+            search_key = sobject.get_search_key()
+        else:
+            sobject = Search.get_by_search_key(search_key)
+
+        if not tasks:
+            tasks = Search.eval("@SOBJECT(sthpw/task)", sobject)
+
+        if not tasks:
+            return
+
+
+        start_date = sobject.get_datetime_value("start_date")
+        end_date = sobject.get_datetime_value("due_date")
+
+        if mode == "even":
+            my.set_even_schedule(tasks, start_date, end_date)
+        elif mode == "even_day":
+            my.set_even_day_schedule(tasks, start_date, end_date, workday=8)
+        elif mode == "from_end_date":
+            my.set_from_end_date_schedule(tasks, end_date)
+
+
+
+    def test(my):
+        start_date = parser.parse("2017-01-20")
+        end_date = parser.parse("2017-02-27 12:00")
+        tasks = [1,2,3,4,5,6,7]
+        set_even_day_schedule(tasks, start_date, end_date)
 
 
 

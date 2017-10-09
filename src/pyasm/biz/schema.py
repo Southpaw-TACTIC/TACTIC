@@ -223,6 +223,12 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
    <connect from="sthpw/subscription" to="sthpw/login" relationship="code" from_col="login" to_col="login"/>
 
+
+
+  <connect from="sthpw/retire_log" to="*"
+                type='hierarchy' relationship='search_type'/>
+
+
   <!-- put this last so that others override -->
   <connect from="sthpw/login" to="*"
             relationship='code' from_col='login' to_col='login'/>

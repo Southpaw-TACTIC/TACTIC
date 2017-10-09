@@ -439,8 +439,8 @@ class PasswordAction(DatabaseAction):
                 return
         
         # encrypt the password
-        #encrypted = md5.new(my.password).hexdigest()
-        encrypted = hashlib.md5(my.password).hexdigest()
+        password = my.password.encode('utf8')
+        encrypted = hashlib.md5(password).hexdigest()
         my.sobject.set_value("password", encrypted)
 
         if my.commit_flag == True:

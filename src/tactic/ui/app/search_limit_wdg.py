@@ -575,10 +575,10 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         top.add(table)
 
         
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background", -2)
         top.add_color("color", "color3")
-        top.add_style("margin: -1px 0px 10px 0px")
-        top.add_border(color="table_border")
+        top.add_style("margin: 0px 0px 10px 0px")
+        #top.add_border(color="table_border")
         top.add_style("padding-right: 30px")
         top.add_style("padding-left: 8px")
         top.add_style("padding-top: 5px")
@@ -594,7 +594,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             end_count = count
 
         total_count = count
-        bgcolor = top.get_color("background", -5)
+        bgcolor = top.get_color("background", -2)
         bgcolor2 = top.get_color("background", 10)
         
         showing_div.add_color('background', bgcolor)

@@ -604,16 +604,17 @@ class NamingUtil(object):
                         value = sobject.get_value(attr)
                 elif object == "snapshot":
                     if not snapshot:
-                        continue
-                    if attr == "timestamp":
-                        value = my._get_timestamp(snapshot)
+                        value = ""
                     else:
-                        value = snapshot.get_value(attr)
-                    if attr in ['version', 'revision']:
-                        if value:
-                            value = version_expr % int(value)
+                        if attr == "timestamp":
+                            value = my._get_timestamp(snapshot)
                         else:
-                            value = "0"*version_padding
+                            value = snapshot.get_value(attr)
+                        if attr in ['version', 'revision']:
+                            if value:
+                                value = version_expr % int(value)
+                            else:
+                                value = "0"*version_padding
                 elif object == "search_type":
                     search_type_obj = sobject.get_search_type_obj()
                     value = search_type_obj.get_value(attr)

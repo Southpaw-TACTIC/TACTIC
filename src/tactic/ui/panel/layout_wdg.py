@@ -186,16 +186,6 @@ class SwitchLayoutMenu(object):
             table.setAttribute("spt_view", bvr.view);
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el, element_names: bvr.element_names, widths:[]} );
 
-
-            /* TEST to have elements update tab ...
-            // if this is actually in a tab, record this on the tab
-            spt.tab.set_tab_top_from_child(activator);
-            var header = spt.tab.get_selected_header();
-            var element_name = header.getAttribute("spt_element_name");
-            spt.tab.set_attribute(element_name, "layout", bvr.view);
-            */
-
-
             '''
 
 

@@ -580,23 +580,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
-        keyword_values = filter_data.get_values_by_prefix("keyword")
-
-        if keyword_values:
-
-            keyword_value = keyword_values[0].get('value')
-            if keyword_value:
-                from tactic.ui.filter import KeywordFilterElementWdg
-                keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
-                keyword_filter.set_values(keyword_values[0])
-                keyword_filter.alter_search(search)
-
-
-        if my.no_results:
-            search.set_null_filter()
-
-        if expr_search:
-            search.add_relationship_search_filter(expr_search)
 
         keywords = my.kwargs.get('keywords')
         if keywords:
@@ -606,6 +589,30 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 search.add_text_search_filter(keywords_column, keywords)
             else:
                 search.add_text_search_filters(keywords_columns, keywords)
+
+        else:
+
+            keyword_values = filter_data.get_values_by_prefix("keyword")
+
+            if keyword_values:
+
+                keyword_value = keyword_values[0].get('value')
+                if keyword_value:
+                    from tactic.ui.filter import KeywordFilterElementWdg
+                    keyword_filter = KeywordFilterElementWdg(
+                            column=my.keyword_column,
+                            mode="keyword",
+                    )
+                    keyword_filter.set_values(keyword_values[0])
+                    keyword_filter.alter_search(search)
+
+
+        if my.no_results:
+            search.set_null_filter()
+
+        if expr_search:
+            search.add_relationship_search_filter(expr_search)
+
 
         if my.connect_key == "__NONE__":
             search.set_null_filter()
@@ -945,9 +952,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             embedded_table =  my.kwargs.get("__hidden__") == 'true'
 
+            gear_settings = my.get_setting("gear")
+            if not gear_settings:
+                gear_settings = my.get_setting("gear_settings")
+
            
             btn_dd = DgTableGearMenuWdg(
-                menus=my.get_setting("gear"),
+                menus=gear_settings,
                 layout=my,
                 table_id=my.get_table_id(),
                 search_type=my.search_type, view=my.view,
@@ -984,16 +995,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             hidden = HiddenWdg("prefix", "keyword")
             keyword_div.add(hidden)
 
-            values_list = filter_data.get_values_by_prefix("keyword")
-            if values_list:
-                values = values_list[0]
+
+            keywords = my.kwargs.get("keywords")
+            if keywords:
+                values = {
+                    "value": keywords
+                }
+
             else:
-                values = {}
+
+                values_list = filter_data.get_values_by_prefix("keyword")
+                if values_list:
+                    values = values_list[0]
+                else:
+                    values = {}
+
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
             my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
             my.keyword_hint_text = SimpleSearchWdg.get_hint_text(my.search_type, my.simple_search_view)
-
 
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(
@@ -1004,7 +1024,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     width="100",
                     show_partial=False,
                     show_toggle=True,
-                    hint_text=my.keyword_hint_text
+                    hint_text=my.keyword_hint_text,
+
             )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
@@ -1068,9 +1089,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 7 0 7")
-            spacing_div.add_style("border-style: solid")
-            spacing_div.add_style("border-width: 0 0 0 1")
-            spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
+            #spacing_div.add_style("border-style: solid")
+            #spacing_div.add_style("border-width: 0 0 0 1")
+            #spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
 
 
         # -- Button Rows
@@ -1171,14 +1192,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_layout_wdg:
             layout_wdg = my.get_layout_wdg()
 
-
-        """
-        show_expand = my.kwargs.get("show_expand")
-        if show_expand in ['false', False]:
-            show_expand = False
-        else:
-            show_expand = True
-        """
 
         show_expand = my.get_setting("expand")
 
@@ -1451,6 +1464,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             outer.add(my.view_save_dialog)
 
         outer.add_style("min-width: 750px")
+        outer.add_style("white-space: nowrap")
         div.add_style("height: %s" % height)
         
         return outer
@@ -1782,7 +1796,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if my.can_use_gear() and my.get_setting("gear"):
-            #button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
             button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row_wdg.add(button)
 
@@ -3267,6 +3280,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         msg_div.add("<br clear='all'/>")
         td.add("<br clear='all'/>")
+
+
 
     def add_no_results_bvr(my, tr):
         ''' This adds a default drag and drop behavior to an empty table.

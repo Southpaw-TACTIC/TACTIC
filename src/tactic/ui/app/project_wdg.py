@@ -15,6 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import SwapDisplayWdg, CheckboxWdg
 from tactic.ui.common import BaseRefreshWdg
 
+# DEPRECATED
 
 class ProjectSetupWdg(BaseRefreshWdg):
     '''Widget that manages the entire project overview'''

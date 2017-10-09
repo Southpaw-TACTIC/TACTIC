@@ -252,8 +252,10 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
-    
-    if (spt.behavior.mode == "dev") {        
+   
+    // basically disable js_logger for this because we loose the origin
+    // of the error and chrome handles it really well now
+    if (true || spt.behavior.mode == "dev") {        
         run_bvr();
     }
     else {
@@ -268,7 +270,7 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
             log.error( cbjs_str );
             log.error( " " );
             log.error( "___________________________________________________________________________________________" );
-            //throw(e)
+            throw(e);
         }
     }
 }
@@ -503,24 +505,7 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
 
 // Provide a destroy function which cleans up the behaviors before destroying
 spt.behavior.destroy = function( el ) {
-
     return spt.behavior.destroy_element(el)
-
-    /*
-    // call any unload behaviors
-    try {
-        spt.behavior.process_unload_behaviors( el );
-    }
-    catch(e) {
-        // if an exception is thrown
-        spt.js_log.warning(e);
-    }
-
-    // deactivate the behaviors and cleanup
-    spt.behavior.deactivate_children( el );
-
-    el.destroy();
-    */
 }
 
 

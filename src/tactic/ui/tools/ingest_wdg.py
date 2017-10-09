@@ -104,7 +104,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             my.search_type = my.sobject.get_search_type()
 
             my.show_settings = my.kwargs.get("show_settings")
-            if not my.show_settings:
+            if my.show_settings in [False, 'false']:
                 my.show_settings = False
 
 
@@ -157,6 +157,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 line.add(" ")
 
 
+
             right = table.add_cell()
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
@@ -167,10 +168,16 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             if my.orig_sobject and my.orig_sobject.column_exists("process"):
                 hidden = HiddenWdg(name="process")
-                #hidden = TextWdg(name="process")
                 top.add(hidden)
                 hidden.add_class("spt_process")
                 process = my.orig_sobject.get_value("process")
+                hidden.set_value(process)
+
+            elif my.kwargs.get("process"):
+                process = my.kwargs.get("process")
+                hidden = HiddenWdg(name="process")
+                top.add(hidden)
+                hidden.add_class("spt_process")
                 hidden.set_value(process)
 
 
@@ -319,9 +326,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 pipeline_search.add_filter("code", pipeline_code)
             else:
                 pipeline_search.set_null_filter()
+        else:
+            pipeline_search.add_project_filter()
+            pipeline_search.add_filter("search_type", base_type)
 
-        pipeline_search.add_project_filter()
-        pipeline_search.add_filter("search_type", base_type)
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
             process_names.update(pipeline.get_process_names())
@@ -1747,7 +1755,7 @@ class IngestUploadCmd(Command):
             sequences = FileRange.get_sequences(filenames)
             filenames = []
             for sequence in sequences:
-                print "sequence: ", sequence
+                print("sequence: ", sequence)
                 if sequence.get('is_sequence'):
                     filename = sequence.get("template")
                 else:
@@ -1930,17 +1938,32 @@ class IngestUploadCmd(Command):
 
             new_file_keywords = ""
 
+
+
+            # handle setting keywords to parent
             if SearchType.column_exists(search_type, "keywords"):
+
+                old_keywords = sobject.get_value("keywords")
+
                 if keywords:
                     new_file_keywords = "%s %s" % (keywords, file_keywords)
                 else:
                     new_file_keywords = file_keywords
 
+                if new_file_keywords:
+                    new_file_keywords = "%s %s" % (old_keywords, new_file_keywords)
+
+                # remove duplicated
+                new_file_keywords = set( new_file_keywords.split(" ") )
+                new_file_keywords = " ".join(new_file_keywords)
+
                 sobject.set_value("keywords", new_file_keywords)
+
 
             if SearchType.column_exists(search_type, "user_keywords"):
                 if keywords:
                     sobject.set_value("user_keywords", keywords)
+
 
             if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
@@ -1970,7 +1993,7 @@ class IngestUploadCmd(Command):
                     cmd = ConvertCbk(**convert)
                     cmd.execute()
             except Exception, e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
             """
 
 

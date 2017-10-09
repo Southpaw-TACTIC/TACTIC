@@ -18,6 +18,15 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
     #
+    # 4.6.0.a02
+    #
+    def upgrade_v4_6_0_a02_001(my):
+        my.run_sql('''
+        ALTER TABLE "retire_log" ADD COLUMN search_code varchar(256);
+        ''')
+
+
+    #
     # 4.6.0.a01
     #
     def upgrade_v4_6_0_a01_008(my):
@@ -50,7 +59,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_6_0_a01_003(my):
         my.run_sql('''
-        ALTER TABLE "task" ALTER COLUMN "task_type" TYPE varchar(256);
+        ALTER TABLE "task" ADD COLUMN "task_type" varchar(256);
         ''')
 
 
@@ -62,7 +71,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_6_0_a01_001(my):
         my.run_sql('''
-        ALTER TABLE "sync_server" ALTER COLUMN "site" TYPE varchar(256);
+        ALTER TABLE "sync_server" ADD COLUMN "site" varchar(256);
         ''')
 
 
@@ -127,7 +136,7 @@ class SthpwUpgrade(BaseUpgrade):
             return zonenames
 
         # add time zone names to timezone prefernce if it does not exist
-        from dateutil.tz import *
+        from dateutil import tz
         from pyasm.search import Search
         pref_list_id = Search.eval("@GET(sthpw/pref_list['key','timezone'].id)")
         if not pref_list_id:
@@ -135,7 +144,7 @@ class SthpwUpgrade(BaseUpgrade):
             timezones = []
             for name in names:
                 try:
-                    gettz(name)
+                    tz.gettz(name)
                     timezones.append(name)
                 except:
                     continue

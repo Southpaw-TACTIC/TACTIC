@@ -14,7 +14,7 @@
 
 __all__ = ['SimpleSearchExampleWdg', 'SimpleSearchWdg']
 
-from pyasm.common import Common, Container, TacticException
+from pyasm.common import Common, Container, TacticException, jsonloads
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.biz import ExpressionParser, Project
 from pyasm.web import DivWdg, HtmlElement, Table
@@ -90,6 +90,9 @@ class SimpleSearchWdg(BaseRefreshWdg):
     def get_search(my):
         return my.search
 
+
+
+
     
     def alter_search(my, search):
         '''
@@ -106,7 +109,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
         from tactic.ui.panel import CustomLayoutWdg
-
 
         # define a standard search action
         from tactic.ui.filter import FilterData
@@ -166,17 +168,45 @@ class SimpleSearchWdg(BaseRefreshWdg):
         top.add_style("margin-bottom: -2px")
         top.add_class("spt_filter_top")
 
-
         table = Table()
         top.add(table)
 
         tr, td = table.add_row_cell()
 
-        button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
-        td.add(button)
-        button.add_style("float: right")
-        button.add_style("margin: 10px")
-        button.add_behavior( {
+
+
+        # add the load wdg
+        show_saved_search = True
+        if show_saved_search:
+            saved_button = ActionButtonWdg(title='Saved', tip='Load Saved Searches')
+            saved_button.add_behavior( {
+                #'type': 'load',
+                'search_type': my.search_type,
+                'cbjs_action': '''
+                var popup = bvr.src_el.getParent(".spt_popup");
+                spt.popup.close(popup);
+                var class_name = 'tactic.ui.app.LoadSearchWdg';
+                var kwargs = {
+                    search_type: bvr.search_type
+                }
+                var layout = spt.table.get_layout();
+                var panel = layout.getParent(".spt_view_panel_top");
+                var popup = spt.panel.load_popup("Saved Searches", class_name, kwargs);
+                popup.activator = panel;
+                '''
+            } )
+            td.add(saved_button)
+            saved_button.add_style("float: right")
+            saved_button.add_style("margin: 10px")
+
+
+
+
+        clera_button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
+        td.add(clera_button)
+        clera_button.add_style("float: right")
+        clera_button.add_style("margin: 10px")
+        clera_button.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
         spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_filter_top"));
@@ -291,6 +321,9 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         return config
 
+
+
+
     def get_display(my):
 
         element_data_dict = {}
@@ -311,7 +344,25 @@ class SimpleSearchWdg(BaseRefreshWdg):
         # this is somewhat duplicated logic from alter_search, but since this is called 
         # in ViewPanelWdg, it's a diff instance and needs to retrieve again
         filter_data = FilterData.get()
-        data_list = filter_data.get_values_by_prefix(my.prefix)
+
+        filter_view = my.kwargs.get("filter_view")
+        if filter_view:
+            search = Search("config/widget_config")
+            search.add_filter("view", filter_view)
+            search.add_filter("category", "search_filter")
+            search.add_filter("search_type", my.search_type)
+            filter_config = search.get_sobject()
+            if filter_config:
+                filter_xml = filter_config.get_xml_value("config")
+                filter_value = filter_xml.get_value("config/filter/values")
+                if filter_value:
+                    data_list = jsonloads(filter_value)
+
+        else:
+            data_list = filter_data.get_values_by_prefix(my.prefix)
+
+
+
         for data in data_list:
             handler = data.get("handler")
             element_name = data.get("element_name")
@@ -505,7 +556,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             widget.set_show_title(False)
             #element_wdg.add("%s: " % title)
             data = element_data_dict.get(element_name)
-			
+
 			
             view_panel_keywords = my.kwargs.get("keywords")
             #user data takes precedence over view_panel_keywords
@@ -578,7 +629,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             from pyasm.widget import WidgetConfigView
             config = WidgetConfigView.get_by_search_type(search_type, simple_search_view)
             # assume the keyword filter is named "keyword"
-            options = config.get_display_options('keyword')
+            options = config.get_display_options('keywords')
             column = options.get('column')
            
             if column:

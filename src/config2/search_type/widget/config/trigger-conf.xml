@@ -65,7 +65,7 @@
 
     <element name="mode">
       <display class="SelectWdg">
-        <values>same process,same transaction|same process,new transaction|separate process,blocking|separate process,non-blocking</values>
+        <values>same process,same transaction|same process,new transaction|separate process,blocking|separate process,non-blocking|separate process,queued</values>
       </display>
     </element>
     

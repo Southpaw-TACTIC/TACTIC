@@ -469,9 +469,13 @@ class HtmlElement(Widget):
             # quotes in order to have the javascript code readable as indented multi-line code) ...
             regex = re.compile( r'\n\s*' )
 
+            if not bvr_spec.get('type'):
+                bvr_spec['type'] = 'click'
+
             if my.__class__.__name__.find('CheckboxWdg') != -1:
                 if bvr_spec.get('propagate_evt') == None:
                     bvr_spec['propagate_evt'] = True
+
 
             script_path = bvr_spec.get('cbjs_script_path')
             if script_path:

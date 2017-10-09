@@ -452,77 +452,60 @@ TacticServerStub = function() {
             kwargs = {__empty__:true};
         }
         var mode_options = ['upload','uploaded', 'copy', 'move', 'inplace','local'];
+
+        // mode is no uploaded by default
         var mode = kwargs['mode'];
-        if (mode == undefined) mode = "upload";
+        if (mode == undefined) mode = "uploaded";
         if (typeof(file_path) != 'string') {
             spt.alert("file_path should be a string instead of an array.");
             return;
         }
-        var applet = null;
-        if (mode != 'uploaded') {
-            // put in a check for Perforce for the moment because file.exists()
-            // is very slow when looking for //depot
-            if (file_path.substr(0, 2) != '//') {
-                var applet = spt.Applet.get();
-                if (applet.is_dir(file_path)){
-                    alert('[' + file_path + '] is a directory. Exiting...');
-                    return;
-                }
-            }
-        }
 
-        if (mode == 'upload') {
-            var ticket = this.transaction_ticket;
-            
-            this.upload_file(file_path, ticket);
-            //file_path = spt.path.get_filesystem_path(file_path); 
-            kwargs.use_handoff_dir = false;
-        }
+
         // already uploaded
-        else if (mode == 'uploaded') {
+        if (mode == 'uploaded') {
             kwargs.use_handoff_dir = false;
             //file_path = spt.path.get_filesystem_path(file_path); 
         }
-        else if (['copy', 'move'].contains(mode)) {
-            var handoff_dir = this.get_handoff_dir();
-            kwargs.use_handoff_dir = true;
-            applet.makedirs(handoff_dir);
-            applet.exec("chmod 777 " + handoff_dir);
-            var basename = spt.path.get_basename(file_path);
 
-            if (mode == 'move') {
-                applet.move_file(file_path, handoff_dir + '/' +  basename);
-            }
-            else if (mode == 'copy') {
-                applet.copy_file(file_path, handoff_dir + '/' +  basename);
-                // it moves from handoff to repo during check-in
-            }
-            mode = 'create';
 
-            // this is meant for 3.8, commented out for now
-            /*
-            var delayed = true;
-            if (delayed) {
-                mode = 'local'; // essentially, local just means delayed
-                kwargs.mode = 'local';
-            }*/
+
+        // NOTE: the modes upload, copy, move and local require local access
+        // either by a java applet or some other applet like pyApplet.
+        // Otherwise, these modes should not be used
+        else {
+            var applet = spt.Applet.get();
+            if (!applet) {
+                spt.alert("Mode ["+mode+"] requires a valid applet (either Java or Python or equivalent).  None found")
+            }
+
+
+            if (mode == 'upload') {
+                var ticket = this.transaction_ticket;
+                
+                this.upload_file(file_path, ticket);
+                kwargs.use_handoff_dir = false;
+            }
+
+            else if (['copy', 'move'].contains(mode)) {
+                var handoff_dir = this.get_handoff_dir();
+                kwargs.use_handoff_dir = true;
+                applet.makedirs(handoff_dir);
+                applet.exec("chmod 777 " + handoff_dir);
+                var basename = spt.path.get_basename(file_path);
+
+                if (mode == 'move') {
+                    applet.move_file(file_path, handoff_dir + '/' +  basename);
+                }
+                else if (mode == 'copy') {
+                    applet.copy_file(file_path, handoff_dir + '/' +  basename);
+                    // it moves from handoff to repo during check-in
+                }
+                mode = 'create';
+            }
+
         }
 
-
-        // find the source path
-        // DISABLING for now until client can recognize this
-        //var source_path = this._find_source_path(file_path);
-        //console.log("source_path: " + source_path);
-        //kwargs['source_path'] = source_path;
-
-        /* Test check-in to SCM
-        if (spt.scm) {
-            var editable = true;
-            var scm_info = spt.scm.run("commit_file", [file_path, description, editable]);
-            return;
-        }
-
-        */
 
 
         // do the checkin
@@ -898,6 +881,7 @@ TacticServerStub = function() {
 
 
     // DEPRECATED: use checkout_snapshot
+    /*
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -977,6 +961,7 @@ TacticServerStub = function() {
         return to_paths
    
     }
+    */
 
 
 
@@ -1200,7 +1185,7 @@ TacticServerStub = function() {
     this.query2 = function(search_type, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        on_complete2 = (value) => {
+        on_complete2 = function(value) {
             value = JSON.parse(value);
             on_complete(value);
         }
@@ -1215,12 +1200,12 @@ TacticServerStub = function() {
     }
 
 
-    this.p_query = function(expression, kwargs) {
-        return new Promise((resolve, reject) => {
+    this.p_query = function(search_type, kwargs) {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
-            kwargs.on_complete = (x) => { resolve(x); }
-            return this.query2(expression, kwargs);
-        } )
+            kwargs.on_complete = function(x) { resolve(x); }
+            return this.query2(search_type, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1238,11 +1223,11 @@ TacticServerStub = function() {
     }
 
     this.p_get_by_search_key = function(search_key, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             this.get_by_search_key(search_key, kwargs);
-        } )
+        }.bind(this) )
     }
 
 
@@ -1253,11 +1238,11 @@ TacticServerStub = function() {
     }
 
     this.p_get_by_code = function(search_type, code, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
-            this.get_by_search_key(expression, args, {}, kwargs);
-        } )
+            kwargs.on_complete = function(x) { resolve(x); }
+            this.get_by_code(search_type, code, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1293,12 +1278,12 @@ TacticServerStub = function() {
 
 
 
-    this.p_update = function(expression, kwargs) {
-        return new Promise((resolve, reject) => {
+    this.p_update = function(search_type, data, kwargs) {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
-            kwargs.on_complete = (x) => { resolve(x); }
-            return this.query2(expression, kwargs);
-        } )
+            kwargs.on_complete = function(x) { resolve(x); }
+            return this.query2(search_type, data, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1326,7 +1311,7 @@ TacticServerStub = function() {
     //
     // Expression methods
     //
-    this.eval = function(exprssion, kwargs, on_complete, on_error) {
+    this.eval = function(expression, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
         var ret_val = this._delegate("eval", arguments, kwargs, null, on_complete, on_error);
@@ -1344,11 +1329,11 @@ TacticServerStub = function() {
 
     /* Test promises */
     this.p_eval = function(expression, kwargs) {
-        return new Promise((resolve, reject) => {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
+            kwargs.on_complete = function(x) { resolve(x); }
             this.eval(expression, kwargs);
-        } )
+        }.bind(this) )
     }
 
 
@@ -1483,12 +1468,14 @@ TacticServerStub = function() {
     /*
      * Widget methods
      */
-    this.get_widget = function(class_name, kwargs) {
+    this.get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+
         try {
-            var ret_val = this._delegate("get_widget", arguments, kwargs, "string");
+            var ret_val = this._delegate("get_widget", arguments, kwargs, "string", on_complete, on_error);
             return ret_val;
         }
         catch(e) {
@@ -1563,12 +1550,12 @@ TacticServerStub = function() {
 
 
     /* Test promises */
-    this.p_execute_cmd = function(expression, args, kwargs) {
-        return new Promise((resolve, reject) => {
+    this.p_execute_cmd = function(class_name, args, kwargs) {
+        return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
-            kwargs.on_complete = (x) => { resolve(x); }
-            this.execute_cmd(expression, args, {}, kwargs);
-        } )
+            kwargs.on_complete = function(x) { resolve(x); }
+            this.execute_cmd(class_name, args, {}, kwargs);
+        }.bind(this) )
     }
 
 
@@ -1612,6 +1599,16 @@ TacticServerStub = function() {
     this.check_access = function(access_group, key, access, kwargs) {
         return this._delegate("check_access", arguments, kwargs);
     }
+
+
+    //
+    // Queue Manager
+    //
+    this.add_queue_item = function(class_name, args, kwargs) {
+        return this._delegate("add_queue_item", arguments, kwargs);
+    }
+
+
 
     this.get_column_names = function(search_type) {
         return this._delegate("get_column_names", arguments, null);
@@ -1657,6 +1654,25 @@ TacticServerStub = function() {
 
 
     //
+    // Trigger methods
+    //
+    this.call_trigger = function(search_key, event, kwargs) {
+        return this._delegate("call_trigger", arguments, kwargs);
+    }
+
+
+    this.call_pipeline_event = function(search_key, process, event, data) {
+        return this._delegate("call_pipeline_event", arguments)
+    }
+
+    this.get_pipeline_status = function(search_key, process) {
+        return this._delegate("get_pipeline_status", argumnets);
+    }
+
+
+
+
+    //
     // Directory methods
     //
     this.get_paths = function(search_key, kwargs) {
@@ -1688,6 +1704,12 @@ TacticServerStub = function() {
     }
 
 
+    // Access to some useful external functions
+    this.send_rest_request = function(method, url, kwargs) {
+        return this._delegate("send_rest_request", arguments, null);
+    }
+
+
 
     // Misc
     this.get_path_from_snapshot = function(snapshot_code, kwargs) {
@@ -1702,7 +1724,7 @@ TacticServerStub = function() {
 
     // async functions
 
-    this.async_get_widget = function(class_name, kwargs) {
+    this.async_get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
@@ -1713,7 +1735,10 @@ TacticServerStub = function() {
         if (!callback) {
             callback = kwargs['on_complete'];
         }
-        var on_error = function(e) {
+        if (!callback) {
+            callback = on_complete;
+        }
+        var err_callback = function(e) {
             if (e == 0)
                 e = 'Received an error (Error 0)';
             else if (e == 502)
@@ -1721,9 +1746,18 @@ TacticServerStub = function() {
             else if (e == 503)
                 e = 'Service is unavailable (Error 503)';
 
-            spt.alert(e); 
+            if (!on_error) {
+                on_error = kwargs['on_error'];
+            }
+
+            if (on_error) {
+                on_error(e);
+            }
+            else {
+                spt.alert(e);
+            }
         };
-        this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);
+        this._delegate("get_widget", arguments, kwargs, "string", callback, err_callback);
         return;
     }
 

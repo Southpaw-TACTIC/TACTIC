@@ -62,8 +62,13 @@ class WebLoginCmd(Command):
         my.login = web.get_form_value("login")
         if Config.get_value("security","force_lowercase_login") == "true":
             my.login = my.login.lower()
-        my.password = web.get_form_value("password")
+
+        password = web.get_form_value("password")
+        my.password = password
+
         my.domain = web.get_form_value("domain")
+
+
 
 
         
@@ -89,6 +94,7 @@ class WebLoginCmd(Command):
 
 
         verify_password = web.get_form_value("verify_password")
+
         if verify_password:
             if verify_password != my.password:
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, \

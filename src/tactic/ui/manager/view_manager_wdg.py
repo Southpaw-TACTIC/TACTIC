@@ -273,8 +273,8 @@ class ViewManagerWdg(BaseRefreshWdg):
                 continue
             views.update([view])
 
-        #print "search_type: ", my.search_type
-        #print "view: ", views, my.view
+        #print("search_type: ", my.search_type)
+        #print("view: ", views, my.view)
 
         if my.search_type and my.view:
             config_view = WidgetConfigView.get_by_search_type(my.search_type, my.view)

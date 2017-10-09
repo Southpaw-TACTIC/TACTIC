@@ -220,24 +220,44 @@ class FileUpload(Base):
         # Use base 64 decode if necessary.
         import base64
         if base_decode and my.write_mode == "wb":
-            data.read(22)
+            header = data.read(10)
+            while 1:
+                char = data.read(1)
+                header = "%s%s" % (header, char)
+                if header.endswith(";base64,"):
+                    break
+                if len(header) > 100:
+                    raise Exception("This is not a Base64 encoded file")
 
         # Write progress file
         f_progress = None
         file_progress_path = "%s_progress" % tmp_file_path
 
-        while 1:
-            buffer = data.read(1024*64)
-            if not buffer:
-                break
-            
-            if base_decode: 
-                buffer = base64.b64decode(buffer)
-            
+        if base_decode and not tmp_file_path.endswith(".png"):
+            buffer = data.read()
+            length = len(buffer)
+            buffer = base64.b64decode(buffer)
             f.write( buffer )
-            f_progress = open(file_progress_path, 'w')
-            f_progress.write(str(f.tell()))
-            f_progress.flush()
+
+            #f_progress = open(file_progress_path, 'w')
+            #f_progress.write(str(length))
+            #f_progress.flush()
+
+        else:
+
+            while 1:
+                buffer = data.read(1024*64)
+                if not buffer:
+                    break
+                
+                if base_decode:
+                    buffer = base64.b64decode(buffer)
+
+                f.write( buffer )
+                f_progress = open(file_progress_path, 'w')
+                f_progress.write(str(f.tell()))
+                f_progress.flush()
+
         f.close()
 
         try:

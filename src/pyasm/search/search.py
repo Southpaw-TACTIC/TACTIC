@@ -455,27 +455,6 @@ class Search(Base):
 
 
 
-    # DEPRECATED
-    """
-    def get_filters(my, name, values, table='', op='in'):
-        assert op in ['in', 'not in']
-        filter = ''
-        if not values or values == ['']:
-            #filter = "%s is NULL" % name
-            filter = "NULL"
-        else:
-            list = [ Sql.quote(value) for value in values ]
-            if table:
-                filter = '"%s"."%s" %s (%s)' % ( table, name, op, ", ".join(list) )
-            else:
-                filter = '"%s" %s (%s)' % ( name, op, ", ".join(list) )
-        return filter
-    """
-
-
-
-
-
 
 
     def add_null_filter(my, name):
@@ -491,7 +470,22 @@ class Search(Base):
         SELECT * FROM "request" WHERE "id" in ( SELECT "request_id" FROM "job" WHERE "code" = '123MMS' )
         '''
         select = search.get_select()
-        my.select.add_select_filter(name, select, op, table=table)
+
+        search_type = my.get_search_type()
+        related_type = search.get_search_type()
+
+        search_type_obj = SearchType.get(search_type)
+        related_type_obj = SearchType.get(related_type)
+
+
+        can_join = DatabaseImpl.can_search_types_join(search_type, related_type)
+        if not can_join:
+            column = select.columns[0]
+            sobjects = search.get_sobjects()
+            values = SObject.get_values(sobjects, column, unique=True)
+            my.add_filters(name, values)
+        else:
+            my.select.add_select_filter(name, select, op, table=table)
 
     def add_op(my, op, idx=None):
         '''add operator like begin, and, or. with an idx number, it will be inserted instead of appended'''
@@ -3001,7 +2995,6 @@ class SObject(object):
             if is_data:
                 value = value.get(attr)
 
-
             # NOTE: We should support datetime natively, however a lot
             # of basic operations don't work with datetime so we would always
             # have to check
@@ -3071,6 +3064,17 @@ class SObject(object):
         else:
             value = None
         return value
+
+
+    def get_datetime_display(my, name, format):
+        value = my.get_value(name)
+        if value:
+            value = parser.parse(value)
+            value = value.strftime(format)
+        else:
+            value = ""
+        return value
+
 
 
 
@@ -3707,15 +3711,22 @@ class SObject(object):
 
     def handle_commit_security(my):
 
-        return True
+        # certain tables can only be written by admin
+        security = Environment.get_security()
+        if security.is_admin():
+            return True
 
         search_type = my.get_base_search_type()
 
         login = Environment.get_user_name()
 
-        if search_type == "sthpw/login":
-            if login != "admin":
-                return False
+
+        admin_types = [
+                'config/custom_script'
+        ]
+        if search_type in admin_types:
+            return False
+
 
         return True
 
@@ -4565,7 +4576,7 @@ class SObject(object):
         my.commit()
 
         from sobject_log import RetireLog
-        RetireLog.create(my.get_search_type(), my.get_id() )
+        RetireLog.create(my.get_search_type(), search_code=my.get_code() )
 
         # remember the data
         data = my.data.copy()
@@ -6536,6 +6547,12 @@ class SObjectUndo:
             Xml.set_attribute(sobject_node,"prev_search_code", prev_code)
 
 
+        from pyasm.security import Site
+        site = Site.get_site()
+        if site:
+            Xml.set_attribute(sobject_node,"site", site)
+
+
         if is_insert:
             Xml.set_attribute(sobject_node,"action","insert")
 
@@ -7133,6 +7150,12 @@ class SearchKey(object):
             return []
 
         sobject = sobjects[0]
+
+        # if sobject is none, then this function will not work.
+        # Not sure if this is the right response
+        if not sobject:
+            return [None for x in sobjects]
+
         search_type = sobject.get_base_search_type()
         if isinstance(sobject, SearchType):
             search_type = "sthpw/search_object"
@@ -7147,6 +7170,11 @@ class SearchKey(object):
 
         search_keys = []
         for sobject in sobjects:
+
+            if not sobject:
+                search_keys.append(None)
+                continue
+
             code = sobject.get_value('code', no_exception=True)
             if not use_id and code:
                 search_key = cls.build_search_key(search_type, code, project_code=project_code)

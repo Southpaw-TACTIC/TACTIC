@@ -225,9 +225,12 @@ spt.hash.onload_first = function() {
     spt.hash.first_load = false;
 
 
+
+
     var options = {
-        'hash': decodeURI(hash),
-        'first_load': true
+        hash: decodeURI(hash),
+        first_load: true,
+        pathname: window.location.pathname
     }
 
     // pass all the ? name/values in

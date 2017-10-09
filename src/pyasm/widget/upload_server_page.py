@@ -21,7 +21,7 @@ from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
 
-import shutil
+import shutil, re
 
 
 class UploadServerWdg(Widget):
@@ -147,17 +147,18 @@ class UploadServerWdg(Widget):
                 f = field_storage.file
             else:
                 f = open(path, 'rb')
-            header = f.read(22)
+            header = f.read(100)
             f.seek(0)
 
-            if header.startswith("data:image/png;base64,"):
+            #if header.startswith("data:image/png;base64") or header.startswith("data:image/jpeg;base64"):
+            if re.search("^data:([\w\-\_]+)\/([\w\-\_]+);base64", header):
                 base_decode = True
             else:
                 base_decode = False
         
             if os.name != 'nt':
                 f.close()
-            
+
           
         if html5_mode and file_name and path and not base_decode:
             

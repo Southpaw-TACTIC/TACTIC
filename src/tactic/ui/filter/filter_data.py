@@ -171,8 +171,6 @@ class FilterData(object):
 
 
 
-
-
     #
     # Static functions
     #

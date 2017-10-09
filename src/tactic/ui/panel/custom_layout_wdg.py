@@ -844,11 +844,19 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         search.add_filter("view", my.view)
 
-        config = search.get_sobject()
-        if config:
+        configs = search.get_sobjects()
+
+        # annoyingly NULL is always higher than any number, so we have
+        # put them at the end
+        if configs and configs[0].column_exists("priority"):
+            configs = sorted(configs, key=lambda x: x.get("priority"))
+            configs.reverse()
+
+        if configs:
+            config = configs[0]
             return config
+
         # if it is not defined in the database, look at a config file
-        
         includes = my.kwargs.get("include")
         if includes:
             includes = includes.split("|")
@@ -1274,26 +1282,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
         load = attrs.get("load")
         if load in ["async", "sequence"]:
             return my.get_async_element_wdg(xml, element_name, load)
-
-
-
-        """
-        use_container = attrs.get('use_container') == 'true'
-        if use_container:
-            # DEPRECATED
-            container = my.get_container(xml)
-        else:
-            container = DivWdg()
-
-        # add in attribute from the element definition
-        # DEPRECATED: does this make any sense to have this here?
-        for name, value in attrs.items():
-            if name == 'name':
-                continue
-            container.add_style(name, value)
-        """
-
-
 
 
 

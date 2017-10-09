@@ -237,12 +237,20 @@ class UserConfigWdg(ProjectConfigWdg):
         <element name="Group Assignment">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
-        </tab>
           ''')
 
+
         config_xml.append('''
+        <element name="Group Security">
+            <display class='tactic.ui.startup.SecurityWdg'/>
+        </element>
+        ''')
+
+        config_xml.append('''
+        </tab>
         </config>
         ''')
+
 
 
         config_xml = "\n".join(config_xml)
@@ -991,183 +999,6 @@ class UserPanelWdg(BaseRefreshWdg):
 
         return top
 
-
-        """
-
-
-        table = Table()
-        table.set_max_width()
-        table.add_style("margin-top: 10px")
-        div.add(table)
-
-
-        # group mouse over
-        table.add_relay_behavior( {
-            'type': "mouseover",
-            'bvr_match_class': 'spt_row',
-            'cbjs_action': "spt.mouse.table_layout_hover_over({}, {src_el: bvr.src_el, add_color_modifier: -2})"
-        } )
-        table.add_relay_behavior( {
-            'type': "mouseout",
-            'bvr_match_class': 'spt_row',
-            'cbjs_action': "spt.mouse.table_layout_hover_out({}, {src_el: bvr.src_el})"
-        } )
-
-
-
-
-        tr = table.add_row()
-        tr.add_color("color", "color")
-        tr.add_color("background", "background", -10)
-        th = table.add_header("&nbsp;")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Login")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("First Name")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Last Name")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Display Name")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Activity")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Groups")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Security")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-        th = table.add_header("Edit")
-        th.add_style("padding: 8px 3px")
-        th.add_style("text-align: left")
-
-
-
-        expr = "@SOBJECT(%s)" %expr_filter
-        logins = Search.eval(expr)
-
-        for i, login in enumerate(logins):
-            tr = table.add_row()
-            tr.add_class("spt_row")
-
-            if not i or not i%2:
-                tr.add_color("background", "background")
-            else:
-                tr.add_color("background", "background", -2 )
-
-            thumb = ThumbWdg()
-            thumb.set_sobject(login)
-            thumb.set_icon_size(45)
-            td = table.add_cell(thumb)
-
-            td = table.add_cell(login.get_value("login"))
-            td.add_style("padding: 3px")
-            td = table.add_cell(login.get_value("first_name"))
-            td.add_style("padding: 3px")
-            td = table.add_cell(login.get_value("last_name"))
-            td.add_style("padding: 3px")
-
-            td = table.add_cell(login.get_value("display_name"))
-            td.add_style("padding: 3px")           
-
-            search_key = login.get_search_key()
-            login_code = login.get_code()
-            full_name = login.get_full_name()
-
-            td = table.add_cell()
-            button = IconButtonWdg(tip="Activity", icon=IconWdg.CALENDAR)
-            td.add(button)
-            button.add_behavior( {
-                'type': 'click_up',
-                'login_code': login_code,
-                'full_name': full_name,
-                'cbjs_action': '''
-
-                var class_name = 'tactic.ui.tools.ScheduleUserToolWdg';
-                var kwargs = {
-                    login: bvr.login_code
-                }
-
-                var title = bvr.full_name + ' Schedule';
-                var top = bvr.src_el.getParent(".spt_dashboard_top");
-                spt.tab.set_tab_top(top);
-                spt.tab.add_new("user_schedule", title, class_name, kwargs);
-                //spt.panel.load_popup("Activty", class_name, kwargs);
-
-
-                '''
-            } )
-
- 
-            td = table.add_cell()
-            button = IconButtonWdg(title="Groups", icon=IconWdg.GROUP_LINK)
-            td.add(button)
-            button.add_behavior( {
-                'type': 'click_up',
-                'search_key': search_key,
-                'cbjs_action': '''
-
-                var class_name = 'tactic.ui.startup.GroupAssignWdg';
-                var kwargs = {
-                    search_key: bvr.search_key
-                };
-                var popup = spt.panel.load_popup("Group Assignment", class_name, kwargs);
-                '''
-            } )
-
-  
-            td = table.add_cell()
-            button = IconButtonWdg(title="Security", icon=IconWdg.LOCK)
-            td.add(button)
-            button.add_behavior( {
-                'type': 'click_up',
-                'search_key': search_key,
-                'cbjs_action': '''
-
-                var class_name = 'tactic.ui.startup.GroupSummaryWdg';
-                var kwargs = {
-                    search_key: bvr.search_key
-                };
-                var popup = spt.panel.load_popup("Security Summary", class_name, kwargs);
-                '''
-            } )
-
-
-
-
-            td = table.add_cell()
-            button = IconButtonWdg(title="Edit User", icon=IconWdg.EDIT)
-            td.add(button)
-            button.add_behavior( {
-                'type': 'click_up',
-                'search_key': search_key,
-                'cbjs_action': '''
-
-                var top = bvr.src_el.getParent(".spt_panel_user_top");
-                var class_name = 'tactic.ui.panel.EditWdg';
-                var kwargs = {
-                    search_type: "sthpw/login",
-                    view: "edit",
-                    search_key: bvr.search_key
-                }
-                var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
-
-                popup.on_save_cbk = function() {
-                    spt.panel.refresh(top);
-                }
-
-                '''
-            } )
-
-        return top
-
-        """
 
 
 

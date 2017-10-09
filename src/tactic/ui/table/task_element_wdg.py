@@ -17,7 +17,7 @@ from dateutil import rrule
 from dateutil import parser
 import datetime
 
-from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException
+from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
@@ -303,7 +303,16 @@ class TaskElementWdg(BaseTableElementWdg):
         'values': 'true|false',
         'category': 'Display',
         'order': '18'
+    },
+    'collate_columns': {
+        'description': 'Flag to collate columns that have the same processes together .',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'category': 'Display',
+        'order': '18'
     }
+
+
     }
 
     LAYOUT_WIDTH = 130
@@ -616,7 +625,6 @@ class TaskElementWdg(BaseTableElementWdg):
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
-
                     # put the processes found into a set to avoid duplicates.
                     my.all_processes_set.add(process.get_name())
                     process_dict = my.label_dict.get(pipeline_code)
@@ -629,8 +637,6 @@ class TaskElementWdg(BaseTableElementWdg):
             default_pipeline_processes = [x.get_name() for x in default_pipeline]
 
             
-
-
 
             # this will add every process in default pipeline to sorted processes 
             # (in the correct order)
@@ -666,6 +672,35 @@ class TaskElementWdg(BaseTableElementWdg):
                 for process in process_data_list:
                     if process not in my.sorted_processes:
                         my.sorted_processes.append(process)
+
+
+        # get all of the assigned logins for each process
+        my.assigned_login_groups = {}
+        for pipeline in pipelines:
+            for process in pipeline.get_processes():
+                assigned_login_group = process.get_attribute("assigned_login_group")
+
+                if not assigned_login_group:
+                    continue
+
+                key = "%s|%s" % (pipeline.get_code(), process.get_name())
+                exists = my.assigned_login_groups.get(key)
+                if exists is None:
+                    search = Search("sthpw/login_in_group")
+                    search.add_filter("login_group", assigned_login_group)
+                    users = search.get_sobjects()
+                    if users:
+                        users = [x.get("login") for x in users]
+                    else:
+                        users = []
+                    my.assigned_login_groups[key] = users
+
+
+        my.assigned_login_groups_labels = {}
+        for value, label in zip(my.assignee, my.assignee_labels):
+            my.assigned_login_groups_labels[value] = label
+
+
 
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -1169,7 +1204,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 process_obj = process_pipeline.get_process(process)
 
                 if not process_obj:
-                    #print("WARNING: process[%s] not in pipeline [%s]" % (process, pipeline.get_code()))
+                    #print("WARNING: process[%s] not in pipeline [%s]" % (proc
                     continue
 
 
@@ -1341,10 +1376,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 has_misc_processes = pipeline.get_processes(type=['progress','hierarchy','dependency'])
         if not pipeline:
             no_pipeline_div = DivWdg()
-            icon = IconWdg("WARNING", IconWdg.WARNING)
-            no_pipeline_div.add(icon)
-            no_pipeline_div.add("<b>You must select a pipeline to manage tasks.</b>")
-            no_pipeline_div.add("<br/>"*2)
+            no_pipeline_div.add("<i>You must select a workflow to manage tasks.</i>")
+            no_pipeline_div.add_style("margin: 3px 5px")
+            no_pipeline_div.add_style("opacity: 0.5")
             return no_pipeline_div 
         
  
@@ -1409,17 +1443,17 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if security.check_access("search_type", {"code":"sthpw/task"}, "insert", default="insert"):
                 label.add_class("spt_task_element_add_task")
                 label.add_attr("spt_search_key", sobject.get_search_key() )
-                icon = IconWdg("Add Tasks", IconWdg.ADD)
+                icon = IconWdg("Add Tasks", icon="BS_PLUS")
                 label.add_cell(icon)
             
                 if show_current_pipeline_only:
-                    td = label.add_cell('<i>No tasks for current pipeline. Click to Add</i>')
+                    td = label.add_cell('<i>No tasks found. Click to Add</i>')
                 else:
                     td = label.add_cell('<i>No tasks found. Click to Add</i>')
 
             else:
                 if show_current_pipeline_only:
-                    td = label.add_cell('<i>No tasks for current pipeline. Need permission to add.</i>')
+                    td = label.add_cell('<i>No tasks found. Need permission to add.</i>')
                 else:
                     td = label.add_cell('<i>No tasks found. Click to Add</i>')
 
@@ -1473,7 +1507,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             pipeline_processes = []
 
             if pipeline:
-                pipeline_processes = pipeline[0].get_processes()
+                #pipeline_processes = pipeline[0].get_processes()
+                pipeline_processes = pipeline[0].get_processes(type=[
+                        #"node",
+                        "manual",
+                        "approval",
+                        "hierarchy",
+                        #"dependency",
+                        "progress"
+                ])
+
 
 
             # all the processes to be drawn so that the user can see it
@@ -1492,16 +1535,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 supprocess = my.kwargs.get("parent_process")
 
+                collate = my.kwargs.get("collate_columns")
+                if collate in [False, 'false']:
+                    processes = pipeline_processes_list
+                else:
+                    processes = my.sorted_processes
+
                 # go through each sorted process
-                for idx, process in enumerate(my.sorted_processes):
+                for idx, process in enumerate(processes):
 
                     if supprocess:
                         process = "%s.%s" % (supprocess, process)
 
-                    if my.layout in ['vertical']:
-                        table.add_row()
-                    td = table.add_cell()
-                    td.add_style("vertical-align: top")
+
                     last_one = False
                     if idx == last:
                         last_one = True
@@ -1527,19 +1573,30 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         tasks.append(items[0])
 
 
-
-                    if pipeline_code:
-                        pipeline = my.pipelines_dict.get(pipeline_code)
-                    else:
-                        pipeline = None
-
+                    pipeline = my.pipelines_dict.get(pipeline_code)
 
 
                     process_obj = pipeline.get_process(process)
                     if process_obj:
                         node_type = process_obj.get_type()
                     else:
+                        # collate the columns or bunch them up as the come
+                        collate = my.kwargs.get("collate_columns")
+                        if collate in [False, 'false']:
+                            continue
+                        if my.layout in ['vertical']:
+                            continue
+
                         node_type = "node"
+
+
+                    # draw the cell
+                    if my.layout in ['vertical']:
+                        table.add_row()
+
+                    td = table.add_cell()
+                    td.add_style("vertical-align: top")
+
 
                     for task in tasks:
                         # make the task slightly opaque
@@ -1586,7 +1643,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         value_wdg.set_value("unknown")
         div.add(value_wdg)
 
- 
         return div
 
 
@@ -1911,111 +1967,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             return div
 
 
-            """
-            if node_type == "dependency":
-
-                dependency_div = DivWdg()
-                div.add(dependency_div)
-                dependency_div.add_style("margin: 8px 0px 8px -8px")
-                dependency_div.add_class("spt_dependency_top")
-
-                dependency_div.add("H!H!H!")
-
-
-                return div
-            """
-
-
-            key = "%s|%s|status" % (sobject.get_search_key(), process)
-            message_sobj = Search.get_by_code("sthpw/message", key)
-            if message_sobj:
-                status = message_sobj.get("message")
-            else:
-                status = 'pending'
-
-            display_status = Common.get_display_title(status)
-
-            color = Task.get_default_color(status)
-
-
-            div.add_behavior( {
-                'type': 'click_up',
-                'code': code,
-                'scope': related_scope,
-                'search_type': search_type,
-                'related_type': related_type,
-                'cbjs_action': '''
-                var class_name = 'tactic.ui.panel.ViewPanelWdg';
-                if (bvr.scope == "global") {
-                    var expression = "@SOBJECT("+ bvr.related_type + ")";
-                }
-                else {
-                    var expression = "@SOBJECT(" + bvr.search_type + "['code','" + bvr.code + "']." + bvr.related_type + ")";
-                }
-                var kwargs = {
-                    search_type: bvr.related_type,
-                    expression: expression,
-                    element_names: 'preview,detail,download,asset_type,name,description,task_status_edit,notes',
-                }
-                var server = TacticServerStub.get();
-                var sobject = server.get_by_code(bvr.search_type, bvr.code);
-                spt.tab.set_main_body_tab();
-                var name = sobject.name;
-                if (!name) {
-                    name = sobject.code;
-                }
-                name = "Related: " + name
-                var title = name;
-                spt.tab.add_new(name, title, class_name, kwargs);
-                '''
-            } )
-
-
-
-            complete = my.get_complete(sobject, related_type, related_process, related_scope)
-
-            num_complete = 0
-            for key, value in complete.items():
-                if value:
-                    num_complete += 1
-
-            count = num_complete
-            total = len(complete)
-
-
-
-            progress_wdg = RadialProgressWdg(
-                total=total,
-                count=count,
-                color=color
-            )
-
-
-            #if my.layout in ['horizontal',  'vertical']:
-            progress_div.add("<b>%s</b>" % display_status)
-
-            progress_div.add(progress_wdg)
-            progress_div.add_style("margin: 0px auto")
-            progress_div.add_style("width: 70px")
-            progress_div.add_style("text-align: center")
-
-
-            return div
-
-
-        """
-        if node_type == "dependency":
-
-            dependency_div = DivWdg()
-            div.add(dependency_div)
-            dependency_div.add_style("margin: 8px 0px 8px -8px")
-            dependency_div.add_class("spt_dependency_top")
-
-            dependency_div.add("H!H!H!")
-
-
-            return div
-        """
 
         if node_type == "hierarchy":
 
@@ -2135,7 +2086,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         elif my.bg_color_mode == 'process':
             div.add_style("background-color: %s" % process_color)
 
-        div.add_style("opacity: 0.75")
+        #div.add_style("opacity: 0.75")
 
 
 
@@ -2191,7 +2142,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 div.add(process_div)
 
-            process_div.add_style("font-weight: bold")
+            #process_div.add_style("font-weight: bold")
             process_div.add_style("font-size: %spx" % my.font_size)
             if my.text_color:
                 process_div.add_style("color", my.text_color)
@@ -2213,7 +2164,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 div.add(context_div)
 
-            context_div.add_style("font-weight: bold")
+            #context_div.add_style("font-weight: bold")
             context_div.add_style("font-size: %spx" % my.font_size)
             if my.text_color:
                 context_div.add_style("color", my.text_color)
@@ -2249,10 +2200,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             start_date = task.get_value("bid_start_date")
             if start_date:
                 start_date = parser.parse(start_date)
+                start_date = SPTDate.convert_to_local(start_date)
                 start_date = start_date.strftime("%m/%d")
             end_date = task.get_value("bid_end_date")
             if end_date:
                 end_date = parser.parse(end_date)
+                end_date = SPTDate.convert_to_local(end_date)
                 end_date = end_date.strftime("%m/%d")
 
             if not start_date and not end_date:
@@ -2311,6 +2264,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 #select = SelectWdg('status_%s'%task_id)
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
+                select.add_style("height: 22px")
+                select.add_style("padding: 0px")
+                select.add_style("margin: 2px 0px 2px 5px")
 
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
@@ -2449,16 +2405,35 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         name = 'assigned|EDIT|%s' % task.get_id()
                     select = SelectWdg(name)
-                    #select = SelectWdg('assigned_%s' %subtask.get_id())
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
+                    select.add_style("height: 22px")
+                    select.add_style("padding: 0px")
+                    select.add_style("margin: 2px 0px 2px 5px")
+
+                    key = "%s|%s" % (pipeline_code, process)
+                    if my.assigned_login_groups.get(key):
+                        assignee = my.assigned_login_groups.get(key)
+                        assignee_labels = []
+                        for a in assignee:
+                            label = my.assigned_login_groups_labels.get(a) or a
+                            assignee_labels.append(label)
+
+                        if assigned and assigned not in assignee:
+                            assignee.append(assigned)
+                            label = my.assigned_login_groups_labels.get(assigned) or assigned
+                            assignee_labels.append(label)
+
+                    else:
+                        assignee = my.assignee
+                        assignee_labels = my.assignee_labels
+
                     select.add_class('spt_task_status_select')
                     select.add_empty_option('-- Assigned --')
-                    select.set_option('values', my.assignee) 
-                    select.set_option('labels', my.assignee_labels) 
+                    select.set_option('values', assignee) 
+                    select.set_option('labels', assignee_labels) 
                     select.set_value(assigned)
                     select.add_class("spt_task_element_assigned")
-                    select.add_style("margin: 1px 0px 1px 0px")
                     if my.layout == 'vertical':
                         select.add_style("width", '%spx'%my.LAYOUT_WIDTH)
                     else:

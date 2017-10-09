@@ -89,18 +89,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         builtin = False
         builtin_key = False
 
-        if label == "Export All ...":
+
+        if my.matches(label, "Export All ..."):
             builtin_key = "export_all_csv"
-        elif label == "Import CSV":
+        elif my.matches(label, "Import CSV"):
             builtin_key = "import_csv"
-        elif label == "Ingest Files":
+        elif my.matches(label, "Ingest Files"):
             builtin_key = "ingest"
-        elif label == 'Check-out Files':
+        elif my.matches(label, "Check-out Files"):
             # this appeared to be redundant
             builtin_key = "ingest"
-        elif label == "Column Manager":
+        elif my.matches(label, "Column Manager"):
             builtin_key = "view_column_manager"
-
 
         if builtin_key:
 
@@ -133,8 +133,21 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         }
         """
 
+
+        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+            see_all = True
+        else:
+            see_all = False
+
+
+        # Admin ignores the menus definition
+        if security.check_access("builtin", "view_site_admin", "allow"):
+            menus = None
+
+
         if menus:
             for submenu, labels in menus.items():
+
                 if labels == True:
                     continue
                 for label in labels:
@@ -142,7 +155,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     builtin_access = my.get_builtin_access(label)
 
                     access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                    local_access = security.check_access("gear_menu", access_keys, "allow")
+                    local_access = see_all or security.check_access("gear_menu", access_keys, "allow")
+
 
                     if builtin_access or local_access:
 
@@ -286,11 +300,12 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             my.is_admin = True
         else:
             my.is_admin = False
-        
-        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
-            my.is_admin = True
+       
+       
+        # see all menu items
+        #if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+        #    my.is_admin = True
 
-        my.is_admin = False
 
         if my.is_admin:
         
@@ -385,8 +400,6 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         if set(a) & set(b):
             return True
-
-        print a, b
 
         for aa in a:
             for bb in b:

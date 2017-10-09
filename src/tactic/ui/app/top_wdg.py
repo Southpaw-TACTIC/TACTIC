@@ -98,11 +98,20 @@ class TopWdg(Widget):
             spt.body.focus_elements.push(el);
         }
 
+        spt.body.remove_focus_element = function(el) {
+            var index = spt.body.focus_elements.indexOf(el);
+            if (index != -1) {
+                spt.body.focus_elements.splice(index, 1);
+            }
+        }
+
         // find all of the registered popups and close them
         // NOTE: logic can handle more than 1 focus element should it happen ...
         spt.body.hide_focus_elements = function(evt) {
             var mouse = evt.client;
             var target = evt.target;
+
+
             
             var targets = [];
             var count = 0;
@@ -132,6 +141,12 @@ class TopWdg(Widget):
 
             }
 
+
+            var dialog = evt.target.getParent(".MooDialog");
+            if (dialog) {
+                targets.push(dialog);
+            }
+
             // find out if any of the parents of target is the focus element
             for (var i = 0; i < spt.body.focus_elements.length; i++) {
                 var el = spt.body.focus_elements[i];
@@ -148,8 +163,13 @@ class TopWdg(Widget):
         
                 if (hit)
                     break;
-                else{
-                    spt.hide(el);
+                else {
+                    if ( el.isVisible() && el.on_complete ) {
+                        el.on_complete();
+                    }
+                    else {
+                        spt.hide(el);
+                    }
       
                 }
             }
@@ -273,6 +293,25 @@ class TopWdg(Widget):
 
 
 
+        my.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_link',
+            'cbjs_action': '''
+            var href = bvr.src_el.getAttribute("href");
+            if (!href) {
+                spt.alert("No href defined for this link");
+                return;
+            }
+            var target = bvr.src_el.getAttribute("target");
+            if (!target) {
+                target = "_self";
+            }
+            window.open(href, target);
+            '''
+        } )
+
+
+
 
 
         my.body.add_relay_behavior( {
@@ -385,6 +424,8 @@ class TopWdg(Widget):
             'type': 'mouseenter',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
+            var bgcolor = bvr.src_el.getStyle("background");
+            bvr.src_el.setAttribute("spt_bgcolor", bgcolor);
             bvr.src_el.setStyle("background", "#EEE");
             '''
             } )
@@ -393,7 +434,10 @@ class TopWdg(Widget):
             'type': 'mouseleave',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
-            bvr.src_el.setStyle("background", "");
+            var bgcolor = bvr.src_el.getAttribute("spt_bgcolor");
+            if (!bgcolor) bgcolor = "";
+            //var bgcolor = ""
+            bvr.src_el.setStyle("background", bgcolor);
             '''
             } )
 
@@ -414,11 +458,11 @@ class TopWdg(Widget):
                 site = Site.get_site()
                 install_dir = Environment.get_install_dir()
                 cmd = '''python "%s/src/bin/upgrade_db.py" -f -s "%s" --quiet --yes &''' % (install_dir, site)
-                print cmd
+                print("cmd: ", cmd)
                 os.system(cmd)
                 pass
             except Exception, e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
 
 
 
@@ -458,6 +502,22 @@ class TopWdg(Widget):
         # add the copyright
         widget.add( my.get_copyright_wdg() )
         widget.add(html)
+
+        # handle redirect
+        request_url = web.get_request_url().get_info().path
+        if request_url in ["/tactic/Index", "/Index", "/"]:
+            # if we have the root path name, provide the ability for the site to
+            # redirect
+            from pyasm.security import Site
+            site_obj = Site.get()
+            redirect = site_obj.get_site_redirect()
+            if redirect:
+                widget.add('''<meta http-equiv="refresh" content="0; url=%s">''' % redirect)
+                return widget
+
+
+
+
 
 
         # create the header
@@ -897,7 +957,7 @@ class TopWdg(Widget):
         for include in includes:
             include = include.strip()
             if include:
-                print "include: ", include
+                print("include: ", include)
                 widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
 
         return widget
@@ -954,7 +1014,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
             for include in includes:
                 include = include.strip()
                 if include:
-                    print "include: ", include
+                    print("include: ", include)
                     Container.append_seq("Page:js", include)
 
 
@@ -1035,7 +1095,7 @@ class TitleTopWdg(TopWdg):
         try:
             project = Project.get()
         except Exception, e:
-            print "ERROR: ", e
+            print("ERROR: ", e)
             # if the project doesn't exist, then use the admin project
             project = Project.get_by_code("admin")
         project_code = project.get_code()
@@ -1145,7 +1205,7 @@ class SitePage(AppServer):
         try:
             SearchType.set_global_template("project", project_code)
         except SecurityException, e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
 
 
@@ -1207,13 +1267,19 @@ class SitePage(AppServer):
             through the ProjectSetting key top_wdg_cls, this class is used 
             except for TACTIC admin pages.
          3. The default widget used is tactic.ui.app.TopWdg.'''
-         
+
+
         top_wdg_cls = None
        
         if not my.hash and not my.custom_url:
             search = Search("config/url")
             search.add_filter("url", "/index")
             my.custom_url = search.get_sobject()
+
+        # TEST Using X-SendFile
+        #if my.hash and my.hash[0] == 'assets':
+        #    my.top = XSendFileTopWdg()
+        #    return my.top
         
         if my.custom_url:
             xml = my.custom_url.get_xml_value("widget")
@@ -1275,7 +1341,7 @@ class CustomTopWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
 
         #content_type = my.kwargs.get("content_type")
-        #print "content_type: ", content_type
+        #print("content_type: ", content_type)
 
         hash = my.kwargs.get("hash")
         ticket = web.get_form_value("ticket")
@@ -1353,6 +1419,38 @@ class CustomTopWdg(BaseRefreshWdg):
 
         return widget
 
+
+
+class XSendFileTopWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        rel_path = "workflow/assets/workflow/asset/Fantasy/Castle/54d45150c61251f65687d716cc3951f1_v001.jpg"
+
+        parts = rel_path.split("/")
+
+        site = parts[0]
+
+        parts = rel_path.split("/")
+
+        base_dir = "/spt/data/sites"
+        path = "%s/%s" % (base_dir, rel_path)
+
+        filename = os.path.basename(rel_path)
+
+        # determine the mimetype automatically
+        import mimetypes
+        base, ext = os.path.splitext(path)
+        mimetype = mimetypes.types_map[ext]
+
+        web = WebContainer.get_web()
+        response = web.get_response()
+        headers = response.headers
+        response.headers['Content-Type'] = mimetype
+        response.headers['Content-Disposition'] = 'inline; filename={0}'.format(filename)
+        response.headers['X-Sendfile'] = path
+
+        return Widget(path)
 
 
 

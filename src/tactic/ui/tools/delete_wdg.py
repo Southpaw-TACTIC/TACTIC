@@ -101,7 +101,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         valid_related_ctr = 0
         for related_type in related_types:
             if related_type == "*":
-                print "WARNING: related_type is *"
+                print("WARNING: related_type is *")
                 continue
             if related_type == search_type:
                 continue
@@ -279,7 +279,7 @@ class DeleteToolWdg(BaseRefreshWdg):
                     related_sobjects.extend(sobjs)
 
             except Exception, e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
                 related_sobjects = []
 
 
@@ -393,7 +393,7 @@ class DeleteCmd(Command):
         file_objects = search.get_sobjects()
 
         #if file_objects:
-        #    print "Removing [%s] file objects" % len(file_objects)
+        #    print("Removing [%s] file objects" % len(file_objects))
 
         for file_object in file_objects:
             base_dir = Environment.get_asset_dir()
@@ -404,7 +404,7 @@ class DeleteCmd(Command):
 
 
         # finally delete the sobject
-        print "Deleting: ", sobject.get_search_key()
+        print("Deleting: ", sobject.get_search_key())
         if search_type == 'sthpw/snapshot':
             my.delete_snapshot(sobject)
         else:
@@ -431,15 +431,15 @@ class DeleteCmd(Command):
 
         files = snapshot.get_related_sobjects("sthpw/file")
         for file in files:
-            print "Deleting file: ", file.get_search_key()
+            print("Deleting file: ", file.get_search_key())
             file.delete()
 
         # remove the files from the repo
         for file_path in paths:
-            print "Removing path: ", file_path
+            print("Removing path: ", file_path)
             FileUndo.remove(file_path)
 
-        print "Deleting snapshot: ", snapshot.get_search_key()
+        print("Deleting snapshot: ", snapshot.get_search_key())
         snapshot.delete()
 
 
@@ -686,7 +686,7 @@ class DeleteSearchTypeCmd(Command):
                 cmd = DeleteCmd(sobject=sobject, values=my.values)
                 cmd.execute()
         except (SqlException, SearchException), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
        
         try:
@@ -694,7 +694,7 @@ class DeleteSearchTypeCmd(Command):
             # must log first
             TableDropUndo.log(search_type, database, table_name)
         except (SqlException, SearchException), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
        
 
 
@@ -703,7 +703,7 @@ class DeleteSearchTypeCmd(Command):
             cmd = DropTable(search_type)
             cmd.commit()
         except (SqlException, SearchException), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
         
        
@@ -718,7 +718,7 @@ class DeleteSearchTypeCmd(Command):
         """
         pipelines = search_type_obj.get_related_sobjects("sthpw/pipeline")
         for pipeline in pipelines:
-            print "deleting: ", pipeline.get_search_key()
+            print("deleting: ", pipeline.get_search_key())
             pipeline.delete()
         """
  
@@ -937,7 +937,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                 try:
                     search = Search(related_type)
                 except Exception, e:
-                    print "WARNING: ", e
+                    print("WARNING: ", e)
                     continue
                 full_search_type = "%s?project=%s" % (search_type, project_code)
                 if related_type.startswith("sthpw/"):
@@ -1214,7 +1214,6 @@ class DeleteProjectCmd(DeleteCmd):
 
         sobjs = Search.eval(expr2)
         for sobj in sobjs:
-            print sobj
             sobj.delete()
 
         sobjs = Search.eval(expr)

@@ -117,6 +117,11 @@ class TextInputWdg(BaseInputWdg):
 
         my.text.set_attr('autocomplete','off')
 
+        ignore = my.kwargs.get("ignore")
+        if ignore in [True, 'true']:
+            my.text.remove_class("spt_input")
+
+
         class_name = kwargs.get("class")
         if class_name:
             my.text.add_class(class_name)
@@ -158,7 +163,7 @@ class TextInputWdg(BaseInputWdg):
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
                 else if (!last_value && last_value != value) {
-                    bvr.src_el.setStyle("background", bvr.bgcolor2);
+                    //bvr.src_el.setStyle("background", bvr.bgcolor2);
                 }
                 else {
                     bvr.src_el.setStyle("background", bvr.bgcolor);
@@ -773,13 +778,14 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         if (!data && data != 0) {
             hidden_el.value = '';
             if (kwargs.validate != false) {
-                src_el.setStyle("background", "#A99");
+                //src_el.setStyle("background", "#A99");
                 src_el.addClass("spt_invalid");
             }
         }
         else {
             // This should not attempt to "correct" the data
             src_el.removeClass("spt_invalid");
+            hidden_el.value = data;
         }
 
        // run client trigger
@@ -801,8 +807,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     value_expr = display_value;
        
 
-
-    var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+    if (value) {
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+    }
+    else {
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "'].code)";
+    }
     var kw = {
         single: true,
         cbjs_action: cbk
@@ -863,7 +873,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         } )
 
         my.hidden = HiddenWdg(my.name)
-        #my.hidden = TextWdg(my.name)
         my.top.add(my.hidden)
         my.hidden.add_class("spt_text_value")
 
@@ -1521,12 +1530,12 @@ class TextInputResultsWdg(BaseRefreshWdg):
             # relevant is ON, then only search for stuff that is relevant in the current table
            
 
-            #search.add_text_search_filter(column, values)
             if search_type == 'sthpw/sobject_list':
                 search.add_filter("project_code", project_code)
 
-            if search_type == 'sthpw/sobject_list' and filter_search_type and filter_search_type != 'None':
+            if search_type == 'sthpw/sobject_list' and filter_search_type and filter_search_type != 'None' and filter_search_type != 'sthpw/sobject_list':
                 search.add_filter("search_type", filter_search_type)
+
             if filters:
                 search.add_op_filters(filters)
             
@@ -1579,6 +1588,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             search.add_limit(my.LIMIT)
 
             results = search.get_sobjects()
+
             info_dict['results'] = results
    
         mode = my.kwargs.get("mode")

@@ -1553,11 +1553,44 @@ class MethodMode(ExpressionParser):
                 values_list.append(values)
 
             # transpose the values
-            values_list = zip(*values_list)
+            if len(values_list) == 1:
+                pass
+            else:
+                values_list = zip(*values_list)
             results = []
             for values in values_list:
                 result = args[0] % values
                 results.append(result)
+
+
+        elif method == 'STARTSWITH':
+
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            mode = my.get_mode(expression)
+            results = my.dive(mode, expression=expression)
+            if not results:
+                return False
+
+            result = results[0]
+            return result.startswith(args[1])
+
+        elif method == 'ENDSWITH':
+
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            mode = my.get_mode(expression)
+            results = my.dive(mode, expression=expression)
+            if not results:
+                return False
+
+            result = results[0]
+            return result.endswith(args[1])
+
 
 
         elif method == 'BASENAME':
@@ -1650,7 +1683,7 @@ class MethodMode(ExpressionParser):
 
             results = []
             if sobjects:
-                if len(args):
+                if len(args) > 1:
                     context = args[1]
                     if not context:
                         context = "__ALL__"
@@ -1955,6 +1988,7 @@ class MethodMode(ExpressionParser):
 
         #key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
         my.related_types = related_types
+
         if my.search:
             key = "%s|%s|%s" % (my.expression, related_types, str(my.search))
         else:
@@ -1970,6 +2004,9 @@ class MethodMode(ExpressionParser):
         related_types_filters = {}
         related_types_paths = {}
 
+        related_exprs = related_types[:]
+        related_types = related_types[:]
+
         # process the search type
         p = re.compile('^(\w+):')
         for i, related_type in enumerate(related_types):
@@ -1984,13 +2021,18 @@ class MethodMode(ExpressionParser):
 
             related_type, filters = my.process_search_type(related_type)
 
+            related_expr = related_exprs[i]
+
             related_types[i] = related_type
-            related_types_filters[related_type] = filters
-            related_types_paths[related_type] = path
+            related_types_filters[related_expr] = filters
+            related_types_paths[related_expr] = path
 
 
         # handle some absolute sobjects
         if len(related_types) == 1:
+            related_type = related_types[0]
+            related_expr = related_exprs[0]
+
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
@@ -2013,7 +2055,7 @@ class MethodMode(ExpressionParser):
             elif related_type == 'connect':
                 related_sobjects = []
                 from pyasm.biz import SObjectConnection
-                filters = related_types_filters.get(related_type)
+                filters = related_types_filters.get(related_expr)
                 reg_filters, context_filters = my.group_filters(filters)
                 
                 if is_search:
@@ -2070,6 +2112,8 @@ class MethodMode(ExpressionParser):
         # the first search type as a starting point
         if not my.sobjects:
             related_type = related_types[0]
+            related_expr = related_exprs[0]
+
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
@@ -2116,7 +2160,7 @@ class MethodMode(ExpressionParser):
                 if my.show_retired:
                     search.set_show_retired(True)
 
-                filters = related_types_filters.get(related_type)
+                filters = related_types_filters.get(related_expr)
                 search.add_op_filters(filters)
 
                 # add any extra filters
@@ -2145,6 +2189,7 @@ class MethodMode(ExpressionParser):
 
             # remove the one just found
             related_types = related_types[1:]
+            related_exprs = related_exprs[1:]
         else:
             # start of with the current sobject list
             related_sobjects = my.sobjects
@@ -2169,6 +2214,8 @@ class MethodMode(ExpressionParser):
             if related_type == '':
                 break
 
+            related_expr = related_exprs[i]
+
             #mode = 'original'
             mode = 'fast'
 
@@ -2188,7 +2235,7 @@ class MethodMode(ExpressionParser):
                 list = []
                 from pyasm.biz import SObjectConnection
 
-                filters = related_types_filters.get(related_type)
+                filters = related_types_filters.get(related_expr)
                 reg_filters, context_filters = my.group_filters(filters)
 
                 if is_search:
@@ -2227,8 +2274,8 @@ class MethodMode(ExpressionParser):
 
             #elif mode == 'fast':
             else:
-                filters = related_types_filters.get(related_type)
-                path = related_types_paths.get(related_type)
+                filters = related_types_filters.get(related_expr)
+                path = related_types_paths.get(related_expr)
                 
                 if is_search:
                     # do the full search
@@ -2238,7 +2285,7 @@ class MethodMode(ExpressionParser):
                         sub_search.set_show_retired(True)
 
                     #FIXME: filters for the very last related_type is not found
-                    filters = related_types_filters.get(related_type)
+                    filters = related_types_filters.get(related_expr)
                     sub_search.add_op_filters(filters)
 
                     if related_sobjects:
@@ -2248,6 +2295,7 @@ class MethodMode(ExpressionParser):
                         sub_search.add_relationship_search_filter(related_search)
                         
                     related_search = sub_search
+
 
                 else:
 
@@ -2259,7 +2307,6 @@ class MethodMode(ExpressionParser):
                         search.add_op_filters(filters)
                         count = search.get_count()
                         return count
-
 
 
                     tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=my.show_retired)

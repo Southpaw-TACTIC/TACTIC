@@ -104,6 +104,7 @@ class Environment(Base):
         dirs = []
         dirs.append("%s/upload" % tmp_dir)
         dirs.append("%s/download" % tmp_dir)
+        dirs.append("%s/handoff" % tmp_dir)
         dirs.append("%s/cache" % tmp_dir)
         dirs.append("%s/upload" % tmp_dir)
         dirs.append("%s/temp" % tmp_dir)
@@ -349,9 +350,9 @@ class Environment(Base):
 
 
         if not base_handoff_dir:
-            data_dir = my.get_data_dir()
-            base_handoff_dir = "%s/%s" % (data_dir, "handoff")
-            
+            tmp_dir = my.get_tmp_dir()
+            base_handoff_dir = "%s/%s" % (tmp_dir, "handoff")
+                
 
         if no_exception == False and not base_handoff_dir:
             raise TacticException("No handoff directory defined in TACTIC config file")

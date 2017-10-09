@@ -81,7 +81,6 @@ class TacticAuthenticate(Authenticate):
     '''Authenticate using the TACTIC database'''
 
     def verify(my, login_name, password):
-        #encrypted = md5.new(password).hexdigest()
         encrypted = hashlib.md5(password).hexdigest()
 
         # get the login sobject from the database

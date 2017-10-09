@@ -42,11 +42,7 @@ class IndexWdg(Widget):
                 'type': 'load',
                 'class_path': class_path,
                 'kwargs': kwargs,
-                'cbjs_action': '''
-                spt.dom.load_js(["popup.js"], function() {
-                    spt.panel.load(bvr.src_el, bvr.class_path, bvr.kwargs);
-                });
-                '''
+                'cbjs_action': 'spt.panel.load(bvr.src_el, bvr.class_path, bvr.kwargs)'
             } )
         return div
 

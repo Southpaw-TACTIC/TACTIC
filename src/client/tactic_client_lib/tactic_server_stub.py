@@ -206,12 +206,18 @@ class TacticServerStub(object):
             # Python 2.7.9 made ssl certificates required and will not allow
             # an unsigned certificate.  This disables that check
             import ssl
-            context = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
-            my.server = xmlrpclib.ServerProxy(
-                        url, allow_none=True,
-                        verbose=False, use_datetime=False, 
-                        transport=xmlrpclib.SafeTransport(context=context)
-             )
+            try:
+                context = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
+                my.server = xmlrpclib.ServerProxy(
+                            url, allow_none=True,
+                            verbose=False, use_datetime=False, 
+                            transport=xmlrpclib.SafeTransport(context=context)
+                 )
+            except:
+                my.server = xmlrpclib.ServerProxy(
+                            url, allow_none=True,
+                            verbose=False, use_datetime=False, 
+                 )
 
         else:
             my.server = xmlrpclib.Server(url, allow_none=True)
@@ -3113,6 +3119,8 @@ class TacticServerStub(object):
         return my.server.get_pipeline_processes_info(my.ticket, search_key,
                                                      recurse, related_process)
 
+
+
     def execute_pipeline(my, pipeline_xml, package):
         '''API Function:  execute_pipeline(pipeline_xml, package)
 
@@ -3137,7 +3145,54 @@ class TacticServerStub(object):
         return interpreter
 
 
+
+    #
+    # trigger methods
+    #
+    def call_trigger(my, search_key, event, input={}, process=None):
+        '''API FUNCTION: Calls a trigger with input package
+        
+        @params
+        ticket - authentication ticket
+        event - name of event
+        input - input data to send to the trigger
+        '''
+        return my.server.call_trigger(my.ticket, search_key, event, input, process)
+
+
+
+    def call_pipeline_event(my, search_key, process, event, data={}):
+        '''API FUNCTION: Call an event in a process in a pipeline.
+
+        @params
+        search_key - the sobject that contains the trigger
+        process - the process node of the pipeline of the sobject
+        event - the event to be set
+        data - dictionary data that needs to be sent to the process
+        '''
+        return my.server.set_pipeline(my.ticket, search_key, process, event, data)
+
+
+    def get_pipeline_status(my, search_key, process):
+        '''API FUNCTION: Set the status of a process in a pipeline.
+
+        @params
+        search_key - the sobject that contains the trigger
+        process - the process node of the pipeline of the sobject
+        '''
+        return my.server.get_pipeline_status(my.ticket, search_key, process)
+
+
+
+
+
+
+    #
+    # session methods
+    #
     def commit_session(my, session_xml, pid):
+        # DEPRECATED
+
         '''Takes a session xml and commits it.  Also handles transfer to old
         style xml data.  Generally, this is executed through the application
         package: tactic_client_lib/application/common/introspect.py. However,
@@ -3718,6 +3773,28 @@ class TacticServerStub(object):
 
 
 
+    #
+    # Queue Manager
+    #
+    def add_queue_item(my, class_name, args={}, queue=None, priority=9999, description=None, message_code=None):
+        '''API Function: Add an item to the job queue
+
+        @param
+        class_name - Fully qualified command class derived from pyasm.command.Command
+        args - Keyword arguments to pass to the command
+        priority - NOT USED ... priority of the job
+        queue - Named queue which categorizes a job.  Some queue managers only look
+                at one type of queue
+        message_code - message log code where messages from the job can be added.
+
+        @return
+        queue_item
+
+        '''
+        return my.server.add_queue_item(my.ticket, class_name, args, queue, priority, description, message_code)
+
+
+
 
     #
     # Widget Config methods
@@ -3974,6 +4051,14 @@ class TacticServerStub(object):
         return my.server.get_doc_link(my.ticket, alias);
 
 
+    #
+    # Access to some useful external functions
+    #
+    def send_rest_request(my, method, url, params={}):
+        return my.server.send_rest_request(my.ticket, method, url, params)
+
+
+
 
     #
     # API/Server Version functions
@@ -4085,6 +4170,11 @@ class TacticServerStub(object):
 
 
 
+
+
+class TACTIC(TacticServerStub):
+    '''Alternate simpler name for this class'''
+    pass
 
 
 #

@@ -31,6 +31,8 @@ class FileDetailWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        parser = my.kwargs.get("parser")
+
         my.search_key = my.kwargs.get("search_key")
         sobject = Search.get_by_search_key(my.search_key)
 
@@ -62,6 +64,7 @@ class FileDetailWdg(BaseRefreshWdg):
         #parent = snapshot.get_parent()
 
         top = my.top
+        my.set_as_panel(top)
 
         if ext == "pdf":
             iframe = HtmlElement.iframe()
@@ -235,6 +238,35 @@ class FileDetailWdg(BaseRefreshWdg):
         from tactic.ui.checkin import PathMetadataWdg
         from tactic.ui.checkin import SnapshotMetadataWdg
 
+        from pyasm.widget import SelectWdg
+        select = SelectWdg(name="parser")
+        select.add_style("width: 125px")
+        select.add_style("margin-top: 0px")
+        select.add_style("margin-right: 10px")
+        select.add_empty_option("-- Metadata --")
+        td.add(select)
+        select.add_style("float: right")
+        select.set_option("values", ["IPTC","EXIF","XMP","ImageMagick","PIL"])
+        select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var parser = bvr.src_el.value;
+            spt.panel.refresh_element(bvr.src_el, {parser: parser})
+            '''
+        } )
+        if parser:
+            select.set_value(parser)
+
+
+
+        title_div = DivWdg()
+        td.add(title_div)
+        title_div.add("<div style='font-size: 16px'>File Metadata</div>")
+        title_div.add("<div>Metadata extracted directly from the file</div>")
+        title_div.add("<hr/>")
+        title_div.add_style("text-align: left")
+        title_div.add_style("margin: 0px 10px")
+
 
         metadata_div = DivWdg()
         td.add(metadata_div)
@@ -244,23 +276,13 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("margin: 20px 0px 20px 10px")
         metadata_div.add_style("text-align: left")
 
-        metadata_div.add("<div style='font-size: 16px'>File Metadata</div>")
-        metadata_div.add("<div>Metadata extracted directly from the file</div>")
-        metadata_div.add("<hr/>")
-
-        parser = my.kwargs.get("parser")
         use_tactic_tags = my.kwargs.get("use_tactic_tags")
 
         server_src = lib_path
 
         # get it dynamically by path
-        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags)
+        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags, search_key=my.search_key)
         metadata_div.add(metadata_wdg)
-
-        #else:
-        #    metadata_wdg = SnapshotMetadataWdg(snapshot=snapshot)
-        #    metadata_div.add(metadata_wdg)
-
 
         top.add("<br/>")
 
