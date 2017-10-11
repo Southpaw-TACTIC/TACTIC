@@ -882,6 +882,12 @@ class TileLayoutWdg(ToolLayoutWdg):
             if (el) {
                 //el.setStyle("background", "%s");
             }
+
+            var tool_el = bvr.src_el.getElement(".spt_tile_tool_top");
+            if (tool_el) {
+                tool_el.setStyle("display", "");
+            }
+
             ''' % bg2
         } )
 
@@ -894,6 +900,12 @@ class TileLayoutWdg(ToolLayoutWdg):
             if (el) {
                 //el.setStyle("background", "%s");
             }
+
+            var tool_el = bvr.src_el.getElement(".spt_tile_tool_top");
+            if (tool_el) {
+                tool_el.setStyle("display", "none");
+            }
+
             ''' % bg1
         } )
 
@@ -1455,6 +1467,65 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb.add_style("transform: translate(0%, -50%)")
         #thumb.add_style("border: solid 2px blue")
         #thumb_div.add_style("border: solid 2px red")
+
+
+        # add a div on the bottom
+        div.add_style("position: relative")
+
+        tool_div = DivWdg()
+        div.add(tool_div)
+        tool_div.add_style("display: none")
+        tool_div.add_class("spt_tile_tool_top")
+
+        lib_path = thumb.get_lib_path()
+        size = Common.get_dir_info(lib_path).get("size")
+        from pyasm.common import FormatValue
+        size = FormatValue().get_format_value(size, "KB")
+
+        size_div = DivWdg()
+        tool_div.add(size_div)
+        size_div.add(size)
+        size_div.add_style("float: right")
+        size_div.add_style("margin-top: 3px")
+
+
+
+        #tool_div.add_style("position: absolute")
+        tool_div.add_style("position: relative")
+        #tool_div.add_style("top: 30px")
+        tool_div.add_style("background: #FFF")
+        tool_div.add_style("color: #000")
+        tool_div.add_style("height: 21px")
+        tool_div.add_style("padding: 2px 5px")
+        tool_div.add_style("margin-top: -26px")
+        tool_div.add_border(size="0px 1px 1px 1px")
+
+
+        href = HtmlElement.href()
+        href.add_attr("href", thumb.get_path())
+        tool_div.add(href)
+
+        path = thumb.get_path()
+        try:
+            path = thumb.snapshot.get_web_path_by_type("main")
+        except:
+            path = path
+
+        basename = os.path.basename(path)
+        href.add_attr("download", basename)
+
+        icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+        icon.add_class("hand")
+        href.add(icon)
+        icon.add_behavior( {
+            'type': 'clickX',
+            'path': thumb.get_path(),
+            'cbjs_action': '''
+            alert(bvr.path); 
+            '''
+        } )
+
+
 
 
         if my.bottom:

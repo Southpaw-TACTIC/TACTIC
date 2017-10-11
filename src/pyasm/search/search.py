@@ -2992,7 +2992,7 @@ class SObject(object):
         try:
             value = my.data[name]
 
-            if is_data:
+            if value and is_data:
                 value = value.get(attr)
 
             # NOTE: We should support datetime natively, however a lot
@@ -3224,8 +3224,6 @@ class SObject(object):
         if isinstance(value, Xml):
             value.clear_xpath_cache()
             value = value.to_string()
-        elif type(value) in [types.DictType]:
-            value = value
         elif type(value) in [types.ListType, types.TupleType]:
             if len(value) == 0:
                 # This check added to handle cases where a list is empty, as 'value[0]' is not defined
@@ -3299,10 +3297,11 @@ class SObject(object):
 
 
 
-    def _set_value(my,  name, value, quoted=True):
+    def _set_value(my, name, value, quoted=True):
         '''called by set_value()'''
 
         if my.update_data.has_key(name) or not my.data.has_key(name) or value != my.data[name]:
+
             # FIXME: this may be necessary with MySQL
             #if isinstance(value, basestring):
             #    value = value.replace("\\", "\\\\")
@@ -3316,9 +3315,10 @@ class SObject(object):
 
     def set_data_value(my, column, name, value, quoted=True):
         data = my.get_value(column) or {}
+        data = data.copy()
 
-        # TODO: make sure the column is a json type
         data[name] = value
+
         my.set_value(column, data)
 
 
@@ -3733,6 +3733,7 @@ class SObject(object):
 
     def commit(my, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
+
         is_insert = False 
         id = my.get_id()
         if my.force_insert or id == -1:
@@ -3837,11 +3838,16 @@ class SObject(object):
         is_sqlite = impl.get_database_type() == 'Sqlite'
         
         #is_mysql = impl.get_database_type() == 'MySQL'
-        
+
         for key, value in my.update_data.items():
             quoted = my.quoted_flag.get(key)
             escape_quoted = False
             changed = False
+
+            if isinstance(value, dict):
+                value = jsondumps(value)
+
+
             # escape the backward slashes
             if is_postgres and isinstance(value, basestring):
                 if value.find('\\') != -1:
