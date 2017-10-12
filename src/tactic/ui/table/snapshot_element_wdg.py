@@ -101,6 +101,7 @@ class SnapshotFileElementWdg(BaseTableElementWdg):
                 filename = "%s (%s)" % (filename, file_range.get_display() )
 
             widget = HtmlElement.href(filename, ref=path, target="_blank")
+            widget.add_attr("download", filename)
         else:
             widget = ""
         return widget

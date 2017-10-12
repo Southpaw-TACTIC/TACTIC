@@ -1570,6 +1570,21 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin: 30px auto")
 
         button.add_behavior( {
+            'type': 'load',
+            'cbjs_action': my.get_onload_js()
+        } )
+
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            spt.ingest.select_files(top, bvr.normal_ext);
+            '''
+        } )
+
+        button.add_behavior( {
             'type': 'click_up',
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
@@ -1617,6 +1632,82 @@ class IngestUploadWdg(BaseRefreshWdg):
         } )
 
         return button
+
+
+
+    def get_onload_js(self):
+
+        return r'''
+
+spt.ingest = {};
+
+spt.ingest.select_files = function(top, normal_ext) {
+
+    var delay = 0;
+    var skip = false;
+    var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+    for (var i = 0; i < files.length; i++) {
+        var size = files[i].size;
+        var file_name = files[i].name;
+        var is_normal = regex.test(file_name);
+        if (size >= 10*1024*1024 || is_normal) {
+            spt.drag.show_file(files[i], files_el, 0, false);
+        }
+        else {
+            spt.drag.show_file(files[i], files_el, delay, true);
+
+            if (size < 100*1024)       delay += 50;
+            else if (size < 1024*1024) delay += 500;
+            else if (size < 10*1024*1024) delay += 1000;
+        }
+
+    }
+
+    // get all of the current filenames
+    var filenames = []
+    var items = top.getElements(".spt_upload_file");
+    for (var i = 0; i < items.length; i++) {
+        var file = items[i].file;
+        filenames.push(file.name);
+    }
+
+
+    // check if this is a sequence or zip
+    var server = TacticServerStub.get();
+    var cmd = 'tactic.ui.tools.IngestCheckCmd';
+    var kwargs = {
+        file_names: filenames
+    };
+    var ret_val = server.execute_cmd(cmd, kwargs);
+    var info = ret_val.info;
+
+    var num_sequences = 0;
+    for (var i = 0; i < info.length; i++) {
+        if (info[i].is_sequence) {
+            num_sequences += 1;
+        }
+    }
+
+    var ok = function() {
+        var upload_button = top.getElement(".spt_upload_files_top");
+        upload_button.setStyle("display", "");
+    }
+
+    if (num_sequences > 0) {
+        spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
+            spt.named_events.fire_event("set_ingest_update_mode", {
+                options: {
+                    value: 'sequence'
+                }
+            } );
+        });
+    }
+
+    ok();
+}
+
+    '''
+
 
 
 
