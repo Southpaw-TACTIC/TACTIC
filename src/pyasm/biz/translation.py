@@ -144,9 +144,7 @@ class Translation(SObject):
                     sobject = sobj
 
 
-                cls.cache_sobject(main_key, sobj)
 
-       
         # autocreate
         """
         if not sobject:

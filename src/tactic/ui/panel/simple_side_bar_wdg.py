@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["SimpleSideBarWdg"]
+__all__ = ["SimpleSideBarWdg", "TabSideBarWdg"]
 
 import os, types
 
@@ -22,6 +22,8 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu, Menu, MenuItem
 
 from panel_wdg import SideBarPanelWdg, SideBarBookmarkMenuWdg
+
+
 class SimpleSideBarWdg(SideBarPanelWdg):
 
     def get_views(my):
@@ -377,5 +379,115 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
         return li
+
+
+
+
+class TabSideBarWdg(SideBarBookmarkMenuWdg):
+
+    def get_display(my):
+
+        top = my.top
+
+        my.config_search_type = my.kwargs.get("config_search_type")
+        if not my.config_search_type:
+            my.config_search_type = "SideBarWdg"
+
+
+        view_item = my.kwargs.get("view")
+        if not view_item:
+            view_item = "definition"
+        my.default = my.kwargs.get('default') == 'True'
+
+
+
+        use_default_style = my.kwargs.get("use_default_style")
+
+        is_personal = False
+ 
+        # get the config
+        config = my.get_config(my.config_search_type, view_item, default=my.default, personal=is_personal)
+        element_names = config.get_element_names()
+
+        new_config_xml = []
+        new_config_xml.append('''<config>''')
+        new_config_xml.append('''<tab>''')
+
+        from pyasm.common import Environment
+        from pyasm.biz import Project
+        from tactic.ui.common import WidgetClassHandler
+
+
+        security = Environment.get_security()
+        user = Environment.get_user_name()
+
+
+        my.project = Project.get()
+
+        class_handler = WidgetClassHandler()
+        for element_name in element_names:
+
+
+            # handle security
+            # TODO: put this in the base class
+            key = {'project': my.project.get_code(), 'element': element_name}
+            key2 = {'element': element_name}
+            key3 = {'project': my.project.get_code(), 'element': '*'}
+            key4 = {'element': '*'}
+            keys = [key, key2, key3, key4]
+            if element_name.startswith('%s.'%user):
+                # personal view is default to be viewable
+                if not security.check_access("link", keys, "view", default="view"):
+                    continue
+            elif not security.check_access("link", keys, "view", default="deny"):
+                continue
+
+
+            display_handler = config.get_display_handler(element_name)
+            display_options = config.get_display_options(element_name)
+
+            # the sidebar currently uses a different structure than the
+            # tab widget so we have to translate
+
+            widget_key = display_options.get("widget_key")
+            if widget_key:
+                class_name = class_handler.get_display_handler(widget_key)
+            else:
+                class_name = display_options.get("class_name")
+
+            new_config_xml.append('''<element name="%s">''' % element_name)
+
+            if class_name:
+                new_config_xml.append('''<display class="%s">''' % class_name)
+            else:
+                new_config_xml.append('''<display widget_key="%s">''' % widget_key)
+
+
+            for name, value in display_options.items():
+                if name in ['widget_key', 'class_name']:
+                    continue
+                new_config_xml.append('''<%s>%s</%s>''' % (name, value, name))
+
+
+            new_config_xml.append('''</display>''')
+
+            new_config_xml.append('''</element>''')
+
+        new_config_xml.append('''</tab>''')
+        new_config_xml.append('''</config>''')
+
+        new_config_xml_str = "\n".join( new_config_xml )
+
+
+        from tactic.ui.container import TabWdg
+        tab = TabWdg(config_xml=new_config_xml_str, view="tab", show_add=False, show_remove=False, use_default_style=use_default_style)
+        top.add(tab)
+
+
+
+
+        return top
+
+
 
 
