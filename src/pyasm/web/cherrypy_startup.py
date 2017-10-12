@@ -167,7 +167,7 @@ class CherryPyStartup(object):
             if sql.get_database_type() != "MongoDb":
                 # before batch, clean up the ticket with a NULL code
                 if os.getenv('TACTIC_MODE') != 'production':
-                    sql.do_update('DELETE from "ticket" where "code" is NULL;')
+                    sql.do_update('DELETE from "ticket" where "code" is NULL')
                 else:
                     start_port = Config.get_value("services", "start_port")
                     if start_port:
@@ -175,7 +175,7 @@ class CherryPyStartup(object):
                     else:
                         start_port = 8081
                     if port and int(port) == start_port:
-                         sql.do_update('DELETE from "ticket" where "code" is NULL;')
+                         sql.do_update('DELETE from "ticket" where "code" is NULL')
         except DatabaseException, e:
             # TODO: need to work on this
             print "ERROR: could not connect to [sthpw] database"

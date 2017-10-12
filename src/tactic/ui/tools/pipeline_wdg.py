@@ -1946,6 +1946,26 @@ class BaseInfoWdg(BaseRefreshWdg):
         table.add_style("width: 100%")
         div.add(table)
         table.add_row()
+
+        """
+        from tactic.ui.panel import ThumbWdg2
+        icon_cell = table.add_cell()
+        thumb = ThumbWdg2()
+        icon_cell.add(thumb)
+        search = Search("config/process")
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+        thumb.set_sobject(process_sobj)
+        thumb.add_style("width: 45px")
+        thumb.add_style("height: 45px")
+        thumb.add_style("border-radius: 30px")
+        thumb.add_style("border: solid 1px #DDD")
+        thumb.add_style("overflow: hidden")
+        """
+
+
+
+
         left = table.add_cell()
         left.add_style("vertical-align: top")
         left.add_style("padding-left: 10px")
@@ -3026,6 +3046,8 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             script_text = TextAreaWdg("script")
             script_text.add_style('padding-top: 10px')
+            script_text.add_style('margin-top: 10px')
+            script_text.add_style('font-size: 1.2em')
             script_text.set_option("read_only", "true")
             script_text.add_style("background", "#EEE");
             script_text.add_class("form-control")
@@ -3067,6 +3089,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
         run_title = DivWdg("Enter new script_code")
         run_title.add_style('margin-bottom: 3px')
+        run_title.add_style('margin-top: 10px')
         div.add(run_title)
 
 
@@ -6102,11 +6125,13 @@ class PipelineSaveCbk(Command):
         pipeline_code = pipeline.get_code()
 
         # make sure to update process table
+        """
         process_names = pipeline.get_process_names()
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
         process_sobjs = search.get_sobjects()
         existing_names = SObject.get_values(process_sobjs, 'process')
+        """
 
         pipeline.update_dependencies()
         
