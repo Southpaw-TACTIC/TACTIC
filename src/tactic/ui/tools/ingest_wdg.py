@@ -723,25 +723,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             var upload_button = top.getElement(".spt_upload_files_top");
 
             var onchange = function (evt) {
+
                 var files = spt.html5upload.get_files();
-                var delay = 0; 
-                for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
-                    var file_name = files[i].name;
-                    var is_normal = regex.test(file_name);
-                    if (size >= 10*1024*1024 || is_normal) {
-                        spt.drag.show_file(files[i], files_el, 0, false);
-                    }
-                    else {
-                        spt.drag.show_file(files[i], files_el, delay, true);
-
-                        if (size < 100*1024)       delay += 50;
-                        else if (size < 1024*1024) delay += 500;
-                        else if (size < 10*1024*1024) delay += 1000;
-                    }
-                }
-
-                upload_button.setStyle("display", "");
+                spt.ingest.select_files(top, files, bvr.normal_ext);
             }
 
             spt.html5upload.clear();
@@ -1580,12 +1564,35 @@ class IngestUploadWdg(BaseRefreshWdg):
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_ingest_top");
-            spt.ingest.select_files(top, bvr.normal_ext);
+            var files = spt.html5upload.get_files();
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+        
+            // clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.ingest.select_files(top, files, bvr.normal_ext);
+            }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
             '''
         } )
 
         button.add_behavior( {
-            'type': 'click_up',
+            'type': 'click_upX',
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 
@@ -1641,11 +1648,14 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 spt.ingest = {};
 
-spt.ingest.select_files = function(top, normal_ext) {
+spt.ingest.select_files = function(top, files, normal_ext) {
+
+    var files_el = top.getElement(".spt_to_ingest_files");
+
+    var regex = new RegExp('(' + normal_ext.join('|') + ')$', 'i');
 
     var delay = 0;
     var skip = false;
-    var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file_name = files[i].name;
