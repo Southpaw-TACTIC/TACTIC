@@ -38,7 +38,7 @@ spt.panel.refresh_element = function(element, data, kwargs) {
 spt.panel.refresh = function(panel_id, values, kwargs) {
     var panel = $(panel_id);
     if (panel == null) {
-        log.warning("panel[" + panel_id + "] cannot be found ");
+        spt.js_log.warning("panel[" + panel_id + "] cannot be found ");
         return;
     }
     // either the panel or the first child will have all the necessary
@@ -88,7 +88,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     var panel = $(panel_id);
     if (!panel)
     {
-        log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
+        spt.js_log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
         return;
     }
     
@@ -349,7 +349,7 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
     var element = $(element_id);
     if (! element) {
-        log.warning("_refresh_widget " + element_id +  " not found ");
+        spt.js_log.warning("_refresh_widget " + element_id +  " not found ");
         return;
     }
     element_id = element.getAttribute('id');

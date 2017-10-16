@@ -262,14 +262,14 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
         try {
             run_bvr();
         } catch(e) {
-            log.error( "___________________________________________________________________________________________" );
-            log.error( "Caught javascript ERROR: " + e );
-            log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
-            log.error( "..........................................................................................." );
-            log.error( " " );
-            log.error( cbjs_str );
-            log.error( " " );
-            log.error( "___________________________________________________________________________________________" );
+            spt.js_log.error( "___________________________________________________________________________________________" );
+            spt.js_log.error( "Caught javascript ERROR: " + e );
+            spt.js_log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
+            spt.js_log.error( "..........................................................................................." );
+            spt.js_log.error( " " );
+            spt.js_log.error( cbjs_str );
+            spt.js_log.error( " " );
+            spt.js_log.error( "___________________________________________________________________________________________" );
             throw(e);
         }
     }
@@ -440,8 +440,8 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     var parent_node = el.parentNode;
 
     if( ! parent_node ) {
-        log.error( "ERROR: NO parent_node found in 'spt.behavior.replace_table_child_element()' ... here is element:" );
-        log.error( el );
+        spt.js_log.error( "ERROR: NO parent_node found in 'spt.behavior.replace_table_child_element()' ... here is element:" );
+        spt.js_log.error( el );
         return null;
     }
 
@@ -473,7 +473,7 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     }
 
     if( ! first_child ) {
-        log.error( "ERROR: NO first child found in temporary table element in " +
+        spt.js_log.error( "ERROR: NO first child found in temporary table element in " +
                    "'spt.behavior.replace_table_child_element()'" );
         // FIXME: previously the check was comparing against node type 3 and so it was always going into
         //        this block, but the code below didn't seem to do anything. This error stuff should
