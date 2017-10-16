@@ -2486,9 +2486,9 @@ class Select(object):
 
         clauses = []
         if my.tables[0].startswith('('):
-            clauses.append("FROM %s" % my.tables[0] )
+            clauses.append('FROM %s' % my.tables[0] )
         elif my.database and is_oracle:
-            clauses.append("FROM " + ", ".join( ['%s."%s"' % (my.database,x) for x in my.tables] ))
+            clauses.append("FROM " + ", ".join( ['"%s"."%s"' % (my.database,x) for x in my.tables] ))
         # NOTE: There really is no reason for SQLServer to be different here.
         #elif my.database and database_type == 'SQLServer':
         #    clauses.append("FROM " + ", ".join( ['[%s]' % x for x in my.tables] ))
@@ -3150,9 +3150,15 @@ class Update(object):
         impl.preprocess_sql(my.data, my.unquoted_cols)
 
 
+
+        if isinstance(database, basestring):
+            database_name = database
+        else:
+            database_name = database.get_database()
+
         statement = []
         if my.database and database_type == "Oracle":
-            statement.append('UPDATE %s."%s" SET' % (my.db_resource, my.table))
+            statement.append('UPDATE "%s"."%s" SET' % (database_name, my.table))
         #elif my.database and database_type == "SQLServer":
         #    statement.append('UPDATE [%s] SET' % my.table)
         else:
@@ -3165,7 +3171,7 @@ class Update(object):
             parts.append('"%s"' % my.table)
             table = ".".join(parts)
 
-            statement.append('UPDATE %s SET' % table)
+            statement.append('UPDATE "%s" SET' % table)
 
 
 

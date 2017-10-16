@@ -50,6 +50,7 @@ class Login(SObject):
         # specified
         defaults['password']= "39195b0707436a7ecb92565bf3411ab1"
         defaults['code'] = my.get_value('login')
+        defaults['upn'] = my.get_value('login')
 
         return defaults
 
