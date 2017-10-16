@@ -3150,11 +3150,10 @@ class Update(object):
         impl.preprocess_sql(my.data, my.unquoted_cols)
 
 
-
-        if isinstance(database, basestring):
-            database_name = database
+        if isinstance(my.db_resource, basestring):
+            database_name = my.db_resource
         else:
-            database_name = database.get_database()
+            database_name = my.db_resource.get_database()
 
         statement = []
         if my.database and database_type == "Oracle":
