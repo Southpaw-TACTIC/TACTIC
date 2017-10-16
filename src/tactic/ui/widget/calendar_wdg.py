@@ -818,6 +818,7 @@ class CalendarInputWdg(BaseInputWdg):
      
 
     def get_display(my):
+
         # should not have float by default
         #my.top.add_style("float: left")
         my.top.add_class("calendar_input_top")
@@ -992,7 +993,11 @@ class CalendarInputWdg(BaseInputWdg):
         current = my.get_current_sobject()
         
         if current and not current.is_insert():
-            db_date = current.get_value(my.get_name(), no_exception=True)
+            column = my.get_option("column")
+            if not column:
+                column = my.get_name()
+
+            db_date = current.get_value(column, no_exception=True)
             
             if db_date:
                 # This date is assumed to be GMT

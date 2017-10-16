@@ -1851,7 +1851,7 @@ class IngestUploadCmd(Command):
         """
 
 
-        # remap the filenames for seuqences
+        # remap the filenames for sequences
         if update_mode == "sequence":
             sequences = FileRange.get_sequences(filenames)
             filenames = []

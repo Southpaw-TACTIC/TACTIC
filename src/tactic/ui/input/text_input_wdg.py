@@ -202,6 +202,14 @@ class TextInputWdg(BaseInputWdg):
                 }
                 '''
             } )
+
+
+        onblur = my.kwargs.get("onblur")
+        if onblur:
+            my.text.add_behavior( {
+                'type': 'blur',
+                'cbjs_action': onblur
+            } )
  
        
         my.top = DivWdg()

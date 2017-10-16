@@ -1095,6 +1095,7 @@ class EditWdg(BaseRefreshWdg):
 
         show_action = my.kwargs.get("show_action")
         if show_action in [False, 'false']:
+            div.add_style("display: none")
             return div
 
 

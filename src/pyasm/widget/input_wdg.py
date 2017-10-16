@@ -1539,6 +1539,14 @@ class SelectWdg(BaseInputWdg):
             my.add_behavior(behavior)
 
 
+        onchange = my.get_option("onchange")
+        if onchange:
+            my.add_behavior( {
+                'type': 'change',
+                'cbjs_action': onchange
+            } )
+ 
+
 
 
 class FilterSelectWdg(SelectWdg):
