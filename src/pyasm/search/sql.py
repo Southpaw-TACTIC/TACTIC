@@ -3170,7 +3170,7 @@ class Update(object):
             parts.append('"%s"' % my.table)
             table = ".".join(parts)
 
-            statement.append('UPDATE "%s" SET' % table)
+            statement.append('UPDATE %s SET' % table)
 
 
 
