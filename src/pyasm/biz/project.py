@@ -206,10 +206,16 @@ class Project(SObject):
 
 
 
-    def get_by_code(cls, project_name):
+    def get_by_code(cls, project_name, use_cache=True):
         if project_name == "default":
             project = Container.get("default_project")
             return project
+
+        if not use_cache:
+            search = Search("sthpw/project")
+            search.add_filter("code", project_name)
+            return search.get_sobject()
+
         return super(Project, cls).get_by_code(project_name)
     get_by_code = classmethod(get_by_code)
 

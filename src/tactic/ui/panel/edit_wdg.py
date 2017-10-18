@@ -825,9 +825,15 @@ class EditWdg(BaseRefreshWdg):
 
                 # description
                 description = widget.get_attr("description") or ""
-                if description:
+                if description and description != "No description":
                     color = td.get_color("color", 40)
-                    td.add("<div style='margin-top: 5px'><i style='color: %s'>%s</i></div>" % (color, description))
+
+                    description_div = DivWdg()
+                    td.add(description_div)
+                    description_div.add_style("margin-top: 5px")
+                    description_div.add_style("color: %s" % color)
+                    description_div.add_style("font-style: italic")
+                    description_div.add(description)
 
 
 

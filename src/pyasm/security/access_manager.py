@@ -175,7 +175,7 @@ class AccessManager(Base):
           </group>
         </rules>
         '''
-        
+
         from pyasm.search import SObject
         if isinstance(xml, SObject):
             sobject = xml
@@ -189,7 +189,6 @@ class AccessManager(Base):
             xmlx.read_string(xml)
             xml = xmlx
 
-        my.xml = xml
 
         # parse shorthand rules
         rule_nodes = xml.get_nodes("rules/rule")

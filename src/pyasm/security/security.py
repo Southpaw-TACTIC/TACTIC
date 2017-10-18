@@ -757,6 +757,10 @@ class Site(object):
     def get_guest_hashes(my):
         return []
 
+    def get_guest_wdg(my, hash):
+        return None
+
+
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)
