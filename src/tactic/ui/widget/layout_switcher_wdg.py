@@ -68,9 +68,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         config_xml = my.kwargs.get("config_xml")
         target = my.kwargs.get("target")
 
+        #default
+        default_layout = my.kwargs.get("default_layout")
 
         # find the save state value, if state is to be saved
         save_state = my.kwargs.get("save_state")
+
         if save_state in [False, 'false']:
             save_state = None
             show_first = False
@@ -78,10 +81,10 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             show_first = True
 
 
-        state_value = None
         if save_state:
             state_value = WidgetSettings.get_value_by_key(save_state)
-
+        elif default_layout:
+            state_value = default_layout
 
         title = my.kwargs.get("title")
         if not title and state_value:
