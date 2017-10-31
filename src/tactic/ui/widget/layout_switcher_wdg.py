@@ -80,7 +80,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         else:
             show_first = True
 
-
+        state_value = None
         if save_state:
             state_value = WidgetSettings.get_value_by_key(save_state)
         elif default_layout:
