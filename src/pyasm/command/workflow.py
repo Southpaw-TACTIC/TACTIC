@@ -750,7 +750,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
-        #print "check_input: ", process
+        print "check_input: ", process
 
         # first check the inputs.  If there is only one input, then
         # skip this check
@@ -792,9 +792,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
     def handle_pending(my):
 
-        # DISABLE for now
-        #if not my.check_inputs():
-        #    return
+        if not my.check_inputs():
+            return
 
         # simply calls action
         my.log_message(my.sobject, my.process, "pending")
@@ -1020,9 +1019,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(my):
 
-        # DISABLE for now
-        #if not my.check_inputs():
-        #    return
+        if not my.check_inputs():
+            return
 
         # simply calls action
         my.log_message(my.sobject, my.process, "pending")
@@ -1164,9 +1162,8 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(my):
 
-        # DISABLE for now
-        #if not my.check_inputs():
-        #    return
+        if not my.check_inputs():
+            return
 
         # simply calls action
         Trigger.call(my, "process|action", output=my.input)
