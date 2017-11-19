@@ -1757,6 +1757,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
             
+        print "\"%s\" %s '%s'" %(column, op, regex)
         return "\"%s\" %s '%s'" %(column, op, regex)
 
 

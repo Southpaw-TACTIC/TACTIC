@@ -710,7 +710,13 @@ class BaseApiXMLRPC(XmlrpcServer):
                 search_key = search_key.replace("&amp;", "&")
 
 
-            #print "search_key: ", search_key
+            print "search_key: ", search_key
+
+            search = Search("spme/shot")
+            search.add_filter("code", "MPC_CPM_08024")
+            print search.get_statement()
+            sss = search.get_sobject()
+            print sss
             sobject = SearchKey.get_by_search_key(search_key)
             if not sobject:
                 if no_exception:

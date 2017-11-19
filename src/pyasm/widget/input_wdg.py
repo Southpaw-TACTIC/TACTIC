@@ -144,11 +144,11 @@ class BaseInputWdg(HtmlElement):
             return my.title
 
         name = my.get_name()
-        title = string.replace(my.name, "_", " ")
-        title = title.capitalize()
-        span = SpanWdg(title)
+        if not name:
+            return ""
 
-       
+        title = Common.get_display_title(name)
+        span = SpanWdg(title)
         return span
 
 
@@ -551,22 +551,8 @@ class BaseInputWdg(HtmlElement):
 class BaseTextWdg(BaseInputWdg):
     def handle_mode(my):
         return
-        '''
-        # DISABLED for now
-        mode = my.options.get("mode")
-        if mode == "string":
-            behavior = {
-                'type': 'keyboard',
-                'kbd_handler_name': 'DgTableMultiLineTextEdit'
-            }
-            my.add_behavior(behavior)
-        elif mode in ["float", "integer"]:
-            behavior = {
-                'type': 'keyboard',
-                'kbd_handler_name': 'FloatTextEdit' 
-            }
-            my.add_behavior(behavior)
-        '''
+
+
 
 class TextWdg(BaseTextWdg):
 

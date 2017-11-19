@@ -748,7 +748,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         elif node_type == "hierarchy":
             border_radius =  50 
             width = width
-            height = height + 50
+            height = height + 40
         elif node_type == "dependency":
             border_radius =  5
             #width = width
@@ -797,121 +797,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         offset = 0
         my.add_nobs(node, width, height, offset)
-
-        """
-        # add nobbies on the node
-        left_nob = DivWdg()
-        left_nob.add_class("spt_left_nob")
-        left_nob.set_round_corners(3, corners=['TL','BL'])
-        left_nob.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
-        left_nob.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
-        left_nob.add_style("cursor: pointer")
-        left_nob.add_style("position: absolute")
-        left_nob.add_style("border: solid 1px black")
-        left_nob.add_style("background: rgba(255,255,0,0.2)")
-        left_nob.add_style("width: 10px")
-        left_nob.add_style("height: 10px")
-        left_nob.add_style("top: %spx" % (height/2-5))
-        left_nob.add_style("left: -11px")
-        left_nob.add_style("z-index: 100")
-        left_nob.add("")
-        node.add(left_nob)
-        
-            
-
-        # add nobbies on the node
-        right_nob = DivWdg()
-        node.add(right_nob)
-        right_nob.add_class("spt_right_nob")
-        right_nob.add_style("cursor: pointer")
-        right_nob.add_style("position: absolute")
-        right_nob.add_style("top: 0px")
-        right_nob.add_style("left: %spx" % (width+1))
-        right_nob.add_style("z-index: 100")
-        right_nob.add_style("width: 12px")
-        right_nob.add_style("height: 40px")
-
-        right_nob_vis = DivWdg()
-        right_nob.add(right_nob_vis)
-        right_nob_vis.add("")
-        right_nob_vis.set_round_corners(3, corners=['TR','BR'])
-        right_nob_vis.add_style("border: solid 1px black")
-        right_nob_vis.add_style("background: rgba(255,255,0,0.2)")
-        right_nob_vis.add_style("width: 10px")
-        right_nob_vis.add_style("height: 10px")
-        right_nob_vis.add_style("margin-top: %spx" % (height/2-5))
-        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
-        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
-
-        if my.nob_mode == 'dynamic':
-            left_nob.add_style("display: none")
-            right_nob.add_style("display: none")
-            node.add_behavior( {
-            'type': 'hover',
-            'cbjs_action_over': '''
-            var el = bvr.src_el;
-            var nob = el.getElement(".spt_left_nob");
-            spt.show(nob);
-            var nob = el.getElement(".spt_right_nob");
-            spt.show(nob);
-            ''',
-            'cbjs_action_out': '''
-            var el = bvr.src_el;
-            var nob = el.getElement(".spt_left_nob");
-            spt.hide(nob);
-            var nob = el.getElement(".spt_right_nob");
-            spt.hide(nob);
-
-            '''
-            } )
-
-        
-        if my.is_editable:
-
-            # add the behavior that will draw the connector
-            left_nob.add_behavior( {
-            "type": 'drag',
-            "mouse_btn": 'LMB',
-            "drag_el": '@',
-            "cb_set_prefix": 'spt.pipeline.drag_connector'
-            } )
-            
-            
-
-            right_nob.add_behavior( {
-            "type": 'drag',
-            "mouse_btn": 'LMB',
-            "drag_el": '@',
-            "cb_set_prefix": 'spt.pipeline.drag_connector'
-            } )
-            right_nob.add_behavior( {
-            "type": 'drag',
-            "modkeys": 'SHIFT',
-            "mouse_btn": 'LMB',
-            "drag_el": '@',
-            "cb_set_prefix": 'spt.pipeline.drag_connector'
-            } )
-
-
-        """
-
-
-        # active glow
-        """
-        BASE = "/context/themes2/default/pipeline"
-        active = DivWdg()
-        node.add(active)
-        active.add_class("spt_active");
-        active.add("<img src='%s/node_glow.png' height='%s' width='125'/>" % (BASE, (height+20)))
-        active.add_style("position: absolute")
-        active.add_style("top: -9px")
-        active.add_style("left: -11px")
-        active.add_style("z-index: -200")
-        active.add_style("display: none")
-
-        active.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.5)")
-        """
-
 
 
         content = DivWdg()
@@ -980,7 +865,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             icon = IconButtonWdg(name="Expand", icon="BS_ARROW_DOWN")
             icon_div.add(icon)
             icon_div.add_style("margin: 0px auto")
-            icon_div.add_style("top: 50px")
+            icon_div.add_style("top: 40px")
             icon_div.add_style("left: %spx" % (width/2-12))
             icon_div.add_style("position: absolute")
             icon_div.add_style("z-index: 300")
@@ -996,6 +881,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var node = bvr.src_el.getParent(".spt_pipeline_node");
             var node_name = spt.pipeline.get_node_name(node);
             var pipeline_code = spt.pipeline.get_current_group();
+            var pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+pipeline_code+"'])", {single: true});
+            var search_type = pipeline.search_type;
+
 
             var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
             var process = server.eval(expr, {single: true});
@@ -1013,10 +901,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             if (!subpipeline) {
                 // create the pipeline
                 var data = {
-                    name: node_name + "_pipeline",
-                    parent_process: process_code
+                    name: node_name + " Workflow",
+                    search_type: search_type,
+                    // This is deprecated, use subpipeline_code on process
+                    //parent_process: process_code
                 }
                 subpipeline = server.insert("sthpw/pipeline", data);
+                var subpipeline_code = subpipeline.code;
+                server.update(process, { subpipeline_code: subpipeline_code })
             }
 
             var subpipeline_code = subpipeline.code;
@@ -1027,7 +919,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var top = spt.pipeline.top;
             var text = top.getElement(".spt_pipeline_editor_current2");
             if (text) {
-                var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
+                var html = "<span class='hand tactic_hover spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
                 text.innerHTML = text.innerHTML + " / " + html;
             }
 

@@ -3635,13 +3635,118 @@ class HierarchyInfoWdg(BaseInfoWdg):
         pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
 
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        search_type = pipeline.get_value("search_type")
+
         top = my.top
         top.add_style("padding: 20px 0px")
+        top.add_class("spt_hierarchy_top")
 
  
         title_wdg = my.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
+
+        info_div = DivWdg()
+        top.add(info_div)
+        info_div.add("A hierarchy process is a process that references a sub-workflow.")
+        info_div.add_style("margin: 10px 10px 20px 10px")
+
+
+
+
+        top.add( my.get_description_wdg(pipeline) )
+
+        settings_wdg = DivWdg()
+        top.add(settings_wdg)
+        settings_wdg.add_style("padding: 10px")
+
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+
+        search = Search("sthpw/pipeline")
+        search.add_filter("search_type", search_type)
+        search.add_filter("code", pipeline_code, op="!=")
+        subpipelines = search.get_sobjects()
+
+        values = [x.get("code") for x in subpipelines]
+        labels = [x.get("name") for x in subpipelines]
+
+        subpipeline_code = process_sobj.get_value("subpipeline_code")
+
+        settings_wdg.add("<b>Points to a sub Workflow:</b>")
+        select = SelectWdg("subpipeline")
+        settings_wdg.add(select)
+        if subpipeline_code:
+            select.set_value(subpipeline_code)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>Reference another workflow</span>")
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<br/>")
+
+
+        # auto create sb tasks
+        values = ["subtasks_only", "top_only", "all", "none"]
+        labels = ["Create SubTasks Only", "Top Task Only", "Both Top and SubTasks", "No Tasks"]
+
+        task_creation = workflow.get("task_creation") or "subtasks_only"
+
+        settings_wdg.add("<b>Task Creation:</b>")
+        select = SelectWdg("task_creation")
+        settings_wdg.add(select)
+        if task_creation:
+            select.set_value(task_creation)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- Select --")
+        settings_wdg.add("<span style='opacity: 0.6'>Determine whether tasks of the referenced workflow are created when generating an inital schedule</span>")
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<br/>")
+
+
+
+
+        save_button = ActionButtonWdg(title="Save", color="primary")
+        settings_wdg.add(save_button)
+        save_button.add_style("float: right")
+        save_button.add_style("padding-top: 3px")
+        save_button.add_behavior( {
+            'type': 'click_up',
+            'process': process,
+            'pipeline_code': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_hierarchy_top");
+            var values = spt.api.get_input_values(top, null, false);
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = values;
+            values['node_type'] = 'hierarchy';
+            values['process'] = bvr.process;
+            values['pipeline_code'] = bvr.pipeline_code;
+
+            var server = TacticServerStub.get();
+            server.execute_cmd( class_name, values);
+            
+            '''
+        } )
+
+
+ 
         return top
 
 
@@ -4258,6 +4363,8 @@ class ProcessInfoCmd(Command):
         if node_type == 'approval':
             return my.handle_approval()
 
+        if node_type == 'hierarchy':
+            return my.handle_hierarchy()
 
         if node_type == 'progress':
             return my.handle_progress()
@@ -4468,6 +4575,35 @@ class ProcessInfoCmd(Command):
         process_sobj.commit()
 
 
+
+    def handle_hierarchy(my):
+
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        search_type = pipeline.get_value("search_type")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+        data = process_sobj.get_json_value("workflow") or {}
+
+        subpipeline_code = my.kwargs.get("subpipeline")
+        process_sobj.set_value("subpipeline_code", subpipeline_code)
+        process_sobj.commit()
+
+        task_creation = my.kwargs.get("task_creation") or "subtasks_only"
+        data['task_creation'] = task_creation
+
+        process_sobj.set_value("workflow", data)
+
+
+        process_sobj.commit()
+ 
 
     def handle_progress(my):
 

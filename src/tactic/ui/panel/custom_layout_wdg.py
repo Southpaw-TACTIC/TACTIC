@@ -1280,7 +1280,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         load = attrs.get("load")
-        if load in ["async", "sequence"]:
+
+        if load in ["none"]:
+            return None
+
+        elif load in ["async", "sequence"]:
             return my.get_async_element_wdg(xml, element_name, load)
 
 

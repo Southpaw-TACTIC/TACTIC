@@ -126,10 +126,10 @@ class WidgetClassHandler(object):
         </element>
 
         <element name='text'>
-        <!--
             <display class='tactic.ui.input.TextInputWdg'/>
-        -->
+        <!--
             <display class='pyasm.widget.TextWdg'/>
+        -->
         </element>
         <element name='select'>
             <display class='pyasm.widget.SelectWdg'/>

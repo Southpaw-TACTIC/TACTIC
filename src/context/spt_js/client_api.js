@@ -319,6 +319,13 @@ TacticServerStub = function() {
         return this._delegate("ping");
     }
 
+    this.async_ping = function() {
+        console.log("Async ping not implemented");
+        return "OK";
+    }
+
+
+
 
     this.get_connection_info = function() {
         return this._delegate("get_connection_info");

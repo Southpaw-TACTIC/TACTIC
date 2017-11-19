@@ -31,9 +31,9 @@ from dateutil.relativedelta import relativedelta
 TASK_PIPELINE = '''
 <pipeline type="serial">
   <process completion="0" color="#ecbf7f" name="Assignment"/>
+  <process completion="5" color="#a96ccf" name="Waiting"/>
   <process completion="10" color="#8ad3e5" name="Pending"/>
   <process completion="20" color="#e9e386" name="In Progress"/>
-  <process completion="20" color="#a96ccf" name="Waiting"/>
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
   <process completion="80" color="#e84a4d" name="Revise"/>
   <process completion="80" color="#e84a4d" name="Reject"/>
@@ -559,10 +559,6 @@ class Task(SObject):
             task.set_value("bid_start_date", new_task_start_date)
             task.set_value("bid_end_date", new_task_end_date)
 
-            print "start: ", new_task_start_date
-            print "end  : ", new_task_end_date
-            print "---"
-
             task.commit()
 
             # recurse to the next dependent tasks
@@ -902,7 +898,7 @@ class Task(SObject):
 
     def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[],
             skip_duplicate=True, mode='standard',start_offset=0,assigned=None,
-            start_date=None, schedule_mode=None
+            start_date=None, schedule_mode=None, parent_process=None
 
         ):
         '''add initial tasks based on the pipeline of the sobject'''
@@ -965,11 +961,12 @@ class Task(SObject):
             print "WARNING: pipeline '%s' does not exist" %  pipeline_code
             return []
 
-        #TODO: add recursive property here 
+
+        # get all of the processes that will have tasks
         if processes:
             process_names = processes
         else:
-            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual"])
+            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual", "hierarchy"])
 
 
         # remember which ones already exist
@@ -1089,19 +1086,9 @@ class Task(SObject):
                 continue
 
             process_type = process_obj.get_type()
-            task_type = None
-            if process_type in ['approval']:
-                task_type = "approval"
-
-            # depend_id is pretty much deprecated ...
-            # dependencies are usually set by the workflow engine
-            if last_task:
-                depend_id = last_task.get_id()
-            else:
-                depend_id = None
-
-
             attrs = process_obj.get_attributes()
+
+
             duration = attrs.get("duration")
             if duration:
                 duration = int(duration)
@@ -1113,6 +1100,54 @@ class Task(SObject):
                 bid_duration = default_bid_duration
             else:
                 bid_duration = int(bid_duration)
+
+
+            workflow = process_sobject.get_json_value("workflow") or {}
+
+
+            task_creation = workflow.get("task_creation")
+            if task_creation == "none":
+                continue
+
+
+            if process_type in ['hierarchy']:
+                subpipeline_code = process_sobject.get("subpipeline_code")
+
+                # subtasks_only, top_only, all, none 
+                subtasks = []
+                if task_creation in ['subtasks_only', 'all']:
+
+                    # create the subtasks
+                    if subpipeline_code:
+                        subtasks = Task.add_initial_tasks(sobject, subpipeline_code, start_date=start_date, parent_process=process_name )
+
+                    # if we only have subtasks then remap the start date to the end
+                    if task_creation == "subtasks_only":
+                        if subtasks:
+                            start_date = subtasks[-1].get_datetime_value("bid_end_date")
+                        continue
+
+
+                # for both, continue as normal, but the length is that of the sub tasks
+                if subtasks:
+                    diff = subtasks[-1].get_datetime_value("bid_end_date") - subtasks[0].get_datetime_value("bid_start_date")
+                    duration = diff.days
+
+
+
+            task_type = None
+            if process_type in ['approval']:
+                task_type = "approval"
+
+
+
+            # depend_id is pretty much deprecated ...
+            # dependencies are usually set by the workflow engine
+            if last_task:
+                depend_id = last_task.get_id()
+            else:
+                depend_id = None
+
 
             # get description
             if process_sobject:
@@ -1166,8 +1201,13 @@ class Task(SObject):
 
             for context in output_contexts:
 
+                if parent_process:
+                    full_process_name = "%s/%s" % (parent_process, process_name)
+                else:
+                    full_process_name = process_name
+
                 # first check if it already exists when skip_duplicate is True
-                key1 = '%s:%s' %(process_name, context)
+                key1 = '%s:%s' %(full_process_name, context)
                 task_existed = False
                 for item in existing_task_dict:
                     if item.startswith(key1):
@@ -1179,7 +1219,7 @@ class Task(SObject):
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
 
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
+                last_task = Task.create(sobject, full_process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )

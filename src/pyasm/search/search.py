@@ -1352,7 +1352,7 @@ class Search(Base):
         my.select.add_group_aggregate_filter(group_cols)
 
 
-    def add_keyword_filter(my, column, keywords, table=None, column_type=None, op=None):
+    def add_keyword_filter(my, column, keywords, table=None, column_type=None, op=None, case_sensitive=False):
 
         if not table:
             table = my.search_type_obj.get_table()
@@ -1373,7 +1373,8 @@ class Search(Base):
             if not keyword:
                 continue
 
-            keyword = keyword.lower()
+            if not case_sensitive:
+                keyword = keyword.lower()
             # avoid syntax error
             keyword = keyword.replace("'", "''")
             
@@ -2963,6 +2964,8 @@ class SObject(object):
         #value = my._get_dynamic_value(name, no_exception)
         #if value != None:
         #    return value
+        if not name:
+            return None
 
         is_data = False
         if name.find("->") != -1:
@@ -3935,7 +3938,6 @@ class SObject(object):
 
         # Fill the data back in (autocreate of ids)
         # The only way to do this reliably is to query the database
-        #if id == -1:
         if is_insert:
             # assume that the id is constantly incrementing
             if not impl.has_sequences():

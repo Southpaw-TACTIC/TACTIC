@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = [ 'EditTitleWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
+__all__ = [ 'EditTitleWdg', 'EditCustomWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
@@ -30,26 +30,88 @@ class EditException(Exception):
 
 
 class EditTitleWdg(BaseInputWdg):
-    def get_display(my):
-        div = DivWdg()
-        title = my.get_title()
+    def get_display(self):
+
+        #mode = self.kwargs.get("mode")
+
+        title = self.get_title()
         if not title:
-            title = my.get_name()
-            title = title.replace("_", " ")
-            title = title.title()
+            title = self.get_name()
+            title = Common.get_display_title(title)
+
+
+        """
+        div = DivWdg()
         div.add(title)
         div.add_style("font-weight: bold")
-        div.add_style("margin", "20px 0px")
-
+        div.add_style("margin", "20px -10px")
         div.add_color("background", "background", -5)
         div.add_style("height", "20px")
         div.add_style("padding", "10px 10px")
+        """
+
+
+
+        div = DivWdg()
+        div.add_style("margin-top: 20px")
+        div.add_style("font-size: 16px")
+        div.add(title)
+        div.add("<hr/>")
 
         return div
 
 
-    def get_default_action(my):
+    def get_default_action(self):
         return "pyasm.command.NullAction"
+
+
+
+class EditCustomWdg(BaseInputWdg):
+
+    ARGS_KEYS = {
+        "view": {
+            'description': "The custom view to be displayed here",
+            'type': 'TextWdg',
+            'category': 'Options'
+        },
+    }
+
+
+    def get_display(self):
+
+        view = self.kwargs.get("view")
+        if not view:
+            return
+
+        sobject = self.get_current_sobject()
+        if sobject:
+            search_key = sobject.get_search_key()
+            self.kwargs['search_key'] = search_key
+
+        from tactic.ui.panel import CustomLayoutWdg
+        layout = CustomLayoutWdg(**self.kwargs)
+
+
+        try:
+            display = layout.get_buffer_display()
+        except Exception, e:
+            display = str(e)
+
+
+        div = DivWdg()
+        div.add(display)
+        return div
+
+
+
+
+    def get_default_action(self):
+        return "pyasm.command.NullAction"
+
+
+
+
+
 
 
 class EditWdg(BaseRefreshWdg):
@@ -423,14 +485,16 @@ class EditWdg(BaseRefreshWdg):
             if config:
                 configs.append(config)
 
-        #if my.mode == 'insert':
-        #    config = WidgetDbConfig.get_by_search_type(my.search_type, "insert")
-        #    if config:
-        #        configs.append(config)
-        # look for a definition
-        #config = WidgetDbConfig.get_by_search_type(my.search_type, "edit")
-        #if config:
-        #    configs.append(config)
+        else:
+            if my.mode == 'insert':
+                config = WidgetDbConfig.get_by_search_type(my.search_type, "insert")
+                if config:
+                    configs.append(config)
+            # look for the edit
+            config = WidgetDbConfig.get_by_search_type(my.search_type, "edit")
+            if config:
+                configs.append(config)
+
 
         file_configs = WidgetConfigView.get_configs_from_file(my.search_type, my.view)
         configs.extend(file_configs)
@@ -445,8 +509,8 @@ class EditWdg(BaseRefreshWdg):
             config = WidgetDbConfig.get_by_search_type(my.search_type, "edit_definition")
             if config:
                 configs.append(config)
-    
-        config = WidgetConfigView(my.search_type, my.view, configs)
+   
+        config = WidgetConfigView(my.search_type, my.view, configs, layout="EditWdg")
         return config
 
 
@@ -583,6 +647,7 @@ class EditWdg(BaseRefreshWdg):
 
         height = attrs.get('height')
         if height:
+            print "height: ", height
             table.add_style("height: %s" % height)
 
 
@@ -664,9 +729,9 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("border-width: 1px")
                 td.add_style("border-style: solid")
 
-            td.add_style("padding: 8 3 8 3")
-            td.add_color("background", "background3")
-            td.add_color("color", "color3")
+            td.add_style("padding: 8px 3px 8px 3px")
+            td.add_color("background", "background", -3)
+            td.add_color("color", "color")
         
         security = Environment.get_security()
 
@@ -776,7 +841,6 @@ class EditWdg(BaseRefreshWdg):
                 title_div.add(title)
                 title_div.add_style("display: inline-block")
                 title_div.add_class("spt_edit_title")
-
 
 
                 td = table.add_cell(title_div)
@@ -987,7 +1051,7 @@ class EditWdg(BaseRefreshWdg):
         #actual header div
         header_div.add(title_div)
         header_div.add_class("spt_popup_header")
-        header_div.add_color("background", "background3", 10)
+        header_div.add_color("background", "background", -8)
 
         if my.color_mode == "default":
             header_div.add_color("border-color", "table_border", default="border")
@@ -1069,7 +1133,7 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
-        div.add_color("background", "background3", 10)
+        div.add_color("background", "background", -8)
         div.add_style("padding-top: 5px")
         div.add_style("padding-bottom: 30px")
 

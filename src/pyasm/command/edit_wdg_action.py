@@ -269,8 +269,8 @@ class DatabaseAction(Command):
         elif col_type in ["float", "integer"]:
             if isinstance(value, basestring):
                 value = value.replace(",", "")
-            if value.startswith("$"):
-                value = value.lstrip("$")
+                if value.startswith("$"):
+                    value = value.lstrip("$")
 
             try:
                 if not value:

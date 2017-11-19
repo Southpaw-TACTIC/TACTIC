@@ -930,6 +930,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         """
  
         mode = my.kwargs.get("mode")
+        keyword_mode = my.kwargs.get("keyword_mode")
 
         filters = my.kwargs.get("filters")
         script_path = my.kwargs.get("script_path")
@@ -947,6 +948,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'filters': filters,
             'column': column,
             'mode': mode,
+            'keyword_mode': keyword_mode,
             'relevant': relevant,
             'case_sensitive': case_sensitive,
             'value_column': value_column,
@@ -1073,7 +1075,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     do_search: bvr.do_search,
                     case_sensitive: bvr.case_sensitive,
                     value: value,
-                    mode: bvr.mode
+                    mode: bvr.mode,
+                    keyword_mode: bvr.keyword_mode
                 },
                 cbjs_action: cbk,
             }
@@ -1469,6 +1472,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         
         column = my.kwargs.get("column")
         value_column = my.kwargs.get("value_column")
+        keyword_mode = my.kwargs.get("keyword_mode") or "startswith"
 
         if not search_type:
             search_type = "sthpw/sobject_list"
@@ -1487,14 +1491,13 @@ class TextInputResultsWdg(BaseRefreshWdg):
         # TODO:  This may apply to normal keyword search as well. to treat the whole phrase as 1 word
         if value_column and value.find(' ') != -1:
             values = [value]
-        else:
+        elif keyword_mode == "contains":
             values = Common.extract_keywords(value, lower=not case_sensitive)
-            # allow words with speical characters stripped out by Common.extract_keywords to be searched
-            # FIXME: THIS CAUSES PROBLEMS and is disabled for now
-            #if value.lower() not in values:
-            #    values.append(value.lower())
-        # why is this done?
-        # so the auto suggestion list the items in the same order as they are typed in
+        else:
+            values = value.split(" ")
+
+
+        # reverse so the auto suggestion list the items in the same order as they are typed in
         values.reverse()
 
         project_code = Project.get_project_code()
@@ -1578,13 +1581,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
             if not single_col:
                 search_op = 'or'
             for col in col_list:
-                #info = column_info.get(column)
-                #if info and info.get("data_type") == 'integer':
-                #    search.add_filter(column,values[0], op='=')
-                #else:
-                #    search.add_startswith_keyword_filter(column, values)
-                search.add_startswith_keyword_filter(col, values,
-                   case_sensitive=case_sensitive)
+                if keyword_mode == "contains":
+                    search.add_keyword_filter(col, values, case_sensitive=case_sensitive)
+                else:
+                    search.add_startswith_keyword_filter(col, values,
+                       case_sensitive=case_sensitive)
                
             search.add_op(search_op)
 
@@ -1604,8 +1605,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             results = search_dict.get(search_type).get('results')
 
-            labels = [x.get_value(column) for x in results]
-            values = [x.get_value(value_column) for x in results]
+            labels = [x.get_value(column) or "" for x in results]
+            values = [x.get_value(value_column) or "" for x in results]
 
             widget = my.get_icon_result_wdg(results, values, labels )
             top.add(widget)

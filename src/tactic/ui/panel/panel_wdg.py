@@ -1863,7 +1863,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
    
 
-    def get_config(cls, config_search_type, view,  default=False, personal=False):
+    def get_config(cls, config_search_type, view, default=False, personal=False):
 
         #print "view: ", view
 
@@ -1918,8 +1918,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             search = Search("config/widget_config")
             search.add_filter("search_type", config_search_type)
             search.add_filter("view", view)
-            #search.add_filter("login", login)
-            
+            if search.column_exists("priority"):
+                search.add_order_by("priority desc")
             config = search.get_sobject()
             if config:
                 configs.append(config)

@@ -195,7 +195,51 @@ class TaskStatusChangeTrigger(Trigger):
         if status == "approved":
             status = "complete"
 
-        process = pipeline.get_process(process_name)
+
+        # The task may have a hierarchy in it.  This is denoted by a / (or .) delimiter.
+        # Both are supported for now, however, it is possible people will use a "/"
+        # in the process name.
+        parent_pipelines = []
+        parent_processes = []
+        parts = None
+        if process_name.find(".") != -1:
+            parts = process_name.split(".")
+
+        elif process_name.find("/") != -1:
+            parts = process_name.split("/")
+
+        if parts:
+            for part in parts[:-1]:
+                process_name = part
+                process = pipeline.get_process(process_name)
+
+                if not process:
+                    raise Exception("Process [%s] not in pipeline" % process_name)
+
+                # find the pipeline
+                search = Search("config/process")
+                search.add_filter("pipeline_code", pipeline.get_code())
+                search.add_filter("process", process_name)
+                process_sobj = search.get_sobject()
+
+                parent_pipeline = pipeline
+                parent_pipelines.append(pipeline)
+                parent_process = process_name
+                parent_processes.append(process_name)
+
+                # find the current process and pipeline_code
+                pipeline_code = process_sobj.get_value("subpipeline_code")
+                pipeline = Pipeline.get_by_code(pipeline_code)
+
+                process = pipeline.get_process(parts[-1])
+
+                break
+
+        else:
+            process = pipeline.get_process(process_name)
+
+
+
         if not process:
             # we don't have enough info here
             return
@@ -212,7 +256,9 @@ class TaskStatusChangeTrigger(Trigger):
         output = {
             'sobject': sobject,
             'pipeline': pipeline,
+            'parent_pipelines': parent_pipelines,
             'process': process_name,
+            'parent_processes': parent_processes,
             'status': status,
             'internal': True
         }
@@ -304,16 +350,28 @@ class BaseProcessTrigger(Trigger):
 
 
 
+    def get_full_process_name(my, process):
+        if process.find("/") == -1 and my.parent_processes:
+            full_process_name = "%s/%s" % ("/".join(my.parent_processes), process)
+        else:
+            full_process_name = process
+
+        return full_process_name
+
+
+
     def set_all_tasks(my, sobject, process, status):
 
         # prevent for instance TaskStatusChangeTrigger setting a custom task status back to complete
         if not hasattr(my, "internal"):
             my.internal = my.input.get("internal") or False
 
-        
         if my.internal:
             return
-        tasks = Task.get_by_sobject(sobject, process=process)
+
+        full_process_name = my.get_full_process_name(process)
+
+        tasks = Task.get_by_sobject(sobject, process=full_process_name)
         title = status.replace("-", " ")
         title = title.replace("_", " ")
         title = Common.get_display_title(title)
@@ -324,6 +382,19 @@ class BaseProcessTrigger(Trigger):
 
     def run_callback(my, pipeline, process, status):
 
+        parts = []
+        if process.find(".") != -1:
+            parts = process.split(".")
+        if process.find("/") != -1:
+            parts = process.split("/")
+
+        if parts:
+            subpipeline = parts[0]
+            process = parts[-1]
+
+
+
+
         # get the node triggers
         # TODO: make this more efficient
         search = Search("config/process")        
@@ -333,7 +404,7 @@ class BaseProcessTrigger(Trigger):
 
         #print "callback process: ", process, pipeline.get_code()
         if not process_sobj:
-            raise TacticException('Process item [%s] has not been created. Please save your pipeline in the Project Workflow Editor to refresh the processes.'%process)
+            raise TacticException('Process item [%s] has not been created.'%process)
 
 
 
@@ -653,7 +724,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         my.name = kwargs.get("name")
 
         my.pipeline = my.input.get("pipeline")
+        my.parent_pipelines = my.input.get("parent_pipelines") or []
         my.process = my.input.get("process")
+        my.parent_processes = my.input.get("parent_processes") or []
         my.sobject = my.input.get("sobject")
         my.input_data = my.input.get("data")
         my.data = my.input_data
@@ -722,8 +795,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         # DISABLE for now
         #if not my.check_inputs():
         #    return
-
-        #print "pending: ", my.process
 
         # simply calls action
         my.log_message(my.sobject, my.process, "pending")
@@ -802,27 +873,52 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
-
-
-
-
         # call the process|pending event for all output processes
         output_processes = my.pipeline.get_output_processes(my.process)
         for output_process in output_processes:
             output_process = output_process.get_name()
 
-            if my.process_parts:
-                output_process = "%s.%s" % (my.process_parts[0], output_process)
+            #if my.process_parts:
+            #    output_process = "%s.%s" % (my.process_parts[0], output_process)
 
             output = {
                 'pipeline': my.pipeline,
                 'sobject': my.sobject,
+                'parent_pipelines': my.parent_pipelines,
+                'parent_processes': my.parent_processes,
                 'process': output_process,
                 'data': my.output_data
             }
 
             event = "process|pending"
             Trigger.call(my, event, output)
+
+
+        # if there are no output processes then check for any hierarchy
+        if not output_processes and my.parent_processes:
+            print "parent_pipelines: ", my.parent_pipelines
+            print "parent_processes: ", my.parent_processes
+            # send a message up the hierarchy
+            parent_pipelines = my.parent_pipelines[:]
+            pipeline = parent_pipelines.pop()
+
+            parent_processes = my.parent_processes[:]
+            process = parent_processes.pop()
+
+            output = {
+                'sobject': my.sobject,
+                'pipeline': pipeline,
+                'parent_pipelines': parent_pipelines,
+                'parent_processes': parent_processes,
+                'process': process,
+                'data': my.output_data
+            }
+
+            event = "process|complete"
+            Trigger.call(my, event, output)
+
+
+
 
 
     def handle_reject(my):
@@ -850,6 +946,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'pipeline': my.pipeline,
                 'sobject': my.sobject,
                 'process': input_process,
+                'parent_pipelines': my.parent_pipelines,
+                'parent_processes': my.parent_processes,
                 'error': my.input.get("error") or "Reject from %s" % my.process,
             }
 
@@ -907,6 +1005,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             input = {
                 'pipeline': my.pipeline,
                 'sobject': my.sobject,
+                'parent_pipelines': my.parent_pipelines,
+                'parent_processes': my.parent_processes,
                 'process': input_process,
                 'error': my.input.get("error")
             }
@@ -924,10 +1024,9 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         #if not my.check_inputs():
         #    return
 
-        #print "pending: ", my.process
-
         # simply calls action
         my.log_message(my.sobject, my.process, "pending")
+
 
 
         search = Search("config/process")        
@@ -957,13 +1056,15 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         # check to see if the tasks exist and if they don't then create one
         if autocreate_task:
             mapped_status = my.get_mapped_status(process_obj)
-            tasks = Task.get_by_sobject(my.sobject, process=my.process)
+
+            full_process_name = my.get_full_process_name(my.process)
+            tasks = Task.get_by_sobject(my.sobject, process=full_process_name)
             if not tasks:
                 Task.add_initial_tasks(my.sobject, processes=[my.process], status=mapped_status)
             else:
                 my.set_all_tasks(my.sobject, my.process, mapped_status)
         else:
-            my.set_all_tasks(my.sobject, my.process,  mapped_status)
+            my.set_all_tasks(my.sobject, my.process, mapped_status)
 
 
         my.run_callback(my.pipeline, my.process, "pending")
@@ -1199,7 +1300,21 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
 class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(my):
-        my.log_message(my.sobject, my.process, "pending")
+
+        # DISABLE for now
+        #if not my.check_inputs():
+        #    return
+
+        # simply calls action
+        Trigger.call(my, "process|action", output=my.input)
+
+
+
+
+    def handle_action(my):
+        my.log_message(my.sobject, my.process, "in_progress")
+        my.set_all_tasks(my.sobject, my.process, "in_progress")
+
 
         search = Search("config/process")
         search.add_filter("pipeline_code", my.pipeline.get_code())
@@ -1232,16 +1347,31 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
             first_process = child_processes[0]
             first_name = first_process.get_name()
 
-            full_name = "%s.%s" % (my.process, first_name)
-
             input = {
                     'pipeline': subpipeline,
                     'sobject': my.sobject,
-                    'process': full_name,
+                    'process': first_name,
+                    'parent_pipelines': [my.pipeline],
+                    'parent_processes': [my.process],
             }
 
             event = "process|pending"
             Trigger.call(my, event, input)
+
+            full_name = "%s/%s" % (my.process, first_name)
+            input = {
+                    'pipeline': subpipeline,
+                    'sobject': my.sobject,
+                    'process': first_name,
+                    'parent_pipeline': [my.pipeline],
+                    'parent_processes': [my.process],
+            }
+
+            event = "process|pending"
+            Trigger.call(my, event, input)
+
+
+
 
 
 
@@ -1621,7 +1751,12 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             parts = process.split(".")
             process = parts[-1]
 
+        if process.find("/") != -1:
+            parts = process.split("/")
+            process = parts[-1]
+
         process_obj = pipeline.get_process(process)
+
         node_type = process_obj.get_type()
 
         if node_type == "action":
@@ -1687,6 +1822,11 @@ class ProcessActionTrigger(BaseProcessTrigger):
         if process.find(".") != -1:
             parts = process.split(".")
             process = parts[-1]
+        if process.find("/") != -1:
+            parts = process.split("/")
+            process = parts[-1]
+
+
 
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
@@ -1743,7 +1883,6 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         if not pipeline:
             return
 
-        #print "complete: ", process, sobject.get_search_key()
 
         # This checks all the dependent completes to see if they are complete
         # before declaring that this node is complete
@@ -1753,6 +1892,9 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
         if process.find(".") != -1:
             parts = process.split(".")
+            process = parts[-1]
+        if process.find("/") != -1:
+            parts = process.split("/")
             process = parts[-1]
 
         

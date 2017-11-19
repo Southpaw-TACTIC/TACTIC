@@ -202,8 +202,10 @@ class HashPanelWdg(BaseRefreshWdg):
                 return None
 
 
-
-            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
+            # This is used to find a sub menu (?)
+            #view = link
+            view = "definition"
+            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", view, personal=personal)
 
             view = config.get_element_attribute(link, 'view')
             if view:
