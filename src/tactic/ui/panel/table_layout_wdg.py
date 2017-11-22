@@ -2441,6 +2441,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # if grouped by time
         if my.group_by_time.get(group_column):
+            label = Common.process_unicode_string(group_value)
             if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
                 title = 'Week  %s' %label
             elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
