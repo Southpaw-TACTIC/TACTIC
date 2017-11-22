@@ -208,11 +208,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
         canvas_title.add_style("left: 0px")
-        canvas_title.add_style("z-index: 50")
+        canvas_title.add_style("z-index: 150")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
+        canvas_title.add_class("hand")
         canvas_title.add_relay_behavior( {
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': 'spt_pipeline_link',
             'cbjs_action': '''
             spt.pipeline.clear_canvas();
@@ -874,7 +875,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             icon_div.add_style("text-align: center");
 
             icon_div.add_behavior( {
-            'type': 'click_up',
+            'type': 'click',
             'cbjs_action': '''
             var server = TacticServerStub.get();
 
@@ -914,14 +915,29 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var subpipeline_code = subpipeline.code;
 
             spt.pipeline.clear_canvas();
-            spt.pipeline.import_pipeline(subpipeline_code);
+            //spt.pipeline.import_pipeline(subpipeline_code);
+
 
             var top = spt.pipeline.top;
             var text = top.getElement(".spt_pipeline_editor_current2");
+
+            if (text) {
+                var root_html = text.innerHTML; 
+                bvr.breadcrumb = root_html;
+            }
+
+            event = 'pipeline_'+subpipeline_code+'|click';
+            spt.named_events.fire_event(event, bvr);
+
+            /*
             if (text) {
                 var html = "<span class='hand tactic_hover spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
-                text.innerHTML = text.innerHTML + " / " + html;
+                text.innerHTML = root_html + " / " + html;
             }
+            */
+
+
+
 
             evt.stopPropagation();
             '''

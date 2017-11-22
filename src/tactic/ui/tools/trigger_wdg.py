@@ -15,9 +15,12 @@ __all__ = ['TriggerToolWdg', 'TriggerDetailWdg',
 'PythonScriptTriggerEditWdg', 'PythonClassTriggerEditWdg',
 'StatusTriggerEditCbk', 'NotificationTriggerEditCbk',
 'PythonScriptTriggerEditCbk', 'PythonClassTriggerEditCbk',
+'TriggerParentStatusEditWdg', 'TriggerParentStatusEditCbk',
+
 'TriggerCreateWdg', 'TriggerCreateCbk',
 'TriggerCompleteWdg', 'TriggerCompleteCbk',
 'TriggerDateWdg', 'TriggerDateCbk',
+
 'EventTriggerEditWdg'
 ]
 
@@ -520,6 +523,8 @@ class TriggerDetailWdg(BaseRefreshWdg):
             # TODO: should use trigger_type in database
             if class_name == 'tactic.command.PipelineTaskStatusTrigger' and not script_path:
                 trigger_type = 'task_status'
+            elif class_name == 'tactic.command.PipelineParentStatusTrigger' and not script_path:
+                trigger_type = 'parent_status'
             elif class_name == 'tactic.command.PipelineTaskStatusTrigger' and script_path:
                 trigger_type = 'custom_script'
             elif class_name == 'tactic.command.PipelineTaskCreateTrigger':
@@ -737,12 +742,14 @@ class TriggerDetailWdg(BaseRefreshWdg):
         if my.mode == 'pipeline':
             trigger_labels = [
                 'Send a notification',
+                'Update parent status',
                 'Update another task status',
                 'Create another task',
                 'Set actual task date',
             ]
             trigger_values = [
                 'notification',
+                'parent_status',
                 'task_status',
                 'task_create',
                 'task_date',
@@ -874,6 +881,11 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_wdg = 'tactic.ui.tools.NotificationTriggerEditWdg';
             trigger_cbk = 'tactic.ui.tools.NotificationTriggerEditCbk';
         }
+        else if (trigger_type == "parent_status") {
+            trigger_wdg = 'tactic.ui.tools.TriggerParentStatusEditWdg';
+            trigger_cbk = 'tactic.ui.tools.TriggerParentStatusEditCbk';
+        }
+
         else if (trigger_type == "task_status") {
             trigger_wdg = 'tactic.ui.tools.StatusTriggerEditWdg';
             trigger_cbk = 'tactic.ui.tools.StatusTriggerEditCbk';
@@ -928,6 +940,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
         if trigger_type == "notification":
             trigger_wdg = NotificationTriggerEditWdg(**kwargs)
             trigger_cbk = "tactic.ui.tools.NotificationTriggerEditCbk"
+
+        elif trigger_type == "parent_status":
+            trigger_wdg = TriggerParentStatusEditWdg(**kwargs)
+            trigger_cbk = "tactic.ui.tools.TriggerParentStatusEditCbk"
 
         elif trigger_type == "task_status":
             trigger_wdg = StatusTriggerEditWdg(**kwargs)
@@ -1231,7 +1247,10 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
             if not my.data:
                 my.data = {}
             else:
-                my.data = jsonloads(my.data)
+                try:
+                    my.data = jsonloads(my.data)
+                except:
+                    my.data = {}
             if isinstance(my.data, dict):
                 my.data = [my.data]
         else:
@@ -1500,6 +1519,76 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
 
 
 
+
+class TriggerParentStatusEditWdg(BaseRefreshWdg):
+
+    def get_display(my):
+        div = DivWdg()
+
+        process = my.kwargs.get("process")
+
+        column_values = []
+        trigger = my.kwargs.get("trigger")
+        if trigger:
+            data = trigger.get_value("data")
+            data = jsonloads(data)
+        else:
+            data = {}
+
+
+        dst_status = data.get("dst_status") or ""
+
+        labels = ['Pending', 'In Progress', 'Complete', 'Approved']
+        values = labels
+
+        div.add("To Status:")
+        select = SelectWdg("dst_status")
+        div.add(select)
+        select.set_option("labels", labels)
+        select.set_option("values", values)
+        select.set_value(dst_status)
+        div.add("<br/>")
+
+
+        return div
+
+
+
+
+
+class TriggerParentStatusEditCbk(BaseTriggerEditCbk):
+
+    def get_class_name(my): 
+        class_name = 'tactic.command.PipelineParentStatusTrigger'
+        return class_name
+
+
+    def execute(my):
+
+        my.process = my.kwargs.get("process")
+        dst_status = my.kwargs.get("dst_status")
+
+        data = {
+            'dst_status': dst_status
+        }
+
+
+        trigger = my.get_trigger()
+
+        trigger.set_value("data", jsondumps(data))
+        trigger.commit()
+
+
+        search_key = SearchKey.get_by_sobject(trigger)
+        my.info['search_key'] = search_key
+
+
+
+
+
+
+
+
 class TriggerCreateWdg(BaseRefreshWdg):
 
     def get_display(my):
@@ -1545,6 +1634,8 @@ class TriggerCreateWdg(BaseRefreshWdg):
             output_div.add(output)
 
         return top
+
+
 
 
 class TriggerCompleteWdg(BaseRefreshWdg):
@@ -1598,6 +1689,12 @@ class TriggerCompleteWdg(BaseRefreshWdg):
 class TriggerCompleteCbk(BaseTriggerEditCbk):
     def execute(my):
         pass
+
+
+
+
+
+
        
 
 class TriggerDateWdg(BaseRefreshWdg):
@@ -1666,6 +1763,13 @@ class TriggerDateCbk(BaseTriggerEditCbk):
 
         search_key = SearchKey.get_by_sobject(trigger)
         my.info['search_key'] = search_key
+
+
+
+
+
+
+
 
 
 
@@ -2027,6 +2131,11 @@ class NotificationTriggerEditCbk(Command):
 
         search_key = SearchKey.get_by_sobject(notification)
         my.info['search_key'] = search_key
+
+
+
+
+
 
 class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
