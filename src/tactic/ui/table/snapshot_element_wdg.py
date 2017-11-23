@@ -100,9 +100,28 @@ class SnapshotFileElementWdg(BaseTableElementWdg):
                 file_range = sobject.get_file_range()
                 filename = "%s (%s)" % (filename, file_range.get_display() )
 
-            widget = HtmlElement.href(filename, ref=path, target="_blank")
+
+            widget = DivWdg()
+            widget.add_style("display: inline-block")
+            link = HtmlElement.href(filename, ref=path)
+            link.add_attr("download", filename)
+            # do this in javascript because the link doesn't
+            # work for some reason
+            widget.add_behavior( {
+                'type': 'click',
+                'filename': filename,
+                'href': path,
+                'cbjs_action': '''
+                var a = document.createElement('a');
+                a.href = bvr.href;
+                a.download = bvr.filename;
+                a.click();
+                '''
+            } )
+            widget.add(link)
         else:
             widget = ""
+
         return widget
 
 

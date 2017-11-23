@@ -116,7 +116,7 @@ spt.named_events._execute_listeners = function( event_name, firing_element, firi
         // -- commenting out this warning, as there will be many times we'll fire an event without having
         // -- listeners necessarily registered for it ... just return and don't do any processing
         //
-        // log.warning("WARNING: attempting to fire a named event ["+ event_name 
+        // spt.js_log.warning("WARNING: attempting to fire a named event ["+ event_name 
         //     + "], but event name has not been registered.");
         return
     }

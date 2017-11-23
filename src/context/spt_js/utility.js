@@ -1363,7 +1363,7 @@ spt.alert = function(msg, options){
     var env = spt.Environment.get();
     if (env) {
         if (env.get_kiosk_mode() == true) {
-            log.critical("In kiosk mode - alert suppressed: " + msg);
+            spt.js_log.critical("In kiosk mode - alert suppressed: " + msg);
             return;
         } 
     }
@@ -1622,7 +1622,7 @@ spt.exception.handler = function( ex )
                 ex_str = '502 Proxy Error. The request has exceeded the Timeout setting in the Web Server.'
         }
         else {
-            log.error( "ERROR: currently unable to handle exception of type '" + spt.get_typeof(ex) + "'" );
+            spt.js_log.error( "ERROR: currently unable to handle exception of type '" + spt.get_typeof(ex) + "'" );
             ex_str = "*** Unknown exception type ***";
         }
     }
@@ -1823,7 +1823,7 @@ spt.print_moo_dimensions = function( el )
     var position = el.getPosition();
     var coords = el.getCoordinates();
 
-    log.debug( " " );
+    spt.js_log.debug( " " );
 
     var title_str = "[" + tag + "] ";
     if( id ) {
@@ -1831,25 +1831,25 @@ spt.print_moo_dimensions = function( el )
     }
     title_str = title_str + "className='" + cls + "' ...";
 
-    log.debug( title_str );
+    spt.js_log.debug( title_str );
     var dashes = [];
     for( var c=0; c < title_str.length; c++ ) {
         dashes.push('-');
     }
-    log.debug( dashes.join('') );
+    spt.js_log.debug( dashes.join('') );
 
-    log.debug( "    size.x, size.y = " + size.x + ", " + size.y );
-    log.debug( "    scroll_size.x, scroll_size.y = " + scroll_size.x + ", " + scroll_size.y );
-    log.debug( "    scroll.x, scroll.y = " + scroll.x + ", " + scroll.y );
-    log.debug( "    position.x, position.y = " + position.x + ", " + position.y );
-    log.debug( "    coordinates:" );
-    log.debug( "        top = " + coords.top );
-    log.debug( "        left = " + coords.left );
-    log.debug( "        width = " + coords.width );
-    log.debug( "        height = " + coords.height );
-    log.debug( "        right = " + coords.right );
-    log.debug( "        bottom = " + coords.bottom );
-    log.debug( " " );
+    spt.js_log.debug( "    size.x, size.y = " + size.x + ", " + size.y );
+    spt.js_log.debug( "    scroll_size.x, scroll_size.y = " + scroll_size.x + ", " + scroll_size.y );
+    spt.js_log.debug( "    scroll.x, scroll.y = " + scroll.x + ", " + scroll.y );
+    spt.js_log.debug( "    position.x, position.y = " + position.x + ", " + position.y );
+    spt.js_log.debug( "    coordinates:" );
+    spt.js_log.debug( "        top = " + coords.top );
+    spt.js_log.debug( "        left = " + coords.left );
+    spt.js_log.debug( "        width = " + coords.width );
+    spt.js_log.debug( "        height = " + coords.height );
+    spt.js_log.debug( "        right = " + coords.right );
+    spt.js_log.debug( "        bottom = " + coords.bottom );
+    spt.js_log.debug( " " );
 }
 
 
@@ -2015,17 +2015,17 @@ spt.force_default_context_menu = false;
 
 spt.log_eval_error = function( js_error, js_str, calling_function_str, extra_error_msg )
 {
-    log.error( "___________________________________________________________________________________________" );
-    log.error( "Caught javascript ERROR: " + js_error );
-    log.error( "   [error occurred on call to 'eval()' in '" + calling_function_str + "()' function]" );
+    spt.js_log.error( "___________________________________________________________________________________________" );
+    spt.js_log.error( "Caught javascript ERROR: " + js_error );
+    spt.js_log.error( "   [error occurred on call to 'eval()' in '" + calling_function_str + "()' function]" );
     if( extra_error_msg ) {
-        log.error( "   [" + extra_error_msg + "]" );
+        spt.js_log.error( "   [" + extra_error_msg + "]" );
     }
-    log.error( "..........................................................................................." );
-    log.error( " " );
-    log.error( js_str );
-    log.error( " " );
-    log.error( "___________________________________________________________________________________________" );
+    spt.js_log.error( "..........................................................................................." );
+    spt.js_log.error( " " );
+    spt.js_log.error( js_str );
+    spt.js_log.error( " " );
+    spt.js_log.error( "___________________________________________________________________________________________" );
 }
 
 

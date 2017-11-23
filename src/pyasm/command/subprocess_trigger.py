@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['SubprocessTrigger', 'ScriptTrigger']
+__all__ = ['SubprocessTrigger', 'QueueTrigger', 'ScriptTrigger']
 
 import tacticenv
 
@@ -22,17 +22,37 @@ from pyasm.security import Site
 from tactic_client_lib import TacticServerStub
 from tactic_client_lib.interpreter import Handler
 
+from trigger import Trigger
+from command import Command
+
 
 
 class SubprocessTrigger(Handler):
     '''Utility class that calls a trigger by external process'''
     def __init__(my):
         my.mode = "same process,new transaction"
+        my.info = {}
         super(SubprocessTrigger,my).__init__()
 
     def set_data(my, data):
         my.data = data
         my.class_name = data.get("class_name")
+
+        # Since the trigger will run separate somewhere else, we do not
+        # know if the the workflow should stop of not.  The trigger
+        # can define a result in the data
+        kwargs = data.get("kwargs")
+        if kwargs and kwargs.get("result"):
+            my.info['result'] = kwargs.get("result")
+        else:
+            my.info['result'] = True
+
+
+
+
+    def get_info(my):
+        return my.info
+
 
     def get_class_name(my):
         return my.class_name
@@ -49,6 +69,8 @@ class SubprocessTrigger(Handler):
         if site and not data.get("site"):
             data['site'] = site
 
+
+
         # input data for the handler
         if my.mode == 'separate process,blocking':
             input_data_str = jsondumps(input_data)
@@ -62,6 +84,8 @@ class SubprocessTrigger(Handler):
 
             retcode = subprocess.call([py_exec, file, data_str, input_data_str])
 
+
+
         elif my.mode == 'separate process,non-blocking':
             input_data_str = jsondumps(input_data)
             data_str = jsondumps(data)
@@ -72,6 +96,25 @@ class SubprocessTrigger(Handler):
                 py_exec = "python"
 
             retcode = subprocess.Popen([py_exec, file, data_str, input_data_str])
+
+
+        elif my.mode == 'separate process,queued':
+
+            kwargs = data.get("kwargs")
+            priority = kwargs.get("priority") or 99999
+            description = kwargs.get("description") or "Trigger"
+            queue_type = kwargs.get("trigger") or "trigger"
+
+            class_name = "pyasm.command.QueueTrigger"
+            kwargs = {
+                'input_data': input_data,
+                'data': data,
+            }
+
+            from tactic.command import Queue
+            queue_item = Queue.add(class_name, kwargs, queue_type=queue_type, priority=priority, description=description)
+
+
         elif my.mode == 'same process,new transaction':
             # run it inline
             trigger = ScriptTrigger()
@@ -80,10 +123,26 @@ class SubprocessTrigger(Handler):
             trigger.execute()
 
 
+ 
+class QueueTrigger(Command):
+    '''Simple command which is executed from a queue'''
+    def execute(my):
+
+        input_data = my.kwargs.get("input_data")
+        data = my.kwargs.get("data")
+
+        trigger = ScriptTrigger()
+        trigger.set_input(input_data)
+        trigger.set_data(data)
+
+        trigger.execute()
+
 
 
 
 class ScriptTrigger(Handler):
+    '''Utility class that calls a trigger by external process'''
+    # NOTE: this is not really a trigger'''
 
     def set_data(my, data):
         my.data = data

@@ -329,7 +329,7 @@ spt.css.add_looks = function( looks_to_add, target_el )
     else if( in_type == 'string' ) {
         looks = looks_to_add.split(/\s+/);
     } else {
-        log.error( "ERROR: [spt.css.add_looks] '" + in_type + "' is not supported for looks_to_add argument." );
+        spt.js_log.error( "ERROR: [spt.css.add_looks] '" + in_type + "' is not supported for looks_to_add argument." );
         return [];
     }
 
@@ -398,9 +398,9 @@ spt.css._select_core = function( operation, el )
 {
     var select_bvr_list = spt.behavior.get_bvrs_by_type( "select", el );
     if( ! select_bvr_list || select_bvr_list == 0 ) {
-        log.error( "ERROR: [spt.css.select] No 'select' type behavior found on element ... aborting select. " +
+        spt.js_log.error( "ERROR: [spt.css.select] No 'select' type behavior found on element ... aborting select. " +
                     "Element is ..." );
-        log.error( el );
+        spt.js_log.error( el );
         return;
     }
 

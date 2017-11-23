@@ -104,7 +104,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             my.search_type = my.sobject.get_search_type()
 
             my.show_settings = my.kwargs.get("show_settings")
-            if not my.show_settings:
+            if my.show_settings in [False, 'false']:
                 my.show_settings = False
 
 
@@ -157,6 +157,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 line.add(" ")
 
 
+
             right = table.add_cell()
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
@@ -167,10 +168,16 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             if my.orig_sobject and my.orig_sobject.column_exists("process"):
                 hidden = HiddenWdg(name="process")
-                #hidden = TextWdg(name="process")
                 top.add(hidden)
                 hidden.add_class("spt_process")
                 process = my.orig_sobject.get_value("process")
+                hidden.set_value(process)
+
+            elif my.kwargs.get("process"):
+                process = my.kwargs.get("process")
+                hidden = HiddenWdg(name="process")
+                top.add(hidden)
+                hidden.add_class("spt_process")
                 hidden.set_value(process)
 
 
@@ -716,25 +723,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             var upload_button = top.getElement(".spt_upload_files_top");
 
             var onchange = function (evt) {
+
                 var files = spt.html5upload.get_files();
-                var delay = 0; 
-                for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
-                    var file_name = files[i].name;
-                    var is_normal = regex.test(file_name);
-                    if (size >= 10*1024*1024 || is_normal) {
-                        spt.drag.show_file(files[i], files_el, 0, false);
-                    }
-                    else {
-                        spt.drag.show_file(files[i], files_el, delay, true);
-
-                        if (size < 100*1024)       delay += 50;
-                        else if (size < 1024*1024) delay += 500;
-                        else if (size < 10*1024*1024) delay += 1000;
-                    }
-                }
-
-                upload_button.setStyle("display", "");
+                spt.ingest.select_files(top, files, bvr.normal_ext);
             }
 
             spt.html5upload.clear();
@@ -1563,7 +1554,45 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin: 30px auto")
 
         button.add_behavior( {
+            'type': 'load',
+            'cbjs_action': my.get_onload_js()
+        } )
+
+
+        button.add_behavior( {
             'type': 'click_up',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files = spt.html5upload.get_files();
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+        
+            // clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.ingest.select_files(top, files, bvr.normal_ext);
+            }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
+            '''
+        } )
+
+        button.add_behavior( {
+            'type': 'click_upX',
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 
@@ -1610,6 +1639,85 @@ class IngestUploadWdg(BaseRefreshWdg):
         } )
 
         return button
+
+
+
+    def get_onload_js(self):
+
+        return r'''
+
+spt.ingest = {};
+
+spt.ingest.select_files = function(top, files, normal_ext) {
+
+    var files_el = top.getElement(".spt_to_ingest_files");
+
+    var regex = new RegExp('(' + normal_ext.join('|') + ')$', 'i');
+
+    var delay = 0;
+    var skip = false;
+    for (var i = 0; i < files.length; i++) {
+        var size = files[i].size;
+        var file_name = files[i].name;
+        var is_normal = regex.test(file_name);
+        if (size >= 10*1024*1024 || is_normal) {
+            spt.drag.show_file(files[i], files_el, 0, false);
+        }
+        else {
+            spt.drag.show_file(files[i], files_el, delay, true);
+
+            if (size < 100*1024)       delay += 50;
+            else if (size < 1024*1024) delay += 500;
+            else if (size < 10*1024*1024) delay += 1000;
+        }
+
+    }
+
+    // get all of the current filenames
+    var filenames = []
+    var items = top.getElements(".spt_upload_file");
+    for (var i = 0; i < items.length; i++) {
+        var file = items[i].file;
+        filenames.push(file.name);
+    }
+
+
+    // check if this is a sequence or zip
+    var server = TacticServerStub.get();
+    var cmd = 'tactic.ui.tools.IngestCheckCmd';
+    var kwargs = {
+        file_names: filenames
+    };
+    var ret_val = server.execute_cmd(cmd, kwargs);
+    var info = ret_val.info;
+
+    var num_sequences = 0;
+    for (var i = 0; i < info.length; i++) {
+        if (info[i].is_sequence) {
+            num_sequences += 1;
+        }
+    }
+
+    var ok = function() {
+        var upload_button = top.getElement(".spt_upload_files_top");
+        upload_button.setStyle("display", "");
+    }
+
+    if (num_sequences > 0) {
+        spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
+            spt.named_events.fire_event("set_ingest_update_mode", {
+                options: {
+                    value: 'sequence'
+                }
+            } );
+        });
+    }
+
+    ok();
+}
+
+    '''
+
 
 
 
@@ -1743,7 +1851,7 @@ class IngestUploadCmd(Command):
         """
 
 
-        # remap the filenames for seuqences
+        # remap the filenames for sequences
         if update_mode == "sequence":
             sequences = FileRange.get_sequences(filenames)
             filenames = []

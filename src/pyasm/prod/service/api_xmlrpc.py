@@ -710,7 +710,6 @@ class BaseApiXMLRPC(XmlrpcServer):
                 search_key = search_key.replace("&amp;", "&")
 
 
-            #print "search_key: ", search_key
             sobject = SearchKey.get_by_search_key(search_key)
             if not sobject:
                 if no_exception:
@@ -5003,14 +5002,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def set_workflow_status(my, ticket, search_key, process, status, data={}):
-        '''Set the status of a process in a workflow.
+    def call_pipeline_event(my, ticket, search_key, process, event, data={}):
+        '''Call an even in a process in a pipeline
 
         @params
         ticket - authentication ticket
         search_key - the sobject that contains the trigger
         process - the process node of the workflow of the sobject
-        status - the status to be set
+        event - the event to be set
         data - dictionary data that needs to be sent to the process
         '''
 
@@ -5027,12 +5026,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 'data': data
             }
 
-            event = "process|%s" % status
+            event = "process|%s" % event
             Trigger.call(my, event, input)
 
 
     @xmlrpc_decorator
-    def get_workflow_status(my, ticket, search_key, process):
+    def get_pipeline_status(my, ticket, search_key, process):
         '''Get the status of a process in a workflow.
 
         @params
@@ -5611,6 +5610,34 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 'status': 'OK'
             }
         return info
+
+
+
+    #
+    # Queue Manager
+    #
+    @xmlrpc_decorator
+    def add_queue_item(my, ticket, class_name, args={}, queue=None, priority=9999, description=None, message_code=None):
+        '''API Function: Add an item to the job queue
+
+        @param
+        class_name - Fully qualified command class derived from pyasm.command.Command
+        args - Keyword arguments to pass to the command
+        priority - NOT USED ... priority of the job
+        queue - Named queue which categorizes a job.  Some queue managers only look
+                at one type of queue
+        description - a description of the job
+        message_code - message log code where messages from the job can be added.
+
+        @return
+        queue_item
+
+        '''
+        from tactic.command import Queue
+        queue_item = Queue.add(class_name, args, queue, priority, description, message_code)
+        sobject_dict = my._get_sobject_dict(queue_item)
+        return sobject_dict
+
 
 
 

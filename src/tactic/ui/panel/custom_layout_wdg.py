@@ -1280,28 +1280,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         load = attrs.get("load")
-        if load in ["async", "sequence"]:
+
+        if load in ["none"]:
+            return None
+
+        elif load in ["async", "sequence"]:
             return my.get_async_element_wdg(xml, element_name, load)
-
-
-
-        """
-        use_container = attrs.get('use_container') == 'true'
-        if use_container:
-            # DEPRECATED
-            container = my.get_container(xml)
-        else:
-            container = DivWdg()
-
-        # add in attribute from the element definition
-        # DEPRECATED: does this make any sense to have this here?
-        for name, value in attrs.items():
-            if name == 'name':
-                continue
-            container.add_style(name, value)
-        """
-
-
 
 
 

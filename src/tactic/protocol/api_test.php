@@ -39,7 +39,7 @@ echo "\n";
 
 $data = [
     'method' => 'get_by_code',
-    'search_type' => 'workflow/order',
+    'search_type' => 'workflow/job',
     'code' => 'JOB00220',
 ];
 $result = executeREST($data);

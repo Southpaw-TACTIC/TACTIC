@@ -516,7 +516,7 @@ class WidgetConfig(Base):
 
 class WidgetConfigView(Base):
     '''Abstracts all the sources of configurations for a particular view'''
-    def __init__(my, search_type, view, configs, state=None):
+    def __init__(my, search_type, view, configs, state=None, layout=None):
         my.search_type = search_type
         my.view = view
         my.configs = configs
@@ -525,6 +525,9 @@ class WidgetConfigView(Base):
 
         my.state = state
         my.hash_id = Common.generate_random_key()
+
+        my.layout = layout
+
 
     def get_view(my):
         return my.view
@@ -708,9 +711,9 @@ class WidgetConfigView(Base):
 
         # if this view is a definition view, then the element names are those
         # of the definition
-        if my.view in ["definition", 'default_definition']:
+        if my.view in ["definition", 'default_definition', 'edit_definition']:
             for config in my.configs:
-                if config.get_view() in ['definition', 'default_definition']:
+                if config.get_view() in ['definition', 'default_definition', 'edit_definition']:
                     element_names = config.get_element_names(type, attrs)
                     if element_names:
                         return element_names
@@ -721,7 +724,7 @@ class WidgetConfigView(Base):
         for config in my.configs:
 
             # to get the element names, skip all of the definition configs
-            if not include_definition and config.get_view() in ["definition", 'default_definition']:
+            if not include_definition and config.get_view() in ["definition", 'default_definition', 'edit_definition']:
                 continue
 
             #element_names = WidgetConfig.get_element_names(config, type, attrs)
@@ -758,8 +761,11 @@ class WidgetConfigView(Base):
 
 
     def get_layout_handler(my):
-        attributes = my.get_view_attributes()
-        layout = attributes.get('layout')
+        layout = my.layout
+        if not layout:
+            attributes = my.get_view_attributes()
+            layout = attributes.get('layout')
+
         if not layout:
             # handle some hard coded defaults
             if my.view in ["edit", "insert", "preview"]:
@@ -1350,7 +1356,7 @@ class WidgetConfigView(Base):
 
 
     
-    def get_by_search_type(search_type, view, use_cache=True, local_search=False):
+    def get_by_search_type(search_type, view, use_cache=True, local_search=False,layout=None):
         '''gets all the widget configs that have the view asked for
         @keyparam: 
         use_cache - enable caching
@@ -1378,6 +1384,7 @@ class WidgetConfigView(Base):
                 config_cache = {}
                 Container.put("WidgetConfigView:config_cache", config_cache)
             widget_config_view = config_cache.get("%s:%s" % (search_type, view) ) 
+
             if widget_config_view:
                 return widget_config_view
 
@@ -1401,12 +1408,6 @@ class WidgetConfigView(Base):
         filename = "%s-conf.xml" % search_key
         default_filename = "DEFAULT-conf.xml"
 
-
-
-        #
-        # DEPRECATED: this should be deprectated, but it is still heavily
-        # used
-        #
 
 
         # temp addition starts
@@ -1443,7 +1444,11 @@ class WidgetConfigView(Base):
             % (base_dir, sub_dir, filename)
 
 
-        default_definition = "definition"
+        if layout in ['EditWdg', 'tactic.ui.panel.EditWdg']:
+            default_definition = "edit_definition"
+        else:
+            default_definition = "definition"
+
         # this determines at what point we need to append the default defnition config and ALL config
         # it auto switches between defintion or edit_definition, there is no need to hardcode edit_definition
 
@@ -1470,11 +1475,11 @@ class WidgetConfigView(Base):
                     configs.append(config)
 
                     # look at config xml for layout definition
-                    attributes = config.get_view_attributes()
-                    layout = attributes.get("layout")
+                    if not layout:
+                        attributes = config.get_view_attributes()
+                        layout = attributes.get("layout")
                     if layout in ["EditWdg",'tactic.ui.panel.EditWdg'] or view in ['edit','insert','edit_item']:
                         default_definition = 'edit_definition'
-
 
             
                     # only add a definition if the db config actualy exists
@@ -1518,8 +1523,9 @@ class WidgetConfigView(Base):
                     configs.append(config)
 
             # look at config xml for layout definition
-            attributes = config.get_view_attributes()
-            layout = attributes.get("layout")
+            if not layout:
+                attributes = config.get_view_attributes()
+                layout = attributes.get("layout")
             if layout in ["EditWdg",'tactic.ui.panel.EditWdg'] or view in ['edit','insert', 'edit_item']:
                 default_definition = 'edit_definition'
 
@@ -1554,6 +1560,7 @@ class WidgetConfigView(Base):
         # create a definition based on custom widgets
         # NOTE: this is likely too limiting and it messes up the default table
         # This should be added to the default definition
+        """
         if view in ['tablex']:
 
             search = Search("config/widget_config")
@@ -1568,13 +1575,13 @@ class WidgetConfigView(Base):
 
                 for db_config in db_configs:
                     config_view = db_config.get_value("view")
-                    config.append( """
+                    config.append('''
                     <element name="%s">
                       <display class="tactic.ui.table.CustomLayoutElementWdg">
                         <view>%s</view>
                       </display>
                     </element>
-                    """ % (config_view, config_view) )
+                    ''' % (config_view, config_view) )
                 config.append("</%s>" % view)
                 config.append("</config>")
 
@@ -1584,6 +1591,7 @@ class WidgetConfigView(Base):
                 xml.read_string(config)
                 config = WidgetConfig.get(view, xml=xml)
                 configs.append(config)
+            """
 
 
 
@@ -1637,12 +1645,15 @@ class WidgetConfigView(Base):
             if config.has_view():
                 configs.append(config)
 
-            config = WidgetConfig.get("default_definition", default_prod_conf_path)
+            if layout == "EditWdg":
+                config = WidgetConfig.get("default_edit_definition", default_prod_conf_path)
+            else:
+                config = WidgetConfig.get("default_definition", default_prod_conf_path)
             if config.has_view():
                 configs.append(config)
 
 
-        widget_config_view = WidgetConfigView(search_type,view,configs)
+        widget_config_view = WidgetConfigView(search_type,view,configs,layout=layout)
 
 
         # add search_type to all of the configs

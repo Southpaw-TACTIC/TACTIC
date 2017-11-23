@@ -46,7 +46,7 @@ class BaseInputWdg(HtmlElement):
     get_args_keys = classmethod(get_args_keys)
 
 
-    #def __init__(my,name=None, type=None, label=None):
+    #def __init__(my, name=None, type=None, label=None):
     def __init__(my, name=None, type=None, label=None, **kwargs):
         super(BaseInputWdg,my).__init__(type)
 
@@ -144,11 +144,11 @@ class BaseInputWdg(HtmlElement):
             return my.title
 
         name = my.get_name()
-        title = string.replace(my.name, "_", " ")
-        title = title.capitalize()
-        span = SpanWdg(title)
+        if not name:
+            return ""
 
-       
+        title = Common.get_display_title(name)
+        span = SpanWdg(title)
         return span
 
 
@@ -551,22 +551,8 @@ class BaseInputWdg(HtmlElement):
 class BaseTextWdg(BaseInputWdg):
     def handle_mode(my):
         return
-        '''
-        # DISABLED for now
-        mode = my.options.get("mode")
-        if mode == "string":
-            behavior = {
-                'type': 'keyboard',
-                'kbd_handler_name': 'DgTableMultiLineTextEdit'
-            }
-            my.add_behavior(behavior)
-        elif mode in ["float", "integer"]:
-            behavior = {
-                'type': 'keyboard',
-                'kbd_handler_name': 'FloatTextEdit' 
-            }
-            my.add_behavior(behavior)
-        '''
+
+
 
 class TextWdg(BaseTextWdg):
 
@@ -1538,6 +1524,14 @@ class SelectWdg(BaseInputWdg):
                 behavior['cbjs_action'] = my.change_cbjs_action
             my.add_behavior(behavior)
 
+
+        onchange = my.get_option("onchange")
+        if onchange:
+            my.add_behavior( {
+                'type': 'change',
+                'cbjs_action': onchange
+            } )
+ 
 
 
 

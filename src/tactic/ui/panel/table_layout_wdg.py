@@ -339,6 +339,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.group_values = {}
         my.group_ids = {}
         my.group_rows = []
+        my.group_widgets = []
         my.level_name = ''
         my.level_spacing = 20
 
@@ -862,8 +863,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             h_scroll.add(scroll)
-            #scroll.add_style("overflow-y: hidden")
-            #scroll.add_style("overflow-x: none")
 
 
             padding = DivWdg()
@@ -883,6 +882,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             my.header_table.add_class("spt_table_with_headers")
+            my.header_table.set_id("spt_table_with_headers")
             my.header_table.set_unique_id()
             my.handle_headers(my.header_table)
             if table_width:
@@ -895,12 +895,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_style("height: %s" % height)
 
             scroll.add_class("spt_table_scroll")
+            scroll.add_attr( "onScroll", '''$(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
+            # Scroll event not implemented in behaviors yet
+            """
+            scroll.add_behavior( {
+                'type': 'scroll',
+                'cbjs_action': '''
+                console.log(bvr.src_el.scrollLeft);
+                '''
+            } )
+            """
 
-            # Always adding a scroll bar, but using margin-right to hide it
-            #scroll.add_style("margin-right: -%spx" % my.SCROLLBAR_WIDTH)
-            #scroll.add_style("overflow-y: scroll")
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")  
+
+            # new
+            scroll.add_style("overflow-x: auto")  
+
+
             if not height and my.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -919,8 +931,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 table.add_style("font-size: %s" % font_size)
                 my.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
-            if table_width:
-                table.add_style("width: %s" % table_width)
+            #if table_width:
+            #    table.add_style("width: %s" % table_width)
 
             table.add_color("color", "color")
 
@@ -1033,7 +1045,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         chunk_size = 20
-        
 
         for row, sobject in enumerate(my.sobjects):
 
@@ -2134,6 +2145,25 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 #td.add_style("overflow: hidden")
                 td.add_attr("colspan", "2")
 
+                # this is set in handle_group
+                group_value = td.group_value
+                group_div = td.group_div
+                if group_div:
+                    if group_value == '__NONE__':
+                        label = '---'
+                    else:
+                        group_label_expr = my.kwargs.get("group_label_expr")
+                        if group_label_expr:
+                            label = Search.eval(group_label_expr, sobjects, single=True)
+                        else:
+                            label = Common.process_unicode_string(group_value)
+
+                    title = label
+
+                    group_div.add(title)
+
+
+
 
             group_widgets = []
             has_widgets = False
@@ -2387,8 +2417,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if group_value != last_value:
             tr.group_level = i
-           
-        
+
+
+
+
+        title = ""
+
+
+        # calculate the group content        
+        """
         if group_value == '__NONE__':
             label = '---'
         else:
@@ -2399,7 +2436,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 label = Common.process_unicode_string(group_value)
 
         title = label
+        """
+
+
+        # if grouped by time
         if my.group_by_time.get(group_column):
+            label = Common.process_unicode_string(group_value)
             if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
                 title = 'Week  %s' %label
             elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
@@ -2409,12 +2451,31 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     timestamp = datetime(int(labels[0]),int(labels[1]),1)
                     title = timestamp.strftime("%Y %b")
 
+
+        title_div = DivWdg()
+        title_div.add(title)
+        title_div.add_style("display: inline-block")
+
+
+        # add the group value to this td ... only store widget if it wasn't
+        # handled by the time grouping
+        td.group_value = group_value
+        if not title:
+            td.group_div = title_div
+        else:
+            td.group_div = None
+
+
+        my.group_widgets.append(title_div)
+
+
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        swap = SwapDisplayWdg(title=title, icon='BS_FOLDER_OPEN',is_on=my.is_on)
+        swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=my.is_on)
         swap.set_behavior_top(my.table)
         td.add(swap)
-        swap.add_style("width: 800px")
         swap.add_style("font-weight: bold")
+
+
 
         td.add_style("height: 25px")
         td.add_style("padding-left: %spx" % (i*15))
@@ -4506,7 +4567,8 @@ spt.table.open_link = function(bvr) {
     if (view) {
         var cls = "tactic.ui.panel.CustomLayoutWdg";
         var kwargs = {
-            view: view
+            view: view,
+            search_key: search_key
         }
     }
     else if (search_key) {

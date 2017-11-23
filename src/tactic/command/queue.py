@@ -39,7 +39,10 @@ class Queue:
         if server_code:
             search.add_filter("server_code", server_code)
         search.add_filter("state", "pending")
+
+        search.add_order_by("priority")
         search.add_order_by("timestamp")
+
 
         chunk = 10
         search.add_limit(chunk)
@@ -77,7 +80,11 @@ class Queue:
         queue = SearchType.create("sthpw/queue")
         queue.set_value("project_code", Project.get_project_code())
         #queue.set_sobject_value(sobject)
+
+        if not queue_type:
+            queue_type = "default"
         queue.set_value("queue", queue_type)
+
         queue.set_value("state", "pending")
 
         queue.set_value("login", Environment.get_user_name())
@@ -90,9 +97,12 @@ class Queue:
             queue.set_value("message_code", message_code)
 
 
-
+        if not priority:
+            priority = 9999
         queue.set_value("priority", priority)
-        queue.set_value("description", description)
+
+        if description:
+            queue.set_value("description", description)
 
         queue.set_user()
         queue.commit()
@@ -376,13 +386,13 @@ class JobTask(SchedulerTask):
                     import time
                     time.sleep(retry_interval)
                     attempts += 1
-                    print("Retrying [%s]...." % attempts)
 
                     if attempts >= max_attempts:
                         print("ERROR: reached max attempts")
                         my.job.set_value("state", "error")
                         break
 
+                    print("Retrying [%s]...." % attempts)
 
             my.job.commit()
             my.jobs.remove(my.job)

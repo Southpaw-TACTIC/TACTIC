@@ -398,13 +398,16 @@ class TacticSchedulerThread(threading.Thread):
         # get the all of the timed triggers
         #search = Search("sthpw/timed_trigger")
         #search.add_filter("type", "timed")
+        timed_trigger_sobjs = []
         for project in projects:
 
             project_code = project.get_code()
             try:
                 search = Search("config/trigger?project=%s" % project_code)
                 search.add_filter("event", "schedule")
-                timed_trigger_sobjs = search.get_sobjects()
+                items = search.get_sobjects()
+                if items:
+                    timed_trigger_sobjs.extend(items)
             except Exception, e:
                 #print "WARNING: ", e
                 continue
@@ -502,11 +505,19 @@ class TacticSchedulerThread(threading.Thread):
             trigger_type = data.get("type")
 
             if trigger_type == 'interval':
-                #scheduler.add_interval_task(task, interval=interval, mode='threaded', delay=0)
+
+                interval = data.get("interval")
+                delay = data.get("delay")
+
+                if not interval:
+                    continue
+
+                if not delay:
+                    delay = 3
 
                 args = {
-                    'interval': int( data.get("interval") ),
-                    'delay': int( data.get("delay") ),
+                    'interval': interval,
+                    'delay': delay,
                 }
 
                 scheduler.add_interval_task(task, **args)
@@ -766,7 +777,7 @@ class TacticMonitor(object):
         # create a separate thread for scheduler processes
 
         start_scheduler = Config.get_value("services", "scheduler")
-        if start_scheduler == 'true':
+        if start_scheduler == 'true' or True:
             tactic_scheduler_thread = TacticSchedulerThread()
             tactic_scheduler_thread.set_dev(my.dev_mode)
             tactic_scheduler_thread.start()

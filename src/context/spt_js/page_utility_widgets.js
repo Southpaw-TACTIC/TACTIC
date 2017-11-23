@@ -187,8 +187,6 @@ spt.puw.get_parent_thru_stub = function( el, mt_search_str )
     }
 
     if( ! puw_el ) {
-        //log.warning("Unable to find PUW for stub through the following element ...");
-        //log.warning( el );
         return null;
     }
 

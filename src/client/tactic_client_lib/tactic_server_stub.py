@@ -3119,6 +3119,8 @@ class TacticServerStub(object):
         return my.server.get_pipeline_processes_info(my.ticket, search_key,
                                                      recurse, related_process)
 
+
+
     def execute_pipeline(my, pipeline_xml, package):
         '''API Function:  execute_pipeline(pipeline_xml, package)
 
@@ -3148,7 +3150,7 @@ class TacticServerStub(object):
     # trigger methods
     #
     def call_trigger(my, search_key, event, input={}, process=None):
-        '''Calls a trigger with input package
+        '''API FUNCTION: Calls a trigger with input package
         
         @params
         ticket - authentication ticket
@@ -3159,26 +3161,26 @@ class TacticServerStub(object):
 
 
 
-    def set_workflow_status(my, search_key, process, status, data={}):
-        '''Set the status of a process in a workflow.
+    def call_pipeline_event(my, search_key, process, event, data={}):
+        '''API FUNCTION: Call an event in a process in a pipeline.
 
         @params
         search_key - the sobject that contains the trigger
-        process - the process node of the workflow of the sobject
-        status - the status to be set
+        process - the process node of the pipeline of the sobject
+        event - the event to be set
         data - dictionary data that needs to be sent to the process
         '''
-        return my.server.set_workflow_status(my.ticket, search_key, process, status, data)
+        return my.server.set_pipeline(my.ticket, search_key, process, event, data)
 
 
-    def get_workflow_status(my, search_key, process):
-        '''Set the status of a process in a workflow.
+    def get_pipeline_status(my, search_key, process):
+        '''API FUNCTION: Set the status of a process in a pipeline.
 
         @params
         search_key - the sobject that contains the trigger
-        process - the process node of the workflow of the sobject
+        process - the process node of the pipeline of the sobject
         '''
-        return my.server.get_workflow_status(my.ticket, search_key, process)
+        return my.server.get_pipeline_status(my.ticket, search_key, process)
 
 
 
@@ -3768,6 +3770,28 @@ class TacticServerStub(object):
 
         '''
         return my.server.check_access(my.ticket, access_group, key, access, value, is_match, default)
+
+
+
+    #
+    # Queue Manager
+    #
+    def add_queue_item(my, class_name, args={}, queue=None, priority=9999, description=None, message_code=None):
+        '''API Function: Add an item to the job queue
+
+        @param
+        class_name - Fully qualified command class derived from pyasm.command.Command
+        args - Keyword arguments to pass to the command
+        priority - NOT USED ... priority of the job
+        queue - Named queue which categorizes a job.  Some queue managers only look
+                at one type of queue
+        message_code - message log code where messages from the job can be added.
+
+        @return
+        queue_item
+
+        '''
+        return my.server.add_queue_item(my.ticket, class_name, args, queue, priority, description, message_code)
 
 
 

@@ -635,6 +635,12 @@ class DatabaseImpl(DatabaseImplInterface):
 class BaseSQLDatabaseImpl(DatabaseImpl):
     
     def is_column_sortable(my, db_resource, table, column):
+
+        # support -> operator
+        if column.find("->"):
+            parts = column.split("->")
+            column = parts[0]
+
         from sql import DbContainer
         sql = DbContainer.get(db_resource)
         columns = sql.get_columns(table)
@@ -1751,6 +1757,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
             
+        print "\"%s\" %s '%s'" %(column, op, regex)
         return "\"%s\" %s '%s'" %(column, op, regex)
 
 
@@ -2412,13 +2419,20 @@ class OracleImpl(PostgresImpl):
         info = OracleImpl.info.get(database)
 
         if not info:
+
+            from pyasm.search import DbResource, DbContainer
+            if isinstance(database, basestring):
+                database_name = database
+            else:
+                database_name = database.get_database()
+
             from sql import Select, DbContainer
             sql = DbContainer.get(database)
             select = Select()
             select.set_database(sql)
             select.add_table("ALL_TABLES")
             select.add_column("TABLE_NAME")
-            select.add_where('''"OWNER" in ('%s','%s')''' % (database, database.upper()))
+            select.add_where('''"OWNER" in ('%s','%s')''' % (database_name, database_name.upper()))
 
             statement =  select.get_statement()
             results = sql.do_query(statement)

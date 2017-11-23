@@ -435,12 +435,12 @@ class Pipeline(SObject):
             """
 
 
-    def update_process_table(my, search_type=None):
+    def update_process_table(self, search_type=None):
         ''' make sure to update process table'''
 
-        template = my.get_template_pipeline()
+        template = self.get_template_pipeline()
         if template:
-            if template.get_code() == my.get_code():
+            if template.get_code() == self.get_code():
                 template_processes = []
             else:
                 template_processes = template.get_process_names()
@@ -448,8 +448,8 @@ class Pipeline(SObject):
             template_processes = []
 
 
-        process_names = my.get_process_names()
-        pipeline_code = my.get_code()
+        process_names = self.get_process_names()
+        pipeline_code = self.get_code()
 
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
@@ -481,7 +481,7 @@ class Pipeline(SObject):
             # copy information over from the template
             if process_name in template_processes:
                 template_attrs = template.get_process_attrs(process_name)
-                process = my.get_process(process_name)
+                process = self.get_process(process_name)
                 for name, value in template_attrs.items():
                     if name in ['xpos', 'ypos', 'name']:
                         continue
@@ -505,7 +505,7 @@ class Pipeline(SObject):
 
 
             
-            attrs = my.get_process_attrs(process_name)
+            attrs = self.get_process_attrs(process_name)
             color = attrs.get('color')
             if color:
                 process_sobj.set_value("color", color)
@@ -516,26 +516,39 @@ class Pipeline(SObject):
 
 
         if pipeline_has_updates:
-            my.set_value("pipeline", my.get_pipeline_xml().to_string())
-            my.commit()
-
+            self.set_value("pipeline", self.get_pipeline_xml().to_string())
+            self.commit()
 
         # delete obsolete
         obsolete = set(existing_names) - set(process_names)
         if obsolete:
             for obsolete_name in obsolete:
                 for process_sobj in process_sobjs:
+                    if process_sobj.get_value("process") != obsolete_name:
+                        continue
+                    # FIXME: this node type is always None
+                    process_obj = self.get_process(obsolete_name)
+                    if process_obj:
+                        node_type = process_obj.get_type()
+                        try:
+                            from pyasm.command import CustomProcessConfig
+                            handler = CustomProcessConfig.get_delete_handler(node_type, {})
+                        except Exception, e:
+                            handler = None
+
+                        if handler:
+                            handler.execute()
+
                     # delete it
-                    if process_sobj.get_value("process") == obsolete_name:
-                        process_sobj.delete()
-                        break
+                    process_sobj.delete()
 
 
 
-    def get_name(my, long=False):
+
+    def get_name(self, long=False):
         '''this is the old function, kept for backward-compatibility'''
         #TODO: remove this function here
-        return my.get_code()
+        return self.get_code()
 
 
     def set_pipeline(my, pipeline_xml, cache=True):

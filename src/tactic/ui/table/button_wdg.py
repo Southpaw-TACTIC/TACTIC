@@ -28,7 +28,7 @@ class ButtonElementWdg(BaseTableElementWdg):
     ARGS_KEYS = {
 
     'script_path': {
-        'description': '''Points to the python script path that is executed when the button is clicked''',
+        'description': '''Points to the script path that is executed when the button is clicked''',
         'type': 'TextWdg',
         'category': 'Options',
         'order': 0

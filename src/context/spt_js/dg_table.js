@@ -998,7 +998,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
     var table_top = el.getParent(".spt_table_top");
 
     if( ! table_top ) {
-        log.warning('Table top not found! Cannot toggle display of commit button');
+        spt.js_log.warning('Table top not found! Cannot toggle display of commit button');
         return;
     }
 
@@ -4930,7 +4930,7 @@ spt.dg_table.drow_smenu_setup_cbk = function( menu_el, activator_el )
     if (tbody) {
         display_label = tbody.get("spt_display_value");
         if( ! display_label ) {
-            log.warning( "WARNING: [spt.dg_table.drow_smenu_setup_cbk] could not find 'spt_display_value' for item to " +
+            spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_setup_cbk] could not find 'spt_display_value' for item to " +
                             "delete ... using 'search_key' as display_label." );
             display_label = tbody.get("spt_search_key");
         }
@@ -5113,7 +5113,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
  
     var display_label = tbody.get("spt_display_value");
     if( ! display_label ) {
-        log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
+        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
                         "delete ... using 'search_key' as display_label." );
         display_label = search_key;
     }
@@ -5170,7 +5170,7 @@ spt.dg_table.drow_smenu_item_audit_log_cbk = function(evt, bvr)
 
     var display_label = row.get("spt_display_value");
     if( ! display_label ) {
-        log.warning( "WARNING: [spt.dg_table.drow_smenu_item_audit_log_cbk] could not find 'spt_display_value' for " +
+        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_item_audit_log_cbk] could not find 'spt_display_value' for " +
                         "item to delete ... using 'search_key' as display_label." );
         display_label = search_key;
     }
@@ -5254,7 +5254,7 @@ spt.dg_table._toggle_commit_btn = function(el, hide)
         if (panel) break;
     }
     if (!panel) {
-        log.warning('panel not found! Cannot display commit button');
+        spt.js_log.warning('panel not found! Cannot display commit button');
         return;
     } 
     var table = panel.getElement('.spt_table_content');

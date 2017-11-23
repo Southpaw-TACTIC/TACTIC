@@ -373,19 +373,38 @@ class BaseAppServer(Base):
             if override_default:
                 project = override_default
         if is_upload:
-           access = True
+            print "IS UPLOAD"
+            access = True
+
         elif project != 'default':
-            security_version = get_security_version()
-            if security_version == 1:
-                default = "view"
-                access = security.check_access("project", project, "view", default="view")
+
+            # make sure the security check is done on the appropriate site
+            path_info = site_obj.get_request_path_info()
+            if path_info:
+                site = path_info.get("site")
+                Site.set_site(site)
+                s = Environment.get_security()
+                has_site = True
             else:
-                default = "deny"
-                key = { "code": project }
-                key2 = { "code": "*" }
-                #keys = [key]
-                keys = [key, key2]
-                access = security.check_access("project", keys, "allow", default=default)
+                s = security
+                has_site = False
+
+            try:
+                security_version = get_security_version()
+                if security_version == 1:
+                    default = "view"
+                    access = s.check_access("project", project, "view", default="view")
+                else:
+                    default = "deny"
+                    key = { "code": project }
+                    key2 = { "code": "*" }
+                    keys = [key, key2]
+                    access = s.check_access("project", keys, "allow", default=default)
+            finally:
+                if has_site:
+                    Site.pop_site()
+
+
         else:
             # you always have access to the default project
             access = True
@@ -414,23 +433,14 @@ class BaseAppServer(Base):
                 return
 
 
-        if login_name == 'guest' and guest_mode == "full":
-            # some extra security for guest users
-            guest_url_allow = Config.get_value("security", "guest_url_allow")
-            if guest_url_allow:
-                items = guest_url_allow.split("|")
-                allowed = False
-                if my.hash:
-                    url = my.hash[0]
-                else:
-                    url = "index"
-                for item in items:
-                    item = item.strip("/")
-                    if item == url:
-                        allowed = True
-                        break
-                if not allowed:
-                    return my.handle_not_logged_in()
+
+        if login_name == 'guest':
+            # let the site handle the guest completely
+            guest_wdg = site_obj.get_guest_wdg(my.hash)
+            if guest_wdg:
+                web_app = WebApp()
+                web_app.get_display(guest_wdg)
+                return
 
 
 
@@ -444,24 +454,49 @@ class BaseAppServer(Base):
             from tactic.ui.panel import HashPanelWdg
             web = WebContainer.get_web()
 
+
+
             widget = Widget()
             top = TitleTopWdg()
             widget.add(top)
             body = top.get_body()
-            #body.add_gradient("background", "background", 5, -20)
             body.add_color("background", "background")
             body.add_color("color", "color")
 
-            # get the project from the url because we are still 
-            # in the admin project at this stage
-            current_project = web.get_context_name()
-            
+
+            has_site = False
+
+            # use the path to set the project and/or site
+            path_info = site_obj.get_request_path_info()
+            if path_info:
+                path_site = path_info.get("site")
+
+                try:
+                    Site.set_site(path_site)
+                    has_site = True
+                except Exception, e:
+                    print "WARNING: ", e
+                    current_project = web.get_context_name()
+                else:
+                    current_project = path_info.get("project_code")
+                    if not current_project:
+                        current_project = web.get_context_name()
+
+            else:
+                # get the project from the url because we are still 
+                # in the admin project at this stage
+                current_project = web.get_context_name()
+
+
+
             sudo = Sudo()
             try:
                 if current_project != "default":
-                    project = Project.get_by_code(current_project)
-                    assert project
+                    project = Project.get_by_code(current_project, use_cache=False)
+                    if not project:
+                        raise Exception("Project [%s] does not exist" % current_project)
             except Exception, e:
+                print "WARNING: ", e
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
@@ -504,6 +539,11 @@ class BaseAppServer(Base):
             finally:
                 sudo.exit()
 
+                if has_site:
+                    Site.pop_site()
+
+
+
             if not web_wdg:
                 msg = "No default page defined for guest user. Please set up /guest in Custom URL."
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
@@ -514,6 +554,30 @@ class BaseAppServer(Base):
             web_app = WebApp()
             web_app.get_display(widget)
             return
+
+
+
+        # Full access
+
+
+        # if a guest has full access, then handle it here
+        if login_name == 'guest' and guest_mode == "full":
+            # some extra security for guest users
+            guest_url_allow = Config.get_value("security", "guest_url_allow")
+            if guest_url_allow:
+                items = guest_url_allow.split("|")
+                allowed = False
+                if my.hash:
+                    url = my.hash[0]
+                else:
+                    url = "index"
+                for item in items:
+                    item = item.strip("/")
+                    if item == url:
+                        allowed = True
+                        break
+                if not allowed:
+                    return my.handle_not_logged_in()
 
 
 
@@ -581,6 +645,13 @@ class BaseAppServer(Base):
         Translation.install()
 
 
+
+        path_info = site_obj.get_request_path_info()
+        if path_info and path_info.get("site") != "default":
+            Site.set_site(path_info.get("site"))
+            project_code = path_info.get("project_code")
+
+
         # handle the case where the project does not exist
         project = Project.get(no_exception=True)
         if not project:
@@ -595,8 +666,12 @@ class BaseAppServer(Base):
             return widget
 
 
+
+        # get the content of the page
         try:
+
             widget = my.get_content(page_type)
+
         except Exception, e:
             print "ERROR: ", e
             from pyasm.widget import BottomWdg, Error403Wdg

@@ -69,6 +69,12 @@ class FirstRunInit(object):
                 shutil.copytree(install_data_path, data_dir)
 
 
+            # create the dist folder
+            to_dir = "%s/dist" % (data_dir)
+            if not os.path.exists(to_dir):
+                os.makedirs(to_dir)
+
+
             # copy the appropriate config file
             if os.name == 'nt':
                 filename = 'standalone_win32-conf.xml'

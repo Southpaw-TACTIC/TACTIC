@@ -9,8 +9,7 @@
 #
 #
 #
-
-__all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'SnapshotDetailWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
+__all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'SnapshotDetailWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg','SObjectRelatedNotesWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -2420,13 +2419,91 @@ class TaskDetailPanelWdg(BaseRefreshWdg):
         )
         top.add(element)
 
-
-
-
         return top
 
 
+class SObjectRelatedNotesWdg(BaseRefreshWdg):
+
+    def get_display(my):
+        search_key = my.kwargs.get("search_key")
+
+        from pyasm.search import Search
+        my.sobject = Search.get_by_search_key(search_key)
+        my.show_task_process = my.kwargs.get('show_task_process')
+
+        top = my.top
+        td = DivWdg()
+        top.add(td)
+        td.add_style("text-align: left")
+        td.add_style("vertical-align: top")
+        td.add_class("spt_notes_wrapper")
+        td.add_style("padding: 20px")
+
+        title_wdg = DivWdg()
+        td.add(title_wdg)
+        title_wdg.add_style("width: 100%")
+        title_wdg.add("Notes")
+        title_wdg.add_style("font-size: 1.4em")
+        title_wdg.add_style("margin-bottom: 5px")
+
+        desc_wdg = DivWdg()
+        td.add(desc_wdg)
+        desc_wdg.add("List of all the notes for this item.")
+        td.add("<hr/>")
+
+        #write out all the notes totals
+        search_type = my.sobject.get_base_search_type()
+
+        parts = search_type.split("/")
 
 
+        from pyasm.biz import ProjectSetting
+        related_types = ProjectSetting.get_value_by_key("notes/%s/related_types" % parts[1])
+        if related_types:
+            related_types = related_types.split(",")
+        else:
+            related_types = []
 
+
+        sobjects = []
+        for related_type in related_types:
+            related_sobjects = Search.eval("@SOBJECT(%s)" % related_type, my.sobject)
+            sobjects.extend(related_sobjects)
+
+        sobjects.insert(0, my.sobject)
+
+        from tactic.ui.widget.discussion_wdg import DiscussionWdg
+        for sobject in sobjects:
+            search_key = sobject.get_search_key()
+
+            if len(sobjects) > 1:
+                name = sobject.get_value("name", no_exception=True)
+                if name:
+                    td.add("<b>%s</b> - %s" % (sobject.get_code(), name))
+                else:
+                    td.add("<b>%s</b>" % sobject.get_code())
+
+            notes_div = DivWdg()
+            td.add(notes_div)
+
+
+            discussion_wdg = DiscussionWdg(search_key=search_key,
+                    context_hidden=False, show_note_expand=False,
+                    show_task_process=my.show_task_process)
+
+            notes_div.add(discussion_wdg)
+            #menu = discussion_wdg.get_menu_wdg(notes_div)
+            #notes_div.add(menu)
+
+            notes_div.add_style("min-width: 300px")
+            notes_div.add_style("height: auto")
+            notes_div.add_style("min-height: 20")
+            notes_div.add_style("overflow-y: auto")
+            notes_div.add_class("spt_resizable")
+
+            if len(sobjects) > 1:
+                notes_div.add_style("margin: 10px 10px")
+                td.add("<hr/>")
+
+        return top
 
