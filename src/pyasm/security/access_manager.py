@@ -537,15 +537,12 @@ class AccessManager(Base):
         parser = ExpressionParser()
         current_project = None
 
-        for rule in rules.values():
-            access, dct = rule
-            """
-            # FIXME: hacky: break the encoding done earlier
-            parts = rule.split("||")
-            data = parts[0]
-            data = data.replace("?project=*", "")
-            rule = eval(data)
-            """
+
+        # preprocess to get a list of rule that will apply
+        rule_items = []
+        for rule_item in rules.values():
+            access, dct = rule_item
+
             rule = dct
             rule_search_type = rule.get('search_type')
             if not rule_search_type:
@@ -556,8 +553,6 @@ class AccessManager(Base):
             if rule_search_type != search_type:
                 continue
 
-            column = rule.get('column')
-            value = rule.get('value')
             project = rule.get('project')
            
             # to avoid infinite recursion, get the project here
@@ -567,8 +562,24 @@ class AccessManager(Base):
             
             if project and project not in ['*', current_project]:
                 continue
+
+
+            rule_items.append(rule)
+
+
+        if len(rule_items) > 1:
+            search.add_op("begin")
+
+
+        for rule in rule_items:
+
+            rule_search_type = rule.get('search_type')
+
+            column = rule.get('column')
+            value = rule.get('value')
+           
+
             # If a relationship is set, then use that
-            # FIXME: this is not very clear how to procede.
             related = rule.get('related')
 
             sudo = Sudo()
@@ -578,7 +589,6 @@ class AccessManager(Base):
                 search.add_relationship_filters(sobjects)
                 del sudo
                 return
-
 
 
             # interpret the value
@@ -620,6 +630,10 @@ class AccessManager(Base):
                     search.add_filters(column, values, op=op)
 
             del sudo
+
+
+        if len(rule_items) > 1:
+            search.add_op("or")
 
 
     def alter_search_type_search(my, search):

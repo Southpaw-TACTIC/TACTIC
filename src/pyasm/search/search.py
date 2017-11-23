@@ -1747,11 +1747,8 @@ class Search(Base):
             raise SearchException("Class_path [%s] does not exist" % class_path)
 
         # allow security to alter the search if it hasn't been done in SearchLimitWdg
-        #TODO: Revisit and fix for SQL Server.
         if not my.security_filter:
             security.alter_search(my)
-
-
 
 
         # build an sql object
