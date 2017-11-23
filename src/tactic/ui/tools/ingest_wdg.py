@@ -53,6 +53,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         'update_process': 'Determines the update process for snapshots when the update_mode is set to true and one sobject is found',
         'ignore_path_keywords': 'Comma separated string of path keywords to be hidden',
         'project_code': 'Publish to another project',
+        'keyword_mode': 'Takes values "simplified" and "none". When "simplified", keywords will not be extracted from file name. When "none", keywords will notbe ingested into sobject.'
     }
 
 
@@ -1225,6 +1226,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var ignore_path_keywords = bvr.kwargs.ignore_path_keywords;
 
         var library_mode = bvr.kwargs.library_mode;
+        var keyword_mode = bvr.kwargs.keyword_mode;
         var dated_dirs = bvr.kwargs.dated_dirs;
         var project_code = bvr.kwargs.project_code;
         if (!project_code) {
@@ -1337,6 +1339,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             ignore_ext: ignore_ext,
             column: column,
             library_mode: library_mode,
+            keyword_mode: keyword_mode,
             dated_dirs: dated_dirs,
             context_mode: context_mode,
             zip_mode: zip_mode,
@@ -1405,6 +1408,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         context = my.kwargs.get("context")
         context_mode = my.kwargs.get("context_mode")
+        keyword_mode = my.kwargs.get("keyword_mode")
 
 
         button.add_behavior( {
@@ -1420,7 +1424,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'context_mode': context_mode,
                 'update_process': my.update_process,
                 'ignore_path_keywords': my.ignore_path_keywords,
-                'project_code': my.project_code
+                'project_code': my.project_code,
+                'keyword_mode': keyword_mode
             },
             'cbjs_action': '''
 
@@ -2023,7 +2028,12 @@ class IngestUploadCmd(Command):
             else:
                 path_for_keywords = new_filename
 
-            file_keywords = Common.extract_keywords_from_path(path_for_keywords)            
+            cmd_keyword_mode = my.kwargs.get("keyword_mode")
+
+            if cmd_keyword_mode == "simplified":
+                file_keywords = []
+            else:
+                file_keywords = Common.extract_keywords_from_path(path_for_keywords)      
             
             # Extract keywords from the path to be added to keywords_data, 
             # if ignore_path_keywords is found, remove the specified keywords
@@ -2057,13 +2067,15 @@ class IngestUploadCmd(Command):
                 # remove duplicated
                 new_file_keywords = set( new_file_keywords.split(" ") )
                 new_file_keywords = " ".join(new_file_keywords)
-
-                sobject.set_value("keywords", new_file_keywords)
+                
+                if not cmd_keyword_mode == "none":
+                    sobject.set_value("keywords", new_file_keywords)
 
 
             if SearchType.column_exists(search_type, "user_keywords"):
                 if keywords:
-                    sobject.set_value("user_keywords", keywords)
+                    if not cmd_keyword_mode == "none":
+                        sobject.set_value("user_keywords", keywords)
 
 
             if SearchType.column_exists(search_type, "keywords_data"):
