@@ -539,7 +539,7 @@ class AccessManager(Base):
 
 
         # preprocess to get a list of rule that will apply
-        rule_items = []
+        rules_dict = {}
         for rule_item in rules.values():
             access, dct = rule_item
 
@@ -564,76 +564,88 @@ class AccessManager(Base):
                 continue
 
 
-            rule_items.append(rule)
-
-
-        if len(rule_items) > 1:
-            search.add_op("begin")
-
-
-        for rule in rule_items:
-
-            rule_search_type = rule.get('search_type')
-
             column = rule.get('column')
-            value = rule.get('value')
-           
+            rules_list = rules_dict.get(column)
+            if rules_list == None:
+                rules_list = []
+                rules_dict[column] = rules_list
 
-            # If a relationship is set, then use that
-            related = rule.get('related')
+            rules_list.append(rule)
 
-            sudo = Sudo()
-            if related:
 
-                sobjects = parser.eval(related)
-                search.add_relationship_filters(sobjects)
+
+        for column, rules_list in rules_dict.items():
+
+            if len(rules_list) > 1:
+                search.add_op("begin")
+
+
+            for rule in rules_list:
+
+                column = rule.get('column')
+                value = rule.get('value')
+               
+
+                # If a relationship is set, then use that
+                related = rule.get('related')
+
+                sudo = Sudo()
+                if related:
+
+                    sobjects = parser.eval(related)
+                    search.add_relationship_filters(sobjects)
+                    del sudo
+                    return
+
+
+                # interpret the value
+                # since the expression runs float(), we want to avoid that a number 5 being converted to 5.0
+                # if we can't find @ or $
+                if value.find('@') != -1 or value.find('$') != -1:
+                    values = parser.eval(value, list=True)
+                elif value.find("|") == -1:
+                    values = value.split("|")
+                else:
+                    values = [value]
+
+                op = rule.get('op')
+                
+
+                # TODO: made this work with search.add_op_filters() with the expression parser instead of this
+                # simpler implementation
+                if len(values) == 1:
+                    if not op:
+                        op = '='
+                    quoted = True
+                    # special case for NULL
+                    if values[0] == 'NULL':
+                        quoted = False
+                    if op in ['not in', '!=']:
+                        search.add_op('begin')
+                        search.add_filter(column, values[0], op=op, quoted=quoted)
+                        search.add_filter(column, None)
+                        search.add_op('or')
+                    else:
+                        search.add_filter(column, values[0], op=op, quoted=quoted)
+                elif len(values) > 1:
+                    if not op:
+                        op = 'in'
+                    if op in ['not in', '!=']:
+                        search.add_op('begin')
+                        search.add_filter(column, values, op=op)
+                        search.add_filter(column, None)
+                        search.add_op('or')
+                    else:
+                        search.add_filters(column, values, op=op)
+
                 del sudo
-                return
 
 
-            # interpret the value
-            # since the expression runs float(), we want to avoid that a number 5 being converted to 5.0
-            # if we can't find @ or $
-            if value.find('@') != -1 or value.find('$') != -1:
-                values = parser.eval(value, list=True)
-            else:
-                values = [value]
+            if len(rules_list) > 1:
+                search.add_op("or")
 
-            op = rule.get('op')
-            
-
-            # TODO: made this work with search.add_op_filters() with the expression parser instead of this
-            # simpler implementation
-            if len(values) == 1:
-                if not op:
-                    op = '='
-                quoted = True
-                # special case for NULL
-                if values[0] == 'NULL':
-                    quoted = False
-                if op in ['not in', '!=']:
-                    search.add_op('begin')
-                    search.add_filter(column, values[0], op=op, quoted=quoted)
-                    search.add_filter(column, None)
-                    search.add_op('or')
-                else:
-                    search.add_filter(column, values[0], op=op, quoted=quoted)
-            elif len(values) > 1:
-                if not op:
-                    op = 'in'
-                if op in ['not in', '!=']:
-                    search.add_op('begin')
-                    search.add_filter(column, values, op=op)
-                    search.add_filter(column, None)
-                    search.add_op('or')
-                else:
-                    search.add_filters(column, values, op=op)
-
-            del sudo
-
-
-        if len(rule_items) > 1:
-            search.add_op("or")
+            if search_type == "workflow/job":
+                print search.get_statement()
 
 
     def alter_search_type_search(my, search):
