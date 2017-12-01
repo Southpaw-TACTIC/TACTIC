@@ -106,8 +106,18 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         if my.title:
             title = my.title
             title = title.replace(r'\n','<br/>')
+
+            if my.title.find("->") != -1:
+                parts = my.title.split("->")
+                title = parts[-1]
+
         else:
             title = my.name
+
+            if my.name.find("->") != -1:
+                parts = my.name.split("->")
+                title = parts[-1]
+
 
             if not title:
                 title = ""

@@ -875,7 +875,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             icon_div.add_style("text-align: center");
 
             icon_div.add_behavior( {
-            'type': 'click',
+            'type': 'click_up',
             'cbjs_action': '''
             var server = TacticServerStub.get();
 
@@ -899,25 +899,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
             }
 
-            if (!subpipeline) {
-                // create the pipeline
-                var data = {
-                    name: node_name + " Workflow",
-                    search_type: search_type,
-                    // This is deprecated, use subpipeline_code on process
-                    //parent_process: process_code
-                }
-                subpipeline = server.insert("sthpw/pipeline", data);
-                var subpipeline_code = subpipeline.code;
-                server.update(process, { subpipeline_code: subpipeline_code })
-            }
-
-            var subpipeline_code = subpipeline.code;
-
-            spt.pipeline.clear_canvas();
-            //spt.pipeline.import_pipeline(subpipeline_code);
-
-
             var top = spt.pipeline.top;
             var text = top.getElement(".spt_pipeline_editor_current2");
 
@@ -925,19 +906,47 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var root_html = text.innerHTML; 
                 bvr.breadcrumb = root_html;
             }
-
-            event = 'pipeline_'+subpipeline_code+'|click';
-            spt.named_events.fire_event(event, bvr);
-
-            /*
-            if (text) {
-                var html = "<span class='hand tactic_hover spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
-                text.innerHTML = root_html + " / " + html;
+            else {
+                var root_html = "";
             }
-            */
 
 
+            if (!subpipeline) {
+                spt.confirm( "Create new workflow?", function() {
+                    // create the pipeline
+                    var data = {
+                        name: node_name + " Workflow",
+                        search_type: search_type,
+                        // This is deprecated, use subpipeline_code on process
+                        //parent_process: process_code
+                    }
+                    subpipeline = server.insert("sthpw/pipeline", data);
+                    subpipeline_code = subpipeline.code;
+                    server.update(process, { subpipeline_code: subpipeline_code })
 
+                    spt.pipeline.clear_canvas();
+                    spt.pipeline.import_pipeline(subpipeline_code);
+
+                    if (text) {
+                        var html = "<span class='hand tactic_hover spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
+                        text.innerHTML = root_html + " / " + html;
+                    }
+
+                } );
+                return;
+            }
+            else {
+                subpipeline_code = subpipeline.code;
+
+                spt.pipeline.clear_canvas();
+                spt.pipeline.import_pipeline(subpipeline_code);
+
+                if (text) {
+                    var html = "<span class='hand tactic_hover spt_pipeline_link' spt_pipeline_code='"+subpipeline.code+"'>"+subpipeline.name+"</span>";
+                    text.innerHTML = root_html + " / " + html;
+                }
+
+            }
 
             evt.stopPropagation();
             '''
@@ -1184,7 +1193,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # on normal click, select single node if not selected, otherwise
         # select the whole group
         node.add_behavior( {
-        'type': 'click_up',
+        'type': 'click',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
@@ -1195,6 +1204,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         else {
             spt.pipeline.select_single_node(node);
         }
+        evt.stopPropagation();
         '''
         } )
 

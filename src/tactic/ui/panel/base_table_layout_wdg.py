@@ -413,15 +413,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search.add_op_filters(my.kwargs.get("op_filters"))
 
 
-        # passed in filter overrides
-        values = filter_data.get_values_by_prefix("group")
-        order = WebContainer.get_web().get_form_value('order')
-        
+
         # user-chosen order has top priority
+        order = WebContainer.get_web().get_form_value('order')
         if order:
             my.order_element = order
             if not values:
-                tmp_order_element, direction  = my.get_order_element(my.order_element)
+                tmp_order_element, direction = my.get_order_element(my.order_element)
                 
                 widget = my.get_widget(tmp_order_element)
                 my.order_widget = widget
@@ -430,6 +428,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 except AttributeError:
                     search.add_order_by(my.order_element, direction)
 
+
+        # passed in filter overrides
+        values = filter_data.get_values_by_prefix("group")
         if values:
 
             group_values = values[0]
@@ -2192,8 +2193,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
       
 
@@ -2226,8 +2225,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
  
         # Group By Week Optional menu item ...

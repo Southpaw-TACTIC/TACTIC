@@ -2357,7 +2357,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 group_value = "__NONE__"
             
             last_value = group_values.get(group_column)
-           
+
+
+
+            # TEST TEST TEST
+            print "TEST TEST TEST TEST TEST"
+            if group_value.find("/"):
+                parts = group_value.split("/")
+                group_value = parts[0]
+            if group_value.find("/"):
+                parts = group_value.split("/")
+                group_value = parts[0]
+
+
+
+
             # if this is the first row or the group value has changed,
             # then create a new group
             if last_value == None or group_value != last_value:

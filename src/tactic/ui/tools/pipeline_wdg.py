@@ -908,7 +908,6 @@ class PipelineListWdg(BaseRefreshWdg):
             var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
 
 
-            console.log(bvr);
             var breadcrumb = bvr.breadcrumb;
             if (breadcrumb) {
                 text.innerHTML = breadcrumb + " / " + html;

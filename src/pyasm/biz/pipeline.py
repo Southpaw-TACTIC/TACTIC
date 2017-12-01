@@ -794,6 +794,15 @@ class Pipeline(SObject):
         return processes
 
 
+    def get_input_process_names(my, process, type=None, from_attr=None):
+        input_processes = my.get_input_processes(process, type, from_attr)
+        process_names = [x.get_name() for x in input_processes]
+        return process_names
+ 
+
+
+
+
     def get_output_processes(my, process, type=None, from_attr=None):
         connects = my._get_connects(process, direction="from")
         if not connects:
@@ -827,6 +836,13 @@ class Pipeline(SObject):
                     processes.append(process)
             
         return processes
+
+
+
+    def get_output_process_names(my, process, type=None, from_attr=None):
+        output_processes = my.get_output_processes(process, type, from_attr)
+        process_names = [x.get_name() for x in output_processes]
+        return process_names
  
 
 

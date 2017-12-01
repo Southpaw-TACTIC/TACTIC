@@ -1771,8 +1771,6 @@ class Search(Base):
                 columns = select_columns
 
 
-        # DEPRECATED:
-        # add the configuration settings for this sobject
         '''
         my.config = SObjectConfig.get_by_search_type(my.search_type_obj, database)
         if my.config != None:
@@ -1781,7 +1779,6 @@ class Search(Base):
             for order_by in order_bys:
                 if order_by:
                     my.add_order_by(order_by)
-                    print "order: ", search_type, order_by
         '''
         # Hard coded replacement.  This is done for performance reasons
         if my.order_by:
@@ -1837,6 +1834,7 @@ class Search(Base):
             # get the select statement and do the query
             if not statement:
                 statement = my.select.get_statement()
+
 
             from pyasm.security import Site
             results = sql.do_query(statement)
@@ -3731,6 +3729,46 @@ class SObject(object):
         return True
 
 
+    def store_version(my):
+        # versioning
+        versioning = True
+        if versioning and my.get_base_search_type() in ["spme/wop","spme/shot"]:
+            # find the last version
+            last_search = Search("spme/version")
+            last_search.add_column("version")
+            last_search.add_filter("search_type", my.get_search_type())
+            last_search.add_filter("search_code", my.get_code())
+            last_search.add_order_by("version desc")
+            last = last_search.get_sobject()
+            if not last:
+                version = 1
+            else:
+                version = last.get("version")
+            version += 1
+
+            new_version = SearchType.create("spme/version")
+            new_version.set_value("version", version)
+            new_version.set_value("search_type", my.get_search_type())
+            new_version.set_value("search_code", my.get_code())
+            new_version.set_user()
+
+            # get and copy the data
+            data = my.get_data()
+            data = data.copy()
+
+            # scrub the data
+            new_data = {}
+            for name, value in data.items():
+                if value is None:
+                    continue
+                new_data[name] = value
+
+            new_version.set_value("data", new_data)
+            new_version.commit()
+
+
+
+
     def commit(my, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
 
@@ -3753,6 +3791,10 @@ class SObject(object):
         # work
         if is_insert:
             my.set_defaults()
+
+
+        if not is_insert:
+            my.store_version()
 
 
         # remap triggers kwarg
