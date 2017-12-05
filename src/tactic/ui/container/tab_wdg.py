@@ -1254,9 +1254,16 @@ spt.tab.close = function(src_el) {
                 my.view = 'tab'
                 config = WidgetConfig.get(view=my.view, xml=config_xml)
 
-        if config:
-            element_names = config.get_element_names()
-        else:
+
+        element_names = my.kwargs.get("element_names")
+        if element_names and isinstance(element_names, basestring):
+            element_names = element_names.split(",")
+
+        if not element_names:
+            if config:
+                element_names = config.get_element_names()
+        
+        if not element_names:
             element_names = []
 
 

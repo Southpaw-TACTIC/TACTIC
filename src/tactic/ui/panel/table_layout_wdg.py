@@ -5794,8 +5794,13 @@ spt.table.set_column_width = function(element_name, width) {
 
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
-        table.setStyle("width", total_width);
         header_table.setStyle("width", total_width);
+        table.setStyle("width", total_width);
+        subtable = table.getElement(".spt_table_table");
+        if (subtable) {
+            subtable.setStyle("width", total_width);
+            
+        }
 
         var layout = spt.table.get_layout();
         if (layout.getAttribute("has_extra_header") == "true") {

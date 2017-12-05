@@ -28,9 +28,11 @@ class PipelineInputWdg(BaseInputWdg):
 
         if search_type:
             st = search_type
+        elif not search_type:
+            return "N/A - Not enough info to display"
         else:
-            
             st = sobj.get_base_search_type()
+
         # for inline insert, this should proceed
         #if not sobj:
         #    return ''

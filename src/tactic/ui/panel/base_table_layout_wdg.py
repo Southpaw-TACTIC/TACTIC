@@ -431,6 +431,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # passed in filter overrides
         values = filter_data.get_values_by_prefix("group")
+        print
+        print "values: ", values
         if values:
 
             group_values = values[0]
@@ -462,6 +464,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.show_retired_element = group_values.get("show_retired")
             if my.show_retired_element == "true":
                 search.set_show_retired(True)
+
+
 
 
         order_by = my.kwargs.get('order_by')
@@ -509,7 +513,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # alter the search
             my.search_limit.set_search(search)
             my.search_limit.alter_search(search)
-
 
 
 
