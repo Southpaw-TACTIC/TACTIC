@@ -537,15 +537,12 @@ class AccessManager(Base):
         parser = ExpressionParser()
         current_project = None
 
-        for rule in rules.values():
-            access, dct = rule
-            """
-            # FIXME: hacky: break the encoding done earlier
-            parts = rule.split("||")
-            data = parts[0]
-            data = data.replace("?project=*", "")
-            rule = eval(data)
-            """
+
+        # preprocess to get a list of rule that will apply
+        rules_dict = {}
+        for rule_item in rules.values():
+            access, dct = rule_item
+
             rule = dct
             rule_search_type = rule.get('search_type')
             if not rule_search_type:
@@ -556,8 +553,6 @@ class AccessManager(Base):
             if rule_search_type != search_type:
                 continue
 
-            column = rule.get('column')
-            value = rule.get('value')
             project = rule.get('project')
            
             # to avoid infinite recursion, get the project here
@@ -567,59 +562,90 @@ class AccessManager(Base):
             
             if project and project not in ['*', current_project]:
                 continue
-            # If a relationship is set, then use that
-            # FIXME: this is not very clear how to procede.
-            related = rule.get('related')
 
-            sudo = Sudo()
-            if related:
 
-                sobjects = parser.eval(related)
-                search.add_relationship_filters(sobjects)
+            column = rule.get('column')
+            rules_list = rules_dict.get(column)
+            if rules_list == None:
+                rules_list = []
+                rules_dict[column] = rules_list
+
+            rules_list.append(rule)
+
+
+
+        for column, rules_list in rules_dict.items():
+
+            if len(rules_list) > 1:
+                search.add_op("begin")
+
+
+            for rule in rules_list:
+
+                column = rule.get('column')
+                value = rule.get('value')
+               
+
+                # If a relationship is set, then use that
+                related = rule.get('related')
+
+                sudo = Sudo()
+                if related:
+
+                    sobjects = parser.eval(related)
+                    search.add_relationship_filters(sobjects)
+                    del sudo
+                    return
+
+
+                # interpret the value
+                # since the expression runs float(), we want to avoid that a number 5 being converted to 5.0
+                # if we can't find @ or $
+                if value.find('@') != -1 or value.find('$') != -1:
+                    values = parser.eval(value, list=True)
+                elif value.find("|") == -1:
+                    values = value.split("|")
+                else:
+                    values = [value]
+
+                op = rule.get('op')
+                
+
+                # TODO: made this work with search.add_op_filters() with the expression parser instead of this
+                # simpler implementation
+                if len(values) == 1:
+                    if not op:
+                        op = '='
+                    quoted = True
+                    # special case for NULL
+                    if values[0] == 'NULL':
+                        quoted = False
+                    if op in ['not in', '!=']:
+                        search.add_op('begin')
+                        search.add_filter(column, values[0], op=op, quoted=quoted)
+                        search.add_filter(column, None)
+                        search.add_op('or')
+                    else:
+                        search.add_filter(column, values[0], op=op, quoted=quoted)
+                elif len(values) > 1:
+                    if not op:
+                        op = 'in'
+                    if op in ['not in', '!=']:
+                        search.add_op('begin')
+                        search.add_filter(column, values, op=op)
+                        search.add_filter(column, None)
+                        search.add_op('or')
+                    else:
+                        search.add_filters(column, values, op=op)
+
                 del sudo
-                return
 
 
+            if len(rules_list) > 1:
+                search.add_op("or")
 
-            # interpret the value
-            # since the expression runs float(), we want to avoid that a number 5 being converted to 5.0
-            # if we can't find @ or $
-            if value.find('@') != -1 or value.find('$') != -1:
-                values = parser.eval(value, list=True)
-            else:
-                values = [value]
-
-            op = rule.get('op')
-            
-
-            # TODO: made this work with search.add_op_filters() with the expression parser instead of this
-            # simpler implementation
-            if len(values) == 1:
-                if not op:
-                    op = '='
-                quoted = True
-                # special case for NULL
-                if values[0] == 'NULL':
-                    quoted = False
-                if op in ['not in', '!=']:
-                    search.add_op('begin')
-                    search.add_filter(column, values[0], op=op, quoted=quoted)
-                    search.add_filter(column, None)
-                    search.add_op('or')
-                else:
-                    search.add_filter(column, values[0], op=op, quoted=quoted)
-            elif len(values) > 1:
-                if not op:
-                    op = 'in'
-                if op in ['not in', '!=']:
-                    search.add_op('begin')
-                    search.add_filter(column, values, op=op)
-                    search.add_filter(column, None)
-                    search.add_op('or')
-                else:
-                    search.add_filters(column, values, op=op)
-
-            del sudo
+            if search_type == "workflow/job":
+                print search.get_statement()
 
 
     def alter_search_type_search(my, search):
