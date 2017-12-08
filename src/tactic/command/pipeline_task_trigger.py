@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ['PipelineTaskStatusTrigger', 'PipelineTaskTrigger', 'PipelineTaskDateTrigger', 'PipelineTaskCreateTrigger', 'RelatedTaskUpdateTrigger', 'TaskCreatorTrigger', 'TaskCompleteTrigger']
+__all__ = ['PipelineTaskStatusTrigger', 'PipelineTaskTrigger', 'PipelineTaskDateTrigger', 'PipelineTaskCreateTrigger', 'RelatedTaskUpdateTrigger', 'TaskCreatorTrigger', 'TaskCompleteTrigger', 'PipelineParentStatusTrigger']
 
 import tacticenv
 
@@ -302,7 +302,33 @@ class PipelineTaskTrigger(Trigger):
                         break
                 
 
+class PipelineParentStatusTrigger(Trigger):
+    '''This is the trigger that is executed on a change'''
 
+    ARGS_KEYS = {
+    }
+
+
+    def execute(my):
+
+        trigger_sobj = my.get_trigger_sobj()
+        data = trigger_sobj.get_value("data")
+        data = jsonloads(data)
+
+        dst_status = data.get('dst_status')
+
+        item = my.get_caller()
+
+        parent = item.get_parent()
+        if not parent:
+            return
+
+        parent.set_value("status", dst_status)
+        parent.commit()
+
+
+
+ 
 class PipelineTaskDateTrigger(Trigger):
     '''This is the trigger that is executed on a change'''
 

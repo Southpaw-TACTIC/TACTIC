@@ -22,6 +22,7 @@ from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
 from tactic.ui.panel import FastTableLayoutWdg
+from pyasm.widget import SwapDisplayWdg
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg, TextAreaWdg
 
@@ -529,7 +530,6 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
         # project_specific pipelines
-        from pyasm.widget import SwapDisplayWdg
         content_div = DivWdg()
         content_div.add_style('padding-top: 6px') 
         inner.add(content_div)
@@ -869,7 +869,6 @@ class PipelineListWdg(BaseRefreshWdg):
         'title': title,
         'event_name': 'pipeline_%s|click' % pipeline_code,
         'cbjs_action': '''
-        //var src_el = bvr.firing_element;
         var top = null;
         // they could be different when inserting or just clicked on
         [bvr.firing_element, bvr.src_el].each(function(el) {
@@ -905,9 +904,18 @@ class PipelineListWdg(BaseRefreshWdg):
 
             
             var text = top.getElement(".spt_pipeline_editor_current2");
-            //text.value = title;
+
             var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
-            text.innerHTML = html;
+
+
+            console.log(bvr);
+            var breadcrumb = bvr.breadcrumb;
+            if (breadcrumb) {
+                text.innerHTML = breadcrumb + " / " + html;
+            }
+            else {
+                text.innerHTML = html;
+            }
 
             spt.pipeline.set_current_group(value);
 
@@ -2288,15 +2296,22 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         top.add("<br/><hr/>")
 
-        depend_div = DivWdg()
-        top.add(depend_div)
-        depend_div.add("<b>Process Dependencies</b><br/>")
-        depend_div.add("A list of dependencies related to this process.")
-        depend_div.add_style("margin: 20px 10px 10px 10px")
 
+        depend_title_div = DivWdg()
+        depend_div = DivWdg()
+        top.add(depend_title_div)
+        top.add(depend_div)
+
+        swap = SwapDisplayWdg()
+        depend_title_div.add(swap)
+        SwapDisplayWdg.create_swap_title(depend_title_div, swap, depend_div, is_open=False)
+
+        depend_title_div.add("<b>Process Dependencies</b><br/>")
+        depend_title_div.add("&nbsp;&nbsp;&nbsp;A list of items related to this process.")
+        depend_title_div.add_style("margin: 20px 10px 10px 10px")
 
         table = Table()
-        top.add(table)
+        depend_div.add(table)
         table.add_style('width: auto')
         table.add_style('margin: 0px 5px')
 
@@ -2413,8 +2428,8 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-
-        has_checkins = True
+        # DEPRECATED: The old check-in widget is basically not functional anymore
+        has_checkins = False
         if has_checkins:
             div = DivWdg()
             top.add(div)
