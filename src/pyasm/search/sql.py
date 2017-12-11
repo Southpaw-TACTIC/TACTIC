@@ -2177,6 +2177,18 @@ class Select(object):
                 'table': table
         } )
 
+        assert op in ['in', 'not in', '@@']
+
+
+        if op == "@@":
+            # full text search requires that the filters be added one by one
+            my.add_op("begin")
+            for value in values:
+                my.add_filter(column, value, table, op)
+            my.add_op("or")
+            return
+
+
 
         if op == "@@":
             # full text search requires that the filters be added one by one
@@ -2192,7 +2204,6 @@ class Select(object):
             table = my.tables[0]
 
 
-        assert op in ['in', 'not in']
         filter = ''
         if not values or values == ['']:
             if table:
