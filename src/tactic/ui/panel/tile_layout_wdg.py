@@ -1508,7 +1508,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         tool_div.add_border(size="0px 1px 1px 1px")
 
 
-        """
         href = HtmlElement.href()
         href.add_attr("href", thumb.get_path())
         tool_div.add(href)
@@ -1526,6 +1525,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
         icon.add_class("hand")
         href.add(icon)
+        """
         icon.add_behavior( {
             'type': 'clickX',
             'path': thumb.get_path(),

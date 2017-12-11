@@ -2221,6 +2221,11 @@ spt.tab.close = function(src_el) {
 
             state = my.kwargs.get("state") or {}
             search_key = state.get("search_key")
+
+            if not search_key:
+                search_key = my.kwargs.get("search_key")
+            print "sss: ", search_key
+
             if search_key:
                 sobject = Search.get_by_search_key(search_key)
             else:

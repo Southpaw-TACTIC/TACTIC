@@ -17,6 +17,7 @@ import os, shutil, re
 from pyasm.common import *
 from pyasm.command import CommandException
 from pyasm.search import Search
+
 from pyasm.application.perforce import Perforce
 
 from file_checkin import *

@@ -2149,6 +2149,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 
+
 class DefaultInfoWdg(BaseInfoWdg):
 
 
@@ -2226,6 +2227,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             return top
 
 
+
         has_tasks = True
         if has_tasks:
             div = DivWdg()
@@ -2259,6 +2261,21 @@ class DefaultInfoWdg(BaseInfoWdg):
                 '''
             } )
 
+
+
+
+        from pyasm.biz import ProjectSetting
+        setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
+        if setting in ["true"]:
+
+            from spt.modules.workflow import TaskDetailSettingWdg
+            detail_wdg = TaskDetailSettingWdg(
+                    **my.kwargs
+            )
+
+            #detail_wdg = my.get_detail_wdg()
+            top.add(detail_wdg)
+            detail_wdg.add_style("margin: 10px")
 
 
 

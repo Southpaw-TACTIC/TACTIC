@@ -402,18 +402,6 @@ class Search(Base):
 
 
 
-
-    # FIXME: this does not take the type into account
-    # DEPRECATED
-    """
-    def get_filter(my, name, value, op='='):
-        if value == None:
-            return '"%s" is NULL' % name
-        else:
-            return '"%s" %s %s' % ( name, op, Sql.quote(value) )
-    """
-
-
     def set_null_filter(my):
         my.null_filter = True
 
@@ -437,23 +425,7 @@ class Search(Base):
 
     def add_filters(my, name, values, table='', op='in'):
         ''' add a where name in (val1, val2, ...) '''
-        """
-        if not op:
-            op = 'in'
-
-        if not table:
-            table = my.select.get_table()
-        filter = my.get_filters(name, values, table, op)
-        if filter == "NULL":
-            my.null_filter = True
-        #my.select.add_filter(name, filter)
-        my.select.add_where(filter)
-        """
-        #filter = my.get_filters(name, values, table, op)
-        #print "filter: ", filter
         my.select.add_filters(name, values, op=op, table=table)
-
-
 
 
 
