@@ -1919,34 +1919,36 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         td.add_class("spt_widget_top")
         td.add_style("padding: 5px 0px")
 
-        help_div = DivWdg()
-        td.add(help_div)
-        help_div.add_style("float: right")
-        help_div.add_style("margin-top: -7px")
+        if Project.get().is_admin():
+            help_div = DivWdg()
+            td.add(help_div)
+            help_div.add_style("float: right")
+            help_div.add_style("margin-top: -7px")
 
-        help_wdg = ActionButtonWdg(title="?", tip="Show Help", size='small')
-        help_div.add(help_wdg)
+            help_wdg = ActionButtonWdg(title="?", tip="Show Help", size='small')
+            help_div.add(help_wdg)
 
-        handler = WidgetClassHandler()
-        attrs = handler.get_all_elements_attributes("help")
+            handler = WidgetClassHandler()
+            attrs = handler.get_all_elements_attributes("help")
 
-        help_wdg.add_behavior( {
-            'type': 'click_up',
-            'attrs': attrs,
-            'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_widget_top");
-                var key_el = top.getElement(".spt_widget_key");
-                var key = key_el.value;
-                spt.help.set_top();
-                var alias = bvr.attrs[key];
-                if (alias == null) {
-                    spt.alert("No documentation for this widget defined");
-                }
-                else {
-                    spt.help.load_alias(alias);
-                }
-            '''
-        } )
+            help_wdg.add_behavior( {
+                'type': 'click_up',
+                'attrs': attrs,
+                'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_widget_top");
+                    var key_el = top.getElement(".spt_widget_key");
+                    var key = key_el.value;
+                    spt.help.set_top();
+                    var alias = bvr.attrs[key];
+                    if (alias == null) {
+                        spt.alert("No documentation for this widget defined");
+                    }
+                    else {
+                        spt.help.load_alias(alias);
+                    }
+                '''
+            } )
+
         td.add(widget_select)
 
         #table.add_row_cell("&nbsp;&nbsp;&nbsp;&nbsp;- or -")
