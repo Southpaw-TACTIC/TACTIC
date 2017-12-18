@@ -174,11 +174,14 @@ class SimpleSearchWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
 
 
+        td.add_class("spt_simple_search_title")
+
 
         # add the load wdg
         show_saved_search = True
         if show_saved_search:
             saved_button = ActionButtonWdg(title='Saved', tip='Load Saved Searches')
+            saved_button.add_class("spt_simple_search_clear_button")
             saved_button.add_behavior( {
                 #'type': 'load',
                 'search_type': my.search_type,
@@ -202,16 +205,19 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
 
-        clera_button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
-        td.add(clera_button)
-        clera_button.add_style("float: right")
-        clera_button.add_style("margin: 10px")
-        clera_button.add_behavior( {
+        clear_button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
+        td.add(clear_button)
+        clear_button.add_class("spt_simple_search_clear_button")
+        clear_button.add_style("float: right")
+        clear_button.add_style("margin: 10px")
+        clear_button.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
         spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_filter_top"));
         '''
         } )
+
+
 
         title_div = DivWdg()
         td.add(title_div)
@@ -242,10 +248,12 @@ class SimpleSearchWdg(BaseRefreshWdg):
         else:
             show_search = True
 
+        show_search = True
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
-            search_wdg.add_style("float: left")
+            search_wdg.add_style("float: right")
+            search_wdg.add_class("spt_simple_search_button")
 
             search_wdg.add_style("padding-top: 6px")
             search_wdg.add_style("padding-left: 10px")
@@ -253,7 +261,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             td = table.add_cell()
             td.add(search_wdg)
-            td.add_style("padding: 5px 20px")
+            td.add_style("padding: 5px 10px")
             #td.add_border()
             #td.add_color("background", "background", -10)
 
@@ -330,7 +338,16 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         config = my.get_config()
         element_names = config.get_element_names()
+
         content_wdg = DivWdg()
+        content_wdg.add_class("spt_simple_search_top")
+
+        onload_js = DivWdg()
+        content_wdg.add(onload_js)
+        onload_js.add_behavior( {
+            'type': 'load',
+            'cbjs_action': my.get_onload_js()
+        } )
 
 
 
@@ -470,8 +487,16 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             icon_td = table.add_cell()
             title_td = table.add_cell()
-            element_td =table.add_cell()
+            element_td = table.add_cell()
 
+            # need to add these to all the elements because it is all separated
+            # by table tds
+            icon_td.add_class("spt_element_item")
+            icon_td.add_attr("spt_element_name", element_name)
+            title_td.add_class("spt_element_item")
+            title_td.add_attr("spt_element_name", element_name)
+            element_td.add_class("spt_element_item")
+            element_td.add_attr("spt_element_name", element_name)
 
             # show the title
             title_td.add_style("text-align: left")
@@ -479,14 +504,12 @@ class SimpleSearchWdg(BaseRefreshWdg):
             title_td.add_style("min-width: 60px")
 
 
+
             element_wdg = DivWdg()
             if attrs.get('view') == 'false':
                 element_wdg.add_style('display: none')
             element_td.add(element_wdg)
 
-            #title_td.add_style("border: solid 1px red")
-            #element_td.add_style("border: solid 1px blue")
-            #element_wdg.add_style("border: solid 1px yellow")
 
 
             if i >= 0  and i < columns -1 and len(element_names) > 1:
@@ -495,17 +518,12 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 spacer.add_style("border-style: solid")
                 spacer.add_style("border-width: 0 0 0 0")
                 #spacer.add_style("height: %spx" % (num_rows*20))
-                spacer.add_style("height: %spx" % (num_rows*20))
+                spacer.add_style("height: %spx" % (num_rows*10))
                 spacer.add_style("width: 10px")
                 spacer.add_style("border-color: %s" % spacer.get_color("border") )
                 spacer.add("&nbsp;")
                 td = table.add_cell(spacer)
                 td.add_attr("rowspan", tot_rows)
-
-            #element_wdg.add_color("color", "color3")
-            #element_wdg.add_color("background", "background3")
-            #element_wdg.set_round_corners()
-            #element_wdg.add_border()
 
             element_wdg.add_style("padding: 4px 10px 4px 5px")
             element_wdg.add_class("spt_table_search")
@@ -593,6 +611,12 @@ class SimpleSearchWdg(BaseRefreshWdg):
             if not widget.is_set():
                 icon.add_style("display: none")
 
+            else:
+                color = icon_div.get_color("background", -10)
+                icon_td.add_style("background-color", color)
+                title_td.add_style("background-color", color)
+                element_td.add_style("background-color", color)
+
 
 
         #elements_wdg.add("<br clear='all'/>")
@@ -614,7 +638,10 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 'panel_id':     my.prefix
             }
 
-        button = ActionButtonWdg(title='Search', tip='Run search with this criteria' )
+
+        title = "Apply"
+
+        button = ActionButtonWdg(title=title, tip='Run search with this criteria' )
         search_div.add(button)
         #button.add_style("margin-top: -7px")
         button.add_behavior( run_search_bvr )
@@ -657,3 +684,122 @@ class SimpleSearchWdg(BaseRefreshWdg):
         return ""
 
     get_hint_text = classmethod(get_hint_text)
+
+
+
+
+    def get_onload_js(my):
+        return r'''
+
+spt.simple_search = {};
+
+spt.simple_search.get_top = function() {
+    var layout = spt.table.get_layout();
+    var panel = layout.getParent(".spt_view_panel_top");
+    var top = panel.getElement(".spt_simple_search");
+    return top;
+}
+
+
+spt.simple_search.show = function() {
+    var top = spt.simple_search.get_top();
+    if (top) {
+        top.setStyle("display", "");
+        spt.body.add_focus_element(top);
+    }
+}
+
+
+spt.simple_search.show_elements = function(element_names) {
+
+    var top = spt.simple_search.get_top();
+
+    var items = top.getElements(".spt_element_item")
+
+    for (var i = 0; i < items.length; i++) {
+        var element_name = items[i].getAttribute("spt_element_name");
+        if (element_names.indexOf(element_name) != -1) {
+            items[i].setStyle("display", ""); 
+        }
+        else {
+            items[i].setStyle("display", "none"); 
+        }
+    }
+
+
+}
+
+
+spt.simple_search.has_element = function(element_name) {
+
+    var flag = false;
+
+    var top = spt.simple_search.get_top();
+    if (!top) {
+        return false;
+    }
+
+    var items = top.getElements(".spt_element_item")
+    for (var i = 0; i < items.length; i++) {
+        var item_element_name = items[i].getAttribute("spt_element_name");
+        if (element_name == item_element_name) {
+            flag = true;
+            break
+        }
+    }
+
+    return flag;
+}
+
+
+
+spt.simple_search.show_all_elements = function() {
+
+    var top = spt.simple_search.get_top();
+    var items = top.getElements(".spt_element_item")
+    for (var i = 0; i < items.length; i++) {
+        items[i].setStyle("display", ""); 
+    }
+}
+
+spt.simple_search.hide_all_elements = function() {
+
+    var top = spt.simple_search.get_top();
+    var items = top.getElements(".spt_element_item")
+    for (var i = 0; i < items.length; i++) {
+        items[i].setStyle("display", "none"); 
+    }
+}
+
+spt.simple_search.set_position = function(position) {
+    var top = spt.simple_search.get_top();
+
+    top.setStyle("top", position.y);
+    top.setStyle("left", position.x);
+}
+
+
+spt.simple_search.show_title = function() {
+    var top = spt.simple_search.get_top();
+    var title_el = top.getElement(".spt_simple_search_title");
+    title_el.setStyle("display", "");
+}
+
+
+spt.simple_search.hide_title = function() {
+    var top = spt.simple_search.get_top();
+    var title_el = top.getElement(".spt_simple_search_title");
+    title_el.setStyle("display", "none");
+}
+
+
+
+
+        '''
+
+
+
+
+
+
+

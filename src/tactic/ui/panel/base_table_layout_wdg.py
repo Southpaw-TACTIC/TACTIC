@@ -1053,11 +1053,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_view_panel_top");
                     if (top) {
-                        var simple_search = top.getElement(".spt_simple_search");
-                        if (simple_search) {
-                            simple_search.setStyle("display", "");
-                            spt.body.add_focus_element(simple_search);
-                        }
+                        var pos = bvr.src_el.getPosition(top);
+                        pos.y += 35;
+                        spt.simple_search.set_position(pos);
+                        spt.simple_search.show_all_elements();
+                        spt.simple_search.show_title();
+                        spt.simple_search.show();
                     }
 
                    
@@ -1093,9 +1094,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 7 0 7")
-            #spacing_div.add_style("border-style: solid")
-            #spacing_div.add_style("border-width: 0 0 0 1")
-            #spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
 
 
         # -- Button Rows
@@ -1286,7 +1284,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
-            keyword_div.add_style("margin-left: 20px")
+            keyword_div.add_style("margin-left: 0px")
 
 
         if my.kwargs.get("show_refresh") != 'false':
@@ -1495,6 +1493,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Save button
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
+        #save_button.add_style("padding: none")
+
         #save_button.add_style("display", "none")
         save_button.add_class("spt_save_button")
         # it needs to be called save_button_top for the button to re-appear after its dissapeared

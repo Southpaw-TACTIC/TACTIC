@@ -1469,6 +1469,9 @@ spt.tab.close = function(src_el) {
             content_top.add_style("overflow-y: auto")
 
             content_top.add_style("min-height: %s" % height)
+        else:
+            # TODO: make this configurable
+            content_top.add_style("min-height: 500px")
 
 
 
@@ -2224,7 +2227,6 @@ spt.tab.close = function(src_el) {
 
             if not search_key:
                 search_key = my.kwargs.get("search_key")
-            print "sss: ", search_key
 
             if search_key:
                 sobject = Search.get_by_search_key(search_key)

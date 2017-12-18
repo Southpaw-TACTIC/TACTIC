@@ -2409,7 +2409,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # put the sobjects in each sub group for group summary calculation
         if my.group_rows:
-            my.group_rows[-1].get_sobjects().append(sobject)
+            group_level = my.group_rows[-1].group_level
+
+            last_group_level = 100
+            for group_row in reversed(my.group_rows):
+                group_level = group_row.group_level
+
+                if group_level < last_group_level:
+                    group_row.get_sobjects().append(sobject)
+                    if group_level == 0:
+                        break
+
+                last_group_level = group_level
+
+
+
+            #my.group_rows[-1].get_sobjects().append(sobject)
+
+            #for j in range(1, group_level+1):
+            #    my.group_rows[-1-j].get_sobjects().append(sobject)
+
 
         
 

@@ -2179,11 +2179,11 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         if bcategory == None:
             bcategory = ''
 
-        aorder = a.get('order')
-        border = b.get('order')
+        aorder = a.get('order') or 99
+        border = b.get('order') or 99
 
-        avalue = "%s|%s" % (acategory, aorder)
-        bvalue = "%s|%s" % (bcategory, border)
+        avalue = "%s|%0.2d" % (acategory, aorder)
+        bvalue = "%s|%0.2d" % (bcategory, border)
 
         if avalue == None:
             return 1

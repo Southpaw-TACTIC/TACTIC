@@ -679,6 +679,7 @@ class FormatElementWdg(SimpleTableElementWdg):
             th.add_attr("spt_input_type", "inline")
             #th.add_style("text-align: center")
 
+        my.add_simple_search(th)
 
     def handle_td(my, td):
         super(FormatElementWdg, my).handle_td(td)

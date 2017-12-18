@@ -70,11 +70,24 @@ class BaseFilterElementWdg(BaseRefreshWdg):
 
         return title_div
 
-
+    """
     def is_set(my):
         '''indicates whether this filter has values set that will
         oontribute to the search'''
         return my.set_flag
+    """
+
+    def is_set(my):
+        value = my.values.get("value")
+        if value:
+            return True
+        else:
+            return False
+        
+
+
+
+
 
     def get_set_js_action(my):
         return r'''
@@ -424,6 +437,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 class TextFilterElementWdg(SelectFilterElementWdg):
     ''' derives from SelectFilterElementWdg but with a text box'''
+ 
+
     def get_display(my):
         div = DivWdg()
 
@@ -461,6 +476,7 @@ class TextFilterElementWdg(SelectFilterElementWdg):
         value = my.values.get("value")
         if value:
             text.set_value(value)
+
 
         if my.show_title:
             title_div = DivWdg()
