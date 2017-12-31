@@ -3881,7 +3881,7 @@ class WorkElementWdg(ButtonElementWdg):
             my.context = sobject.get_value('context')
             try:
                 parent = sobject.get_parent()
-            except SearchException, e:
+            except SearchException as e:
                 parent = None
                 if e.__str__().find('not registered') != -1:
                     pass
@@ -3889,7 +3889,7 @@ class WorkElementWdg(ButtonElementWdg):
                     pass    
                 else:
                     raise
-            except Exception, e:
+            except Exception as e:
                 parent = None
 
             # find current snapshot for this:

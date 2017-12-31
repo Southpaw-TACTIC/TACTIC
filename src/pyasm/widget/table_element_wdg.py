@@ -1117,7 +1117,7 @@ class XmlWdg(BaseTableElementWdg):
         # parse the xml to see if it is valid
         try:
             Xml(string=value)
-        except XmlException, e:
+        except XmlException as e:
 
           
             widget.add( IconWdg("XML Parse Error", IconWdg.ERROR) )
@@ -1763,7 +1763,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                     else:
                         warning = "Dangling reference: %s" % tmp_sobj.get_search_key()
                         Environment.add_warning(warning, warning)
-                except SearchException, e:
+                except SearchException as e:
                     # skips unknown search_type/project
                     print e.__str__()
                     pass
@@ -1773,7 +1773,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
             ref_sobjs = []
             try:
                 ref_sobjs = Search.get_by_id(search_type, search_ids)
-            except SearchException, e:
+            except SearchException as e:
                 # skips unknown search_type/project
                 print e.__str__()
                 pass
@@ -1958,7 +1958,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                 ref_sobject = Search.get_by_id(search_type, search_id)
                 if not ref_sobject:
                     return None
-            except SearchException, e:
+            except SearchException as e:
                 print e.__str__()
                 return None
 

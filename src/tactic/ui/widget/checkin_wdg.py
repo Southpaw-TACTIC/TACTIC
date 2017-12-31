@@ -1624,7 +1624,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             if from_expression:
                 try:
                     from_sobjects = Search.eval(from_expression, my.sobject)
-                except SearchException, e:
+                except SearchException as e:
                     print "WARNINIG: expression [%s] gave error: " % from_expression, e
 
             elif from_pipeline:
@@ -1642,7 +1642,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 from_expression = "@SOBJECT()"
                 try:
                     from_sobjects = Search.eval(from_expression, my.sobject)
-                except SearchException, e:
+                except SearchException as e:
                     print "WARNINIG: expression [%s] gave error: " % from_expression, e
 
 
@@ -2042,7 +2042,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 if to_expression:
                     try: 
                         to_sobjects = Search.eval(to_expression, my.sobject)
-                    except SearchException, e:
+                    except SearchException as e:
                         print "WARNINIG: expression [%s] gave error: " % to_expression, e
 
                 if to_pipeline:
@@ -2141,7 +2141,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 custom_layout = CustomLayoutWdg(view=custom_options_view)
                 options_div.add(custom_layout.get_buffer_display())
                 top.add(options_div)
-        except Exception, e:
+        except Exception as e:
             from pyasm.widget import ExceptionWdg
             options_div.add( ExceptionWdg(e) )
             #options_div.add("Error")

@@ -118,7 +118,7 @@ class PythonElementWdg(TypeTableElementWdg):
         try:
             cmd = PythonCmd(code=my.code, sobject=sobject_dict, filter_data=filter_data)
             result = cmd.execute()
-        except Exception, e:
+        except Exception as e:
             return str(e)
         
         return result
@@ -158,7 +158,7 @@ class PythonElementWdg(TypeTableElementWdg):
         try:
             cmd = PythonCmd(code=my.code, sobject=sobject_dict)
             result = cmd.execute()
-        except Exception, e:
+        except Exception as e:
             return str(e)
 
         if result == "":

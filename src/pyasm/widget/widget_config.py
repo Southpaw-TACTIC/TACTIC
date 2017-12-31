@@ -31,7 +31,7 @@ class WidgetConfig(Base):
 
 
     #def __del__(my):
-    #    print "DELETING config: ", my
+    #    print("DELETING config: ", my)
 
 
     
@@ -401,7 +401,7 @@ class WidgetConfig(Base):
                 values[name] = value
         else:
             values = my.xml.get_recursive_node_values(node)
-        #print xpath
+        #print(xpath)
         return values
 
 
@@ -485,7 +485,7 @@ class WidgetConfig(Base):
             my.xml.replace_child(view_node, target_node, new_root_node)
         else:
             my.xml.append_child(view_node, new_root_node)
-        #print my.xml.to_string()
+        #print(my.xml.to_string())
 
 
 
@@ -568,7 +568,7 @@ class WidgetConfigView(Base):
             view_node = xml.get_node("config/*")
 
             if view_node is None:
-                print ("WARNING: Widget config with id [%s] has no view defined" % db_config.get_id())
+                print("WARNING: Widget config with id [%s] has no view defined" % db_config.get_id())
                 continue
 
             # make a special case for "edit" and "table"
@@ -1189,8 +1189,8 @@ class WidgetConfigView(Base):
                 from file_wdg import ThumbWdg
                 if isinstance(widget, BaseInputWdg) or isinstance(widget, ThumbWdg):
                     widget.set_options(display_options)
-            except Exception, e:
-                print "widget error: ", e
+            except Exception as e:
+                print("widget error: ", e)
                 # TableLayoutwdg can't be created in 2 steps like this
                 # should raise the error in this case
                 if display_handler in ['tactic.ui.panel.TableLayoutWdg','tactic.ui.panel.FastTableLayoutWdg', 'tactic.ui.panel.OldTableLayoutWdg']:
@@ -1432,7 +1432,7 @@ class WidgetConfigView(Base):
                 % (site_dir,context,filename)
         if os.path.exists(conf_path):
             # load in config file
-            print "WARNING: using deprecated sites folder to store config file"
+            print("WARNING: using deprecated sites folder to store config file")
             config = WidgetConfig.get(view, conf_path)
             if config.has_view():
                 configs.append(config)

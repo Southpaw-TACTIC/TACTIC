@@ -146,7 +146,7 @@ class DbResourceWdg(BaseRefreshWdg):
 
         try:
             connect = DbContainer.get(db_resource)
-        except Exception, e:
+        except Exception as e:
             div.add("Could not connect")
             div.add_style("padding: 30px")
             div.add("<br/>"*2)

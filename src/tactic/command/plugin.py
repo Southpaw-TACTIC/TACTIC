@@ -245,7 +245,7 @@ class PluginBase(Command):
 
         try:
             search_type = SearchType.get(search_type)
-        except SearchException, e:
+        except SearchException as e:
             return []
 
 
@@ -270,7 +270,7 @@ class PluginBase(Command):
         elif search_type:
             try:
                 search = Search(search_type)
-            except SearchException, e:
+            except SearchException as e:
                 return []
 
 
@@ -991,7 +991,7 @@ class PluginInstaller(PluginBase):
                             print 'WARNING: Search Type [%s] is already registered' % search_type_chk.get_value("search_type")
                     else:
                         search_type_obj.commit()
-                except SearchException, e:
+                except SearchException as e:
                     if e.__str__().find('not registered') != -1:
                         search_type_obj.commit()
 
@@ -1120,7 +1120,7 @@ class PluginInstaller(PluginBase):
             transaction_str = transaction.xml.to_string()
             my.plugin.set_value("transaction", transaction_str)
             my.plugin.commit()
-        except Exception, e:
+        except Exception as e:
             print "Error: ", e.message
         '''
 
@@ -1192,7 +1192,7 @@ class PluginUninstaller(PluginBase):
         for sobject in sobjects:
             try:
                 sobject.delete()
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: could not delete [%s] due to error [%s]" % (sobject.get_search_key(), e)
 
 
@@ -1453,7 +1453,7 @@ class PluginTools(PluginBase):
             table_drop = DropTable(search_type)
             table_drop.commit()
             # NOTE: do we need to log the undo for this?
-        except Exception, e:
+        except Exception as e:
             print "Error: ", e.message
 
 
@@ -1607,7 +1607,7 @@ class PluginTools(PluginBase):
                         f.extend(subf.readlines())
                         subf.close()
                         f.append("\n")
-                    except Exception, e:
+                    except Exception as e:
                         print "WARNING: ", e
         else:
             #f = codecs.open(path, 'r', 'utf-8')
@@ -1651,9 +1651,9 @@ class PluginTools(PluginBase):
 
                 try:
                     exec(statement_str)
-                except SqlException, e:
+                except SqlException as e:
                     print "ERROR (SQLException): ", e
-                except Exception, e:
+                except Exception as e:
                     print "ERROR: ", e
                     print
                     print statement_str
@@ -1792,7 +1792,7 @@ class PluginTools(PluginBase):
                                 sobject.commit(triggers=False)
                             except UnicodeDecodeError, e:
                                 raise
-                            except Exception, e:
+                            except Exception as e:
                                 print "WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e)
                                 continue
 

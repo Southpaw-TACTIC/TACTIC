@@ -859,7 +859,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         for title, expr in zip(titles, exprs):
             try:
                 value = Search.eval(expr, sobject)
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: ", e.message
                 continue
 

@@ -548,7 +548,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 if widget:
                     widget.set_title(titles[i])
 
-            except Exception, e:
+            except Exception as e:
                 element_wdg.add(ExceptionWdg(e))
                 continue
 
@@ -596,7 +596,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                     title_td.add(widget.get_title_wdg())
 
                 element_wdg.add(widget.get_buffer_display())
-            except Exception, e:
+            except Exception as e:
                 element_wdg.add(ExceptionWdg(e))
                 continue
                 

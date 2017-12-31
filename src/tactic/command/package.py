@@ -72,7 +72,7 @@ class Package(Command):
                     # through a naming convention filter?
 
                     count += 1
-                except Exception, e:
+                except Exception as e:
                     print "WARNING: ", str(e)
                 #server.add_xx(search_key, context)
 

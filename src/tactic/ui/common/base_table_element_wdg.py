@@ -405,7 +405,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 column_exist_error = None
                 cmd = ColumnAddCmd(search_type, column_name, data_type)
                 cmd.execute()
-            except TacticException, e:
+            except TacticException as e:
                 if 'already existed in this table' in e.__str__():
                     column_exist_error = e
                 else:
@@ -478,7 +478,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         expression, title = my.get_expression(summary)
         try:
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e.message
             result = 0
             title = ''
@@ -538,8 +538,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         try:
             info['check'] = True
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
-        except Exception, e:
-            print "WARNING: ", e.message
+        except Exception as e:
+            print("WARNING: ", e.message)
             result = "Calculation Error"
             title = ''
 

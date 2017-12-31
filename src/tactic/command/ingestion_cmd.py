@@ -499,10 +499,10 @@ class IngestionCmd(Command):
             validation_cmd = PythonCmd(script_path=my.validation_script, input=input, IngestException=IngestException)
             try:
                 result = validation_cmd.execute()
-            except IngestException, e:
+            except IngestException as e:
                 print e.message
                 result = None
-            except Exception, e:
+            except Exception as e:
                 print "ERROR: ", e.message
                 result = None
 

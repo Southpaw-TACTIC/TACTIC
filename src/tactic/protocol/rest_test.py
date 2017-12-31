@@ -36,15 +36,15 @@ class RestTest(unittest.TestCase):
 
         try:
             my._setup()
-            print
-            print
-            print
+            print()
+            print()
+            print()
             my._test_accept()
             my._test_method()
             my._test_custom_handler()
-            print
-            print
-            print
+            print()
+            print()
+            print()
 
         finally:
             #test_env.delete()
@@ -63,7 +63,7 @@ class RestTest(unittest.TestCase):
             request = urllib2.Request(url, data)
         else:
             url = "%s?login_ticket=%s" % (url, ticket)
-            print "url: ", url
+            print("url: ", url)
             request = urllib2.Request(url)
 
         for key,value in headers.items():
@@ -71,12 +71,12 @@ class RestTest(unittest.TestCase):
 
         try:
             response = urllib2.urlopen(request)
-        except Exception, e:
+        except Exception as e:
             # try again
-            print "WARNING: ", e
+            print("WARNING: ", e)
             response = urllib2.urlopen(request)
 
-        #print response.info().headers
+        #print(response.info().headers)
 
         value = response.read()
 
@@ -138,7 +138,7 @@ from pyasm.common import Xml
 accept = kwargs.get("Accept")
 method = kwargs.get("Method")
 
-print "kwargs: ", kwargs
+print("kwargs: ", kwargs)
 
 code = kwargs.get("code")
 if code == "CODE0123":
@@ -237,7 +237,7 @@ else:
             'expression': '@SOBJECT(unittest/person)'
         }
         ret_val = my.send_request(url, headers, data)
-        print ret_val
+        print(ret_val)
 
 
     def _test_update(my):

@@ -214,8 +214,8 @@ class FormatElementWdg(SimpleTableElementWdg):
         expression, title = my.get_expression(summary)
         try:
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
-        except Exception, e:
-            print "WARNING: ", e.message
+        except Exception as e:
+            print("WARNING: ", e.message)
             result = "Calculation Error"
             title = ''
         """

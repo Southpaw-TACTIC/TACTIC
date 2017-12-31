@@ -67,7 +67,7 @@ class WatchServerFolderTask(SchedulerTask):
             for task in my.tasks:
                 try:
                     task.execute()
-                except Exception, e:
+                except Exception as e:
                     print "WARNING: error executing task:"
                     print "Reported Error: ", str(e)
 
@@ -202,7 +202,7 @@ class WatchFolderTask(SchedulerTask):
                 else:
                     print "Running transaction: [%s]" % transaction_code
                     my.handle_transaction(base_dir, transaction_code, transaction_code)
-            except Exception, e:
+            except Exception as e:
                 print "... ERROR: could not process transaction [%s]" % transaction_code
                 print str(e)
                 print
@@ -347,14 +347,14 @@ class WatchFolderTask(SchedulerTask):
             status = "complete"
 
         # May need special handing
-        #except MissingItemException, e:
+        #except MissingItemException as e:
         #    print "WARNING: Could not run transaction [%s]" % transaction_code
         #    print "Error reported: ", str(e)
         #    search = SearchType.create("sthpw/sync_error")
 
 
 
-        except Exception, e:
+        except Exception as e:
             print "WARNING: Could not run transaction [%s]" % transaction_code
             print "Error reported: ", str(e)
             status = "error"
@@ -400,7 +400,7 @@ class WatchFolderTask(SchedulerTask):
                     stat = os.stat(path)
                     m.update(path)
                     m.update(str(stat))
-                except Exception, e:
+                except Exception as e:
                     print e
         md5 = m.hexdigest()
         return md5

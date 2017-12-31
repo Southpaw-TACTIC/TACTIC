@@ -164,7 +164,7 @@ class WatchFolderFileActionThread(threading.Thread):
                     break
 
 
-            except Exception, e:
+            except Exception as e:
                 print "Error: ", e
                 f = open(error_path,"w")
                 f.write(str(e))
@@ -249,7 +249,7 @@ class WatchFolderCheckFileThread(threading.Thread):
             task.add_path(path)
 
 
-        except Exception, e:
+        except Exception as e:
             print "Error: ", e
             f = open(my.error_path, "w")
             f.write(str(e))
@@ -460,7 +460,7 @@ class CheckinCmd(object):
 
 
             
-        except Exception, e:
+        except Exception as e:
             print "Error occurred", e
             error_message=str(e)
 
@@ -646,7 +646,7 @@ class WatchDropFolderTask(SchedulerTask):
                 observer.schedule(event_handler, path=path, recursive=True)
                 observer.start()
 
-            except Exception, e:
+            except Exception as e:
                 print "... skipping: ", e
                 raise
 

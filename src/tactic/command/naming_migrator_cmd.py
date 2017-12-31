@@ -102,7 +102,7 @@ class NamingMigratorCmd(Command):
                     else:
                         raise Exception("Invalid mode [%s]" % mode)
 
-                except Exception, e:
+                except Exception as e:
                     error = "Snapshot [%s] has an error getting preallocated path: [%s]" % (snapshot.get_code(), e.message )
                     errors.append(error)
                     continue
@@ -114,12 +114,12 @@ class NamingMigratorCmd(Command):
 
                 num_found += 1
 
-                print "snapshot: ", snapshot.get_value("code")
-                print "old: ", old_path
-                print "new: ", path
+                print("snapshot: ", snapshot.get_value("code"))
+                print("old: ", old_path)
+                print("new: ", path)
 
 
-                print "-"*20
+                print("-"*20)
 
 
                 new_dir = os.path.dirname(path)

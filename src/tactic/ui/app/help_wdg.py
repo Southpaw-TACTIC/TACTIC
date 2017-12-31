@@ -164,7 +164,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                     html.append(line)
                     count += 1
             f.close()
-        except Exception, e:
+        except Exception as e:
             print("Error processing: ", e)
             html.append("Error processing document: %s<br/><br/>" % str(e))
         

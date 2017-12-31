@@ -420,7 +420,7 @@ class CellEditWdg(BaseRefreshWdg):
             display = my.display_wdg.get_buffer_display()
             div.add(display)
             #div.add(my.display_wdg)
-        except Exception, e:
+        except Exception as e:
             print "WARNING in CellEditWdg: ", e
             my.display_wdg = TextWdg(element_name)
             my.display_wdg.set_value('Error in widget')
@@ -456,7 +456,7 @@ class CellEditWdg(BaseRefreshWdg):
                 # FIXME: this should use date util
                 try:
                     tmp, value = value.split(" ")
-                except Exception, e:
+                except Exception as e:
                     value = "00:00:00"
 
             values['main'] = value

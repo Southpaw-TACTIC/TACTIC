@@ -90,7 +90,7 @@ class RSync(object):
                 value = my.sync_paths(from_paths, to_path)
                 success = True
                 break
-            except RSyncConnectionException, e:
+            except RSyncConnectionException as e:
                 time.sleep(60)
 
                 from tactic_client_lib import TacticServerStub
@@ -98,7 +98,7 @@ class RSync(object):
                 server.log_message(message_key, {"message": str(e)}, "error_retry")
                 continue
 
-            except Exception, e:
+            except Exception as e:
                 print "Failed on try [%s]..." % tries
                 raise
 
