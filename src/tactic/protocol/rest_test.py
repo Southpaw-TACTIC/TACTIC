@@ -36,15 +36,15 @@ class RestTest(unittest.TestCase):
 
         try:
             my._setup()
-            print()
-            print()
-            print()
+            print("")
+            print("")
+            print("")
             my._test_accept()
             my._test_method()
             my._test_custom_handler()
-            print()
-            print()
-            print()
+            print("")
+            print("")
+            print("")
 
         finally:
             #test_env.delete()

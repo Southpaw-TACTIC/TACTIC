@@ -126,8 +126,8 @@ def set_default_vendor(vendor=None):
 
 try:
     set_default_vendor()
-except TacticException, e:
-    print e
+except TacticException as e:
+    print(e)
 
 
 from pyasm.common import *
@@ -217,7 +217,7 @@ class Sql(Base):
 
 
     #def __del__(my):
-    #    print "CONNECT: delete: ", my
+    #    print("CONNECT: delete: ", my)
 
 
     ### These are for the default .. most often for the sthpw database
@@ -570,8 +570,8 @@ class Sql(Base):
             else:
                 raise DatabaseException("Unsupported Database [%s]" % my.vendor)
 
-        except Exception, e:
-            #print "ERROR: connecting to database [%s, %s]" % (my.host, my.database_name), e.__str__()
+        except Exception as e:
+            #print("ERROR: connecting to database [%s, %s]" % (my.host, my.database_name), e.__str__())
             raise
             raise DatabaseException(e)
 
@@ -646,15 +646,15 @@ class Sql(Base):
                 raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
 
             if num_attempts >= 3:
-                print "ERROR: three failed attempts have been made to access [%s]" % my.database_name
+                print("ERROR: three failed attempts have been made to access [%s]" % my.database_name)
                 raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
 
             Container.put("Sql::first_query", False)
 
             # try to reconnect
-            print "WARNING: a database error [%s] has been encountered: " % e.__class__.__name__
-            print str(e)
-            print "Attempting to reconnect and reissue query"
+            print("WARNING: a database error [%s] has been encountered: " % e.__class__.__name__)
+            print(str(e))
+            print("Attempting to reconnect and reissue query")
             # try closing: oracle throws an exception if you try to close
             # on an already closed connection
             try:
@@ -666,7 +666,7 @@ class Sql(Base):
 
         except pgdb.Error, e:
             error_msg = str(e)
-            print "ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query)
+            print("ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error 
             raise SqlException("%s: %s\n" % (my.DO_QUERY_ERR, query))
     """
@@ -695,7 +695,7 @@ class Sql(Base):
 
                 #import time
                 #start = time.time()
-                #print my.database_name, query
+                #print(my.database_name, query)
                 my.query = query
                 my.cursor = my.conn.cursor()
                 #import time
@@ -720,7 +720,7 @@ class Sql(Base):
                     my.results = my.cursor.fetchall()
 
                 my.cursor.close()
-                #print time.time() - start
+                #print(time.time() - start)
 
 
             return my.results
@@ -737,15 +737,15 @@ class Sql(Base):
                 raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
 
             if num_attempts >= 3:
-                print "ERROR: three failed attempts have been made to access [%s]" % my.database_name
+                print("ERROR: three failed attempts have been made to access [%s]" % my.database_name)
                 raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
 
             Container.put("Sql::first_query", False)
 
             # try to reconnect
-            print "WARNING: a database error [%s] has been encountered: " % e.__class__.__name__
-            print str(e)
-            print "Attempting to reconnect and reissue query"
+            print("WARNING: a database error [%s] has been encountered: " % e.__class__.__name__)
+            print(str(e))
+            print("Attempting to reconnect and reissue query")
             # try closing: oracle throws an exception if you try to close
             # on an already closed connection
             try:
@@ -757,7 +757,7 @@ class Sql(Base):
 
         except my.pgdb.Error, e:
             error_msg = str(e)
-            print "ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query)
+            print("ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error 
             raise SqlException("%s: %s\n" % (my.DO_QUERY_ERR, query))
 
@@ -788,7 +788,7 @@ class Sql(Base):
                 my.connect()
 
             # store the last query
-            #print "[%s]" % my.database_name, query
+            #print("[%s]" % my.database_name, query)
 
             my.query = query
             my.cursor = my.conn.cursor()
@@ -823,8 +823,8 @@ class Sql(Base):
             else:
                 wrong_query = unicode(query, errors='ignore').encode('utf-8')
 
-            print "Error with query (ProgrammingError): ", my.database_name, wrong_query
-            print str(e)
+            print("Error with query (ProgrammingError): ", my.database_name, wrong_query)
+            print(str(e))
             raise SqlException(str(e))
         except my.pgdb.Error, e:
             if not quiet:
@@ -832,7 +832,7 @@ class Sql(Base):
                     wrong_query = query.encode('utf-8')
                 else:
                     wrong_query = unicode(query, errors='ignore').encode('utf-8')
-                print "Error with query (Error): ", my.database_name, wrong_query
+                print("Error with query (Error): ", my.database_name, wrong_query)
             raise SqlException(e.__str__())
 
 
@@ -947,8 +947,8 @@ class Sql(Base):
                 value = value.replace("'", "''")
             except Exception:
                 #raise SqlException("Error with quoting [%s]" % value)
-                print "WARNING: set_value(): ", value
-                print "type: ", type(value)
+                print("WARNING: set_value(): ", value)
+                print("type: ", type(value))
                 raise
 
         if has_outside_quotes:
@@ -1277,7 +1277,7 @@ class DbContainer(Base):
         from sql import DbResource
         assert db_resource != None
         if db_resource != "sthpw":
-            #print "DBCONTAINER what is", db_resource, type(db_resource)
+            #print("DBCONTAINER what is", db_resource, type(db_resource))
             assert DbResource.is_instance(db_resource)
         else:
             db_resource = DbResource.get_default("sthpw")
@@ -1404,7 +1404,7 @@ class DbContainer(Base):
                 # otherwise reuse one from the pool
                 sql = global_pool.pop()
                 #import thread as xx
-                #print "CONNECT: reuse: ", database_key, sql, xx.get_ident()
+                #print("CONNECT: reuse: ", database_key, sql, xx.get_ident())
 
 
             # remember for this thread
@@ -1441,8 +1441,8 @@ class DbContainer(Base):
             try:
                 sql.commit()
                 
-            except Exception, e:
-                print "WARNING: When trying to commit: ", e
+            except Exception as e:
+                print("WARNING: When trying to commit: ", e)
                 del(thread_pool[database_key])
             finally:
                 sql.close()
@@ -1470,7 +1470,7 @@ class DbContainer(Base):
 
     def release_thread_sql(cls):
         # release all of the open connections back to the pool
-        #print "releasing: ", thread.get_ident()
+        #print("releasing: ", thread.get_ident())
 
 
         lock = Lock()
@@ -1486,8 +1486,8 @@ class DbContainer(Base):
                 # NOTE: implemented in 4.0
                 try:
                     sql.commit()
-                except SqlException, e:
-                    print "WARNING: ", e.__str__()
+                except SqlException as e:
+                    print("WARNING: ", e.__str__())
                 # Do not pool sqlite. SQLite does not like sharing connection
                 # amongst threads
                 if sql.get_database_type() == 'Sqlite':
@@ -1576,7 +1576,7 @@ class DbPasswordUtil(object):
 
         """
         if Config.get_value("database", "vendor") == 'SQLServer':
-            print "WARNING: SQLServer implementation does not support encoded keys for database passwords"
+            print("WARNING: SQLServer implementation does not support encoded keys for database passwords")
             return coded
         """
         if not coded or coded == "none":
@@ -1870,7 +1870,7 @@ class Select(object):
             # NOTE: sometimes an object that is sql.Sql is not detected
             # by the above condition.  Note sure why, but this warning
             # becomes intrusive
-            #print "WARNING: it should be Sql instance, but it is not detected as such"
+            #print("WARNING: it should be Sql instance, but it is not detected as such")
             my.sql = database
             database = my.sql.get_database_name()
             my.db_resource = DbResource.get_default(database)
@@ -2858,7 +2858,7 @@ class Insert(object):
             database = my.sql.get_database_name()
             my.db_resource = my.sql.get_db_resource()
         else:
-            print "WARNING: it should be Sql instance, but it is not detected as such"
+            print("WARNING: it should be Sql instance, but it is not detected as such")
             my.sql = database
             database = my.sql.get_database_name()
             my.db_resource = DbResource.get_default(database)
@@ -3071,7 +3071,7 @@ class Update(object):
             database = my.sql.get_database_name()
             my.db_resource = my.sql.get_db_resource()
         else:
-            print "WARNING: it should be Sql instance, but it is not detected as such"
+            print("WARNING: it should be Sql instance, but it is not detected as such")
             my.sql = database
             database = my.sql.get_database_name()
             my.db_resource = DbResource.get_default(database)
@@ -3282,7 +3282,7 @@ class Delete(object):
             database = my.sql.get_database_name()
             my.db_resource = my.sql.get_db_resource()
         else:
-            print "WARNING: it should be Sql instance, but it is not detected as such"
+            print("WARNING: it should be Sql instance, but it is not detected as such")
             my.sql = database
             database = my.sql.get_database_name()
             my.db_resource = DbResource.get_default(database)
@@ -3533,17 +3533,17 @@ class CreateTable(Base):
             sql.clear_table_cache(my.database)
 
         else:
-            print "WARNING: table [%s] exists ... skipping" % my.table
+            print("WARNING: table [%s] exists ... skipping" % my.table)
             defined_cols = set( sql.get_column_info(my.table).keys() )
             desired_cols = set( [x[0] for x in my.columns] )
             diff1 = defined_cols.difference(desired_cols)
             if diff1:
-                print "... extra columns in database: ", diff1
+                print("... extra columns in database: ", diff1)
             diff2 = desired_cols.difference(defined_cols)
             if diff2:
-                print "... new columns in definition: ", diff2
+                print("... new columns in definition: ", diff2)
             if not diff1 and not diff2:
-                print "... definition the same as in the database"
+                print("... definition the same as in the database")
 
         # create a sequence for the id
         try:
@@ -3551,8 +3551,8 @@ class CreateTable(Base):
                 sequence = impl.get_sequence_name(my.table)
                 statement = my.impl.get_create_sequence(sequence)
                 sql.do_update(statement)
-        except Exception, e:
-            print "WARNING: ", str(e)
+        except Exception as e:
+            print("WARNING: ", str(e))
 
 
 
@@ -3582,7 +3582,7 @@ class DropTable(Base):
     def commit(my):
         sql = DbContainer.get(my.db_resource)
         if not sql.table_exists(my.table):
-            print "WARNING: table [%s] does not exist in database [%s]" % (my.table, my.database)
+            print("WARNING: table [%s] does not exist in database [%s]" % (my.table, my.database))
             return
 
         # dump table into sql first
@@ -3599,8 +3599,8 @@ class DropTable(Base):
         try:
             # should i use mode='sobject'? it defaults to 'sql'
             dumper.dump_to_tactic(path=schema_path)
-        except SqlException, e:
-            print "SqlException: ", e
+        except SqlException as e:
+            print("SqlException: ", e)
             raise
 
         sql.do_update(my.statement)
@@ -3626,7 +3626,7 @@ class AlterTable(CreateTable):
 
     def drop(my, name):
         #TODO: check if this column exists
-        #print "COL NAME ", name
+        #print("COL NAME ", name)
         my.drop_columns.append(name)
 
     def verify_table(my):
@@ -3717,7 +3717,7 @@ class AlterTable(CreateTable):
             for statement in statements:
                 sql.do_update(statement)
         else:
-            print "WARNING: table [%s] does not exist ... skipping" % my.table
+            print("WARNING: table [%s] does not exist ... skipping" % my.table)
 
 
 

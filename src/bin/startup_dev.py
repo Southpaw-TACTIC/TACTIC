@@ -12,7 +12,6 @@
 
 import os, sys
 
-
 # set up environment
 os.environ['TACTIC_APP_SERVER'] = "cherrypy"
 os.environ['TACTIC_MODE'] = "development"

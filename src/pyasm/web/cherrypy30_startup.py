@@ -127,11 +127,11 @@ class CherryPyStartup(CherryPyStartup20):
                 eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
         except (AttributeError, SyntaxError), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
             has_project = False
             has_site = True
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             has_project = False
         else:
             has_project = True
@@ -156,8 +156,8 @@ class CherryPyStartup(CherryPyStartup20):
                     WebContainer.set_web(adapter)
 
                     widget = UploadServerWdg().get_display()
-                except Exception, e:
-                    print "ERROR: ", e
+                except Exception as e:
+                    print("ERROR: ", e)
                     widget = e
 
             else:
@@ -169,11 +169,11 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-        print "WARNING:"
-        print "    status: ", status
-        print "    message: ", message
-        print "    site: ", site
-        print "    project_code: ", project_code
+        print("WARNING:")
+        print("    status: ", status)
+        print("    message: ", message)
+        print("    site: ", site)
+        print("    project_code: ", project_code)
 
 
 
@@ -184,8 +184,8 @@ class CherryPyStartup(CherryPyStartup20):
         if has_site:
             try:
                 project = Project.get_by_code(project_code)
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 raise
 
 
@@ -214,7 +214,7 @@ class CherryPyStartup(CherryPyStartup20):
                     widget = HashPanelWdg.get_widget_from_hash(hash)
                     if widget:
                         html = widget.get_buffer_display()
-                except Exception, e:
+                except Exception as e:
                     return "ERROR: %s" % str(e)
 
                 if html:
@@ -271,8 +271,8 @@ class CherryPyStartup(CherryPyStartup20):
             top.add(widget)
 
             return top.get_buffer_display()
-        except Exception, e:
-            print "ERROR: ", e
+        except Exception as e:
+            print("ERROR: ", e)
             return "ERROR: ", e
 
 
@@ -427,9 +427,9 @@ class CherryPyStartup(CherryPyStartup20):
             return
 
         if site:
-            print "Registering project ... %s (%s)" % (project, site)
+            print("Registering project ... %s (%s)" % (project, site))
         else:
-            print "Registering project ... %s" % project
+            print("Registering project ... %s" % project)
 
 
         try:
@@ -452,12 +452,12 @@ class CherryPyStartup(CherryPyStartup20):
 
 
         except ImportError:
-            #print "... WARNING: SitePage not found"
+            #print("... WARNING: SitePage not found")
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
         except SyntaxError, e:
-            print e.__str__()
-            print "WARNING: skipping project [%s]" % project
+            print(e.__str__())
+            print("WARNING: skipping project [%s]" % project)
 
 
 
@@ -511,8 +511,8 @@ class CherryPyStartup(CherryPyStartup20):
                     exec("cherrypy.root.tactic.%s.%s = %s()" % (project,context,context) )
 
             except ImportError, e:
-                print str(e)
-                print "... failed to import '%s.%s.%s'" % (base, project, context)
+                print(str(e))
+                print("... failed to import '%s.%s.%s'" % (base, project, context))
                 raise
                 #return
 

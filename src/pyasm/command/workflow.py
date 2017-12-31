@@ -50,7 +50,7 @@ class Workflow(object):
         #if workflow not in [True, 'true']:
         #    return
 
-        print "Starting Workflow Engine"
+        print("Starting Workflow Engine")
 
         # initialize the triggers for the workflow
         event = "process|pending"
@@ -627,7 +627,7 @@ class BaseProcessTrigger(Trigger):
         # the caller is implied to be complete
         key = "%s|%s|status" % (caller_sobject.get_search_key(), related_process)
         complete[key] = True
-        #print "complete: ", complete
+        #print("complete: ", complete)
 
         # check if there are conditions which make it not complete
         is_complete = True
@@ -750,7 +750,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process = my.input.get("process")
         sobject = my.input.get("sobject")
 
-        print "check_input: ", process
+        print("check_input: ", process)
 
         # first check the inputs.  If there is only one input, then
         # skip this check
@@ -895,8 +895,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # if there are no output processes then check for any hierarchy
         if not output_processes and my.parent_processes:
-            print "parent_pipelines: ", my.parent_pipelines
-            print "parent_processes: ", my.parent_processes
+            print("parent_pipelines: ", my.parent_pipelines)
+            print("parent_processes: ", my.parent_processes)
             # send a message up the hierarchy
             parent_pipelines = my.parent_pipelines[:]
             pipeline = parent_pipelines.pop()
@@ -1041,7 +1041,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             
             process_obj = my.pipeline.get_process(my.process)
             if not process_obj:
-                print "No process_obj [%s]" % process
+                print("No process_obj [%s]" % process)
                 return
 
             # only if it's not internal. If it's true, set_all_tasks() returns anyways
@@ -1171,7 +1171,7 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(my):
-        #print "action: ", my.process
+        #print("action: ", my.process)
 
         my.log_message(my.sobject, my.process, "in_progress")
         my.set_all_tasks(my.sobject, my.process, "in_progress")
@@ -1222,8 +1222,8 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
             for trigger in triggers:
                 try:
                     info = trigger.get_info()
-                except Exception, e:
-                    print "WARNING: trigger [%s] does not support get_info" % trigger
+                except Exception as e:
+                    print("WARNING: trigger [%s] does not support get_info" % trigger)
                     continue
 
                 ret_val = info.get("result")
@@ -1432,12 +1432,12 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
         if not related_search_type:
-            print "WARNING: no related search_type found"
+            print("WARNING: no related search_type found")
             return
 
 
         if not related_process:
-            print "WARNING: no related process found"
+            print("WARNING: no related process found")
             return
 
 
@@ -2076,7 +2076,7 @@ class ProcessErrorTrigger(BaseProcessTrigger):
         sobject = my.input.get("sobject")
         pipeline = my.input.get("pipeline")
  
-        print "Error: Failed to process [%s] on sobject [%s]" % (process, sobject.get_search_key() )
+        print("Error: Failed to process [%s] on sobject [%s]" % (process, sobject.get_search_key() ))
 
         # TODO: send a message so that those following this sobject will be notified
 
@@ -2195,20 +2195,20 @@ class ProcessCustomTrigger(BaseProcessTrigger):
 
         process_obj = pipeline.get_process(process)
         if not process_obj:
-            print "No process_obj [%s]" % process
+            print("No process_obj [%s]" % process)
             return
 
         status_pipeline_code = process_obj.get_task_pipeline()
         status_pipeline = Pipeline.get_by_code(status_pipeline_code)
         if not status_pipeline:
-            print "No custom status pipeline [%s]" % process
+            print("No custom status pipeline [%s]" % process)
             return
         
         status_processes = status_pipeline.get_process_names()
 
         status_obj = status_pipeline.get_process(status)
         if not status_obj:
-            print "No status [%s]" % status
+            print("No status [%s]" % status)
             return
 
 
@@ -2229,8 +2229,8 @@ class ProcessCustomTrigger(BaseProcessTrigger):
         if to_status and to_status.lower() in PREDEFINED:
             to_status = to_status.lower()
 
-        #print "direction: ", direction
-        #print "to_status: ", to_status
+        #print("direction: ", direction)
+        #print("to_status: ", to_status)
 
 
         if mapping:
@@ -2421,11 +2421,11 @@ class ProcessListenTrigger(BaseProcessTrigger):
         related_search_type = related_pipeline.get_value("search_type")
 
         if not related_search_type:
-            print "WARNING: no related search_type found"
+            print("WARNING: no related search_type found")
             return
 
         if not related_process:
-            print "WARNING: no related process found"
+            print("WARNING: no related process found")
             return
 
 

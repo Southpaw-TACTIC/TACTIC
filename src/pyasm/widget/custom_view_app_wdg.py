@@ -69,9 +69,9 @@ class CustomViewAppWdg(Widget):
         # make sure the current selection exists
         try:
             SearchType.get(search_type)
-        except SearchException, e:
+        except SearchException as e:
             return div
-        except SqlException, e:
+        except SqlException as e:
             return div
 
 

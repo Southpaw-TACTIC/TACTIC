@@ -496,7 +496,7 @@ class LoginGroup(Login):
                     login_code = login.get_value("login")
                     login_codes.add(login_code)
             else:
-                print "This group [%s] no longer exists" %group_name
+                print("This group [%s] no longer exists" %group_name)
 
         results = list(login_codes)
         groups_dict[login_name] = results
@@ -543,7 +543,7 @@ class LoginGroup(Login):
             else:
                 node = access_rules.get_node("rules/rule[@group='project' and @code='*' and @access='allow']")
                 if node is not None:
-                    print "added2"
+                    print("added2")
                     project_groups.append( group )
 
 
@@ -834,8 +834,8 @@ class Site(object):
         #class_name = "spt.modules.portal.PortalSite"
         try:
             site = Common.create_from_class_path(class_name)
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             site = Site()
         return site
     get = classmethod(get)
@@ -905,14 +905,14 @@ class Site(object):
 
         try:
             sql = DbContainer.get("sthpw")
-        except Exception, e:
+        except Exception as e:
             # try to start the site
             site_obj = Site.get()
             state = site_obj.start_site(site)
             if state == "OK":
                 pass
             else:
-                print "WARNING: ", e
+                print("WARNING: ", e)
                 Site.pop_site()
                 raise Exception("WARNING: site [%s] does not exist" % site)
 
@@ -1052,7 +1052,7 @@ class Ticket(SObject):
                 Site.pop_site()
 
         if not ticket:
-            print "WARNING: Ticket [%s] is not valid" % key
+            print("WARNING: Ticket [%s] is not valid" % key)
 
         # This is an extra test which we may enable later.
         # if we have a ticket, then look for the user in the login table.  It ensures
@@ -1119,7 +1119,7 @@ class Ticket(SObject):
         # FIXME: this is a bit of a hack until we figure out how
         # timestamps work in sqlite (all are converted to GMT?!)
         if impl.get_database_type() in ['Sqlite', 'MySQL']:
-            print "WARNING: no expiry on ticket for Sqlite and MySQL"
+            print("WARNING: no expiry on ticket for Sqlite and MySQL")
             ticket.set_value("expiry", 'NULL', quoted=0)
         else:
             ticket.set_value("expiry", expiry, quoted=0)
@@ -1485,7 +1485,7 @@ class Security(Base):
         # authenticate use some external method
         if sid:
             expr = '''@SOBJECT(table/sessions?project=drupal['sid','%s'])''' % sid
-            #print "expr: ", expr
+            #print("expr: ", expr)
             session = server.eval(expr, single=True)
         else:
             session = {}
@@ -1507,7 +1507,7 @@ class Security(Base):
         # at this point, the user is authenticated
 
         user_name = drupal_user.get("name")
-        #print "login: ", user_name
+        #print("login: ", user_name)
 
         # if the user doesn't exist, then autocreate one
         
@@ -1619,8 +1619,8 @@ class Security(Base):
         authenticate = Common.create_from_class_path(auth_class)
         try:
             is_authenticated = authenticate.verify(auth_login_name, password)
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             raise
 
         if is_authenticated != True:
@@ -1665,7 +1665,7 @@ class Security(Base):
 
             try:
                 authenticate.add_user_info( my._login, password)
-            except Exception, e:
+            except Exception as e:
                 raise SecurityException("Error updating user info: %s" % e.__str__())
 
             # verify that this won't create too many users.  Floating licenses
@@ -1698,7 +1698,7 @@ class Security(Base):
         elif license_type == 'float': 
             try:
                 my.license.verify_floating(login_name)
-            except LicenseException, e:
+            except LicenseException as e:
                 raise SecurityException(str(e))
 
 
@@ -1894,7 +1894,7 @@ class Security(Base):
             my._groups = []
 
         #for x  in my._groups:
-        #    print x.get_login_group()
+        #    print(x.get_login_group())
         
 
     def add_access_rules(my):
@@ -1944,7 +1944,7 @@ class LicenseKey(object):
             # get the size and key object
             haspass, my.size, keyobj = pickle.loads(unwrapped_key)
             my.algorithm, my.keyobj = pickle.loads(keyobj)
-        except Exception, e:
+        except Exception as e:
             raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
 
 
@@ -1997,9 +1997,9 @@ class License(object):
 
         try:
             my.parse_license()
-        except LicenseException, e:
+        except LicenseException as e:
             my.message = e.__str__()
-            print "WARNING: ", my.message
+            print("WARNING: ", my.message)
             my.licensed = False
 
             # this is the minimal acceptable data for my.xml, dont't set to None
@@ -2019,7 +2019,7 @@ class License(object):
 
         try:
             my.xml.read_file(my.license_path, cache=False)
-        except XmlException, e:
+        except XmlException as e:
             my.xml.read_string("<license/>")
             raise LicenseException("Error parsing license file: malformed xml license file [%s] e: %s" % (my.license_path, e))
 
@@ -2033,10 +2033,10 @@ class License(object):
         # the data requires a very specific spacing.  4Suite puts out a
         # different dump and lxml and unfortunately, the license key is
         # dependent on the spacing.
-        #print "data: [%s]" % data
+        #print("data: [%s]" % data)
         data = data.replace("    ", "  ")
         data = data.replace("  </data>", "</data>")
-        #print "data: [%s]" % data
+        #print("data: [%s]" % data)
 
     
         # verify the signature
@@ -2086,7 +2086,7 @@ class License(object):
             my.verify_license()
             my.licensed = True
             return True
-        except LicenseException, e:
+        except LicenseException as e:
             my.message = e.__str__()
             my.licensed = False
             my.LICENSE = None
@@ -2101,10 +2101,10 @@ class License(object):
         floating_current_users = my.get_current_floating_users()
         floating_current = len(floating_current_users)
 
-        #print "foating_max: ", floating_max
-        #print "foating_current: ", floating_current
-        #print "login_name: ", login_name
-        #print "floating_current_users: ", floating_current_users
+        #print("foating_max: ", floating_max)
+        #print("foating_current: ", floating_current))
+        #print("login_name: ", login_name)
+        #print("floating_current_users: ", floating_current_users)
 
         # if the user is in the list, then this user is already logged in
         if login_name and login_name in floating_current_users:
@@ -2180,7 +2180,7 @@ class License(object):
 
         num_users = select.execute_count()
         #statement = select.get_count()
-        #print "statement: ", statement
+        #print("statement: ", statement)
         #num_users = sql.get_value(statement)
         #num_users = int(num_users)
         return num_users
@@ -2213,7 +2213,7 @@ class License(object):
 
         #statement = select.get_count()
         statement = select.get_statement()
-        #print "statement: ", statement
+        #print("statement: ", statement)
 
         login_names = sql.do_query(statement)
         login_names = [x[0] for x in login_names]
@@ -2310,10 +2310,10 @@ class License(object):
                     # software anways
                     current = 0
                    
-                #print "current: ", current, license_users, current > license_users
+                #print("current: ", current, license_users, current > license_users)
                 if current > license_users:
                     raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
-        #print "License verified ... "
+        #print("License verified ... ")
 
 
 

@@ -65,12 +65,12 @@ def _cp_on_http_error(status, message):
     tb = sys.exc_info()[2]
     stacktrace = traceback.format_tb(tb)
     stacktrace_str = "".join(stacktrace)
-    print "-"*50
-    print stacktrace_str
-    print "-"*50
+    print("-"*50)
+    print(stacktrace_str)
+    print("-"*50)
 
 
-    print path, status, message
+    print(path, status, message)
     try:
         eval("cherrypy.root.tactic.%s" % project_code)
     # if project_code is empty , it raises SyntaxError
@@ -100,7 +100,7 @@ def _cp_on_http_error(status, message):
 
     # check to see if this project exists in the database?
     #project = Project.get_by_code(project_code)
-    #print project
+    #print(project)
     
     from pyasm.web import Widget, WebApp, AppServer
     from pyasm.widget import TopWdg, BottomWdg, Error404Wdg
@@ -176,9 +176,9 @@ class CherryPyStartup(object):
                         start_port = 8081
                     if port and int(port) == start_port:
                          sql.do_update('DELETE from "ticket" where "code" is NULL')
-        except DatabaseException, e:
+        except DatabaseException as e:
             # TODO: need to work on this
-            print "ERROR: could not connect to [sthpw] database"
+            print("ERROR: could not connect to [sthpw] database")
             #os.environ["TACTIC_CONFIG_PATH"] = Config.get_default_config_path()
             #Sql.set_default_vendor("Sqlite")
 
@@ -235,12 +235,12 @@ class CherryPyStartup(object):
         # start up the queue system ...
         if Config.get_value("sync", "enabled") == "true":
             # start up the sync system ...
-            print "Starting Transaction Sync ..."
+            print("Starting Transaction Sync ...")
             from tactic.command import TransactionQueueManager
             TransactionQueueManager.start()
 
             # start up the sync system ...
-            print "Starting Watch Folder Service ..."
+            print("Starting Watch Folder Service ...")
             from tactic.command import WatchServerFolderTask
             WatchServerFolderTask.start()
         """
@@ -258,9 +258,9 @@ class CherryPyStartup(object):
         DbContainer.close_thread_sql()
 
         version = Environment.get_release_version()
-        print
-        print "Starting TACTIC v%s ..." % version
-        print
+        print("")
+        print("Starting TACTIC v%s ..." % version)
+        print("")
 
 
 
@@ -403,7 +403,7 @@ class CherryPyStartup(object):
 
 
     def register_project(my, site, config):
-        print "Registering project ... %s" % site
+        print("Registering project ... %s" % site)
 
         # if there happend to be . in the site name, convert to _
         # NOTE: not sure what the implication of that is???
@@ -428,7 +428,7 @@ class CherryPyStartup(object):
             exec("cherrypy.root.projects.%s = SitePage()" % site)
 
         except ImportError:
-            #print "... WARNING: Index not found"
+            #print("... WARNING: Index not found")
             exec("cherrypy.root.tactic.%s = TacticIndex()" % site)
             exec("cherrypy.root.projects.%s = TacticIndex()" % site)
 
@@ -443,7 +443,7 @@ class CherryPyStartup(object):
             context_dir = "%s/sites/%s/context" % (context_dir, site)
 
         if not os.path.exists(context_dir):
-            #print "WARNING: context directory not found"
+            #print("WARNING: context directory not found")
             return
 
         contexts = []
@@ -467,7 +467,7 @@ class CherryPyStartup(object):
                 exec("cherrypy.root.tactic.%s.%s = %s()" % (site,context,context) )
 
             except ImportError, e:
-                print str(e)
+                print(str(e))
                 print "... failed to import '%s.%s.%s'" % (base, site, context)
                 raise
                 #return
