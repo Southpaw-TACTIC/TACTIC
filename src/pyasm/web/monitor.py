@@ -53,7 +53,7 @@ class BaseProcessThread(threading.Thread):
         super(BaseProcessThread,my).__init__()
 
     def run(my):
-        print "Starting %s ..." % my.get_title()
+        print("Starting %s ..." % my.get_title())
 
         while 1:
 
@@ -63,10 +63,10 @@ class BaseProcessThread(threading.Thread):
             time.sleep(1)
             
             if my.end:
-                #print "Stopping %s ..." % my.get_title()
+                #print("Stopping %s ..." % my.get_title())
                 break
             else:
-                #print "Restarting %s ..." % my.get_title()
+                #print("Restarting %s ..." % my.get_title())
                 pass
 
     def get_title(my):
@@ -150,7 +150,7 @@ class BaseProcessThread(threading.Thread):
             pid = file.read()
             file.close()
 
-            print "WARNING : port %s is not responsive!!" % my.port
+            print("WARNING : port %s is not responsive!!" % my.port)
         '''
 
 
@@ -214,7 +214,7 @@ class CustomPythonProcessThread(BaseProcessThread):
 
             if char == "\n":
                 line = "".join(buffer)
-                #print line
+                #print(line)
 
             buffer.append(char)
  
@@ -303,7 +303,7 @@ class TacticTimedThread(threading.Thread):
         import time
         time.sleep(6)
 
-        #print "Starting Timed Trigger"
+        #print("Starting Timed Trigger")
 
         # checks are done every 60 seconds
         chunk = 60
@@ -334,10 +334,10 @@ class TacticTimedThread(threading.Thread):
 
         while 1:
             time.sleep(chunk)
-            #print "Running timer"
+            #print("Running timer")
 
             date = Date()
-            #print "utc: ", date.get_display_time()
+            #print("utc: ", date.get_display_time())
 
             # go through each trigger
             for timed_trigger in timed_triggers:
@@ -360,7 +360,7 @@ class TacticTimedThread(threading.Thread):
 
 
             if my.end:
-                #print "Stopping timed thread"
+                #print("Stopping timed thread")
                 break
 
 
@@ -381,7 +381,7 @@ class TacticSchedulerThread(threading.Thread):
         import time
         time.sleep(3)
 
-        #print "Starting Scheduler ...."
+        #print("Starting Scheduler ....")
 
         # NOTE: not sure why we have to do a batch here
         from pyasm.security import Batch
@@ -408,8 +408,8 @@ class TacticSchedulerThread(threading.Thread):
                 items = search.get_sobjects()
                 if items:
                     timed_trigger_sobjs.extend(items)
-            except Exception, e:
-                #print "WARNING: ", e
+            except Exception as e:
+                #print("WARNING: ", e)
                 continue
 
             # example
@@ -451,7 +451,7 @@ class TacticSchedulerThread(threading.Thread):
                 timed_triggers.append(timed_trigger)
 
             if has_triggers and my.dev_mode:
-                print "Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code)
+                print("Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code))
 
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
@@ -472,7 +472,7 @@ class TacticSchedulerThread(threading.Thread):
                     #Command.execute_cmd(timed_trigger)
                     Project.set_project(my.project_code)
                     timed_triggers[my.index].execute()
-                except Exception, e:
+                except Exception as e:
                     raise
                 finally:
                     DbContainer.close_thread_sql()
@@ -725,15 +725,15 @@ class TacticMonitor(object):
                 watch_folder_code = watch_folder.get("code")
 
                 if not project_code:
-                    print "Watch Folder missing project_code ... skipping"
+                    print("Watch Folder missing project_code ... skipping")
                     continue
 
                 if not base_dir:
-                    print "Watch Folder missing base_dir ... skipping"
+                    print("Watch Folder missing base_dir ... skipping")
                     continue
 
                 if not search_type:
-                    print "Watch Folder missing search_type ... skipping"
+                    print("Watch Folder missing search_type ... skipping")
                     continue
 
                 my.watch_folder_cleanup(base_dir)
@@ -761,9 +761,9 @@ class TacticMonitor(object):
 
 
         if len(tactic_threads) == 0:
-            print
-            print "No services started ..."
-            print
+            print("\n")
+            print("No services started ...")
+            print("\n")
             return
 
 
@@ -829,7 +829,7 @@ class TacticMonitor(object):
                     break
 
             except KeyboardInterrupt, e:
-                #print "Keyboard interrupt ... exiting Tactic"
+                #print("Keyboard interrupt ... exiting Tactic")
                 for tactic_thread in my.tactic_threads:
                     tactic_thread.end = True
                     end = True

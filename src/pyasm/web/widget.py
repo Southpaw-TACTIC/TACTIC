@@ -106,7 +106,7 @@ class Widget(object):
             # call the main initialization function
             my.init()
 
-        except SecurityException, e:
+        except SecurityException as e:
             my.__cripple_widget(e)
 
 
@@ -317,7 +317,7 @@ class Widget(object):
 
     def set_sobjects(my,sobjects,search=None):
         '''store the sobjects that this widget will act upon'''
-        #print "set_sobjects"
+        #print("set_sobjects")
         if search:
             my.search = search
         my.sobjects = sobjects
@@ -399,7 +399,7 @@ class Widget(object):
         for widget in my.widgets:
             try:
                 widget.check_security()
-            except SecurityException, e:
+            except SecurityException as e:
                 my.__cripple_widget(e)
 
 
@@ -542,9 +542,9 @@ class Widget(object):
     has_access = classmethod(has_access)
 
     def dump(my):
-        print my
+        print(my)
         for widget in my.widgets:
-            print "child: \t", widget
+            print("child: \t", widget)
 
         for widget in my.widgets:
             widget.dump()
@@ -677,7 +677,7 @@ class WidgetSettings(SObject):
     # DEPRECATED
     def get_key_value(key, widget_name):
 
-        #print 'DEPRECATED: WidgetSettings.get_key_value()'
+        #print('DEPRECATED: WidgetSettings.get_key_value()')
 
         # web form value overrides all others
         web = WebContainer.get_web()

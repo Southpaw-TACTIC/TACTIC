@@ -443,13 +443,13 @@ class Transaction(Base):
                 # triggers are "ingest" which basically runs nothing execpt the
                 # update
                 change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
-            except SqlException, e:
-                print "WARNING: ", str(e)
+            except SqlException as e:
+                print("WARNING: ", str(e))
                 if change_timestamp.is_insert:
                     action = "insert"
                 else:
                     action = "update"
-                print "Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code)
+                print("Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code))
                 DbContainer.commit_thread_sql()
 
 
@@ -587,8 +587,8 @@ class FileUndo:
         if os.path.exists(src):
             try:
                 os.rmdir(src)
-            except Exception, e:
-                print "WARNING: could not remove [%s]" % src
+            except Exception as e:
+                print("WARNING: could not remove [%s]" % src)
         FileUndo._add_to_transaction_log("rmdir", src, "")
  
     rmdir = staticmethod(rmdir)
@@ -760,7 +760,7 @@ class FileUndo:
             try:
                 os.symlink(rel,dst)
             except Exception:
-                print "Error: could not symlink [%s] to [%s]" % (rel, dst)
+                print("Error: could not symlink [%s] to [%s]" % (rel, dst))
                 raise 
 
         # all file links need to be relative
@@ -871,7 +871,7 @@ class FileUndo:
                     else:
                         shutil.move(src, "%s" % tmp_dir )
 
-                except Exception, e:
+                except Exception as e:
                     # if there are any errors in moving to cache, then
                     # just delete the files
                     if os.path.exists(src):
@@ -879,8 +879,8 @@ class FileUndo:
                             shutil.rmtree(src)
                         else:
                             os.unlink(src)
-                        print "Error: ", e.args[0].encode('utf-8','ignore')
-                        print "Error moving [%s] to cache directory in [%s] failed. Removed repository files" % (src, tmp_dir)
+                        print("Error: ", e.args[0].encode('utf-8','ignore'))
+                        print("Error moving [%s] to cache directory in [%s] failed. Removed repository files" % (src, tmp_dir))
 
                 # attempt to remove directories
                 last_dir = None
@@ -935,7 +935,7 @@ class FileUndo:
                         try:
                             rel = Common.relative_path(dst, prev)
                             os.symlink(rel, dst)
-                        except Exception, e:
+                        except Exception as e:
                             raise IOError(str(e))
 
 
@@ -944,8 +944,8 @@ class FileUndo:
             print("Failed to undo %s %s" % (type, src))
         except OSError, e:
             raise TransactionException("Failed to undo due to OS Error during %s. %s" % (type, e.__str__()))
-        except Exception, e:
-            print "Error: %s" %e
+        except Exception as e:
+            print("Error: %s" %e)
             raise
 
     undo = staticmethod(undo)
@@ -1011,7 +1011,7 @@ class FileUndo:
 
 
             if not os.path.exists(orig):
-                print "WARNING: cannot find file [%s]" % orig
+                print("WARNING: cannot find file [%s]" % orig)
 
             if not os.path.exists(src_dir):
                 os.makedirs(src_dir)
@@ -1057,7 +1057,7 @@ class FileUndo:
 
                     os.symlink(rel,dst)
                 except Exception:
-                    print "Error: could not symlink [%s] to [%s]" % (rel, dst)
+                    print("Error: could not symlink [%s] to [%s]" % (rel, dst))
                     raise 
 
 
@@ -1073,7 +1073,7 @@ class TableUndo(Base):
         # build the sobject xml action description
         transaction = Transaction.get()
         if not transaction:
-            print "WARNING: no transaction found"
+            print("WARNING: no transaction found")
             return
 
         sobject_node = transaction.create_log_node("table")
@@ -1088,7 +1088,7 @@ class TableUndo(Base):
         column_info = SearchType.get_column_info(search_type)
         xml = transaction.get_xml()
 
-        #print "column_info: ", column_info
+        #print("column_info: ", column_info)
         #column_info:  {u'code': {'data_type': 'varchar', 'nullable': True}, u'description': {'data_type': 'text', 'nullable': True}, u'timestamp': {'data_type': 'timestamp', 'nullable': True}, u's_status': {'data_type': 'varchar', 'nullable': True}, u'keywords': {'data_type': 'text', 'nullable': True}, u'login': {'data_type': 'varchar', 'nullable': True}, u'id': {'data_type': 'integer', 'nullable': False}, u'name': {'data_type': 'varchar', 'nullable': True}}
         for column, data in column_info.items():
             column_node = xml.create_element("column")
@@ -1167,8 +1167,8 @@ class TableUndo(Base):
             dumper = TableSchemaDumper(search_type)
             try:
                 dumper.dump_to_tactic(path=schema_path)
-            except SqlException, e:
-                print "SqlException: ", e
+            except SqlException as e:
+                print("SqlException: ", e)
         
             # dump the table data to a file and store it in cache
             from sql_dumper import TableDataDumper
@@ -1176,8 +1176,8 @@ class TableUndo(Base):
             dumper.set_info(table)
             try:
                 dumper.execute()
-            except SqlException, e:
-                print "SqlException: ", e
+            except SqlException as e:
+                print("SqlException: ", e)
 
             #cmd = "pg_dump -h %s -U %s -t %s %s > %s" % \
             #    (host, user, table, database, schema_path)
@@ -1185,15 +1185,15 @@ class TableUndo(Base):
 
             sql.do_update('DROP TABLE "%s"' % table)
 
-        except SqlException, e:
+        except SqlException as e:
             # This means that the table did not exist, DROP TABLE failed.
             # if there is an sql exception, Note it, but continue.  The
             # undo must complete.
             # TODO: should put this in an error log
-            print "SqlException: ", e
+            print("SqlException: ", e)
 
-        except TransactionException, e:
-            print "Failed to undo '%s' '%s'" % (database, table)
+        except TransactionException as e:
+            print("Failed to undo '%s' '%s'" % (database, table))
 
     undo = staticmethod(undo)
 
@@ -1262,17 +1262,17 @@ class TableUndo(Base):
 
 
             except IOError, e:
-                 print "ERROR: ", str(e)
+                 print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             """
 
 
-            #except SqlException, e:
-            #     print "Database ERROR:", str(e)
+            #except SqlException as e:
+            #     print("Database ERROR:", str(e))
         
-        except TransactionException, e:
+        except TransactionException as e:
             print("Failed to redo '%s' '%s'" % (database, table_name))
-            print "Error: ", e
+            print("Error: ", e)
 
     redo = staticmethod(redo)
 
@@ -1340,10 +1340,10 @@ class TableDropUndo(Base):
                  if seq_max:
                      SearchType.sequence_setval(search_type, seq_max)
             except IOError, e:
-                 print "ERROR: ", str(e)
+                 print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
-            except SqlException, e:
-                 print "Database ERROR:", str(e)
+            except SqlException as e:
+                 print("Database ERROR:", str(e))
 
          
             # need to keep it around
@@ -1390,21 +1390,21 @@ class TableDropUndo(Base):
             dumper = TableSchemaDumper(search_type)
             try:
                 dumper.dump_to_tactic(path=schema_path)
-            except SqlException, e:
-                print "SqlException: ", e
+            except SqlException as e:
+                print("SqlException: ", e)
            
 
             sql.do_update('DROP TABLE "%s"' % table)
 
-        except SqlException, e:
+        except SqlException as e:
             # This means that the table did not exist, DROP TABLE failed.
             # if there is an sql exception, Note it, but continue.  The
             # undo must complete.
             # TODO: should put this in an error log
-            print "SqlException: ", e
+            print("SqlException: ", e)
 
-        except TransactionException, e:
-            print "Failed to redo '%s' '%s'" % (database, table)
+        except TransactionException as e:
+            print("Failed to redo '%s' '%s'" % (database, table))
     redo = staticmethod(redo)
 
 
@@ -1540,8 +1540,8 @@ class AlterTableUndo(Base):
 
         except TransactionException:
             print("Failed to add column '%s.%s'" % (table, column))
-        except Exception, e:
-            print "Error: [%s]" % e.__str__()
+        except Exception as e:
+            print("Error: [%s]" % e.__str__())
             if statement:
                 print("Failed to execute: %s in [%s]" % (statement, database))
             raise
@@ -1574,7 +1574,7 @@ class AlterTableUndo(Base):
 
         except TransactionException:
             print("Failed to drop column '%s.%s'" % (table, column))
-        except Exception, e:
+        except Exception as e:
             print(e.__str__())
             if statement:
                 print("Failed to execute: %s" % statement)
@@ -1613,7 +1613,7 @@ class AlterTableUndo(Base):
 
         except TransactionException:
             print("Failed to modify column '%s.%s'" % (table, column))
-        except Exception, e:
+        except Exception as e:
             print(e.__str__())
             print("Failed to execute sql.modify_column()")
 

@@ -40,8 +40,8 @@ except ImportError:
             from simplejson import loads as jsonloads
             import simplejson as json
         except ImportError:
-            print "ERROR: no json library found"
-            print
+            print("ERROR: no json library found")
+            print("\n")
             raise
 
     try:
@@ -471,7 +471,7 @@ class Common(Base):
                     pass
 
 
-                #print "item: ", item2
+                #print("item: ", item2)
                 item2 = item2.lower()
 
                 keywords.add(item2)
@@ -493,7 +493,7 @@ class Common(Base):
             value.encode('ascii')
         except UnicodeEncodeError:
             is_ascii = False
-        except Exception, e:
+        except Exception as e:
             is_acii = False
         else:
             is_ascii = True
@@ -535,7 +535,7 @@ class Common(Base):
             # if it exists, check the MD5 checksum
             if md5_checksum:
                 if my._md5_check(to_path, md5_checksum):
-                    print "skipping '%s', already exists" % to_path
+                    print("skipping '%s', already exists" % to_path)
                     return to_path
             else:
                 # always download if no md5_checksum available
@@ -632,9 +632,9 @@ class Common(Base):
         
         ''' 
         stacktrace_str = "".join(stacktrace)
-        print "-"*50
-        print stacktrace_str
-        print "-"*50
+        print("-"*50)
+        print(stacktrace_str)
+        print("-"*50
     dump_trace = staticmethod(dump_trace)
     """
 
@@ -1006,7 +1006,7 @@ class Common(Base):
             else:
                 token.append(char)
 
-        #print re_expression
+        #print(re_expression)
         p = re.compile(re_expression)
         m = p.search(value)
         if m:
@@ -1279,8 +1279,8 @@ class Common(Base):
         import sys
         python = sys.executable
         # for windows
-        print "Restarting the process. . ."
-        print
+        print("Restarting the process. . .")
+        print("\n")
         python = python.replace('\\','/')
         if os.name =='nt':
             import subprocess
@@ -1321,8 +1321,8 @@ class Common(Base):
 
             # we have to replace all & signs to &amp; for it be proper text
             text = text.replace("&", "&amp;")
-        except Exception, e:
-            print "Mako Error: ", e
+        except Exception as e:
+            print("Mako Error: ", e)
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
@@ -1445,7 +1445,7 @@ class Marshaller:
                     #print( "from %s import %s as %s" % (module_name,class_name, unique_class_name))
                     exec( "from %s import %s as %s" % (module_name,class_name, unique_class_name), gl, lc )
                 except:
-                    print ImportError("Cannot import [%s] from module [%s]" % (class_name, module_name) )
+                    print("Cannot import [%s] from module [%s]" % (class_name, module_name) )
                     raise
             else:
                 # standard libraries to import for dynamic loading
@@ -1473,11 +1473,11 @@ class Marshaller:
                 else:
                     object = eval("%s(%s)" % (unique_class_name, args) )
 
-            except Exception, e:
+            except Exception as e:
                 print("%s: %s" % (class_name, e.__str__()))
                 raise
                 #raise Exception("%s: %s" % (class_name, e.__str__()))
-        except Exception, e:
+        except Exception as e:
             print("%s: %s" % (class_name, e.__str__()))
             raise
 
@@ -1535,37 +1535,37 @@ class RollbackImporter:
     def __init__(my):
         "Creates an instance and installs as the global importer"
         my.previousModules = sys.modules.copy()
-        print "starting ... "
+        print("starting ... ")
         my.realImport = __builtin__.__import__
         __builtin__.__import__ = my._import
-        print "import: ", __builtin__.__import__
+        print("import: ", __builtin__.__import__)
         my.newModules = {}
 
     def _import(my, name, globals=None, locals=None, fromlist=[]):
         result = apply(my.realImport, (name, globals, locals, fromlist))
         my.newModules[name] = (globals, locals)
-        print "loading: ", name
+        print("loading: ", name)
         return result
         
     def uninstall(my):
-        print "uninstall ...."
+        print("uninstall ....")
         __builtin__.__import__ = my.realImport
         for modname, modinfo in my.newModules.items():
             if not my.previousModules.has_key(modname):
                 # Force reload when modname next imported
-                print "modname: ", modname
+                print("modname: ", modname)
                 if not sys.modules.get(modname):
-                    print "WARNING: module [%s] not imported" % modname
+                    print("WARNING: module [%s] not imported" % modname)
                     continue
 
                 #globals = modinfo[0]
                 #locals = modinfo[1]
 
-                print "deleting %s" % modname
+                print("deleting %s" % modname)
 
-                print "prehas? ", sys.modules.get(modname)
+                print("prehas? ", sys.modules.get(modname))
                 del(sys.modules[modname])
-                print "has? ", sys.modules.get(modname)
+                print("has? ", sys.modules.get(modname))
 """
 
 

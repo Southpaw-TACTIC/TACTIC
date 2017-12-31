@@ -672,7 +672,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
-                print "Error in view [%s]: " % my.view, exceptions.text_error_template().render()
+                print("Error in view [%s]: " % my.view, exceptions.text_error_template().render())
                 #html = exceptions.html_error_template().render(css=False)
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
@@ -821,7 +821,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
                 except Exception as e:
-                    print "Error: ", e
+                    print("Error: ", e)
                     raise TacticException("Error parsing behavior [%s]" % behavior_str)
 
 
@@ -953,7 +953,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             try:
                 xml.read_string(element_html)
             except Exception as e:
-                print "Error: ", e
+                print("Error: ", e)
                 xml.read_string("<h1>%s</h1>" % str(e) )
             root = xml.get_root_node()
 
@@ -1000,7 +1000,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 full_line = []
                 parse_context = ''
 
-            except XmlException, e:
+            except XmlException as e:
                 parse_context = 'element'
                 #raise e
                 continue
@@ -1029,8 +1029,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 f = open("/tmp/error", 'w')
                 f.write(element_html)
                 f.close()
-                #print element_html
-                print "Error: ", e
+                #print(element_html)
+                print("Error: ", e)
             """
 
             if element_html:

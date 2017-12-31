@@ -406,8 +406,8 @@ class Pipeline(SObject):
                     from pyasm.command import ColumnAddCmd
                     cmd = ColumnAddCmd(search_type, "pipeline_code", "varchar")
                     cmd.execute()
-            except SqlException, e:
-                print "Error creating column [pipeline_code] for %" %search_type 
+            except SqlException as e:
+                print("Error creating column [pipeline_code] for %" %search_type )
                 pass
 
             # go through all of the sobjects and set all the empty ones
@@ -533,7 +533,7 @@ class Pipeline(SObject):
                         try:
                             from pyasm.command import CustomProcessConfig
                             handler = CustomProcessConfig.get_delete_handler(node_type, {})
-                        except Exception, e:
+                        except Exception as e:
                             handler = None
 
                         if handler:
@@ -577,7 +577,7 @@ class Pipeline(SObject):
 
             try:
                 my.xml.read_string(pipeline_xml)
-            except XmlException, e:
+            except XmlException as e:
                 my.xml.read_string("<pipeline/>")
 
         # clear these again when set externally

@@ -171,7 +171,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
             f = open(path)
             f.write("test.txt", 'w')
             f.close()
-        except Exception, e:
+        except Exception as e:
             status = "Error: can't write to asset folder"
 
         return status
