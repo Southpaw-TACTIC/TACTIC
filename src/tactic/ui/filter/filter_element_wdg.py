@@ -288,7 +288,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 use_multidb = False
                 search.add_relationship_search_filter(search2, op="in", use_multidb=use_multidb)
 
-            except SearchException, e:
+            except SearchException as e:
                 raise SearchException('[%s] in simple search definition may have syntax error. %s ' %(expression, e.__str__()))
 
 

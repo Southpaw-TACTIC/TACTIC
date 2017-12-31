@@ -126,7 +126,6 @@ class ExpressionParser(object):
         project = Project.get_project_code()
         my.vars['PROJECT'] = project
 
-
         try:
             from pyasm.web import WebContainer
             web = WebContainer.get_web()

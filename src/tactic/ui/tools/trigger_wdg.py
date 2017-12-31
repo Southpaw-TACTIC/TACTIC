@@ -204,8 +204,10 @@ class TriggerToolWdg(BaseRefreshWdg):
             search.add_filter("event", "%%|%s" % my.search_type, op='like')
             search.add_filter("search_type", my.search_type)
             search.add_op("or")
+
         search.add_project_filter()
         triggers = search.get_sobjects()
+
         for i, trigger in enumerate(triggers):
             trigger_div = my.get_trigger_wdg(trigger, i+1)
             triggers_div.add(trigger_div)

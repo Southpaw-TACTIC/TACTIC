@@ -121,10 +121,13 @@ def set_default_vendor(vendor=None):
     assert DATABASE in VENDORS
     pgdb = DATABASE_DICT.get(DATABASE)
     if not pgdb:
-        raise TacticException("ERROR: database library for [%s] is not installed" % DATABASE)
+        raise TacticException("WARNING: database library for default database [%s] is not installed" % DATABASE)
 
 
-set_default_vendor()
+try:
+    set_default_vendor()
+except TacticException, e:
+    print e
 
 
 from pyasm.common import *
@@ -3382,6 +3385,9 @@ class CreateTable(Base):
             expr = my.impl.get_boolean(not_null=not_null)
         elif type == "serial":
             expr = my.impl.get_serial(not_null=not_null)
+        elif type in ["json", "jsonb"]:
+            expr = my.impl.get_json(not_null=not_null)
+
 
             
         # SQL Server

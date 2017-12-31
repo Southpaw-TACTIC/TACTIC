@@ -181,7 +181,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         show_saved_search = True
         if show_saved_search:
             saved_button = ActionButtonWdg(title='Saved', tip='Load Saved Searches')
-            saved_button.add_class("spt_simple_search_clear_button")
+            saved_button.add_class("spt_simple_search_save_button")
             saved_button.add_behavior( {
                 #'type': 'load',
                 'search_type': my.search_type,
@@ -606,7 +606,17 @@ class SimpleSearchWdg(BaseRefreshWdg):
             #icon.add_style("color", "#393")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
+            icon.add_class("hand")
             icon.add_attr("spt_element_name", element_name)
+
+            icon.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+                var element_name = bvr.src_el.getAttribute("spt_element_name");
+                spt.simple_search.clear_element(element_name);
+                '''
+
+            } )
 
             if not widget.is_set():
                 icon.add_style("display: none")
@@ -633,7 +643,10 @@ class SimpleSearchWdg(BaseRefreshWdg):
         else:
             run_search_bvr = {
                 'type':         'click_up',
-                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)',
+                'cbjs_action':  '''
+                spt.simple_search.hide();
+                spt.dg_table.search_cbk(evt, bvr);
+                ''',
                 'new_search':   True,
                 'panel_id':     my.prefix
             }
@@ -709,6 +722,13 @@ spt.simple_search.show = function() {
     }
 }
 
+spt.simple_search.hide = function() {
+    var top = spt.simple_search.get_top();
+    if (top) {
+        top.setStyle("display", "none");
+    }
+}
+
 
 spt.simple_search.show_elements = function(element_names) {
 
@@ -749,6 +769,26 @@ spt.simple_search.has_element = function(element_name) {
     }
 
     return flag;
+}
+
+
+
+spt.simple_search.clear_element = function(element_name) {
+    var top = spt.simple_search.get_top();
+
+    var items = top.getElements(".spt_element_item")
+    for (var i = 0; i < items.length; i++) {
+        var item_element_name = items[i].getAttribute("spt_element_name");
+        if (element_name == item_element_name) {
+            spt.api.Utility.clear_inputs(items[i]);
+            items[i].setStyle("background-color", "");
+
+            var asterix = items[i].getElement(".spt_filter_set");
+            if (asterix) {
+                asterix.setStyle("display", "none");
+            }
+        }
+    }
 }
 
 

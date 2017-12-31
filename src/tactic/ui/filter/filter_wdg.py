@@ -206,7 +206,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 #columns = search_type_obj.get_columns(show_hidden=False)
                 columns = SearchType.get_columns(related_type)
                 columns = my.remove_columns(columns)
-            except SqlException, e:
+            except SqlException as e:
                 DbContainer.abort_thread_sql()
                 continue
             my.related_types_column_dict[related_type] = columns
@@ -230,7 +230,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 search.add_filter("search_type", my.search_type)
                 search.add_filter("view", view)
                 config_sobj = search.get_sobject()
-            except SearchException, e:
+            except SearchException as e:
                 print "WARNING: ", e
                 config_sobj = None
 

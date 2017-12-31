@@ -702,7 +702,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if my.do_search == True:
                 my.sobjects = search.get_sobjects()
 
-        except SqlException, e:
+        except SqlException as e:
             my.search_wdg.clear_search_data(search.get_base_search_type())
 
 
@@ -718,7 +718,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         for widget in my.widgets:
             try:
                 sobjects = widget.process_sobjects(my.sobjects, search)
-            except Exception, e:
+            except Exception as e:
                 #print str(e)
                 pass
             else:
@@ -919,7 +919,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search.add_filter("view", "gear_menu_custom")
             search.add_filter("search_type", my.search_type)
             config_sobj = search.get_sobject()
-        except Exception, e:
+        except Exception as e:
             print "WARNING: When trying to find config: ", e
             config_sobj = None
 

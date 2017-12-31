@@ -340,7 +340,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if use_cache == "true":
             try:
                 return sobject.get_value(element_name)
-            except Exception, e:
+            except Exception as e:
                 print "Error: ", e.message
 
 
@@ -552,7 +552,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 my.alt_result = my._get_result(my.sobject, my.alt_expression)
             else:
                 my.alt_result = result
-        except Exception, e:
+        except Exception as e:
             print "Expression error: ", e
             print "    in column [%s] with [%s]" % (my.get_name(), my.expression)
             #from pyasm.widget import ExceptionWdg
@@ -623,7 +623,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                     try:
                         display_result = Search.eval(display_expr, my.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
-                    except Exception, e:
+                    except Exception as e:
                         print "WARNING in display expression [%s]: " % display_expr, e
                         display_result = "ERROR: %s" % e
 
@@ -804,6 +804,18 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 div.add_behavior( behavior )
 
 
+        """
+        # test dynamic updates on expressions
+        if my.get_name() == "customer":
+            outer.add_update( {
+                'search_key': my.sobject.get_search_key(),
+                'column': "customer_code",
+                'interval': 4,
+                'cbjs_action': "spt.panel.refresh_element(bvr.src_el)",
+            } )
+
+        my.set_as_panel(outer);
+        """
 
         return outer
 
@@ -1023,7 +1035,7 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
         # assume the value is an expression
         try:
             value = Search.eval(value)
-        except Exception, e:
+        except Exception as e:
             value = 0
 
         return value
@@ -1039,7 +1051,7 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
         # assume the value is an expression
         try:
             value = Search.eval(value)
-        except Exception, e:
+        except Exception as e:
             print e.message
             value = "Error [%s]" % value
 

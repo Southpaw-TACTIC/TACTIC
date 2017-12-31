@@ -178,7 +178,7 @@ class ResetPasswordCmd(Command):
                 email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject='TACTIC password change')
             
                 email_cmd.execute()
-            except TacticException, e:
+            except TacticException as e:
                 
                 msg = "Failed to send an email for your new password. Reset aborted."
                 web.set_form_value(ResetPasswordWdg.MSG, msg)

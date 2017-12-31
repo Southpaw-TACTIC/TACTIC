@@ -1849,7 +1849,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                     if view_node is not None:
                         configs.append(config)
 
-        except XmlException, e:
+        except XmlException as e:
             msg = "Error with view [%s]"% ' '.join(views)
             print "Error: ", str(e)
             
@@ -2955,7 +2955,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         if type(my.state) in types.StringTypes:
             try:
                 my.state = eval(my.state)
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: eval(state) error", e.__str__()
                 my.state = {}
         Container.put("global_state", my.state)
@@ -3001,7 +3001,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         # set up a search
         try:
             search_type_obj = SearchType.get(search_type)
-        except SearchException, e:
+        except SearchException as e:
             print "Warning: can't find search type [%s]" % search_type
             return top
 
@@ -3070,7 +3070,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             search = Search(search_type)
             search.set_null_filter()
             sobjects = search.get_sobjects()
-        except Exception, e:
+        except Exception as e:
             impl = SearchType.get_database_impl_by_search_type(search_type)
             if impl.get_database_type() == "MongoDb":
                 can_search = False
@@ -3085,7 +3085,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 from tactic.ui.app import SearchWdg
                 search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
-            except SearchException, e:
+            except SearchException as e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
                 raise
@@ -3413,7 +3413,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 exec("from %s import %s" % (module_name,class_name), gl, lc )
                 extra_keys = eval("%s.get_kwargs_keys()" % class_name )
-            except Exception, e:
+            except Exception as e:
                 extra_keys = []
 
             for key in extra_keys:
@@ -3453,7 +3453,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 if can_search:
                     layout_table.handle_search()
-            except SqlException, e:
+            except SqlException as e:
                 from pyasm.widget import ExceptionWdg
                 exception_wdg = ExceptionWdg(e)
 

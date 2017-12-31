@@ -954,7 +954,7 @@ class ActionButtonWdgOld(DivWdg):
             if not button_bvr:
                 my.add_top_behaviors(request_top_wdg)
                 request_top_wdg.add_class("spt_button_behaviors")
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e
 
 
@@ -1175,7 +1175,7 @@ class ActionButtonWdg(DivWdg):
             if not button_bvr:
                 my.add_top_behaviors(request_top_wdg)
                 request_top_wdg.add_class("spt_button_behaviors")
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e
 
 

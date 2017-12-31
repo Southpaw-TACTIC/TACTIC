@@ -514,7 +514,6 @@ class Environment(Base):
             alias = "default"
 
 
-
         from pyasm.security import Site
         asset_dir = Site.get().get_asset_dir(file_object=file_object,alias=alias)
         if asset_dir:

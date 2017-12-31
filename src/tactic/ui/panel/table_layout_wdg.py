@@ -289,7 +289,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         for search_type, sobjects in search_types_dict.items():
             try:
                 search = Search(search_type)
-            except SearchException, e:
+            except SearchException as e:
                 # it may have been deleted
                 # show it as is, without remapping
                 print str(e)
@@ -1411,6 +1411,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
     def handle_table_behaviors(my, table):
+
+
+
         security = Environment.get_security()
         project_code = Project.get_project_code()
         my.handle_load_behaviors(table)
@@ -1735,7 +1738,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         show_border = my.kwargs.get("show_border")
-        if show_border not in [False, "false"]:
+        if show_border in ['horizontal']:
+            cell_styles["border-bottom"] = "solid 1px %s" % border_color
+            cell_styles["padding"] = "3px"
+            select_styles["border-bottom"] = "solid 1px %s" % border_color
+
+        elif show_border not in [False, "false"]:
             cell_styles["border"] = "solid 1px %s" % border_color
             cell_styles["padding"] = "3px"
             select_styles["border"] = "solid 1px %s" % border_color
@@ -1881,6 +1889,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
  
 
     def handle_headers(my, table, hidden=False):
+
+        # FIXME: for some reason, this is neeeded on the chunk loading
+        #if my.kwargs.get('temp') == True:
+        #    return
+
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
@@ -1947,7 +1960,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             show_border = my.kwargs.get("show_border")
-            if show_border not in [False, "false"]:
+            if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border: solid 1px %s" % border_color)
 
             edit_wdg = my.edit_wdgs.get(name)
@@ -1965,7 +1978,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
-            inner_div.add_style("min-height: 30px")
+            inner_div.add_style("min-height: 35px")
 
 
 
@@ -2316,6 +2329,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_groups(my, table, row, sobject):
         '''called per sobject, decide to draw a grouping folder if conditions are met''' 
+
+
+        if my.kwargs.get('temp') == True:
+            return
+
+
         if row == 0:
             my.group_summary = []
 
@@ -2663,7 +2682,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         if not html:
                             html = "<div style='height: 14px'>&nbsp;</div>"
                         td.add(html)
-                except Exception, e:
+                except Exception as e:
 
                     my.error_columns.add(element_name)
 
@@ -2856,7 +2875,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 text_color = text_color_map.get(value)
                 if text_color:
                     td.add_style("color", text_color)
-        except Exception, e:
+        except Exception as e:
             print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
 
 
@@ -2877,7 +2896,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         show_border = my.kwargs.get("show_border")
-        if show_border not in [False, "false"]:
+        if show_border not in [False, "false", 'horizontal']:
             th.add_style("border", "solid 1px %s" % border_color)
 
         th.add_looks( 'dg_row_select_box' )

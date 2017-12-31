@@ -99,7 +99,7 @@ class EditCustomWdg(BaseInputWdg):
 
         try:
             display = layout.get_buffer_display()
-        except Exception, e:
+        except Exception as e:
             display = str(e)
 
 

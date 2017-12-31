@@ -638,7 +638,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 content_div.add(no_items)
                 no_items.add("<i>-- No Items --</i>")
 
-        except Exception, e:
+        except Exception as  e:
             print("WARNING: ", e)
             none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
             none_wdg.add("<div>%s</div>" % str(e))

@@ -461,7 +461,7 @@ class TopWdg(Widget):
                 print("cmd: ", cmd)
                 os.system(cmd)
                 pass
-            except Exception, e:
+            except Exception as e:
                 print("WARNING: ", e)
 
 
@@ -1094,7 +1094,7 @@ class TitleTopWdg(TopWdg):
         # add the title in the header
         try:
             project = Project.get()
-        except Exception, e:
+        except Exception as e:
             print("ERROR: ", e)
             # if the project doesn't exist, then use the admin project
             project = Project.get_by_code("admin")
@@ -1204,7 +1204,7 @@ class SitePage(AppServer):
 
         try:
             SearchType.set_global_template("project", project_code)
-        except SecurityException, e:
+        except SecurityException as e:
             print("WARNING: ", e)
 
 
@@ -1217,7 +1217,7 @@ class SitePage(AppServer):
 
         try:
             project = Project.get()
-        except Exception, e:
+        except Exception as e:
             Project.set_project("sthpw")
             from pyasm.widget import Error404Wdg
             page = Error404Wdg()

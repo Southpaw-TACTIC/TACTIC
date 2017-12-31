@@ -72,7 +72,8 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         filter_wdg = my.get_filter_wdg(filter_name)
         th.add( filter_wdg )
         filter_wdg.add_style("position: absolute")
-        filter_wdg.add_style("right: 0px")
+        filter_wdg.add_style("right: 8px")
+        filter_wdg.add_style("width: 25px")
         filter_wdg.add_style("top: 10px")
         filter_wdg.add_style("display: none")
 
@@ -216,10 +217,23 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
             }
 
             pos.y += 35;
+
+
             spt.simple_search.show_elements([name]);
             spt.simple_search.set_position(pos);
             spt.simple_search.hide_title();
             spt.simple_search.show();
+
+            var top = spt.simple_search.get_top();
+            var size = top.getSize();
+            var cur_pos = top.getPosition( $(document.body) );
+            var window_size = $(document.body).getSize();
+            if (cur_pos.x + size.x > window_size.x) {
+                var panel_size = panel.getSize();
+                pos.x = panel_size.x - size.x;
+                spt.simple_search.set_position(pos);
+            }
+
             '''
         } )
 
@@ -655,9 +669,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
             value_wdg.add_style("overflow-x: hidden")
             value_wdg.add_style("text-overflow: ellipsis")
-            #value_wdg.add_style("white-space: nowrap")
 
-            #value_wdg.add_style("max-height: 100px")
+
+
+            # sompe properties
+            min_height = 25
+            value_wdg.add_style("min-height: %spx" % min_height)
+
+            #value_wdg.add_style("white-space: nowrap")
 
             #value_wdg.add_style("overflow-y: hidden")
             #value_wdg.add_class("spt_scrollable")

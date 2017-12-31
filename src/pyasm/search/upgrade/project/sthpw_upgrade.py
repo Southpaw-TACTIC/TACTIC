@@ -1924,7 +1924,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
 
-    def upgrade_v3_7_0_v01_002(my):
+    def critical_v3_7_0_v01_002(my):
         my.run_sql('''
         ALTER TABLE task add constraint task_code_unique UNIQUE(code);
         ''')

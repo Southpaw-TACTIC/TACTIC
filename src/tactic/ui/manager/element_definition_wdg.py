@@ -420,7 +420,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             # test build the class
             try:
                 widget = config_view.get_display_widget(element_name)
-            except Exception, e:
+            except Exception as e:
                 print("ERROR: ", e)
                 widget = None
             is_editable = False
@@ -1411,7 +1411,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
             # test build the class
             try:
                 widget = config_view.get_display_widget(element_name)
-            except Exception, e:
+            except Exception as e:
                 print("ERROR: ", e)
                 widget = None
             is_editable = False
@@ -2250,7 +2250,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 error.add_style('color: red')
                 error.add("WARNING: could not import display class [%s]" % display_class)
                 top.add(error)
-            except Exception, e :
+            except Exception as e:
                 error = DivWdg()
                 error.add_style('color: red')
                 error.add("WARNING: %s" % str(e) )
@@ -2261,7 +2261,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     # prevent the ARG_KEYS from getting modifed later on when appending kwargs
                     class_options = class_options.copy()
 
-                except Exception, e:
+                except Exception as e:
                     error = DivWdg()
                     error.add_style('color: red')
                     error.add("WARNING: could not get options.  Failed on get_args_keys() for %s" %display_class)
@@ -2270,7 +2270,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 try:
                     category_options = eval("%s.get_category_keys()" % display_class)
-                except Exception, e:
+                except Exception as e:
                     pass
 
 
@@ -2296,7 +2296,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                         xml_value = eval(xml_value)
                         data = jsondumps(xml_value)
                         data = jsonloads(data)
-                    except Exception, e:
+                    except Exception as e:
                         print("Error loading kwargs", xml_value)
                         print(e)
                         data = {}
@@ -2621,7 +2621,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     edit_wdg.add_style("width: 450px")
                     if value and hasattr(edit_wdg,'set_value'):
                         edit_wdg.set_value(value)
-                except Exception, e:
+                except Exception as e:
                     print("Cannot create widget: [%s]" % widget_type, e, e.message)
 
             if not edit_wdg:
@@ -2991,7 +2991,7 @@ class SimpleElementDefinitionCbk(Command):
         config = WidgetConfig.get(view, xml=xml)
         try:
             config.alter_xml_element(element_name, config_xml=element_xml.to_string())
-        except SetupException, e:
+        except SetupException as e:
             raise TacticException("Incorrectly formatted widget config found. %s"%e.__str__())
 
 
@@ -3024,7 +3024,7 @@ class SimpleElementDefinitionCbk(Command):
                 # this is meant for the definition display, not for edit_definition view
                 print("Warning: [%s] does not have create_required_columns method"%element_name)
                 raise
-            except Exception, e:
+            except Exception as e:
                 print("Warning: ", e.message)
                 raise
 

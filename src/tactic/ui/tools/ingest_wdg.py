@@ -1770,7 +1770,7 @@ class IngestUploadCmd(Command):
         my.message_key = my.kwargs.get("message_key")        
         try:
             return my._execute()
-        except Exception, e:
+        except Exception as e:
             if my.message_key:
                 msg = {
                     'progress': 100,
@@ -2105,7 +2105,7 @@ class IngestUploadCmd(Command):
                     message_key = "IngestConvert001"
                     cmd = ConvertCbk(**convert)
                     cmd.execute()
-            except Exception, e:
+            except Exception as e:
                 print("WARNING: ", e)
             """
 

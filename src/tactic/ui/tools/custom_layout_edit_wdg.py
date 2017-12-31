@@ -39,7 +39,7 @@ class CustomLayoutHelpWdg(BaseRefreshWdg):
         # parse the xml to see if it is valid
         try:
             Xml(string=data, strip_cdata=True)
-        except XmlException, e:
+        except XmlException as e:
             widget.add( IconWdg("XML Parse Error", IconWdg.ERROR) )
             span = SpanWdg()
             span.add_style('color: #f44')
@@ -535,7 +535,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         if folder_states:
             try:
                 folder_states = jsonloads(folder_states)
-            except Exception, e:
+            except Exception as e:
                 print "WARNINIG: can't parse json string [%s]" % folder_states
                 folder_states = {}
         else:
@@ -865,7 +865,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     try:
                         raw_data = cur_config.get_value('config')
                         Xml(string=raw_data, strip_cdata=True)
-                    except XmlException, e:
+                    except XmlException as e:
                         for text in ['config', view, 'html']:
                             raw_data = raw_data.replace('<%s>' %text, '')
                             raw_data = raw_data.replace('</%s>'%text, '')
@@ -2639,7 +2639,7 @@ class CustomLayoutEditSaveCmd(Command):
             # check if kwargs is a proper dictionary
             try:
                 kwargs_test = eval(kwargs)
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('kwargs contains syntax error: %s' %(e))
             for key, value in kwargs_test.items():
                 if not isinstance(value, basestring) and not isinstance(value, dict):
