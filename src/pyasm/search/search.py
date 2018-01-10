@@ -122,8 +122,8 @@ class Search(Base):
                         my.search_type_obj.set_value("search_type", search_type)
                         return
 
-                except Exception, e:
-                    print "WARNING [%s]: Search constructor:" % search_type, str(e)
+                except Exception as e:
+                    print("WARNING [%s]: Search constructor:" % search_type, str(e))
                     raise
 
 
@@ -168,7 +168,7 @@ class Search(Base):
                 keys = [key, key2, key3, key4]
                 default = "allow"
                 if not security.check_access("search_type", keys, "view", default=default):
-                    print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type)
+                    print("WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type))
                     my.set_null_filter()
 
             elif not search_type.startswith("sthpw/") and not search_type.startswith("config/"):
@@ -179,7 +179,7 @@ class Search(Base):
                 keys = [key, key2, key3, key4]
                 default = "deny"
                 if not security.check_access("search_type", keys, "view", default=default):
-                    print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type)
+                    print("WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type))
                     my.set_null_filter()
 
         else:
@@ -402,18 +402,6 @@ class Search(Base):
 
 
 
-
-    # FIXME: this does not take the type into account
-    # DEPRECATED
-    """
-    def get_filter(my, name, value, op='='):
-        if value == None:
-            return '"%s" is NULL' % name
-        else:
-            return '"%s" %s %s' % ( name, op, Sql.quote(value) )
-    """
-
-
     def set_null_filter(my):
         my.null_filter = True
 
@@ -437,23 +425,7 @@ class Search(Base):
 
     def add_filters(my, name, values, table='', op='in'):
         ''' add a where name in (val1, val2, ...) '''
-        """
-        if not op:
-            op = 'in'
-
-        if not table:
-            table = my.select.get_table()
-        filter = my.get_filters(name, values, table, op)
-        if filter == "NULL":
-            my.null_filter = True
-        #my.select.add_filter(name, filter)
-        my.select.add_where(filter)
-        """
-        #filter = my.get_filters(name, values, table, op)
-        #print "filter: ", filter
         my.select.add_filters(name, values, op=op, table=table)
-
-
 
 
 
@@ -549,7 +521,7 @@ class Search(Base):
                     if my.is_expr(value):
                         value = Search.eval(value, single=True)
                     my.add_filter(name, value, table=table)
-                    #print 'name: [%s],[%s]' % (name, value)
+                    #print('name: [%s],[%s]' % (name, value))
                 elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
                     # <name> = '<value>'
                     my.add_filter(name, value, table=table)
@@ -691,7 +663,7 @@ class Search(Base):
         search_type = my.get_search_type()
 
         if parent_search_type == search_type:
-            print "WARNING: parent type and search type are the same for [%s]" % parent_search_type
+            print("WARNING: parent type and search type are the same for [%s]" % parent_search_type)
             my.add_id_filter(parent.get_id())
             return
 
@@ -745,7 +717,7 @@ class Search(Base):
         related_type = sobject.get_search_type()
         
         if search_type == related_type:
-            print "WARNING: related type and search type are the same for [%s]" % search_type
+            print("WARNING: related type and search type are the same for [%s]" % search_type)
             my.add_id_filter(sobject.get_id())
             return
 
@@ -1052,7 +1024,7 @@ class Search(Base):
         search.order_by = False
 
         if search_type == related_type:
-            #print "WARNING: related type and search type are the same for [%s]" % search_type
+            #print("WARNING: related type and search type are the same for [%s]" % search_type)
             search.add_column("id")
             my.add_search_filter("id", search, op, table=table )
             return True
@@ -1771,8 +1743,6 @@ class Search(Base):
                 columns = select_columns
 
 
-        # DEPRECATED:
-        # add the configuration settings for this sobject
         '''
         my.config = SObjectConfig.get_by_search_type(my.search_type_obj, database)
         if my.config != None:
@@ -1781,7 +1751,6 @@ class Search(Base):
             for order_by in order_bys:
                 if order_by:
                     my.add_order_by(order_by)
-                    print "order: ", search_type, order_by
         '''
         # Hard coded replacement.  This is done for performance reasons
         if my.order_by:
@@ -1826,7 +1795,7 @@ class Search(Base):
         vendor = db_resource.get_vendor()
         if vendor == "MongoDb":
             #statement = my.select.get_statement()
-            #print 'statement: ', statement
+            #print('statement: ', statement)
             results = sql.do_query(my.select)
             # TODO:
             # Not really used because results is already a dictionary
@@ -1875,7 +1844,7 @@ class Search(Base):
             num_sobjects = 0
         num_sobjects = num_sobjects + len(results)
         if len(results) > 1000:
-            print "WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore'))
+            print("WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore')))
         Container.put("NUM_SOBJECTS", num_sobjects)
 
 
@@ -2182,7 +2151,7 @@ class Search(Base):
         search_type = sobject.get_base_search_type()
         project_code = sobject.get_project_code()
         if related_type == search_type:
-            print "WARNING: source type is the same as related type [%s]" % search_type
+            print("WARNING: source type is the same as related type [%s]" % search_type)
             return {}
 
 
@@ -2372,15 +2341,15 @@ class RemoteSearch(Select):
                 results = my.server.query(my.search_type, filters=my.filters,
                     limit=my.limit)
 
-            except Exception, e:
+            except Exception as e:
                 if time.time() - start > 10:
-                    print "WARNING: try [%s] took longer than 10s: " % i, str(e)
+                    print("WARNING: try [%s] took longer than 10s: " % i, str(e))
                     raise
 
                 if i == trys:
                     raise
                 else:
-                    print "WARNING: try [%s]: " % i, str(e)
+                    print("WARNING: try [%s]: " % i, str(e))
                     continue
             else:
                 break
@@ -3113,7 +3082,7 @@ class SObject(object):
             data = binascii.hexlify(zlib.compress(data))
             data = "zlib:%s" % data
             length_after = len(data)
-            #print "transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
+            #print("transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
         my.set_value(name, data)
 
     
@@ -3160,7 +3129,7 @@ class SObject(object):
 
         try:
             xml.read_string(value, remove_blank_text=remove_blank_text)
-        except XmlException, e:
+        except XmlException as e:
             value = "<%s/>" % root
             xml.read_string(value)
 
@@ -3263,7 +3232,7 @@ class SObject(object):
         if value == None or value == '':
             if not column_info:
                 # NOTE: This is legal
-                #print "WARNING: column [%s] does not exist in [%s]" % (name, my.get_base_search_type() )
+                #print("WARNING: column [%s] does not exist in [%s]" % (name, my.get_base_search_type() ))
                 pass
             elif column_info.get('data_type') in ['timestamp']:
                 value = None
@@ -3281,7 +3250,7 @@ class SObject(object):
             try:
                 value = parser.parse(value)
                 value = str(value)
-            except Exception, e:
+            except Exception as e:
                 # Keep the value as is
                 value = value
         elif column_info.get('data_type') in ['varchar','text']:
@@ -3553,7 +3522,7 @@ class SObject(object):
                 my.set_value( from_col, sobject.get_value(to_col) )
  
         elif relationship in ['general']:
-            print 'WARNING: relationship [%s] not supported' % relationship
+            print('WARNING: relationship [%s] not supported' % relationship)
 
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
@@ -3731,6 +3700,46 @@ class SObject(object):
         return True
 
 
+    def store_version(my):
+        # versioning
+        versioning = True
+        if versioning and my.get_base_search_type() in ["spme/wop","spme/shot"]:
+            # find the last version
+            last_search = Search("spme/version")
+            last_search.add_column("version")
+            last_search.add_filter("search_type", my.get_search_type())
+            last_search.add_filter("search_code", my.get_code())
+            last_search.add_order_by("version desc")
+            last = last_search.get_sobject()
+            if not last:
+                version = 1
+            else:
+                version = last.get("version")
+            version += 1
+
+            new_version = SearchType.create("spme/version")
+            new_version.set_value("version", version)
+            new_version.set_value("search_type", my.get_search_type())
+            new_version.set_value("search_code", my.get_code())
+            new_version.set_user()
+
+            # get and copy the data
+            data = my.get_data()
+            data = data.copy()
+
+            # scrub the data
+            new_data = {}
+            for name, value in data.items():
+                if value is None:
+                    continue
+                new_data[name] = value
+
+            new_version.set_value("data", new_data)
+            new_version.commit()
+
+
+
+
     def commit(my, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
 
@@ -3753,6 +3762,10 @@ class SObject(object):
         # work
         if is_insert:
             my.set_defaults()
+
+
+        if not is_insert:
+            my.store_version()
 
 
         # remap triggers kwarg
@@ -3894,7 +3907,7 @@ class SObject(object):
         if vendor == "MongoDb":
             update.execute(sql)
             #statement = update.get_statement()
-            #print "statement: ", statement
+            #print("statement: ", statement)
             statement = "MongoDB!!!"
 
         else:
@@ -3912,7 +3925,7 @@ class SObject(object):
                 if id_statement:
                     sql.do_update(id_statement)
 
-            #print "statement: ", statement
+            #print("statement: ", statement)
             sql.do_update(statement)
 
 
@@ -4445,9 +4458,9 @@ class SObject(object):
         for related_type in related_types:
             related_sobjects = my.get_related_sobjects(related_type)
             if related_sobjects:
-                print "Updating dependent search_type [%s]" % related_type
+                print("Updating dependent search_type [%s]" % related_type)
             for related_sobject in related_sobjects:
-                print "... ", related_sobject.get_code()
+                print("... ", related_sobject.get_code())
                 related_sobject.set_value("search_code", new_code)
                 related_sobject.commit()
 
@@ -4459,7 +4472,7 @@ class SObject(object):
             if related_type == "*":
                 continue
 
-            print "Preparing to update [%s]" % related_type
+            print("Preparing to update [%s]" % related_type)
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
 
@@ -4480,7 +4493,7 @@ class SObject(object):
 
             related_sobjects = my.get_related_sobjects(related_type)
             for related_sobject in related_sobjects:
-                print "... related: ", related_sobject.get_code()
+                print("... related: ", related_sobject.get_code())
 
             if related_sobjects:
                 raise TacticException("There are related items in [%s].  Please change these first" % related_type)
@@ -4555,8 +4568,8 @@ class SObject(object):
             for key,value in defaults.items():
                 if not my.has_value(key) or my.get_value(key) == None:
                     my.set_value(key, value)
-        except Exception, e:
-            print "Error: ", e.__str__()
+        except Exception as e:
+            print("Error: ", e.__str__())
 
 
 
@@ -4651,7 +4664,7 @@ class SObject(object):
             keys = [key, key2, key3, key4]
             default = "deny"
             if not security.check_access("search_type", keys, "delete", default=default):
-                print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_user_name(), base_search_type)
+                print("WARNING: User [%s] security failed for search type [%s]" % (Environment.get_user_name(), base_search_type))
                 raise SObjectException('[%s] is not allowed to delete item in [%s]. You may need to adjust the access rules for the group.' % (Environment.get_user_name(), base_search_type))
 
         # remember the data
@@ -4760,7 +4773,7 @@ class SObject(object):
 
                 related_sobjects = my.get_related_sobjects(related_type)
 
-                #print "found: ", related_type, len(related_sobjects)
+                #print("found: ", related_type, len(related_sobjects))
                 for related_sobject in related_sobjects:
                     related_sobject.clone(parent=clone)
 
@@ -6064,7 +6077,7 @@ class SearchType(SObject):
             base = key
             try:
                 search_type = cls._get_data(base)
-            except SearchException, e:
+            except SearchException as e:
                 if not no_exception:
                     raise
 
@@ -6156,7 +6169,7 @@ class SearchType(SObject):
             return Project.set_global_project_code(impl)
             #return cls.set_project(impl)
 
-        print "DEPRECATED: set_global_template: ", var, impl
+        print("DEPRECATED: set_global_template: ", var, impl)
     set_global_template = classmethod(set_global_template)
 
     def get_global_template(cls, var):
@@ -6164,7 +6177,7 @@ class SearchType(SObject):
             return Project.get_global_project_code()
             #return cls.get_project()
 
-        print "DEPRECATED: get_global_template: "
+        print("DEPRECATED: get_global_template: ")
         return SObjectFactory.get_template(var)
     get_global_template = classmethod(get_global_template)
 
@@ -6249,21 +6262,21 @@ class SearchType(SObject):
 
         try:
             object = getattr(module, class_name)(search_type, columns, result, fast_data=fast_data)
-        except Exception, e:
+        except Exception as e:
             #if class_name == "SearchType":
             if True:
                 import traceback
-                print "Error: ", e
+                print("Error: ", e)
                 # print the stacktrace
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
 
-            print "WARNING: class [%s] does not accept fast_data" % class_name
+            print("WARNING: class [%s] does not accept fast_data" % class_name)
             object = getattr(module, class_name)(search_type, columns, result)
 
         return object
@@ -6338,8 +6351,8 @@ class SearchType(SObject):
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
             #from pyasm.security import Site
-            #print "Site: ", Site.get_site()
-            #print "sql: ", select.get_statement()
+            #print("Site: ", Site.get_site())
+            #print("sql: ", select.get_statement())
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )
@@ -6703,7 +6716,7 @@ class SObjectUndo:
                     try:
                         search_id = int(search_id.strip("'"))
                     except ValueError, e:
-                        print "ERROR: undo error: ", e.__str__()
+                        print("ERROR: undo error: ", e.__str__())
                         return
 
         # get the sobject
@@ -6726,7 +6739,7 @@ class SObjectUndo:
         if action == "delete":
             # if the sobject still exists, we have an inconsistency
             if sobject:
-                print "WARNING: deleted sobject still exists [%s, %s]" % (search_type, search_code)
+                print("WARNING: deleted sobject still exists [%s, %s]" % (search_type, search_code))
 
             # recreate the sobject
             sobject = SearchType.create(search_type)
@@ -6840,7 +6853,7 @@ class SObjectUndo:
                 if not SearchType.column_exists(search_type, name):
                     msg = "Column [%s] does not exist in search_type [%s]" % (name, sobject.get_search_type() )
                     if no_exception:
-                        print "WARNING: %s" % msg
+                        print("WARNING: %s" % msg)
                         continue
                     else:
                         raise MissingException(msg)
@@ -6868,7 +6881,7 @@ class SObjectUndo:
                         else:
                             value = SPTDate.convert(value)
                     except:
-                        print "WARNING: could not parse timestamp [%s]" % value
+                        print("WARNING: could not parse timestamp [%s]" % value)
 
                 elif column_type == 'boolean':
                     if value == 'true':
@@ -6896,7 +6909,7 @@ class SObjectUndo:
             if not sobject:
                 msg = "sobject [%s, code=%s] does not exist when trying to update in redo" % (search_type, search_code)
                 if no_exception:
-                    print "WARNING: %s" % msg
+                    print("WARNING: %s" % msg)
                     return
                 else:
                     raise MissingException(msg)
@@ -6917,17 +6930,17 @@ class SObjectUndo:
                     try:
                         col_changed = parser.parse(col_changed)
                         if col_changed > transaction_time:
-                            print "Column [%s] was changed after this transaction ... skipping" % name
-                            print "Transaction time: ", transaction_time
-                            print "Column modification time: ", col_changed
+                            print("Column [%s] was changed after this transaction ... skipping" % name)
+                            print("Transaction time: ", transaction_time)
+                            print("Column modification time: ", col_changed)
                             continue
                     except:
-                        print "WARNING: modification date mangled for column [%s]... skipping" % name
+                        print("WARNING: modification date mangled for column [%s]... skipping" % name)
 
                 if not SearchType.column_exists(search_type, name):
                     msg = "WARNING: Column [%s] does not exist in search_type [%s]" % (name, sobject.get_search_type() )
                     if no_exception:
-                        print "WARNING: %s" % msg
+                        print("WARNING: %s" % msg)
                         continue
                     else:
                         raise MissingException(msg)
@@ -6966,7 +6979,7 @@ class SObjectUndo:
             if sobject == None:
                 error = "Error trying to delete sobject [%s, %s] that does not exist." % (search_type, search_code)
                 if no_exception:
-                    print "WARNING: %s" % error
+                    print("WARNING: %s" % error)
                 else:
                     raise MissingException(error)
             else:

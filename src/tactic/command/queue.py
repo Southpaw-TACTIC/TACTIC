@@ -193,7 +193,7 @@ class JobTask(SchedulerTask):
 
             my.jobs = []
 
-        except Exception, e:
+        except Exception as e:
             print("Exception: ", e.message)
             count += 1
             my.cleanup(count)
@@ -340,7 +340,7 @@ class JobTask(SchedulerTask):
 
                 # set job to complete
                 my.job.set_value("state", "complete")
-            except Exception, e:
+            except Exception as e:
                 my.job.set_value("state", "error")
 
             my.job.commit()
@@ -370,7 +370,7 @@ class JobTask(SchedulerTask):
                     # set job to complete
                     my.job.set_value("state", "complete")
                     break
-                except TacticException, e:
+                except TacticException as e:
 
                     # This is an error on this server, so just exit
                     # and don't bother retrying
@@ -379,7 +379,7 @@ class JobTask(SchedulerTask):
                     break
 
 
-                except Exception, e:
+                except Exception as e:
                     if stop_on_error:
                         raise
                     print("WARNING in Queue: ", e)

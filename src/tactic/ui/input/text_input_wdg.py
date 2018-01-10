@@ -433,8 +433,8 @@ class TextInputWdg(BaseInputWdg):
 
 
 
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 icon = IconButtonWdg(name="Error: %s" % str(e), icon=IconWdg.ERROR)
 
             edit_div.add(icon)
@@ -1288,8 +1288,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 cmd = PythonCmd(script_path=script_path, **kwargs)
                 Command.execute_cmd(cmd)
         
-            except Exception, e:
-                print e
+            except Exception as e:
+                print(e)
                 raise
 
             else:
@@ -1747,7 +1747,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         filtered = filtered[0:10]
 
         for keywords in filtered:
-            #print "keywords: ", keywords
+            #print("keywords: ", keywords)
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")

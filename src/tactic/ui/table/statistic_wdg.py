@@ -509,6 +509,8 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             my.due_date_col = 'bid_end_date'
         my.mode = ''
 
+        my.set_option('filter_name', my.due_date_col)
+
 
     def add_value_update(my, value_wdg, sobject, name):
         value_wdg.add_update( {

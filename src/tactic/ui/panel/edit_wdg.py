@@ -40,6 +40,10 @@ class EditTitleWdg(BaseInputWdg):
             title = Common.get_display_title(title)
 
 
+        #description = self.get_description()
+        #print "description: ", description
+
+
         """
         div = DivWdg()
         div.add(title)
@@ -55,6 +59,7 @@ class EditTitleWdg(BaseInputWdg):
         div = DivWdg()
         div.add_style("margin-top: 20px")
         div.add_style("font-size: 16px")
+        div.add_style("font-weight: bold")
         div.add(title)
         div.add("<hr/>")
 
@@ -94,7 +99,7 @@ class EditCustomWdg(BaseInputWdg):
 
         try:
             display = layout.get_buffer_display()
-        except Exception, e:
+        except Exception as e:
             display = str(e)
 
 
@@ -622,13 +627,21 @@ class EditWdg(BaseRefreshWdg):
         if show_header not in ['false', False]:
             my.add_header(inner, sobj_title)
 
-
-        #insert table into a body container so styling gets applied
-        table = Table()
         body_container = DivWdg()
-        body_container.add_class("spt_popup_body")
-        body_container.add(table)
         inner.add(body_container)
+        body_container.add_class("spt_popup_body")
+
+        table_div = DivWdg()
+        body_container.add(table_div)
+        table_div.add_style("margin: 0px 20px")
+
+        table = Table()
+        table_div.add(table)
+
+
+
+        table.add_style("margin-left: auto")
+        table.add_style("margin-right: auto")
 
 
         if my.color_mode == "default":
@@ -647,7 +660,6 @@ class EditWdg(BaseRefreshWdg):
 
         height = attrs.get('height')
         if height:
-            print "height: ", height
             table.add_style("height: %s" % height)
 
 
@@ -701,7 +713,8 @@ class EditWdg(BaseRefreshWdg):
 
         # set the width
         table.add_style("width: %s" % width)
-        table.add_style("margin: 0px 20px")
+        table.add_style("margin-top: 20px")
+        table.add_style("margin-bottom: 20px")
 
 
 

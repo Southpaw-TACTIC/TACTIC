@@ -110,8 +110,8 @@ class Maya(Application):
 
         try:
             exec("import pymel as pymel")
-        except Exception, e:
-            print "exception"
+        except Exception as e:
+            print("exception")
             raise MayaException(e)
 
         if init == True:
@@ -141,7 +141,7 @@ class Maya(Application):
             if not pymel:
                 exec("import pymel as pymel", globals(), locals())
             if verbose == True or (verbose == None and my.verbose == True):
-                print "->", cmd
+                print("->", cmd)
             return pymel.mel(cmd)
 
 
@@ -163,7 +163,7 @@ class Maya(Application):
     def get_var(my, name):
         value = mel('$%s = $%s' % (name, name) ) 
         #value = value.replace("||", "/")
-        #print "value: ", name, value
+        #print("value: ", name, value)
         return value
 
 
@@ -338,7 +338,7 @@ class Maya(Application):
 
     def rename(my, path):
         '''rename the file so that "save" will go to that directory'''
-        print "renaming: ", path
+        print("renaming: ", path)
         if path.endswith("/") or path.endswith("\\"):
             path = "%suntitled.ma" % path
         elif not path:
@@ -469,7 +469,7 @@ class Maya(Application):
 
         mel('file -rename "%s"' % path )
         cmd = 'file -force -op "v=0" %s -type "%s"' % (export_mode, type_key)
-        print "cmd: ", cmd
+        print("cmd: ", cmd)
         mel(cmd)
         
         return path
@@ -523,7 +523,7 @@ class Maya(Application):
             delight_list = mel('ls -type delightShapeSet')
             if delight_list:
                 delight_set = set(delight_list)
-        except Exception, e:
+        except Exception as e:
             pass
 
         ignore_set = set(['defaultLightSet', 'defaultObjectSet']).union(delight_set)
@@ -885,14 +885,14 @@ class Maya85(Maya):
             my.buffer.append(cmd)
         else:
             if verbose == True or (verbose == None and my.verbose == True):
-                print "->", cmd
+                print("->", cmd)
             try:
                 return mm.mel.eval(cmd)
-            except Exception, e:
+            except Exception as e:
                 if cmd.startswith("MayaManInfo"):
-                    print "Warning: ", cmd
+                    print("Warning: ", cmd)
                 else:
-                    print "Error: ", cmd
+                    print("Error: ", cmd)
                     # Let the MEL keep running
                     raise MayaException(cmd)
 

@@ -78,7 +78,7 @@ class BaseAppServer(Base):
             profile.run( "from pyasm.web.app_server import BaseAppServer; BaseAppServer.profile()", path)
             p = pstats.Stats(path)
             p.sort_stats('cumulative').print_stats(30)
-            print "*"*30
+            print("*"*30)
             p.sort_stats('time').print_stats(30)
 
         else:
@@ -119,9 +119,9 @@ class BaseAppServer(Base):
                 # get the display
                 my._get_display()
 
-            except SetupException, e:
+            except SetupException as e:
                 '''Display setup exception in the interface'''
-                print "Setup exception: ", e.__str__()
+                print("Setup exception: ", e.__str__())
                 DbContainer.rollback_all()
                 ExceptionLog.log(e)
                 my.writeln("<h3>Tactic Setup Error</h3>" )
@@ -130,7 +130,7 @@ class BaseAppServer(Base):
                 my.writeln("</pre>" )
                 error = "405: TACTIC Setup Error"
 
-            except DatabaseException, e:
+            except DatabaseException as e:
                 from tactic.ui.startup import DbConfigPanelWdg
                 config_wdg = DbConfigPanelWdg()
                 my.writeln("<pre>")
@@ -139,9 +139,9 @@ class BaseAppServer(Base):
                 error = "405: TACTIC Database Error"
 
 
-            except Exception, e:
+            except Exception as e:
                 stack_trace = ExceptionLog.get_stack_trace(e)
-                #print stack_trace
+                #print(stack_trace)
                 my.writeln("<pre>")
                 my.writeln(stack_trace)
                 my.writeln("</pre>")
@@ -157,11 +157,11 @@ class BaseAppServer(Base):
                 # ensure that database connections are rolled back
                 try:
                     DbContainer.rollback_all()
-                except Exception, e2:
-                    print "Error: Could not rollback: ", e2.__str__()
+                except Exception as e2:
+                    print("Error: Could not rollback: ", e2.__str__())
                     my.writeln("Error: Could not rollback: '%s'" % e2.__str__() )
                     stack_trace = ExceptionLog.get_stack_trace(e2)
-                    print stack_trace
+                    print(stack_trace)
                     my.writeln("<pre>")
                     my.writeln(stack_trace)
                     my.writeln("</pre>")
@@ -173,12 +173,12 @@ class BaseAppServer(Base):
                     # WARNING: if this call causes an exception, the error
                     # will be obscure
                     log = ExceptionLog.log(e)
-                except Exception, e2:
+                except Exception as e2:
 
-                    print "Error: Could not log exception: ", e2.__str__()
+                    print("Error: Could not log exception: ", e2.__str__())
                     my.writeln("Error '%s': Could not log exception" % e2.__str__() )
                     stack_trace = ExceptionLog.get_stack_trace(e2)
-                    print stack_trace
+                    print(stack_trace)
                     my.writeln("<pre>")
                     my.writeln(stack_trace)
                     my.writeln("</pre>")
@@ -201,7 +201,7 @@ class BaseAppServer(Base):
 
             if error:
                 import cherrypy
-                print "error: ", error
+                print("error: ", error)
                 cherrypy.response.status = error
                 #raise Exception(error)
 
@@ -254,7 +254,7 @@ class BaseAppServer(Base):
                     if current_project != "default":
                         project = Project.get_by_code(current_project)
                         assert project
-                except Exception, e:
+                except Exception as e:
                     pass
                 else:
 
@@ -264,8 +264,8 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         try:
                             Project.set_project(current_project)
-                        except SecurityException, e:
-                            print e
+                        except SecurityException as e:
+                            print(e)
                             if 'is not permitted to view project' not in e.__str__():
                                 raise
 
@@ -337,8 +337,8 @@ class BaseAppServer(Base):
         try:
             security = my.handle_security(security)
             is_logged_in = security.is_logged_in()
-        except Exception, e:
-            print "AppServer Exception: ", e
+        except Exception as e:
+            print("AppServer Exception: ", e)
             return my.handle_not_logged_in()
 
  
@@ -373,7 +373,7 @@ class BaseAppServer(Base):
             if override_default:
                 project = override_default
         if is_upload:
-            print "IS UPLOAD"
+            print("IS UPLOAD")
             access = True
 
         elif project != 'default':
@@ -429,7 +429,7 @@ class BaseAppServer(Base):
                 widget.add( BottomWdg() )
                 widget.get_display()
                 if is_upload:
-                    print "WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project)
+                    print("WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project))
                 return
 
 
@@ -474,8 +474,8 @@ class BaseAppServer(Base):
                 try:
                     Site.set_site(path_site)
                     has_site = True
-                except Exception, e:
-                    print "WARNING: ", e
+                except Exception as e:
+                    print("WARNING: ", e)
                     current_project = web.get_context_name()
                 else:
                     current_project = path_info.get("project_code")
@@ -495,8 +495,8 @@ class BaseAppServer(Base):
                     project = Project.get_by_code(current_project, use_cache=False)
                     if not project:
                         raise Exception("Project [%s] does not exist" % current_project)
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
@@ -505,8 +505,8 @@ class BaseAppServer(Base):
                 if current_project and current_project != "default":
                     try:
                         Project.set_project(current_project)
-                    except SecurityException, e:
-                        print e
+                    except SecurityException as e:
+                        print(e)
                         if 'is not permitted to view project' in e.__str__():
                             pass
                         else:
@@ -672,8 +672,8 @@ class BaseAppServer(Base):
 
             widget = my.get_content(page_type)
 
-        except Exception, e:
-            print "ERROR: ", e
+        except Exception as e:
+            print("ERROR: ", e)
             from pyasm.widget import BottomWdg, Error403Wdg
             widget = Widget()
             top = my.get_top_wdg()
@@ -783,8 +783,8 @@ class BaseAppServer(Base):
                 reset_cmd = ResetPasswordCmd(reset=True)
                 try:
                     reset_cmd.execute()
-                except TacticException, e:
-                    print "Reset failed. %s" %e.__str__()
+                except TacticException as e:
+                    print("Reset failed. %s" %e.__str__())
 
             # let empty username or password thru to get feedback from WebLoginCmd
             else:
@@ -808,8 +808,8 @@ class BaseAppServer(Base):
             ticket = security.get_ticket()
             if ticket:
                 site_obj.handle_ticket(ticket)
-        except Exception, e:
-            print "ERROR in handle_ticket: ", e
+        except Exception as e:
+            print("ERROR in handle_ticket: ", e)
         """
 
 
@@ -863,7 +863,7 @@ class BaseAppServer(Base):
 
         # NOTE: is this needed anymore?
         if request_type in ["upload", "dynamic_file"]:
-            print "DEPRECATED: dynamic file in app_server.py"
+            print("DEPRECATED: dynamic file in app_server.py")
             widget = Widget()
             page = my.get_page_widget()
             widget.add(page)
@@ -894,10 +894,10 @@ class BaseAppServer(Base):
         tb = sys.exc_info()[2]
         stacktrace = traceback.format_tb(tb)
         stacktrace_str = "".join(stacktrace)
-        print "-"*50
-        print stacktrace_str
-        print str(exception)
-        print "-"*50
+        print("-"*50)
+        print(stacktrace_str)
+        print(str(exception))
+        print("-"*50)
 
         user_name = Environment.get_user_name()
         exception_log = SObjectFactory.create("sthpw/exception_log")
@@ -1004,7 +1004,7 @@ def get_app_server_class():
     else:
         #raise AppServerException("Environment variable TACTIC_APP_SERVER not set")
         # default to webware for now
-        #print "WARNING: Environment variable TACTIC_APP_SERVER not set"
+        #print("WARNING: Environment variable TACTIC_APP_SERVER not set")
         #from webware_adapter import get_app_server
         return object
 
@@ -1026,7 +1026,7 @@ def get_xmlrpc_server_class():
     else:
         #raise AppServerException("Environment variable TACTIC_APP_SERVER not set")
         # default to webware for now
-        #print "WARNING: Environment variable TACTIC_APP_SERVER not set"
+        #print("WARNING: Environment variable TACTIC_APP_SERVER not set")
         #from webware_adapter import get_xmlrpc_server
         return object
 

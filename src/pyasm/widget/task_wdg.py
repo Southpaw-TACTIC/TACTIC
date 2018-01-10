@@ -1018,9 +1018,9 @@ class TaskParentSpacingTableElement(SimpleTableElementWdg):
         else:
             try:
                 parent = sobject.get_parent()
-            except SObjectSecurityException, e:
+            except SObjectSecurityException as e:
                 pass
-            except SearchException, e:
+            except SearchException as e:
                 if e.__str__().find('not registered') != -1:
                     pass
                 elif e.__str__().find('does not exist for database') != -1:

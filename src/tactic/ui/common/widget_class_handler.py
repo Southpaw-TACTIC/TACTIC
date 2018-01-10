@@ -119,18 +119,23 @@ class WidgetClassHandler(object):
         </element>
 
         <element name='hidden_row'>
-            <!--
-            <display class='pyasm.widget.HiddenRowToggleWdg'/>
-            -->
             <display class='tactic.ui.table.HiddenRowElementWdg'/>
+        </element>
+
+
+
+
+
+
+        <element name='title'>
+            <display class='tactic.ui.panel.EditTitleWdg'/>
         </element>
 
         <element name='text'>
             <display class='tactic.ui.input.TextInputWdg'/>
-        <!--
-            <display class='pyasm.widget.TextWdg'/>
-        -->
         </element>
+
+
         <element name='select'>
             <display class='pyasm.widget.SelectWdg'/>
         </element>

@@ -289,7 +289,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         for search_type, sobjects in search_types_dict.items():
             try:
                 search = Search(search_type)
-            except SearchException, e:
+            except SearchException as e:
                 # it may have been deleted
                 # show it as is, without remapping
                 print str(e)
@@ -1411,6 +1411,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
     def handle_table_behaviors(my, table):
+
+
+
         security = Environment.get_security()
         project_code = Project.get_project_code()
         my.handle_load_behaviors(table)
@@ -1735,7 +1738,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         show_border = my.kwargs.get("show_border")
-        if show_border not in [False, "false"]:
+        if show_border in ['horizontal']:
+            cell_styles["border-bottom"] = "solid 1px %s" % border_color
+            cell_styles["padding"] = "3px"
+            select_styles["border-bottom"] = "solid 1px %s" % border_color
+
+        elif show_border not in [False, "false"]:
             cell_styles["border"] = "solid 1px %s" % border_color
             cell_styles["padding"] = "3px"
             select_styles["border"] = "solid 1px %s" % border_color
@@ -1881,6 +1889,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
  
 
     def handle_headers(my, table, hidden=False):
+
+        # FIXME: for some reason, this is neeeded on the chunk loading
+        #if my.kwargs.get('temp') == True:
+        #    return
+
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
@@ -1947,7 +1960,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             show_border = my.kwargs.get("show_border")
-            if show_border not in [False, "false"]:
+            if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border: solid 1px %s" % border_color)
 
             edit_wdg = my.edit_wdgs.get(name)
@@ -1965,7 +1978,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
-            inner_div.add_style("min-height: 30px")
+            inner_div.add_style("min-height: 35px")
 
 
 
@@ -2143,7 +2156,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             for td in group_row.get_widgets():
                 #td.add_style("overflow: hidden")
-                td.add_attr("colspan", "2")
+                #td.add_attr("colspan", "2")
 
                 # this is set in handle_group
                 group_value = td.group_value
@@ -2316,6 +2329,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_groups(my, table, row, sobject):
         '''called per sobject, decide to draw a grouping folder if conditions are met''' 
+
+
+        if my.kwargs.get('temp') == True:
+            return
+
+
         if row == 0:
             my.group_summary = []
 
@@ -2357,7 +2376,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 group_value = "__NONE__"
             
             last_value = group_values.get(group_column)
-           
+
+
+
+            # break groups by a "/" delimiter
+            if group_value.find("/"):
+                parts = group_value.split("/")
+                if not parts[0].endswith(" "):
+                    group_value = parts[0]
+
+
+
+
             # if this is the first row or the group value has changed,
             # then create a new group
             if last_value == None or group_value != last_value:
@@ -2395,7 +2425,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # put the sobjects in each sub group for group summary calculation
         if my.group_rows:
-            my.group_rows[-1].get_sobjects().append(sobject)
+            group_level = my.group_rows[-1].group_level
+
+            last_group_level = 100
+            for group_row in reversed(my.group_rows):
+                group_level = group_row.group_level
+
+                if group_level < last_group_level:
+                    group_row.get_sobjects().append(sobject)
+                    if group_level == 0:
+                        break
+
+                last_group_level = group_level
+
+
+
+            #my.group_rows[-1].get_sobjects().append(sobject)
+
+            #for j in range(1, group_level+1):
+            #    my.group_rows[-1-j].get_sobjects().append(sobject)
+
 
         
 
@@ -2419,24 +2468,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.group_level = i
 
 
-
-
         title = ""
 
-
-        # calculate the group content        
-        """
-        if group_value == '__NONE__':
-            label = '---'
-        else:
-            group_label_expr = my.kwargs.get("group_label_expr")
-            if group_label_expr:
-                label = Search.eval(group_label_expr, sobject, single=True)
-            else:
-                label = Common.process_unicode_string(group_value)
-
-        title = label
-        """
 
 
         # if grouped by time
@@ -2450,6 +2483,41 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if len(labels)== 2:
                     timestamp = datetime(int(labels[0]),int(labels[1]),1)
                     title = timestamp.strftime("%Y %b")
+
+
+
+
+        # TEST - Add button
+        add_div = DivWdg()
+        td.add(add_div)
+        add_div.add_style("display: inline-block")
+        add_div.add_style("float: right")
+        add_div.add_style("margin: 3px 8px 3px 5px")
+        add_div.add_class("hand")
+        add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
+        add_div.add_behavior( {
+            "type": "click",
+            "search_type": my.search_type,
+            "group_column": group_column,
+            "group_value": group_value,
+            "cbjs_action": '''
+            var class_name = 'tactic.ui.panel.EditWdg';
+
+            var defaults = {};
+            defaults[bvr.group_column] = bvr.group_value;
+
+            var kwargs = {
+                view: 'edit',
+                search_type: bvr.search_type, 
+                default: defaults,
+            }
+            spt.panel.load_popup("Insert", class_name, kwargs);
+
+            '''
+        } )
+
+
+
 
 
         title_div = DivWdg()
@@ -2469,6 +2537,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.group_widgets.append(title_div)
 
 
+
+
+
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
         swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=my.is_on)
         swap.set_behavior_top(my.table)
@@ -2476,8 +2547,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("font-weight: bold")
 
 
-
-        td.add_style("height: 25px")
+        td.add_style("height: 30px")
         td.add_style("padding-left: %spx" % (i*15))
 
         border_color = tr.get_color("table_border")
@@ -2630,7 +2700,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         if not html:
                             html = "<div style='height: 14px'>&nbsp;</div>"
                         td.add(html)
-                except Exception, e:
+                except Exception as e:
 
                     my.error_columns.add(element_name)
 
@@ -2823,11 +2893,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 text_color = text_color_map.get(value)
                 if text_color:
                     td.add_style("color", text_color)
-        except Exception, e:
+        except Exception as e:
             print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
 
 
     def handle_select_header(my, table, border_color=None):
+
+        show_border = my.kwargs.get("show_border")
+        if not border_color:
+            border_color = table.get_color("table_border", 0, default="border")
 
         if my.group_columns:
             spacing = len(my.group_columns) * 20
@@ -2836,15 +2910,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th.add_style("width: %spx" % spacing)
             th.add_style("max-width: %spx" % spacing)
 
+            if show_border not in [False, "false", 'horizontal']:
+                th.add_style("border", "solid 1px %s" % border_color)
+
         th = table.add_cell()
-        #th.add_gradient("background", "background", -10)
-        if not border_color:
-            border_color = table.get_color("table_border", 0, default="border")
-
-
-
-        show_border = my.kwargs.get("show_border")
-        if show_border not in [False, "false"]:
+        if show_border not in [False, "false", 'horizontal']:
             th.add_style("border", "solid 1px %s" % border_color)
 
         th.add_looks( 'dg_row_select_box' )
@@ -2881,6 +2951,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #my.is_grouped = my.kwargs.get("is_grouped")
         #if my.is_grouped or my.group_columns:
 
+        show_border = my.kwargs.get("show_border")
         
         if my.group_columns or True:
             spacing = len(my.group_columns) * 20
@@ -2890,6 +2961,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 td.add_style("width: %spx" % spacing)
                 td.add_style("max-width: %spx" % spacing)
 
+                if show_border not in [False, "false"]:
+                    border_color = table.get_color("table_border", 0, default="border")
+                    td.add_style("border-bottom", "solid 1px %s" % border_color)
 
 
         td = table.add_cell()
@@ -5780,8 +5854,13 @@ spt.table.set_column_width = function(element_name, width) {
 
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
-        table.setStyle("width", total_width);
         header_table.setStyle("width", total_width);
+        table.setStyle("width", total_width);
+        subtable = table.getElement(".spt_table_table");
+        if (subtable) {
+            subtable.setStyle("width", total_width);
+            
+        }
 
         var layout = spt.table.get_layout();
         if (layout.getAttribute("has_extra_header") == "true") {

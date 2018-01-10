@@ -413,15 +413,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search.add_op_filters(my.kwargs.get("op_filters"))
 
 
-        # passed in filter overrides
-        values = filter_data.get_values_by_prefix("group")
-        order = WebContainer.get_web().get_form_value('order')
-        
+
         # user-chosen order has top priority
+        order = WebContainer.get_web().get_form_value('order')
         if order:
             my.order_element = order
             if not values:
-                tmp_order_element, direction  = my.get_order_element(my.order_element)
+                tmp_order_element, direction = my.get_order_element(my.order_element)
                 
                 widget = my.get_widget(tmp_order_element)
                 my.order_widget = widget
@@ -430,6 +428,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 except AttributeError:
                     search.add_order_by(my.order_element, direction)
 
+
+        # passed in filter overrides
+        values = filter_data.get_values_by_prefix("group")
+        print
+        print "values: ", values
         if values:
 
             group_values = values[0]
@@ -461,6 +464,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.show_retired_element = group_values.get("show_retired")
             if my.show_retired_element == "true":
                 search.set_show_retired(True)
+
+
 
 
         order_by = my.kwargs.get('order_by')
@@ -508,7 +513,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # alter the search
             my.search_limit.set_search(search)
             my.search_limit.alter_search(search)
-
 
 
 
@@ -698,7 +702,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if my.do_search == True:
                 my.sobjects = search.get_sobjects()
 
-        except SqlException, e:
+        except SqlException as e:
             my.search_wdg.clear_search_data(search.get_base_search_type())
 
 
@@ -714,7 +718,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         for widget in my.widgets:
             try:
                 sobjects = widget.process_sobjects(my.sobjects, search)
-            except Exception, e:
+            except Exception as e:
                 #print str(e)
                 pass
             else:
@@ -915,7 +919,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search.add_filter("view", "gear_menu_custom")
             search.add_filter("search_type", my.search_type)
             config_sobj = search.get_sobject()
-        except Exception, e:
+        except Exception as e:
             print "WARNING: When trying to find config: ", e
             config_sobj = None
 
@@ -1049,11 +1053,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_view_panel_top");
                     if (top) {
-                        var simple_search = top.getElement(".spt_simple_search");
-                        if (simple_search) {
-                            simple_search.setStyle("display", "");
-                            spt.body.add_focus_element(simple_search);
-                        }
+                        var pos = bvr.src_el.getPosition(top);
+                        pos.y += 35;
+                        spt.simple_search.set_position(pos);
+                        spt.simple_search.show_all_elements();
+                        spt.simple_search.show_title();
+                        spt.simple_search.show();
                     }
 
                    
@@ -1089,9 +1094,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 7 0 7")
-            #spacing_div.add_style("border-style: solid")
-            #spacing_div.add_style("border-width: 0 0 0 1")
-            #spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
 
 
         # -- Button Rows
@@ -1282,7 +1284,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
-            keyword_div.add_style("margin-left: 20px")
+            keyword_div.add_style("margin-left: 0px")
 
 
         if my.kwargs.get("show_refresh") != 'false':
@@ -1491,6 +1493,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Save button
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
+        #save_button.add_style("padding: none")
+
         #save_button.add_style("display", "none")
         save_button.add_class("spt_save_button")
         # it needs to be called save_button_top for the button to re-appear after its dissapeared
@@ -2192,8 +2197,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
       
 
@@ -2226,8 +2229,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
  
         # Group By Week Optional menu item ...

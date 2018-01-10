@@ -42,7 +42,7 @@ class PipelineInterpreter(object):
         try:
             process = my.pipeline.get_first_process_name()
             my.handle_process2(process)
-        except Exception, e:
+        except Exception as e:
             if not my.handlers:
                 raise
             print("Failed at handler: ", my.handlers[-1])
@@ -52,7 +52,7 @@ class PipelineInterpreter(object):
                 handlers.reverse()
                 for handler in handlers:
                     handler.undo()
-            except Exception, e:
+            except Exception as e:
                 print("Could not undo:", e.__str())
                 raise
 
@@ -119,7 +119,7 @@ class PipelineInterpreter(object):
                     my.handle_process(node)
                 elif node_name == "package":
                     my.handle_package(node)
-        except Exception, e:
+        except Exception as e:
             if not my.handlers:
                 raise
             print("Failed at handler: ", my.handlers[-1])
@@ -129,7 +129,7 @@ class PipelineInterpreter(object):
                 handlers.reverse()
                 for handler in handlers:
                     handler.undo()
-            except Exception, e:
+            except Exception as e:
                 print("Could not undo:", e.__str())
                 raise
 

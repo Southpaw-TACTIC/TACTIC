@@ -278,7 +278,7 @@ class DeleteToolWdg(BaseRefreshWdg):
                     sobjs = sobject.get_related_sobjects(related_type)
                     related_sobjects.extend(sobjs)
 
-            except Exception, e:
+            except Exception as e:
                 print("WARNING: ", e)
                 related_sobjects = []
 
@@ -936,7 +936,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
                 try:
                     search = Search(related_type)
-                except Exception, e:
+                except Exception as e:
                     print("WARNING: ", e)
                     continue
                 full_search_type = "%s?project=%s" % (search_type, project_code)
@@ -1199,7 +1199,7 @@ class DeleteProjectCmd(DeleteCmd):
                 if sql.get_database_type() != 'Sqlite':
                     if sql.get_connection() and sql.connect():
                         raise TacticException("Database [%s] still exists. There could still be connections to it."%project_code)
-            except SqlException, e:
+            except SqlException as e:
                 pass
         # remove the project entry
         project.delete(triggers=False)

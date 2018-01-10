@@ -53,7 +53,7 @@ class SnapshotLockedElementWdg(BaseTableElementWdg):
                     is_locked = Snapshot.is_locked(parent, context)
 
                     my.is_locked_dict[key] = is_locked
-                except SearchException, e:
+                except SearchException as e:
                     continue
 
 

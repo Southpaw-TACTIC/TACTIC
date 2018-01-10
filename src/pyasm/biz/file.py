@@ -54,7 +54,7 @@ if os.name == "nt":
             continue
         else:
             
-            print "ImageMagick found in %s" %exe
+            print("ImageMagick found in %s" %exe)
     if not convert_exe_list:
         # IM might not be in Program Files but may still be in PATH
         try:
@@ -434,7 +434,7 @@ class File(SObject):
 
     def makedirs(dir, mode=None):
         '''wrapper to mkdirs in case it ever needs to be overridden'''
-        print "DEPRECATED: use System().makedirs()"
+        print("DEPRECATED: use System().makedirs()")
         return System().makedirs(dir,mode)
     makedirs = staticmethod(makedirs)
 
@@ -485,7 +485,7 @@ class File(SObject):
             output = value[0].strip()
             if not output:
                 err = value[1]
-                print err
+                print(err)
             
         return output
        
@@ -580,7 +580,7 @@ class IconCreator(object):
             except IOError, e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
-                print "WARNING: ", e.__str__()
+                print("WARNING: ", e.__str__())
                 Environment.add_warning("Unknown file type", e.__str__())
         else:
             # assume it is an image
@@ -589,7 +589,7 @@ class IconCreator(object):
             except IOError, e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
-                print "WARNING: ", e.__str__()
+                print("WARNING: ", e.__str__())
                 Environment.add_warning("Unknown file type", e.__str__())
 
 
@@ -631,20 +631,20 @@ class IconCreator(object):
 
                 subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
 
-            except Exception, e:
-                print "Error extracting from pdf [%s]" % e
+            except Exception as e:
+                print("Error extracting from pdf [%s]" % e)
                 return
 
         # check that it actually got created
         if os.path.exists(tmp_icon_path):
             my.icon_path = tmp_icon_path
         else:
-            print "Warning: [%s] did not get created from pdf" % tmp_icon_path
+            print("Warning: [%s] did not get created from pdf" % tmp_icon_path)
 
         if os.path.exists(tmp_web_path):
             my.web_path = tmp_web_path
         else:
-            print "Warning: [%s] did not get created from pdf" % tmp_web_path
+            print("Warning: [%s] did not get created from pdf" % tmp_web_path)
 
     def get_web_file_size(my):
         from pyasm.prod.biz import ProdSetting
@@ -752,7 +752,7 @@ class IconCreator(object):
             else:
                 my.web_path = None
 
-        except Exception, e:
+        except Exception as e:
 
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
@@ -767,7 +767,7 @@ class IconCreator(object):
             else:
                 my.icon_path = None
 
-        except Exception, e:
+        except Exception as e:
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
@@ -895,8 +895,8 @@ class IconCreator(object):
                     try:
                         im = Image.open(large_path)
                         x,y = im.size
-                    except Exception, e:
-                        print "WARNING: ", e
+                    except Exception as e:
+                        print("WARNING: ", e)
                         x = 0
                         y = 0
                     if x < y:
@@ -966,8 +966,8 @@ class IconCreator(object):
             else:
                 raise TacticException('No image manipulation tool installed')
             
-        except Exception, e:
-            print "Error: ", e
+        except Exception as e:
+            print("Error: ", e)
 
         # after these operations, confirm that the icon has been generated
         if not os.path.exists(small_path):
@@ -1270,7 +1270,7 @@ class FileRange(object):
         last_value = None
         padding = None
         for i, file in enumerate(files):
-            print file
+            print(file)
             #parts = re.split(r"[\/\-\.]", file)
             parts = re.split(r"(\d+)", file)
 
@@ -1386,7 +1386,7 @@ class FileRange(object):
 
                 # find the places where the parts are different
                 c = cls._compare(parts, template)
-                #print c, compares[j], c.count("0")
+                #print(c, compares[j], c.count("0"))
                 if not compares[j]:
                     compares[j] = c
 

@@ -668,11 +668,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
             # we have to replace all & signs to &amp; for it be proper html
             html = html.replace("&", "&amp;")
             return html
-        except Exception, e:
+        except Exception as e:
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
-                print "Error in view [%s]: " % my.view, exceptions.text_error_template().render()
+                print("Error in view [%s]: " % my.view, exceptions.text_error_template().render())
                 #html = exceptions.html_error_template().render(css=False)
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
@@ -751,7 +751,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             for key, value in view_kwargs.items():
                 try:
                     test = jsondumps(value)
-                except Exception, e:
+                except Exception as e:
                     del(view_kwargs[key])
 
 
@@ -820,8 +820,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-                except Exception, e:
-                    print "Error: ", e
+                except Exception as e:
+                    print("Error: ", e)
                     raise TacticException("Error parsing behavior [%s]" % behavior_str)
 
 
@@ -945,15 +945,15 @@ class CustomLayoutWdg(BaseRefreshWdg):
             try:
                 element_wdg = my.get_element_wdg(xml, my.def_config)
                 element_html = element_wdg.get_buffer_display()
-            except Exception, e:
+            except Exception as e:
                 from pyasm.widget import ExceptionWdg
                 element_html = ExceptionWdg(e).get_buffer_display()
 
             xml = Xml()
             try:
                 xml.read_string(element_html)
-            except Exception, e:
-                print "Error: ", e
+            except Exception as e:
+                print("Error: ", e)
                 xml.read_string("<h1>%s</h1>" % str(e) )
             root = xml.get_root_node()
 
@@ -1000,7 +1000,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 full_line = []
                 parse_context = ''
 
-            except XmlException, e:
+            except XmlException as e:
                 parse_context = 'element'
                 #raise e
                 continue
@@ -1016,7 +1016,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     element_html = element_wdg.get_buffer_display()
                 else:
                     element_html = ''
-            except Exception, e:
+            except Exception as e:
                 from pyasm.widget import ExceptionWdg
                 element_html = ExceptionWdg(e).get_buffer_display()
 
@@ -1025,12 +1025,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
             try:
                 new_xml = Xml()
                 new_xml.read_string(element_html)
-            except Exception, e:
+            except Exception as e:
                 f = open("/tmp/error", 'w')
                 f.write(element_html)
                 f.close()
-                #print element_html
-                print "Error: ", e
+                #print(element_html)
+                print("Error: ", e)
             """
 
             if element_html:
@@ -1349,7 +1349,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-        except Exception, e:
+        except Exception as e:
             from pyasm.widget import ExceptionWdg
             log = ExceptionWdg(e)
             element_wdg = log

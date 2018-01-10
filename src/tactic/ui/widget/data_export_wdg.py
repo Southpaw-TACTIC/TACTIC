@@ -880,7 +880,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         try:    
             csv_parser.parse()
         # that can be all kinds of encoding/decoding exception
-        except Exception, e:
+        except Exception as e:
             # possibly incompatible encoder selected, use the default instead.
             # Let the user pick it.
             span = SpanWdg('WARNING: The selected encoder is not compatible with your csv file. Please choose the proper one (e.g. UTF-8). Refer to the documentation/tutorial on how to save your csv file with UTF-8 encoding if you have special characters in it.', css='warning')
@@ -1336,7 +1336,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         try:    
             csv_parser.parse()
         # that can be all kinds of encoding/decoding exception
-        except Exception, e:
+        except Exception as e:
             # possibly incompatible encoder selected, use the default instead.
             # Let the user pick it.
             span = SpanWdg('WARNING: The selected encoder is not compatible with your csv file. Please choose the proper one. Refer to the documentation/tutorial on how to save your csv file with UTF-8 encoding if you have special characters in it.', css='warning')
@@ -1669,7 +1669,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             else:
                 # if it is just some number instead of a real date or timestamp
                 column_type = my._check_integer(data)
-        except Exception, e:
+        except Exception as e:
             pass
            
         return column_type 

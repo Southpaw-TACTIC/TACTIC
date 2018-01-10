@@ -92,8 +92,8 @@ class ExplorerElementWdg(BaseTableElementWdg):
                     sobject_lib_dir = my.get_lib_dir(sobject)
                 sobject_dir = sobject_dir.strip()
                 sobject_dir = Common.process_unicode_string(sobject_dir)
-            except TacticException, e:
-                print "WARNING: ", str(e)
+            except TacticException as e:
+                print("WARNING: ", str(e))
                 button = IconWdg("No Path Found", IconWdg.CROSS, long=False)
             else:
                 button = IconButtonWdg(title="Explore: %s" % sobject_dir, icon=IconWdg.LOAD)

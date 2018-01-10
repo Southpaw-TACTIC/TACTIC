@@ -625,8 +625,8 @@ class SyncRemoteProjectCmd(Command):
 
 
 
-        except Exception, e:
-            print "Error: ", str(e)
+        except Exception as e:
+            print("Error: ", str(e))
             raise
 
 

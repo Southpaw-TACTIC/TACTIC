@@ -430,7 +430,7 @@ class ThumbWdg(BaseTableElementWdg):
 
  
 
-                except SqlException, e:
+                except SqlException as e:
                     my.SQL_ERROR = True 
                     DbContainer.abort_thread_sql()
                     return
@@ -746,9 +746,9 @@ class ThumbWdg(BaseTableElementWdg):
             # check if the sobject actually exists
             try:
                 snapshot.get_sobject()
-            except SObjectNotFoundException, e:
+            except SObjectNotFoundException as e:
                 return IconWdg('sobject n/a for snapshot code[%s]' %snapshot.get_code(), icon=IconWdg.ERROR)
-            except SearchException, e:
+            except SearchException as e:
                 return IconWdg('parent for snapshot [%s] not found' %snapshot.get_code(), icon=IconWdg.ERROR)
        
         else:
@@ -1414,7 +1414,7 @@ class ThumbWdg(BaseTableElementWdg):
     get_file_info = staticmethod(get_file_info)
 
     def get_refresh_script(sobject, icon_size=None, show_progress=True):
-        print "DEPRECATED: Snapshot.get_refresh_script!"
+        print("DEPRECATED: Snapshot.get_refresh_script!")
 
         # get the ajax loader for the thumbnail
         ajax = AjaxLoader("thumb_%s" % sobject.get_search_key() )
@@ -1542,7 +1542,7 @@ class ThumbCmd(Command):
             """
 
             if not os.path.exists(path):
-                print "WARNING: path [%s] does not exist" % path
+                print("WARNING: path [%s] does not exist" % path)
                 return
 
             icon_creator = IconCreator(path)

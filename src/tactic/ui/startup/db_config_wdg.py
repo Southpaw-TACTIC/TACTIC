@@ -642,7 +642,7 @@ class DbConfigCbk(Command):
             # attempt
             sql.connect()
             sql.do_query("select id from transaction_log limit 1")
-        except Exception, e:
+        except Exception as e:
             my.info['error'] = "Could not connect to database with (vendor=%s, server=%s, user=%s, port=%s)" % (vendor, server, user, port)
             my.info['message'] = str(e)
             print e
@@ -690,7 +690,7 @@ class DbConfigSaveCbk(Command):
             my.configure_asset_dir()
             my.configure_palette()
             my.configure_security()
-        except Exception, e:
+        except Exception as e:
             raise TacticException('Error in [%s]: %s'%(my.section, e.__str__()))
         # FIXME: if this all fails, then revert back
         

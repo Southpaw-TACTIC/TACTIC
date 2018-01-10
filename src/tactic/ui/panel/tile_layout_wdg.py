@@ -787,6 +787,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var tile_top = bvr.src_el.getParent(".spt_tile_top");
                 var search_key = tile_top.getAttribute("spt_search_key_v2");
 
+                var thumb_top = tile_top.getElement(".spt_thumb_top");
+                var main_path = thumb_top.getAttribute("spt_main_path");
+                if (main_path.endsWith(".pdf")) {
+                    window.open(main_path, "_blank");
+                    return;
+                }
+
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
                 var kwargs = {
                     search_keys: search_keys,
@@ -1514,9 +1521,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         basename = os.path.basename(path)
         href.add_attr("download", basename)
 
+
         icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
         icon.add_class("hand")
         href.add(icon)
+        """
         icon.add_behavior( {
             'type': 'clickX',
             'path': thumb.get_path(),
@@ -1524,6 +1533,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             alert(bvr.path); 
             '''
         } )
+        """
 
 
 
@@ -2311,6 +2321,11 @@ class ThumbWdg2(BaseRefreshWdg):
     def get_lib_path(my):
         return my.lib_path
 
+    def get_main_path(my):
+        return my.main_path
+
+
+
 
 
     def get_display(my):
@@ -2428,6 +2443,8 @@ class ThumbWdg2(BaseRefreshWdg):
                 path = urllib.pathname2url(path)
                 img = HtmlElement.img(src=path)
 
+                div.add_attr("spt_main_path", my.get_main_path())
+
 
 
 
@@ -2513,6 +2530,7 @@ class ThumbWdg2(BaseRefreshWdg):
         icon_path = None
         path = None
         lib_path = None
+        main_path = None
 
         base_search_type = sobject.get_base_search_type()
         if base_search_type == "sthpw/snapshot":
@@ -2539,18 +2557,19 @@ class ThumbWdg2(BaseRefreshWdg):
             icon_path = snapshot.get_web_path_by_type(file_type)
 
             file_type = "main"
-            path = snapshot.get_web_path_by_type(file_type)
+            main_path = snapshot.get_web_path_by_type(file_type)
             lib_path = snapshot.get_lib_path_by_type(file_type)
 
         if icon_path:
             path = icon_path
-        elif path:
-            path = my.find_icon_link(path)
+        elif main_path:
+            path = my.find_icon_link(main_path)
 
 
         # remember the last path
         my.path = path
         my.lib_path = lib_path
+        my.main_path = main_path
         my.icon_path = icon_path
         my.snapshot = snapshot
  

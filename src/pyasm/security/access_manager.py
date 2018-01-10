@@ -644,8 +644,6 @@ class AccessManager(Base):
             if len(rules_list) > 1:
                 search.add_op("or")
 
-            if search_type == "workflow/job":
-                print search.get_statement()
 
 
     def alter_search_type_search(my, search):

@@ -33,7 +33,7 @@ class TransactionQueueAppendCmd(Trigger):
 
         search_type = input.get('search_type')
         if search_type != 'sthpw/transaction_log':
-            print "ERROR: this trigger can only be executed for transaction_logs"
+            print("ERROR: this trigger can only be executed for transaction_logs")
             return
 
         
@@ -55,7 +55,7 @@ class TransactionQueueAppendCmd(Trigger):
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         servers = search.get_sobjects()
-        #print "servers: ", len(servers)
+        #print("servers: ", len(servers))
 
 
 
@@ -86,7 +86,7 @@ class TransactionQueueAppendCmd(Trigger):
 
             # check security
             #if not my.check_security(server):
-            #    print "Transaction denied due to security restrictions"
+            #    print("Transaction denied due to security restrictions")
             #    continue
 
             server_code = server.get_code()
@@ -233,7 +233,7 @@ class TransactionQueueManager(JobTask):
                 continue
 
             server_code = my.servers[server_index].get_code()
-            #print "server_code: ", server_code
+            #print("server_code: ", server_code)
             job = Queue.get_next_job(job_search_type=job_search_type, server_code=server_code)
             if job:
                 break
@@ -264,11 +264,11 @@ class TransactionQueueManager(JobTask):
 
 class TransactionQueueServersTrigger(Trigger):
     def execute(my):
-        #print "Searching for sync shares ...."
+        #print("Searching for sync shares ....")
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         servers = search.get_sobjects()
-        #print "... found [%s] online remote share/s" % len(servers)
+        #print("... found [%s] online remote share/s" % len(servers))
 
         Container.put("TransactionQueueServers", servers)
 
@@ -291,7 +291,7 @@ class TransactionQueueCmd(Command):
         if job:
             job_code = job.get_code()
 
-        print "Executing sync job [%s] ... "% job_code
+        print("Executing sync job [%s] ... "% job_code)
         if not transaction_code:
             raise TacticException("WARNING: No transaction_code provided")
 
@@ -344,7 +344,7 @@ class TransactionQueueCmd(Command):
         search.add_filter("code", transaction_code)
         log = search.get_sobject()
         if not log:
-            print "WARNING: No transaction_log [%s] exists" % transaction_code
+            print("WARNING: No transaction_log [%s] exists" % transaction_code)
             return
 
 
@@ -352,7 +352,7 @@ class TransactionQueueCmd(Command):
         # If a server is a complete copy, then no filter is necessary
         message, transaction_xml = my.filter_transaction( log, server )
         if not transaction_xml.get_nodes("transaction/*"):
-            print "No actions in transaction passed security ... skipping sync to [%s]" % server.get_code()
+            print("No actions in transaction passed security ... skipping sync to [%s]" % server.get_code())
             job = my.kwargs.get("job")
             job.set_value("error_log", message)
             job.commit()
@@ -369,7 +369,7 @@ class TransactionQueueCmd(Command):
         ztransaction_data = binascii.hexlify(compressed)
         ztransaction_data = "zlib:%s" % ztransaction_data
         length_after = len(ztransaction_data)
-        print "transaction log recompress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
+        print("transaction log recompress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
         # reset the transaction log sobject with the new xml.  This
         # should be harmless because it is never commited
         log.set_value("transaction", ztransaction_data)
@@ -423,17 +423,17 @@ class TransactionQueueCmd(Command):
                 if file_mode == 'upload':
                     for path in paths:
                         if os.path.isdir(path):
-                            print "upload dir: ", path
+                            print("upload dir: ", path)
                             remote_server.upload_directory(path)
                         else:
-                            print "upload file: ", path
+                            print("upload file: ", path)
                             remote_server.upload_file(path)
 
 
-                #print "ping: ", remote_server.ping()
+                #print("ping: ", remote_server.ping())
                 remote_server.execute_transaction(log.get_data(), file_mode=file_mode)
-            except Exception, e:
-                print "Error sending remote command [%s]" % str(e)
+            except Exception as e:
+                print("Error sending remote command [%s]" % str(e))
 
                 job = my.kwargs.get("job")
                 job.set_value("error_log", str(e))
@@ -445,10 +445,10 @@ class TransactionQueueCmd(Command):
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print "Error: ", str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print("Error: ", str(e))
+                print("-"*50)
 
                 raise
 
@@ -624,7 +624,7 @@ class RunTransactionCmd(Command):
             if transaction_xml:
                 transaction.set_value("transaction", transaction_xml)
             else:
-                print "WARNING: transaction xml is empty"
+                print("WARNING: transaction xml is empty")
             transaction.set_value("login", "admin")
 
             # commit the new transaction.  This is the only case where
@@ -635,9 +635,9 @@ class RunTransactionCmd(Command):
             # 
             try:
                 transaction.commit()
-            except Exception, e:
-                print "Failed to commit transaction [%s]: It may already exist. Skipping." % transaction.get_code()
-                print str(e)
+            except Exception as e:
+                print("Failed to commit transaction [%s]: It may already exist. Skipping." % transaction.get_code())
+                print(str(e))
                 return
 
         transaction_code = transaction.get_value("code")
@@ -646,7 +646,7 @@ class RunTransactionCmd(Command):
         search = Search("sthpw/transaction_log")
         search.add_filter("code", transaction_code)
         if search.get_count():
-            print "WARNING: transaction [%s] already exists" % transaction_code
+            print("WARNING: transaction [%s] already exists" % transaction_code)
             return
 
 
@@ -823,7 +823,7 @@ class TransactionLogCompareCmd(Command):
 
         if mode == 'scan':
             info = sync_utils.get_transaction_info()
-            print info
+            print(info)
 
         #if mode == 'sync':
         if mode == 'pull':
@@ -833,7 +833,7 @@ class TransactionLogCompareCmd(Command):
 
             #my.download_transaction_files(missing_transactions)
 
-            print "executing missing transactions locally: ", len(missing_transactions)
+            print("executing missing transactions locally: ", len(missing_transactions))
 
             # execute missing transactions on the local machine
             for transaction in missing_transactions:
@@ -856,7 +856,7 @@ class TransactionLogCompareCmd(Command):
             for transaction in missing_transactions:
 
                 # do them one at a time (slow)
-                print "running: ", transaction.get_code()
+                print("running: ", transaction.get_code())
 
                 # need to convert to a dictionary
                 transaction_dict = transaction.get_data()
@@ -901,13 +901,13 @@ class TransactionLogCompareCmd(Command):
             for path in paths:
                 url = "%s/assets/%s" % (remote_host, path)
 
-                print "downloading: ", url
+                print("downloading: ", url)
                 remote_server.download(url, to_dir)
 
                 # FIXME: the problem with this is that it is not undoable
                 #dirname = os.path.dirname(path)
                 #to_dir = "%s/%s" % (base_dir, dirname)
-                #print "to_dir: ", to_dir
+                #print("to_dir: ", to_dir)
 
 
                 remote_server.download(url, to_dir)
@@ -989,7 +989,7 @@ class TransactionPluginCreateCmd(Command):
                 if not os.path.exists(dirname):
                     os.makedirs(dirname)
 
-                print "adding: [%s]" % new_path
+                print("adding: [%s]" % new_path)
                 shutil.copy(path, new_path)
 
 

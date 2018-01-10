@@ -914,6 +914,7 @@ class HtmlElement(Widget):
             column = update.get("column")
             expression = update.get("expression")
             compare = update.get("compare")
+            return_type = update.get("return")
 
 
             #print "expression: ", expression
@@ -992,7 +993,10 @@ class HtmlElement(Widget):
             if site:
                 Site.pop_site()
 
-        return value
+        if return_type == "sobject":
+            return sobject.get_sobject_dict()
+        else:
+            return value
     eval_update = classmethod(eval_update)
 
 

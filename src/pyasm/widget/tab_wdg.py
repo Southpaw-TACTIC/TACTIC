@@ -23,6 +23,9 @@ from pyasm.prod.biz import ProdSetting
 from pyasm.biz import Project
 
 
+# DEPRECATED: use tactic.ui.container.TabWdg
+
+
 class TabWdg(Widget):
     '''The standard widget to display tabs.  Most sites use this widget as
     the outer container widget for navigation.  It has special exception
@@ -147,7 +150,7 @@ class TabWdg(Widget):
     def init(my):
         try:
             super(TabWdg,my).init()
-        except Exception, e:
+        except Exception as e:
             my.handle_exception(e)
 
 
@@ -155,7 +158,7 @@ class TabWdg(Widget):
     def do_search(my):
         try:
             super(TabWdg,my).do_search()
-        except Exception, e:
+        except Exception as e:
             my.handle_exception(e)
 
 
@@ -247,7 +250,7 @@ class TabWdg(Widget):
             """
 
         # catch all exceptions and log them
-        except Exception, e:
+        except Exception as e:
             my.handle_exception(e)
 
 
@@ -359,7 +362,7 @@ class TabWdg(Widget):
                 content = my.get_content(selected_widget)
                 if isinstance( content, Widget):
                     content = content.get_buffer_display()
-            except Exception, e:
+            except Exception as e:
                 my.handle_exception(e)
 
                 # TODO: need some way to make this automatic in Widget.
@@ -680,7 +683,7 @@ class DynTabWdg(TabWdg):
                 widget = ClassWdg(widget)
                 
         # catch all exceptions and log them
-        except Exception, e:
+        except Exception as e:
             my.handle_exception(e)
 
         super(DynTabWdg,my)._add_widget(widget, title)

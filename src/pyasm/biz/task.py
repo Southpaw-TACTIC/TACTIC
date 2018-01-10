@@ -759,7 +759,7 @@ class Task(SObject):
     def create(cls, sobject, process, description="", assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
             start_date=None, end_date=None, context='', bid_duration=8, \
-            task_type=None):
+            task_type=None, triggers=True):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
@@ -815,7 +815,8 @@ class Task(SObject):
         if task_type:
             task.set_value("task_type", task_type)
 
-        task.commit(triggers=True)
+        task.commit(triggers=triggers)
+
         # log the status creation event
         StatusLog.create(task, status)
 
@@ -935,9 +936,10 @@ class Task(SObject):
          
                 if existed:
                     context = "%s/%0.3d" % (context, max_num+1)
-            
 
             return context
+
+
         # get pipeline
         if not pipeline_code:
             pipeline_code = sobject.get_value("pipeline_code")
@@ -997,6 +999,9 @@ class Task(SObject):
             default_bid_duration = 60
         last_task = None
 
+
+
+
         # this is the explicit mode for creating task for a specific process:context combo
         if mode == 'context':
 
@@ -1047,7 +1052,7 @@ class Task(SObject):
                 end_date_str = end_date.strftime("%Y-%m-%d")
 
                 # Create the task
-                last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
+                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
                 
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1059,6 +1064,11 @@ class Task(SObject):
                 start_date = SPTDate.add_business_days(end_date, 1)
 
             return tasks
+
+
+
+
+
 
 
         # get all of the process_sobjects
@@ -1075,9 +1085,21 @@ class Task(SObject):
 
         if start_offset:
             start_date = SPTDate.add_business_days(start_date, start_offset)
-      
 
-        for process_name in process_names:
+
+        # New task generator
+        use_new_generator = True
+        if use_new_generator:
+            task_generator = TaskGenerator()
+            tasks = task_generator.execute(sobject, pipeline, start_date=start_date)
+            old_generator_processes = []
+        else:
+            old_generator_processes = process_names
+
+
+
+        # DEPRECATED
+        for process_name in old_generator_processes:
 
             process_sobject = process_sobjects.get(process_name)
 
@@ -1297,6 +1319,8 @@ class TaskAutoSchedule(object):
     get_diff_days = staticmethod(get_diff_days)
 
 
+
+
     def round_second(mydate):
         
         if isinstance(mydate, basestring):
@@ -1402,6 +1426,8 @@ class TaskAutoSchedule(object):
 
         assert mode in ['even', 'even_day', 'from_end_date']
 
+
+
         if sobject:
             search_key = sobject.get_search_key()
         else:
@@ -1423,6 +1449,413 @@ class TaskAutoSchedule(object):
             my.set_even_day_schedule(tasks, start_date, end_date, workday=8)
         elif mode == "from_end_date":
             my.set_from_end_date_schedule(tasks, end_date)
+
+
+
+
+
+
+class TaskGenerator(object):
+    '''Class to handle various auto schedule methods'''
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+        my.process_tasks = {}
+        my.tasks = []
+
+ 
+
+    def execute(my, sobject, pipeline, parent_process=None, start_date=None, end_date=None):
+
+        my.sobject = sobject
+
+        my.pipeline = pipeline
+        my.process_sobjects = pipeline.get_process_sobjects()
+
+        my.first_start_date = start_date
+        my.start_date = start_date
+        my.end_date = end_date
+        my.parent_process = parent_process
+
+
+
+        # remember which ones already exist
+        existing_tasks = Task.get_by_sobject(sobject, order=False)
+    
+        my.existing_task_set = set()
+        for x in existing_tasks:
+            key = '%s:%s' %(x.get_value('process'),x.get_value("context"))
+            my.existing_task_set.add(key)
+
+
+
+
+
+
+        # TODO: handled all of thes
+        #------------------
+        # create all of the tasks
+        description = ""
+        tasks = []
+        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
+        if not bid_duration_unit:
+            bid_duration_unit = 'hour'
+
+        # that's the date range in 5 days (not hours)
+        default_duration = 3
+        default_bid_duration = 8 # hours
+        if bid_duration_unit == 'minute':
+            default_bid_duration = 60
+        last_task = None
+        #---------------------
+
+
+
+
+
+        my.handled_processes = set()
+        my._generate_tasks()
+
+        return my.tasks
+
+
+
+    def _get_context(my, process_name, context=None):
+        existed = False
+        if not my.existing_task_set:
+            if context:
+                context = context
+            else:
+                context = process_name
+        else:
+
+            compare_key = "%s:%s" %(process_name, context)
+            max_num = 0
+            for item in my.existing_task_set:
+                item_stripped = re.sub('/\d+$', '', item)
+                
+                #if item.startswith(compare_key):
+                if item_stripped == compare_key:
+                    existing_context = item.replace('%s:'%process_name,'')
+                    suffix = existing_context.split('/')[-1]
+                    try:    
+                        num = int(suffix)
+                    except:
+                        num = 0
+                      
+                    if num > max_num:
+                        max_num = num
+
+                    existed = True
+        
+     
+            if existed:
+                context = "%s/%0.3d" % (context, max_num+1)
+
+        return context
+
+
+
+
+
+    def _generate_tasks(my):
+
+        process_names = my.pipeline.get_process_names()
+
+        # find all of the processes that do not have inputs
+        start_processes = []
+        for process_name in process_names:
+            if not my.pipeline.get_input_processes(process_name):
+                start_processes.append(process_name)
+
+
+
+        for start_process in start_processes:
+
+            # reset the start date for each start process
+            my.start_date = my.first_start_date
+
+            my.handle_process(start_process)
+
+            my._handle_downstream_tasks(start_process)
+
+
+
+
+    def _handle_downstream_tasks(my, process):
+
+        # we have a new pipeline
+        pipeline = my.pipeline
+        handled_processes = my.handled_processes
+        process_sobjects = my.process_sobjects
+
+
+        output_processes = pipeline.get_output_process_names(process)
+
+        for output_process in output_processes:
+
+            # check that all inputs have been handled
+            input_processes = pipeline.get_input_process_names(output_process)
+            if len(input_processes) > 1:
+                # find out if all the input processes have been handled
+                inputs_handled = True
+                for input_process in input_processes:
+                    if input_process not in my.handled_processes:
+                        inputs_handled = False
+                        break
+
+                if not inputs_handled:
+                    continue
+
+
+
+            if output_process in handled_processes:
+                continue
+
+
+
+            # remap the start date from the inputs and reset the end date
+            if input_processes:
+                last_end_date = my.first_start_date
+                for input_process in input_processes:
+                    last_task = my.process_tasks.get(input_process)
+                    if last_task and last_task.get_datetime_value("bid_end_date") > last_end_date:
+                        last_end_date = last_task.get_datetime_value("bid_end_date")
+                my.start_date = last_end_date + timedelta(days=1)
+            else:
+                my.start_date = my.first_start_date
+
+            my.end_date = None
+
+
+
+            # create the tasks
+            my.handle_process(output_process)
+
+
+            # add process ot the handled
+            handled_processes.add(output_process)
+
+            # go to all the downstream processes
+            my._handle_downstream_tasks(output_process)
+
+
+
+    def handle_process(my, process_name):
+
+        # we have a new pipeline
+        pipeline = my.pipeline
+        handled_processes = my.handled_processes
+        process_sobjects = my.process_sobjects
+
+
+        process_sobject = process_sobjects.get(process_name)
+        process_obj = pipeline.get_process(process_name)
+
+        workflow = process_sobject.get_json_value("workflow") or {}
+        task_creation = workflow.get('task_creation')
+        if task_creation == "none":
+            return
+
+
+        process_type = process_obj.get_type()
+        attrs = process_obj.get_attributes()
+
+
+        # if this process has hierarchy, then create the subtasks
+        if process_type in ['hierarchy']:
+            subpipeline_code = process_sobject.get("subpipeline_code")
+
+
+            # subtasks_only, top_only, all, none 
+            subtasks = []
+            if task_creation in ['subtasks_only', 'all']:
+
+                # create the subtasks
+                subtasks = []
+                if subpipeline_code:
+                    subpipeline = Pipeline.get_by_code(subpipeline_code)
+
+                    if subpipeline:
+                        generator = TaskGenerator()
+                        subtasks = generator.execute(my.sobject, subpipeline, start_date=my.start_date, parent_process=process_name)
+
+
+                        my.tasks.extend(subtasks)
+
+
+
+                # if we only have subtasks then store the last task from the subtasks
+                if task_creation == "subtasks_only":
+                    if subtasks:
+                        #my.start_date = subtasks[-1].get_datetime_value("bid_end_date")
+
+                        # store the last task 
+                        last_task = subtasks[-1]
+                        my.process_tasks[process_name] = last_task
+
+
+                    # don't create any further tasks
+                    return
+
+
+
+        # determine if tasks are created for this process
+        task_creation = workflow.get("task_creation")
+        if task_creation == "none":
+            return
+
+
+
+
+
+        num_activities = 1
+
+        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
+        if not bid_duration_unit:
+            bid_duration_unit = 'hour'
+
+        # that's the date range in 5 days (not hours)
+        default_duration = 3
+        default_bid_duration = 8 # hours
+        if bid_duration_unit == 'minute':
+            default_bid_duration = 60
+
+
+        # TODO: what is this for?
+        last_task = None
+        contexts = []
+        assigned = ""
+        descripton = ""
+        mode = "standard"
+        skip_duplicate = True
+
+
+        pipeline = my.pipeline
+        process_sobjects = my.process_sobjects
+
+        for i in range(0, num_activities):
+
+            process_sobject = process_sobjects.get(process_name)
+
+            process_obj = pipeline.get_process(process_name)
+            if not process_obj:
+                continue
+
+            process_type = process_obj.get_type()
+            attrs = process_obj.get_attributes()
+
+
+
+            duration = attrs.get("duration")
+            if duration:
+                duration = int(duration)
+            else:
+                duration = default_duration
+
+            bid_duration = attrs.get("bid_duration")
+            if not bid_duration:
+                bid_duration = default_bid_duration
+            else:
+                bid_duration = int(bid_duration)
+
+
+            workflow = process_sobject.get_json_value("workflow") or {}
+
+
+
+            task_type = None
+            if process_type in ['approval']:
+                task_type = "approval"
+
+
+
+            # get description
+            if process_sobject:
+                description = process_sobject.get("description")
+            else:
+                description = ""
+
+
+
+            # check to see how many weekends there are between these two dates
+            if my.start_date.weekday() == 5:
+                my.start_date = my.start_date + timedelta(days=2)
+            if my.start_date.weekday() == 6:
+                my.start_date = my.start_date + timedelta(days=1)
+
+
+            # determine the start and end date of the task
+            start_date = my.start_date
+            end_date = my.start_date + timedelta(days=0) # make a copy
+
+            skip_weekends = True
+            if skip_weekends:
+                # add duration of days that aren't weekdays
+                end_date = SPTDate.add_business_days(my.start_date, duration)
+            else:
+                # for a task to be x days long, we need duration x-1.
+                end_date += timedelta(days=(duration-1))
+
+            # shift the end date outside of the weekend
+            if end_date.weekday() == 5:
+                end_date = my.start_date + timedelta(days=2)
+            if start_date.weekday() == 6:
+                end_date = my.start_date + timedelta(days=1)
+
+            
+
+            # output contexts could be duplicated from 2 different outout processes
+            if mode == 'simple process':
+                output_contexts = [process_name]
+            else:
+                output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
+            pipeline_code = process_obj.get_task_pipeline()
+
+
+            for context in output_contexts:
+
+                if my.parent_process:
+                    full_process_name = "%s/%s" % (my.parent_process, process_name)
+                else:
+                    full_process_name = process_name
+
+                # first check if it already exists when skip_duplicate is True
+                key1 = '%s:%s' %(full_process_name, context)
+                task_existed = False
+                for item in my.existing_task_set:
+                    if item.startswith(key1):
+                        task_existed = True
+                        break
+                if skip_duplicate and task_existed:
+                    continue
+
+
+
+
+                if contexts and context not in contexts:
+                    continue
+                context = my._get_context(process_name, context)
+
+                new_task = Task.create(my.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
+                 
+                # this avoids duplicated tasks for process connecting to multiple processes 
+                new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )
+                my.existing_task_set.add(new_key)
+
+                my.tasks.append(new_task)
+                my.process_tasks[process_name] = new_task
+
+
+                # set a new end_date
+                my.end_date = end_date
+
+
+            # set the start date to after the end_date
+            #my.start_date = my.end_date + timedelta(days=1)
+
+
 
 
 

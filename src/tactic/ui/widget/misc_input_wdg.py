@@ -154,7 +154,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         if sobject:
             try:
                 my.parent = sobject.get_parent()
-            except SearchException, e:
+            except SearchException as e:
             
                 if e.__str__().find('not registered') != -1:
                     pass     
@@ -163,7 +163,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                 else:
                     raise
 
-            except Exception, e:
+            except Exception as e:
                 print "Exception: ", e
 
 

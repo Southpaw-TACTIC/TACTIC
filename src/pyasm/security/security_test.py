@@ -182,8 +182,8 @@ class SecurityTest(unittest.TestCase):
             my._test_access_manager()
         
             my._test_guest_allow()
-        except Exception, e:
-            print "Error: ", e
+        except Exception as e:
+            print("Error: ", e)
             raise
 
 
@@ -197,7 +197,7 @@ class SecurityTest(unittest.TestCase):
         fail = False
         try:
             my.security.login_user(my.user,password)
-        except SecurityException, e:
+        except SecurityException as e:
             fail = True
 
         my.assertEquals( True, fail )
@@ -208,7 +208,7 @@ class SecurityTest(unittest.TestCase):
         fail = False
         try:
             my.security.login_user(my.user,my.password)
-        except SecurityException, e:
+        except SecurityException as e:
             fail = True
 
         # set this user as admin
@@ -384,7 +384,7 @@ class SecurityTest(unittest.TestCase):
       
         try: 
             Project.set_project('unittest')
-        except SecurityException, e:
+        except SecurityException as e:
             # should get an SecurityException
             my.assertEquals('User [unittest_guy] is not permitted to view project [unittest]', e.__str__())
             xml = Xml()
@@ -395,8 +395,8 @@ class SecurityTest(unittest.TestCase):
 
             access_manager = Environment.get_security().get_access_manager()
             access_manager.add_xml_rules(xml)
-        except Exception, e:
-            print "Error : %s", str(e)
+        except Exception as e:
+            print("Error : %s", str(e))
         else:
             # this should not happen
             raise Exception('unittest_guy should not be allowed to use Project unittest here.')
@@ -465,7 +465,7 @@ class SecurityTest(unittest.TestCase):
         # should fail
         try:
             person.set_value("name_last", "Ducky")
-        except SecurityException, e:
+        except SecurityException as e:
             pass
         else:
             my.fail("Expected a SecurityException")
@@ -479,7 +479,7 @@ class SecurityTest(unittest.TestCase):
         """
         try:
             nationality = person.get_value("nationality")
-        except SecurityException, e:
+        except SecurityException as e:
             pass
         else:
             my.fail("Expected a SecurityException")
@@ -669,7 +669,7 @@ class SecurityTest(unittest.TestCase):
         # delete of unittest note should fail
         try:
             note.delete()
-        except SObjectException, e:
+        except SObjectException as e:
             msg = 'delete error'
         my.assertEquals(msg, 'delete error')
             

@@ -83,7 +83,7 @@ class Command(Base):
     # methods to override
     ###########
     def get_title(my):
-        print "WARNING: Should override 'get_title' function for %s" % my
+        print("WARNING: Should override 'get_title' function for %s" % my)
         return Common.get_full_class_name(my)
         #raise CommandException("Must override 'get_title' function for %s" % my)
 
@@ -92,7 +92,7 @@ class Command(Base):
         '''This function allows the command to check to see if the conditions
         are correct to run at all.  With the function, a command can quickly
         avoid starting a full transaction and undo recording'''
-        #print "WARNING: Should override 'check' function for %s" % my
+        #print("WARNING: Should override 'check' function for %s" % my)
         return True
 
 
@@ -188,7 +188,7 @@ class Command(Base):
             try:
                 if not cmd.check():
                     return
-            except TacticException, e:
+            except TacticException as e:
                 if not isinstance(e, CommandExitException):
                     if isinstance(e.message, unicode):
                         error = e.message.encode('utf-8')
@@ -201,17 +201,17 @@ class Command(Base):
         # comes from.  This is used by the client api
         try:
             transaction = cmd.get_transaction()
-        except Exception, e:
+        except Exception as e:
             # fail with controlled error
-            print "Error: ", e
+            print("Error: ", e)
             # print the stacktrace
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
-            print "-"*50
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
+            print("-"*50)
 
             raise
 
@@ -241,7 +241,7 @@ class Command(Base):
             ret_val = cmd.execute()
             cmd.postprocess()
 
-        except CommandExitException, e:
+        except CommandExitException as e:
             # fail gracefully
             if cmd != top_cmd_seq[0]:
                 raise
@@ -254,13 +254,13 @@ class Command(Base):
         except KeyboardInterrupt, e:
             # this is specifically for batch processes.  A keyboard interrupt
             # will commit the database and allow undo
-            print "Keyboard interrupt..."
+            print("Keyboard interrupt...")
             transaction.add_description("Keyboard interrupt")
             transaction.commit()
             Container.put(cmd.TOP_CMD_KEY, None)
             raise
 
-        except Exception, e:
+        except Exception as e:
             # if this is not the top command keep going up
             if cmd != top_cmd_seq[0]:
                 raise
@@ -283,15 +283,15 @@ class Command(Base):
            
             else:
                 error_msg = message
-            print "Error: ", error_msg
+            print("Error: ", error_msg)
             # print the stacktrace
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print "Error: ", error_msg
-            print "-"*50
+            print("-"*50)
+            print(stacktrace_str)
+            print("Error: ", error_msg)
+            print("-"*50)
 
 
             transaction.rollback()
@@ -330,16 +330,16 @@ class Command(Base):
                     transaction.commit()
 
 
-                except Exception, e:
-                    print "FAILED TO COMMIT TRANSACTION", cmd, cmd.__class__.__name__
+                except Exception as e:
+                    print("FAILED TO COMMIT TRANSACTION", cmd, cmd.__class__.__name__)
                     # print the stacktrace
                     tb = sys.exc_info()[2]
                     stacktrace = traceback.format_tb(tb)
                     stacktrace_str = "".join(stacktrace)
-                    print "-"*50
-                    print stacktrace_str
-                    print str(e)
-                    print "-"*50
+                    print("-"*50)
+                    print(stacktrace_str)
+                    print(str(e))
+                    print("-"*50)
                     raise
                     
                 top_cmd_seq.pop()
@@ -350,15 +350,15 @@ class Command(Base):
                 # pipeline execute any actions
                 try:
                     cmd.notify_listeners()
-                except Exception, e:
+                except Exception as e:
                     # print the stacktrace
                     tb = sys.exc_info()[2]
                     stacktrace = traceback.format_tb(tb)
                     stacktrace_str = "".join(stacktrace)
-                    print "-"*50
-                    print stacktrace_str
-                    print str(e)
-                    print "-"*50
+                    print("-"*50)
+                    print(stacktrace_str)
+                    print(str(e))
+                    print("-"*50)
                     raise
 
                 # call all registered triggers 
@@ -525,7 +525,7 @@ class SampleHandler(Command):
         my.prev_command = prev_command
 
     def execute(my):
-        print "EXECUTING sample command"
+        print("EXECUTING sample command")
 
         # create the render
         render = SearchType.create("prod/render")
@@ -593,7 +593,7 @@ class SampleHandler2(Command):
         my.set_pipeline_code("turntable")
         my.sobjects = [my.prev_command.sobject]
 
-        print "SampleHandler2"
+        print("SampleHandler2")
         my.set_as_approved()
 
 

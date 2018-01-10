@@ -714,9 +714,9 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             # save the display definition
             cbk = ManageSideBarDetailCbk(search_type=my.search_type,element_name=my.element_name, view=my.view, login=my.login)
             Command.execute_cmd(cbk)
-        except UserException, e:
+        except UserException as e:
             my.user_error = e.__str__()
-        except XmlException, e:
+        except XmlException as e:
             my.user_error = e.__str__()
             
 
@@ -1495,7 +1495,7 @@ class ManageSideBarDetailCbk(Command):
             node = xml.get_node(xpath)
             if node is None:
                 raise UserException('There is a mismatch in the element name of the XML you have entered. You are changing the element [%s] but it is not found in the XML.' %my.element_name)
-        except XmlException, e:
+        except XmlException as e:
             raise XmlException("Improper syntax in XML: %s"%e.__str__())
         
 

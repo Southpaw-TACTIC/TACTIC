@@ -221,7 +221,7 @@ class CreateProjectCmd(Command):
         try:
             # create the datbase
             database.create_database(db_resource)
-        except Exception, e:
+        except Exception as e:
             print str(e)
             print "WARNING: Error creating database [%s]" % project_code
 

@@ -342,8 +342,8 @@ class PluginWdg(BaseRefreshWdg):
                 manifest = Xml()
                 try:
                     manifest.read_file(manifest_path)
-                except Exception, e:
-                    print "Error reading manifest: [%s]" % manifest_path, e
+                except Exception as e:
+                    print("Error reading manifest: [%s]" % manifest_path, e)
                     msg = "Error reading manifest [%s]: %s" % (manifest_path, str(e))
 
                     manifest_xml = """
@@ -2679,7 +2679,7 @@ class PluginRemoveCbk(Command):
 
         plugin_dir = "%s/%s" % (plugin_base_dir, dirname)
         if os.path.exists(plugin_dir):
-            print "Removing from installation: ", plugin_dir
+            print("Removing from installation: ", plugin_dir)
             shutil.rmtree(plugin_dir)
 
         zip_path = "%s.zip" % plugin_dir

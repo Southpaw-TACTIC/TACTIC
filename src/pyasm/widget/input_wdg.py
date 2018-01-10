@@ -994,46 +994,51 @@ class SelectWdg(BaseInputWdg):
     ARGS_KEYS = {
     'values': {
         'description': 'A list of values separated by | that determine the actual values of the selection',
-        'order': 0,
+        'order': 1,
         'category': 'Options'
 
     },
     'labels': {
         'description': 'A list of values separated by | that determine the label of the selection',
 
-        'order': 1,
+        'order': 2,
         'category': 'Options'
     },
-     'values_expr': {
+
+
+    'values_expr': {
         'description': 'A list of values retrieved through an expression. e.g. @GET(prod/shot.code)',
         'type': 'TextAreaWdg',
-        'order': 2
+        'order': 3,
+        'category': 'Misc',
     },
     'labels_expr': {
         'description': 'A list of labels retrieved through an expression. e.g. @GET(prod/shot.name)',
         'type': 'TextAreaWdg',
-        'order': 3
+        'order': 2,
+        'category': 'Misc',
     },
     'mode_expr': {
         'description': 'Specify if it uses the current sObject as a starting point',
         'type': 'SelectWdg',
         'values': 'relative',
         'empty': 'true',
-        'order': 4,
+        'order': 3,
+        'category': 'Misc',
     },
     'empty': {
         'description': 'The label for an empty selection',
         #'default': '-- Select --',
         'type': 'SelectWdg',
         'values': 'true|false',
-        'order': 3,
+        'order': 4,
         'category': 'Options'
     },
     'default': {
         'description': 'The default selection value in an edit form. Can be a TEL variable.',
         'type': 'TextWdg',
         'category': 'Options',
-        'order': 2,
+        'order': 5,
     },
     'query': {
         'description': 'Query shorthand in the form of <search_type>|<value_column>|<label_column>"'
@@ -1234,7 +1239,7 @@ class SelectWdg(BaseInputWdg):
                 project_code = current_sobj.get_project_code()
             try:
                 search = Search(search_type, project_code=project_code)
-            except SearchException, e:
+            except SearchException as e:
                 # skip if there is an unregistered sType or the table does not exist in the db
                 if e.__str__().find('does not exist for database') != -1 or 'not registered' != -1:
                     my.values = ['ERROR in query option. Remove it in Edit Mode > Other Options']
@@ -1295,7 +1300,7 @@ class SelectWdg(BaseInputWdg):
             try:
                 parser = ExpressionParser()
                 my.values = parser.eval(values_expr, sobjects=sobjects)
-            except Exception, e:
+            except Exception as e:
                 print "Expression error: ", str(e)
                 my.values = ['Error in values expression']
                 my.labels = my.values[:]
@@ -1309,7 +1314,7 @@ class SelectWdg(BaseInputWdg):
                     # expression may return it as a string when doing concatenation is done on a 1-item list
                     if isinstance(my.labels, basestring):
                         my.labels = [my.labels]
-                except Exception, e:
+                except Exception as e:
                     print "Expression error: ", str(e)
                     my.labels = ['Error in labels expression']
             else:

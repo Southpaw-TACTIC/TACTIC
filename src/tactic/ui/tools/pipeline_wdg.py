@@ -638,7 +638,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 content_div.add(no_items)
                 no_items.add("<i>-- No Items --</i>")
 
-        except Exception, e:
+        except Exception as  e:
             print("WARNING: ", e)
             none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
             none_wdg.add("<div>%s</div>" % str(e))
@@ -908,7 +908,6 @@ class PipelineListWdg(BaseRefreshWdg):
             var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
 
 
-            console.log(bvr);
             var breadcrumb = bvr.breadcrumb;
             if (breadcrumb) {
                 text.innerHTML = breadcrumb + " / " + html;
@@ -2150,6 +2149,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 
+
 class DefaultInfoWdg(BaseInfoWdg):
 
 
@@ -2227,6 +2227,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             return top
 
 
+
         has_tasks = True
         if has_tasks:
             div = DivWdg()
@@ -2260,6 +2261,21 @@ class DefaultInfoWdg(BaseInfoWdg):
                 '''
             } )
 
+
+
+
+        from pyasm.biz import ProjectSetting
+        setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
+        if setting in ["true"]:
+
+            from spt.modules.workflow import TaskDetailSettingWdg
+            detail_wdg = TaskDetailSettingWdg(
+                    **my.kwargs
+            )
+
+            #detail_wdg = my.get_detail_wdg()
+            top.add(detail_wdg)
+            detail_wdg.add_style("margin: 10px")
 
 
 

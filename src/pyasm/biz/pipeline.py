@@ -406,8 +406,8 @@ class Pipeline(SObject):
                     from pyasm.command import ColumnAddCmd
                     cmd = ColumnAddCmd(search_type, "pipeline_code", "varchar")
                     cmd.execute()
-            except SqlException, e:
-                print "Error creating column [pipeline_code] for %" %search_type 
+            except SqlException as e:
+                print("Error creating column [pipeline_code] for %" %search_type )
                 pass
 
             # go through all of the sobjects and set all the empty ones
@@ -533,7 +533,7 @@ class Pipeline(SObject):
                         try:
                             from pyasm.command import CustomProcessConfig
                             handler = CustomProcessConfig.get_delete_handler(node_type, {})
-                        except Exception, e:
+                        except Exception as e:
                             handler = None
 
                         if handler:
@@ -577,7 +577,7 @@ class Pipeline(SObject):
 
             try:
                 my.xml.read_string(pipeline_xml)
-            except XmlException, e:
+            except XmlException as e:
                 my.xml.read_string("<pipeline/>")
 
         # clear these again when set externally
@@ -794,6 +794,15 @@ class Pipeline(SObject):
         return processes
 
 
+    def get_input_process_names(my, process, type=None, from_attr=None):
+        input_processes = my.get_input_processes(process, type, from_attr)
+        process_names = [x.get_name() for x in input_processes]
+        return process_names
+ 
+
+
+
+
     def get_output_processes(my, process, type=None, from_attr=None):
         connects = my._get_connects(process, direction="from")
         if not connects:
@@ -827,6 +836,13 @@ class Pipeline(SObject):
                     processes.append(process)
             
         return processes
+
+
+
+    def get_output_process_names(my, process, type=None, from_attr=None):
+        output_processes = my.get_output_processes(process, type, from_attr)
+        process_names = [x.get_name() for x in output_processes]
+        return process_names
  
 
 

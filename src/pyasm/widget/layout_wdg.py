@@ -209,7 +209,7 @@ class BaseConfigWdg(HtmlElement):
         try:
             my.widgets.remove(widget)
         except:
-            print "WARNING: cannot remove widget"
+            print("WARNING: cannot remove widget")
 
 
 
@@ -694,7 +694,7 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
 
                 # make sure the security exception does not hide the whole
                 # table
-                except SecurityException, e:
+                except SecurityException as e:
                     #table.add_cell("Security Denied: '%s'" % widget.__class__.__name__)
                     table.add_blank_cell()
                     pass
@@ -933,7 +933,7 @@ class TbodyWdg(TableWdg, AjaxWdg):
 
                 # make sure the security exception does not hide the whole tbody
                 
-                except SecurityException, e:
+                except SecurityException as e:
                     tbody.add_blank_cell()
                     pass
             
@@ -1014,7 +1014,7 @@ class TrWdg(TbodyWdg):
 
             # make sure the security exception does not hide the whole tbody
             
-            except SecurityException, e:
+            except SecurityException as e:
                 td = HtmlElement.td()
                 td.add("&nbsp;")
                 pass
@@ -1345,7 +1345,7 @@ class EditWdg(BaseConfigWdg):
             elif my.mode == "edit":
                 search_key = my.sobjects[0].get_search_key()
                 refresh_script = "window.parent.%s" % event_container.get_event_caller("refresh|%s" % search_key )
-                #print refresh_script
+                #print(refresh_script)
             else:
                 refresh_script = "window.parent.%s" % event_container.get_refresh_caller()
 

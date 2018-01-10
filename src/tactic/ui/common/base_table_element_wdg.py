@@ -58,6 +58,51 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
             if order_by not in ['true', 'false']:
                 th.set_attr("spt_order_by", order_by)
 
+        my.add_simple_search(th)
+
+
+    def add_simple_search(my, th):
+
+        filter_name = my.get_option("filter_name")
+        if not filter_name:
+            filter_name = my.get_name()
+
+
+        th.add_style("position: relative")
+        filter_wdg = my.get_filter_wdg(filter_name)
+        th.add( filter_wdg )
+        filter_wdg.add_style("position: absolute")
+        filter_wdg.add_style("right: 8px")
+        filter_wdg.add_style("width: 25px")
+        filter_wdg.add_style("top: 10px")
+        filter_wdg.add_style("display: none")
+
+
+        th.add_behavior( {
+            'type': 'mouseenter',
+            'element_name': filter_name,
+            'cbjs_action': '''
+            if (!spt.simple_search) {
+                return;
+            }
+
+            if (!spt.simple_search.has_element(bvr.element_name) ) {
+                return;
+            }
+
+            var el = bvr.src_el.getElement(".spt_filter_button");
+            el.setStyle("display", "");
+            '''
+        } )
+
+        th.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            var el = bvr.src_el.getElement(".spt_filter_button");
+            el.setStyle("display", "none");
+            '''
+        } )
+
 
 
     def _add_css_style(my, element, prefix, name=None, value=None):
@@ -89,11 +134,15 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
                 value = Search.eval(expr, sobject, vars=vars)
                 if value:
                     element.add_style("%s: %s" % (property, value) )
+
+
+
  
     def handle_td(my, td):
         name = my.name
         value = my.value
         my._add_css_style(td, 'css_', name, value)
+
        
 
     def handle_tr(my, tr):
@@ -106,8 +155,18 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         if my.title:
             title = my.title
             title = title.replace(r'\n','<br/>')
+
+            if my.title.find("->") != -1:
+                parts = my.title.split("->")
+                title = parts[-1]
+
         else:
             title = my.name
+
+            if my.name.find("->") != -1:
+                parts = my.name.split("->")
+                title = parts[-1]
+
 
             if not title:
                 title = ""
@@ -124,6 +183,63 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         div.add(title)
 
         return div
+
+
+    def get_filter_wdg(my, filter_name):
+
+        if not filter_name:
+            filter_name = my.get_name()
+
+        from pyasm.web import DivWdg
+        from tactic.ui.widget import IconButtonWdg
+        filter_wdg = DivWdg()
+        button = IconButtonWdg(title="Show Filter", icon="BS_SEARCH")
+        filter_wdg.add_class("spt_filter_button")
+
+
+        filter_wdg.add(button)
+        filter_wdg.add_style("display: inline-block")
+        filter_wdg.add_style("vertical-align: middle")
+        filter_wdg.add_style("opacity: 0.5")
+
+        filter_wdg.add_attr("spt_filter_name", filter_name)
+        filter_wdg.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            var panel = bvr.src_el.getParent(".spt_view_panel_top");
+            var th = bvr.src_el.getParent("th");
+            var pos = th.getPosition(panel);
+
+            var name = bvr.src_el.getAttribute("spt_filter_name");
+
+            if (! spt.simple_search.has_element(name) ) {
+                return;
+            }
+
+            pos.y += 35;
+
+
+            spt.simple_search.show_elements([name]);
+            spt.simple_search.set_position(pos);
+            spt.simple_search.hide_title();
+            spt.simple_search.show();
+
+            var top = spt.simple_search.get_top();
+            var size = top.getSize();
+            var cur_pos = top.getPosition( $(document.body) );
+            var window_size = $(document.body).getSize();
+            if (cur_pos.x + size.x > window_size.x) {
+                var panel_size = panel.getSize();
+                pos.x = panel_size.x - size.x;
+                spt.simple_search.set_position(pos);
+            }
+
+            '''
+        } )
+
+
+
+        return filter_wdg
 
 
 
@@ -268,7 +384,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             'description': 'Determine the database column to display',
             'type': 'TextWdg',
             'category': 'Display'
+        },
+        'single_line': {
+            'description': 'Determines if the text is displayed as a single line',
+            'type': 'SelectWdg',
+            'values': 'false|true',
+            'category': 'Display'
         }
+
     }
 
 
@@ -289,7 +412,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 column_exist_error = None
                 cmd = ColumnAddCmd(search_type, column_name, data_type)
                 cmd.execute()
-            except TacticException, e:
+            except TacticException as e:
                 if 'already existed in this table' in e.__str__():
                     column_exist_error = e
                 else:
@@ -362,7 +485,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         expression, title = my.get_expression(summary)
         try:
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e.message
             result = 0
             title = ''
@@ -422,8 +545,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         try:
             info['check'] = True
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
-        except Exception, e:
-            print "WARNING: ", e.message
+        except Exception as e:
+            print("WARNING: ", e.message)
             result = "Calculation Error"
             title = ''
 
@@ -553,9 +676,17 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
             value_wdg.add_style("overflow-x: hidden")
             value_wdg.add_style("text-overflow: ellipsis")
-            #value_wdg.add_style("white-space: nowrap")
 
-            #value_wdg.add_style("max-height: 100px")
+
+
+            # sompe properties
+            min_height = 25
+            value_wdg.add_style("min-height: %spx" % min_height)
+
+            single_line = my.get_option("single_line") or False
+            if single_line in ["true", True]:
+                value_wdg.add_style("line-height: %spx" % min_height)
+                value_wdg.add_style("white-space: nowrap")
 
             #value_wdg.add_style("overflow-y: hidden")
             #value_wdg.add_class("spt_scrollable")

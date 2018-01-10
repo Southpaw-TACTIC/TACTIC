@@ -128,7 +128,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
                     raise SearchException("No table")
 
                 exists[search_type] = True
-            except SearchException, e:
+            except SearchException as  e:
                 not_exists[search_type] = True
 
 
@@ -855,7 +855,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         try:
             left_search_type_sobj = SearchType.get(left_search_type)
             left_columns = SearchType.get_columns(left_search_type)
-        except Exception, e:
+        except Exception as e:
             left_search_type_sobj = SearchType.create("sthpw/search_type")
             left_search_type_sobj.set_value("search_type", left_search_type)
             left_columns = []
@@ -863,7 +863,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         try:
             right_search_type_sobj = SearchType.get(right_search_type)
             right_columns = SearchType.get_columns(right_search_type)
-        except Exception, e:
+        except Exception as e:
             right_search_type_sobj = SearchType.create("sthpw/search_type")
             right_search_type_sobj.set_value("search_type", right_search_type)
             right_columns = []

@@ -854,6 +854,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return part
 
 
+
+    def get_json(my, not_null=False):
+        raise Exception("JSON Type not supported yet")
+
     
     #
     # Sequence methods for SQL Server
@@ -1688,6 +1692,15 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return op.join(parts)
 
 
+
+    def get_json(my, not_null=False):
+       parts = []
+       parts.append("jsonb")
+       if not_null:
+           parts.append("NOT NULL")
+       return " ".join(parts)
+
+
     
     #
     # Sequence methods for Postgres
@@ -2130,6 +2143,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                     data_type = "text"
                 elif data_type == 'boolean':
                     data_type = "boolean"
+                elif data_type == 'jsonb':
+                    data_type = "json"
                 elif data_type.startswith("timestamp"):
                     data_type = "timestamp"
                 # for time with/wihtout time zone
@@ -3258,6 +3273,10 @@ class MySQLImpl(PostgresImpl):
                 data_type = 'text'
                 size = 256
 
+            elif data_type.startswith("JSON"):
+                data_type = 'json'
+                size = 0
+
             elif data_type.startswith("int"):
                 parts = data_type.split(" ")
                 size = parts[0]
@@ -3346,6 +3365,21 @@ class MySQLImpl(PostgresImpl):
 
 
 
+    def get_json(my, not_null=False):
+        parts = []
+
+        # JSON not support untile MySQL 5.7 (need to check version) 
+        #parts.append("JSON")
+        parts.append("text")
+
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
+
+ 
+
     def get_timestamp_now(my, offset=None, type=None, op='+'):
         '''MySQL get current / offset timestamp from now'''
         parts = []
@@ -3426,6 +3460,10 @@ class MySQLImpl(PostgresImpl):
         '''create a database'''
         from sql import DbContainer, DbResource
         db_resource = DbResource.get_default("")
+
+        if not isinstance(database, basestring):
+            database = database.get_database()
+
         sql = DbContainer.get(db_resource)
         statement = '''CREATE DATABASE IF NOT EXISTS "%s";''' % database
         results = sql.do_update(statement)

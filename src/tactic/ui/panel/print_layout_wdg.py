@@ -407,8 +407,8 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
                         color = color_map.get(widget_value)
                         if color:
                             td.add_style("background-color", color)
-                except Exception, e:
-                    print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, e.message
+                except Exception as e:
+                    print('WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, e.message)
 
             # close the surrounding tbody
             my.table.close_tbody()

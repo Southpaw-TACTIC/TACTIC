@@ -235,7 +235,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
             try:
                 search_codes = SObject.get_values(my.sobjects, 'search_code', unique=True)
                 search_ids = None
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: ", e
                 search_ids = SObject.get_values(my.sobjects, 'search_id', unique=True)
                 search_codes = None
@@ -258,7 +258,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                     else:
                         warning = "Dangling reference: %s" % tmp_sobj.get_search_key()
                         Environment.add_warning(warning, warning)
-                except SearchException, e:
+                except SearchException as e:
                     # skips unknown search_type/project
                     print e.__str__()
                     continue
@@ -270,7 +270,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                     ref_sobjs = Search.get_by_code(search_type, search_codes)
                 else:
                     ref_sobjs = Search.get_by_id(search_type, search_ids)
-            except SearchException, e:
+            except SearchException as e:
                 # skips unknown search_type/project
                 print e.__str__()
                 pass
@@ -428,7 +428,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
                 if not ref_sobject:
                     return None
-            except SearchException, e:
+            except SearchException as e:
                 print e.__str__()
                 return None
 
@@ -495,7 +495,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                 value = parent.get_code()
             else:
                 value = "&nbsp;"
-        except SearchException, e:
+        except SearchException as e:
             # skips unknown search_type/project
             print e.__str__()
             search_type =   sobject.get_search_type()

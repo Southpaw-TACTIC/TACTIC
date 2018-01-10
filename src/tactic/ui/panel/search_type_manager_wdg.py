@@ -338,7 +338,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                         for elem in user_element_names:
                             user_node = user_config.get_element_node(elem)
                             default_config.append_xml_element(elem, node=user_node)
-                except SqlException, e:
+                except SqlException as e:
                      print "Search ERROR: ", e.__str__()
                      default_config = None
                 
@@ -394,7 +394,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                 # add the schema config definiiton
                 schema_config = SearchType.get_schema_config(search_type)
                 widget_config_list = [schema_config]
-            except SqlException, e:
+            except SqlException as e:
                 widget_config_list = []
         if not config_view:
             config_view = WidgetConfigView(search_type, view, widget_config_list)

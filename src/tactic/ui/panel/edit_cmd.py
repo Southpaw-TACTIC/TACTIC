@@ -212,8 +212,8 @@ class EditCmd(Command):
                     stmt = Common.get_import_from_class_path(display_class)
                     exec(stmt)
                     action_handler_class = eval("%s.get_default_action()" % display_class)
-                except Exception, e:
-                    #print "WARNING: ", e
+                except Exception as e:
+                    #print("WARNING: ", e)
                     action_handler_class = ""
 
             if action_handler_class == "":
@@ -366,7 +366,7 @@ class EditCmd(Command):
                 if is_insert and my.connect_key and my.connect_key != "__NONE__":
                     sobject.connect(my.connect_key, "task")
 
-            except SqlException, e:
+            except SqlException as e:
                 msg = "An error was encountered adding this item.  The error reported was [%s]" % e
                 raise SqlException(msg)
 
@@ -380,7 +380,7 @@ class EditCmd(Command):
         for action_handler in action_handlers:
             try:
                 action_handler.post_execute()
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: ", e
 
 

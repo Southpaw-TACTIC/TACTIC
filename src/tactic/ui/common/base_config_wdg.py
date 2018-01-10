@@ -152,7 +152,7 @@ class BaseConfigWdg(BaseRefreshWdg):
                 else:
                     display_options['element_name'] = element_name
                     element = WidgetConfig.create_widget( display_handler, display_options=display_options )
-            except Exception, e:
+            except Exception as e:
                 from tactic.ui.common import WidgetTableElementWdg
                 element = WidgetTableElementWdg()
                 # FIXME: not sure why this doesn't work

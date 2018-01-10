@@ -9,9 +9,10 @@
 #
 #
 #
+from __future__ import print_function
+
 
 import os, sys
-
 
 # set up environment
 os.environ['TACTIC_APP_SERVER'] = "cherrypy"

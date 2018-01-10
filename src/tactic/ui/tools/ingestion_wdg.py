@@ -449,7 +449,7 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
                 f = codecs.open(scan_path, 'r', 'utf-8')
                 ignore = jsonloads( f.read() )
                 f.close()
-            except Exception, e:
+            except Exception as e:
                 print("Error: ", e.message)
                 ignore = None
         else:

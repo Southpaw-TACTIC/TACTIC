@@ -295,7 +295,7 @@ class SearchWdg(BaseRefreshWdg):
                             filter_data = FilterData(data)
                         filter_data.set_to_cgi()
 
-                except XmlException, e:
+                except XmlException as e:
                     print("WARNING: non-xml filter detected!!")
 
         
@@ -323,7 +323,7 @@ class SearchWdg(BaseRefreshWdg):
                 from pyasm.search import WidgetDbConfig
                 config_sobj = WidgetDbConfig.merge_configs(config_sobjs)
                 #config_sobj = config_sobjs[0]
-            except SearchException, e:
+            except SearchException as e:
                 print("WARNING: ", e)
                 config_sobj = None
 
@@ -389,7 +389,7 @@ class SearchWdg(BaseRefreshWdg):
             my.alter_search()
             my.set_persistent_value()
 
-        except SearchInputException, e:
+        except SearchInputException as e:
             my.clear_search_data(my.search_type)
             raise SearchInputException("%s If this problem persists, this view may contain invalid data in &lt; values &gt;. Clean up the data in Widget Config for the view [%s]."%( e.__str__(), my.view)) 
         except:
@@ -883,7 +883,7 @@ class SearchWdg(BaseRefreshWdg):
                 try:
                     filter_data = FilterData(data)
                     filter_data.set_to_cgi()
-                except SetupException, e:
+                except SetupException as e:
                     print("This filter data is causing error:", data)
                     print(e)
 
@@ -924,7 +924,7 @@ class LoadSearchWdg(BaseRefreshWdg):
             search.add_op("or")
             search.add_filter("search_type", search_type)
             configs = search.get_sobjects()
-        except SearchException, e:
+        except SearchException as e:
             print("WARNING: ", e)
             configs = []
         except:

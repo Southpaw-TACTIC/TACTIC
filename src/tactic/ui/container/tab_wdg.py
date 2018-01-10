@@ -1254,9 +1254,16 @@ spt.tab.close = function(src_el) {
                 my.view = 'tab'
                 config = WidgetConfig.get(view=my.view, xml=config_xml)
 
-        if config:
-            element_names = config.get_element_names()
-        else:
+
+        element_names = my.kwargs.get("element_names")
+        if element_names and isinstance(element_names, basestring):
+            element_names = element_names.split(",")
+
+        if not element_names:
+            if config:
+                element_names = config.get_element_names()
+        
+        if not element_names:
             element_names = []
 
 
@@ -1462,6 +1469,9 @@ spt.tab.close = function(src_el) {
             content_top.add_style("overflow-y: auto")
 
             content_top.add_style("min-height: %s" % height)
+        else:
+            # TODO: make this configurable
+            content_top.add_style("min-height: 500px")
 
 
 
@@ -2214,6 +2224,10 @@ spt.tab.close = function(src_el) {
 
             state = my.kwargs.get("state") or {}
             search_key = state.get("search_key")
+
+            if not search_key:
+                search_key = my.kwargs.get("search_key")
+
             if search_key:
                 sobject = Search.get_by_search_key(search_key)
             else:

@@ -104,7 +104,7 @@ class WidgetDbConfig(SObject):
             if my.view and not test:
                 try:
                     view_node = my.xml.create_element(my.view)
-                except Exception, e:
+                except Exception as e:
                     if e.__str__().find('tag name') != -1:
                         
                         view_node = my.xml.create_element('view', attrs={'name': my.view})
@@ -411,7 +411,7 @@ class WidgetDbConfig(SObject):
        
         view_node = my.get_view_node()
         if view_node is None:
-            print "View Node does not exist"
+            print("View Node does not exist")
             return
         node = my.get_element_node(element_name)
         if node is not None:
@@ -424,7 +424,7 @@ class WidgetDbConfig(SObject):
                 xml.insert_before(new_root_node, element)
             else:
                 xml.append_child(view_node, new_root_node)
-        #print my.xml.to_string()
+        #print(my.xml.to_string())
 
 
 
@@ -436,7 +436,7 @@ class WidgetDbConfig(SObject):
        
         view_node = my.get_view_node()
         if view_node is None:
-            print "View Node does not exist"
+            print("View Node does not exist")
             return
         node = my.get_element_node(element_name)
         if node is not None:
@@ -448,7 +448,7 @@ class WidgetDbConfig(SObject):
             else:
                 xml.append_child(view_node, new_root_node)
 
-        #print my.xml.to_string()
+        #print(my.xml.to_string())
 
 
 
@@ -554,7 +554,7 @@ class WidgetDbConfig(SObject):
         node = None
         index = -1
         for i, node in enumerate(nodes):
-            print i, node
+            print(i, node)
             if Xml.get_attribute(node, "name") == elem_name:
                 node = node
                 index = i
@@ -646,7 +646,7 @@ class WidgetDbConfig(SObject):
         try:
             search = Search( WidgetDbConfig.SEARCH_TYPE, project_code=project_code )
         # if there is no Widget config table
-        except SearchException, e:
+        except SearchException as e:
             return None
 
 
@@ -682,8 +682,8 @@ class WidgetDbConfig(SObject):
                     parts = orig_search_type.split("=")
                     project_code = parts[-1]
                     widget_db_config = cls.get_by_search_type(search_type, view, project_code=project_code)
-                except Exception, e:
-                    print "ERROR: ", e
+                except Exception as e:
+                    print("ERROR: ", e)
                     # No widget config found in the other project of the stype
                     pass
 
@@ -806,7 +806,7 @@ class WidgetDbConfig(SObject):
 
         # clear previous caches
         #key = '%s:%s' %(search_type, view)
-        #print "clearing cache: ", key
+        #print("clearing cache: ", key)
         cls.clear_cache()
         return sobject
     create = classmethod(create)

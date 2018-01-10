@@ -46,17 +46,17 @@ class ProcessElementWdg(SimpleTableElementWdg):
             # get the parent pipeline code
             try:
                 parent = sobj.get_parent()
-            except SObjectSecurityException, e:
+            except SObjectSecurityException as e:
                 print "SObjectSecurityException raised for getting parent of [%s]" %sobj.get_code()
                 pass
-            except SearchException, e:
+            except SearchException as e:
                 if e.__str__().find('not registered') != -1:
                     pass
                 elif e.__str__().find('does not exist for database') != -1:
                     pass    
                 else:
                     raise
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: ", e
 
 

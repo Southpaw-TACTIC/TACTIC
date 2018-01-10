@@ -56,7 +56,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
     'link_view': {
         'description': 'View to link result to another view',
         'type': 'TextWdg',
-        'order': 4,
+        'order': 5,
         'category': 'Options',
     },
     'inline_styles': 'Styles to add to the DIV generated that contains the result of the expression',
@@ -84,14 +84,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'description': 'If absolute mode is selected, it does not relate to the current SObject',
         'type': 'SelectWdg',
         'values': 'default|absolute',
-        'order': 4
+        'order': 6
 
     },
     'calc_mode':     {
         'description': '(ALPHA) fast|slow - fast uses new calculation mode. Only @SUM, @COUNT, @SOBJECT and @GET are current supported',
         'type': 'SelectWdg',
         'values': 'slow|fast',
-        'order': 5
+        'order': 7
     },
 
     'show_retired':     {
@@ -99,7 +99,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'type': 'SelectWdg',
         'values': 'true|false',
         'category': 'Options',
-        'order': 6
+        'order': 8
     },
 
 
@@ -119,14 +119,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'description': 'Turn on Order by',
         'type': 'TextWdg',
         
-        'order': 7,
+        'order': 8,
         'category': 'Options'
     },
      'group_by': {
         'description': 'Turn on Group by',
         'type': 'SelectWdg',
         'values': 'true|false',
-        'order': 8,
+        'order': 9,
         'category': 'Options'
     },
     
@@ -134,7 +134,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'description': 'Turn on Group by',
         'type': 'SelectWdg',
         'values': 'true|false',
-        'order': 9,
+        'order': 10,
         'category': 'Options'
     },
 
@@ -142,9 +142,16 @@ class ExpressionElementWdg(TypeTableElementWdg):
         'description': 'Result justification',
         'type': 'SelectWdg',
         'values': 'default|left|right|center',
-        'order': 91,
+        'order': 11,
         'category': 'Options'
     },
+    'filter_name': {
+        'description': 'Name of filter to use',
+        'type': 'TextWdg',
+        'order': 12,
+        'category': 'Options'
+    },
+
     'empty': {
         'description': "vAlue to display if empty"
     }
@@ -333,7 +340,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if use_cache == "true":
             try:
                 return sobject.get_value(element_name)
-            except Exception, e:
+            except Exception as e:
                 print "Error: ", e.message
 
 
@@ -545,7 +552,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 my.alt_result = my._get_result(my.sobject, my.alt_expression)
             else:
                 my.alt_result = result
-        except Exception, e:
+        except Exception as e:
             print "Expression error: ", e
             print "    in column [%s] with [%s]" % (my.get_name(), my.expression)
             #from pyasm.widget import ExceptionWdg
@@ -616,7 +623,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                     try:
                         display_result = Search.eval(display_expr, my.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
-                    except Exception, e:
+                    except Exception as e:
                         print "WARNING in display expression [%s]: " % display_expr, e
                         display_result = "ERROR: %s" % e
 
@@ -797,6 +804,18 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 div.add_behavior( behavior )
 
 
+        """
+        # test dynamic updates on expressions
+        if my.get_name() == "customer":
+            outer.add_update( {
+                'search_key': my.sobject.get_search_key(),
+                'column': "customer_code",
+                'interval': 4,
+                'cbjs_action': "spt.panel.refresh_element(bvr.src_el)",
+            } )
+
+        my.set_as_panel(outer);
+        """
 
         return outer
 
@@ -1016,7 +1035,7 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
         # assume the value is an expression
         try:
             value = Search.eval(value)
-        except Exception, e:
+        except Exception as e:
             value = 0
 
         return value
@@ -1032,7 +1051,7 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
         # assume the value is an expression
         try:
             value = Search.eval(value)
-        except Exception, e:
+        except Exception as e:
             print e.message
             value = "Error [%s]" % value
 

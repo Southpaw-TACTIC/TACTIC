@@ -1351,6 +1351,10 @@ spt.popup.resize_drag_setup = function(evt, bvr, mouse_411) {
     spt.popup.last_resize_pos = { x: mouse_411.curr_x, y: mouse_411.curr_y };
     spt.popup.last_size = content.getSize();
 
+    // remove the max height requirement
+    content.setStyle("max-height", "");
+    content.setStyle("overflow-y", "auto");
+
 }
 
 
