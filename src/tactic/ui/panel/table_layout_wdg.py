@@ -2156,7 +2156,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             for td in group_row.get_widgets():
                 #td.add_style("overflow: hidden")
-                td.add_attr("colspan", "2")
+                #td.add_attr("colspan", "2")
 
                 # this is set in handle_group
                 group_value = td.group_value
@@ -2379,14 +2379,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-            # TEST TEST TEST
-            print "TEST TEST TEST TEST TEST"
+            # break groups by a "/" delimiter
             if group_value.find("/"):
                 parts = group_value.split("/")
-                group_value = parts[0]
-            if group_value.find("/"):
-                parts = group_value.split("/")
-                group_value = parts[0]
+                if not parts[0].endswith(" "):
+                    group_value = parts[0]
 
 
 
@@ -2471,24 +2468,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.group_level = i
 
 
-
-
         title = ""
 
-
-        # calculate the group content        
-        """
-        if group_value == '__NONE__':
-            label = '---'
-        else:
-            group_label_expr = my.kwargs.get("group_label_expr")
-            if group_label_expr:
-                label = Search.eval(group_label_expr, sobject, single=True)
-            else:
-                label = Common.process_unicode_string(group_value)
-
-        title = label
-        """
 
 
         # if grouped by time
@@ -2502,6 +2483,41 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if len(labels)== 2:
                     timestamp = datetime(int(labels[0]),int(labels[1]),1)
                     title = timestamp.strftime("%Y %b")
+
+
+
+
+        # TEST - Add button
+        add_div = DivWdg()
+        td.add(add_div)
+        add_div.add_style("display: inline-block")
+        add_div.add_style("float: right")
+        add_div.add_style("margin: 3px 8px 3px 5px")
+        add_div.add_class("hand")
+        add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
+        add_div.add_behavior( {
+            "type": "click",
+            "search_type": my.search_type,
+            "group_column": group_column,
+            "group_value": group_value,
+            "cbjs_action": '''
+            var class_name = 'tactic.ui.panel.EditWdg';
+
+            var defaults = {};
+            defaults[bvr.group_column] = bvr.group_value;
+
+            var kwargs = {
+                view: 'edit',
+                search_type: bvr.search_type, 
+                default: defaults,
+            }
+            spt.panel.load_popup("Insert", class_name, kwargs);
+
+            '''
+        } )
+
+
+
 
 
         title_div = DivWdg()
@@ -2521,6 +2537,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.group_widgets.append(title_div)
 
 
+
+
+
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
         swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=my.is_on)
         swap.set_behavior_top(my.table)
@@ -2528,8 +2547,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("font-weight: bold")
 
 
-
-        td.add_style("height: 25px")
+        td.add_style("height: 30px")
         td.add_style("padding-left: %spx" % (i*15))
 
         border_color = tr.get_color("table_border")
@@ -2881,6 +2899,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_select_header(my, table, border_color=None):
 
+        show_border = my.kwargs.get("show_border")
+        if not border_color:
+            border_color = table.get_color("table_border", 0, default="border")
+
         if my.group_columns:
             spacing = len(my.group_columns) * 20
             th = table.add_cell()
@@ -2888,14 +2910,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th.add_style("width: %spx" % spacing)
             th.add_style("max-width: %spx" % spacing)
 
+            if show_border not in [False, "false", 'horizontal']:
+                th.add_style("border", "solid 1px %s" % border_color)
+
         th = table.add_cell()
-        #th.add_gradient("background", "background", -10)
-        if not border_color:
-            border_color = table.get_color("table_border", 0, default="border")
-
-
-
-        show_border = my.kwargs.get("show_border")
         if show_border not in [False, "false", 'horizontal']:
             th.add_style("border", "solid 1px %s" % border_color)
 
@@ -2933,6 +2951,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #my.is_grouped = my.kwargs.get("is_grouped")
         #if my.is_grouped or my.group_columns:
 
+        show_border = my.kwargs.get("show_border")
         
         if my.group_columns or True:
             spacing = len(my.group_columns) * 20
@@ -2942,6 +2961,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 td.add_style("width: %spx" % spacing)
                 td.add_style("max-width: %spx" % spacing)
 
+                if show_border not in [False, "false"]:
+                    border_color = table.get_color("table_border", 0, default="border")
+                    td.add_style("border-bottom", "solid 1px %s" % border_color)
 
 
         td = table.add_cell()

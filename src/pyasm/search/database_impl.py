@@ -3372,7 +3372,6 @@ class MySQLImpl(PostgresImpl):
         #parts.append("JSON")
         parts.append("text")
 
-        parts.append("text")
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)

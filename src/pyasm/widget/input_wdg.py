@@ -994,46 +994,51 @@ class SelectWdg(BaseInputWdg):
     ARGS_KEYS = {
     'values': {
         'description': 'A list of values separated by | that determine the actual values of the selection',
-        'order': 0,
+        'order': 1,
         'category': 'Options'
 
     },
     'labels': {
         'description': 'A list of values separated by | that determine the label of the selection',
 
-        'order': 1,
+        'order': 2,
         'category': 'Options'
     },
-     'values_expr': {
+
+
+    'values_expr': {
         'description': 'A list of values retrieved through an expression. e.g. @GET(prod/shot.code)',
         'type': 'TextAreaWdg',
-        'order': 2
+        'order': 3,
+        'category': 'Misc',
     },
     'labels_expr': {
         'description': 'A list of labels retrieved through an expression. e.g. @GET(prod/shot.name)',
         'type': 'TextAreaWdg',
-        'order': 3
+        'order': 2,
+        'category': 'Misc',
     },
     'mode_expr': {
         'description': 'Specify if it uses the current sObject as a starting point',
         'type': 'SelectWdg',
         'values': 'relative',
         'empty': 'true',
-        'order': 4,
+        'order': 3,
+        'category': 'Misc',
     },
     'empty': {
         'description': 'The label for an empty selection',
         #'default': '-- Select --',
         'type': 'SelectWdg',
         'values': 'true|false',
-        'order': 3,
+        'order': 4,
         'category': 'Options'
     },
     'default': {
         'description': 'The default selection value in an edit form. Can be a TEL variable.',
         'type': 'TextWdg',
         'category': 'Options',
-        'order': 2,
+        'order': 5,
     },
     'query': {
         'description': 'Query shorthand in the form of <search_type>|<value_column>|<label_column>"'

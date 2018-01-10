@@ -83,7 +83,7 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
             'element_name': filter_name,
             'cbjs_action': '''
             if (!spt.simple_search) {
-                retur;
+                return;
             }
 
             if (!spt.simple_search.has_element(bvr.element_name) ) {
@@ -384,7 +384,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             'description': 'Determine the database column to display',
             'type': 'TextWdg',
             'category': 'Display'
+        },
+        'single_line': {
+            'description': 'Determines if the text is displayed as a single line',
+            'type': 'SelectWdg',
+            'values': 'false|true',
+            'category': 'Display'
         }
+
     }
 
 
@@ -676,7 +683,10 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             min_height = 25
             value_wdg.add_style("min-height: %spx" % min_height)
 
-            #value_wdg.add_style("white-space: nowrap")
+            single_line = my.get_option("single_line") or False
+            if single_line in ["true", True]:
+                value_wdg.add_style("line-height: %spx" % min_height)
+                value_wdg.add_style("white-space: nowrap")
 
             #value_wdg.add_style("overflow-y: hidden")
             #value_wdg.add_class("spt_scrollable")
