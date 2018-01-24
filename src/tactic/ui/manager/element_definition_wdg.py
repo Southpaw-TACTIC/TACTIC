@@ -2182,6 +2182,11 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         aorder = a.get('order') or 99
         border = b.get('order') or 99
 
+        if isinstance(aorder, basestring):
+            aorder = int(aorder)
+        if isinstance(border, basestring):
+            border = int(border)
+
         avalue = "%s|%0.2d" % (acategory, aorder)
         bvalue = "%s|%0.2d" % (bcategory, border)
 
@@ -2320,7 +2325,6 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         #    title.add_style("margin: 10px 0 10px 0")
         #    title.add("Widget Options:")
         #    top.add(title)
-
 
 
         # convert to an array

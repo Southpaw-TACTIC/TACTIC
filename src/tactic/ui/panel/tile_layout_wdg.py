@@ -2306,6 +2306,7 @@ class ThumbWdg2(BaseRefreshWdg):
     def init(my):
         my.path = None
         my.show_name_hover = my.kwargs.get("show_name_hover")
+        my.main_path = ""
 
     def set_sobject(my, sobject):
         super(ThumbWdg2, my).set_sobject(sobject)

@@ -1407,7 +1407,12 @@ class SelectWdg(BaseInputWdg):
         if width:
             my.add_style("width: %s" % width)
 
-        my.add_border()
+        border_mode = my.get_option("border_mode") or "box"
+        if border_mode == "box":
+            my.add_border()
+        else:
+            my.add_style("border", "none")
+
         #my.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...

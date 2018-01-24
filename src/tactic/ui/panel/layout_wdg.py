@@ -9,6 +9,10 @@
 #
 #
 #
+
+from __future__ import print_function
+
+
 __all__ = ["AddPredefinedColumnWdg", "SwitchLayoutMenu", "CellEditWdg", "CellWdg", "EditColumnDefinitionWdg", "EditColumnDefinitionCbk"]
 
 
@@ -285,7 +289,7 @@ class CellEditWdg(BaseRefreshWdg):
             # FIXME: This doesn't look right.. the type can only be display or action, not edit
             my.display_wdg = my.config.get_widget(element_name, "edit")
         except ImportError, e:
-            print "WARNING: create widget", str(e)
+            print("WARNING: create widget", str(e))
             my.display_wdg = SimpleTableElementWdg()
             my.display_wdg.add("No edit defined")
 
@@ -421,7 +425,7 @@ class CellEditWdg(BaseRefreshWdg):
             div.add(display)
             #div.add(my.display_wdg)
         except Exception as e:
-            print "WARNING in CellEditWdg: ", e
+            print("WARNING in CellEditWdg: ", e)
             my.display_wdg = TextWdg(element_name)
             my.display_wdg.set_value('Error in widget')
           
@@ -980,7 +984,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
-            #print "file_path: ", file_path
+            #print("file_path: ", file_path)
             if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
                 continue
 

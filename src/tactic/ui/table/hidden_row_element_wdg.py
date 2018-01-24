@@ -235,11 +235,17 @@ class RowAddElementWdg(HiddenRowElementWdg):
         search_type = sobject.get_search_type_obj()
         stype_title = search_type.get_title()
 
+        # get related types
+        related_types = my.get_option("related_types")
+        if not related_types:
+            from pyasm.biz import Schema
+            schema = Schema.get()
+            related_types = schema.get_related_search_types(search_type.get_base_key())
 
-        from pyasm.biz import Schema
-        schema = Schema.get()
-        related_types = schema.get_related_search_types(search_type.get_base_key())
-        related_types = ",".join(related_types)
+        if isinstance(related_types, list):
+            related_types = ",".join(related_types)
+
+        related_types = "sthpw/task"
 
         name = my.get_name()
 
@@ -285,13 +291,21 @@ class RowAddElementWdg(HiddenRowElementWdg):
         stype_div.add_style("font-syle: italic")
         stype_div.add_style("font-size: 9px")
 
-        #swap = SwapDisplayWdg(title=label, icon=icon)
-        swap = SwapDisplayWdg(title=title, icon=icon)
-        swap.set_behavior_top(my.layout)
-        swap.add_style("float: left")
-        swap.add_class("spt_level_listen")
 
-        top.add(swap)
+        max_level = 1
+        level = my.kwargs.get("level") or 0
+        if level >= max_level:
+            top.add(title)
+
+        else:
+
+            #swap = SwapDisplayWdg(title=label, icon=icon)
+            swap = SwapDisplayWdg(title=title, icon=icon)
+            swap.set_behavior_top(my.layout)
+            swap.add_style("float: left")
+            swap.add_class("spt_level_listen")
+
+            top.add(swap)
 
         return top
 

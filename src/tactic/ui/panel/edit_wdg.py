@@ -1551,7 +1551,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
 
         var options = {}
         options.cancel_args = bvr;
-           
+
         spt.confirm( "Error: " + spt.exception.handler(e) + "<br/>Try again?", ok, cancel, options);
     }
     return info;
