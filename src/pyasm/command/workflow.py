@@ -9,6 +9,7 @@
 #
 #
 #
+from __future__ import print_function
 
 __all__ = ['Workflow', 'WorkflowException', 'BaseWorkflowNodeHandler', 'BaseProcessTrigger', 'ProcessStatusTrigger', 'CustomProcessConfig']
 
@@ -362,7 +363,7 @@ class BaseProcessTrigger(Trigger):
 
     def set_all_tasks(my, sobject, process, status):
 
-        # prevent for instance TaskStatusChangeTrigger setting a custom task status back to complete
+        # prevent TaskStatusChangeTrigger from setting a custom task status back to complete
         if not hasattr(my, "internal"):
             my.internal = my.input.get("internal") or False
 
@@ -813,7 +814,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
     def handle_complete(my):
-
 
         # run a nodes complete trigger
         status = "complete"
@@ -1977,29 +1977,6 @@ class ProcessRejectTrigger(BaseProcessTrigger):
             handler = my.get_handler(node_type)
             return handler.handle_reject()
 
-
-        """
-        my.run_callback(pipeline, process, "reject")
-
-        my.set_all_tasks(sobject, process, my.get_status())
-
-        input_processes = pipeline.get_input_processes(process)
-        for input_process in input_processes:
-            input_process = input_process.get_name()
-
-            if reject_processes:
-                if input_process not in reject_processes:
-                    continue
-
-            input = {
-                'pipeline': pipeline,
-                'sobject': sobject,
-                'process': input_process
-            }
-
-            event = "process|revise"
-            Trigger.call(my, event, input)
-        """
 
 
 
