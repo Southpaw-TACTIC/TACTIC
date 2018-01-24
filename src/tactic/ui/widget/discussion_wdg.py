@@ -113,6 +113,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'type': 'SelectWdg',
         'values': 'true|false',
         'order': 10
+    },
+
+    'mode': {
+        'description': 'Determine if the table shows small icons or process names',
+        'values': 'default|icon',
+        'type': 'SelectWdg',
+        'category': 'Options',
+        'order': 10
     }
 
     }

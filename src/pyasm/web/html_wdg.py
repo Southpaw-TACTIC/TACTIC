@@ -1633,11 +1633,11 @@ class Table(HtmlElement):
 
         if my.is_dynamic_flag:
             td.set_attr("colspan",my.max_cols*2)
-            #td.set_attr("colspan","100%")
         else:
             #td.set_attr("colspan",my.max_cols)
             td.set_attr("colspan","100%")
-            td.set_attr("colspan","50000")
+            #td.set_attr("colspan","50000")
+            td.set_attr("colspan", my.max_cols)
         return (tr,td)
 
 

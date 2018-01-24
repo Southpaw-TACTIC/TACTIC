@@ -9,6 +9,9 @@
 #
 #
 #
+from __future__ import print_function
+
+
 __all__ = ["CustomLayoutWdg", "SObjectHeaderWdg"]
 
 import os, types, re
@@ -1171,6 +1174,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         div = DivWdg()
         unique_id = div.set_unique_id()
+        div.add_class("spt_manual_load")
+
+        show_loading = my.kwargs.get("show_loading")
 
         if load == "sequence":
             my.sequence_data.append( {
@@ -1178,6 +1184,30 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 'kwargs': display_options,
                 'unique_id': unique_id
             } )
+        elif load == "manual":
+
+            show_loading = False
+            div.add_behavior( {
+                'type': 'load',
+                'class_name': display_handler,
+                'kwargs': display_options,
+                'cbjs_action': '''
+                bvr.src_el.load = function() {
+                    spt.panel.async_load(bvr.src_el, bvr.class_name, bvr.kwargs);
+                }
+
+                '''
+            } )
+            msg = DivWdg()
+            div.add(msg)
+            msg.add_style("padding", "20px")
+            msg.add_style("margin", "10px auto")
+            msg.add_style("width", "150px")
+            msg.add_style("border", "solid 1px #DDD")
+            msg.add_style("text-align", "center")
+            msg.add("Loading ...")
+
+
         else:
             div.add_behavior( {
                 'type': 'load',
@@ -1188,7 +1218,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 '''
             } )
 
-        if my.kwargs.get("show_loading") not in ["False", False, "false"]:
+        if show_loading not in ["False", False, "false"]:
             loading_div = DivWdg()
             loading_div.add_style("margin: auto auto")
             loading_div.add_style("width: 150px")
@@ -1284,7 +1314,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         if load in ["none"]:
             return None
 
-        elif load in ["async", "sequence"]:
+        elif load in ["async", "sequence","manual"]:
             return my.get_async_element_wdg(xml, element_name, load)
 
 

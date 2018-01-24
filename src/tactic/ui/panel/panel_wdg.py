@@ -2555,7 +2555,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         'simple_search_config': {
             'description': 'config xml as opposed to a view for defining a simple search',
             'type': 'TextWdg',
-            'order': '5a',
+            'order': 5,
             'category': 'Search'
         },
         'simple_search_visible_rows': {
@@ -2678,7 +2678,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determine if it displays top, bottom or both search limit",
             'type': 'SelectWdg',
             'values': 'bottom|top|both',
-            'order': '07a',
+            'order': 7,
             'category': 'Display'
         },
 
@@ -2716,14 +2716,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determines whether or not to expand the table",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": '11a',
+            "order": 11,
             'category': 'Display'
         },
         "show_border": {
             'description': "determines whether or not to show borders on the table",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": '11b',
+            "order": 11,
             'category': 'Display'
         },
         'checkin_context': {

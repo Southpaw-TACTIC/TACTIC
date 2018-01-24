@@ -3170,7 +3170,7 @@ class TacticServerStub(object):
         event - the event to be set
         data - dictionary data that needs to be sent to the process
         '''
-        return my.server.set_pipeline(my.ticket, search_key, process, event, data)
+        return my.server.call_pipeline_event(my.ticket, search_key, process, event, data)
 
 
     def get_pipeline_status(my, search_key, process):

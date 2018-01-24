@@ -305,8 +305,11 @@ class SearchTypePanel(BaseRefreshWdg):
 
         button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="BS_PLUS")
         top.add(button)
-        button.add_style("float: left")
+        button.add_style("display: inline-block")
+        button.add_style("vertical-align: middle")
         button.add_style("margin-top: 0px")
+        button.add_style("margin-right: 15px")
+        button.add_style("margin-left: 5px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -337,6 +340,7 @@ class SearchTypePanel(BaseRefreshWdg):
         span = SpanWdg(css='small')
         top.add(span)
         top.add(cb)
+        top.add("<br clear='all'/>")
         top.add("<br clear='all'/>")
         #search_type_objs = []
         if not search_type_objs:
@@ -390,7 +394,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
         table = Table()
         div.add(table)
-        table.add_style("margin-top: 10px")
+        table.add_style("margin-top: 14px")
         table.set_max_width()
 
 
@@ -407,11 +411,13 @@ class SearchTypePanel(BaseRefreshWdg):
             'cbjs_action': "spt.mouse.table_layout_hover_out({}, {src_el: bvr.src_el})"
         } )
 
+        border_color = table.get_color("border")
 
 
         tr = table.add_row()
         tr.add_color("color", "color")
-        tr.add_gradient("background", "background", -10)
+        tr.add_color("background", "background", -3)
+        tr.add_style("border-bottom: solid 1px %s" % border_color)
         th = table.add_header("")
         th.add_style("text-align: left")
         th = table.add_header("Title")
@@ -444,7 +450,7 @@ class SearchTypePanel(BaseRefreshWdg):
             tr.add_class("spt_row")
 
             if not i or not i%2:
-                tr.add_color("background", "background3")
+                tr.add_color("background", "background")
             else:
                 tr.add_color("background", "background", -2 )
 

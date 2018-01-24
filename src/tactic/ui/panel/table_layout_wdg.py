@@ -1114,13 +1114,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     // run at the end of last load
                     if (bvr.expand_on_load) {
                         spt.table.set_layout(layout);
-                        spt.table.expand_table();
+                        spt.table.expand_table("full");
                     }
 
                     return;
                 }
 
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
+                if (bvr.expand_on_load) {
+                    spt.table.expand_table("full");
+                }
             }
             func();
 
@@ -1135,7 +1138,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 var unique_id = "loading|"+bvr.unique_id;
                 spt.named_events.fire_event(unique_id, {});
                 if (bvr.expand_on_load) {
-                     spt.table.expand_table();
+                     spt.table.expand_table("full");
                 }
             '''
             } )
@@ -2177,7 +2180,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-
+            # TODO: need to look this over. It currently messes up the table structure
+            # since a group is a row-cell.
+            # This adds widgets to a group item.  It would useful to tread a "group"
+            # as an sobject and display just like the other sobjects
+            """
             group_widgets = []
             has_widgets = False
        
@@ -2259,6 +2266,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     td.add_style("padding: 3px")
                     # replace the top group row summary
                     group_row.add(td, 'td_%s'%wdg_idx)
+
+            """
+
 
             # reset when reaching the top level
             if group_level == 0:
@@ -2483,38 +2493,45 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if len(labels)== 2:
                     timestamp = datetime(int(labels[0]),int(labels[1]),1)
                     title = timestamp.strftime("%Y %b")
+        else:
+
+            # TEST - Add button
+            extra_data = my.extra_data or {}
+            extra_data = extra_data.copy()
+
+            for group_level, item in my.group_values.items():
+                for x, y in item.items():
+                    if y == "__NONE__":
+                        continue
+                    extra_data[x] = y
+
+            extra_data[group_column] = group_value
 
 
+            add_div = DivWdg()
+            td.add(add_div)
+            add_div.add_style("display: inline-block")
+            add_div.add_style("float: right")
+            add_div.add_style("margin: 3px 8px 3px 5px")
+            add_div.add_class("hand")
+            add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
+            add_div.add_behavior( {
+                "type": "click",
+                "search_type": my.search_type,
+                "extra_data": extra_data,
+                "cbjs_action": '''
+                var class_name = 'tactic.ui.panel.EditWdg';
 
+                var kwargs = {
+                    view: 'edit',
+                    search_type: bvr.search_type, 
+                    default: bvr.extra_data,
+                    extra_data: bvr.extra_data,
+                }
+                spt.panel.load_popup("Insert", class_name, kwargs);
 
-        # TEST - Add button
-        add_div = DivWdg()
-        td.add(add_div)
-        add_div.add_style("display: inline-block")
-        add_div.add_style("float: right")
-        add_div.add_style("margin: 3px 8px 3px 5px")
-        add_div.add_class("hand")
-        add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
-        add_div.add_behavior( {
-            "type": "click",
-            "search_type": my.search_type,
-            "group_column": group_column,
-            "group_value": group_value,
-            "cbjs_action": '''
-            var class_name = 'tactic.ui.panel.EditWdg';
-
-            var defaults = {};
-            defaults[bvr.group_column] = bvr.group_value;
-
-            var kwargs = {
-                view: 'edit',
-                search_type: bvr.search_type, 
-                default: defaults,
-            }
-            spt.panel.load_popup("Insert", class_name, kwargs);
-
-            '''
-        } )
+                '''
+            } )
 
 
 
@@ -3113,7 +3130,15 @@ spt.table.set_table = function(table) {
 
 spt.table.get_group_elements = function() {
     var layout = spt.table.layout;
-    var group_elements = layout.getElement(".spt_table_group_info").getAttribute("spt_group_elements");
+    var group_info = layout.getElement(".spt_table_group_info");
+
+    // not supported by some layouts (ie tile)
+    if (!group_info) {
+        return [];
+    }
+
+
+    var group_elements = group_info.getAttribute("spt_group_elements");
     if (group_elements) {
         return group_elements.split(",");
     }
@@ -3774,6 +3799,7 @@ spt.table.add_rows = function(row, search_type, level) {
     // make some adjustments
     kwargs['search_type'] = search_type;
     kwargs['search_key'] = search_key;
+    kwargs['level'] = level;
     delete kwargs['search_keys'];
 
 
@@ -4685,6 +4711,21 @@ spt.table.has_changes = function() {
 }
 
 
+spt.table.get_changed_search_keys = function() {
+    var rows = spt.table.get_changed_rows();
+
+    var search_keys = [];
+    for (var i = 0; i < rows.length; i++) {
+        var search_key = rows[i].getAttribute("spt_search_key_v2");
+        search_keys.push(search_key);
+    }
+    return search_keys;
+}
+
+
+
+
+
 spt.table.get_bottom_row = function() {
     var table = spt.table.get_table();
     var row = table.getElement(".spt_table_bottom_row");
@@ -5238,6 +5279,13 @@ spt.table.get_refresh_kwargs = function(row) {
 
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
+
+    // put some protection here
+    if (!rows) return;
+    if (rows.length == 0) return;
+    if (!rows[0]) return;
+
+
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
@@ -5259,6 +5307,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     //var layout = spt.table.get_layout();
     // this is more reliable when multi table are drawn in the same page while
     // refresh is happening
+
     var layout_el = rows[0].getParent(".spt_layout");
     spt.table.set_layout(layout_el);
 
@@ -5906,16 +5955,19 @@ spt.table.get_column_widths = function() {
 
 
 
-spt.table.expand_table = function() {
+spt.table.expand_table = function(mode) {
 
     var layout = spt.table.get_layout();
     var version = layout.getAttribute("spt_version");
     var headers;
     var table = null;
+    var subtable = null;
     var header_table = null;
     if (version == '2') {
         spt.table.set_layout(layout);
         table = spt.table.get_table();
+        var subtable = table.getElement(".spt_table_table");
+
         headers = spt.table.get_headers();
         header_table = spt.table.get_header_table();
 
@@ -5925,19 +5977,27 @@ spt.table.expand_table = function() {
         header_table = table;
         headers = layout.getElements(".spt_table_th");
     }
-    var width = table.getStyle("width");
+    var width = header_table.getStyle("width");
    
     // don't set the width of each column, this is simpler
-    if (width == '100%') {
+    if ( mode != "full" && width == '100%') {
+        console.log("here");
         table.setStyle("width", "");
         if (header_table) {
             header_table.setStyle("width", "");
+        }
+        if (subtable) {
+            subtable.setStyle("width", "");
+
         }
     }
     else {
         table.setStyle("width", "100%");
         if (header_table) {
             header_table.setStyle("width", "100%");
+        }
+        if (subtable) {
+            subtable.setStyle("width", "100%");
         }
         layout.setStyle("width", "100%");
     }
@@ -5969,6 +6029,8 @@ spt.table.expand_table = function() {
             div.inject(header_parent, "before");
         }
     }
+
+
 }
 
 

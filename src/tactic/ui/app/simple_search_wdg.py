@@ -298,6 +298,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
         if config_sobj:
             #config_xml = config_sobj.get("config")
             config_xml = config_sobj.get_xml().to_string()
+            config_xml = config_xml.replace("&lt;", "<")
+            config_xml = config_xml.replace("&gt;", ">")
             config_xml = Common.run_mako(config_xml)
 
         elif config:
