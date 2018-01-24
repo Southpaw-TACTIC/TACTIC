@@ -11,6 +11,8 @@
 # Description: Triggers are called periodically in the code based on some event
 # These are registered in the global container and listen for events.
 
+from __future__ import print_function
+
 __all__ = ["TriggerException", "Trigger", "SampleTrigger", "TimedTrigger", "SampleTimedTrigger"]
 
 import sys, traceback
@@ -47,7 +49,7 @@ class Trigger(Command):
         super(Trigger,my).__init__()
 
     def get_title(my):
-        print "WARNING: Should override 'get_title' function for %s" % my
+        print("WARNING: Should override 'get_title' function for %s" % my)
         return Common.get_full_class_name(my)
 
 
@@ -121,7 +123,7 @@ class Trigger(Command):
     # DEPRECATED
     def append_trigger(caller, trigger, event):
         '''append to the the list of called triggers'''
-        #print "Trigger.append_trigger is DEPRECATED"
+        #print("Trigger.append_trigger is DEPRECATED")
         trigger.set_caller(caller)
         trigger.set_event(event)
         triggers = Container.append_seq("Trigger:called_triggers",trigger)
@@ -182,17 +184,17 @@ class Trigger(Command):
                     # they get here.
                     Trigger.execute_cmd(trigger, call_trigger=False)
 
-                except Exception, e:
+                except Exception as e:
                     # if there is an error in calling this trigger for some
                     # reason, carry on with the other triggers
                     # print the stacktrace
                     tb = sys.exc_info()[2]
                     stacktrace = traceback.format_tb(tb)
                     stacktrace_str = "".join(stacktrace)
-                    print "-"*50
-                    print stacktrace_str
-                    print str(e)
-                    print "-"*50
+                    print("-"*50)
+                    print(stacktrace_str)
+                    print(str(e))
+                    print("-"*50)
                     continue
 
         finally:
@@ -386,8 +388,8 @@ class Trigger(Command):
                 try:
                     search = Search("config/trigger")
                     project_triggers = search.get_sobjects()
-                except SearchException, e:
-                    print "WARNING: ", e
+                except SearchException as e:
+                    print("WARNING: ", e)
                     project_triggers = []
             else:
                 project_triggers = []
@@ -505,7 +507,7 @@ class Trigger(Command):
                         "project": project_code,
                         "ticket": Environment.get_ticket(),
                         "class_name": trigger_class,
-                        "kwargs": kwargs
+                        "kwargs": kwargs,
                     }
                     trigger.set_data(data)
 
@@ -525,10 +527,10 @@ class Trigger(Command):
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
                 raise
 
             if issubclass( trigger.__class__, Trigger):
@@ -559,17 +561,17 @@ class Trigger(Command):
             # otherwise call the trigger immediately
             try:
                 trigger.execute()
-            except Exception, e:
+            except Exception as e:
                 #log = ExceptionLog.log(e)
 
                 # print the stacktrace
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
 
                 caller.errors.append("Trigger [%s] failed: %s" \
                     %(trigger.get_title(), str(e)))
@@ -614,7 +616,7 @@ class Trigger(Command):
         triggers.extend(project_triggers)
 
         #for trigger in triggers:
-        #    print trigger.get_search_key()
+        #    print(trigger.get_search_key())
 
         search_type = None
 
@@ -645,7 +647,7 @@ class Trigger(Command):
                 continue
 
 
-            #print event, trigger_process, process,trigger.get_id()
+            #print(event, trigger_process, process,trigger.get_id())
 
             if trigger.get_value("event") == event:
                 event_triggers.append(trigger)
@@ -862,10 +864,10 @@ class SnapshotIsLatestTrigger(Trigger):
         snapshot = Search.get_by_search_key(search_key)
         
 
-        #print "mode: ", mode
-        #print "snapshot: ", snapshot.get("version"), snapshot.get("context")
-        #print "data: ", input.get("update_data").keys()
-        #print
+        #print("mode: ", mode)
+        #print("snapshot: ", snapshot.get("version"), snapshot.get("context"))
+        #print("data: ", input.get("update_data").keys())
+        #print("\n")
 
 
         # if the current snapshot is already the latest, don't do anything
@@ -889,7 +891,7 @@ class SearchTypeCacheTrigger(Handler):
 
     def execute(my):
         from pyasm.biz import CacheContainer
-        print "running cache trigger"
+        print("running cache trigger")
         search_type = my.input.get("search_type")
         assert search_type
         cache = CacheContainer.get(search_type)
@@ -906,7 +908,7 @@ class SampleTrigger(Trigger):
         if command_class != "SimpleStatusCmd":
             return
 
-        print "Executing sample trigger"
+        print("Executing sample trigger")
 
     
 
@@ -966,7 +968,7 @@ class TimedTrigger(Base):
 
             if current_hour == execute_hour:
                 if execute_minute == current_minute:
-                    print "time of day!!!"
+                    print("time of day!!!")
                     return True
 
         return False
@@ -993,10 +995,10 @@ class SampleTimedTrigger(TimedTrigger):
         return 3600
 
     def execute(my):
-        print "doing a bunch of stuff"
-        print "sleeping"
+        print("doing a bunch of stuff")
+        print("sleeping")
         time.sleep(15)
-        print ".... done"
+        print(".... done")
 
         
 
@@ -1030,7 +1032,7 @@ class BurnDownTimedTrigger(TimedTrigger):
         date = Date()
         cur_time = date.get_utc()
 
-        print "Burn down"
+        print("Burn down")
 
         #first = 8 * 60 * 60
         first = 30
@@ -1078,13 +1080,13 @@ class BurnDownTimedTrigger(TimedTrigger):
 
             # once we've reached the first marker, email next interval
             start = (interval - first) / next
-            print "start: ", interval, first, start
+            print("start: ", interval, first, start)
 
             continue
 
             parent = sobject.get_parent()
             if not parent:
-                print "WARNING: parent does not exist [%s]" % sobject.get_search_key()
+                print("WARNING: parent does not exist [%s]" % sobject.get_search_key())
                 continue
 
             process = sobject.get_value("process")
@@ -1092,7 +1094,7 @@ class BurnDownTimedTrigger(TimedTrigger):
             status = sobject.get_value("status")
             code = parent.get_code()
 
-            print (code, assigned, process, status, interval/3600)
+            print(code, assigned, process, status, interval/3600)
             ready_sobjects.append( sobject )
 
 
