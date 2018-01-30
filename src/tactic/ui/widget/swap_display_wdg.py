@@ -22,41 +22,41 @@ class SwapDisplayWdg(BaseRefreshWdg):
     relay behaviors to significantly reduce the number of behaviors
     required'''
 
-    def init(my):
-        my.on_wdg = None
-        my.off_wdg = None
-        my.title_wdg = None
-        my.behavior_top = None
-        my.content_id = None
-        my.inner = DivWdg()
+    def init(self):
+        self.on_wdg = None
+        self.off_wdg = None
+        self.title_wdg = None
+        self.behavior_top = None
+        self.content_id = None
+        self.inner = DivWdg()
 
-    def set_default_wdg(my):
+    def set_default_wdg(self):
         theme = DivWdg().get_theme()
         if theme == "default":
-            my.on_wdg = IconWdg('open', IconWdg.ARROWHEAD_DARK_DOWN)
-            my.off_wdg = IconWdg('closed', IconWdg.ARROWHEAD_DARK_RIGHT)
+            self.on_wdg = IconWdg('open', IconWdg.ARROWHEAD_DARK_DOWN)
+            self.off_wdg = IconWdg('closed', IconWdg.ARROWHEAD_DARK_RIGHT)
         else:
-            my.on_wdg = IconWdg('open', IconWdg.INFO_OPEN_SMALL)
-            my.off_wdg = IconWdg('closed', IconWdg.INFO_CLOSED_SMALL)
+            self.on_wdg = IconWdg('open', IconWdg.INFO_OPEN_SMALL)
+            self.off_wdg = IconWdg('closed', IconWdg.INFO_CLOSED_SMALL)
 
-    def set_display_wdgs(my, on_wdg, off_wdg):
-        my.on_wdg = on_wdg
-        my.off_wdg = off_wdg
+    def set_display_wdgs(self, on_wdg, off_wdg):
+        self.on_wdg = on_wdg
+        self.off_wdg = off_wdg
 
-    def set_on(my, flag=True):
-        my.kwargs["is_on"] = flag
+    def set_on(self, flag=True):
+        self.kwargs["is_on"] = flag
 
-    def set_off(my, flag=False):
-        my.kwargs["is_on"] = flag
+    def set_off(self, flag=False):
+        self.kwargs["is_on"] = flag
 
-    def set_title_wdg(my, title):
-        my.title_wdg = title
+    def set_title_wdg(self, title):
+        self.title_wdg = title
 
-    def set_content_id(my, content_id):
-        my.content_id = content_id
+    def set_content_id(self, content_id):
+        self.content_id = content_id
 
-    def set_behavior_top(my, behavior_top):
-        my.behavior_top = behavior_top
+    def set_behavior_top(self, behavior_top):
+        self.behavior_top = behavior_top
 
     def handle_top(cls, top):
 
@@ -104,24 +104,24 @@ class SwapDisplayWdg(BaseRefreshWdg):
     handle_top = classmethod(handle_top)
 
 
-    def add_behavior(my, behavior):
-        my.top.add_behavior(behavior)
+    def add_behavior(self, behavior):
+        self.top.add_behavior(behavior)
 
-    def add_class(my, class_name):
-        my.inner.add_class(class_name)
+    def add_class(self, class_name):
+        self.inner.add_class(class_name)
 
-    def add_attr(my, name, value):
-        my.inner.add_attr(name, value)
-
-
+    def add_attr(self, name, value):
+        self.inner.add_attr(name, value)
 
 
 
-    def get_display(my):
-        top = my.top
+
+
+    def get_display(self):
+        top = self.top
         top.add_class("hand")
 
-        inner = my.inner
+        inner = self.inner
         top.add(inner)
         inner.add_class("spt_swap_top")
 
@@ -132,27 +132,27 @@ class SwapDisplayWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell()
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
 
         # determine whether this widget is on or off
-        is_on = my.kwargs.get("is_on")
+        is_on = self.kwargs.get("is_on")
         if is_on in [True, "true"]:
             is_on = True
         else:
             is_on = False
 
-        if not my.on_wdg or not my.off_wdg:
-            my.set_default_wdg()
+        if not self.on_wdg or not self.off_wdg:
+            self.set_default_wdg()
 
 
         # add the content id
-        if my.content_id:
-            inner.add_attr("spt_content_id", my.content_id)
+        if self.content_id:
+            inner.add_attr("spt_content_id", self.content_id)
 
 
         # add the behaviors
-        if not my.behavior_top:
-            my.handle_top(top)
+        if not self.behavior_top:
+            self.handle_top(top)
 
         on_div = DivWdg()
         td.add(on_div)
@@ -171,12 +171,12 @@ class SwapDisplayWdg(BaseRefreshWdg):
             inner.add_attr("spt_state", "off")
 
 
-        on_div.add( my.on_wdg )
-        off_div.add( my.off_wdg )
+        on_div.add( self.on_wdg )
+        off_div.add( self.off_wdg )
 
 
         # handle an icon
-        icon_str = my.kwargs.get("icon")
+        icon_str = self.kwargs.get("icon")
         if icon_str and isinstance(icon_str, basestring):
             icon_div = DivWdg()
 
@@ -196,7 +196,7 @@ class SwapDisplayWdg(BaseRefreshWdg):
             icon_str.add_style("margin-left: -6px")
 
         else:
-            show_border = my.kwargs.get("show_border")
+            show_border = self.kwargs.get("show_border")
             if show_border in [True, 'true']:
                 on_div.add_border()
                 off_div.add_border()
@@ -209,8 +209,8 @@ class SwapDisplayWdg(BaseRefreshWdg):
             off_div.add_style("overflow: hidden")
 
 
-        if my.title_wdg:
-            td = table.add_cell(my.title_wdg)
+        if self.title_wdg:
+            td = table.add_cell(self.title_wdg)
         else:
             td = table.add_cell(title)
 
@@ -221,9 +221,9 @@ class SwapDisplayWdg(BaseRefreshWdg):
 
 class TestSwapWdg(BaseRefreshWdg):
 
-        def get_display(my):
+        def get_display(self):
 
-            top = my.top
+            top = self.top
             top.add_color("background", "background")
             top.add_style("padding: 5px")
             top.add_border()

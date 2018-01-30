@@ -27,16 +27,16 @@ from tactic.ui.common import BaseRefreshWdg
 
 class SetupManagerWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             "error": "Any error that may exists"
         }
 
-    def init(my):
+    def init(self):
         pass
  
 
-    def get_display(my):
+    def get_display(self):
         try:
             cmd = DatabaseManagerCbk()
             cmd.execute()
@@ -53,7 +53,7 @@ class SetupManagerWdg(BaseRefreshWdg):
         if not security.is_logged_in():
             # if there is no database connection, then a user must login as
             # admin 
-            div.add( my.get_login_wdg() )
+            div.add( self.get_login_wdg() )
             return div
 
         #security = Environment.get_security().get_login()
@@ -82,7 +82,7 @@ class SetupManagerWdg(BaseRefreshWdg):
         content.add("<br/>")
         
         if not error:
-            error = my.kwargs.get("error")
+            error = self.kwargs.get("error")
         if error:
             error_div = DivWdg()
             error_div.add_style("border: solid 1px #000")
@@ -177,7 +177,7 @@ class SetupManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_login_wdg(my):
+    def get_login_wdg(self):
         from pyasm.widget import WebLoginWdg, BottomWdg
         widget = WebLoginWdg()
         return widget
@@ -189,7 +189,7 @@ class SetupManagerWdg(BaseRefreshWdg):
 
 class DatabaseManagerCbk(object):
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
 
         xml_string = Config.get_xml_data().to_string()
@@ -201,7 +201,7 @@ class DatabaseManagerCbk(object):
             is_config_key = key.find("/") != -1
 
             if key == "database/password":
-                my.handle_password()
+                self.handle_password()
 
             elif is_config_key:
                 module_name, key = key.split("/")
@@ -213,7 +213,7 @@ class DatabaseManagerCbk(object):
         if xml_string2 != xml_string:
             Config.save_config()
 
-    def handle_password(my):
+    def handle_password(self):
 
         web = WebContainer.get_web()
         first = web.get_form_value("database/password")
@@ -238,7 +238,7 @@ class DatabaseManagerCbk(object):
 class DatabaseErrorWdg(Widget):
 
     LOGIN_MSG = 'login_message'
-    def get_display(my):
+    def get_display(self):
 
         
         div = DivWdg()
@@ -265,7 +265,7 @@ class DatabaseErrorWdg(Widget):
         error_div.add("Databsae Error")
         table.add_cell( error_div)
 
-        error = my.get_error()
+        error = self.get_error()
         table.add_row()
         td = table.add_cell( "<b>%s</b>" % error )
         td.add_style("padding: 5px 20px 5px 20px")
@@ -280,6 +280,6 @@ class DatabaseErrorWdg(Widget):
 
 
 
-    def get_error(my):
+    def get_error(self):
         return "ERROR: Lost connection to the database"
 

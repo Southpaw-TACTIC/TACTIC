@@ -28,7 +28,7 @@ class ResetPasswordWdg(BaseRefreshWdg):
     MSG = 'reset_msg'
     RESET_MSG = 'Reset completed.'
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
@@ -102,7 +102,7 @@ class ResetPasswordWdg(BaseRefreshWdg):
 
         div.add( HtmlElement.spacer_div(1,14) )
         div.add(table2)
-        #div.add(HiddenWdg(my.LOGIN_MSG))
+        #div.add(HiddenWdg(self.LOGIN_MSG))
 
         #box.add(script)
 
@@ -123,10 +123,10 @@ class ResetPasswordWdg(BaseRefreshWdg):
 
 class ResetPasswordCmd(Command):
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
-        my.login = web.get_form_value("login")
-        if my.login =='admin':
+        self.login = web.get_form_value("login")
+        if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value(ResetPasswordWdg.MSG, error_msg)
             raise TacticException(error_msg)
@@ -137,23 +137,23 @@ class ResetPasswordCmd(Command):
         return False
     is_undoable = classmethod(is_undoable)
               
-    def execute(my):
+    def execute(self):
         # Since this is not called with Command.execute_cmd
-        my.check()
+        self.check()
 
         web = WebContainer.get_web()
 
-        reset_on = my.kwargs.get('reset') == True
+        reset_on = self.kwargs.get('reset') == True
         if reset_on:
             security = WebContainer.get_security()
             #Batch()
-            login = Login.get_by_login(my.login, use_upn=True)
+            login = Login.get_by_login(self.login, use_upn=True)
             if not login:
-                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%my.login)
+                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
                 return
             email = login.get_value('email')
             if not email:
-                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%my.login)
+                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
                 return
 
         
@@ -192,8 +192,8 @@ class ResetPasswordCmd(Command):
 
                 
             # handle windows domains
-            #if my.domain:
-            #    my.login = "%s\\%s" % (my.domain, my.login)
+            #if self.domain:
+            #    self.login = "%s\\%s" % (self.domain, self.login)
 
             web.set_form_value(ResetPasswordWdg.MSG, msg)
 

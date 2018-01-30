@@ -35,22 +35,22 @@ class AggregateWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.search_type = my.kwargs.get('search_type')
-        my.element_name = my.kwargs.get('element_name')
-        assert my.search_type
-        assert my.element_name
+        self.search_type = self.kwargs.get('search_type')
+        self.element_name = self.kwargs.get('element_name')
+        assert self.search_type
+        assert self.element_name
 
         class_name = 'tactic.ui.app.aggregate_wdg.AggregateCmd'
         interval = 120
         priority = None
 
-        if my.kwargs.get('is_refresh'):
+        if self.kwargs.get('is_refresh'):
             user = Environment.get_user_name()
 
             # these interval jobs need to have a specific code
-            code = "aggregate|%s|%s" % (my.search_type, my.element_name)
+            code = "aggregate|%s|%s" % (self.search_type, self.element_name)
 
             # check to see if the job exists
             #job = Search.get_by_code("sthpw/queue", code)
@@ -62,7 +62,7 @@ class AggregateWdg(BaseRefreshWdg):
                 job.set_value("project_code", Project.get_project_code() )
                 job.set_value("class_name", class_name)
                 job.set_value("command", class_name)
-                job.set_value("serialized", str(my.kwargs) )
+                job.set_value("serialized", str(self.kwargs) )
                 job.set_value("interval", 120)
                 job.set_value("state", 'pending')
                 job.set_value("queue", 'interval')
@@ -73,13 +73,13 @@ class AggregateWdg(BaseRefreshWdg):
 
 
 
-        my.view = my.kwargs.get('view')
-        if not my.view:
-            my.view = 'definition'
+        self.view = self.kwargs.get('view')
+        if not self.view:
+            self.view = 'definition'
 
         
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         action_div = DivWdg()
         top.add(action_div)
@@ -160,7 +160,7 @@ class AggregateWdg(BaseRefreshWdg):
 
 
         '''
-        cmd = AggregateCmd(**my.kwargs)
+        cmd = AggregateCmd(**self.kwargs)
 
         print "registering scheduled task"
         scheduler = Scheduler.get()
@@ -184,17 +184,17 @@ class AggregateWdg(BaseRefreshWdg):
 from pyasm.command import Command
 class AggregateRegisterCmd(Command):
 
-    def execute(my):
-        my.search_type = my.kwargs.get("search_type")
-        my.element_name = my.kwargs.get("element_name")
-        assert my.search_type
-        assert my.element_name
+    def execute(self):
+        self.search_type = self.kwargs.get("search_type")
+        self.element_name = self.kwargs.get("element_name")
+        assert self.search_type
+        assert self.element_name
 
-        interval = my.kwargs.get('interval')
+        interval = self.kwargs.get('interval')
         if not interval:
             interval = 120
 
-        data_type = my.kwargs.get('data_type')
+        data_type = self.kwargs.get('data_type')
         if not data_type:
             data_type = 'float'
 
@@ -204,7 +204,7 @@ class AggregateRegisterCmd(Command):
         user = Environment.get_user_name()
 
         # these interval jobs need to have a specific code
-        code = "aggregate|%s|%s" % (my.search_type, my.element_name)
+        code = "aggregate|%s|%s" % (self.search_type, self.element_name)
 
         # check to see if the job exists
         job = Search.get_by_code("sthpw/queue", code)
@@ -229,25 +229,25 @@ class AggregateRegisterCmd(Command):
             # add a column to the table
             from pyasm.command import ColumnAddCmd
             from pyasm.search import AlterTable
-            column_name = my.element_name
-            cmd = ColumnAddCmd(my.search_type, column_name, data_type)
+            column_name = self.element_name
+            cmd = ColumnAddCmd(self.search_type, column_name, data_type)
             cmd.execute()
 
             # modify the table
-            #alter = AlterTable(my.search_type)
-            #alter.modify(my.search_type, data_type)
+            #alter = AlterTable(self.search_type)
+            #alter.modify(self.search_type, data_type)
             #print alter.get_statements()
 
 
-        job.set_value("serialized", str(my.kwargs) )
+        job.set_value("serialized", str(self.kwargs) )
         job.set_value("interval", interval)
         job.commit()
 
 
 
 #class AggregateRefreshTask(SchedulerTask):
-#    def execute(my):
-#        cmd = my.kwargs.get("command")
+#    def execute(self):
+#        cmd = self.kwargs.get("command")
 #        Command.execute_cmd(cmd)
 
 
@@ -263,25 +263,25 @@ class AggregateCmd(Command):
     }
 
 
-    def get_title(my):
+    def get_title(self):
         return "Aggregate Calculation"
 
 
-    def execute(my):
+    def execute(self):
 
-        my.search_type = my.kwargs.get('search_type')
-        my.element_name = my.kwargs.get('element_name')
-        #print "Calculating aggregate: ", my.search_type, my.element_name
+        self.search_type = self.kwargs.get('search_type')
+        self.element_name = self.kwargs.get('element_name')
+        #print "Calculating aggregate: ", self.search_type, self.element_name
 
-        my.view = my.kwargs.get('view')
-        if not my.view:
-            my.view = 'definition'
+        self.view = self.kwargs.get('view')
+        if not self.view:
+            self.view = 'definition'
 
-        config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
-        widget = config.get_display_widget(my.element_name)
+        config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
+        widget = config.get_display_widget(self.element_name)
 
         # calculate all of the values
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         sobjects = search.get_sobjects()
         widget.set_sobjects(sobjects)
         widget.kwargs['use_cache'] = "false"
@@ -297,9 +297,9 @@ class AggregateCmd(Command):
             # c_element_name
             #
             # this_month -> c_this_month
-            #column = "c_%s" % my.element_name
+            #column = "c_%s" % self.element_name
             #sobject.set_value(column, value)
-            sobject.set_value(my.element_name, value)
+            sobject.set_value(self.element_name, value)
             sobject.commit()
 
 

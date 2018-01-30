@@ -41,30 +41,30 @@ class ChartBuilderWdg(BaseRefreshWdg):
     'search_keys': 'list of search keys to display'
     }
 
-    def get_display(my):
+    def get_display(self):
 
-        data = my.kwargs.get('kwargs')
+        data = self.kwargs.get('kwargs')
         if data:
             data = jsonloads(data)
-            my.kwargs.update(data)
+            self.kwargs.update(data)
 
 
-        my.search_type = my.kwargs.get("search_type")
+        self.search_type = self.kwargs.get("search_type")
 
-        my.x_axis = my.kwargs.get("x_axis")
-        if not my.x_axis:
-            my.x_axis = 'code'
+        self.x_axis = self.kwargs.get("x_axis")
+        if not self.x_axis:
+            self.x_axis = 'code'
 
-        my.y_axis = my.kwargs.get("y_axis")
-        if type(my.y_axis) == types.ListType:
-            my.y_axis = "|".join( my.y_axis )
+        self.y_axis = self.kwargs.get("y_axis")
+        if type(self.y_axis) == types.ListType:
+            self.y_axis = "|".join( self.y_axis )
 
-        my.chart_type = my.kwargs.get("chart_type")
-        if not my.chart_type:
-            my.chart_type = 'bar'
+        self.chart_type = self.kwargs.get("chart_type")
+        if not self.chart_type:
+            self.chart_type = 'bar'
 
         # get any search keys if any are passed in
-        my.search_keys = my.kwargs.get("search_keys")
+        self.search_keys = self.kwargs.get("search_keys")
 
 
         top = DivWdg()
@@ -135,7 +135,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         search_type_div = DivWdg()
         search_type_select = TextWdg("search_type")
-        search_type_select.set_value(my.search_type)
+        search_type_select.set_value(self.search_type)
         #search_type_select.set_option("values", search_types)
         search_type_div.add(search_type_select)
         table.add_cell(search_type_div)
@@ -148,8 +148,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
         #type_div.add_style("padding: 3px")
         type_select = SelectWdg("chart_type")
         type_select.set_option("values", "line|bar|area")
-        if my.chart_type:
-            type_select.set_value(my.chart_type)
+        if self.chart_type:
+            type_select.set_value(self.chart_type)
         type_div.add(type_select)
         table.add_cell(type_div)
 
@@ -173,15 +173,15 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         y_axis_div = DivWdg()
         #y_axis_text = TextWdg("y_axis")
-        #if my.y_axis:
-        #    y_axis_text.set_value(my.y_axis)
+        #if self.y_axis:
+        #    y_axis_text.set_value(self.y_axis)
         #y_axis_div.add(y_axis_text)
         td = table.add_cell(y_axis_div)
 
         # add in a list of entries
         from tactic.ui.container import DynamicListWdg
         list_wdg = DynamicListWdg()
-        for value in my.y_axis.split("|"):
+        for value in self.y_axis.split("|"):
             item = TextWdg("y_axis")
             item.set_value(value, set_form_value=False)
             list_wdg.add_item(item)
@@ -247,11 +247,11 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         width = '600px'
         kwargs = {
-            'y_axis': my.y_axis,
-            'chart_type': my.chart_type,
-            'search_type': my.search_type,
+            'y_axis': self.y_axis,
+            'chart_type': self.chart_type,
+            'search_type': self.search_type,
             'width': width,
-            'search_keys': my.search_keys
+            'search_keys': self.search_keys
         }
 
         chart_div = DivWdg()

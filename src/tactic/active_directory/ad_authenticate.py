@@ -37,22 +37,22 @@ BASE_DIR = "%s/src/tactic/active_directory" % INSTALL_DIR
 class ADAuthenticate(Authenticate):
     '''Test authenticate mechanism which caches user info'''
 
-    def __init__(my):
-        my.ad_exists = True
+    def __init__(self):
+        self.ad_exists = True
         if os.name != 'nt':
-            my.ad_exists = False
+            self.ad_exists = False
 
-        my.groups = set()
+        self.groups = set()
 
-        my.data = {}
-        my.tactic_groups = []
+        self.data = {}
+        self.tactic_groups = []
 
 
-    def get_mode(my):
+    def get_mode(self):
         return 'cache'
 
 
-    def verify(my, login_name, password):
+    def verify(self, login_name, password):
             
         if login_name.find("\\") != -1:
             domain, base_login_name = login_name.split("\\")
@@ -86,7 +86,7 @@ class ADAuthenticate(Authenticate):
 
 
         # skip authentication if ad does not exist
-        if not my.ad_exists:
+        if not self.ad_exists:
             print "WARNING: Active directory does not exist ... skipping verify"
             return True
 
@@ -115,7 +115,7 @@ class ADAuthenticate(Authenticate):
 
         # preload data for further use later with original full login_name
         if is_logged_in:
-            my.load_user_data(base_login_name, domain)
+            self.load_user_data(base_login_name, domain)
         else:
             # If AD authentication fails, attempt login via Tactic database+
             # (Only allow login for external users)
@@ -130,7 +130,7 @@ class ADAuthenticate(Authenticate):
         return is_logged_in
 
 
-    def get_user_mapping(my):
+    def get_user_mapping(self):
         '''returns a dictionary of the mappings between AD attributes to
         login table attributes'''
         # NOTE: ensure this syncs up with the map in get_user_info() 
@@ -154,7 +154,7 @@ class ADAuthenticate(Authenticate):
         return attrs_map
 
 
-    def get_group_mapping(my):
+    def get_group_mapping(self):
         group_attrs_map = {
             'dn':               'dn',
             'name':             'name',
@@ -162,25 +162,25 @@ class ADAuthenticate(Authenticate):
         return group_attrs_map
 
 
-    def get_tactic_license_type(my):
+    def get_tactic_license_type(self):
         '''determines from AD what license a particular user is entitled
         to'''
         key = 'tacticLicenseType'
-        licence_type = my.data.get(key)
+        licence_type = self.data.get(key)
         if not license_type:
             return False
         else:
             return True
 
 
-    def get_default_license_type(my):
+    def get_default_license_type(self):
         license_type = Config.get_value("active_directory", "default_license_type")
         if not license_type:
             license_type = 'user'
         return license_type
 
 
-    def get_default_groups(my):
+    def get_default_groups(self):
         groups = Config.get_value("active_directory", "default_groups")
         if not groups:
             groups = []
@@ -191,42 +191,42 @@ class ADAuthenticate(Authenticate):
 
 
 
-    def get_user_data(my, key=None):
+    def get_user_data(self, key=None):
         if key:
-            return my.data.get(key)
+            return self.data.get(key)
         else:
-            return my.data
+            return self.data
 
 
-    def load_user_data(my, login_name, domain=None):
+    def load_user_data(self, login_name, domain=None):
         '''get user data from active directory'''
 
         # get all of the tactic groups
-        my.tactic_groups = Search.eval("@SOBJECT(sthpw/login_group)")
+        self.tactic_groups = Search.eval("@SOBJECT(sthpw/login_group)")
 
         # get the mappings
-        attrs_map = my.get_user_mapping()
-        group_attrs_map = my.get_group_mapping()
+        attrs_map = self.get_user_mapping()
+        group_attrs_map = self.get_group_mapping()
 
-        if my.ad_exists:
-            my.data = my.get_info_from_ad(login_name, attrs_map, domain=domain)
+        if self.ad_exists:
+            self.data = self.get_info_from_ad(login_name, attrs_map, domain=domain)
         else:
             #group_path = "%s/AD_group_export.ldif" % BASE_DIR
-            #my.group_data = my.get_info_from_file(login_name, group_attrs_map, group_path)
+            #self.group_data = self.get_info_from_file(login_name, group_attrs_map, group_path)
             path = "%s/AD_user_export.ldif" % BASE_DIR
-            my.data = my.get_info_from_file(attrs_map, path)
+            self.data = self.get_info_from_file(attrs_map, path)
 
-        if not my.data.get('sAMAccountName'):
+        if not self.data.get('sAMAccountName'):
             raise SecurityException("Could not get info from Active Directory for login [%s]. You may have selected the wrong domain." % login_name)
-        return my.data
+        return self.data
 
 
 
-    def add_user_info(my, login, password):
+    def add_user_info(self, login, password):
         ''' sets all the information about the user'''
 
         login_name = login.get_value("login")
-        data = my.data
+        data = self.data
 
 
         # split up display name into first and last name
@@ -273,14 +273,14 @@ class ADAuthenticate(Authenticate):
 
         handle_groups = Config.get_value("active_directory", "handle_groups")
         if handle_groups == "false":
-            my.add_default_group(login)
+            self.add_default_group(login)
         else:
             # add all of the groups
-            my.add_group_info(login)
+            self.add_group_info(login)
 
 
 
-    def get_info_from_ad(my, login_name, attrs_map, domain=None):
+    def get_info_from_ad(self, login_name, attrs_map, domain=None):
 
         data = {}
         if login_name == 'admin':
@@ -307,7 +307,7 @@ class ADAuthenticate(Authenticate):
             output = Popen( cmd, stdout=PIPE).communicate()[0]
             import StringIO
             output = StringIO.StringIO(output)
-            data = my.get_info_from_file(attrs_map, output)
+            data = self.get_info_from_file(attrs_map, output)
             
             # get the license type from active directory
             license_type = data.get('tacticLicenseType')
@@ -317,8 +317,8 @@ class ADAuthenticate(Authenticate):
                 # FIXME: this logic is questionable.
                 # if the user has no defined groups in Active Directory, then
                 # it should use the default license type.
-                if not my.groups:
-                    license_type = my.get_default_license_type()
+                if not self.groups:
+                    license_type = self.get_default_license_type()
                     data['license_type'] = license_type
                 else:
                     data['license_type'] = "user"
@@ -331,7 +331,7 @@ class ADAuthenticate(Authenticate):
 
 
 
-    def get_info_from_file(my, attrs_map, path):
+    def get_info_from_file(self, attrs_map, path):
         '''for testing purposes'''
 
         data = {}
@@ -379,7 +379,7 @@ class ADAuthenticate(Authenticate):
             name, value = line.split(": ", 1)
 
             if name == 'memberOf':
-                my.handle_group(value)
+                self.handle_group(value)
                 continue
 
             attr_name = attrs_map.get(name)
@@ -396,8 +396,8 @@ class ADAuthenticate(Authenticate):
             # FIXME: this logic is questionable.
             # if the user has no defined groups in Active Directory, then
             # it should use the default license type.
-            if not my.groups:
-                license_type = my.get_default_license_type()
+            if not self.groups:
+                license_type = self.get_default_license_type()
                 data['license_type'] = license_type
             else:
                 data['license_type'] = "user"
@@ -407,7 +407,7 @@ class ADAuthenticate(Authenticate):
 
 
 
-    def handle_group(my, value):
+    def handle_group(self, value):
 		
         # some values have commas in them.
         value = value.replace("\\,", "|||")
@@ -425,13 +425,13 @@ class ADAuthenticate(Authenticate):
         # optional ad_login_group can record the actual group name in AD
         if "ad_login_group" in columns:
             mapping_col = "ad_login_group"
-            for x in my.tactic_groups:
+            for x in self.tactic_groups:
                 value = x.get_value(mapping_col)
                 if value:
                     group_dict[value] = x
 
         mapping_col = "login_group"
-        for x in my.tactic_groups:
+        for x in self.tactic_groups:
             value = x.get_value(mapping_col)
             if value:
                 group_dict[value] = x
@@ -439,21 +439,21 @@ class ADAuthenticate(Authenticate):
 
         # make sure the groups from AD are in the defined tactic groups
         if ad_group_name in group_dict:
-            my.groups.add(group_dict[ad_group_name])
+            self.groups.add(group_dict[ad_group_name])
 
 
 
-    def add_group_info(my, user):
+    def add_group_info(self, user):
         '''add the user to a specified group'''
-        if not my.groups:
-            default_groups = my.get_default_groups()
-            my.groups.update(default_groups)
+        if not self.groups:
+            default_groups = self.get_default_groups()
+            self.groups.update(default_groups)
 
 
         # add a group
-        skipped_connects = user.remove_all_groups(except_list=my.groups)
+        skipped_connects = user.remove_all_groups(except_list=self.groups)
         skipped_group_names = [ x.get_value('login_group') for x in skipped_connects ]
-        for group in my.groups:
+        for group in self.groups:
             #print "user: ", user.get_value("login")
             if not isinstance(group, basestring): 
                 group_name = group.get_value('login_group')
@@ -464,9 +464,9 @@ class ADAuthenticate(Authenticate):
                 continue
             user.add_to_group(group)
 
-    def add_default_group(my, user):
+    def add_default_group(self, user):
         '''add the user to the default group only if he is groupless'''
-        default_groups = my.get_default_groups()
+        default_groups = self.get_default_groups()
         user_name = user.get_login()
         login_in_groups = LoginInGroup.get_by_login_name(user_name)
 

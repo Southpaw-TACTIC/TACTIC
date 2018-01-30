@@ -31,10 +31,10 @@ from tactic.ui.widget import FileSelectorWdg
 
 class ScmPublishWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        my.sobject = my.kwargs.get("sobject")
-        search_key = my.sobject.get_search_key()
+        self.sobject = self.kwargs.get("sobject")
+        search_key = self.sobject.get_search_key()
 
         top = DivWdg()
         top.add_class("spt_checkin_publish")
@@ -97,11 +97,11 @@ class ScmPublishWdg(BaseRefreshWdg):
         button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
         top.add(button)
 
-        my.repo_type = 'perforce'
-        if my.repo_type == 'perforce':
+        self.repo_type = 'perforce'
+        if self.repo_type == 'perforce':
 
             # the depot is set per project (unless overridden)
-            project = my.sobject.get_project()
+            project = self.sobject.get_project()
             depot = project.get_value("location", no_exception=True)
             if not depot:
                 depot = project.get_code()
@@ -267,12 +267,12 @@ class ScmPublishWdg(BaseRefreshWdg):
 
 class ScmFileSelectorWdg(FileSelectorWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        my.search_key = my.kwargs.get("search_key")
-        my.process = my.kwargs.get("process")
-        my.sobject = Search.get_by_search_key(my.search_key)
-        my.pipeline_code = my.kwargs.get("pipeline_code")
+        self.search_key = self.kwargs.get("search_key")
+        self.process = self.kwargs.get("process")
+        self.sobject = Search.get_by_search_key(self.search_key)
+        self.pipeline_code = self.kwargs.get("pipeline_code")
 
         top = DivWdg()
         top.add_class("spt_file_selector")
@@ -328,7 +328,7 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         password = ""
         port = ""
 
-        project = my.sobject.get_project()
+        project = self.sobject.get_project()
         depot = project.get_value("location", no_exception=True)
         if not depot:
             depot = ""
@@ -378,15 +378,15 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         button = ButtonNewWdg(title="Check-out", icon=IconWdg.CHECK_OUT, long=False)
         button_row.add(button)
 
-        my.sandbox_dir = my.kwargs.get("sandbox_dir")
+        self.sandbox_dir = self.kwargs.get("sandbox_dir")
 
 
 
         # what are we trying to do here???
-        #my.root_sandbox_dir = Environment.get_sandbox_dir()
-        #project = my.sobject.get_project()
-        #my.root_sandbox_dir = "%s/%s" % (my.root_sandbox_dir, project.get_code())
-        #repo_dir = my.sandbox_dir.replace("%s/" % my.root_sandbox_dir, "")
+        #self.root_sandbox_dir = Environment.get_sandbox_dir()
+        #project = self.sobject.get_project()
+        #self.root_sandbox_dir = "%s/%s" % (self.root_sandbox_dir, project.get_code())
+        #repo_dir = self.sandbox_dir.replace("%s/" % self.root_sandbox_dir, "")
         #repo_dir = "%s/%s" % (project.get_code(), repo_dir)
 
 
@@ -396,9 +396,9 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         # the relative path to the root.  The following removes
         # the root of the sandbox folder assuming that this is mapped
         # to the base of the depot
-        my.root_sandbox_dir = Environment.get_sandbox_dir()
-        repo_dir = my.sandbox_dir
-        repo_dir = my.sandbox_dir.replace("%s/" % my.root_sandbox_dir, "")
+        self.root_sandbox_dir = Environment.get_sandbox_dir()
+        repo_dir = self.sandbox_dir
+        repo_dir = self.sandbox_dir.replace("%s/" % self.root_sandbox_dir, "")
 
 
 
@@ -595,7 +595,7 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.sandbox_dir,
+        'sandbox_dir': self.sandbox_dir,
         'cbjs_action': '''
         var path = bvr.sandbox_dir + "/" + "new_text_file.txt";
         var env = spt.Environment.get();
@@ -621,8 +621,8 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.sandbox_dir,
-        'process': my.process,
+        'sandbox_dir': self.sandbox_dir,
+        'process': self.process,
         'script_path': script_path,
         'cbjs_action': '''
         var script = spt.CustomProject.get_script_by_path(bvr.script_path);
@@ -646,7 +646,7 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.sandbox_dir,
+        'sandbox_dir': self.sandbox_dir,
         'template_path': template_path,
         'cbjs_action': '''
         var path = bvr.sandbox_dir + "/" + "_template.zip";
@@ -682,7 +682,7 @@ class ScmFileSelectorWdg(FileSelectorWdg):
 
         behavior = {
         'type': 'click_up',
-        'base_dir': my.sandbox_dir,
+        'base_dir': self.sandbox_dir,
         'cbjs_action': '''
             var current_dir = bvr.base_dir;
             var is_sandbox = false;
@@ -698,16 +698,16 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         list_wdg.add(button_row)
         button_row.add_style("float: right")
 
-        #button = SandboxButtonWdg(base_dir=my.sandbox_dir, process=my.process)
+        #button = SandboxButtonWdg(base_dir=self.sandbox_dir, process=self.process)
         #button_row.add(button)
 
-        #button = CheckoutButtonWdg(base_dir=my.sandbox_dir, sobject=my.sobject, proces=my.process)
+        #button = CheckoutButtonWdg(base_dir=self.sandbox_dir, sobject=self.sobject, proces=self.process)
         #button_row.add(button)
 
-        button = ExploreButtonWdg(base_dir=my.sandbox_dir)
+        button = ExploreButtonWdg(base_dir=self.sandbox_dir)
         button_row.add(button)
 
-        button = GearMenuButtonWdg(base_dir=my.sandbox_dir, process=my.process, pipeline_code=my.pipeline_code)
+        button = GearMenuButtonWdg(base_dir=self.sandbox_dir, process=self.process, pipeline_code=self.pipeline_code)
         button_row.add(button)
 
 
@@ -720,17 +720,17 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         top.add(content_div)
         content_div.add_class("spt_checkin_content")
 
-        content = my.get_content_wdg()
+        content = self.get_content_wdg()
         content_div.add(content)
 
         return top
 
 
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
         content = DivWdg()
 
-        project = my.sobject.get_project()
+        project = self.sobject.get_project()
         depot = project.get_value("location", no_exception=True)
         if not depot:
             depot = Config.get_value("perforce", "depot")
@@ -746,11 +746,11 @@ class ScmFileSelectorWdg(FileSelectorWdg):
         content.add_behavior( {
             'type': 'load',
             'folder_state': folder_state,
-            'search_key': my.search_key,
-            'sandbox_dir': my.sandbox_dir,
+            'search_key': self.search_key,
+            'sandbox_dir': self.sandbox_dir,
             'root_sandbox_dir': root_sandbox_dir,
             'depot': depot,
-            'process': my.process,
+            'process': self.process,
             'branch': branch,
             'cbjs_action': '''
 
@@ -849,30 +849,30 @@ spt.app_busy.hide();
 
 class ScmDirListWdg(CheckinDirListWdg):
 
-    def preprocess(my):
-        my.search_key = my.kwargs.get("search_key")
-        if my.search_key:
-            my.sobject = Search.get_by_search_key(my.search_key)
+    def preprocess(self):
+        self.search_key = self.kwargs.get("search_key")
+        if self.search_key:
+            self.sobject = Search.get_by_search_key(self.search_key)
         else:
-            my.sobject = None
+            self.sobject = None
 
-        my.path_info = my.kwargs.get("path_info")
-        my.paths = my.kwargs.get("paths")
-        if not my.paths:
-            my.paths = []
+        self.path_info = self.kwargs.get("path_info")
+        self.paths = self.kwargs.get("paths")
+        if not self.paths:
+            self.paths = []
 
-        sizes = my.kwargs.get("sizes")
+        sizes = self.kwargs.get("sizes")
 
-        my.sizes = {}
+        self.sizes = {}
 
-        #for path, size in zip(my.paths, sizes):
+        #for path, size in zip(self.paths, sizes):
         i = 0
-        for path in my.paths:
+        for path in self.paths:
             if path.endswith("/"):
                 continue
 
             size = sizes[i]
-            my.sizes[path] = size
+            self.sizes[path] = size
             i += 1
 
 
@@ -880,17 +880,17 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
 
-    def add_top_behaviors(my, top):
+    def add_top_behaviors(self, top):
 
-        super(ScmDirListWdg, my).add_top_behaviors(top)
+        super(ScmDirListWdg, self).add_top_behaviors(top)
 
         changelist = WidgetSettings.get_value_by_key("current_changelist")
 
         menu_item = MenuItem(type='title', label="Perforce Actions")
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
 
         menu_item = MenuItem(type='action', label='Add To Changelist [%s]' % changelist)
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'changelist': changelist,
@@ -918,7 +918,7 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
         menu_item = MenuItem(type='action', label='Make Editable')
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'changelist': changelist,
@@ -946,7 +946,7 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
         menu_item = MenuItem(type='action', label='Revert File')
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -967,7 +967,7 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
         menu_item = MenuItem(type='action', label='File Log')
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -992,11 +992,11 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
 
-    def handle_dir_div(my, dir_div, dirname, basename):
+    def handle_dir_div(self, dir_div, dirname, basename):
         dir_div.add("%s" % basename )
 
 
-    def handle_item_div(my, item_div, dirname, basename):
+    def handle_item_div(self, item_div, dirname, basename):
 
 
         table = Table()
@@ -1006,7 +1006,7 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
 
-        icon_string = my.get_file_icon(dirname, basename)
+        icon_string = self.get_file_icon(dirname, basename)
 
         icon_div = DivWdg()
         td = table.add_cell(icon_div)
@@ -1020,7 +1020,7 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
         path = "%s/%s" % (dirname, basename)
-        status = my.path_info.get(path)
+        status = self.path_info.get(path)
         margin_left = -16
         if status == 'same':
             check = IconWdg( "No Changes", IconWdg.CHECK, width=12 )
@@ -1069,7 +1069,7 @@ class ScmDirListWdg(CheckinDirListWdg):
         td = table.add_cell(size_div)
         td.add_style("width: 60px")
 
-        size = my.sizes.get(spath)
+        size = self.sizes.get(spath)
         if size is None or size == -1:
             size_div.add("-")
         else:
@@ -1081,8 +1081,8 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
         # FIXME: this still is needed right now, although really used.
-        my.subcontext_options = []
-        if not my.subcontext_options:
+        self.subcontext_options = []
+        if not self.subcontext_options:
             subcontext = TextWdg("subcontext")
             subcontext = HiddenWdg("subcontext")
             subcontext.add_class("spt_subcontext")
@@ -1092,7 +1092,7 @@ class ScmDirListWdg(CheckinDirListWdg):
             subcontext = SelectWdg("subcontext")
             subcontext = HiddenWdg("subcontext")
             subcontext.set_option("show_missing", False)
-            subcontext.set_option("values", my.subcontext_options)
+            subcontext.set_option("values", self.subcontext_options)
             subcontext.add_empty_option("----")
 
 
@@ -1111,8 +1111,8 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 
 
-    #def get_file_icon(my, dirname, basename):
-    #    if my.path_info.get("%s/%s" % (dirname, basename)) == 'none':
+    #def get_file_icon(self, dirname, basename):
+    #    if self.path_info.get("%s/%s" % (dirname, basename)) == 'none':
     #        return IconWdg.DETAILS
     #    else:
     #        return IconWdg.ERROR
@@ -1123,9 +1123,9 @@ class ScmDirListWdg(CheckinDirListWdg):
 
 class ScmSignInWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_sign_in_top")
 
 
@@ -1186,7 +1186,7 @@ class ScmSignInWdg(BaseRefreshWdg):
         td = table.add_cell("Workspace: ")
         td.add_style("vertical-align: top")
 
-        workspaces = my.kwargs.get("workspaces")
+        workspaces = self.kwargs.get("workspaces")
         td = table.add_cell()
         button = ActionButtonWdg(width='55', title="Lookup")
         td.add(button)
@@ -1529,11 +1529,11 @@ spt.scm.file_log = function(path) {
 
 class ScmCheckinHistoryWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        file_logs = my.kwargs.get("file_logs")
+        file_logs = self.kwargs.get("file_logs")
         print "file_logs: ", file_logs
 
         attrs = ['depot', 'action','change','client','desc','digest','fileSize','rev','time','type','user']
@@ -1546,11 +1546,11 @@ class ScmCheckinHistoryWdg(BaseRefreshWdg):
         file_path = file_log.get("depotFile")
 
         # find the number of revisions
-        my.sobjects = []
+        self.sobjects = []
         num_sobjects = len(file_log.get("action"))
         for i in range(0, num_sobjects):
             sobject = SearchType.create("sthpw/virtual")
-            my.sobjects.append(sobject)
+            self.sobjects.append(sobject)
             sobject.set_value("depotFile", file_path)
             sobject.set_value("id", i)
 
@@ -1560,12 +1560,12 @@ class ScmCheckinHistoryWdg(BaseRefreshWdg):
                 value = file_path.lstrip("//")
                 parts = value.split("/")
                 value = "//%s" % parts[0]
-                for sobject in my.sobjects:
+                for sobject in self.sobjects:
                     sobject.set_value(attr, value)
             else:
                 values = file_log.get(attr)
                 for i, value in enumerate(values):
-                    my.sobjects[i].set_value(attr, value)
+                    self.sobjects[i].set_value(attr, value)
 
         title_wdg = DivWdg()
         top.add(title_wdg)
@@ -1580,7 +1580,7 @@ class ScmCheckinHistoryWdg(BaseRefreshWdg):
 
         from tactic.ui.panel import FastTableLayoutWdg
         table = FastTableLayoutWdg(search_type="sthpw/virtual", view="table", element_names=attrs, show_shelf=False)
-        table.set_sobjects(my.sobjects)
+        table.set_sobjects(self.sobjects)
         top.add(table)
 
 
@@ -1593,8 +1593,8 @@ class ScmCheckinHistoryWdg(BaseRefreshWdg):
 
 class ScmScriptEdtior(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
 
 

@@ -14,35 +14,35 @@ class UploadMultipart(object):
     '''Handles the multipart content type for uploading files.  Will break up
     a file into chunks and upload separately for huge files'''
 
-    def __init__(my):
-        my.count = 0
-        my.chunk_size = 10*1024*1024
-        my.ticket = None
+    def __init__(self):
+        self.count = 0
+        self.chunk_size = 10*1024*1024
+        self.ticket = None
 
-        my.server_url = None
-
-
-    def set_upload_server(my, server_url):
-        my.server_url = server_url
+        self.server_url = None
 
 
-    def set_chunk_size(my, size):
+    def set_upload_server(self, server_url):
+        self.server_url = server_url
+
+
+    def set_chunk_size(self, size):
         '''set the chunk size of each upload'''
-        my.chunk_size = size
+        self.chunk_size = size
 
-    def set_ticket(my, ticket):
+    def set_ticket(self, ticket):
         '''set the ticket for security'''
-        my.ticket = ticket
+        self.ticket = ticket
 
 
-    def execute(my, path):
-        assert my.server_url
+    def execute(self, path):
+        assert self.server_url
 
         f = open(path, 'rb')
 
         count = 0
         while 1:
-            buffer = f.read(my.chunk_size)
+            buffer = f.read(self.chunk_size)
             if not buffer:
                 break
 
@@ -55,12 +55,12 @@ class UploadMultipart(object):
                 ("ajax", "true"),
                 ("action", action),
             ]
-            if my.ticket:
-                fields.append( ("ticket", my.ticket) )
-                fields.append( ("login_ticket", my.ticket) )
+            if self.ticket:
+                fields.append( ("ticket", self.ticket) )
+                fields.append( ("login_ticket", self.ticket) )
 
             files = [("file", path, buffer)]
-            (status, reason, content) = my.upload(my.server_url,fields,files)
+            (status, reason, content) = self.upload(self.server_url,fields,files)
 
             if reason != "OK":
                 raise Exception("Upload of '%s' failed: %s %s" % (path, status, reason) )
@@ -72,12 +72,12 @@ class UploadMultipart(object):
 
 
 
-    def upload(my, url, fields, files):
+    def upload(self, url, fields, files):
         try:
             while 1:
                 try:
                     urlparts = urlparse.urlsplit(url)
-                    ret_value = my.posturl(url,fields,files)
+                    ret_value = self.posturl(url,fields,files)
 
                     return ret_value
                 except socket.error, e:
@@ -85,31 +85,31 @@ class UploadMultipart(object):
 
                     # retry about 5 times
                     print "... trying again"
-                    my.count += 1
-                    if my.count == 5:
+                    self.count += 1
+                    if self.count == 5:
                         raise
-                    my.upload(url, fields, files)
+                    self.upload(url, fields, files)
         finally:
-            my.count = 0
+            self.count = 0
 
 
 
     # Repurposed from:
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/146306
 
-    def posturl(my, url, fields, files):
+    def posturl(self, url, fields, files):
         urlparts = urlparse.urlsplit(url)
-        return my.post_multipart(urlparts[1], urlparts[2], fields,files)
+        return self.post_multipart(urlparts[1], urlparts[2], fields,files)
                 
 
 
-    def post_multipart(my, host, selector, fields, files):
+    def post_multipart(self, host, selector, fields, files):
         '''
         Post fields and files to an http host as multipart/form-data.
         fields is a sequence of (name, value) elements for regular form fields.
         files is a sequence of (name, filename, value) elements for data to be uploaded as files.dirk.noteboom@sympatico.ca
         '''
-        content_type, body = my.encode_multipart_formdata(fields, files)
+        content_type, body = self.encode_multipart_formdata(fields, files)
         h = httplib.HTTPConnection(host)  
         headers = {
             'User-Agent': 'Tactic Client',
@@ -120,7 +120,7 @@ class UploadMultipart(object):
         return res.status, res.reason, res.read()    
 
 
-    def encode_multipart_formdata(my, fields, files):
+    def encode_multipart_formdata(self, fields, files):
         '''
         fields is a sequence of (name, value) elements for regular form fields.
         files is a sequence of (name, filename, value) elements for data to be uploaded as files.

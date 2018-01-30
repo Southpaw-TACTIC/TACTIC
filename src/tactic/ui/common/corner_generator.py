@@ -18,31 +18,31 @@ import sys, os
 
 
 class CornerGenerator(object):
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def execute(my):
+    def execute(self):
         from PIL import Image, ImageDraw, ImageFilter
 
-        color = my.kwargs.get("color")
+        color = self.kwargs.get("color")
         if not color:
             color = '#FFF'
 
         if not color.startswith("#"):
             color = "#%s" % color
 
-        basedir = my.kwargs.get("basedir")
+        basedir = self.kwargs.get("basedir")
         if not basedir:
             basedir = '.'
         else:
             if not os.path.exists(basedir):
                 os.makedirs(basedir)
 
-        basename = my.kwargs.get("basename")
+        basename = self.kwargs.get("basename")
         if not basename:
             basename = 'border'
 
-        size = my.kwargs.get("size")
+        size = self.kwargs.get("size")
         if not size:
             size = 10
 

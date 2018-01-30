@@ -80,134 +80,134 @@ class CustomLayoutWdg(BaseRefreshWdg):
     }
 
 
-    def __init__(my, **kwargs):
-        super(CustomLayoutWdg, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        super(CustomLayoutWdg, self).__init__(**kwargs)
 
 
-    def init(my):
-        my.server = TacticServerStub.get(protocol='local')
+    def init(self):
+        self.server = TacticServerStub.get(protocol='local')
 
-        sobjects_expr = my.kwargs.get("sobjects_expr")
+        sobjects_expr = self.kwargs.get("sobjects_expr")
         if sobjects_expr:
-            my.sobjects = Search.eval(sobjects_expr)
+            self.sobjects = Search.eval(sobjects_expr)
 
-        my.data = {}
+        self.data = {}
 
         # NOTE: this is is for the FilterElement Functionality
-        my.show_title = True
+        self.show_title = True
 
-        my.layout_wdg = None
-        my.config = None
-        my.def_config = None
-        my.sobject_dicts = None
-        my.is_table_element = False
+        self.layout_wdg = None
+        self.config = None
+        self.def_config = None
+        self.sobject_dicts = None
+        self.is_table_element = False
 
-        my.sequence_data = []
+        self.sequence_data = []
 
 
-    def preprocess(my):
-        code = my.kwargs.get('data')
+    def preprocess(self):
+        code = self.kwargs.get('data')
         if not code:
-            my.data = {}
+            self.data = {}
             return
         
         # preprocess using mako
-        #include_mako = my.kwargs.get("include_mako")
+        #include_mako = self.kwargs.get("include_mako")
         #if not include_mako:
-        #    include_mako = my.view_attrs.get("include_mako")
+        #    include_mako = self.view_attrs.get("include_mako")
 
         from tactic.command import PythonCmd
         python_cmd = PythonCmd(code=code)
-        my.data = python_cmd.execute()
+        self.data = python_cmd.execute()
 
 
 
     # NOTE: this is so that a custom layout can be used as a filter ....
     # however, this is not ideal because a filter requires a number of
     # methods that should not be present in this class
-    def alter_search(my, search):
-        script_path = my.get_option("alter_search_script_path")
-        script_code = my.get_option("alter_search_script_code")
+    def alter_search(self, search):
+        script_path = self.get_option("alter_search_script_path")
+        script_code = self.get_option("alter_search_script_code")
 
         from tactic.command import PythonCmd
         if script_path:
-            cmd = PythonCmd(script_path=script_path, values=my.values, search=search, show_title=my.show_title)
+            cmd = PythonCmd(script_path=script_path, values=self.values, search=search, show_title=self.show_title)
         elif script_code:
-            cmd = PythonCmd(script_code=script_code, values=my.values, search=search, show_title=my.show_title)
+            cmd = PythonCmd(script_code=script_code, values=self.values, search=search, show_title=self.show_title)
 
         cmd.execute()
 
 
-    def set_values(my, values):
-        my.values = values
+    def set_values(self, values):
+        self.values = values
 
-    def set_show_title(my, flag):
-        my.show_title = flag
-
-
+    def set_show_title(self, flag):
+        self.show_title = flag
 
 
-    def get_display(my):
-        my.sobject = my.get_current_sobject()
-        if not my.sobject:
-            my.sobject = my.get_sobject_from_kwargs()
 
-        if my.sobject and my.sobject.is_insert():
+
+    def get_display(self):
+        self.sobject = self.get_current_sobject()
+        if not self.sobject:
+            self.sobject = self.get_sobject_from_kwargs()
+
+        if self.sobject and self.sobject.is_insert():
             return DivWdg()
 
 
 
-        if my.sobject:
-            my.search_key = SearchKey.get_by_sobject(my.sobject)
-            my.kwargs['search_key'] = my.search_key
+        if self.sobject:
+            self.search_key = SearchKey.get_by_sobject(self.sobject)
+            self.kwargs['search_key'] = self.search_key
 
         else:
-            my.search_key = my.kwargs.get('search_key')
+            self.search_key = self.kwargs.get('search_key')
 
 
-        html = my.kwargs.get('html')
+        html = self.kwargs.get('html')
         if not html:
             html = ""
 
         # DEPRECATED
-        my.state = my.kwargs.get("state")
-        my.state = BaseRefreshWdg.process_state(my.state)
-        if not my.state:
-            my.state = my.kwargs
-            my.state['search_key'] = my.search_key
+        self.state = self.kwargs.get("state")
+        self.state = BaseRefreshWdg.process_state(self.state)
+        if not self.state:
+            self.state = self.kwargs
+            self.state['search_key'] = self.search_key
 
 
 
-        my.view = my.kwargs.get('view')
-        my.view = my.view.replace("/", ".")
-        my.view_folder = ""
+        self.view = self.kwargs.get('view')
+        self.view = self.view.replace("/", ".")
+        self.view_folder = ""
 
-        if my.view.startswith("."):
-            my.view_folder = my.kwargs.get("__view_folder__")
-            if my.view_folder:
-                my.view = "%s%s" % (my.view_folder, my.view)
+        if self.view.startswith("."):
+            self.view_folder = self.kwargs.get("__view_folder__")
+            if self.view_folder:
+                self.view = "%s%s" % (self.view_folder, self.view)
 
-        parts = my.view.split(".")
-        my.view_folder = ".".join(parts[:-1])
+        parts = self.view.split(".")
+        self.view_folder = ".".join(parts[:-1])
 
 
 
-        if not my.view and not html:
+        if not self.view and not html:
             raise TacticException("No view defined in custom layout")
 
         # If html is not a string, then convert it?
         if not isinstance(html, basestring):
             html = str(html)
 
-        my.view_attrs = {}
+        self.view_attrs = {}
 
-        my.category = my.kwargs.get("category")
-        my.search_type = my.kwargs.get("search_type")
+        self.category = self.kwargs.get("category")
+        self.search_type = self.kwargs.get("search_type")
 
-        my.encoding = my.kwargs.get("encoding")
-        if not my.encoding:
-             my.encoding = 'utf-8'
-        my.plugin = None
+        self.encoding = self.kwargs.get("encoding")
+        if not self.encoding:
+             self.encoding = 'utf-8'
+        self.plugin = None
 
         xml = None
 
@@ -216,20 +216,20 @@ class CustomLayoutWdg(BaseRefreshWdg):
         config = None
         if not html:
 
-            if my.config != None:
-                config = my.config
+            if self.config != None:
+                config = self.config
             else:
-                config = my.kwargs.get("config")
+                config = self.kwargs.get("config")
                 if not config:
-                    config = my.get_config()
+                    config = self.get_config()
 
 
 
             if not config:
                 #div = DivWdg()
-                #div.add("No config defined for view [%s] for custom layout" % my.view)
+                #div.add("No config defined for view [%s] for custom layout" % self.view)
                 #return div
-                raise TacticException("No config defined for view [%s] for custom layout" % my.view)
+                raise TacticException("No config defined for view [%s] for custom layout" % self.view)
 
             if isinstance(config, WidgetDbConfig):
                 config_str = config.get_value("config")
@@ -238,12 +238,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             if config_str.startswith("<html>"):
                 html = config_str
-                my.def_config = None
+                self.def_config = None
             else:
                 xml = config.get_xml()
 
-                if my.def_config == None:
-                    my.def_config = my.get_def_config(xml)
+                if self.def_config == None:
+                    self.def_config = self.get_def_config(xml)
 
                 # get the view attributes
                 if isinstance(config, WidgetConfigView):
@@ -254,9 +254,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 if view_node is None:
                     div = DivWdg("No view node found in xml. Invalid XML entry found")
                     return div
-                my.view_attrs = xml.get_attributes(view_node)
+                self.view_attrs = xml.get_attributes(view_node)
 
-                nodes = xml.get_nodes("config/%s/html/*" % my.view)
+                nodes = xml.get_nodes("config/%s/html/*" % self.view)
                 if not nodes:
                     div = DivWdg("No definition found")
                     return div
@@ -303,41 +303,41 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 html = html.getvalue()
 
 
-        my.config = config
-        #my.def_config = config    # This is unnessary?
+        self.config = config
+        #self.def_config = config    # This is unnessary?
 
         # try to get the sobject if this is in a table element widget
-        if my.search_key:
+        if self.search_key:
             try:
                 # this will raise an exception if it is not in a table element
-                sobject = my.get_current_sobject()
+                sobject = self.get_current_sobject()
             except:
-                sobject = SearchKey.get_by_search_key(my.search_key)
+                sobject = SearchKey.get_by_search_key(self.search_key)
             sobjects = [sobject]
         else:
             try:
                 # this will raise an exception if it is not in a table element
-                sobject = my.get_current_sobject()
+                sobject = self.get_current_sobject()
                 if sobject:
                     sobjects = [sobject]
                 else:
                     sobjects = []
             except:
-                sobject = my.sobjects
+                sobject = self.sobjects
 
 
-        my.layout = my.get_layout_wdg()
+        self.layout = self.get_layout_wdg()
 
 
 
         # preprocess using mako
-        include_mako = my.kwargs.get("include_mako")
+        include_mako = self.kwargs.get("include_mako")
         if not include_mako:
-            include_mako = my.view_attrs.get("include_mako")
+            include_mako = self.view_attrs.get("include_mako")
 
 
         if xml:
-            mako_node = xml.get_node("config/%s/mako" % my.view)
+            mako_node = xml.get_node("config/%s/mako" % self.view)
             if mako_node is not None:
                 mako_str = xml.get_node_value(mako_node)
                 html = "<%%\n%s\n%%>\n%s" % (mako_str, html)
@@ -353,7 +353,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             html = html.replace("&lt;", "<")
             html = html.replace("&gt;", ">")
 
-            html = my.process_mako(html)
+            html = self.process_mako(html)
 
 
 
@@ -366,7 +366,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         for m in matches:
             full_expr = m.group()
             expr = m.groups()[0]
-            result = parser.eval(expr, sobjects, single=True, state=my.state)
+            result = parser.eval(expr, sobjects, single=True, state=self.state)
             if isinstance(result, basestring):
                 result = Common.process_unicode_string(result)
             else:
@@ -391,12 +391,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         # need a top widget that can be used to refresh
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_custom_top")
         top.add_class("spt_panel")
 
-        ignore_events = my.kwargs.get("ignore_events") in ['true', True]
+        ignore_events = self.kwargs.get("ignore_events") in ['true', True]
 
         if ignore_events:
             top.add_style("pointer-events: none")
@@ -409,25 +409,25 @@ class CustomLayoutWdg(BaseRefreshWdg):
         if ignore_events:
             content.add_style("pointer-events: none")
         top.add(content)
-        my.content = content
+        self.content = content
 
 
         is_test = Container.get("CustomLayout::is_test")
         if not is_test:
-            is_test = my.kwargs.get("is_test") in [True, 'true']
+            is_test = self.kwargs.get("is_test") in [True, 'true']
 
         if is_test:
             Container.put("CustomLayout::is_test", True)
-            my.top.add_style("margin: 0px 5px")
-            my.handle_is_test(content)
+            self.top.add_style("margin: 0px 5px")
+            self.handle_is_test(content)
 
 
 
-        html = my.replace_elements(html)
+        html = self.replace_elements(html)
         content.add(html)
 
         if xml:
-            my.add_behaviors(content, xml)
+            self.add_behaviors(content, xml)
 
 
         # remove all the extra palettes created
@@ -439,17 +439,17 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 break
 
             
-        if my.kwargs.get("is_top") in ['true', True]:
+        if self.kwargs.get("is_top") in ['true', True]:
             return html
 
-        elif my.kwargs.get("is_refresh"):
+        elif self.kwargs.get("is_refresh"):
             return content
         else:
             return top
 
 
 
-    def handle_is_test(my, content):
+    def handle_is_test(self, content):
 
         content.add_behavior( {
             'type': 'mouseover',
@@ -485,7 +485,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         div = DivWdg()
         content.add(div)
         div.add_style("position: absolute")
-        div.add("View: %s" % my.view)
+        div.add("View: %s" % self.view)
         div.add_class("spt_test")
         div.add_border()
         #div.set_box_shadow("1px 1px 1px 1px")
@@ -514,7 +514,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         # add in a context menu
-        menu = my.get_test_context_menu()
+        menu = self.get_test_context_menu()
         menus = [menu.get_data()]
         menus_in = {
             'TEST_CTX': menus,
@@ -524,7 +524,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_test_context_menu(my):
+    def get_test_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -537,7 +537,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'view': my.view,
+            'view': self.view,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_custom_top");
@@ -554,7 +554,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'view': my.view,
+            'view': self.view,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var popup_top = activator.getParent(".spt_popup");
@@ -573,7 +573,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'view': my.view,
+            'view': self.view,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var popup_top = activator.getParent(".spt_popup");
@@ -609,7 +609,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-    def process_mako(my, html):
+    def process_mako(self, html):
 
         from mako.template import Template
         from mako import exceptions
@@ -620,34 +620,34 @@ class CustomLayoutWdg(BaseRefreshWdg):
         html = html.replace("]]>", "")
         #html = html.decode('utf-8')
       
-        if my.encoding == 'ascii':
+        if self.encoding == 'ascii':
             template = Template(html)
         else:
-            template = Template(html, output_encoding=my.encoding, input_encoding=my.encoding)
+            template = Template(html, output_encoding=self.encoding, input_encoding=self.encoding)
 
         # get the api version of the sobject
-        if not my.is_table_element:
-            if my.sobject_dicts == None:
-                my.sobject_dicts = []
-                for sobject in my.sobjects:
+        if not self.is_table_element:
+            if self.sobject_dicts == None:
+                self.sobject_dicts = []
+                for sobject in self.sobjects:
                     sobject_dict = sobject.get_sobject_dict()
-                    my.sobject_dicts.append(sobject_dict)
+                    self.sobject_dicts.append(sobject_dict)
 
-        if my.sobject:
-            sobject = my.sobject.get_sobject_dict()
+        if self.sobject:
+            sobject = self.sobject.get_sobject_dict()
         else:
             sobject = {}
 
 
 
         # find out if there is a plugin associated with this
-        plugin = my.kwargs.get("plugin")
+        plugin = self.kwargs.get("plugin")
         if not plugin or plugin == '{}':
             plugin = {}
 
         """
-        if not plugin and isinstance(my.config, SObject):
-            plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
+        if not plugin and isinstance(self.config, SObject):
+            plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", self.config, single=True)
         """
 
         if plugin:
@@ -656,16 +656,16 @@ class CustomLayoutWdg(BaseRefreshWdg):
             else:
                 plugin = plugin.get_sobject_dict()
             plugin_code = plugin.get("code")
-            plugin_dir = my.server.get_plugin_dir(plugin)
+            plugin_dir = self.server.get_plugin_dir(plugin)
         else:
             plugin_code = ""
             plugin_dir = ""
             plugin = {}
-        my.kwargs['plugin_dir'] = plugin_dir
-        my.kwargs['plugin_code'] = plugin_code
+        self.kwargs['plugin_dir'] = plugin_dir
+        self.kwargs['plugin_code'] = plugin_code
 
         try:
-            html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, plugin=plugin, kwargs=my.kwargs)
+            html = template.render(server=self.server, search=Search, sobject=sobject, sobjects=self.sobject_dicts, data=self.data, plugin=plugin, kwargs=self.kwargs)
 
 
             # we have to replace all & signs to &amp; for it be proper html
@@ -675,25 +675,25 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
-                print("Error in view [%s]: " % my.view, exceptions.text_error_template().render())
+                print("Error in view [%s]: " % self.view, exceptions.text_error_template().render())
                 #html = exceptions.html_error_template().render(css=False)
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
                 return html
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
         '''required for BaseTableElementWdg used by fast table'''
         pass
 
 
-    def add_test(my, xml):
+    def add_test(self, xml):
         # add a test env in
-        text_node = xml.get_nodes("config/%s/test" % my.view)
+        text_node = xml.get_nodes("config/%s/test" % self.view)
 
 
 
 
-    def add_kwargs(my, widget, xml):
+    def add_kwargs(self, widget, xml):
         """
         ARGS_KEYS = {
         'category': {
@@ -721,16 +721,16 @@ class CustomLayoutWdg(BaseRefreshWdg):
         """
 
 
-        kwargs_nodes = xml.get_nodes("config/%s/kwargs/kwarg" % my.view)
+        kwargs_nodes = xml.get_nodes("config/%s/kwargs/kwarg" % self.view)
         for kwarg_node in kwargs_node:
             pass
 
 
 
 
-    def add_behaviors(my, widget, xml):
+    def add_behaviors(self, widget, xml):
 
-        behavior_nodes = xml.get_nodes("config/%s/behavior" % my.view)
+        behavior_nodes = xml.get_nodes("config/%s/behavior" % self.view)
 
         if behavior_nodes:
             hidden_div = DivWdg()
@@ -750,7 +750,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             # remove objects that cannot be json marshalled
-            view_kwargs = my.kwargs.copy()
+            view_kwargs = self.kwargs.copy()
             for key, value in view_kwargs.items():
                 try:
                     test = jsondumps(value)
@@ -798,22 +798,22 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
                     # add the kwargs to this so behaviors have access
                     bvr['kwargs'] = view_kwargs
-                    bvr['class_name'] = Common.get_full_class_name(my)
+                    bvr['class_name'] = Common.get_full_class_name(self)
 
                     if relay_class:
                         bvr['bvr_match_class'] = relay_class
                         if not bvr.get("type"):
                             bvr['type'] = 'mouseup'
-                        my.content.add_relay_behavior( bvr )
+                        self.content.add_relay_behavior( bvr )
 
                     elif bvr.get("type") == "smart_drag":
                         bvr['bvr_match_class'] = css_class
-                        my.content.add_behavior(bvr)
+                        self.content.add_behavior(bvr)
 
                     elif bvr.get("type") == "listen":
                         bvr['bvr_match_class'] = css_class
                         bvr['event_name'] = Xml.get_attribute(behavior_node,'event_name')
-                        my.content.add_behavior(bvr)
+                        self.content.add_behavior(bvr)
 
                     else:
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
@@ -828,24 +828,24 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     raise TacticException("Error parsing behavior [%s]" % behavior_str)
 
 
-    def get_config(my):
+    def get_config(self):
         config = None
-        config_xml = my.kwargs.get('config_xml')
+        config_xml = self.kwargs.get('config_xml')
         if config_xml:
-            config = WidgetConfig.get(xml=config_xml, view=my.view)
+            config = WidgetConfig.get(xml=config_xml, view=self.view)
             return config
 
 
         # this is the new preferred way of defining CustomLayoutWdg
         search = Search("config/widget_config")
-        if my.category:
-            search.add_filter("category", my.category)
+        if self.category:
+            search.add_filter("category", self.category)
         else:
             search.add_filter("category", 'CustomLayoutWdg')
-        if my.search_type:
-            search.add_filter("search_type", my.search_type)
+        if self.search_type:
+            search.add_filter("search_type", self.search_type)
 
-        search.add_filter("view", my.view)
+        search.add_filter("view", self.view)
 
         configs = search.get_sobjects()
 
@@ -860,7 +860,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             return config
 
         # if it is not defined in the database, look at a config file
-        includes = my.kwargs.get("include")
+        includes = self.kwargs.get("include")
         if includes:
             includes = includes.split("|")
 
@@ -871,31 +871,31 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     tmp_path = __file__
                     dir_name = os.path.dirname(tmp_path)
                     file_path ="%s/../config/%s" % (dir_name, include)
-                config = WidgetConfig.get(file_path=file_path, view=my.view)
-                if config and config.has_view(my.view):
+                config = WidgetConfig.get(file_path=file_path, view=self.view)
+                if config and config.has_view(self.view):
                     return config
 
         # deprecated approach, assuming a "CustomLayoutWdg" as search_type,
         # is deprecated
         if not config:
             search = Search("config/widget_config")
-            if my.category:
-                search.add_filter("category", my.category)
-            if my.search_type:
+            if self.category:
+                search.add_filter("category", self.category)
+            if self.search_type:
                 search.add_filter("search_type", "CustomLayoutWdg")
 
-            search.add_filter("view", my.view)
+            search.add_filter("view", self.view)
 
             config = search.get_sobject()
         
-        #if not config and my.search_type and my.view:
-        #    config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+        #if not config and self.search_type and self.view:
+        #    config = WidgetConfigView.get_by_search_type(self.search_type, self.view)
         # this is the new preferred way of defining CustomLayoutWdg
         # NOTE: this finds a definition where search type is not explicitly
         # given>
         if not config:
             search = Search("config/widget_config")
-            search.add_filter("view", my.view)
+            search.add_filter("view", self.view)
             search.add_filter("search_type", None)
             config = search.get_sobject()
 
@@ -904,20 +904,20 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_def_config(my, def_xml=None):
+    def get_def_config(self, def_xml=None):
         def_confg = None
 
-        my.def_view = my.kwargs.get('definition')
-        if my.def_view:
-            #raise TacticException("No definition view defined in custom layout with view [%s]" % my.view)
+        self.def_view = self.kwargs.get('definition')
+        if self.def_view:
+            #raise TacticException("No definition view defined in custom layout with view [%s]" % self.view)
 
-            my.search_type = "CustomLayoutWdg"
+            self.search_type = "CustomLayoutWdg"
             search = Search("config/widget_config")
-            search.add_filter("search_type", my.search_type)
-            search.add_filter("view", my.def_view)
+            search.add_filter("search_type", self.search_type)
+            search.add_filter("view", self.def_view)
             def_db_config = search.get_sobject()
             if not def_db_config:
-                raise TacticException("Definition config [%s] not defined" % my.def_view)
+                raise TacticException("Definition config [%s] not defined" % self.def_view)
             def_xml = def_db_config.get_xml()
             def_config = WidgetConfig.get("definition", xml=def_xml)
 
@@ -925,13 +925,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
         # also look inline to see if there are any definitions        
         if def_xml:
             # just use the passed in xml for a definition
-            def_config = WidgetConfig.get(my.view, xml=def_xml)
+            def_config = WidgetConfig.get(self.view, xml=def_xml)
 
 
         return def_config
 
    
-    def replace_elements(my, html_str):
+    def replace_elements(self, html_str):
 
         """
         # NOTE: this likely is a better way to extract elements, but still
@@ -946,7 +946,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             tmp_config = '''<config><tmp>%s</tmp></config>''' % full_line_str
 
             try:
-                element_wdg = my.get_element_wdg(xml, my.def_config)
+                element_wdg = self.get_element_wdg(xml, self.def_config)
                 element_html = element_wdg.get_buffer_display()
             except Exception as e:
                 from pyasm.widget import ExceptionWdg
@@ -1014,7 +1014,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     continue
 
 
-                element_wdg = my.get_element_wdg(xml, my.def_config)
+                element_wdg = self.get_element_wdg(xml, self.def_config)
                 if element_wdg:
                     element_html = element_wdg.get_buffer_display()
                 else:
@@ -1039,7 +1039,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if element_html:
                 html.writeln(element_html)
 
-        sequence_wdg = my.get_sequence_wdg()
+        sequence_wdg = self.get_sequence_wdg()
         html.writeln(sequence_wdg.get_buffer_display() )
         
 
@@ -1054,27 +1054,27 @@ class CustomLayoutWdg(BaseRefreshWdg):
     # as a table elementj
     # NOTE: Use tactic.ui.table.CustomLayoutElementWdg for adding custom layouts
     # to layouts
-    def set_parent_wdg(my, name):
+    def set_parent_wdg(self, name):
         pass
-    def is_in_column(my):
+    def is_in_column(self):
         return True
-    def is_groupable(my):
+    def is_groupable(self):
         return False
 
-    def set_layout_wdg(my, widget):
-        my.layout_wdg = widget
-    def get_layout_wdg(my):
-        return my.layout_wdg 
+    def set_layout_wdg(self, widget):
+        self.layout_wdg = widget
+    def get_layout_wdg(self):
+        return self.layout_wdg 
 
 
-    def get_title(my):
+    def get_title(self):
         '''Returns a widget containing the title to be displayed for this
         column'''
-        if my.title:
-            title = my.title
+        if self.title:
+            title = self.title
             return title
 
-        title = my.name
+        title = self.name
         if not title:
             title = ""
             return title
@@ -1083,57 +1083,57 @@ class CustomLayoutWdg(BaseRefreshWdg):
         return title
 
 
-    def get_value(my):
+    def get_value(self):
         return None
 
-    def get_text_value(my):
+    def get_text_value(self):
         '''for csv export'''
-        sobject = my.get_current_sobject()
-        text_expr = my.kwargs.get("text_value")
+        sobject = self.get_current_sobject()
+        text_expr = self.kwargs.get("text_value")
         text_expr = "@GET(.id)"
         if not text_expr:
             return ''
         value = Search.eval(text_expr, sobject, single=True)
         return value
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
-    def is_searchable(my):
+    def is_searchable(self):
         return False
-    def handle_th(my, th, xx=None):
+    def handle_th(self, th, xx=None):
         pass
-    def handle_td(my, td):
+    def handle_td(self, td):
         pass
-    def handle_tr(my, tr):
+    def handle_tr(self, tr):
         pass
-    def is_editable(my):
+    def is_editable(self):
         return False
-    def get_bottom_wdg(my):
+    def get_bottom_wdg(self):
         return None
-    def get_group_bottom_wdg(my, sobjects=None):
+    def get_group_bottom_wdg(self, sobjects=None):
         return None
-    def get_header_option_wdg(my):
+    def get_header_option_wdg(self):
         return None
-    def get_generator(my):
-        return my.generator_element
-    def set_generator(my, element_name):
-        my.generator_element = element_name
+    def get_generator(self):
+        return self.generator_element
+    def set_generator(self, element_name):
+        self.generator_element = element_name
 
     ## END TableElementWdg methods
 
  
 
-    def get_sequence_wdg(my):
+    def get_sequence_wdg(self):
 
         funcs = []
 
         div = DivWdg()
-        if not my.sequence_data:
+        if not self.sequence_data:
             return div
 
         div.add_behavior( {
             'type': 'load',
-            'data': my.sequence_data,
+            'data': self.sequence_data,
             'cbjs_action': '''
 
             var count = -1;
@@ -1166,7 +1166,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
  
 
 
-    def get_async_element_wdg(my, xml, element_name, load):
+    def get_async_element_wdg(self, xml, element_name, load):
 
         tmp_config = WidgetConfig.get('tmp', xml=xml)
         display_handler = tmp_config.get_display_handler(element_name)
@@ -1176,10 +1176,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
         unique_id = div.set_unique_id()
         div.add_class("spt_manual_load")
 
-        show_loading = my.kwargs.get("show_loading")
+        show_loading = self.kwargs.get("show_loading")
 
         if load == "sequence":
-            my.sequence_data.append( {
+            self.sequence_data.append( {
                 'class_name': display_handler,
                 'kwargs': display_options,
                 'unique_id': unique_id
@@ -1231,13 +1231,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_element_wdg(my, xml, def_config):
+    def get_element_wdg(self, xml, def_config):
 
         element_node = xml.get_node("config/tmp/element")
         attrs = Xml.get_attributes(element_node)
         element_name = attrs.get("name")
 
-        widget = my.get_widget(element_name)
+        widget = self.get_widget(element_name)
         if widget:
             return widget
 
@@ -1271,12 +1271,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             if type == "reference":
                 search_type = attrs.get("search_type")
-                my.config = WidgetConfigView.get_by_search_type(search_type, view)
+                self.config = WidgetConfigView.get_by_search_type(search_type, view)
                 # check if definition has no name.  Don't use element_name
                 if not attrs.get("name"):
                     return
 
-                element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
+                element_wdg = self.config.get_display_widget(element_name, extra_options=attrs)
                 container = DivWdg()
                 container.add(element_wdg)
                 return container
@@ -1287,7 +1287,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             # if no class name is defined and not view is defined look
             # at predefined elements
             if not view and not class_name:
-                element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
+                element_wdg = self.config.get_display_widget(element_name, extra_options=attrs)
                 container = DivWdg()
                 container.add(element_wdg)
                 return container
@@ -1315,7 +1315,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             return None
 
         elif load in ["async", "sequence","manual"]:
-            return my.get_async_element_wdg(xml, element_name, load)
+            return self.get_async_element_wdg(xml, element_name, load)
 
 
 
@@ -1325,8 +1325,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if view_node is not None:
                 view = xml.get_node_value(view_node)
                 if view.startswith("."):
-                    if my.view_folder:
-                        xml.set_node_value(view_node, "%s%s" %(my.view_folder,view))
+                    if self.view_folder:
+                        xml.set_node_value(view_node, "%s%s" %(self.view_folder,view))
             tmp_config = WidgetConfig.get('tmp', xml=xml)
             configs = []
             configs.append(tmp_config)
@@ -1335,21 +1335,21 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if def_config:
                 configs.append(def_config)
 
-            config = WidgetConfigView('CustomLayoutWdg', 'tmp', configs, state=my.state)
+            config = WidgetConfigView('CustomLayoutWdg', 'tmp', configs, state=self.state)
 
             # NOTE: this doesn't work too well when we go to an abasolute
             # view.
-            parent_view = my.kwargs.get("parent_view")
+            parent_view = self.kwargs.get("parent_view")
             if parent_view:
                 parent_view = parent_view.replace(".", "/")
-                parent_view = "%s/%s" % (parent_view, my.view)
+                parent_view = "%s/%s" % (parent_view, self.view)
             else:
-                parent_view = my.view
+                parent_view = self.view
 
             # NOTE: need some protection code for infinite loops
 
 
-            includes = my.kwargs.get("include")
+            includes = self.kwargs.get("include")
             extra_options = {"parent_view": parent_view}
             if includes:
                 extra_options['include'] = includes
@@ -1373,8 +1373,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             # make a provision if this custom widget is in a table
-            if my.layout:
-                sobject = my.get_current_sobject()
+            if self.layout:
+                sobject = self.get_current_sobject()
                 element_wdg.set_sobject(sobject)
 
 
@@ -1392,7 +1392,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_smart_header_context_menu_data(my):
+    def get_smart_header_context_menu_data(self):
         from pyasm.widget import IconWdg
         menu_data = { 'menu_tag_suffix': 'MAIN', 'width': 200 }
 
@@ -1463,14 +1463,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
 __all__.append("TestStateWdg")
 class TestStateWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        my.top.add(my.kwargs)
-        my.top.add("<hr/>")
-        if my.sobjects:
-            my.top.add(my.sobjects[0].get_code())
+    def get_display(self):
+        self.top.add(self.kwargs)
+        self.top.add("<hr/>")
+        if self.sobjects:
+            self.top.add(self.sobjects[0].get_code())
         else:
-            my.top.add("No sobjects")
-        return my.top
+            self.top.add("No sobjects")
+        return self.top
 
 
 
@@ -1478,7 +1478,7 @@ class TestStateWdg(BaseRefreshWdg):
 """
 class ContainerWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'inner_width': 'Inner width, sans rounded corner wrapper ... numeric value only',
             'inner_height': 'Inner height, sans rounded corner wrapper ... numeric value only',
@@ -1486,96 +1486,96 @@ class ContainerWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
+    def init(self):
 
-        my.top = DivWdg()
-        my.content_wdg = DivWdg()
+        self.top = DivWdg()
+        self.content_wdg = DivWdg()
 
         is_IE = WebContainer.get_web().is_IE()
 
         # get the width and height of the contents (the inner part of the container) ...
-        my.inner_width = my.kwargs.get('inner_width')
-        my.inner_height = my.kwargs.get('inner_height')
+        self.inner_width = self.kwargs.get('inner_width')
+        self.inner_height = self.kwargs.get('inner_height')
 
-        if my.inner_width:
-            my.inner_width = int(my.inner_width)
+        if self.inner_width:
+            self.inner_width = int(self.inner_width)
             if is_IE:
-                my.inner_width -= 20  # adjust for rounded corner wrapper
+                self.inner_width -= 20  # adjust for rounded corner wrapper
         else:
-            my.inner_width = 600
-        if my.inner_height:
-            my.inner_height = int(my.inner_height)
+            self.inner_width = 600
+        if self.inner_height:
+            self.inner_height = int(self.inner_height)
             if is_IE:
-                my.inner_height -= 20  # adjust for rounded corner wrapper
+                self.inner_height -= 20  # adjust for rounded corner wrapper
         else:
-            my.inner_height = 200
+            self.inner_height = 200
 
         # Now place a ResizeScrollWdg within a RoundedCornerDivWdg ... the ResizeScrollWdg will contain
         # the actual contents of this container, so that the contents can be scrolled and resized ...
         #
         from tactic.ui.container import RoundedCornerDivWdg
-        color = my.top.get_color("background")
-        my.rc_wdg = RoundedCornerDivWdg(hex_color_code=color,corner_size=10)
+        color = self.top.get_color("background")
+        self.rc_wdg = RoundedCornerDivWdg(hex_color_code=color,corner_size=10)
 
-        #show_scrollbars = my.kwargs.get("show_resize_scroll")
+        #show_scrollbars = self.kwargs.get("show_resize_scroll")
         #if show_scrollbars in ['', 'false']:
-        #    my.inner_wdg = DivWdg()
+        #    self.inner_wdg = DivWdg()
         #else:
         #    from tactic.ui.container import ResizeScrollWdg
-        #    my.inner_wdg = ResizeScrollWdg( width=my.inner_width, height=my.inner_height, scroll_bar_size_str='medium', scroll_expansion='inside' )
-        my.inner_wdg = DivWdg()
-        my.inner_wdg.add_style("width: %s" % my.inner_width)
-        my.inner_wdg.add_style("height: %s" % my.inner_height)
-        my.inner_wdg.add_style("overflow-y: auto")
-        my.inner_wdg.add_style("overflow-x: hidden")
+        #    self.inner_wdg = ResizeScrollWdg( width=self.inner_width, height=self.inner_height, scroll_bar_size_str='medium', scroll_expansion='inside' )
+        self.inner_wdg = DivWdg()
+        self.inner_wdg.add_style("width: %s" % self.inner_width)
+        self.inner_wdg.add_style("height: %s" % self.inner_height)
+        self.inner_wdg.add_style("overflow-y: auto")
+        self.inner_wdg.add_style("overflow-x: hidden")
 
-        my.rc_wdg.add( my.inner_wdg )
+        self.rc_wdg.add( self.inner_wdg )
 
-        my.content_wdg.add(my.rc_wdg)
-
-
-        my.table = Table(css="minimal")
-        my.table.add_row()
-        my.content_td = my.table.add_cell()
-        my.content_td.add_class("spt_content")
-        my.content_td.add_style('padding: 2px')
+        self.content_wdg.add(self.rc_wdg)
 
 
+        self.table = Table(css="minimal")
+        self.table.add_row()
+        self.content_td = self.table.add_cell()
+        self.content_td.add_class("spt_content")
+        self.content_td.add_style('padding: 2px')
 
-    def add_style(my, name, value=None):
+
+
+    def add_style(self, name, value=None):
         if name.startswith("height"):
-            my.content_td.add_style(name, value)
+            self.content_td.add_style(name, value)
         elif name.startswith("width"):
-            my.content_td.add_style(name, value)
+            self.content_td.add_style(name, value)
         else:
-            my.top.add_style(name, value)
+            self.top.add_style(name, value)
 
 
-    def get_display(my):
+    def get_display(self):
 
         # fill in the content widget
-        for widget in my.widgets:
-            my.inner_wdg.add(widget)
+        for widget in self.widgets:
+            self.inner_wdg.add(widget)
 
-        my.top.add_class("spt_container")
+        self.top.add_class("spt_container")
 
-        my.content_wdg.add_style("float: left")
+        self.content_wdg.add_style("float: left")
 
         # -- DO NOT SET THE WIDTH AND HEIGHT of the content_wdg! Commenting out these lines ...
-        # my.content_wdg.add_style("width: 100%")
-        # my.content_wdg.add_style("height: 100%")
+        # self.content_wdg.add_style("width: 100%")
+        # self.content_wdg.add_style("height: 100%")
 
 
         # add the content
-        my.content_td.add_style("vertical-align: top")
-        my.content_td.add(my.content_wdg)
+        self.content_td.add_style("vertical-align: top")
+        self.content_td.add(self.content_wdg)
 
-        my.top.add(my.table)
+        self.top.add(self.table)
 
-        return my.top
+        return self.top
 
 
-    def get_divider_wdg(my, activator, mode='vertical'):
+    def get_divider_wdg(self, activator, mode='vertical'):
         divider_div = DivWdg()
         divider_div.add_style("border-style", "dashed")
         divider_div.add_style("border-color", "#999")
@@ -1606,16 +1606,16 @@ class ContainerWdg(BaseRefreshWdg):
 
 class SObjectHeaderWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         "parent_key": "the search key of the sobject that the header will display"
         }
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        search_key = my.kwargs.get('parent_key')
+        search_key = self.kwargs.get('parent_key')
 
         div = DivWdg()
 

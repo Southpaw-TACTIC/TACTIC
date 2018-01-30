@@ -20,15 +20,15 @@ from file_wdg import *
 class IconAttr(SObjectAttr):
     '''defines attribute which has a get_display function like all widgets'''
 
-    def get_value(my):
-        return my.get_display()
+    def get_value(self):
+        return self.get_display()
 
-    def get_display(my):
+    def get_display(self):
         widget_class = "ThumbWdg"
         widget = eval( "%s()" % widget_class )
         #widget.set_icon_size("")
         widget.set_name("files")
-        widget.set_sobjects([my.sobject])
+        widget.set_sobjects([self.sobject])
 
         print widget.get_display()
         return widget
@@ -38,12 +38,12 @@ class IconAttr(SObjectAttr):
 class BrandAttr(SObjectAttr):
     '''defines attribute which has a get_display function like all widgets'''
 
-    def get_value(my):
-        return my.get_display()
+    def get_value(self):
+        return self.get_display()
 
-    def get_display(my):
+    def get_display(self):
 
-        brand_code = my.sobject.get_value("brand_code")
+        brand_code = self.sobject.get_value("brand_code")
         search = Search("pg/brand")
         search.add_filter("brand_code", brand_code)
         brand = search.get_sobject()

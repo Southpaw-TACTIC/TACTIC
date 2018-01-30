@@ -23,58 +23,58 @@ class BaseRenderContext(Base):
     '''The context under which a render take place.  This includes all
     of the settings and specific flags for a particular render'''
 
-    def __init__(my, policy=None):
-        my.sobject = None
+    def __init__(self, policy=None):
+        self.sobject = None
 
-        my.snapshot = None
-        my.snapshot_xml = None
-        my.snapshot_sobject = None
+        self.snapshot = None
+        self.snapshot_xml = None
+        self.snapshot_sobject = None
 
-        my.context = None
+        self.context = None
 
-        my.policy = policy
+        self.policy = policy
 
         # by default, just render the first frame
-        my.frame_range = FrameRange(1,1,1)
+        self.frame_range = FrameRange(1,1,1)
 
         # FIXME: this is maya specific
-        my.camera = "persp"
-        my.layer_names = []
+        self.camera = "persp"
+        self.layer_names = []
 
-        my.override = ""
+        self.override = ""
 
 
         # FIXME: not general enough
-        my.shot = None
+        self.shot = None
 
 
-    def set_policy(my, policy):
-        my.policy = policy
+    def set_policy(self, policy):
+        self.policy = policy
 
-    def set_override(my, override):
+    def set_override(self, override):
         '''set overrides to render parameters'''
-        my.override = override
+        self.override = override
 
-    def get_override(my):
-        return my.override
+    def get_override(self):
+        return self.override
 
 
     # information from policy
-    def get_resolution(my):
-        return my.policy.get_resolution()
+    def get_resolution(self):
+        return self.policy.get_resolution()
 
 
-    def get_layer_names(my):
-        return my.layer_names
+    def get_layer_names(self):
+        return self.layer_names
 
-    def add_layer(my, layer_name):
-        my.layer_names.append(layer_name)
+    def add_layer(self, layer_name):
+        self.layer_names.append(layer_name)
 
 
 
-    def get_input_path(my):
+    def get_input_path(self):
         '''gets the input file to be rendered'''
-        snapshot = my.get_snapshot()
+        snapshot = self.get_snapshot()
         lib_dir = snapshot.get_lib_dir()
 
         # FIXME: big assumption that snapshot type == file_type
@@ -93,24 +93,24 @@ class BaseRenderContext(Base):
         return input_path
 
 
-    def get_output_prefix(my):
+    def get_output_prefix(self):
         # FIXME: should get this from naming conventions
         return "image_test"
 
-    def get_output_ext(my):
+    def get_output_ext(self):
         # FIXME: should take this from render policy
         return "png"
 
-    def get_output_padding(my):
+    def get_output_padding(self):
         return 4
 
-    def get_output_pattern(my):
+    def get_output_pattern(self):
         # ie: "image.jpg.####"
-        return "%s.%s.####" % (my.get_output_prefix(), my.get_output_ext() )
+        return "%s.%s.####" % (self.get_output_prefix(), self.get_output_ext() )
 
 
 
-    def get_render_dir(my):
+    def get_render_dir(self):
         ticket = Environment.get_security().get_ticket_key()
         tmpdir = Environment.get_tmp_dir()
         render_dir = "%s/temp/%s" % (tmpdir, ticket)
@@ -121,91 +121,91 @@ class BaseRenderContext(Base):
 
 
 
-    def set_shot(my, shot):
-        my.shot = shot
+    def set_shot(self, shot):
+        self.shot = shot
 
         # setting the shot always sets the frames
-        my.frame_range = shot.get_frame_range()
+        self.frame_range = shot.get_frame_range()
 
 
-    def get_shot(my):
-        return my.shot
+    def get_shot(self):
+        return self.shot
 
 
-    def set_sobject(my, sobject):
+    def set_sobject(self, sobject):
         '''set the sobject that is being rendered'''
-        my.sobject = sobject
+        self.sobject = sobject
 
-    def get_sobject(my):
-        return my.sobject
+    def get_sobject(self):
+        return self.sobject
 
 
 
-    def set_camera(my, camera):
+    def set_camera(self, camera):
         print "Overriding camera: ", camera
-        my.camera = camera
+        self.camera = camera
 
-    def get_camera(my):
-        return my.camera
+    def get_camera(self):
+        return self.camera
 
 
 
-    def set_frame_range(my, frame_range):
-        my.frame_range = frame_range
+    def set_frame_range(self, frame_range):
+        self.frame_range = frame_range
 
         # if the policy sets a frame by, then use it
-        frame_by = my.policy.get_value("frame_by")
+        frame_by = self.policy.get_value("frame_by")
         if frame_by:
-            my.frame_range.set_frame_by(int(frame_by))
+            self.frame_range.set_frame_by(int(frame_by))
             
 
-    def set_frame_range_values(my, start, end, by):
+    def set_frame_range_values(self, start, end, by):
         frame_range = FrameRange(start, end, by)
-        my.set_frame_range(frame_range)
+        self.set_frame_range(frame_range)
             
 
 
-    def get_frame_range(my):
-        return my.frame_range
+    def get_frame_range(self):
+        return self.frame_range
 
 
 
-    def set_snapshot(my, snapshot):
+    def set_snapshot(self, snapshot):
         assert snapshot != None
-        my.snapshot = snapshot
-        my.snapshot_xml = snapshot.get_value("snapshot")
-        #my.sobject = my.snapshot.get_sobject()
-        my.snapshot_sobject = my.snapshot.get_sobject()
+        self.snapshot = snapshot
+        self.snapshot_xml = snapshot.get_value("snapshot")
+        #self.sobject = self.snapshot.get_sobject()
+        self.snapshot_sobject = self.snapshot.get_sobject()
 
-    def set_snapshot_xml(my, snapshot_xml):
-        my.snapshot_xml = snapshot_xml
+    def set_snapshot_xml(self, snapshot_xml):
+        self.snapshot_xml = snapshot_xml
 
-    def get_snapshot(my):
-        return my.snapshot
+    def get_snapshot(self):
+        return self.snapshot
 
 
-    def get_snapshot_xml(my):
-        return my.snapshot_xml
+    def get_snapshot_xml(self):
+        return self.snapshot_xml
 
-    def set_context(my, context):
-        my.context = context
+    def set_context(self, context):
+        self.context = context
 
-    def get_context(my):
-        return my.context
+    def get_context(self):
+        return self.context
 
-    def set_policy(my, policy):
-        my.policy = policy
+    def set_policy(self, policy):
+        self.policy = policy
 
-    def get_extra_settings(my):
+    def get_extra_settings(self):
         # these extra settings are determined by the policy
-        return my.policy.get_value("extra_settings")
+        return self.policy.get_value("extra_settings")
 
 
-    def get_name(my):
-        return my.__class__.__name__
+    def get_name(self):
+        return self.__class__.__name__
 
 
-    def get_xml_data(my):
+    def get_xml_data(self):
         '''create an XML document which can be stored in the queue for
         for informaiton about this render context.'''
         xml = Xml()
@@ -213,35 +213,35 @@ class BaseRenderContext(Base):
         root = xml.get_root_node()
 
 
-        if my.snapshot:
-            element = xml.create_text_element("search_key", my.sobject.get_search_key())
+        if self.snapshot:
+            element = xml.create_text_element("search_key", self.sobject.get_search_key())
             root.appendChild(element)
-            element = xml.create_text_element("snapshot_code", my.snapshot.get_code())
+            element = xml.create_text_element("snapshot_code", self.snapshot.get_code())
             root.appendChild(element)
 
  
-        elif my.sobject:
-            element = xml.create_text_element("search_key", my.sobject.get_search_key())
+        elif self.sobject:
+            element = xml.create_text_element("search_key", self.sobject.get_search_key())
             root.appendChild(element)
            
 
 
         #  add information about the frames
-        element = xml.create_text_element("prefix", my.get_output_prefix() )
+        element = xml.create_text_element("prefix", self.get_output_prefix() )
         root.appendChild(element)
-        element = xml.create_text_element("ext", my.get_output_ext() )
+        element = xml.create_text_element("ext", self.get_output_ext() )
         root.appendChild(element)
-        element = xml.create_text_element("padding", str(my.get_output_padding() )) 
+        element = xml.create_text_element("padding", str(self.get_output_padding() )) 
         root.appendChild(element)
-        element = xml.create_text_element("file_range", my.frame_range.get_key() )
+        element = xml.create_text_element("file_range", self.frame_range.get_key() )
         root.appendChild(element)
-        element = xml.create_text_element("pattern", my.get_output_pattern() )
+        element = xml.create_text_element("pattern", self.get_output_pattern() )
         root.appendChild(element)
 
 
 
         # add layer information
-        for layer_name in my.layer_names:
+        for layer_name in self.layer_names:
             element = xml.create_text_element("layer_name", layer_name )
             root.appendChild(element)
 
@@ -259,25 +259,25 @@ class BaseRenderContext(Base):
 class AssetRenderContext(BaseRenderContext):
     '''Convenience class to render assets thumbnails'''
 
-    def __init__(my, sobject):
-        super(AssetRenderContext,my).__init__()
-        my.set_sobject(sobject)
-        my.set_context("publish")
+    def __init__(self, sobject):
+        super(AssetRenderContext,self).__init__()
+        self.set_sobject(sobject)
+        self.set_context("publish")
 
         # check if there is an associate render_stage sobject.
         search = Search("prod/render_stage")
         search.add_sobject_filter(sobject)
-        search.add_filter("context", my.context)
+        search.add_filter("context", self.context)
         render_stage = search.get_sobject()
 
         if render_stage != None:
-            snapshot = Snapshot.get_latest_by_sobject(render_stage, my.context)
+            snapshot = Snapshot.get_latest_by_sobject(render_stage, self.context)
         else:
             loader_context = ProdLoaderContext()
             snapshot = loader_context.get_snapshot_by_sobject( \
-                sobject, my.context)
+                sobject, self.context)
 
-        my.set_snapshot(snapshot)
+        self.set_snapshot(snapshot)
 
 
         if snapshot == None:
@@ -292,15 +292,15 @@ class AssetRenderContext(BaseRenderContext):
         for instance in instances:
             if instance.startswith("camera"):
                 # HACK
-                #my.camera = instance
-                my.camera = "%s:%s" % (instance, "camera100")
+                #self.camera = instance
+                self.camera = "%s:%s" % (instance, "camera100")
 
-        camera = my.camera
+        camera = self.camera
 
 
         # set up the asset with a camera
         if camera == "persp":
-            my.set_snapshot_xml('''
+            self.set_snapshot_xml('''
             <snapshot>
             <ref snapshot_code='%s'/>
             <mel>
@@ -313,7 +313,7 @@ class AssetRenderContext(BaseRenderContext):
             ''' % (snapshot.get_code(), camera, camera, camera)
             )
         else:
-            my.set_snapshot_xml('''
+            self.set_snapshot_xml('''
             <snapshot>
             <ref snapshot_code='%s'/>
             </snapshot>

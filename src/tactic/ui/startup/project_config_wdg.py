@@ -27,10 +27,10 @@ class ProjectConfigWdg(BaseRefreshWdg):
     ARGS_KEYS = {
     } 
 
-    def get_help_alias(my):
+    def get_help_alias(self):
         return 'project-startup-configuration'
 
-    def get_panel_wdg(my, td, panel):
+    def get_panel_wdg(self, td, panel):
 
         title = panel.get("title")
         widget = panel.get("widget")
@@ -67,7 +67,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
             title_wdg.add(title)
 
             from tactic.ui.app import HelpButtonWdg
-            help_wdg = HelpButtonWdg(alias=my.get_help_alias())
+            help_wdg = HelpButtonWdg(alias=self.get_help_alias())
             help_wdg.add_style("float: right")
             help_wdg.add_style("margin-top: -5px")
             title_wdg.add(help_wdg)
@@ -81,7 +81,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         return div
 
 
-    def get_panels(my):
+    def get_panels(self):
 
         panels = []
 
@@ -132,18 +132,18 @@ class ProjectConfigWdg(BaseRefreshWdg):
         return panels
 
 
-    def get_display(my):
+    def get_display(self):
 
         # set the sobjects to all the widgets then preprocess
-        for widget in my.widgets:
-            widget.set_sobjects(my.sobjects)
-            widget.set_parent_wdg(my)
+        for widget in self.widgets:
+            widget.set_sobjects(self.sobjects)
+            widget.set_parent_wdg(self)
             # preprocess the elements
             widget.preprocess()
 
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
@@ -153,7 +153,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
 
         title = DivWdg()
         inner.add(title)
-        title.add(my.get_title())
+        title.add(self.get_title())
         title.add_style("font-size: 18px")
         title.add_style("font-weight: bold")
         title.add_style("text-align: center")
@@ -171,7 +171,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         inner.add(table)
         table.set_max_width()
 
-        panels = my.get_panels()
+        panels = self.get_panels()
 
         for panel in panels:
             tr = table.add_row()
@@ -181,36 +181,36 @@ class ProjectConfigWdg(BaseRefreshWdg):
             td.add_style("vertical-align: top")
 
 
-            panel = my.get_panel_wdg(td, panel)
+            panel = self.get_panel_wdg(td, panel)
             td.add(panel)
 
         return top
 
 
 
-    def get_title(my):
+    def get_title(self):
         return "Project Configuration"
 
 
 class UserConfigWdg(ProjectConfigWdg):
 
-    def get_title(my):
+    def get_title(self):
         return "Manage Users"
 
-    def get_help_alias(my):
+    def get_help_alias(self):
         return 'project-startup-manage-users'
 
 
-    def get_panels(my):
+    def get_panels(self):
 
         panels = []
 
-        show_security = my.kwargs.get("show_security") or ""
-        show_add = my.kwargs.get("show_add") or ""
-        view = my.kwargs.get("view") or ""
-        filter_mode = my.kwargs.get("filter_mode") or ""
-        show_help = my.kwargs.get("show_help") or ""
-        show_search_limit = my.kwargs.get("show_search_limit") or ""
+        show_security = self.kwargs.get("show_security") or ""
+        show_add = self.kwargs.get("show_add") or ""
+        view = self.kwargs.get("view") or ""
+        filter_mode = self.kwargs.get("filter_mode") or ""
+        show_help = self.kwargs.get("show_help") or ""
+        show_search_limit = self.kwargs.get("show_search_limit") or ""
 
         from tactic.ui.container import TabWdg
         config_xml = []
@@ -272,7 +272,7 @@ class UserConfigWdg(ProjectConfigWdg):
 
 class SearchTypePanel(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         show_multi_project = web.get_form_value('show_multi_project')
@@ -280,7 +280,7 @@ class SearchTypePanel(BaseRefreshWdg):
         search_type_objs = project.get_search_types(include_multi_project=show_multi_project)
 
 
-        top = my.top
+        top = self.top
         top.add_class("spt_panel_stype_list_top")
         #top.add_style("min-width: 400px")
         #top.add_style("max-width: 1000px")
@@ -817,18 +817,18 @@ class SearchTypePanel(BaseRefreshWdg):
 
 class UserPanelWdg(BaseRefreshWdg):
 
-    def get_help_alias(my):
+    def get_help_alias(self):
         return 'project-startup-manage-users'
 
-    def get_display(my):
+    def get_display(self):
 
-        filter_mode = my.kwargs.get("filter_mode")
-        show_add = my.kwargs.get("show_add") or True
-        show_security = my.kwargs.get("show_security") or True
-        show_search_limit = my.kwargs.get("show_search_limit") or True
-        show_help = my.kwargs.get("show_help") or True
+        filter_mode = self.kwargs.get("filter_mode")
+        show_add = self.kwargs.get("show_add") or True
+        show_security = self.kwargs.get("show_security") or True
+        show_search_limit = self.kwargs.get("show_search_limit") or True
+        show_help = self.kwargs.get("show_help") or True
 
-        show_toolbar = my.kwargs.get("show_toolbar") or False
+        show_toolbar = self.kwargs.get("show_toolbar") or False
 
         project = Project.get().get_code()
 
@@ -840,7 +840,7 @@ class UserPanelWdg(BaseRefreshWdg):
         expr_filter = "%ssthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']" % new_filter
         current_users = Search.eval("@COUNT(%s)" %expr_filter)
 
-        top = my.top
+        top = self.top
         top.add_class("spt_panel_user_top")
         top.add_style("min-width: 400px")
         
@@ -881,7 +881,7 @@ class UserPanelWdg(BaseRefreshWdg):
             tool_div.add_style('top','-8px')
 
 
-        show_count = my.kwargs.get("show_count")
+        show_count = self.kwargs.get("show_count")
         show_count = True
         if show_count in ['true', True]:
             security = Environment.get_security()
@@ -963,7 +963,7 @@ class UserPanelWdg(BaseRefreshWdg):
             div.add("<br/><br/>")
             div.add("For more information, read the help docs: ")
             from tactic.ui.app import HelpButtonWdg
-            help = HelpButtonWdg(alias=my.get_help_alias())
+            help = HelpButtonWdg(alias=self.get_help_alias())
             div.add(help)
             div.add("<br/>")
             div.add("Click on the 'Add' button above to start adding new users.")
@@ -978,7 +978,7 @@ class UserPanelWdg(BaseRefreshWdg):
         #div.add_style("max-height: 300px")
         #div.add_style("overflow-y: auto")
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
 
         if not view:
             view = "manage_user"

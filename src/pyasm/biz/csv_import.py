@@ -20,39 +20,39 @@ class AsciiEncodeException(Exception):
 
 class CsvParser(object):
 
-    def __init__(my, file_path):
-        my.file_path = file_path
+    def __init__(self, file_path):
+        self.file_path = file_path
 
         if not os.path.exists(file_path):
             raise Exception("Path '%s' does not exists")
 
-        my.num_rows_to_read = 0
-        my.has_title_row = True
-        my.lowercase_title = False
-        my.titles = []
-        my.data = []
-        my.encoder = None
+        self.num_rows_to_read = 0
+        self.has_title_row = True
+        self.lowercase_title = False
+        self.titles = []
+        self.data = []
+        self.encoder = None
 
 
-    def get_titles(my):
-        return my.titles
+    def get_titles(self):
+        return self.titles
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
 
-    def set_num_rows_to_read(my, num_rows):
-        my.num_rows_to_read = num_rows
+    def set_num_rows_to_read(self, num_rows):
+        self.num_rows_to_read = num_rows
 
-    def set_has_title_row(my, has_title_row):
-        my.has_title_row = has_title_row
+    def set_has_title_row(self, has_title_row):
+        self.has_title_row = has_title_row
 
-    def set_lowercase_title(my, lowercase):
-        my.lowercase_title = lowercase
+    def set_lowercase_title(self, lowercase):
+        self.lowercase_title = lowercase
 
-    def set_encoder(my, encoder):
-        my.encoder = encoder
+    def set_encoder(self, encoder):
+        self.encoder = encoder
 
-    def unicode_csv_reader(my, unicode_csv_data, dialect=csv.excel, encoder='utf-8', **kwargs):
+    def unicode_csv_reader(self, unicode_csv_data, dialect=csv.excel, encoder='utf-8', **kwargs):
         # csv.py doesn't do Unicode; encode as UTF-8 if explicitly set
         def utf_8_encoder(unicode_csv_data, encoder='utf-8'):
             # use this only if the file has been encoded in utf-8            
@@ -86,22 +86,22 @@ class CsvParser(object):
                 yield row
         #return csv_reader
     
-    def parse(my):
+    def parse(self):
 
-        input_file = open(my.file_path, 'rU') 
-        csvreader = my.unicode_csv_reader(input_file, encoder=my.encoder)
+        input_file = open(self.file_path, 'rU') 
+        csvreader = self.unicode_csv_reader(input_file, encoder=self.encoder)
 
         for row_count, row in enumerate(csvreader):
             # parse title: all titles must be filled
-            if my.has_title_row and not my.titles:
-                my.titles = []
+            if self.has_title_row and not self.titles:
+                self.titles = []
                 for cell in row:
                     if not cell:
                         continue
-                    if my.lowercase_title:
+                    if self.lowercase_title:
                         cell = cell.lower()
-                    my.titles.append( cell.strip() )
-                if my.titles:
+                    self.titles.append( cell.strip() )
+                if self.titles:
                     title_processed = True
 
             else:
@@ -118,14 +118,14 @@ class CsvParser(object):
                 if not values_in_row:
                     continue
 
-                my.data.append(row)
+                self.data.append(row)
 
-            if my.num_rows_to_read and row_count == my.num_rows_to_read:
+            if self.num_rows_to_read and row_count == self.num_rows_to_read:
                 break
 
-        if my.data and not my.titles:
-            for i in range(0, len(my.data[0]) ):
-                my.titles.append("")
+        if self.data and not self.titles:
+            for i in range(0, len(self.data[0]) ):
+                self.titles.append("")
 
         input_file.close()
 

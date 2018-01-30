@@ -30,7 +30,7 @@ from pyasm.security import Batch
 
 class WorkflowTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         Batch()
         from pyasm.web.web_init import WebInit
 
@@ -38,7 +38,7 @@ class WorkflowTest(unittest.TestCase):
         test_env.create()
 
         try:
-            my._test_complete_trigger()
+            self._test_complete_trigger()
         finally:
             test_env.delete()
 
@@ -57,13 +57,13 @@ class WorkflowTest(unittest.TestCase):
            
  
  
-    def _test_complete_trigger(my):
+    def _test_complete_trigger(self):
         cmd = WorkflowCmd()
         Command.execute_cmd(cmd)
 
 
 class WorkflowCmd(Command):
-    def execute(my):
+    def execute(self):
 
         #from pyasm.security import Site
         #from pyasm.biz import Project
@@ -72,34 +72,34 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_multi_task()
+            self._test_multi_task()
 
 
 
-            my._test_multi_input_reject()
-            my._test_progress()
-            #my._test_progress_reject()
-            my._test_multi_input()
-            my._test_multi_input_complete()
-            my._test_custom_status()
-            my._test_messaging()
-            my._test_hierarchy()
-            my._test_js()
-            my._test_manual()
-            my._test_check()
-            my._test_task()
-            my._test_action_process()
-            my._test_choice()
-            my._test_input()
-            my._test_trigger()
-            my._test_approval()
-            my._test_dependency()
+            self._test_multi_input_reject()
+            self._test_progress()
+            #self._test_progress_reject()
+            self._test_multi_input()
+            self._test_multi_input_complete()
+            self._test_custom_status()
+            self._test_messaging()
+            self._test_hierarchy()
+            self._test_js()
+            self._test_manual()
+            self._test_check()
+            self._test_task()
+            self._test_action_process()
+            self._test_choice()
+            self._test_input()
+            self._test_trigger()
+            self._test_approval()
+            self._test_dependency()
         except Exception, e:
             print "Error: ", e
             raise
 
 
-    def get_pipeline(my, pipeline_xml, add_tasks=False, search_type=None):
+    def get_pipeline(self, pipeline_xml, add_tasks=False, search_type=None):
 
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
@@ -170,7 +170,7 @@ class WorkflowCmd(Command):
 
 
 
-    def _test_js(my):
+    def _test_js(self):
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
         sobject.set_value("code", "test")
@@ -181,7 +181,7 @@ class WorkflowCmd(Command):
           <process type="action" name="a"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         process = processes.get("a")
         process.set_json_value("workflow", {
@@ -204,13 +204,13 @@ class WorkflowCmd(Command):
 
         import time
         start = time.time()
-        Trigger.call(my, "process|pending", output)
-        #my.assertEquals( "complete", sobject.get_value("a"))
+        Trigger.call(self, "process|pending", output)
+        #self.assertEquals( "complete", sobject.get_value("a"))
 
 
 
 
-    def _test_action_process(my):
+    def _test_action_process(self):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -235,7 +235,7 @@ class WorkflowCmd(Command):
           <connect from="d" to="e"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
 
         process = "a"
@@ -248,19 +248,19 @@ class WorkflowCmd(Command):
 
         import time
         start = time.time()
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
         #print "time: ", time.time() - start
-        my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("b"))
-        my.assertEquals( "complete", sobject.get_value("c"))
-        my.assertEquals( "complete", sobject.get_value("d"))
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( "complete", sobject.get_value("d"))
 
         # TODO: this got called twice ... not what we want : fix later
-        my.assertEquals( "complete", sobject.get_value("e"))
+        self.assertEquals( "complete", sobject.get_value("e"))
 
 
 
-    def _test_check(my):
+    def _test_check(self):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -284,7 +284,7 @@ class WorkflowCmd(Command):
 
         '''
 
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         for process in processes.keys():
             a_process = processes.get(process)
@@ -316,8 +316,8 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
-        my.assertEquals( "revise", sobject.get_value("a"))
+        Trigger.call(self, "process|pending", output)
+        self.assertEquals( "revise", sobject.get_value("a"))
 
 
         process = processes.get("b")
@@ -341,15 +341,15 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
-        my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("c"))
+        Trigger.call(self, "process|pending", output)
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("c"))
 
 
 
 
 
-    def _test_input(my):
+    def _test_input(self):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -367,7 +367,7 @@ class WorkflowCmd(Command):
           <connect from="b" to="d" from_attr="success"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
 
         # check input values
@@ -391,16 +391,16 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
         # make sure we have the same sobject
-        my.assertEquals( "test", sobject.get_value("test") )
-        my.assertEquals( "a", sobject.get_value("b_input"))
-        my.assertEquals( "c,d", sobject.get_value("b_output"))
+        self.assertEquals( "test", sobject.get_value("test") )
+        self.assertEquals( "a", sobject.get_value("b_input"))
+        self.assertEquals( "c,d", sobject.get_value("b_output"))
 
 
 
 
-    def _test_multi_input(my):
+    def _test_multi_input(self):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -430,7 +430,7 @@ class WorkflowCmd(Command):
           <connect from="c" to="d"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
 
         process = processes.get("c")
@@ -443,20 +443,20 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
        
-        my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("b1"))
-        my.assertEquals( "complete", sobject.get_value("b2"))
-        my.assertEquals( "complete", sobject.get_value("b3"))
-        my.assertEquals( "complete", sobject.get_value("b4"))
-        my.assertEquals( "complete", sobject.get_value("c"))
-        my.assertEquals( "complete", sobject.get_value("d"))
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b1"))
+        self.assertEquals( "complete", sobject.get_value("b2"))
+        self.assertEquals( "complete", sobject.get_value("b3"))
+        self.assertEquals( "complete", sobject.get_value("b4"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( "complete", sobject.get_value("d"))
 
 
 
 
-    def _test_multi_input_complete(my):
+    def _test_multi_input_complete(self):
 
         # DISABLE until check_inputs is called
         return
@@ -485,7 +485,7 @@ class WorkflowCmd(Command):
           <connect from="b3" to="c"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
 
         process = processes.get("c")
@@ -498,7 +498,7 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
         # Run the pipeline
@@ -508,23 +508,23 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|complete", output)
+        Trigger.call(self, "process|complete", output)
 
        
-        my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("b1"))
-        my.assertEquals( "pending", sobject.get_value("b2"))
-        my.assertEquals( "pending", sobject.get_value("b3"))
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b1"))
+        self.assertEquals( "pending", sobject.get_value("b2"))
+        self.assertEquals( "pending", sobject.get_value("b3"))
 
         # THIS WILL FAIL until we implement this correctly
-        my.assertEquals( "pending", sobject.get_value("c"))
+        self.assertEquals( "pending", sobject.get_value("c"))
 
 
 
 
 
 
-    def _test_multi_input_reject(my):
+    def _test_multi_input_reject(self):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -547,7 +547,7 @@ class WorkflowCmd(Command):
           <connect from="a3" to="b"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
 
         # Run the pipeline
@@ -558,16 +558,16 @@ class WorkflowCmd(Command):
             "process": process,
             "reject_process": ['a1', 'a3']
         }
-        Trigger.call(my, "process|reject", output)
+        Trigger.call(self, "process|reject", output)
 
-        my.assertEquals( "revise", sobject.get_value("a1"))
-        my.assertEquals( "complete", sobject.get_value("a2"))
-        my.assertEquals( "revise", sobject.get_value("a3"))
-
-
+        self.assertEquals( "revise", sobject.get_value("a1"))
+        self.assertEquals( "complete", sobject.get_value("a2"))
+        self.assertEquals( "revise", sobject.get_value("a3"))
 
 
-    def _test_choice(my):
+
+
+    def _test_choice(self):
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -594,7 +594,7 @@ class WorkflowCmd(Command):
 
         '''
 
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         process = processes.get("b")
         process.set_json_value("workflow", {
@@ -616,17 +616,17 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
-        my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("b"))
-        my.assertEquals( "complete", sobject.get_value("c"))
-        my.assertEquals( False, sobject.get_value("d"))
-        my.assertEquals( "complete", sobject.get_value("e"))
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( False, sobject.get_value("d"))
+        self.assertEquals( "complete", sobject.get_value("e"))
 
 
 
-    def _test_manual(my):
+    def _test_manual(self):
 
         print "test manual"
 
@@ -645,7 +645,7 @@ class WorkflowCmd(Command):
         </pipeline>
         '''
 
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         # Run the pipeline
         process = "a"
@@ -654,14 +654,14 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
         # nothing should have run
-        my.assertEquals( "pending", sobject.get_value("a"))
-        my.assertEquals( False, sobject.get_value("b"))
+        self.assertEquals( "pending", sobject.get_value("a"))
+        self.assertEquals( False, sobject.get_value("b"))
 
 
-    def _test_task(my):
+    def _test_task(self):
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -676,7 +676,7 @@ class WorkflowCmd(Command):
         </pipeline>
         '''
 
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code() )
         sobject.commit()
@@ -698,16 +698,16 @@ class WorkflowCmd(Command):
         # TODO: not quite sure if this should be related to "action"
         #task.set_value("status", "in_progress")
         #task.commit()
-        #my.assertEquals( "in_progress", sobject.get_value("name_first"))
+        #self.assertEquals( "in_progress", sobject.get_value("name_first"))
 
         task.set_value("status", "complete")
         task.commit()
-        my.assertEquals( "b", sobject.get_value("name_first"))
+        self.assertEquals( "b", sobject.get_value("name_first"))
 
 
 
 
-    def _test_multi_task(my):
+    def _test_multi_task(self):
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -720,7 +720,7 @@ class WorkflowCmd(Command):
         </pipeline>
         '''
 
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code() )
         sobject.commit()
@@ -739,11 +739,11 @@ class WorkflowCmd(Command):
 
         task.set_value("status", "complete")
         task.commit()
-        my.assertEquals( False, "b" == sobject.get_value("name_first"))
+        self.assertEquals( False, "b" == sobject.get_value("name_first"))
 
         task2.set_value("status", "complete")
         task2.commit()
-        my.assertEquals( True, "b" == sobject.get_value("name_first"))
+        self.assertEquals( True, "b" == sobject.get_value("name_first"))
 
 
 
@@ -753,7 +753,7 @@ class WorkflowCmd(Command):
 
 
 
-    def _test_trigger(my):
+    def _test_trigger(self):
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -763,7 +763,7 @@ class WorkflowCmd(Command):
           <process type="action" name="a"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         process = processes.get("a")
         process.set_value("workflow", "")
@@ -800,11 +800,11 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
 
-    def _test_approval(my):
+    def _test_approval(self):
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -818,14 +818,14 @@ class WorkflowCmd(Command):
           <connect from="b" to="c"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code())
         sobject.commit()
 
         # ensure there are not tasks
         tasks = Task.get_by_sobject(sobject, process="b")
-        my.assertEquals(0, len(tasks))
+        self.assertEquals(0, len(tasks))
 
 
         # Run the pipeline
@@ -835,24 +835,24 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
         # ensure there are not tasks
         tasks = Task.get_by_sobject(sobject, process="b")
-        my.assertEquals(1, len(tasks))
+        self.assertEquals(1, len(tasks))
 
         task = tasks[0]
-        my.assertEquals("b", task.get("process"))
+        self.assertEquals("b", task.get("process"))
 
         # approve the task
         task.set_value("status", "approved")
         task.commit()
-        my.assertEquals( "complete", sobject.get_value("b"))
-        my.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("c"))
 
 
 
-    def _test_hierarchy(my):
+    def _test_hierarchy(self):
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -868,7 +868,7 @@ class WorkflowCmd(Command):
           <connect from="c" to="d"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
 
         # create the sub pipeline
@@ -885,7 +885,7 @@ class WorkflowCmd(Command):
           <connect from="subc" to="end"/>
         </pipeline>
         '''
-        subpipeline, subprocesses = my.get_pipeline(subpipeline_xml)
+        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
         #subpipeline.set_value("parent_process", parent_process.get_code())
         subpipeline.commit()
         subpipeline_code = subpipeline.get_code()
@@ -907,21 +907,21 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
-        my.assertEquals( "complete", sobject.get_value("a"))
-        my.assertEquals( "complete", sobject.get_value("b"))
-        my.assertEquals( "complete", sobject.get_value("c"))
-        my.assertEquals( "complete", sobject.get_value("start"))
-        my.assertEquals( "complete", sobject.get_value("suba"))
-        my.assertEquals( "complete", sobject.get_value("subb"))
-        my.assertEquals( "complete", sobject.get_value("subc"))
-        my.assertEquals( "complete", sobject.get_value("end"))
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( "complete", sobject.get_value("start"))
+        self.assertEquals( "complete", sobject.get_value("suba"))
+        self.assertEquals( "complete", sobject.get_value("subb"))
+        self.assertEquals( "complete", sobject.get_value("subc"))
+        self.assertEquals( "complete", sobject.get_value("end"))
 
         
 
 
-    def _test_dependency(my):
+    def _test_dependency(self):
 
         # Diabled in this version
         #return
@@ -939,7 +939,7 @@ class WorkflowCmd(Command):
           <connect from="b" to="c"/>
         </pipeline>
         '''
-        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml)
+        city_pipeline, city_processes = self.get_pipeline(city_pipeline_xml)
 
         city.set_value("pipeline_code", city_pipeline.get_code())
         city.commit()
@@ -957,7 +957,7 @@ class WorkflowCmd(Command):
           <connect from="y" to="z"/>
         </pipeline>
         '''
-        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml)
+        person_pipeline, person_processes = self.get_pipeline(person_pipeline_xml)
 
         for name in ['Beth', 'Cindy', 'John','Amy','Jack','Steve','Karen']:
             person = SearchType.create("unittest/person")
@@ -981,7 +981,7 @@ class WorkflowCmd(Command):
             "sobject": city,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
 
@@ -989,15 +989,15 @@ class WorkflowCmd(Command):
         #person_task.set_value("status", "complete")
         #person_task.commit()
         for person in people:
-            my.assertEquals( "complete", person.get_value("x") )
-            my.assertEquals( "complete", person.get_value("y") )
-            my.assertEquals( "complete", person.get_value("z") )
+            self.assertEquals( "complete", person.get_value("x") )
+            self.assertEquals( "complete", person.get_value("y") )
+            self.assertEquals( "complete", person.get_value("z") )
 
-        my.assertEquals( "complete", city.get_value("c") )
+        self.assertEquals( "complete", city.get_value("c") )
 
 
 
-    def _test_progress(my):
+    def _test_progress(self):
 
         # create a dummy sobject
         city = SearchType.create("unittest/city")
@@ -1013,7 +1013,7 @@ class WorkflowCmd(Command):
           <connect from="p2" to="p3"/>
         </pipeline>
         '''
-        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
+        person_pipeline, person_processes = self.get_pipeline(person_pipeline_xml, search_type="unittest/person")
         person_pipeline_code = person_pipeline.get_value("code")
 
 
@@ -1029,7 +1029,7 @@ class WorkflowCmd(Command):
           <connect from="c3" to="c4"/>
         </pipeline>
         ''' % person_pipeline_code
-        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
+        city_pipeline, city_processes = self.get_pipeline(city_pipeline_xml, search_type="unittest/city")
 
         city.set_value("pipeline_code", city_pipeline.get_code())
         city.commit()
@@ -1058,12 +1058,12 @@ class WorkflowCmd(Command):
             "sobject": city,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
         # it should have stopped at c2
-        my.assertEquals( "complete", city.get_value("c1") )
-        my.assertEquals( "pending", city.get_value("c2") )
+        self.assertEquals( "complete", city.get_value("c1") )
+        self.assertEquals( "pending", city.get_value("c2") )
 
         # run the people pipeline
         for person in people:
@@ -1074,22 +1074,22 @@ class WorkflowCmd(Command):
                 "process": process
             }
 
-            Trigger.call(my, "process|pending", output)
+            Trigger.call(self, "process|pending", output)
 
-            #my.assertEquals( "pending", city.get_value("c2") )
+            #self.assertEquals( "pending", city.get_value("c2") )
 
 
         # it should have stopped at p3
         for person in people:
-            my.assertEquals( "complete", person.get_value("p1") )
-            my.assertEquals( "complete", person.get_value("p2") )
-            my.assertEquals( "pending", person.get_value("p3") )
+            self.assertEquals( "complete", person.get_value("p1") )
+            self.assertEquals( "complete", person.get_value("p2") )
+            self.assertEquals( "pending", person.get_value("p3") )
 
 
         # however, because p1 is complete, c2 should have finished
-        my.assertEquals( "complete", city.get_value("c1") )
-        my.assertEquals( "complete", city.get_value("c2") )
-        my.assertEquals( "pending", city.get_value("c3") )
+        self.assertEquals( "complete", city.get_value("c1") )
+        self.assertEquals( "complete", city.get_value("c2") )
+        self.assertEquals( "pending", city.get_value("c3") )
 
 
         # run the manual p3 for all people
@@ -1100,14 +1100,14 @@ class WorkflowCmd(Command):
                 "sobject": person,
                 "process": process
             }
-            Trigger.call(my, "process|complete", output)
+            Trigger.call(self, "process|complete", output)
 
     
         # this should complete c3 and c4
         for person in people:
-            my.assertEquals( "complete", person.get_value("p1") )
-            my.assertEquals( "complete", person.get_value("p2") )
-            my.assertEquals( "complete", person.get_value("p3") )
+            self.assertEquals( "complete", person.get_value("p1") )
+            self.assertEquals( "complete", person.get_value("p2") )
+            self.assertEquals( "complete", person.get_value("p3") )
 
         """
         TODO: sync the progress node c3 status to match p3. 
@@ -1120,13 +1120,13 @@ class WorkflowCmd(Command):
                 "sobject": person,
                 "process": process
             }
-            Trigger.call(my, "process|revise", output)
+            Trigger.call(self, "process|revise", output)
         
            
 
-        my.assertEquals( "complete", city.get_value("c1") )
-        my.assertEquals( "complete", city.get_value("c2") )
-        my.assertEquals( "pending", city.get_value("c3") )
+        self.assertEquals( "complete", city.get_value("c1") )
+        self.assertEquals( "complete", city.get_value("c2") )
+        self.assertEquals( "pending", city.get_value("c3") )
 
 
         # run the manual p3 for all people to complete again
@@ -1137,17 +1137,17 @@ class WorkflowCmd(Command):
                 "sobject": person,
                 "process": process
             }
-            Trigger.call(my, "process|complete", output)
+            Trigger.call(self, "process|complete", output)
         
         """
-        my.assertEquals( "complete", city.get_value("c1") )
-        my.assertEquals( "complete", city.get_value("c2") )
-        my.assertEquals( "complete", city.get_value("c3") )
-        my.assertEquals( "complete", city.get_value("c4") )
+        self.assertEquals( "complete", city.get_value("c1") )
+        self.assertEquals( "complete", city.get_value("c2") )
+        self.assertEquals( "complete", city.get_value("c3") )
+        self.assertEquals( "complete", city.get_value("c4") )
 
 
 
-    def _test_progress_reject(my):
+    def _test_progress_reject(self):
 
         # FIXME: it is not completely clear what should happen when a progress
         # node recieves a revise message.
@@ -1163,7 +1163,7 @@ class WorkflowCmd(Command):
           <process type="action" name="p1"/>
         </pipeline>
         '''
-        person_pipeline, person_processes = my.get_pipeline(person_pipeline_xml, search_type="unittest/person")
+        person_pipeline, person_processes = self.get_pipeline(person_pipeline_xml, search_type="unittest/person")
         person_pipeline_code = person_pipeline.get_value("code")
 
 
@@ -1175,7 +1175,7 @@ class WorkflowCmd(Command):
           <connect from="c1" to="c2"/>
         </pipeline>
         ''' % person_pipeline_code
-        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml, search_type="unittest/city")
+        city_pipeline, city_processes = self.get_pipeline(city_pipeline_xml, search_type="unittest/city")
 
         city.set_value("pipeline_code", city_pipeline.get_code())
         city.commit()
@@ -1205,16 +1205,16 @@ class WorkflowCmd(Command):
             "process": process
         }
 
-        Trigger.call(my, "process|reject", output)
+        Trigger.call(self, "process|reject", output)
 
         for person in people:
-            my.assertEquals( "revise", person.get_value("p1") )
+            self.assertEquals( "revise", person.get_value("p1") )
 
 
  
 
 
-    def _test_messaging(my):
+    def _test_messaging(self):
 
         # create a dummy sobject
         city = SearchType.create("unittest/city")
@@ -1229,7 +1229,7 @@ class WorkflowCmd(Command):
           <connect from="b" to="c"/>
         </pipeline>
         '''
-        city_pipeline, city_processes = my.get_pipeline(city_pipeline_xml)
+        city_pipeline, city_processes = self.get_pipeline(city_pipeline_xml)
 
         city.set_value("pipeline_code", city_pipeline.get_code())
         city.commit()
@@ -1241,7 +1241,7 @@ class WorkflowCmd(Command):
             "sobject": city,
             "process": process
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
         for process in city_processes:
@@ -1250,11 +1250,11 @@ class WorkflowCmd(Command):
             search.add_filter("code", key)
             sobject = search.get_sobject()
             message = sobject.get_value("message")
-            my.assertEquals("complete", message)
+            self.assertEquals("complete", message)
 
 
 
-    def _test_custom_status(my):
+    def _test_custom_status(self):
 
         task_pipeline_xml = '''
         <pipeline>
@@ -1267,7 +1267,7 @@ class WorkflowCmd(Command):
           <process name="Accept" mapping="complete"/>
         </pipeline>
         '''
-        task_pipeline, task_processes = my.get_pipeline(task_pipeline_xml)
+        task_pipeline, task_processes = self.get_pipeline(task_pipeline_xml)
         task_pipeline.set_value("code", "custom_task")
         task_pipeline.commit()
 
@@ -1286,7 +1286,7 @@ class WorkflowCmd(Command):
           <connect from="b" to="c"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code())
 
@@ -1300,10 +1300,10 @@ class WorkflowCmd(Command):
             "process": process,
             "status": status
         }
-        Trigger.call(my, "process|custom", output)
+        Trigger.call(self, "process|custom", output)
 
-        my.assertEquals("reject", sobject.get_value("b"))
-        my.assertEquals("revise", sobject.get_value("a"))
+        self.assertEquals("reject", sobject.get_value("b"))
+        self.assertEquals("revise", sobject.get_value("a"))
 
 
 
@@ -1316,9 +1316,9 @@ class WorkflowCmd(Command):
             "process": process,
             "status": status
         }
-        Trigger.call(my, "process|custom", output)
+        Trigger.call(self, "process|custom", output)
 
-        my.assertEquals("Do It", sobject.get_value("b"))
+        self.assertEquals("Do It", sobject.get_value("b"))
 
 
 
@@ -1331,7 +1331,7 @@ class WorkflowCmd(Command):
 
 
 
-    def assertEquals(my, a, b):
+    def assertEquals(self, a, b):
         if a == b:
             return
         else:

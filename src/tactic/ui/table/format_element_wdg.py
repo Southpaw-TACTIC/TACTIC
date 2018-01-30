@@ -64,11 +64,11 @@ class FormatElementWdg(SimpleTableElementWdg):
     }
 
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
         layout.add_relay_behavior( {
         'type': 'mouseup',
         #'propagate_evt': True, # not sure if this works
-        'bvr_match_class': 'spt_format_checkbox_%s' % my.get_name(),
+        'bvr_match_class': 'spt_format_checkbox_%s' % self.get_name(),
         'cbjs_action': '''
         var layout = bvr.src_el.getParent(".spt_layout");
         var version = layout.getAttribute("spt_version");
@@ -99,8 +99,8 @@ class FormatElementWdg(SimpleTableElementWdg):
         } )
 
 
-    def get_width(my):
-        widget_type = my.get_option("type")
+    def get_width(self):
+        widget_type = self.get_option("type")
         if widget_type in ['integer']:
             return 30
         elif widget_type in ['float', 'date', 'timecode', 'currency']:
@@ -110,45 +110,45 @@ class FormatElementWdg(SimpleTableElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
 
-        value = my.get_value()
-        widget_type = my.get_option("type")
+        value = self.get_value()
+        widget_type = self.get_option("type")
         
         if widget_type in ['integer', 'float', 'timecode', 'currency']:
             top.add_style("float: right")
-            my.justify = "right"
+            self.justify = "right"
 
         elif widget_type in ['date','time']:
-            name = my.get_name()
+            name = self.get_name()
             if value and not SObject.is_day_column(name):               
-                value = my.get_timezone_value(value)
+                value = self.get_timezone_value(value)
          
 
                 value = str(value)
 
         else:
             top.add_style("float: left")
-            my.justify = "left"
+            self.justify = "left"
         top.add_style("padding-right: 3px")
 
         top.add_style("min-height: 15px")
 
-        format = my.get_option('format')
-        value = my.get_format_value( value, format )
+        format = self.get_option('format')
+        value = self.get_format_value( value, format )
         top.add(value)
 
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject:
 
-            column =  my.kwargs.get('column')
+            column =  self.kwargs.get('column')
             if column:
                 name = column
             else:
-                name = my.get_name()
+                name = self.get_name()
 
             top.add_update( {
                 'search_key': sobject.get_search_key(),
@@ -159,30 +159,30 @@ class FormatElementWdg(SimpleTableElementWdg):
 
         return top
 
-    def get_text_value(my):
+    def get_text_value(self):
 
-        value = my.get_value()
-        widget_type = my.get_option("type")
+        value = self.get_value()
+        widget_type = self.get_option("type")
         
         if widget_type in ['date','time'] and value:
-            name = my.get_name()
+            name = self.get_name()
             if not SObject.is_day_column(name):
-                value = my.get_timezone_value(value)
+                value = self.get_timezone_value(value)
                 value = str(value)
  
-        format = my.get_option('format')
+        format = self.get_option('format')
         
         if format == 'Checkbox':
             value = str(value)
         else:
-            value = my.get_format_value( value, format )
+            value = self.get_format_value( value, format )
 
        
         return value
 
-    def get_bottom_wdg(my):
+    def get_bottom_wdg(self):
         # check if the user has enabled it
-        info = my.check_bottom_wdg()
+        info = self.check_bottom_wdg()
 
         if info.get('check') == False:
             return None
@@ -190,45 +190,45 @@ class FormatElementWdg(SimpleTableElementWdg):
         
         title = info.get('title')
         result = info.get('result')
-        format = my.get_option('format')
-        result = my.get_format_value( result, format )
+        format = self.get_option('format')
+        result = self.get_format_value( result, format )
 
         div = DivWdg()
         div.add(title)
         div.add(str(result))
         div.add_style("text-align: right")
-        div.add_class( "spt_%s_expr_bottom" % (my.get_name()) )
+        div.add_class( "spt_%s_expr_bottom" % (self.get_name()) )
         return div
 
 
 
-    def get_group_bottom_wdg(my, sobjects):
+    def get_group_bottom_wdg(self, sobjects):
 
-        summary = my.get_option("total_summary")
+        summary = self.get_option("total_summary")
         if not summary:
             return None
 
         # parse the expression
-        my.vars = my.get_vars()
+        self.vars = self.get_vars()
  
-        expression, title = my.get_expression(summary)
+        expression, title = self.get_expression(summary)
         try:
-            result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
+            result = Search.eval(expression, sobjects=sobjects, vars=self.vars)
         except Exception as e:
             print("WARNING: ", e.message)
             result = "Calculation Error"
             title = ''
         """
-        widget_type = my.get_option("type")
+        widget_type = self.get_option("type")
         
         if widget_type in ['date','time']:
-            name = my.get_name()
+            name = self.get_name()
             if not SObject.is_day_column(name):
                 result = SPTDate.convert_to_local(result)
                 result= str(result)
         """
-        format = my.get_option('format')
-        formatted_result = my.get_format_value( result, format )
+        format = self.get_option('format')
+        formatted_result = self.get_format_value( result, format )
 
         div = DivWdg()
         div.add(str(formatted_result))
@@ -238,7 +238,7 @@ class FormatElementWdg(SimpleTableElementWdg):
 
 
 
-    def convert_to_float(my, num):
+    def convert_to_float(self, num):
         try:
             num = float(num)
         except:
@@ -246,13 +246,13 @@ class FormatElementWdg(SimpleTableElementWdg):
         return num
 
 
-    def number_format(my, num, places=0):
+    def number_format(self, num, places=0):
         """Format a number according to locality and given places"""
         import locale
         locale.setlocale(locale.LC_ALL, "")
         return locale.format("%.*f", (places, num), True)
 
-    def currency_format(my, num, grouping=False, monetary=False):
+    def currency_format(self, num, grouping=False, monetary=False):
         """Format a currency according to locality and given places"""
         import locale
         locale.setlocale(locale.LC_ALL, "")
@@ -263,7 +263,7 @@ class FormatElementWdg(SimpleTableElementWdg):
         return locale.currency(num, True, grouping, monetary)
 
    
-    def get_format_value(my, value, format):
+    def get_format_value(self, value, format):
         if format not in ['Checkbox'] and value == '':
             return ''
         # ------------------------------------------------
@@ -272,40 +272,40 @@ class FormatElementWdg(SimpleTableElementWdg):
             if not value:
                 # Case where value is '', 0, 0.0, -0.0 . 
                 value = 0
-            value = "%0.0f" % my.convert_to_float(value)
+            value = "%0.0f" % self.convert_to_float(value)
 
         elif format == '-1,234':
             if not value:
                 value = 0
             # Group the value into three numbers seperated by a comma.
-            value = my.number_format(value, places=0)
+            value = self.number_format(value, places=0)
 
         # ------------------------------------------------
         # Float
         elif format == '-1234.12':
             if not value:
                 value = 0
-            value = "%0.2f" % my.convert_to_float(value)
+            value = "%0.2f" % self.convert_to_float(value)
 
         elif format == '-1,234.12':
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.number_format(value, places=2)
+            value = self.number_format(value, places=2)
 
         # ------------------------------------------------
         # Percentage
         elif format == '-13%':
             if not value:
                 value = 0
-            value = my.convert_to_float(value) * 100
-            value = "%0.0f" % my.convert_to_float(value) + "%"
+            value = self.convert_to_float(value) * 100
+            value = "%0.0f" % self.convert_to_float(value) + "%"
 
         elif format == '-12.95%':
             if not value:
                 value = 0
-            value = my.convert_to_float(value) * 100
-            value = "%0.2f" % my.convert_to_float(value) + "%"
+            value = self.convert_to_float(value) * 100
+            value = "%0.2f" % self.convert_to_float(value) + "%"
 
         # ------------------------------------------------
         # Currency
@@ -313,33 +313,33 @@ class FormatElementWdg(SimpleTableElementWdg):
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
             value = value[0:-3]
 
         elif format == '-$1,234.00':
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
 
         elif format == '-$1,234.--':
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
             value = value[0:-3] + ".--"
 
         elif format == '-$1,234.00 CAD':
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True, monetary=True)
+            value = self.currency_format(value, grouping=True, monetary=True)
 
         elif format == '($1,234.00)':
             # break the value up by 3s
             if not value or value == "0":
                 value = " "
             else:
-                value = my.currency_format(value, grouping=True)
+                value = self.currency_format(value, grouping=True)
                 if value.startswith("-"):
                     value = "<span style='color: #F00'>(%s)</span>" % value.replace("-", "")
 
@@ -518,7 +518,7 @@ class FormatElementWdg(SimpleTableElementWdg):
                 from pyasm.common import SPTDate
 
                 # this is a special column based timezone override
-                timezone = my.get_option('timezone')
+                timezone = self.get_option('timezone')
                 if not timezone:
                     pass
                 elif timezone == "local":
@@ -585,7 +585,7 @@ class FormatElementWdg(SimpleTableElementWdg):
                 value = ''
             else:
                 try:
-                    value = "%.2e" % my.convert_to_float(value)
+                    value = "%.2e" % self.convert_to_float(value)
                 except:
                     value = "0.00"
 
@@ -594,7 +594,7 @@ class FormatElementWdg(SimpleTableElementWdg):
                 value = ''
             else:
                 try:
-                    value = "%.2e" % my.convert_to_float(value)
+                    value = "%.2e" % self.convert_to_float(value)
                 except:
                     value = "0.00"
 
@@ -618,8 +618,8 @@ class FormatElementWdg(SimpleTableElementWdg):
             div = DivWdg()
             div.add_class("spt_boolean_top")
             from pyasm.widget import CheckboxWdg
-            checkbox = CheckboxWdg(my.get_name())
-            if my.attributes.get('edit') == 'false':
+            checkbox = CheckboxWdg(self.get_name())
+            if self.attributes.get('edit') == 'false':
                 checkbox.set_option('disabled','disabled')
 
             checkbox.set_option("value", "true")
@@ -627,9 +627,9 @@ class FormatElementWdg(SimpleTableElementWdg):
                 checkbox.set_checked()
             div.add(checkbox)
 
-            div.add_class('spt_format_checkbox_%s' % my.get_name())
+            div.add_class('spt_format_checkbox_%s' % self.get_name())
 
-            version = my.parent_wdg.get_layout_version()
+            version = self.parent_wdg.get_layout_version()
             if version == "2":
                 pass
             else:
@@ -653,7 +653,7 @@ class FormatElementWdg(SimpleTableElementWdg):
         # ------------------------------------------------
         # Timecode
         elif format in ['MM:SS.FF','MM:SS:FF', 'MM:SS', 'HH:MM:SS.FF', 'HH:MM:SS:FF', 'HH:MM:SS']:
-            fps = my.get_option('fps')
+            fps = self.get_option('fps')
             if not fps:
                 fps = 24
             else:
@@ -673,20 +673,20 @@ class FormatElementWdg(SimpleTableElementWdg):
 
 
 
-    def handle_th(my, th, index):
-        format = my.get_option('format')
+    def handle_th(self, th, index):
+        format = self.get_option('format')
         if format == 'Checkbox':
             th.add_attr("spt_input_type", "inline")
             #th.add_style("text-align: center")
 
-        my.add_simple_search(th)
+        self.add_simple_search(th)
 
-    def handle_td(my, td):
-        super(FormatElementWdg, my).handle_td(td)
-        version = my.parent_wdg.get_layout_version()
+    def handle_td(self, td):
+        super(FormatElementWdg, self).handle_td(td)
+        version = self.parent_wdg.get_layout_version()
         if version == "2":
             return
-        format = my.get_option('format')
+        format = self.get_option('format')
         if format == 'Checkbox':
             td.add_attr("spt_input_type", "inline")
             td.add_style("text-align: center")

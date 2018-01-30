@@ -30,16 +30,16 @@ class ReviewWdg(BaseRefreshWdg):
     'context': 'the context of the notes'
     }
 
-    def get_display(my):
+    def get_display(self):
 
-        my.search_key = my.kwargs.get("search_key") 
-        my.context = my.kwargs.get("context") 
+        self.search_key = self.kwargs.get("search_key") 
+        self.context = self.kwargs.get("context") 
 
-        assert my.search_key
-        assert my.context
+        assert self.search_key
+        assert self.context
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_class("spt_review_top")
 
         table = Table()
@@ -54,8 +54,8 @@ class ReviewWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'kwargs': {
-            'search_key': my.search_key,
-            'context': my.context,
+            'search_key': self.search_key,
+            'context': self.context,
         },
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_review_top");
@@ -100,9 +100,9 @@ class ReviewWdg(BaseRefreshWdg):
 
 
 
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
 
-        note_context = "%s|note" % my.context
+        note_context = "%s|note" % self.context
         snapshots = Search.eval("@SOBJECT(sthpw/snapshot['context','=','%s'])" % note_context, [sobject])
 
         vnotes_div = DivWdg()
@@ -119,7 +119,7 @@ class ReviewWdg(BaseRefreshWdg):
         if not snapshots:
             vnotes_div.add("<b>No review notes available</b>")
 
-            notes_wdg = VisualNotesWdg(search_key=my.search_key,context=my.context)
+            notes_wdg = VisualNotesWdg(search_key=self.search_key,context=self.context)
             content_div.add(notes_wdg)
 
 

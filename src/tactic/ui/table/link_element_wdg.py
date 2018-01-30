@@ -29,25 +29,25 @@ class LinkElementWdg(SimpleTableElementWdg):
     }
 
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def is_editable(my):
+    def is_editable(self):
         return 'optional'
 
-    def create_required_columns(my, search_type):
-        column_name = my.get_name()
+    def create_required_columns(self, search_type):
+        column_name = self.get_name()
         data_type = "varchar"
         cmd = ColumnAddCmd(search_type, column_name, data_type)
         cmd.execute()
 
 
 
-    def get_display(my):
+    def get_display(self):
         
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        value = sobject.get_value( my.get_name() )
+        value = sobject.get_value( self.get_name() )
         if value.startswith("{") and value.endswith("}"):
             value = Search.eval(value)
 
@@ -77,7 +77,7 @@ class LinkElementWdg(SimpleTableElementWdg):
             } )
 
 
-            icon = my.get_option("icon")
+            icon = self.get_option("icon")
             if not icon:
                 icon = 'jump'
 

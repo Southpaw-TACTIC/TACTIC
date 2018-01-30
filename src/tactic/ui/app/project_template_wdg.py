@@ -28,11 +28,11 @@ from tactic.ui.widget import ActionButtonWdg
 
 class ProjectTemplateWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         div.add_class("spt_project_template_top")
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
         div.add_color("background", "background")
 
@@ -53,7 +53,7 @@ class ProjectTemplateWdg(BaseRefreshWdg):
         left.add_style("min-width: 250px")
         left.add_style("height: 400px")
 
-        left.add(my.get_templates_wdg() )
+        left.add(self.get_templates_wdg() )
 
         right = table.add_cell()
         right.add_border()
@@ -62,7 +62,7 @@ class ProjectTemplateWdg(BaseRefreshWdg):
         right.add_style("padding: 5px")
         right.add_class("spt_project_template_content")
 
-        template = my.kwargs.get("template")
+        template = self.kwargs.get("template")
         if template: 
             template_dir = Environment.get_template_dir()
             template_dir = "%s/%s" % (template_dir, template)
@@ -86,7 +86,7 @@ class ProjectTemplateWdg(BaseRefreshWdg):
 
 
 
-    def get_templates_wdg(my):
+    def get_templates_wdg(self):
 
         div = DivWdg()
         div.add_style("padding: 5px")
@@ -232,13 +232,13 @@ class ProjectTemplateWdg(BaseRefreshWdg):
 
 
 class ProjectTemplateEditWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_style("width: 500px")
 
-        template_dir = my.kwargs.get("template_dir")
+        template_dir = self.kwargs.get("template_dir")
 
         manifest_path = "%s/manifest.xml" % template_dir
 
@@ -390,12 +390,12 @@ class ProjectTemplateEditWdg(BaseRefreshWdg):
 
 
 class ProjectTemplateDeleteCmd(Command):
-    def execute(my):
-        template = my.kwargs.get("template")
+    def execute(self):
+        template = self.kwargs.get("template")
 
         template_dir = Environment.get_template_dir()
 
-        template = my.kwargs.get("template")
+        template = self.kwargs.get("template")
 
 
         from pyasm.search import FileUndo
@@ -411,12 +411,12 @@ class ProjectTemplateDeleteCmd(Command):
 
 class ProjectTemplateInstallCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         from pyasm.common import ZipUtil
         ziputil = ZipUtil()
 
-        paths = my.kwargs.get("paths")
+        paths = self.kwargs.get("paths")
 
         upload_dir = Environment.get_upload_dir()
         template_dir = Environment.get_template_dir()
@@ -445,12 +445,12 @@ class ProjectTemplateInstallCmd(Command):
 class ProjectTemplateDownloadCmd(Command):
     '''prepare a template for download'''
 
-    def execute(my):
+    def execute(self):
 
         template_dir = Environment.get_template_dir()
 
         # find the 
-        template_dir = my.kwargs.get("template_dir")
+        template_dir = self.kwargs.get("template_dir")
         if not template_dir:
             return
 
@@ -483,7 +483,7 @@ class ProjectTemplateDownloadCmd(Command):
 
         shutil.copy(path, cache_dir)
 
-        my.info["filename"] = filename
+        self.info["filename"] = filename
 
 
 

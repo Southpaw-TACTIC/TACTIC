@@ -20,13 +20,13 @@ from Crypto.Cipher import AES
 
 class EncryptUtil(object):
 
-    def __init__(my, password):
-        my.password = password
-        my.key = hashlib.sha256(password).digest()
+    def __init__(self, password):
+        self.password = password
+        self.key = hashlib.sha256(password).digest()
 
 
 
-    def encrypt_file(my, in_filename, out_filename=None, chunksize=64*1024):
+    def encrypt_file(self, in_filename, out_filename=None, chunksize=64*1024):
         """ Encrypts a file using AES (CBC mode) with the
             given key.
 
@@ -47,7 +47,7 @@ class EncryptUtil(object):
                 sizes can be faster for some files and machines.
                 chunksize must be divisible by 16.
         """
-        key = my.key
+        key = self.key
 
         if not out_filename:
             out_filename = in_filename + '.enc'
@@ -76,7 +76,7 @@ class EncryptUtil(object):
 
 
 
-    def decrypt_file(my, in_filename, out_filename=None, chunksize=24*1024):
+    def decrypt_file(self, in_filename, out_filename=None, chunksize=24*1024):
         """ Decrypts a file using AES (CBC mode) with the
             given key. Parameters are similar to encrypt_file,
             with one difference: out_filename, if not supplied
@@ -85,7 +85,7 @@ class EncryptUtil(object):
             out_filename will be 'aaa.zip')
         """
 
-        key = my.key
+        key = self.key
 
         if not out_filename:
             out_filename = os.path.splitext(in_filename)[0]

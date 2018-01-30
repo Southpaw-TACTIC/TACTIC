@@ -22,17 +22,17 @@ from tactic.ui.common import BaseTableElementWdg
 
 class LayerTableElementWdg(BaseTableElementWdg):
 
-    def get_title(my):
+    def get_title(self):
         widget = Widget()
 
         if not Container.get('GeneralAppletWdg'):
             widget.add( GeneralAppletWdg() )
             Container.put('GeneralAppletWdg', True)
-        widget.add(super(LayerTableElementWdg, my).get_title())
+        widget.add(super(LayerTableElementWdg, self).get_title())
         return widget
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
 
         # this is a comp object ... need to find the shot
@@ -56,7 +56,7 @@ class LayerTableElementWdg(BaseTableElementWdg):
             table.add_cell("<i>No renders</i>")
         else:
             render = Snapshot.get_current_by_sobject(render)
-            table.add_cell( my.get_open_wdg(render) )
+            table.add_cell( self.get_open_wdg(render) )
             dir = render.get_web_dir()
             table.add_cell( "<i>%s</i>" % dir )
 
@@ -71,7 +71,7 @@ class LayerTableElementWdg(BaseTableElementWdg):
             if not render:
                 table.add_cell("<i>No renders</i>")
             else:
-                table.add_cell( my.get_open_wdg(render) )
+                table.add_cell( self.get_open_wdg(render) )
                 dir = render.get_client_lib_dir()
                 table.add_cell( "<i>%s</i>" % dir )
 
@@ -101,12 +101,12 @@ class LayerTableElementWdg(BaseTableElementWdg):
 
 class CompLayerTableElementWdg(LayerTableElementWdg):
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         
 
-        context = my.kwargs.get('context')
+        context = self.kwargs.get('context')
         if not context:
             context = "publish"
             
@@ -137,7 +137,7 @@ class CompLayerTableElementWdg(LayerTableElementWdg):
         if ref_nodes:
             table.add_row_cell('Ref:')
             
-            my.draw_node(ref_nodes, table)
+            self.draw_node(ref_nodes, table)
         if unknown_ref_nodes:
             table.add_row_cell('Unknown Ref:')
             for node in unknown_ref_nodes:
@@ -147,7 +147,7 @@ class CompLayerTableElementWdg(LayerTableElementWdg):
         div.add(table)
         return div
 
-    def draw_node(my, ref_nodes, table):
+    def draw_node(self, ref_nodes, table):
         if not ref_nodes:
             return
         
@@ -164,7 +164,7 @@ class CompLayerTableElementWdg(LayerTableElementWdg):
             parent = render.get_parent()
             table.add_cell( parent.get_name() )
 
-            table.add_cell( my.get_open_wdg(render) )
+            table.add_cell( self.get_open_wdg(render) )
 
             dir = render.get_client_lib_dir()
             table.add_cell( "<i>%s</i>" % dir )
@@ -174,8 +174,8 @@ class CompLayerTableElementWdg(LayerTableElementWdg):
 
 class ExploreTableElementWdg(LayerTableElementWdg):
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         snapshots = []
         if isinstance(sobject, Layer):
@@ -200,7 +200,7 @@ class ExploreTableElementWdg(LayerTableElementWdg):
             for file_type in file_types:
                 table.add_row()
                 
-                table.add_cell( my.get_open_wdg(snapshot, file_type) )
+                table.add_cell( self.get_open_wdg(snapshot, file_type) )
                 dir = snapshot.get_client_lib_dir(file_type=file_type)
                 
                 

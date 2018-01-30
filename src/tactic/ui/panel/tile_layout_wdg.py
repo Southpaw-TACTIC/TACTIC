@@ -185,13 +185,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-    def can_select(my):
+    def can_select(self):
         return True
 
-    def can_expand(my):
+    def can_expand(self):
         return True
 
-    def get_expand_behavior(my):
+    def get_expand_behavior(self):
         return {
             'type': 'click_up',
             'cbjs_action': '''
@@ -218,36 +218,36 @@ class TileLayoutWdg(ToolLayoutWdg):
         }
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         # TODO: this should be applied to ViewPanelWdg level
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
         if process and search.column_exists('process'):
             search.add_filter("process", process)
 
-        context = my.kwargs.get("context")
+        context = self.kwargs.get("context")
         if context:
             search.add_filter("context", context)
 
-        return super(ToolLayoutWdg, my).alter_search(search)
+        return super(ToolLayoutWdg, self).alter_search(search)
 
 
 
-    def handle_group(my, inner, row, sobject):
+    def handle_group(self, inner, row, sobject):
 
 
         last_group_column = None
         
-        for i, group_column in enumerate(my.group_columns):
-            group_values = my.group_values[i]
+        for i, group_column in enumerate(self.group_columns):
+            group_values = self.group_values[i]
             
-            eval_group_column =  my._grouping_data.get(group_column)
+            eval_group_column =  self._grouping_data.get(group_column)
             if eval_group_column:
                 group_column = eval_group_column
             
             group_value = sobject.get_value(group_column, no_exception=True)
-            if my.group_by_time.get(group_column): #my.group_interval:
+            if self.group_by_time.get(group_column): #self.group_interval:
                 #group_value = sobject.get_value(group_column, no_exception=True)
-                group_value = my._get_simplified_time(group_value)
+                group_value = self._get_simplified_time(group_value)
             if not group_value:
                 group_value = "__NONE__"
             
@@ -263,17 +263,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if group_value == '__NONE__':
                     label = '---'
                 else:
-                    group_label_expr = my.kwargs.get("group_label_expr")
+                    group_label_expr = self.kwargs.get("group_label_expr")
                     if group_label_expr:
                         label = Search.eval(group_label_expr, sobject, single=True)
                     else:
                         label = Common.process_unicode_string(group_value)
 
                 title = label
-                if my.group_by_time.get(group_column):
-                    if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
+                if self.group_by_time.get(group_column):
+                    if self.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
                         title = 'Week  %s' %label
-                    elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
+                    elif self.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
                         # order by number, but convert to alpha title
                         labels = label.split(' ')
                         if len(labels)== 2:
@@ -293,7 +293,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 group_wdg.add_style("width: auto")
 
 
-                group_levels = len(my.group_columns)
+                group_levels = len(self.group_columns)
                 #group_levels = 1
                 if i+1 >= group_levels:
                     inner.add(group_wdg)
@@ -317,27 +317,27 @@ class TileLayoutWdg(ToolLayoutWdg):
             
                 last_group_column = group_column
                 # clear the next dict to facilate proper grouping in the next major group
-                next_dict = my.group_values.get(i+1)
+                next_dict = self.group_values.get(i+1)
                 if next_dict:
                     next_dict = {}
-                    my.group_values[i+1] = next_dict
+                    self.group_values[i+1] = next_dict
 
 
-    def add_no_results_bvr(my, tr):
+    def add_no_results_bvr(self, tr):
         return
 
 
-    def add_no_results_style(my, td):
+    def add_no_results_style(self, td):
         div = DivWdg()
         td.add(div)
         div.add_style("height: 300px")
    
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
         div = DivWdg()
         div.add_class("spt_tile_layout_top")
-        if my.top_styles:
-            div.add_styles(my.top_styles)
+        if self.top_styles:
+            div.add_styles(self.top_styles)
         inner = DivWdg()
         div.add(inner)
 
@@ -345,16 +345,16 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         menus_in = {}
         # set up the context menus
-        if my.show_context_menu == True:
-            menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
-            menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
-        elif my.show_context_menu == 'none':
+        if self.show_context_menu == True:
+            menus_in['DG_HEADER_CTX'] = [ self.get_smart_header_context_menu_data() ]
+            menus_in['DG_DROW_SMENU_CTX'] = [ self.get_data_row_smart_context_menu_details() ]
+        elif self.show_context_menu == 'none':
             div.add_event('oncontextmenu', 'return false;')
         if menus_in:
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
         
 
-        temp = my.kwargs.get("temp")
+        temp = self.kwargs.get("temp")
         has_loading = False
 
         
@@ -368,24 +368,24 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         inner.add("<br clear='all'/>")
         
-        if my.upload_mode in ['button','both']:
+        if self.upload_mode in ['button','both']:
             button_div = DivWdg()
             inner.add(button_div)
-            button_div.add( my.get_upload_wdg() )
-            button_div.add( my.get_delete_wdg() )
+            button_div.add( self.get_upload_wdg() )
+            button_div.add( self.get_delete_wdg() )
             button_div.add_style("height: 45px")
             
         
-        if my.sobjects:
-            inner.add( my.get_scale_wdg())
-            if my.upload_mode in ['button','both']:
+        if self.sobjects:
+            inner.add( self.get_scale_wdg())
+            if self.upload_mode in ['button','both']:
                 inner.add(HtmlElement.br(3))
 
-            my.process_groups()
+            self.process_groups()
 
-            for row, sobject in enumerate(my.sobjects):
+            for row, sobject in enumerate(self.sobjects):
 
-                my.handle_group(inner, row, sobject)
+                self.handle_group(inner, row, sobject)
 
 
                 if False and not temp and row > 4: 
@@ -404,15 +404,15 @@ class TileLayoutWdg(ToolLayoutWdg):
                     continue
 
 
-                kwargs = my.kwargs.copy()
-                tile = my.get_tile_wdg(sobject)
+                kwargs = self.kwargs.copy()
+                tile = self.get_tile_wdg(sobject)
                 inner.add(tile)
                 #inner.add_style("text-align: center")
                 inner.add_style("text-align: left")
         else:
             table = Table()
             inner.add(table)
-            my.handle_no_results(table)
+            self.handle_no_results(table)
 
 
         chunk_size = 5
@@ -463,40 +463,40 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-    def init(my):
-        my.scale_called = False
-        my.scale = None
-        top_view = my.kwargs.get("top_view")
+    def init(self):
+        self.scale_called = False
+        self.scale = None
+        top_view = self.kwargs.get("top_view")
         if top_view:
             kwargs = {
                 'view': top_view,
             }
             from tactic.ui.panel import CustomLayoutWdg
-            my.title_wdg = CustomLayoutWdg(**kwargs)
+            self.title_wdg = CustomLayoutWdg(**kwargs)
         else:
-            my.title_wdg = None
-        my.sticky_scale = my.kwargs.get('sticky_scale')
-        if my.sticky_scale == 'local':
+            self.title_wdg = None
+        self.sticky_scale = self.kwargs.get('sticky_scale')
+        if self.sticky_scale == 'local':
             # NOTE: each side bar link has a unique name on each level, but it's not always available
             # not in page refresh or built-in links
-            # element = my.kwargs.get('element_name')
-            my.scale_prefix = '%s:%s' %(my.search_type, my.view)
+            # element = self.kwargs.get('element_name')
+            self.scale_prefix = '%s:%s' %(self.search_type, self.view)
         else:
-            my.scale_prefix = ''
+            self.scale_prefix = ''
         
-        bottom_view = my.kwargs.get("bottom_view")
+        bottom_view = self.kwargs.get("bottom_view")
         if bottom_view:
             kwargs = {
                 'view': bottom_view,
                 'load': 'sequence',
             }
             from tactic.ui.panel import CustomLayoutWdg
-            my.bottom = CustomLayoutWdg(**kwargs)
+            self.bottom = CustomLayoutWdg(**kwargs)
         else:
-            my.bottom = None
+            self.bottom = None
 
-        my.bottom_expr = my.kwargs.get("bottom_expr")
-        my.show_drop_shadow = my.kwargs.get("show_drop_shadow") in ['true', True]
+        self.bottom_expr = self.kwargs.get("bottom_expr")
+        self.show_drop_shadow = self.kwargs.get("show_drop_shadow") in ['true', True]
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
@@ -507,49 +507,49 @@ class TileLayoutWdg(ToolLayoutWdg):
             data = {}
         
 
-        my.scale = data.get("scale")
-        if my.scale == None:
-            my.scale = my.kwargs.get("scale")
-        if my.scale == None:
-            my.scale = 100
+        self.scale = data.get("scale")
+        if self.scale == None:
+            self.scale = self.kwargs.get("scale")
+        if self.scale == None:
+            self.scale = 100
 
 
-        my.aspect_ratio = my.kwargs.get('aspect_ratio')
-        if my.aspect_ratio:
-            parts = re.split('[\Wx]+', my.aspect_ratio)
-            my.aspect_ratio = (int(parts[0]), int(parts[1]))
+        self.aspect_ratio = self.kwargs.get('aspect_ratio')
+        if self.aspect_ratio:
+            parts = re.split('[\Wx]+', self.aspect_ratio)
+            self.aspect_ratio = (int(parts[0]), int(parts[1]))
         else:
 
-            my.aspect_ratio = (240, 160)
-            #my.aspect_ratio = (240, 135)
-            #my.aspect_ratio = (240, 240)
+            self.aspect_ratio = (240, 160)
+            #self.aspect_ratio = (240, 135)
+            #self.aspect_ratio = (240, 240)
 
 
 
-        my.show_name_hover = my.kwargs.get('show_name_hover')
+        self.show_name_hover = self.kwargs.get('show_name_hover')
 
-        my.top_styles = my.kwargs.get('styles')
-        my.spacing = my.kwargs.get('spacing')
-        if not my.spacing:
-            my.spacing = '10'
+        self.top_styles = self.kwargs.get('styles')
+        self.spacing = self.kwargs.get('spacing')
+        if not self.spacing:
+            self.spacing = '10'
 
-        my.overlay_expr = my.kwargs.get('overlay_expr')
-        my.overlay_color = my.kwargs.get('overlay_color')
+        self.overlay_expr = self.kwargs.get('overlay_expr')
+        self.overlay_color = self.kwargs.get('overlay_color')
 
-        my.allow_drag = my.kwargs.get('allow_drag') not in ['false', False]
-        my.upload_mode = my.kwargs.get('upload_mode')
-        if not my.upload_mode:
-            my.upload_mode = 'drop'
+        self.allow_drag = self.kwargs.get('allow_drag') not in ['false', False]
+        self.upload_mode = self.kwargs.get('upload_mode')
+        if not self.upload_mode:
+            self.upload_mode = 'drop'
 
-        my.gallery_align = my.kwargs.get('gallery_align')
+        self.gallery_align = self.kwargs.get('gallery_align')
 
-        super(TileLayoutWdg, my).init()
+        super(TileLayoutWdg, self).init()
 
 
-    def add_layout_behaviors(my, layout_wdg):
+    def add_layout_behaviors(self, layout_wdg):
         border_color = layout_wdg.get_color('border', modifier=20)
         
-        if my.allow_drag:
+        if self.allow_drag:
             layout_wdg.add_behavior( {
                 'type': 'smart_drag',
                 'bvr_match_class': 'spt_tile_checkbox',
@@ -559,7 +559,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'border_color': border_color,
                 'dx': 10, 'dy': 10,
                 'drop_code': 'DROP_ROW',
-                'accepted_search_type' : my.search_type,
+                'accepted_search_type' : self.search_type,
 
                 
                  # don't use cbjs_pre_motion_setup as it assumes the drag el
@@ -593,7 +593,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             } )
 
 
-        detail_element_names = my.kwargs.get("detail_element_names")
+        detail_element_names = self.kwargs.get("detail_element_names")
 
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
@@ -618,13 +618,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         # For collections
-        parts = my.search_type.split("/")
+        parts = self.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
         layout_wdg.add_attr("spt_collection_type", collection_type)
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'collection_type': collection_type,
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'bvr_match_class': 'spt_tile_collection',
             'cbjs_action': '''
             var layout = bvr.src_el.getParent(".spt_layout");
@@ -654,24 +654,24 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
         if not process:
             process = "publish"
 
 
-        mode = my.kwargs.get("expand_mode")
+        mode = self.kwargs.get("expand_mode")
         if not mode:
             mode = "gallery"
 
         
-        gallery_width = my.kwargs.get("gallery_width")
+        gallery_width = self.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
         if mode == "plain":
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'collection_type': collection_type,
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'process': process,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
@@ -745,7 +745,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 '''
             } )
         elif mode == "detail":
-            tab_element_names = my.kwargs.get("tab_element_names")
+            tab_element_names = self.kwargs.get("tab_element_names")
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'bvr_match_class': 'spt_tile_content',
@@ -771,7 +771,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'width': gallery_width,
-                'align': my.gallery_align,
+                'align': self.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -814,7 +814,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'width': gallery_width,
-                'align': my.gallery_align,
+                'align': self.gallery_align,
                 'process': process,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
@@ -857,14 +857,14 @@ class TileLayoutWdg(ToolLayoutWdg):
  
         elif mode == "custom":
             
-            script_path = my.kwargs.get("script_path")
+            script_path = self.kwargs.get("script_path")
             script = None
             if script_path:
                 script_obj = CustomScript.get_by_path(script_path)
                 script = script_obj.get_value("script")
 
             if not script:
-                script = my.kwargs.get("script")
+                script = self.kwargs.get("script")
 
             if not script:
                 script = '''
@@ -917,18 +917,18 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
-        if my.parent_key:
+        if self.parent_key:
             search_type = None
         else:
-            search_type = my.search_type
+            search_type = self.search_type
 
 
-        if my.upload_mode in ['drop','both']:
+        if self.upload_mode in ['drop','both']:
             layout_wdg.add_behavior( {
                 'type': 'load',
                 'search_type': search_type,
-                'search_key': my.parent_key,
-                'drop_shadow': my.show_drop_shadow,
+                'search_key': self.parent_key,
+                'drop_shadow': self.show_drop_shadow,
                 'process': process,
                 'border_color': border_color,
                 'cbjs_action': '''
@@ -1299,7 +1299,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
-        if my.kwargs.get("temp") != True:
+        if self.kwargs.get("temp") != True:
             #unique_id = layout_wdg.get_table_id()
             layout_wdg.add_behavior( {
                 #'type': 'listen',
@@ -1373,30 +1373,30 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-    def get_tile_wdg(my, sobject):
+    def get_tile_wdg(self, sobject):
 
         div = DivWdg()
 
         
         div.add_class("spt_tile_top")
         div.add_class("unselectable")
-        div.add_style('margin', my.spacing)
+        div.add_style('margin', self.spacing)
         div.add_style('background-color','transparent')
         div.add_style('position','relative')
         div.add_style('vertical-align','top')
 
         div.add_class("spt_table_row")
-        div.add_class("spt_table_row_%s" % my.table_id)
+        div.add_class("spt_table_row_%s" % self.table_id)
 
  
-        if my.kwargs.get("show_title") not in ['false', False]:
+        if self.kwargs.get("show_title") not in ['false', False]:
 
-            if my.title_wdg:
-                my.title_wdg.set_sobject(sobject)
-                div.add(my.title_wdg.get_buffer_display())
-                title_wdg = my.title_wdg
+            if self.title_wdg:
+                self.title_wdg.set_sobject(sobject)
+                div.add(self.title_wdg.get_buffer_display())
+                title_wdg = self.title_wdg
             else:
-                title_wdg = my.get_title(sobject)
+                title_wdg = self.get_title(sobject)
                 div.add( title_wdg )
 
 
@@ -1418,7 +1418,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         
-        if my.show_drop_shadow:
+        if self.show_drop_shadow:
             div.set_box_shadow()
 
 
@@ -1439,7 +1439,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             "drag_el": '@',
             'drop_code': 'DROP_ROW',
             'border_color': border_color,
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             "cb_set_prefix": 'spt.tile_layout.image_drag'
         } )
 
@@ -1448,18 +1448,18 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add_class("spt_tile_content")
 
         thumb_div.add_style("overflow: hidden")
-        thumb_div.add_style("width: %s" % my.aspect_ratio[0])
+        thumb_div.add_style("width: %s" % self.aspect_ratio[0])
 
-        thumb_div.add_style("height: %s" % my.aspect_ratio[1])
+        thumb_div.add_style("height: %s" % self.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
 
         kwargs = {}
-        kwargs['show_name_hover'] = my.show_name_hover
-        kwargs['aspect_ratio'] = my.aspect_ratio
+        kwargs['show_name_hover'] = self.show_name_hover
+        kwargs['aspect_ratio'] = self.aspect_ratio
 
         thumb = ThumbWdg2(**kwargs)
 
-        use_parent = my.kwargs.get("use_parent")
+        use_parent = self.kwargs.get("use_parent")
         if use_parent in [True, 'true']:
             parent = sobject.get_parent()
             thumb.set_sobject(parent)
@@ -1538,11 +1538,11 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-        if my.bottom:
-            my.bottom.set_sobject(sobject)
-            div.add(my.bottom.get_buffer_display())
-        elif my.bottom_expr:
-            bottom_value = Search.eval(my.bottom_expr, sobject, single=True)
+        if self.bottom:
+            self.bottom.set_sobject(sobject)
+            div.add(self.bottom.get_buffer_display())
+        elif self.bottom_expr:
+            bottom_value = Search.eval(self.bottom_expr, sobject, single=True)
             bottom_value = bottom_value.replace("\n", "<br/>")
             bottom = DivWdg()
             bottom.add(bottom_value)
@@ -1551,7 +1551,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             bottom.add_style("height: 50px")
             bottom.add_style("overflow-y: auto")
             div.add(bottom)
-            #bottom.add_style("width: %s" % (my.aspect_ratio[0]-20))
+            #bottom.add_style("width: %s" % (self.aspect_ratio[0]-20))
         else:
             table = Table()
             #div.add(table)
@@ -1572,9 +1572,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
         
-        if my.overlay_expr:
+        if self.overlay_expr:
             from tactic.ui.widget import OverlayStatsWdg
-            stat_div = OverlayStatsWdg(expr = my.overlay_expr, sobject = sobject, bg_color = my.overlay_color)
+            stat_div = OverlayStatsWdg(expr = self.overlay_expr, sobject = sobject, bg_color = self.overlay_color)
             div.add(stat_div)
 
 
@@ -1582,7 +1582,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-    def get_view_wdg(my, sobject, view):
+    def get_view_wdg(self, sobject, view):
         div = DivWdg()
         #div.add_style("overflow: hidden")
 
@@ -1597,10 +1597,10 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-    def get_shelf_wdg(my):
-        return my.get_scale_wdg()
+    def get_shelf_wdg(self):
+        return self.get_scale_wdg()
 
-    def get_delete_wdg(my):
+    def get_delete_wdg(self):
         '''Get Delete button'''
         button = ActionButtonWdg(title='Delete')
         button.add_style('float','left')
@@ -1613,24 +1613,24 @@ class TileLayoutWdg(ToolLayoutWdg):
         })
         return button
         
-    def get_upload_wdg(my):
+    def get_upload_wdg(self):
         '''Get Upload button'''
-        process = my.kwargs.get('process')
+        process = self.kwargs.get('process')
         if not process:
             process = 'publish'
 
         transaction_ticket = Common.generate_random_key()
 
         insert_search_type = ''
-        if not my.parent_key:
-            insert_search_type = my.search_type
+        if not self.parent_key:
+            insert_search_type = self.search_type
         
         upload_init = '''
            var server = TacticServerStub.get();
            var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [%s]" });
            // set the ticket to ensure a unified transaction ticket in tihs check-in
            spt.html5upload.ticket = ticket;
-        '''%my.search_type
+        '''%self.search_type
 
         on_complete = '''
            var server = TacticServerStub.get();
@@ -1665,7 +1665,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                spt.alert('Error: file object cannot be found.')
             }
             spt.app_busy.hide();
-        ''' % (my.parent_key, insert_search_type, process)
+        ''' % (self.parent_key, insert_search_type, process)
 
         button = UploadButtonWdg(on_complete=on_complete, upload_init=upload_init)
         button.add_style('float: left')
@@ -1673,13 +1673,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         return button
 
-    def get_scale_wdg(my):
+    def get_scale_wdg(self):
 
-        if my.scale_called == True:
+        if self.scale_called == True:
             return None
-        my.scale_called = True
+        self.scale_called = True
 
-        show_scale = my.kwargs.get("show_scale")
+        show_scale = self.kwargs.get("show_scale")
         
         div = DivWdg()
         if show_scale in [False, 'false']:
@@ -1690,9 +1690,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add(hidden)
         div.add_behavior( {
             'type': 'load',
-            'scale_prefix':  my.scale_prefix,
-            'default_scale': my.scale,
-            'aspect_ratio': my.aspect_ratio,
+            'scale_prefix':  self.scale_prefix,
+            'default_scale': self.scale,
+            'aspect_ratio': self.aspect_ratio,
             'cbjs_action': '''
 spt.tile_layout = {}
 spt.tile_layout.layout = null;
@@ -2042,7 +2042,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         ''' } )
 
 
-        scale = my.kwargs.get("scale")
+        scale = self.kwargs.get("scale")
 
 
         div.add_behavior( {
@@ -2103,12 +2103,12 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             data = data_list[0]
         else:
             data = {}
-        my.scale = data.get("scale")
-        if my.scale == None:
-            my.scale = my.kwargs.get("scale")
+        self.scale = data.get("scale")
+        if self.scale == None:
+            self.scale = self.kwargs.get("scale")
         """
-        if my.scale:
-            value_wdg.set_value(my.scale)
+        if self.scale:
+            value_wdg.set_value(self.scale)
         value_wdg.add_style("width: 28px")
         value_wdg.add_style("text-align: center")
         value_wdg.add_behavior( {
@@ -2170,7 +2170,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         return div
 
 
-    def get_title(my, sobject):
+    def get_title(self, sobject):
         div = DivWdg()
 
         div.add_class("spt_tile_title")
@@ -2210,7 +2210,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
 
         #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
-        show_detail = my.kwargs.get("show_detail")
+        show_detail = self.kwargs.get("show_detail")
         if show_detail not in [False, 'false']:
             detail_div = DivWdg()
             div.add(detail_div)
@@ -2254,7 +2254,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         # to prevent clicking on the checkbox directly and not turning on the yellow border
         #checkbox.add_attr("disabled","disabled")
 
-        title_expr = my.kwargs.get("title_expr")
+        title_expr = self.kwargs.get("title_expr")
         if title_expr:
             title = Search.eval(title_expr, sobject, single=True)
         elif sobject.get_base_search_type() == "sthpw/snapshot":
@@ -2284,7 +2284,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         title_div.add("<br clear='all'/>")
         title_div.add_class("hand")
 
-        if my.kwargs.get("hide_checkbox") in ['true', True]:
+        if self.kwargs.get("hide_checkbox") in ['true', True]:
             checkbox.add_style("visibility: hidden")
             title_div.add_style("left: 10px")
 
@@ -2303,64 +2303,64 @@ from pyasm.biz import FileGroup
 __all__.append("ThumbWdg2")
 class ThumbWdg2(BaseRefreshWdg):
 
-    def init(my):
-        my.path = None
-        my.show_name_hover = my.kwargs.get("show_name_hover")
-        my.main_path = ""
+    def init(self):
+        self.path = None
+        self.show_name_hover = self.kwargs.get("show_name_hover")
+        self.main_path = ""
 
-    def set_sobject(my, sobject):
-        super(ThumbWdg2, my).set_sobject(sobject)
-        my.path = my.get_path_from_sobject(sobject)
+    def set_sobject(self, sobject):
+        super(ThumbWdg2, self).set_sobject(sobject)
+        self.path = self.get_path_from_sobject(sobject)
 
-    def set_path(my, path):
-        my.path = path
+    def set_path(self, path):
+        self.path = path
 
-    def get_path(my):
-        return my.path
-
-
-    def get_lib_path(my):
-        return my.lib_path
-
-    def get_main_path(my):
-        return my.main_path
+    def get_path(self):
+        return self.path
 
 
+    def get_lib_path(self):
+        return self.lib_path
+
+    def get_main_path(self):
+        return self.main_path
 
 
 
-    def get_display(my):
 
-        aspect_ratio = my.kwargs.get("aspect_ratio")
 
-        width = my.kwargs.get("width")
+    def get_display(self):
+
+        aspect_ratio = self.kwargs.get("aspect_ratio")
+
+        width = self.kwargs.get("width")
         if not width:
             width = "100%"
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = "auto"
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if not sobject:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             if search_key:
                 sobject = Search.get_by_search_key(search_key)
-                my.set_sobject(sobject)
+                self.set_sobject(sobject)
 
-        div = my.top
+        div = self.top
         div.add_class("spt_thumb_top")
 
-        path = my.path
-        if my.lib_path and not FileGroup.is_sequence(my.lib_path) and not os.path.exists(my.lib_path):
+        path = self.path
+        if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
             path = ""
 
 
-        my.is_collection = sobject.get_value("_is_collection", no_exception=True)
+        self.is_collection = sobject.get_value("_is_collection", no_exception=True)
 
         search_type = sobject.get_base_search_type()
-        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(my.lib_path):
+        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(self.lib_path):
 
-            image_size = os.path.getsize(my.lib_path)
+            image_size = os.path.getsize(self.lib_path)
             if image_size != 0:
                 # generate icon dynamically
 
@@ -2377,7 +2377,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
         if path:
             if path == "__DYNAMIC__":
-                base,ext = os.path.splitext(my.lib_path)
+                base,ext = os.path.splitext(self.lib_path)
                 ext = ext.upper().lstrip(".")
 
                 #flat ui color
@@ -2414,16 +2414,16 @@ class ThumbWdg2(BaseRefreshWdg):
 
                 if path.endswith("indicator_snake.gif"):
 
-                    if my.lib_path.find("#") != -1:
-                        paths = my.snapshot.get_expanded_file_names()
+                    if self.lib_path.find("#") != -1:
+                        paths = self.snapshot.get_expanded_file_names()
                         # handle sequence
-                        lib_dir = my.snapshot.get_lib_dir()
-                        my.lib_path = "%s/%s" % (lib_dir, paths[0])
+                        lib_dir = self.snapshot.get_lib_dir()
+                        self.lib_path = "%s/%s" % (lib_dir, paths[0])
 
-                    if not os.path.exists(my.lib_path):
+                    if not os.path.exists(self.lib_path):
                         image_size = 0
                     else:
-                        image_size = os.path.getsize(my.lib_path)
+                        image_size = os.path.getsize(self.lib_path)
 
                     if image_size != 0:
                         # generate icon dynamically
@@ -2435,7 +2435,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
                         # generate icon inline
                         from pyasm.widget import ThumbCmd
-                        search_key = my.snapshot.get_search_key()
+                        search_key = self.snapshot.get_search_key()
                         thumb_cmd = ThumbCmd(search_keys=[search_key])
                         thumb_cmd.execute()
                         path = thumb_cmd.get_path()
@@ -2444,14 +2444,14 @@ class ThumbWdg2(BaseRefreshWdg):
                 path = urllib.pathname2url(path)
                 img = HtmlElement.img(src=path)
 
-                div.add_attr("spt_main_path", my.get_main_path())
+                div.add_attr("spt_main_path", self.get_main_path())
 
 
 
 
         else:
             search_type = sobject.get_search_type_obj()
-            path = my.get_path_from_sobject(search_type)
+            path = self.get_path_from_sobject(search_type)
             if path:
                 if isinstance(path, unicode):
                     path = path.encode("utf-8")
@@ -2494,12 +2494,12 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        #if height or my.show_name_hover in ["True","true",True]:
+        #if height or self.show_name_hover in ["True","true",True]:
         #    div.add_style("height: 100%")
 
 
         # FIXE: what is this for???
-        if my.show_name_hover in ["True","true",True]:
+        if self.show_name_hover in ["True","true",True]:
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
             name_hover.add(sobject.get('name'))
@@ -2517,15 +2517,15 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
 
-    def get_path_from_sobject(my, sobject):
+    def get_path_from_sobject(self, sobject):
 
         if sobject.get_value("_is_collection", no_exception=True):
             from pyasm.common import Environment
             install_dir = Environment.get().get_install_dir()
             path = "/context/icons/mime-types/folder2.jpg"
 
-            my.lib_path = "%s/src%s" % (install_dir, path)
-            my.icon_path = "%s/src%s" % (install_dir, path)
+            self.lib_path = "%s/src%s" % (install_dir, path)
+            self.icon_path = "%s/src%s" % (install_dir, path)
             return path
 
         icon_path = None
@@ -2564,20 +2564,20 @@ class ThumbWdg2(BaseRefreshWdg):
         if icon_path:
             path = icon_path
         elif main_path:
-            path = my.find_icon_link(main_path)
+            path = self.find_icon_link(main_path)
 
 
         # remember the last path
-        my.path = path
-        my.lib_path = lib_path
-        my.main_path = main_path
-        my.icon_path = icon_path
-        my.snapshot = snapshot
+        self.path = path
+        self.lib_path = lib_path
+        self.main_path = main_path
+        self.icon_path = icon_path
+        self.snapshot = snapshot
  
         return path
 
 
-    def find_icon_link(my, file_path, repo_path=None):
+    def find_icon_link(self, file_path, repo_path=None):
         from pyasm.widget import ThumbWdg
         return ThumbWdg.find_icon_link(file_path, repo_path)
 

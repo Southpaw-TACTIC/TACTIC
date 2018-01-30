@@ -26,7 +26,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 class QuickBoxWdg(BaseRefreshWdg):
 
-    def get_section_wdg(my, title, description, image, behavior):
+    def get_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -75,9 +75,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("position: absolute")
         top.add_style("top: 300")
         top.add_style("left: 600")
@@ -154,14 +154,14 @@ class QuickBoxWdg(BaseRefreshWdg):
         } )
         close_wdg.add_class("hand")
 
-        content_wdg = my.get_content_wdg()
+        content_wdg = self.get_content_wdg()
         content_top_wdg.add(content_wdg)
 
         return top
 
 
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
         content_wdg = DivWdg()
 
@@ -175,7 +175,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Create Project", "Project Creation Wizard", image, behavior)
+        section = self.get_section_wdg("Create Project", "Project Creation Wizard", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
         """
@@ -197,7 +197,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Configuration", "Lots of Config Goodies", image, behavior)
+        section = self.get_section_wdg("Configuration", "Lots of Config Goodies", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -214,7 +214,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Users", "Users", image, behavior)
+        section = self.get_section_wdg("Users", "Users", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -233,7 +233,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Security", "Security", image, behavior)
+        section = self.get_section_wdg("Security", "Security", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -250,7 +250,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Custom Layout", "Create Custom Interfaces", image, behavior)
+        section = self.get_section_wdg("Custom Layout", "Create Custom Interfaces", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -271,7 +271,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Advanced Setup", "Advanced Setup", image, behavior)
+        section = self.get_section_wdg("Advanced Setup", "Advanced Setup", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -292,7 +292,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             
             '''
         }
-        section = my.get_section_wdg("Project Schema", "Project Schema", image, behavior)
+        section = self.get_section_wdg("Project Schema", "Project Schema", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -313,7 +313,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Project Workflow", "Project Workflow", image, behavior)
+        section = self.get_section_wdg("Project Workflow", "Project Workflow", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -334,7 +334,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Widget Config", "Advanced editing of widget configuration", image, behavior)
+        section = self.get_section_wdg("Widget Config", "Advanced editing of widget configuration", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -357,7 +357,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Manage Plugin", "Tool to load and unload plugins.", image, behavior)
+        section = self.get_section_wdg("Manage Plugin", "Tool to load and unload plugins.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -378,7 +378,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Manage Side Bar", "Tool to manage links and folders for the side bar.", image, behavior)
+        section = self.get_section_wdg("Manage Side Bar", "Tool to manage links and folders for the side bar.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -403,7 +403,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("File Browser", "Browser.", image, behavior)
+        section = self.get_section_wdg("File Browser", "Browser.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -431,7 +431,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Share Manager", "Tool to share project with other TACTIC installs.", image, behavior)
+        section = self.get_section_wdg("Share Manager", "Tool to share project with other TACTIC installs.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
         """
@@ -446,9 +446,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 class CustomQuickBoxWdg(QuickBoxWdg):
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
 
         from tactic.ui.panel import CustomLayoutWdg
         layout = CustomLayoutWdg(

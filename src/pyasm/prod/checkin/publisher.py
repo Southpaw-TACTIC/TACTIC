@@ -35,36 +35,36 @@ class PublisherCmd(LoaderCmd):
     essentially use a low level xml command language which a
     SessionBuilder class will handle'''
 
-    def __init__(my):
-        my.asset_code = None
-        super(PublisherCmd, my).__init__()
+    def __init__(self):
+        self.asset_code = None
+        super(PublisherCmd, self).__init__()
 
-    def set_asset_code(my, code):
-        my.asset_code = code
+    def set_asset_code(self, code):
+        self.asset_code = code
 
-    def execute(my):
+    def execute(self):
 
         # get the current execute parser.  Note this assume that there
         # can only be one at a time.
         key = "PublisherCmd:top_publisher"
         top_publisher = Container.get(key)
         if top_publisher == None:
-            my.execute_xml = Xml()
-            my.execute_xml.create_doc("execute")
-            top_publisher = my
-            #my.is_top_loader_flag = True
+            self.execute_xml = Xml()
+            self.execute_xml.create_doc("execute")
+            top_publisher = self
+            #self.is_top_loader_flag = True
             Container.put(key, top_publisher)
         else:
-            my.execute_xml = top_publisher.execute_xml
+            self.execute_xml = top_publisher.execute_xml
 
         # decipher the XML
-        my.handle_xml()
+        self.handle_xml()
 
         # clean up the execute xml
-        if top_publisher == my:
+        if top_publisher == self:
 
             print "*"*20
-            my.execute_xml.dump()
+            self.execute_xml.dump()
             print "*"*20
 
             Container.remove(key)
@@ -72,12 +72,12 @@ class PublisherCmd(LoaderCmd):
 class FlashAssetPublisherCmd(PublisherCmd):
     ''' this can handle both asset and shot publish'''
 
-    def handle_xml(my):
-        root = my.execute_xml.get_root_node()
-        doc = my.execute_xml.get_doc()
+    def handle_xml(self):
+        root = self.execute_xml.get_root_node()
+        doc = self.execute_xml.get_doc()
         publish_node = doc.createElement("publish")
-        Xml.set_attribute(publish_node, "node", my.asset_code)
-        Xml.set_attribute(publish_node, "asset_code", my.asset_code)
+        Xml.set_attribute(publish_node, "node", self.asset_code)
+        Xml.set_attribute(publish_node, "asset_code", self.asset_code)
         root.appendChild(publish_node)
 
 

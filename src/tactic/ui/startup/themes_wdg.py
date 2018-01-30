@@ -24,12 +24,12 @@ from tactic.ui.container import Menu, MenuItem, SmartMenu
 from reports_wdg import ReportsWdg
 class ThemesWdg(ReportsWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -231,7 +231,7 @@ class ThemesWdg(ReportsWdg):
             spt.tab.add_new(bvr.title, bvr.title, bvr.class_name, bvr.kwargs);
             '''
             }
-            schema_wdg = my.get_section_wdg(title, description, image, behavior)
+            schema_wdg = self.get_section_wdg(title, description, image, behavior)
 
 
             schema_wdg.add_behavior( {
@@ -265,7 +265,7 @@ class ThemesWdg(ReportsWdg):
 
 
 
-    def get_menu(my):
+    def get_menu(self):
         menu = Menu(width=180)
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)

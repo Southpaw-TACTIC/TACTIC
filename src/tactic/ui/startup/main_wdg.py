@@ -27,16 +27,16 @@ from tactic.ui.app import SearchWdg
 
 class SectionWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        title = my.kwargs.get("title")
-        description = my.kwargs.get("description")
-        image = my.kwargs.get("image")
-        behavior = my.kwargs.get("behavior")
+        title = self.kwargs.get("title")
+        description = self.kwargs.get("description")
+        image = self.kwargs.get("image")
+        behavior = self.kwargs.get("behavior")
 
-        return my.get_main_section_wdg(title, description, image, behavior)
+        return self.get_main_section_wdg(title, description, image, behavior)
 
-    def get_main_section_wdg(my, title, description, image, behavior, img_height="64px"):
+    def get_main_section_wdg(self, title, description, image, behavior, img_height="64px"):
 
         section_wdg = DivWdg()
         #section_wdg.set_round_corners()
@@ -117,7 +117,7 @@ class SectionWdg(BaseRefreshWdg):
         return section_wdg
 
 
-    def get_small_section_wdg(my, title, description, image, behavior):
+    def get_small_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         #section_wdg.set_round_corners()
@@ -175,26 +175,26 @@ class MainWdg(BaseRefreshWdg):
     project
     '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
-    def init(my):
+    def init(self):
         # clear the widget settings of last_search:sthpw/sobject_list
         SearchWdg.clear_search_data('sthpw/sobject_list')
 
 
 
-    def get_main_section_wdg(my, title, description, image, behavior):
+    def get_main_section_wdg(self, title, description, image, behavior):
         section_wdg = SectionWdg()
         return section_wdg.get_main_section_wdg(title, description, image, behavior)
 
-    def get_small_section_wdg(my, title, description, image, behavior):
+    def get_small_section_wdg(self, title, description, image, behavior):
         section_wdg = SectionWdg()
         return section_wdg.get_small_section_wdg(title, description, image, behavior)
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -424,7 +424,7 @@ class MainWdg(BaseRefreshWdg):
             spt.tab.add_new("project_configuration", "Configuration", class_name, kwargs);
             '''
         }
-        config_wdg = my.get_main_section_wdg(title, description, image, behavior)
+        config_wdg = self.get_main_section_wdg(title, description, image, behavior)
         td.add(config_wdg)
 
 
@@ -461,7 +461,7 @@ class MainWdg(BaseRefreshWdg):
         spt.tab.add_new("manage_user", "Manage Users", class_name, kwargs);
         '''
         }
-        manage_users_wdg = my.get_main_section_wdg(title, description, image, behavior)
+        manage_users_wdg = self.get_main_section_wdg(title, description, image, behavior)
         td.add(manage_users_wdg)
 
 
@@ -484,7 +484,7 @@ class MainWdg(BaseRefreshWdg):
             spt.tab.add_new("custom_layout_editor", "Custom Layout Editor", class_name, kwargs);
             '''
         }
-        config_wdg = my.get_main_section_wdg(title, description, image, behavior)
+        config_wdg = self.get_main_section_wdg(title, description, image, behavior)
         td.add(config_wdg)
 
 
@@ -509,7 +509,7 @@ class MainWdg(BaseRefreshWdg):
         spt.tab.add_new("plugins", "Manage Plugin", class_name, kwargs);
         '''
         }
-        plugin_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        plugin_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(plugin_wdg)
 
 
@@ -531,7 +531,7 @@ class MainWdg(BaseRefreshWdg):
         spt.tab.add_new("tools", "Tools", class_name, kwargs);
         '''
         }
-        share_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        share_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(share_wdg)
 
 
@@ -556,7 +556,7 @@ class MainWdg(BaseRefreshWdg):
         spt.tab.add_new("shares", "Shares", class_name, kwargs);
         '''
         }
-        share_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        share_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(share_wdg)
         """
 
@@ -578,7 +578,7 @@ class MainWdg(BaseRefreshWdg):
         spt.tab.add_new("project_setup", "Project Setup", class_name)
         '''
         }
-        share_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        share_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(share_wdg)
 
 
@@ -607,7 +607,7 @@ class MainWdg(BaseRefreshWdg):
         spt.help.load_alias("main")
         '''
         }
-        doc_wdg = my.get_section_wdg(title, description, image, behavior)
+        doc_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(doc_wdg)
         """
 
@@ -624,14 +624,14 @@ class MainWdg(BaseRefreshWdg):
         td.add(quick_links_wdg)
         
         #td = table.add_cell()
-        #totals_wdg = my.get_totals_wdg()
+        #totals_wdg = self.get_totals_wdg()
 	#td.add(totals_wdg)
 
         return top
 
 
 
-    def get_totals_wdg(my):
+    def get_totals_wdg(self):
         div = DivWdg()
         
 

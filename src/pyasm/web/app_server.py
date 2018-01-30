@@ -55,22 +55,22 @@ class BaseAppServer(Base):
         profile.object = None
 
 
-    def __init__(my):
-        my.top = None
-        my.hash = None
-        super(BaseAppServer,my).__init__()
+    def __init__(self):
+        self.top = None
+        self.hash = None
+        super(BaseAppServer,self).__init__()
 
 
-    def writeln(my, string):
-        my.buffer.write(string)
+    def writeln(self, string):
+        self.buffer.write(string)
 
 
-    def get_display(my):
+    def get_display(self):
 
         profile_flag = False
 
         if profile_flag:
-            BaseAppServer.profile.object = my
+            BaseAppServer.profile.object = self
             if os.name == 'nt':
                 path = "C:/sthpw/profile"
             else:
@@ -82,7 +82,7 @@ class BaseAppServer(Base):
             p.sort_stats('time').print_stats(30)
 
         else:
-            my.execute()
+            self.execute()
 
         value = WebContainer.get_buffer().getvalue()
         WebContainer.clear_buffer()
@@ -93,14 +93,14 @@ class BaseAppServer(Base):
 
 
     def profile():
-        my = BaseAppServer.profile.object
-        my.execute()
+        self = BaseAppServer.profile.object
+        self.execute()
     profile = staticmethod(profile)
 
 
 
-    def execute(my):
-        my.buffer = cStringIO.StringIO()
+    def execute(self):
+        self.buffer = cStringIO.StringIO()
         error = None
 
         try:
@@ -113,38 +113,38 @@ class BaseAppServer(Base):
                 WebContainer.clear_buffer()
 
                 # initialize the web environment object and register it
-                adapter = my.get_adapter()
+                adapter = self.get_adapter()
                 WebContainer.set_web(adapter)
 
                 # get the display
-                my._get_display()
+                self._get_display()
 
             except SetupException as e:
                 '''Display setup exception in the interface'''
                 print("Setup exception: ", e.__str__())
                 DbContainer.rollback_all()
                 ExceptionLog.log(e)
-                my.writeln("<h3>Tactic Setup Error</h3>" )
-                my.writeln("<pre>" )
-                my.writeln(e.__str__() )
-                my.writeln("</pre>" )
+                self.writeln("<h3>Tactic Setup Error</h3>" )
+                self.writeln("<pre>" )
+                self.writeln(e.__str__() )
+                self.writeln("</pre>" )
                 error = "405: TACTIC Setup Error"
 
             except DatabaseException as e:
                 from tactic.ui.startup import DbConfigPanelWdg
                 config_wdg = DbConfigPanelWdg()
-                my.writeln("<pre>")
-                my.writeln(config_wdg.get_buffer_display())
-                my.writeln("</pre>")
+                self.writeln("<pre>")
+                self.writeln(config_wdg.get_buffer_display())
+                self.writeln("</pre>")
                 error = "405: TACTIC Database Error"
 
 
             except Exception as e:
                 stack_trace = ExceptionLog.get_stack_trace(e)
                 #print(stack_trace)
-                my.writeln("<pre>")
-                my.writeln(stack_trace)
-                my.writeln("</pre>")
+                self.writeln("<pre>")
+                self.writeln(stack_trace)
+                self.writeln("</pre>")
                 error = "405 %s" % str(e)
 
                 # it is possible that the security object was not set
@@ -159,12 +159,12 @@ class BaseAppServer(Base):
                     DbContainer.rollback_all()
                 except Exception as e2:
                     print("Error: Could not rollback: ", e2.__str__())
-                    my.writeln("Error: Could not rollback: '%s'" % e2.__str__() )
+                    self.writeln("Error: Could not rollback: '%s'" % e2.__str__() )
                     stack_trace = ExceptionLog.get_stack_trace(e2)
                     print(stack_trace)
-                    my.writeln("<pre>")
-                    my.writeln(stack_trace)
-                    my.writeln("</pre>")
+                    self.writeln("<pre>")
+                    self.writeln(stack_trace)
+                    self.writeln("</pre>")
                     raise e
                     #return
 
@@ -176,20 +176,20 @@ class BaseAppServer(Base):
                 except Exception as e2:
 
                     print("Error: Could not log exception: ", e2.__str__())
-                    my.writeln("Error '%s': Could not log exception" % e2.__str__() )
+                    self.writeln("Error '%s': Could not log exception" % e2.__str__() )
                     stack_trace = ExceptionLog.get_stack_trace(e2)
                     print(stack_trace)
-                    my.writeln("<pre>")
-                    my.writeln(stack_trace)
-                    my.writeln("</pre>")
+                    self.writeln("<pre>")
+                    self.writeln(stack_trace)
+                    self.writeln("</pre>")
                     return
 
-                my.writeln("<pre>")
-                my.writeln("An Error has occurred.  Please see your Tactic Administrator<br/>")
-                my.writeln( "Error Message: %s" % log.get_value("message") )
-                my.writeln("Error Id: %s" % log.get_id() )
-                #my.writeln( log.get_value("stack_trace") )
-                my.writeln("</pre>")
+                self.writeln("<pre>")
+                self.writeln("An Error has occurred.  Please see your Tactic Administrator<br/>")
+                self.writeln( "Error Message: %s" % log.get_value("message") )
+                self.writeln("Error Id: %s" % log.get_id() )
+                #self.writeln( log.get_value("stack_trace") )
+                self.writeln("</pre>")
 
 
         finally:
@@ -197,7 +197,7 @@ class BaseAppServer(Base):
             DbContainer.close_all()
             # clear the container
             Container.delete()
-            WebContainer.get_buffer().write( my.buffer.getvalue() )
+            WebContainer.get_buffer().write( self.buffer.getvalue() )
 
             if error:
                 import cherrypy
@@ -207,7 +207,7 @@ class BaseAppServer(Base):
 
 
 
-    def handle_not_logged_in(my, allow_change_admin=True):
+    def handle_not_logged_in(self, allow_change_admin=True):
 
 
         site_obj = Site.get()
@@ -283,7 +283,7 @@ class BaseAppServer(Base):
                 # display default web login
                 if not web_wdg:
                     # get login screen from Site
-                    link = "/%s" % "/".join(my.hash)
+                    link = "/%s" % "/".join(self.hash)
                     web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
@@ -308,7 +308,7 @@ class BaseAppServer(Base):
 
 
 
-    def _get_display(my):
+    def _get_display(self):
 
         # set up the security object
         from pyasm.security import Security, Sudo
@@ -335,11 +335,11 @@ class BaseAppServer(Base):
 
         security = Security()
         try:
-            security = my.handle_security(security)
+            security = self.handle_security(security)
             is_logged_in = security.is_logged_in()
         except Exception as e:
             print("AppServer Exception: ", e)
-            return my.handle_not_logged_in()
+            return self.handle_not_logged_in()
 
  
         guest_mode = Config.get_value("security", "guest_mode")
@@ -354,11 +354,11 @@ class BaseAppServer(Base):
         # if not logged in, then log in as guest
         if not is_logged_in:
             if not allow_guest:
-                return my.handle_not_logged_in()
+                return self.handle_not_logged_in()
             else:
                 # login as guest
                 security = Security()
-                my.handle_guest_security(security)
+                self.handle_guest_security(security)
 
 
         # for here on, the user is logged in
@@ -418,12 +418,12 @@ class BaseAppServer(Base):
                 if not msg:
                     msg = "User [%s] is not allowed to see this project [%s]" % (login_name, project)
                     web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
-                return my.handle_not_logged_in(allow_change_admin=False)
+                return self.handle_not_logged_in(allow_change_admin=False)
 
             else:
                 from pyasm.widget import BottomWdg, Error403Wdg
                 widget = Widget()
-                top = my.get_top_wdg()
+                top = self.get_top_wdg()
                 widget.add( top )
                 widget.add( Error403Wdg() )
                 widget.add( BottomWdg() )
@@ -436,7 +436,7 @@ class BaseAppServer(Base):
 
         if login_name == 'guest':
             # let the site handle the guest completely
-            guest_wdg = site_obj.get_guest_wdg(my.hash)
+            guest_wdg = site_obj.get_guest_wdg(self.hash)
             if guest_wdg:
                 web_app = WebApp()
                 web_app.get_display(guest_wdg)
@@ -518,12 +518,12 @@ class BaseAppServer(Base):
                     #urls = search.get_sobjects()
                     #open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
 
-                    link = "/%s" % "/".join(my.hash)
+                    link = "/%s" % "/".join(self.hash)
 
                     # guest views
                     open_hashes = site_obj.get_guest_hashes()
 
-                    if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                    if len(self.hash) >= 1 and self.hash[0] in open_hashes:
                         web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
                     else:
                         web_wdg = None
@@ -547,7 +547,7 @@ class BaseAppServer(Base):
             if not web_wdg:
                 msg = "No default page defined for guest user. Please set up /guest in Custom URL."
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
-                return my.handle_not_logged_in(allow_change_admin=False)
+                return self.handle_not_logged_in(allow_change_admin=False)
 
 
             # create a web app and run it through the pipeline
@@ -567,8 +567,8 @@ class BaseAppServer(Base):
             if guest_url_allow:
                 items = guest_url_allow.split("|")
                 allowed = False
-                if my.hash:
-                    url = my.hash[0]
+                if self.hash:
+                    url = self.hash[0]
                 else:
                     url = "index"
                 for item in items:
@@ -577,7 +577,7 @@ class BaseAppServer(Base):
                         allowed = True
                         break
                 if not allowed:
-                    return my.handle_not_logged_in()
+                    return self.handle_not_logged_in()
 
 
 
@@ -586,7 +586,7 @@ class BaseAppServer(Base):
         is_first_run = Environment.is_first_run()
         if is_first_run:
             from pyasm.widget import WebLoginWdg, BottomWdg
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
 
             from tactic.ui.app import PageHeaderWdg
             from tactic.ui.startup import DbConfigPanelWdg
@@ -635,10 +635,10 @@ class BaseAppServer(Base):
 
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
-        my.set_templates()
-        my.add_triggers()
+        self.set_templates()
+        self.add_triggers()
 
-        my.init_web_container()
+        self.init_web_container()
 
 
         # install the language
@@ -658,7 +658,7 @@ class BaseAppServer(Base):
             from pyasm.widget import BottomWdg, Error404Wdg
             Project.set_project("admin")
             widget = Widget()
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
             widget.add( top )
             widget.add( Error404Wdg() )
             widget.add( BottomWdg() )
@@ -670,13 +670,13 @@ class BaseAppServer(Base):
         # get the content of the page
         try:
 
-            widget = my.get_content(page_type)
+            widget = self.get_content(page_type)
 
         except Exception as e:
             print("ERROR: ", e)
             from pyasm.widget import BottomWdg, Error403Wdg
             widget = Widget()
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
             widget.add( top )
             widget.add( Error403Wdg() )
             widget.add( BottomWdg() )
@@ -698,7 +698,7 @@ class BaseAppServer(Base):
 
 
 
-    def handle_security(my, security, allow_guest=False):
+    def handle_security(self, security, allow_guest=False):
         # set the seucrity object
 
         WebContainer.set_security(security)
@@ -815,7 +815,7 @@ class BaseAppServer(Base):
 
 
         # set up default securities
-        #my.set_default_security(security)
+        #self.set_default_security(security)
 
         # for now apply the access rules after
         security.add_access_rules()
@@ -823,7 +823,7 @@ class BaseAppServer(Base):
         return security
 
 
-    def handle_guest_security(my, security):
+    def handle_guest_security(self, security):
        
         # skip storing current security since it failed
         Site.set_site("default", store_security=False)
@@ -852,44 +852,44 @@ class BaseAppServer(Base):
            
 
 
-    def init_web_container(my):
+    def init_web_container(self):
         # add the event container, initialization only
         event_container = EventContainer()
         WebContainer.set_event_container( event_container )
 
 
-    def get_content(my, request_type):
+    def get_content(self, request_type):
         web = WebContainer.get_web()
 
         # NOTE: is this needed anymore?
         if request_type in ["upload", "dynamic_file"]:
             print("DEPRECATED: dynamic file in app_server.py")
             widget = Widget()
-            page = my.get_page_widget()
+            page = self.get_page_widget()
             widget.add(page)
             return widget
 
 
         # find hash of url
-        my.custom_url = None
-        if my.hash:
-            hash = "/".join(my.hash)
+        self.custom_url = None
+        if self.hash:
+            hash = "/".join(self.hash)
             hash = "/%s" % hash
             from tactic.ui.panel import HashPanelWdg
-            my.custom_url = HashPanelWdg.get_url_from_hash(hash)
-            if my.custom_url:
-                content_type = my.custom_url.get_value("content_type", no_exception=True)
+            self.custom_url = HashPanelWdg.get_url_from_hash(hash)
+            if self.custom_url:
+                content_type = self.custom_url.get_value("content_type", no_exception=True)
             # TODO: we may want to handle this differently for content types
             # other that text/html
 
 
 
 
-        return my.get_application_wdg()
+        return self.get_application_wdg()
 
 
 
-    def log_exception(my, exception):
+    def log_exception(self, exception):
         import sys,traceback
         tb = sys.exc_info()[2]
         stacktrace = traceback.format_tb(tb)
@@ -916,18 +916,18 @@ class BaseAppServer(Base):
     #
     # virtual functions
     #
-    def set_default_security(my, security):
+    def set_default_security(self, security):
         '''set a number of default security rules to be always implemented'''
         rules = AppServerSecurityRules(security)
 
 
-    def get_application_wdg(my):
+    def get_application_wdg(self):
 
-        application = my.get_top_wdg()
+        application = self.get_top_wdg()
 
         # get the main page widget
         # NOTE: this needs to happen after the body is put in a Container
-        page = my.get_page_widget()
+        page = self.get_page_widget()
         page.set_as_top()
         if type(page) in types.StringTypes:
             page = StringWdg(page)
@@ -937,24 +937,24 @@ class BaseAppServer(Base):
 
 
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         '''get the content widget'''
         return "No Content"
 
-    def get_top_wdg(my):
+    def get_top_wdg(self):
         from tactic.ui.app import TopWdg
-        my.top = TopWdg()
-        return my.top
+        self.top = TopWdg()
+        return self.top
 
 
-    def get_single_widget(my, widget, minimal=True):
+    def get_single_widget(self, widget, minimal=True):
 
         from pyasm.widget import BottomWdg
         from tactic.ui.app import TitleTopWdg
         if minimal: 
             top = TitleTopWdg()
         else:
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
 
         container = Widget()
 
@@ -965,12 +965,12 @@ class BaseAppServer(Base):
         return container
 
 
-    def add_triggers(my):
+    def add_triggers(self):
         '''callback that enables a site to add custom triggers'''
         pass
 
 
-    def set_templates(my):
+    def set_templates(self):
         '''callback where sobject templates can be set'''
         pass
 

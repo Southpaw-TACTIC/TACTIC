@@ -162,21 +162,21 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-    def init(my):
-        my.td = None
-        my.expression = None
-        my.alt_expression = None
-        my.alt_result = None
+    def init(self):
+        self.td = None
+        self.expression = None
+        self.alt_expression = None
+        self.alt_result = None
 
-        my.cache_results = None
+        self.cache_results = None
 
 
 
-    def preprocess(my):
-        order_by = my.get_option("order_by")
+    def preprocess(self):
+        order_by = self.get_option("order_by")
         # for backward compatibility when order_by used to be true/false
         if not order_by or order_by =='true':
-            expression = my.get_option("expression")
+            expression = self.get_option("expression")
             if expression.startswith("@GET(") and expression.endswith(")") and expression.count("@") == 1:
                 template = expression.lstrip("@GET(")
                 template = template.rstrip(")")
@@ -186,22 +186,22 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 if template.startswith("."):
                     template = template.lstrip('.')
 
-                my.set_option("order_by", template)
+                self.set_option("order_by", template)
 
 
-        my.init_kwargs()
+        self.init_kwargs()
 
-    def get_required_columns(my):
+    def get_required_columns(self):
         '''method to get the require columns for this'''
         return []
 
 
 
-    def get_header_option_wdg(my):
+    def get_header_option_wdg(self):
 
         return
 
-        if my.kwargs.get("use_cache2") not in ['true', True]:
+        if self.kwargs.get("use_cache2") not in ['true', True]:
             return
 
         div = DivWdg()
@@ -248,13 +248,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-    def is_sortable(my):
+    def is_sortable(self):
 
-        use_cache = my.get_option("use_cache") in ['true', True]
+        use_cache = self.get_option("use_cache") in ['true', True]
         if use_cache:
             return True
 
-        order_by = my.get_option("order_by")
+        order_by = self.get_option("order_by")
 
         # false is the word to prevent the auto-adoption (preprocess) of the expression to order-by
         if order_by and order_by !='false':
@@ -266,21 +266,21 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return False
 
 
-    def is_groupable(my):
+    def is_groupable(self):
 
-        use_cache = my.get_option("use_cache") in ['true', True]
+        use_cache = self.get_option("use_cache") in ['true', True]
         if use_cache:
             return True
 
 
-        group_by = my.get_option("group_by")
+        group_by = self.get_option("group_by")
         if group_by:
             return True
         else:
             return False
 
-    def is_time_groupable(my):
-        group_by = my.get_option("group_by_time")
+    def is_time_groupable(self):
+        group_by = self.get_option("group_by_time")
         if group_by:
             return True
         else:
@@ -290,10 +290,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-    def get_vars(my):
+    def get_vars(self):
         # create variables
-        element_name = my.get_name()
-        my.vars = {
+        element_name = self.get_name()
+        self.vars = {
             'ELEMENT_NAME': element_name
         }
 
@@ -302,12 +302,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
         search_vars = Container.get("Message:search_vars")
         if search_vars:
             for name, value in search_vars.items():
-                my.vars[name] = value
+                self.vars[name] = value
 
-        return my.vars
+        return self.vars
 
 
-    def get_input_by_arg_key(my, key):
+    def get_input_by_arg_key(self, key):
         if key == 'expression':
             input = TextAreaWdg("option_expression")
         else:
@@ -316,27 +316,27 @@ class ExpressionElementWdg(TypeTableElementWdg):
     get_input_by_arg_key = classmethod(get_input_by_arg_key)
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
 
-        if my.alt_result:
-            td.add_attr("spt_input_value", my.alt_result)
-        elif my.alt_result:
-            td.add_attr("spt_input_value", my.value)
+        if self.alt_result:
+            td.add_attr("spt_input_value", self.alt_result)
+        elif self.alt_result:
+            td.add_attr("spt_input_value", self.value)
 
-        super(ExpressionElementWdg,my).handle_td(td)
+        super(ExpressionElementWdg,self).handle_td(td)
 
 
-    def is_editable(my):
+    def is_editable(self):
         return 'optional'
 
 
 
-    def _get_result(my, sobject, expression):
+    def _get_result(self, sobject, expression):
         '''get the result of the expression'''
 
-        element_name = my.get_name()
+        element_name = self.get_name()
 
-        use_cache = my.kwargs.get("use_cache")
+        use_cache = self.kwargs.get("use_cache")
         if use_cache == "true":
             try:
                 return sobject.get_value(element_name)
@@ -348,14 +348,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
             if sobject.is_insert():
                 return ''
 
-        my.vars = {
+        self.vars = {
             'ELEMENT_NAME': element_name,
             'ELEMENT': element_name,
             'SOBJECT_ID': sobject.get_id(),
             'SOBJECT_CODE': sobject.get_code(),
         }
 
-        return_type = my.kwargs.get("return")
+        return_type = self.kwargs.get("return")
         if return_type == 'single':
             single = True
             list = False
@@ -368,11 +368,11 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         # if this expression is an absolute expression, then don't bother
         # with the sobject
-        expression_mode = my.get_option('expression_mode')
+        expression_mode = self.get_option('expression_mode')
         if expression_mode == 'absolute':
             sobject = None
 
-        calc_mode = my.get_option("calc_mode")
+        calc_mode = self.get_option("calc_mode")
         if not calc_mode:
             calc_mode = 'slow'
         #calc_mode = 'fast'
@@ -380,16 +380,16 @@ class ExpressionElementWdg(TypeTableElementWdg):
         parser = ExpressionParser()
         
         if calc_mode == 'fast':
-            if my.cache_results == None:
-                my.cache_results = parser.eval(expression, my.sobjects, vars=my.vars, dictionary=True, show_retired=my.show_retired)
-                if isinstance(my.cache_results, basestring):
-                    if my.cache_results:
-                        my.cache_results = eval(my.cache_results)
+            if self.cache_results == None:
+                self.cache_results = parser.eval(expression, self.sobjects, vars=self.vars, dictionary=True, show_retired=self.show_retired)
+                if isinstance(self.cache_results, basestring):
+                    if self.cache_results:
+                        self.cache_results = eval(self.cache_results)
                     else:
-                        my.cache_results = {}
+                        self.cache_results = {}
 
             search_key = sobject.get_search_key()
-            result = my.cache_results.get(search_key)
+            result = self.cache_results.get(search_key)
             if single:
                 if result and len(result):
                     result = result[0]
@@ -397,7 +397,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     result = ''
         else:
           
-            result = parser.eval(expression, sobject, vars=my.vars, single=single, list=list, show_retired=my.show_retired)
+            result = parser.eval(expression, sobject, vars=self.vars, single=single, list=list, show_retired=self.show_retired)
 
 
 
@@ -434,57 +434,57 @@ class ExpressionElementWdg(TypeTableElementWdg):
         return result
 
 
-    def init_kwargs(my):
+    def init_kwargs(self):
         '''initialize kwargs'''
-        state = my.kwargs.get("state")
+        state = self.kwargs.get("state")
         if state:
             parent_key = state.get("parent_key")
             if parent_key:
-                my.sobject = SearchKey.get_by_search_key(parent_key)
+                self.sobject = SearchKey.get_by_search_key(parent_key)
 
 
-        my.expression = my.get_option("expression")
-        if not my.expression:
-            my.expression = my.kwargs.get("expression")
+        self.expression = self.get_option("expression")
+        if not self.expression:
+            self.expression = self.kwargs.get("expression")
 
-        my.alt_expression = my.get_option("alt_expression")
-        if not my.alt_expression:
-            my.alt_expression = my.kwargs.get("alt_expression")
+        self.alt_expression = self.get_option("alt_expression")
+        if not self.alt_expression:
+            self.alt_expression = self.kwargs.get("alt_expression")
 
-        my.mode = my.get_option("mode")
-        if not my.mode:
-            my.mode = my.kwargs.get("mode")
-        if not my.mode:
-            my.mode = 'value'
+        self.mode = self.get_option("mode")
+        if not self.mode:
+            self.mode = self.kwargs.get("mode")
+        if not self.mode:
+            self.mode = 'value'
 
-        my.show_retired = my.get_option("show_retired")
-        if not my.show_retired:
-            my.show_retired = my.kwargs.get("show_retired")
+        self.show_retired = self.get_option("show_retired")
+        if not self.show_retired:
+            self.show_retired = self.kwargs.get("show_retired")
 
         # default to False
-        if my.show_retired == 'true':
-            my.show_retired = True
+        if self.show_retired == 'true':
+            self.show_retired = True
         else:
-            my.show_retired = False
+            self.show_retired = False
 
 
-        my.enable_eval_listener = False
-        if my.get_option("enable_eval_listener") in [ True, "true", "True", "TRUE" ]:
-            my.enable_eval_listener = True
+        self.enable_eval_listener = False
+        if self.get_option("enable_eval_listener") in [ True, "true", "True", "TRUE" ]:
+            self.enable_eval_listener = True
 
 
-    def get_text_value(my):
+    def get_text_value(self):
         '''for csv export'''
-        my.sobject = my.get_current_sobject()
+        self.sobject = self.get_current_sobject()
 
-        #my.init_kwargs()
-        if not my.expression and not my.alt_expression: 
-            return super(ExpressionElementWdg, my).get_display()
+        #self.init_kwargs()
+        if not self.expression and not self.alt_expression: 
+            return super(ExpressionElementWdg, self).get_display()
 
-        if my.alt_expression:
-            result = my._get_result(my.sobject, my.alt_expression)
+        if self.alt_expression:
+            result = self._get_result(self.sobject, self.alt_expression)
         else:
-            result = my._get_result(my.sobject, my.expression)
+            result = self._get_result(self.sobject, self.expression)
 
 
         if isinstance(result, list):
@@ -493,44 +493,44 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-        format_str = my.kwargs.get("display_format")
+        format_str = self.kwargs.get("display_format")
         if format_str:
             format_val = FormatValue()
             format_value = format_val.get_format_value( result, format_str )
             result = format_value
 
-        name = my.get_name()
-        my.sobject.set_value(name, result)
+        name = self.get_name()
+        self.sobject.set_value(name, result)
         return result
 
 
-    def set_td(my, td):
-        my.td = td
+    def set_td(self, td):
+        self.td = td
 
 
-    def get_display(my):
+    def get_display(self):
 
-        #my.init_kwargs()
+        #self.init_kwargs()
 
-        my.sobject = my.get_current_sobject()
-        if not my.sobject or my.sobject.is_insert():
+        self.sobject = self.get_current_sobject()
+        if not self.sobject or self.sobject.is_insert():
             return ""
 
-        name = my.get_name()
+        name = self.get_name()
 
-        if not my.expression: 
+        if not self.expression: 
             div = DivWdg()
             sobject_id = '000'
-            if my.sobject:
-                sobject_id = my.sobject.get_id()
+            if self.sobject:
+                sobject_id = self.sobject.get_id()
             div.add_class( "spt_%s_expr_id%s" % ( name, sobject_id ) )
             div.add_class( "spt_%s_expr" % name )
 
-            raw_result = super(ExpressionElementWdg, my).get_display()
+            raw_result = super(ExpressionElementWdg, self).get_display()
 
             div.add( raw_result )
             # Now check to see if there are inline CSS styles provided ...
-            inline_styles = my.kwargs.get('inline_styles')
+            inline_styles = self.kwargs.get('inline_styles')
             if inline_styles:
                 style_list = inline_styles.split(";")
                 for style in style_list:
@@ -539,22 +539,22 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
         try:
-            use_cache = my.get_option("use_cache") in ['true', True]
+            use_cache = self.get_option("use_cache") in ['true', True]
             if use_cache:
-                result = my.sobject.get_value(my.get_name())
+                result = self.sobject.get_value(self.get_name())
             else:
-                result = my._get_result(my.sobject, my.expression)
+                result = self._get_result(self.sobject, self.expression)
 
 
             # calculte the alt expression if defined
             # DEPRECATED: use format expression instead
-            if my.alt_expression:
-                my.alt_result = my._get_result(my.sobject, my.alt_expression)
+            if self.alt_expression:
+                self.alt_result = self._get_result(self.sobject, self.alt_expression)
             else:
-                my.alt_result = result
+                self.alt_result = result
         except Exception as e:
             print "Expression error: ", e
-            print "    in column [%s] with [%s]" % (my.get_name(), my.expression)
+            print "    in column [%s] with [%s]" % (self.get_name(), self.expression)
             #from pyasm.widget import ExceptionWdg
             #widget = ExceptionWdg(e)
             #return widget
@@ -564,14 +564,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         if isinstance(result, list):
             delimiter = ', '
-            my.value = delimiter.join(result)
+            self.value = delimiter.join(result)
             results = result
         else:
-            my.value = result
+            self.value = result
             results = [result]
 
         if not results or (len(results) == 1 and results[0] == ''):
-            empty = my.get_option("empty")
+            empty = self.get_option("empty")
             if empty:
                 div = DivWdg()
                 div.add_style("white-space: nowrap")
@@ -581,10 +581,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
             
 
 
-        if my.sobject:
+        if self.sobject:
             # only set if the value does not exist as a key.  This widget should
             # not be able to change existing data of an sobject
-            my.sobject.set_value(name, result)
+            self.sobject.set_value(name, result)
 
 
         outer = DivWdg()
@@ -594,15 +594,15 @@ class ExpressionElementWdg(TypeTableElementWdg):
             if len(results) == 1:
                 div.add_style("display: inline-block")
 
-            if my.sobject:
-                div.add_class( "spt_%s_expr_id%s" % ( name, my.sobject.get_id() ) )
+            if self.sobject:
+                div.add_class( "spt_%s_expr_id%s" % ( name, self.sobject.get_id() ) )
                 div.add_class( "spt_%s_expr" % name )
 
 
             # by default, the value is added
-            if my.mode == 'value':
-                display_expr = my.kwargs.get("display_expression")
-                format_str = my.get_option('display_format')
+            if self.mode == 'value':
+                display_expr = self.kwargs.get("display_expression")
+                format_str = self.get_option('display_format')
 
                 if display_expr:
                     if not isinstance( result, basestring ):
@@ -610,7 +610,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     else:
                         display_result = result
 
-                    return_type = my.kwargs.get("return")
+                    return_type = self.kwargs.get("return")
                     if return_type == 'single':
                         single = True
                         _list = False
@@ -622,7 +622,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                         _list = False
 
                     try:
-                        display_result = Search.eval(display_expr, my.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+                        display_result = Search.eval(display_expr, self.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=self.show_retired)
                     except Exception as e:
                         print "WARNING in display expression [%s]: " % display_expr, e
                         display_result = "ERROR: %s" % e
@@ -637,7 +637,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     display_result = result
 
-                return_type = my.kwargs.get("return")
+                return_type = self.kwargs.get("return")
                 if return_type in ['list']:
                     div.add( "- " )
                     div.add_style("max-width: 400px")
@@ -650,9 +650,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                 # if a DG table td has been provided and if there is an alternate expression
                 # specified then use it for the 'spt_input_value' of the td ...
-                #if my.td and alt_result:
-                #    my.td.set_attr("spt_input_value", str(alt_result))
-                justify = my.get_option("justify")
+                #if self.td and alt_result:
+                #    self.td.set_attr("spt_input_value", str(alt_result))
+                justify = self.get_option("justify")
                 if justify and justify != 'default':
                     if justify != "left":
                         div.add_style("width: 100%")
@@ -668,7 +668,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     div.add_style("margin-right: 5px")
 
                 # Now check to see if there are inline CSS styles provided ...
-                inline_styles = my.kwargs.get('inline_styles')
+                inline_styles = self.kwargs.get('inline_styles')
                 if inline_styles:
                     style_list = inline_styles.split(";")
                     for style in style_list:
@@ -676,15 +676,15 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
                 # display a link if specified
-                link_expr = my.kwargs.get("link_expression")
+                link_expr = self.kwargs.get("link_expression")
                 if link_expr:
                     # using direct behavior because new_tab isn't working consistently
                     div.add_style("text-decoration", "underline")
-                    div.add_attr("search_key", my.sobject.get_search_key())
+                    div.add_attr("search_key", self.sobject.get_search_key())
                     div.add_attr("expression", link_expr)
                     div.add_class("hand")
 
-                    search_type_sobj = my.sobject.get_search_type_obj()
+                    search_type_sobj = self.sobject.get_search_type_obj()
                     sobj_title = search_type_sobj.get_title()
 
 
@@ -699,15 +699,15 @@ class ExpressionElementWdg(TypeTableElementWdg):
                         '''
                     } )
 
-                link_view = my.kwargs.get("link_view")
+                link_view = self.kwargs.get("link_view")
                 if link_view:
                     # using direct behavior because new_tab isn't working consistently
                     div.add_style("text-decoration", "underline")
-                    div.add_attr("search_key", my.sobject.get_search_key())
+                    div.add_attr("search_key", self.sobject.get_search_key())
                     div.add_attr("view", link_view)
                     div.add_class("hand")
 
-                    search_type_sobj = my.sobject.get_search_type_obj()
+                    search_type_sobj = self.sobject.get_search_type_obj()
                     sobj_title = search_type_sobj.get_title()
 
 
@@ -727,7 +727,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-            elif my.mode == 'boolean':
+            elif self.mode == 'boolean':
                 div.add_style("text-align: center")
 
                 if not result:
@@ -743,7 +743,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     div.add( IconWdg("None", IconWdg.DOT_RED) )
                 else:
                     div.add( IconWdg(str(result), IconWdg.DOT_GREEN) )
-            elif my.mode == 'check':
+            elif self.mode == 'check':
                 div.add_style("text-align: center")
                 try:
                     value = int(result)
@@ -753,13 +753,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     div.add( IconWdg(str(result), IconWdg.CHECK) )
                 else:
                     div.add( '&nbsp;' )
-            elif my.mode == 'icon':
+            elif self.mode == 'icon':
                 if not result:
                     result = 0
                 vars = {
                     'VALUE': result
                 }
-                icon_expr = my.get_option("icon_expr")
+                icon_expr = self.get_option("icon_expr")
                 icon = Search.eval(icon_expr, vars=vars)
                 icon = str(icon).upper()
                 div.add_style("text-align: center")
@@ -770,14 +770,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     icon_wdg = eval("IconWdg.%s" % icon)
                 div.add( IconWdg(str(result), icon_wdg ) )
             else:
-                raise TacticException("Unsupported expression display mode [%s] for column [%s]" % (my.mode, my.get_name() ))
+                raise TacticException("Unsupported expression display mode [%s] for column [%s]" % (self.mode, self.get_name() ))
 
 
-            if my.sobject and my.enable_eval_listener:
-                my.add_js_expression(div, my.sobject, my.expression)
+            if self.sobject and self.enable_eval_listener:
+                self.add_js_expression(div, self.sobject, self.expression)
 
             # test link
-            #link = my.get_option("link")
+            #link = self.get_option("link")
             #if link:
             #    div.add_behavior( {
             #        'type': 'click_up',
@@ -786,7 +786,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
             # test behavior
-            behavior = my.get_option("behavior")
+            behavior = self.get_option("behavior")
             if behavior:
                 behavior = behavior.replace('\\\\', '\\')
                 behavior = jsonloads(behavior)
@@ -806,15 +806,15 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         """
         # test dynamic updates on expressions
-        if my.get_name() == "customer":
+        if self.get_name() == "customer":
             outer.add_update( {
-                'search_key': my.sobject.get_search_key(),
+                'search_key': self.sobject.get_search_key(),
                 'column': "customer_code",
                 'interval': 4,
                 'cbjs_action': "spt.panel.refresh_element(bvr.src_el)",
             } )
 
-        my.set_as_panel(outer);
+        self.set_as_panel(outer);
         """
 
         return outer
@@ -822,30 +822,30 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
  
 
-    def get_bottom_wdg(my):
+    def get_bottom_wdg(self):
 
-        my.init_kwargs()
+        self.init_kwargs()
 
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         # ignore the first 2 (edit and insert) if it's on the old TableLayoutWdg
-        if my.get_layout_wdg().get_layout_version() == '1':
+        if self.get_layout_wdg().get_layout_version() == '1':
             sobjects = sobjects[2:]
         
         if not sobjects:
             return None
 
 
-        expression = my.get_option("bottom")
+        expression = self.get_option("bottom")
         if not expression:
             return None
 
         # parse the expression
-        my.vars = my.get_vars()
+        self.vars = self.get_vars()
  
         parser = ExpressionParser()
-        result = parser.eval(expression, sobjects=sobjects, vars=my.vars)
+        result = parser.eval(expression, sobjects=sobjects, vars=self.vars)
 
-        format_str = my.kwargs.get("display_format")
+        format_str = self.kwargs.get("display_format")
         if format_str:
             from tactic.ui.widget import FormatValueWdg
             format_wdg = FormatValueWdg(format=format_str, value=result)
@@ -856,33 +856,33 @@ class ExpressionElementWdg(TypeTableElementWdg):
         div = DivWdg()
         div.add(result)
         div.add_style("text-align: right")
-        div.add_class( "spt_%s_expr_bottom" % (my.get_name()) )
+        div.add_class( "spt_%s_expr_bottom" % (self.get_name()) )
 
         # add a listener
         for sobject in sobjects:
             if sobject.is_insert():
                 continue
-            if my.enable_eval_listener:
-                my.add_js_expression(div, sobject, expression)
+            if self.enable_eval_listener:
+                self.add_js_expression(div, sobject, expression)
 
         return div
 
 
  
 
-    def get_group_bottom_wdg(my, sobjects):
+    def get_group_bottom_wdg(self, sobjects):
 
-        expression = my.get_option("group_bottom")
+        expression = self.get_option("group_bottom")
         if not expression:
             return None
 
         # parse the expression
-        my.vars = my.get_vars()
+        self.vars = self.get_vars()
  
         parser = ExpressionParser()
-        raw_result = parser.eval(expression, sobjects=sobjects, vars=my.vars)
+        raw_result = parser.eval(expression, sobjects=sobjects, vars=self.vars)
 
-        format_str = my.kwargs.get("display_format")
+        format_str = self.kwargs.get("display_format")
         if format_str:
             from tactic.ui.widget import FormatValueWdg
             format_wdg = FormatValueWdg(format=format_str, value=raw_result)
@@ -895,7 +895,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         div = DivWdg()
         div.add(result)
         div.add_style("text-align: right")
-        #div.add_class( "spt_%s_expr_bottom" % (my.get_name()) )
+        #div.add_class( "spt_%s_expr_bottom" % (self.get_name()) )
 
 
         # add a listener
@@ -903,8 +903,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #    if sobject.is_insert():
         #        continue
         #
-        #    if my.enable_eval_listener:
-        #        my.add_js_expression(div, sobject, expression)
+        #    if self.enable_eval_listener:
+        #        self.add_js_expression(div, sobject, expression)
 
         return div, raw_result
 
@@ -912,11 +912,11 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-    def add_js_expression(my, widget, sobject, expression):
+    def add_js_expression(self, widget, sobject, expression):
 
-        js_expression, columns = my.convert_to_js(sobject, expression)
+        js_expression, columns = self.convert_to_js(sobject, expression)
 
-        element_name = my.get_name()
+        element_name = self.get_name()
 
         for column in columns:
             # ignore itself
@@ -935,7 +935,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
  
-    def convert_to_js(my, sobject, expression):
+    def convert_to_js(self, sobject, expression):
 
         # HACK!!: to very robust implementation
         pattern = re.compile('@(\w+)\((.*?)\)')
@@ -979,14 +979,14 @@ __all__.append("ExpressionRecalculateCmd")
 from pyasm.command import Command
 class ExpressionRecalculateCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
         if not search_keys:
             return
 
 
-        element_name = my.kwargs.get("element_name")
+        element_name = self.kwargs.get("element_name")
 
 
         # get all of the sobjects
@@ -1021,16 +1021,16 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
     ARGS_KEYS = {
     }
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
-    def get_text_value(my):
+    def get_text_value(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             return
 
-        value = my.get_value()
+        value = self.get_value()
 
         # assume the value is an expression
         try:
@@ -1040,13 +1040,13 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
 
         return value
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             return
 
-        value = my.get_value()
+        value = self.get_value()
 
         # assume the value is an expression
         try:

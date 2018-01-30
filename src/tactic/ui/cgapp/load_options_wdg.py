@@ -20,31 +20,31 @@ from pyasm.widget import SwapDisplayWdg, CheckboxWdg, IconWdg, TextWdg
 
 class LoadOptionsWdg(Widget):
 
-    def init(my):
-        my.prefix = "prod/asset"
-        my.hide_proxy = False
-        my.hide_connection = False
-        my.hide_instantiation = False
-        my.hide_dependencies = False
+    def init(self):
+        self.prefix = "prod/asset"
+        self.hide_proxy = False
+        self.hide_connection = False
+        self.hide_instantiation = False
+        self.hide_dependencies = False
 
-    def set_prefix(my, prefix):
-        my.prefix = prefix
+    def set_prefix(self, prefix):
+        self.prefix = prefix
 
 
-    def get_element_name(my, name):
-        if my.prefix:
-            return "%s_%s" % (my.prefix, name)
+    def get_element_name(self, name):
+        if self.prefix:
+            return "%s_%s" % (self.prefix, name)
         else:
             return name
 
-    def get_default_setting(my):
+    def get_default_setting(self):
         '''get default setting for options'''
         setting = {'instantiation': 'reference',
                 'connection': 'http',
                 'texture_dependency': 'as checked in'}
         return setting
 
-    def get_display(my):
+    def get_display(self):
     
         widget = Widget()
         
@@ -74,21 +74,21 @@ class LoadOptionsWdg(Widget):
         widget.add(title)
         widget.add(div)
 
-        if not my.hide_instantiation:
+        if not self.hide_instantiation:
             table.add_row()
             table.add_blank_cell()
             div = DivWdg(HtmlElement.b("Instantiation: "))
             table.add_cell(div)
-            div = my.get_instantiation_wdg()
+            div = self.get_instantiation_wdg()
             table.add_cell(div)
 
 
-        setting = my.get_default_setting()
+        setting = self.get_default_setting()
         default_instantiation = setting.get('instantiation')
         default_connection = setting.get('connection')
         default_dependency = setting.get('texture_dependency')
 
-        if not my.hide_connection:
+        if not self.hide_connection:
             table.add_row()
             table.add_blank_cell()
             con_div = DivWdg(HtmlElement.b("Connection: "))
@@ -98,7 +98,7 @@ class LoadOptionsWdg(Widget):
             is_unchecked = True
             default_cb = None
             for value in ['http', 'file system']:
-                name = my.get_element_name("connection")
+                name = self.get_element_name("connection")
                 checkbox = CheckboxWdg( name )
                 checkbox.set_option("value", value)
                 checkbox.set_persistence()
@@ -118,7 +118,7 @@ class LoadOptionsWdg(Widget):
 
 
 
-        if not my.hide_dependencies:
+        if not self.hide_dependencies:
             table.add_row()
             table.add_blank_cell()
             div = DivWdg(HtmlElement.b("Texture Dependencies: "))
@@ -128,7 +128,7 @@ class LoadOptionsWdg(Widget):
             is_unchecked = True
             default_cb = None
             for value in ['as checked in', 'latest', 'current']:
-                name = my.get_element_name("dependency")
+                name = self.get_element_name("dependency")
                 checkbox = CheckboxWdg( name )
 
                 
@@ -199,15 +199,15 @@ class LoadOptionsWdg(Widget):
 
         return widget
 
-    def get_instantiation_wdg(my):
-        setting = my.get_default_setting()
+    def get_instantiation_wdg(self):
+        setting = self.get_default_setting()
         default_instantiation = setting.get('instantiation')
 
         div = DivWdg()
         is_unchecked = True
         default_cb = None
-        for value in my.get_instantiation_options():
-            name = my.get_element_name("instantiation")
+        for value in self.get_instantiation_options():
+            name = self.get_element_name("instantiation")
             checkbox = CheckboxWdg( name )
             if value == default_instantiation:
                 default_cb = checkbox
@@ -226,7 +226,7 @@ class LoadOptionsWdg(Widget):
             default_cb.set_checked()
         return div
 
-    def get_instantiation_options(my):
+    def get_instantiation_options(self):
         options = ['reference', 'import', 'open']
         if WebContainer.get_web().get_selected_app() == 'Houdini':
             options = ['reference']
@@ -235,24 +235,24 @@ class LoadOptionsWdg(Widget):
 
 class AnimLoadOptionsWdg(LoadOptionsWdg):
 
-    def __init__(my):
-        super(AnimLoadOptionsWdg,my).__init__()
+    def __init__(self):
+        super(AnimLoadOptionsWdg,self).__init__()
         # this should match the PREFIX in InstanceLoaderWdg
-        my.prefix = "instance"
-        my.hide_proxy = True
-        my.hide_dependencies = True
+        self.prefix = "instance"
+        self.hide_proxy = True
+        self.hide_dependencies = True
 
 
-    def get_instantiation_options(my):
+    def get_instantiation_options(self):
         return ['reference', 'import', 'open']
 
 class ShotLoadOptionsWdg(LoadOptionsWdg):
 
-    def __init__(my):
-        super(ShotLoadOptionsWdg,my).__init__()
-        my.prefix = "shot"
+    def __init__(self):
+        super(ShotLoadOptionsWdg,self).__init__()
+        self.prefix = "shot"
 
-    def get_instantiation_options(my):
+    def get_instantiation_options(self):
         options = ['reference', 'import', 'open']
         if WebContainer.get_web().get_selected_app() == 'Houdini':
             options = ['import', 'open']
@@ -260,7 +260,7 @@ class ShotLoadOptionsWdg(LoadOptionsWdg):
             options = ['open']
         return options
 
-    def get_default_setting(my):
+    def get_default_setting(self):
         '''get default setting for options'''
         setting = {'instantiation': 'open',
                 'connection': 'http',

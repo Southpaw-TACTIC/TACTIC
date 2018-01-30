@@ -36,7 +36,7 @@ from pyasm.command import Trigger
 
 class NotificationTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         
         Batch()
         from pyasm.web.web_init import WebInit
@@ -44,23 +44,23 @@ class NotificationTest(unittest.TestCase):
 
         test_env = UnittestEnvironment()
         test_env.create()
-        my.transaction = Transaction.get(create=True)
+        self.transaction = Transaction.get(create=True)
         Project.set_project('unittest')
         try:
-            my.person = Person.create( "Unit", "Test",
+            self.person = Person.create( "Unit", "Test",
                         "ComputerWorld", "Fake Unittest Person")
-            my._test_notification()
+            self._test_notification()
 
-            my.transaction = Transaction.get(create=True)
-            my._test_result()
+            self.transaction = Transaction.get(create=True)
+            self._test_result()
         finally:
-            my.transaction.rollback()
+            self.transaction.rollback()
             test_env.delete()
 
         return
 
 
-    def _test_notification(my):
+    def _test_notification(self):
         
         sobject = SearchType.create("sthpw/notification")
         sobject.set_value('subject', 'TACTIC Unittest 001: a new item has been added.')
@@ -93,7 +93,7 @@ class NotificationTest(unittest.TestCase):
         sobject.commit()
 
         # Item added
-        my.clear_notification()
+        self.clear_notification()
         sobject1 = SearchType.create("unittest/country")
         sobject1.set_value('code', 'test_update_trigger')
         sobject1.commit()
@@ -103,13 +103,13 @@ class NotificationTest(unittest.TestCase):
         sobject1.commit()  
 
         # Note added
-        Note.create(my.person, "test note2", context='default2')
+        Note.create(self.person, "test note2", context='default2')
 
         # Task assigned
-        sobject = Task.create(my.person,'hi','hellotest',assigned="test assigned")
+        sobject = Task.create(self.person,'hi','hellotest',assigned="test assigned")
 
         # Task status changed
-        tasks = Task.get_by_sobject(my.person)
+        tasks = Task.get_by_sobject(self.person)
         tasks[0].set_value('process','success')
         tasks[0].commit()
 
@@ -126,7 +126,7 @@ class NotificationTest(unittest.TestCase):
         if os.path.exists(file_path):
             os.remove(file_path)
     
-    def _test_result(my):
+    def _test_result(self):
 
         search = Search('sthpw/notification_log')
         search.add_order_by('timestamp desc')
@@ -137,14 +137,14 @@ class NotificationTest(unittest.TestCase):
             temp_value = note[i].get_value('subject')
             message.append(temp_value)
      
-        my.assertEquals("TACTIC Unittest 001: a new item has been added.", message[0])
-        my.assertEquals("TACTIC Unittest 002: an item has been updated.", message[1])
-        my.assertEquals("TACTIC Unittest 003: New notes added.", message[2])
-        my.assertEquals("TACTIC Unittest 004: New task assigned.", message[3])
-        my.assertEquals("TACTIC Unittest 005: task status has been changed.", message[4])
-        my.assertEquals("TACTIC Unittest 006: Files are checked in.", message[5])
+        self.assertEquals("TACTIC Unittest 001: a new item has been added.", message[0])
+        self.assertEquals("TACTIC Unittest 002: an item has been updated.", message[1])
+        self.assertEquals("TACTIC Unittest 003: New notes added.", message[2])
+        self.assertEquals("TACTIC Unittest 004: New task assigned.", message[3])
+        self.assertEquals("TACTIC Unittest 005: task status has been changed.", message[4])
+        self.assertEquals("TACTIC Unittest 006: Files are checked in.", message[5])
 
-    def clear_notification(my):
+    def clear_notification(self):
         Notification.clear_cache()
         Container.put("Trigger:notifications", None)
         Container.put("triggers:cache", None)

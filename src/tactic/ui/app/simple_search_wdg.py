@@ -30,7 +30,7 @@ from tactic.ui.filter import KeywordFilterElementWdg
 
 class SimpleSearchExampleWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'search_view': 'view for the search',
@@ -38,17 +38,17 @@ class SimpleSearchExampleWdg(BaseRefreshWdg):
         }
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         search_class = 'tactic.ui.app.simple_search_wdg.SimpleSearchWdg'
 
         # for now add a table layout wdg
         from tactic.ui.panel import ViewPanelWdg
-        my.view = 'manage'
-        my.search_type = my.kwargs.get("search_type")
-        table = ViewPanelWdg(search_type=my.search_type, view=my.view, search_class=search_class)
+        self.view = 'manage'
+        self.search_type = self.kwargs.get("search_type")
+        table = ViewPanelWdg(search_type=self.search_type, view=self.view, search_class=search_class)
         top.add(table)
 
         return top
@@ -59,7 +59,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     SEARCH_COLS = ['keyword','keywords','key','name','description','code']
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'run_search_bvr': 'run search bvr when clicking on Search',
@@ -67,37 +67,37 @@ class SimpleSearchWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
+    def init(self):
 
-        my.prefix = my.kwargs.get('prefix')
-        if not my.prefix:
-            my.prefix = 'simple_search'
+        self.prefix = self.kwargs.get('prefix')
+        if not self.prefix:
+            self.prefix = 'simple_search'
 
-        my.content = None
+        self.content = None
 
-        my.prefix = 'simple'
-        my.search_type = my.kwargs.get("search_type")
+        self.prefix = 'simple'
+        self.search_type = self.kwargs.get("search_type")
         # this is needed for get_config() to search properly
-        my.base_search_type = Project.extract_base_search_type(my.search_type)
-        my.column_choice = None
+        self.base_search_type = Project.extract_base_search_type(self.search_type)
+        self.column_choice = None
         
 
-    def handle_search(my):
-        my.search = Search(my.search_type)
-        my.alter_search(my.search)
-        return my.search
+    def handle_search(self):
+        self.search = Search(self.search_type)
+        self.alter_search(self.search)
+        return self.search
 
-    def get_search(my):
-        return my.search
+    def get_search(self):
+        return self.search
 
 
 
 
     
-    def alter_search(my, search):
+    def alter_search(self, search):
         '''
         from tactic.ui.filter import BaseFilterElementWdg
-        config = my.get_config()
+        config = self.get_config()
         element_names = config.get_element_names()
         for element_name in element_names:
             widget = config.get_display_widget(element_name)
@@ -113,12 +113,12 @@ class SimpleSearchWdg(BaseRefreshWdg):
         # define a standard search action
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
-        config = my.get_config()
+        config = self.get_config()
 
-        data_list = filter_data.get_values_by_prefix(my.prefix)
+        data_list = filter_data.get_values_by_prefix(self.prefix)
         search_type = search.get_search_type()
       
-        my.column_choice = my.get_search_col(search_type)
+        self.column_choice = self.get_search_col(search_type)
 
 
         element_data_dict = {}
@@ -141,7 +141,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             widget = config.get_display_widget(element_name)
             if not widget:
                 
-                widget = KeywordFilterElementWdg(column=my.column_choice)
+                widget = KeywordFilterElementWdg(column=self.column_choice)
                 widget.set_name(element_name)
 
             data = element_data_dict.get(element_name)
@@ -150,8 +150,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
             widget.set_values(data)
 
             if isinstance(widget, KeywordFilterElementWdg):
-                if not data.get("keywords") and my.kwargs.get("keywords"):
-                    widget.set_value("value", my.kwargs.get("keywords"))
+                if not data.get("keywords") and self.kwargs.get("keywords"):
+                    widget.set_value("value", self.kwargs.get("keywords"))
             widget.alter_search(search)
 
         return
@@ -159,11 +159,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
 
-    def set_content(my, content):
-        my.content = content
+    def set_content(self, content):
+        self.content = content
 
-    def get_top(my):
-        top = my.top
+    def get_top(self):
+        top = self.top
         top.add_color("background", "background", -5)
         top.add_style("margin-bottom: -2px")
         top.add_class("spt_filter_top")
@@ -184,7 +184,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             saved_button.add_class("spt_simple_search_save_button")
             saved_button.add_behavior( {
                 #'type': 'load',
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'cbjs_action': '''
                 var popup = bvr.src_el.getParent(".spt_popup");
                 spt.popup.close(popup);
@@ -233,16 +233,16 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         tr = table.add_row()
 
-        if not my.content:
-            my.content = DivWdg()
-            my.content.add("No Content")
+        if not self.content:
+            self.content = DivWdg()
+            self.content.add("No Content")
 
         td = table.add_cell()
-        td.add(my.content)
-        #my.content.add_style("margin: -2 -1 0 -1")
+        td.add(self.content)
+        #self.content.add_style("margin: -2 -1 0 -1")
 
 
-        show_search = my.kwargs.get("show_search")
+        show_search = self.kwargs.get("show_search")
         if show_search in [False, 'false']:
             show_search = False
         else:
@@ -250,7 +250,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         show_search = True
         if show_search:
-            search_wdg = my.get_search_wdg()
+            search_wdg = self.get_search_wdg()
             table.add_row()
             search_wdg.add_style("float: right")
             search_wdg.add_class("spt_simple_search_button")
@@ -267,7 +267,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
 
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         top.add(hidden)
         # this cannot be spt_search as it will confuse spt.dg_table.search_cbk() 
         top.add_class("spt_simple_search")
@@ -275,21 +275,21 @@ class SimpleSearchWdg(BaseRefreshWdg):
         return top
 
 
-    def get_config(my):
+    def get_config(self):
 
 
-        my.view = my.kwargs.get("search_view")
-        config = my.kwargs.get("search_config")
+        self.view = self.kwargs.get("search_view")
+        config = self.kwargs.get("search_config")
 
-        if not my.view:
-            my.view = 'custom_filter'
+        if not self.view:
+            self.view = 'custom_filter'
         #view = "custom_filter"
 
-        project_code = Project.extract_project_code(my.search_type)
+        project_code = Project.extract_project_code(self.search_type)
 
         search = Search("config/widget_config", project_code=project_code )
-        search.add_filter("view", my.view)
-        search.add_filter("search_type", my.base_search_type)
+        search.add_filter("view", self.view)
+        search.add_filter("search_type", self.base_search_type)
         config_sobjs = search.get_sobjects()
 
         from pyasm.search import WidgetDbConfig
@@ -317,7 +317,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             </config>
             '''
             # use the one defined in the default config file
-            file_configs = WidgetConfigView.get_configs_from_file(my.base_search_type, my.view)
+            file_configs = WidgetConfigView.get_configs_from_file(self.base_search_type, self.view)
             if file_configs:
                 config = file_configs[0]
                 xml_node = config.get_view_node()
@@ -327,18 +327,18 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             
         from pyasm.widget import WidgetConfig
-        config = WidgetConfig.get(view=my.view, xml=config_xml)
+        config = WidgetConfig.get(view=self.view, xml=config_xml)
 
         return config
 
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         element_data_dict = {}
 
-        config = my.get_config()
+        config = self.get_config()
         element_names = config.get_element_names()
 
         content_wdg = DivWdg()
@@ -348,7 +348,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         content_wdg.add(onload_js)
         onload_js.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
 
@@ -357,19 +357,19 @@ class SimpleSearchWdg(BaseRefreshWdg):
         if not element_names:
             element_names = ['keywords']
 
-        my.set_content(content_wdg)
+        self.set_content(content_wdg)
 
         
         # this is somewhat duplicated logic from alter_search, but since this is called 
         # in ViewPanelWdg, it's a diff instance and needs to retrieve again
         filter_data = FilterData.get()
 
-        filter_view = my.kwargs.get("filter_view")
+        filter_view = self.kwargs.get("filter_view")
         if filter_view:
             search = Search("config/widget_config")
             search.add_filter("view", filter_view)
             search.add_filter("category", "search_filter")
-            search.add_filter("search_type", my.search_type)
+            search.add_filter("search_type", self.search_type)
             filter_config = search.get_sobject()
             if filter_config:
                 filter_xml = filter_config.get_xml_value("config")
@@ -378,7 +378,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                     data_list = jsonloads(filter_value)
 
         else:
-            data_list = filter_data.get_values_by_prefix(my.prefix)
+            data_list = filter_data.get_values_by_prefix(self.prefix)
 
 
 
@@ -413,7 +413,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         elements_wdg.add(table)
         table.add_class("spt_simple_search_table")
         
-        columns = my.kwargs.get("columns")
+        columns = self.kwargs.get("columns")
         if not columns:
             columns = 2
         else:
@@ -422,11 +422,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
         num_rows = int(len(element_names)/columns)+1
         tot_rows = int(len(element_names)/columns)+1
         project_code = Project.get_project_code()
-        # my.search_type could be the same as my.base_search_type
-        full_search_type = SearchType.build_search_type(my.search_type, project_code)
+        # self.search_type could be the same as self.base_search_type
+        full_search_type = SearchType.build_search_type(self.search_type, project_code)
 
 
-        visible_rows = my.kwargs.get("visible_rows")
+        visible_rows = self.kwargs.get("visible_rows")
         if visible_rows:
             visible_rows = int(visible_rows)
             num_rows = visible_rows
@@ -535,7 +535,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             # this is done at get_top()
             #element_wdg.add_class("spt_search")
-            element_wdg.add( HiddenWdg("prefix", my.prefix))
+            element_wdg.add( HiddenWdg("prefix", self.prefix))
 
             display_handler = config.get_display_handler(element_name)
             element_wdg.add( HiddenWdg("handler", display_handler))
@@ -557,9 +557,9 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             if not widget:
                 # the default for KeywordFilterElementWdg is mode=keyword
-                if not my.column_choice:
-                    my.column_choice = my.get_search_col(my.search_type)
-                widget = KeywordFilterElementWdg(column=my.column_choice)
+                if not self.column_choice:
+                    self.column_choice = self.get_search_col(self.search_type)
+                widget = KeywordFilterElementWdg(column=self.column_choice)
                 widget.set_name(element_name)
                 
 
@@ -578,7 +578,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             data = element_data_dict.get(element_name)
 
 			
-            view_panel_keywords = my.kwargs.get("keywords")
+            view_panel_keywords = self.kwargs.get("keywords")
             #user data takes precedence over view_panel_keywords
             if isinstance(widget, KeywordFilterElementWdg):
                 if view_panel_keywords:
@@ -632,16 +632,16 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
         #elements_wdg.add("<br clear='all'/>")
-        top = my.get_top()
+        top = self.get_top()
         return top
 
 
 
-    def get_search_wdg(my):
+    def get_search_wdg(self):
         search_div = DivWdg()
 
-        if my.kwargs.get('run_search_bvr'):
-            run_search_bvr = my.kwargs.get('run_search_bvr')
+        if self.kwargs.get('run_search_bvr'):
+            run_search_bvr = self.kwargs.get('run_search_bvr')
         else:
             run_search_bvr = {
                 'type':         'click_up',
@@ -650,7 +650,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 spt.dg_table.search_cbk(evt, bvr);
                 ''',
                 'new_search':   True,
-                'panel_id':     my.prefix
+                'panel_id':     self.prefix
             }
 
 
@@ -703,7 +703,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 spt.simple_search = {};

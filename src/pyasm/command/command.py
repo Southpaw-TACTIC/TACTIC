@@ -36,74 +36,74 @@ class Command(Base):
 
     TOP_CMD_KEY = "Command:top_cmd"
 
-    def __init__(my, **kwargs):
-        my.errors = []
-        my.description = ""
-        my.info = {}
-        my.response = ''
+    def __init__(self, **kwargs):
+        self.errors = []
+        self.description = ""
+        self.info = {}
+        self.response = ''
         # The sobjects that were operated on by this command
-        my.sobjects = []
+        self.sobjects = []
 
-        my.pipeline_code = None
-        my.process_name = None
-        my.event_name = None
+        self.pipeline_code = None
+        self.process_name = None
+        self.event_name = None
 
-        my.kwargs = kwargs
+        self.kwargs = kwargs
 
-        my.transaction = None
+        self.transaction = None
 
 
     '''
     already defined as a cls method below
-    def is_undoable(my):
+    def is_undoable(self):
         return True
     '''
     
-    def get_errors(my):
-        return my.errors
+    def get_errors(self):
+        return self.errors
 
-    def get_description(my):
+    def get_description(self):
         '''returns a readable description of what the command did'''
-        return my.description
+        return self.description
 
-    def add_description(my, description):
-        if my.description:
-            my.description += "\n%s" % description
+    def add_description(self, description):
+        if self.description:
+            self.description += "\n%s" % description
         else:
-            my.description += "%s" % description
+            self.description += "%s" % description
 
-    def set_response(my, response):
-        my.response = response
+    def set_response(self, response):
+        self.response = response
 
-    def get_sobjects(my):
-        return my.sobjects
+    def get_sobjects(self):
+        return self.sobjects
 
 
     ###########
     # methods to override
     ###########
-    def get_title(my):
-        print("WARNING: Should override 'get_title' function for %s" % my)
-        return Common.get_full_class_name(my)
-        #raise CommandException("Must override 'get_title' function for %s" % my)
+    def get_title(self):
+        print("WARNING: Should override 'get_title' function for %s" % self)
+        return Common.get_full_class_name(self)
+        #raise CommandException("Must override 'get_title' function for %s" % self)
 
 
-    def check(my):
+    def check(self):
         '''This function allows the command to check to see if the conditions
         are correct to run at all.  With the function, a command can quickly
         avoid starting a full transaction and undo recording'''
-        #print("WARNING: Should override 'check' function for %s" % my)
+        #print("WARNING: Should override 'check' function for %s" % self)
         return True
 
 
-    def preprocess(my):
+    def preprocess(self):
         '''everything necessary to prepare for the execution of the command
         is done here.  This includes all information checks and gathering
         of local information is done here'''
         pass
 
     # DEPRECATED: has never been used
-    def get_data(my):
+    def get_data(self):
         '''There is separate data gathering phase.  This is separated
         so that embedded commands can have this command superseded by
         a parent command who will do a batch assemble of data and
@@ -111,7 +111,7 @@ class Command(Base):
         pass
 
 
-    def execute(my):
+    def execute(self):
         '''Does the work of the command.  NEVER call this explicitly:
         call execute_cmd.  This is purely execution phase and occurs
         in a transaction.  It should be simple, fast and safe to fail.
@@ -119,55 +119,55 @@ class Command(Base):
         raise CommandException("Must override execute function")
 
 
-    def postprocess(my):
+    def postprocess(self):
         pass
 
 
 
-    def check_security(my):
+    def check_security(self):
         '''give the command a callback that allows it to check security'''
         return True
 
 
-    def get_info(my, key=None):
+    def get_info(self, key=None):
         '''function to return the info of the command.  The command will
         place specific keyed results which other classes (particular triggers)
         can make use of.'''
         if not key:
-            return my.info
+            return self.info
         else:
-            return my.info.get(key)
+            return self.info.get(key)
 
 
     # transaction commands
-    def start(my):
+    def start(self):
         pass
 
-    def rollback(my):
+    def rollback(self):
         pass
-        #print("Command [%s] does not have a rollback function" % my)
+        #print("Command [%s] does not have a rollback function" % self)
 
-    def commit(my):
-        #print("Command [%s] does not have a commit function" % my)
+    def commit(self):
+        #print("Command [%s] does not have a commit function" % self)
         pass
 
-    def set_transaction(my, transaction):
+    def set_transaction(self, transaction):
         # get the transaction from the container.  This is overridden
         # by some commands
-        my.transaction = transaction
-        return my.transaction
+        self.transaction = transaction
+        return self.transaction
 
 
-    def get_transaction(my):
+    def get_transaction(self):
         # get the transaction from the container.  This is overridden
         # by some commands
-        if not my.transaction:
-            my.transaction = Transaction.get(create=True)
-        return my.transaction
+        if not self.transaction:
+            self.transaction = Transaction.get(create=True)
+        return self.transaction
 
 
-    def execute_transaction(my, call_trigger=True):
-        Command.execute_cmd(my, call_trigger=call_trigger)
+    def execute_transaction(self, call_trigger=True):
+        Command.execute_cmd(self, call_trigger=call_trigger)
 
 
     def execute_cmd(cls, cmd, call_trigger=True):
@@ -382,30 +382,30 @@ class Command(Base):
     '''These commands must be run under a process in a pipeline.  In effect,
     this pipeline owns the command that was executed.
     '''
-    def set_process(my, process_name):
-        my.process_name = process_name
+    def set_process(self, process_name):
+        self.process_name = process_name
 
-    def get_process(my):
-        return my.process_name
+    def get_process(self):
+        return self.process_name
 
-    def set_pipeline_code(my, pipeline_code):
-        my.pipeline_code = pipeline_code
+    def set_pipeline_code(self, pipeline_code):
+        self.pipeline_code = pipeline_code
 
-    def get_pipeline_code(my):
-        return my.pipeline_code
+    def get_pipeline_code(self):
+        return self.pipeline_code
 
-    def set_event_name(my, event_name):
-        my.event_name = event_name
+    def set_event_name(self, event_name):
+        self.event_name = event_name
 
-    def get_event_name(my):
-        return my.event_name
+    def get_event_name(self):
+        return self.event_name
 
-    def set_as_approved(my):
+    def set_as_approved(self):
         '''convinience function that sets task for this process as approved'''
-        my.set_event_name("task/approved")
+        self.set_event_name("task/approved")
 
         # get the task associated with this process
-        tasks = Task.get_by_sobjects(my.sobjects, my.process_name)
+        tasks = Task.get_by_sobjects(self.sobjects, self.process_name)
 
         for task in tasks:
             task.set_value("status", "Approved")
@@ -416,12 +416,12 @@ class Command(Base):
 
 
 
-    def notify_listeners(my):
+    def notify_listeners(self):
         '''The command must have operated on an sobject with a pipeline and
         the operation must have been done on a process in that pipeline'''
 
         # find the sobject that this command operated on
-        sobjects = my.get_sobjects()
+        sobjects = self.get_sobjects()
         if not sobjects:
             return
 
@@ -431,22 +431,22 @@ class Command(Base):
 
 
         # we have sufficient information
-        current_pipeline_code = my.get_pipeline_code()
+        current_pipeline_code = self.get_pipeline_code()
         if not current_pipeline_code:
             current_pipeline_code = sobject.get_value("pipeline_code")
 
 
-        current_process = my.get_process()
-        event = my.get_event_name()
+        current_process = self.get_process()
+        event = self.get_event_name()
         if not current_pipeline_code or not current_process:
             return
         # get the pipelne (for in pipeline process)
         pipeline = Pipeline.get_by_code(current_pipeline_code)
-        my.handle_pipeline(pipeline, current_process, event)
+        self.handle_pipeline(pipeline, current_process, event)
 
 
 
-    def handle_pipeline(my, pipeline, current_process, event):
+    def handle_pipeline(self, pipeline, current_process, event):
 
         # find the output processes
         output_processes = pipeline.get_output_processes(current_process)
@@ -466,7 +466,7 @@ class Command(Base):
             handler = Common.create_from_class_path(handler_cls)
 
             # DEPRECATED
-            handler.set_prev_command(my)
+            handler.set_prev_command(self)
 
             # set the options
             options = process.get_action_options(event, scope="dependent")
@@ -481,7 +481,7 @@ class Command(Base):
 
             # transfer outputs to inputs.  This allows a command to deliver
             # from one process to another
-            input = my.get_info()
+            input = self.get_info()
             handler.set_input(input)
             # By default, inputs travel through
             handler.set_output(input)
@@ -497,21 +497,21 @@ class Command(Base):
 
 class HandlerCmd(Command):
     '''Small wrapper class which executes a handler within a command'''
-    def __init__(my, handler):
-        my.handler = handler
-        super(HandlerCmd, my).__init__()
+    def __init__(self, handler):
+        self.handler = handler
+        super(HandlerCmd, self).__init__()
 
     # DEPRECATED: use get_input()
-    def get_info(my):
+    def get_info(self):
         # get the info from the handler
-        return my.handler.get_input()
+        return self.handler.get_input()
 
-    def get_input(my):
+    def get_input(self):
         # get the info from the handler
-        return my.handler.get_input()
+        return self.handler.get_input()
 
-    def execute(my):
-        my.handler.execute()
+    def execute(self):
+        self.handler.execute()
 
 
 
@@ -521,22 +521,22 @@ __all__.append('SampleHandler2')
 
 # Derive from the client api handler
 class SampleHandler(Command):
-    def set_prev_command(my, prev_command):
-        my.prev_command = prev_command
+    def set_prev_command(self, prev_command):
+        self.prev_command = prev_command
 
-    def execute(my):
+    def execute(self):
         print("EXECUTING sample command")
 
         # create the render
         render = SearchType.create("prod/render")
-        render.set_parent(my.prev_command.sobject)
+        render.set_parent(self.prev_command.sobject)
         render.set_value("pipeline_code", "turntable")
         render.commit()
         Task.add_initial_tasks(render)
 
-        prev_sobject = my.prev_command.sobject
+        prev_sobject = self.prev_command.sobject
         prev_process = "model"
-        this_sobject = my.prev_command.sobject
+        this_sobject = self.prev_command.sobject
         this_process = "turntable"
 
         # get the deliverable
@@ -571,30 +571,30 @@ class SampleHandler(Command):
         checkin = FileCheckin.get(this_sobject, file_paths, file_types, context=this_process)
         checkin.execute()
 
-        my.set_event_name("task/approved")
-        my.set_process("preprocess")
-        my.set_pipeline_code("turntable")
-        my.sobjects = [render]
+        self.set_event_name("task/approved")
+        self.set_process("preprocess")
+        self.set_pipeline_code("turntable")
+        self.sobjects = [render]
 
         # ???
-        my.sobject = render
+        self.sobject = render
 
 
-        my.set_as_approved()
+        self.set_as_approved()
 
 
 class SampleHandler2(Command):
-    def set_prev_command(my, prev_command):
-        my.prev_command = prev_command
+    def set_prev_command(self, prev_command):
+        self.prev_command = prev_command
 
-    def execute(my):
-        my.set_event_name("task/approved")
-        my.set_process("render")
-        my.set_pipeline_code("turntable")
-        my.sobjects = [my.prev_command.sobject]
+    def execute(self):
+        self.set_event_name("task/approved")
+        self.set_process("render")
+        self.set_pipeline_code("turntable")
+        self.sobjects = [self.prev_command.sobject]
 
         print("SampleHandler2")
-        my.set_as_approved()
+        self.set_as_approved()
 
 
 
@@ -626,15 +626,15 @@ class CommandLog(SObject):
 class CommandDescription(Base):
     '''Class which builds up a description of a command'''
 
-    def __init__(my):
-        my.description = []
+    def __init__(self):
+        self.description = []
 
-    def add(my, description):
-        my.description.append(description)
+    def add(self, description):
+        self.description.append(description)
 
 
-    def get(my):
-        return "\n".join(my.description)
+    def get(self):
+        return "\n".join(self.description)
 
 
 

@@ -19,11 +19,11 @@ class CommandSObj(SObject):
 
     SEARCH_TYPE = "sthpw/command"
 
-    def get_primary_key(my):
+    def get_primary_key(self):
         return "class_name"
 
-    def get_description(my):
-        return my.get_primary_key_value() 
+    def get_description(self):
+        return self.get_primary_key_value() 
 
     # static methods 
     def get_by_class_name(name):
@@ -48,11 +48,11 @@ class TriggerSObj(SObject):
         return ['event','class_name']
     get_required_columns = staticmethod(get_required_columns)
 
-    def get_primary_key(my):
+    def get_primary_key(self):
         return "class_name"
 
-    def get_description(my):
-        return my.get_primary_key_value()   
+    def get_description(self):
+        return self.get_primary_key_value()   
 
      
 class Trigger(TriggerSObj):

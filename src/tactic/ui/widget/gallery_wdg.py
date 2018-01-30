@@ -26,14 +26,14 @@ from tactic.ui.common import BaseRefreshWdg
 
 class GalleryWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.curr_path = None
+    def init(self):
+        self.curr_path = None
 
-    def get_display(my):
+    def get_display(self):
 
-        my.sobject_data = {}
+        self.sobject_data = {}
 
-        top = my.top
+        top = self.top
         top.add_style
         top.add_class("spt_gallery_top")
 
@@ -55,11 +55,11 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add_style("z-index: 2000")
 
 
-        width = my.kwargs.get("width")
-        height = my.kwargs.get("height")
+        width = self.kwargs.get("width")
+        height = self.kwargs.get("height")
         
         # default to top.
-        align = my.kwargs.get("align")
+        align = self.kwargs.get("align")
         if not align:
             align = "top"
 
@@ -70,13 +70,13 @@ class GalleryWdg(BaseRefreshWdg):
             width = int(width)
 
 
-        paths = my.get_paths(file_type='main')
+        paths = self.get_paths(file_type='main')
         # icon type may be too small
-        thumb_paths = my.get_paths(file_type='web')
+        thumb_paths = self.get_paths(file_type='web')
         
         descriptions = []
         for path in paths:
-            sobject = my.sobject_data.get(path)
+            sobject = self.sobject_data.get(path)
             if not sobject:
                 descriptions.append("")
             else:
@@ -350,7 +350,7 @@ class GalleryWdg(BaseRefreshWdg):
             path_div.add_style("display: inline-block")
             path_div.add_style("vertical-align: middle")
 
-            if path == my.curr_path:
+            if path == self.curr_path:
                 curr_index = i
 
             try:
@@ -471,13 +471,13 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-    def get_paths(my, file_type='main'):
+    def get_paths(self, file_type='main'):
 
         # this is the selected one
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
       
-        search_keys = my.kwargs.get("search_keys")
-        paths = my.kwargs.get("paths")
+        search_keys = self.kwargs.get("search_keys")
+        paths = self.kwargs.get("paths")
 
         if not paths:
             paths = []
@@ -529,12 +529,12 @@ class GalleryWdg(BaseRefreshWdg):
                     tmp_paths.append(path)  
 
                 path = "|".join(tmp_paths)
-                my.sobject_data[path] = sobject
+                self.sobject_data[path] = sobject
                 paths.append(path)
 
 	            # set the current path the user clicks on
-                if not my.curr_path and sobject.get_search_key() == search_key and file_type=='main':
-                    my.curr_path = path
+                if not self.curr_path and sobject.get_search_key() == search_key and file_type=='main':
+                    self.curr_path = path
                         
 
         elif paths:

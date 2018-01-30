@@ -63,11 +63,11 @@ test_xml = '''
 
 
 class CopyConfigCmd(Command):
-    #def __init__(my, **kwargs):
+    #def __init__(self, **kwargs):
     #    pass
 
 
-    def execute(my):
+    def execute(self):
         project_type = "prod"
 
         # copy all of the widget configs from the prod definition and put

@@ -65,38 +65,38 @@ class PythonElementWdg(TypeTableElementWdg):
   
 
  
-    def get_required_columns(my):
+    def get_required_columns(self):
         '''method to get the require columns for this'''
         return []
 
 
-    def get_sort_prefix(my):
+    def get_sort_prefix(self):
         return "Post"
 
-    def is_sortable(my):
+    def is_sortable(self):
         # false is the word to prevent the auto-adoption (preprocess) of the expression to order-by
-        order_by = my.get_option("order_by")
+        order_by = self.get_option("order_by")
         if order_by =='false':
             return False
         else:
             return True
 
-    def is_groupable(my):
-        group_by = my.get_option("group_by")
+    def is_groupable(self):
+        group_by = self.get_option("group_by")
         if group_by:
             return True
         else:
             return False
 
 
-    def is_time_groupable(my):
+    def is_time_groupable(self):
         return False
 
 
 
-    def preprocess(my):
+    def preprocess(self):
 
-        script_path = my.get_option("script_path")
+        script_path = self.get_option("script_path")
 
         folder = os.path.dirname(script_path)
         title = os.path.basename(script_path)
@@ -106,57 +106,57 @@ class PythonElementWdg(TypeTableElementWdg):
         search.add_filter("title", title)
         custom_script = search.get_sobject()
         if not custom_script:
-           my.code = '''return "No script defined"''' 
+           self.code = '''return "No script defined"''' 
         else:
-           my.code = custom_script.get_value("script")
+           self.code = custom_script.get_value("script")
 
 
-    def get_result(my, sobject):
+    def get_result(self, sobject):
         result = None
         sobject_dict = sobject.get_sobject_dict()
-        filter_data = my.filter_data.get_data()
+        filter_data = self.filter_data.get_data()
         try:
-            cmd = PythonCmd(code=my.code, sobject=sobject_dict, filter_data=filter_data)
+            cmd = PythonCmd(code=self.code, sobject=sobject_dict, filter_data=filter_data)
             result = cmd.execute()
         except Exception as e:
             return str(e)
         
         return result
 
-    def get_display(my):
-        top = my.top
-        my.result = ''
+    def get_display(self):
+        top = self.top
+        self.result = ''
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         
-        current_value = sobject.get_value(my.get_name(), no_exception=True)
+        current_value = sobject.get_value(self.get_name(), no_exception=True)
         if current_value:
             top.add(current_value)
             return top
 
-        result = my.get_result(sobject)
+        result = self.get_result(sobject)
 
         if result == "":
             return top
 
-        sobject.set_value(my.get_name(), result, temp=True)
-        display_format = my.get_option("display_format")
+        sobject.set_value(self.get_name(), result, temp=True)
+        display_format = self.get_option("display_format")
         if display_format:
-            expr = "@FORMAT(@GET(.%s), '%s')" % (my.get_name(), display_format)
+            expr = "@FORMAT(@GET(.%s), '%s')" % (self.get_name(), display_format)
             result = Search.eval(expr, sobject, single=True)
 
-        my.result = result
+        self.result = result
         
         top.add(result)
         return top
 
-    def get_text_value(my):
+    def get_text_value(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         sobject_dict = sobject.get_sobject_dict()
 
         try:
-            cmd = PythonCmd(code=my.code, sobject=sobject_dict)
+            cmd = PythonCmd(code=self.code, sobject=sobject_dict)
             result = cmd.execute()
         except Exception as e:
             return str(e)
@@ -164,16 +164,16 @@ class PythonElementWdg(TypeTableElementWdg):
         if result == "":
             return result
 
-        sobject.set_value(my.get_name(), result, temp=True)
-        display_format = my.get_option("display_format")
+        sobject.set_value(self.get_name(), result, temp=True)
+        display_format = self.get_option("display_format")
         if display_format:
-            expr = "@FORMAT(@GET(.%s), '%s')" % (my.get_name(), display_format)
+            expr = "@FORMAT(@GET(.%s), '%s')" % (self.get_name(), display_format)
             result = Search.eval(expr, sobject, single=True)
         return result
 
 
-    def handle_td(my, td):
-        if isinstance(my.result, basestring):
+    def handle_td(self, td):
+        if isinstance(self.result, basestring):
             td.add_style("text-align", "left")
         else:
             td.add_style("text-align", "right")

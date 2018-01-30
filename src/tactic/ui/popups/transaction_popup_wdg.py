@@ -28,15 +28,15 @@ import datetime
 
 class TransactionPopupWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         pass
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
-    def get_buttons(my):
+    def get_buttons(self):
         button_div = DivWdg()
 
 
@@ -235,13 +235,13 @@ class TransactionPopupWdg(BaseRefreshWdg):
         return button_div
 
 
-    def get_display(my):
+    def get_display(self):
         content_div = DivWdg()
-        my.set_as_panel(content_div)
+        self.set_as_panel(content_div)
         content_div.add_class("spt_undo_log_top")
         content_div.add_style("width: 800px")
 
-        buttons = content_div.add(my.get_buttons())
+        buttons = content_div.add(self.get_buttons())
         content_div.add(buttons)
  
         undo_wdg = UndoLogWdg()

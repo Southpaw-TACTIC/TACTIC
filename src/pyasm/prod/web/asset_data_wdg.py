@@ -21,9 +21,9 @@ from shot_navigator_wdg import *
 
 class AssetDataLink(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         url = WebContainer.get_web().get_widget_url()
         url.set_option("widget", "AssetWdg")
@@ -45,7 +45,7 @@ class AssetDataLink(BaseTableElementWdg):
 
 class AssetWdg(Widget):
 
-    def init(my):
+    def init(self):
 
         web = WebContainer.get_web()
         asset_code = web.get_form_value("asset_code")
@@ -53,7 +53,7 @@ class AssetWdg(Widget):
         asset = Asset.get_by_code(asset_code)
 
         # display some information
-        my.add("<div class='admin_header'>Information</div>")
+        self.add("<div class='admin_header'>Information</div>")
 
         info = DivWdg()
         info.add_style("border-style: solid")
@@ -63,20 +63,20 @@ class AssetWdg(Widget):
         table = Table()
         table.add_row()
         info.add(table)
-        my.add(info)
+        self.add(info)
 
         # Milestone test
-        #my.add("<div class='admin_header'>Milestones</div>")
+        #self.add("<div class='admin_header'>Milestones</div>")
         #milestone = MilestoneWdg()
-        #my.add(milestone)
+        #self.add(milestone)
 
-        my.add("<div class='admin_header'>User Task</div>")
+        self.add("<div class='admin_header'>User Task</div>")
         search = Search("sthpw/task")
         search.add_filter("search_type", asset.get_search_type() )
         search.add_filter("search_id", asset.get_id() )
         table = TableWdg("sthpw/task", "artist")
         table.set_search(search)
-        my.add(table)
+        self.add(table)
 
 
 

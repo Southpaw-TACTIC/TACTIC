@@ -30,18 +30,18 @@ class HtmlElementWdg(SimpleTableElementWdg):
     }
     }
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        height = my.get_option('height')
+        height = self.get_option('height')
         if not height:
             height = 300
 
@@ -53,11 +53,11 @@ class HtmlElementWdg(SimpleTableElementWdg):
         inner.add_style("max-height: %s" % height)
         inner.add_style("margin-right: -3px")
         
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        column = my.get_option("column")
+        column = self.get_option("column")
         if not column:
-            column = my.get_name()
+            column = self.get_name()
 
         if sobject:
             html = sobject.get_json_value( column ) or ""

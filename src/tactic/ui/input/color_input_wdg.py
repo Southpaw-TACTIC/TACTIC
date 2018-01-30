@@ -27,7 +27,7 @@ from text_input_wdg import TextInputWdg
 
 class ColorWdg(Widget):
     '''This is drawn once in the page to reuse by repositioning it'''
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
 
@@ -111,50 +111,50 @@ class ColorInputWdg(BaseInputWdg):
     }
 
 
-    def __init__(my, name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         if not name:
             name = kwargs.get("name")
-        my.top = DivWdg()
-        my.input = None
-        my.kwargs = kwargs
-        super(ColorInputWdg, my).__init__(name)
+        self.top = DivWdg()
+        self.input = None
+        self.kwargs = kwargs
+        super(ColorInputWdg, self).__init__(name)
 
-        if not my.input:
-            my.input = TextInputWdg(name=my.get_input_name())
-
-
-
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
-
-    def set_input(my, input):
-        my.input = input
-        my.input.set_name(my.get_input_name() )
-
-    def get_input(my):
-        return my.input
-
-
-    def add(my, widget):
-        my.top.add(widget)
-
-
-    def add_behavior(my, behavior):
-        return my.input.add_behavior(behavior)
+        if not self.input:
+            self.input = TextInputWdg(name=self.get_input_name())
 
 
 
-    def get_display(my):
-        top = my.top
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
+
+    def set_input(self, input):
+        self.input = input
+        self.input.set_name(self.get_input_name() )
+
+    def get_input(self):
+        return self.input
 
 
-        value = my.get_value()
+    def add(self, widget):
+        self.top.add(widget)
+
+
+    def add_behavior(self, behavior):
+        return self.input.add_behavior(behavior)
+
+
+
+    def get_display(self):
+        top = self.top
+
+
+        value = self.get_value()
         if value:
-            my.input.set_value(value)
-            my.input.add_style("background", value)
-        top.add(my.input)
+            self.input.set_value(value)
+            self.input.add_style("background", value)
+        top.add(self.input)
 
-        start_color = my.kwargs.get("start_color")
+        start_color = self.kwargs.get("start_color")
 
         if not value:
             if start_color and start_color.find(","):
@@ -178,10 +178,10 @@ class ColorInputWdg(BaseInputWdg):
 
 
         if start_color:
-            my.input.set_value(start_color)
-            my.input.add_style("background", start_color)
+            self.input.set_value(start_color)
+            self.input.add_style("background", start_color)
 
-        my.input.add_class("spt_color_input")
+        self.input.add_class("spt_color_input")
      
         if not start_color:
             start_color = [0, 0, 255]
@@ -194,7 +194,7 @@ class ColorInputWdg(BaseInputWdg):
 
         behavior = {
             'type': 'click',
-            'name': my.get_name(),
+            'name': self.get_name(),
             'start_color': start_color,
             'cbjs_action': '''
             var pos = bvr.src_el.getPosition();

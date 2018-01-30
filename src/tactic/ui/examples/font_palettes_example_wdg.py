@@ -19,16 +19,16 @@ from base_example_wdg import BaseExampleWdg
 
 class FontPalettesExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Font Palette Reference"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Listing of Font Palettes and examples of how they will appear in the interface. You can switch " \
                 "between font palettes with various style modifiers -- normal, bold, italic, bold + italic."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         font_div = DivWdg()
 

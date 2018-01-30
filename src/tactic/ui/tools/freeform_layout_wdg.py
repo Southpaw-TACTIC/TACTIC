@@ -26,8 +26,8 @@ import random
 
 class FreeFormLayoutToolWdg(BaseRefreshWdg):
 
-    def get_value(my, name):
-        value = my.kwargs.get(name)
+    def get_value(self, name):
+        value = self.kwargs.get(name)
         if value == None:
             web = WebContainer.get_web()
             value = web.get_form_value(name)
@@ -35,17 +35,17 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         return value
 
 
-    def get_display(my):
+    def get_display(self):
 
 
         category = "FreeformWdg"
 
-        search_type = my.get_value("search_type")
+        search_type = self.get_value("search_type")
         if not search_type:
             search_type = "sthpw/login"
 
 
-        view = my.get_value("view")
+        view = self.get_value("view")
         if not view:
             view = 'freeform'
 
@@ -58,8 +58,8 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         else:
             config_xml = "<config/>"
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_freeform_top")
 
         inner = DivWdg()
@@ -262,9 +262,9 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         from tactic.ui.container import DialogWdg
         dialog = DialogWdg(display=False, show_pointer=False)
         dialog.add_title("Properties")
-        my.dialog_id = dialog.get_id()
+        self.dialog_id = dialog.get_id()
         left.add(dialog)
-        attr_div = my.get_attr_wdg()
+        attr_div = self.get_attr_wdg()
         dialog.add(attr_div)
 
 
@@ -272,14 +272,14 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         left.add(template_div)
         template_div.add_class("spt_freeform_template_top")
         template_div.add_style("display: none")
-        template_config_xml = my.get_template_config_xml()
-        freeform_layout = FreeFormCanvasWdg(search_type=search_type, view="freeform", config_xml=template_config_xml, dialog_id=my.dialog_id)
+        template_config_xml = self.get_template_config_xml()
+        freeform_layout = FreeFormCanvasWdg(search_type=search_type, view="freeform", config_xml=template_config_xml, dialog_id=self.dialog_id)
         template_div.add(freeform_layout)
 
 
         # handle the canvas
         canvas = table.add_cell(resize=False)
-        canvas.add( my.get_action_wdg() )
+        canvas.add( self.get_action_wdg() )
         canvas.add_style("overflow: hidden")
 
         canvas.add_style("vertical-align: top")
@@ -294,21 +294,21 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         canvas_div.add_style("height: 100%")
         canvas_div.add_class("spt_freeform_canvas_top")
         canvas.add(canvas_div)
-        freeform_layout = FreeFormCanvasWdg(search_type=search_type, view=view, config_xml=config_xml, dialog_id=my.dialog_id)
+        freeform_layout = FreeFormCanvasWdg(search_type=search_type, view=view, config_xml=config_xml, dialog_id=self.dialog_id)
         canvas_div.add(freeform_layout)
 
 
 
         table.add_resize_row()
 
-        if my.kwargs.get("is_refresh") in [True, "true"]:
+        if self.kwargs.get("is_refresh") in [True, "true"]:
             return inner
         else:
             return top 
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
         div = DivWdg()
         div.add_gradient("background", "background", -5)
         div.add_border()
@@ -355,7 +355,7 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         button_row.add(button)
 
         from tactic.ui.container import SmartMenu
-        smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': my.get_add_menu() } )
+        smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.get_add_menu() } )
         SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
 
 
@@ -388,7 +388,7 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         return div
 
 
-    def get_add_menu(my):
+    def get_add_menu(self):
         from tactic.ui.container import Menu, MenuItem
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -401,14 +401,14 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Label')
         menu_item.add_behavior( {
             'element_name': 'label',
-            'cbjs_action': my.get_add_bvr_action()
+            'cbjs_action': self.get_add_bvr_action()
         } )
         menu.add(menu_item)
 
         menu_item = MenuItem(type='action', label='Text')
         menu_item.add_behavior( {
             'element_name': 'text',
-            'cbjs_action': my.get_add_bvr_action()
+            'cbjs_action': self.get_add_bvr_action()
         } )
         menu.add(menu_item)
 
@@ -416,7 +416,7 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='TextArea')
         menu_item.add_behavior( {
             'element_name': 'textarea',
-            'cbjs_action': my.get_add_bvr_action()
+            'cbjs_action': self.get_add_bvr_action()
         } )
         menu.add(menu_item)
 
@@ -424,7 +424,7 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         return menu
 
 
-    def get_add_bvr_action(my):
+    def get_add_bvr_action(self):
         cbjs_action = '''
         var activator = spt.smenu.get_activator(bvr);
 
@@ -460,7 +460,7 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
         return cbjs_action 
 
 
-    def get_attr_wdg(my):
+    def get_attr_wdg(self):
         div = DivWdg()
         div.add_border();
         #div.add_style("padding: 10px")
@@ -478,7 +478,7 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
 
 
 
-    def get_template_config_xml(my):
+    def get_template_config_xml(self):
 
         return '''
 <config>
@@ -561,26 +561,26 @@ class FreeFormLayoutToolWdg(BaseRefreshWdg):
 
 class FreeFormCanvasWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        search_type = my.kwargs.get("search_type")
-        view = my.kwargs.get("view")
+        search_type = self.kwargs.get("search_type")
+        view = self.kwargs.get("view")
         assert search_type
         assert view
 
-        #my.handle_search()
+        #self.handle_search()
 
-        config_xml = my.kwargs.get("config_xml")
+        config_xml = self.kwargs.get("config_xml")
         if not config_xml:
             config_xml = "<config/>"
 
 
         # extraneous variables inherited from TableLayoutWdg
-        my.edit_permission = False
+        self.edit_permission = False
 
         top = DivWdg()
         top.add_class("spt_freeform_layout_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("height: 100%")
@@ -589,7 +589,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
         top.add_style("border: dashed 1px %s" % border_color)
 
 
-        is_refresh = my.kwargs.get("is_refresh")
+        is_refresh = self.kwargs.get("is_refresh")
 
         config = WidgetConfig.get(view=view, xml=config_xml)
 
@@ -598,7 +598,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
         canvas.add_class("spt_freeform_canvas")
         canvas.add_style("position: relative")
 
-        my.kwargs['view'] = view
+        self.kwargs['view'] = view
 
 
         element_names = config.get_element_names()
@@ -614,14 +614,14 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
             width = '600px'
         canvas.add_style("width: %s" % canvas_width)
   
-        if not my.sobjects:
+        if not self.sobjects:
             search = Search(search_type)
             sobject = search.get_sobject()
         else:
-            sobject = my.sobjects[0]
+            sobject = self.sobjects[0]
 
 
-        dialog_id = my.kwargs.get("dialog_id")
+        dialog_id = self.kwargs.get("dialog_id")
 
         canvas.add_behavior( {
         'type': 'smart_click_up',
@@ -658,7 +658,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
 
         canvas.add_behavior( {
         'type': 'load',
-        'cbjs_action': my.get_onload_js()
+        'cbjs_action': self.get_onload_js()
         } )
 
 
@@ -893,7 +893,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
 
         # for TableLayoutWdg??
         top.add_class("spt_table_top");
-        class_name = Common.get_full_class_name(my)
+        class_name = Common.get_full_class_name(self)
         top.add_attr("spt_class_name", class_name)
 
         top.add("<br clear='all'/>")
@@ -931,7 +931,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return '''
 
 spt.freeform = {};
@@ -1181,17 +1181,17 @@ spt.freeform.export = function() {
 
 class FreeFormAttrWdg(BaseRefreshWdg):
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def get_display(my):
-        element_name = my.kwargs.get("element_name")
-        element_id = my.kwargs.get("element_id")
-        display_handler = my.kwargs.get("display_handler")
-        display_options = my.kwargs.get("display_options")
+    def get_display(self):
+        element_name = self.kwargs.get("element_name")
+        element_id = self.kwargs.get("element_id")
+        display_handler = self.kwargs.get("display_handler")
+        display_options = self.kwargs.get("display_options")
 
-        top = my.top
+        top = self.top
         top.add_class("spt_freeform_attr_top")
         top.add_style("padding: 10px")
 
@@ -1372,19 +1372,19 @@ class HtmlWdg(BaseRefreshWdg):
     }
 
 
-    def is_resizable(my):
+    def is_resizable(self):
         return True
 
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
-        html = my.kwargs.get("html")
+        html = self.kwargs.get("html")
         if not html:
             html = "<i>No content</i>"
 
@@ -1419,20 +1419,20 @@ class BorderWdg(BaseRefreshWdg):
     }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("position: relative")
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = "200px"
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = "100px"
-        label = my.kwargs.get("label")
-        if label and my.sobjects:
-            label = Search.eval(label, my.sobjects[0], single=True)
+        label = self.kwargs.get("label")
+        if label and self.sobjects:
+            label = Search.eval(label, self.sobjects[0], single=True)
         if not label:
             label = "No Label"
 
@@ -1475,28 +1475,28 @@ class LabelWdg(BaseRefreshWdg):
     }
 
 
-    def is_resizable(my):
+    def is_resizable(self):
         return True
 
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         #top.add_border()
 
-        label = my.kwargs.get("label")
+        label = self.kwargs.get("label")
 
         if label.startswith("{") and label.endswith("}"):
-            if my.sobjects:
-                label = Search.eval(label, my.sobjects[0], single=True)
+            if self.sobjects:
+                label = Search.eval(label, self.sobjects[0], single=True)
         if not label:
             label = "No Label"
 
-        font_size = my.kwargs.get("font-size")
+        font_size = self.kwargs.get("font-size")
         if font_size:
             top.add_style("font-size: %s" % font_size)
 
@@ -1547,27 +1547,27 @@ class FreeFormBoxWdg(BaseRefreshWdg):
     }
 
 
-    def is_resizable(my):
+    def is_resizable(self):
         return True
 
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         #top.add_border()
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = '50px'
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = '50px'
 
-        class_name = my.kwargs.get("class")
+        class_name = self.kwargs.get("class")
         if class_name:
             top.add_class(class_name)
 
@@ -1577,14 +1577,14 @@ class FreeFormBoxWdg(BaseRefreshWdg):
         top.add_color("background", "background3")
 
 
-        font_size = my.kwargs.get("font-size")
+        font_size = self.kwargs.get("font-size")
         if font_size:
             top.add_style("font-size: %s" % font_size)
 
 
 
 
-        css = my.kwargs.get("css")
+        css = self.kwargs.get("css")
         if css:
             css = jsonloads(css)
             for name, value in css.items():
@@ -1621,29 +1621,29 @@ class FreeFormImageWdg(BaseRefreshWdg):
     }
 
 
-    def is_resizable(my):
+    def is_resizable(self):
         return True
 
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = "100%"
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = "100%"
 
-        border = my.kwargs.get("border")
+        border = self.kwargs.get("border")
 
 
-        src = my.kwargs.get("src")
+        src = self.kwargs.get("src")
 
         img = HtmlElement.img(src)
         img.add_style("width: %s" % width)
@@ -1669,16 +1669,16 @@ class FreeFormTextWdg(BaseRefreshWdg):
     }
 
 
-    def is_resizable(my):
+    def is_resizable(self):
         return True
 
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         #top.add_border()
 
-        label = my.kwargs.get("label")
+        label = self.kwargs.get("label")
         if not label:
             label = 'No Label'
 
@@ -1693,14 +1693,14 @@ class FreeFormTextWdg(BaseRefreshWdg):
 
 class DataWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        column = my.kwargs.get("column")
+        column = self.kwargs.get("column")
         if not column:
             column = "code"
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if not sobject:
             value = 'No sobject'
         else:

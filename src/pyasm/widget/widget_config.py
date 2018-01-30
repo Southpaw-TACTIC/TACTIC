@@ -30,39 +30,39 @@ class WidgetConfig(Base):
     '''
 
 
-    #def __del__(my):
-    #    print("DELETING config: ", my)
+    #def __del__(self):
+    #    print("DELETING config: ", self)
 
 
     
-    def __init__(my, view=None, file_path=None, xml=None, __get__=False, use_cache=True, state=None):
+    def __init__(self, view=None, file_path=None, xml=None, __get__=False, use_cache=True, state=None):
         if not __get__:
             raise WidgetConfigException("Do not instantiate WidgetConfig directly.  Use WidgetConfig.get()")
 
-        my.file_path = file_path
+        self.file_path = file_path
 
         if file_path != None:
-            my.xml = Xml()
-            my.xml.read_file(file_path, cache=use_cache)
+            self.xml = Xml()
+            self.xml.read_file(file_path, cache=use_cache)
 
         elif xml:
             if type(xml) in types.StringTypes:
-                my.xml = Xml()
-                my.xml.read_string(xml)
+                self.xml = Xml()
+                self.xml.read_string(xml)
             else:
-                my.xml = xml
+                self.xml = xml
         else:
             raise WidgetConfigException("Must supply either file_path or xml")
 
-        my.view = view
+        self.view = view
         if view and view.find('@') != -1:
-            my.view_as_attr = True
-            my.view_xpath = "view[@name='%s']"%view
+            self.view_as_attr = True
+            self.view_xpath = "view[@name='%s']"%view
         else:
-            my.view_as_attr = False
-            my.view_xpath = view
+            self.view_as_attr = False
+            self.view_xpath = view
 
-        my.state = state
+        self.state = state
 
 
 
@@ -91,82 +91,82 @@ class WidgetConfig(Base):
     get = staticmethod(get)
 
 
-    def get_file_path(my):
-        return my.file_path
+    def get_file_path(self):
+        return self.file_path
 
-    def set_file_path(my, file_path):
-        my.file_path = file_path
+    def set_file_path(self, file_path):
+        self.file_path = file_path
 
 
-    def has_view(my, view=None):
+    def has_view(self, view=None):
         # check that this view actually exists in this file
 
         if not view:
-            view = my.view
+            view = self.view
         if view.find('@') !=-1:
             xpath = "config/view[@name='%s']"%view
         else:
             xpath = "config/%s"%view
-        node = my.xml.get_node(xpath)
+        node = self.xml.get_node(xpath)
         if node is not None:
             return True
         else:
             return False
 
-    def set_view(my, view):
-        my.view = view
+    def set_view(self, view):
+        self.view = view
         if view and view.find('@') != -1:
-            my.view_as_attr = True
-            my.view_xpath = "view[@name='%s']"%view
+            self.view_as_attr = True
+            self.view_xpath = "view[@name='%s']"%view
         else:
-            my.view_as_attr = False
-            my.view_xpath = view
+            self.view_as_attr = False
+            self.view_xpath = view
 
 
-    def get_view(my):
-        return my.view
+    def get_view(self):
+        return self.view
 
-    def get_xml(my):
-        return my.xml
+    def get_xml(self):
+        return self.xml
 
-    def to_string(my):
-        return my.xml.get_xml()
+    def to_string(self):
+        return self.xml.get_xml()
 
 
-    def get_all_views(my):
+    def get_all_views(self):
         '''get all of the view defined in this config xml'''
         xpath = "config/*"
-        view_nodes = my.xml.get_nodes(xpath)
+        view_nodes = self.xml.get_nodes(xpath)
         views = []
         for view in view_nodes:
-            views.append( my.xml.get_node_name(view) )
+            views.append( self.xml.get_node_name(view) )
         return views
 
 
-    def get_view_node(my, view=None):
+    def get_view_node(self, view=None):
         if not view:
-            view = my.view
+            view = self.view
 
         if view.find('@') != -1:
-            return my.get_view_attr_node(view)
+            return self.get_view_attr_node(view)
 
         xpath = "config/%s" % view
 
-        node = my.xml.get_node(xpath)
+        node = self.xml.get_node(xpath)
         return node
 
-    def get_view_attr_node(my, view=None):
+    def get_view_attr_node(self, view=None):
         if not view:
-            view = my.view
+            view = self.view
 
         xpath = "config/view[@name='%s']" %view 
-        node = my.xml.get_node(xpath)
+        node = self.xml.get_node(xpath)
         return node
 
 
 
-    def get_view_attributes(my):
-        node = my.get_view_node()
+    def get_view_attributes(self):
+        node = self.get_view_node()
         if node is not None:
             # get all of the attributes
             node_attrs = Xml.get_attributes(node)
@@ -175,73 +175,73 @@ class WidgetConfig(Base):
             return {}
 
 
-    def get_view_attribute(my, name):
-        attrs = my.get_view_attributes()
+    def get_view_attribute(self, name):
+        attrs = self.get_view_attributes()
         return attrs.get(name)
 
 
 
-    def get_element_attributes(my, element_name):
+    def get_element_attributes(self, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element
         node_attrs = {}
-        node = my.get_element_node(element_name)
+        node = self.get_element_node(element_name)
         if node != None:
             node_attrs = Xml.get_attributes(node)
         return node_attrs
 
 
-    def get_element_attribute(my, element_name, name):
-        attrs = my.get_element_attributes(element_name)
+    def get_element_attribute(self, element_name, name):
+        attrs = self.get_element_attributes(element_name)
         return attrs.get(name)
 
 
 
 
-    def get_element_node(my, element_name):
-        xpath = "config/%s/element[@name='%s']" % (my.view_xpath, element_name)
-        node = my.xml.get_node(xpath)
+    def get_element_node(self, element_name):
+        xpath = "config/%s/element[@name='%s']" % (self.view_xpath, element_name)
+        node = self.xml.get_node(xpath)
         return node
 
-    def import_element_node(my, element_name):
-        node = my.get_element_node(element_name)
+    def import_element_node(self, element_name):
+        node = self.get_element_node(element_name)
         imported_node = None
         if node is not None:
-            imported_node = my.xml.get_doc().importNode(node)
+            imported_node = self.xml.get_doc().importNode(node)
         return imported_node 
 
-    def get_element_xml(my, element_name):
-        node = my.get_element_node(element_name)
+    def get_element_xml(self, element_name):
+        node = self.get_element_node(element_name)
         if node is None:
             return ''
-        return my.xml.to_string(node)
+        return self.xml.to_string(node)
 
 
 
-    def get_element_titles(my):
+    def get_element_titles(self):
         '''get the title of each element in a list. If not specified, 
         it defaults to the name of the element'''
         # the order dictates the order of preference
-        return my.get_element_names(type='', attrs=['title'])
+        return self.get_element_names(type='', attrs=['title'])
 
-    def get_element_widths(my):
+    def get_element_widths(self):
         '''get the width of each element in a list.'''
         # the order dictates the order of preference
-        return my.get_element_names(type='', attrs=['width','name'])
+        return self.get_element_names(type='', attrs=['width','name'])
 
-    def get_element_descriptions(my):
+    def get_element_descriptions(self):
         '''get the descriptions of each element in a list'''
         # the order dictates the order of preference
-        return my.get_element_names(type='', attrs=['description'])
+        return self.get_element_names(type='', attrs=['description'])
 
 
 
-    def get_element_names(my, type='', attrs=['name']):
+    def get_element_names(self, type='', attrs=['name']):
         '''get the name of each element in a list '''
         # NOTE: have to do this long winded logic because 4Suite doesn't
         # appear to support the != operator
-        xpath = "config/%s/element" % my.view_xpath
-        nodes = my.xml.get_nodes(xpath)
+        xpath = "config/%s/element" % self.view_xpath
+        nodes = self.xml.get_nodes(xpath)
         ordered_names = []
 
         # get them all
@@ -259,15 +259,15 @@ class WidgetConfig(Base):
         return ordered_names
 
 
-    def get_default_base(my):
+    def get_default_base(self):
         '''gets the default base that this view is based on'''
-        xpath = "config/%s/@default" % my.view_xpath;
-        default_base = my.xml.get_value(xpath)
+        xpath = "config/%s/@default" % self.view_xpath;
+        default_base = self.xml.get_value(xpath)
         if default_base == "":
             # defining the main types of config snippet
-            if my.view == "edit":
+            if self.view == "edit":
                 return "edit"
-            elif my.view == "insert":
+            elif self.view == "insert":
                 return "insert"
             else:
                 return "table"
@@ -275,15 +275,15 @@ class WidgetConfig(Base):
             return default_base
 
 
-    def get_handler(my, element_name, type):
+    def get_handler(self, element_name, type):
         assert type != None
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/%s/@class" % (my.view_xpath, element_name, type)
-        value = my.xml.get_value(xpath)
+        xpath = "config/%s/element[@name='%s']/%s/@class" % (self.view_xpath, element_name, type)
+        value = self.xml.get_value(xpath)
         if not value:
-            xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view_xpath, element_name, type)
-            key = my.xml.get_value(xpath)
+            xpath = "config/%s/element[@name='%s']/%s/@widget" % (self.view_xpath, element_name, type)
+            key = self.xml.get_value(xpath)
             if key:
                 from tactic.ui.common import WidgetClassHandler
                 handler = WidgetClassHandler()
@@ -292,25 +292,25 @@ class WidgetConfig(Base):
 
   
 
-    def get_widget_key(my, element_name, type='display'):
+    def get_widget_key(self, element_name, type='display'):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view_xpath, element_name, type)
-        return my.xml.get_value(xpath)
+        xpath = "config/%s/element[@name='%s']/%s/@widget" % (self.view_xpath, element_name, type)
+        return self.xml.get_value(xpath)
 
 
 
    
-    def get_display_handler(my, element_name):
+    def get_display_handler(self, element_name):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/display/@class" % (my.view_xpath, element_name)
-        value = my.xml.get_value(xpath)
+        xpath = "config/%s/element[@name='%s']/display/@class" % (self.view_xpath, element_name)
+        value = self.xml.get_value(xpath)
         if not value:
-            xpath = "config/%s/element[@name='%s']/display/@widget" % (my.view_xpath, element_name)
+            xpath = "config/%s/element[@name='%s']/display/@widget" % (self.view_xpath, element_name)
 
            
-            key = my.xml.get_value(xpath)
+            key = self.xml.get_value(xpath)
             
             if key:
                 from tactic.ui.common import WidgetClassHandler
@@ -320,35 +320,35 @@ class WidgetConfig(Base):
         return value
 
 
-    def get_action_handler(my, element_name):
+    def get_action_handler(self, element_name):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/action/@class" % (my.view_xpath, element_name)
-        return my.xml.get_value(xpath)
+        xpath = "config/%s/element[@name='%s']/action/@class" % (self.view_xpath, element_name)
+        return self.xml.get_value(xpath)
 
 
-    def get_display_options(my, element_name):
-        return my.get_options(element_name, 'display')
+    def get_display_options(self, element_name):
+        return self.get_options(element_name, 'display')
 
-    def get_web_options(my, element_name):
-        return my.get_options(element_name, 'web')
+    def get_web_options(self, element_name):
+        return self.get_options(element_name, 'web')
 
 
 
     # NOTE: Leaving old implementation until we can reproduce get_options()
     # perfectly
-    def get_options(my, element_name, element_child_name):
+    def get_options(self, element_name, element_child_name):
         assert element_name != None
 
         xpath = "config/%s/element[@name='%s']/%s" \
-                % (my.view_xpath,element_name, element_child_name)
+                % (self.view_xpath,element_name, element_child_name)
 
-        node = my.xml.get_node(xpath)
+        node = self.xml.get_node(xpath)
         if node == None:
             return {}
 
         # NOTE: special case for custom layout widget
-        handler = my.xml.get_attribute(node, "class")
+        handler = self.xml.get_attribute(node, "class")
 
 
         has_config = False
@@ -364,27 +364,27 @@ class WidgetConfig(Base):
 
 
         if handler == 'tactic.ui.panel.CustomLayoutWdg':
-            children = my.xml.get_children(node)
+            children = self.xml.get_children(node)
             values = {}
             for child in children:
-                name = my.xml.get_node_name(child)
+                name = self.xml.get_node_name(child)
                 if name == 'html':
-                    value = my.xml.to_string(child)
+                    value = self.xml.to_string(child)
                     value = value.replace("<html>", "")
                     value = value.replace("</html>", "")
                     value = value.strip()
                 else:
-                    value = my.xml.get_node_value(child)
+                    value = self.xml.get_node_value(child)
                     value = value.replace("&amp;", "&")
                 values[name] = value
                  
         elif has_config or handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg', 'tactic.ui.container.ContentBoxWdg']:
-            children = my.xml.get_children(node)
+            children = self.xml.get_children(node)
             values = {}
             for child in children:
-                name = my.xml.get_node_name(child)
+                name = self.xml.get_node_name(child)
                 if name == 'config':
-                    value = my.xml.to_string(child)
+                    value = self.xml.to_string(child)
                     if handler.endswith(".EditWdg"):
                         value = value.replace("<config>", "<config><tab layout='%s'>" % handler)
                     else:
@@ -396,22 +396,22 @@ class WidgetConfig(Base):
                     # convert all & back to &amp;
                     value = value.replace("&", "&amp;")
                 else:
-                    value = my.xml.get_node_value(child)
+                    value = self.xml.get_node_value(child)
                     value = value.replace("&amp;", "&")
                 values[name] = value
         else:
-            values = my.xml.get_recursive_node_values(node)
+            values = self.xml.get_recursive_node_values(node)
         #print(xpath)
         return values
 
 
 
 
-    def get_action_options(my, element_name):
+    def get_action_options(self, element_name):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/action/*" % (my.view_xpath, element_name)
-        option_nodes = my.xml.get_nodes(xpath)
+        xpath = "config/%s/element[@name='%s']/action/*" % (self.view_xpath, element_name)
+        option_nodes = self.xml.get_nodes(xpath)
         
         values = {}
 
@@ -425,32 +425,32 @@ class WidgetConfig(Base):
 
 
 
-    def get_type(my, element_name):
-        xpath = "config/%s/element[@name='%s']/@type" % (my.view_xpath, element_name)
-        type = my.xml.get_value(xpath)
+    def get_type(self, element_name):
+        xpath = "config/%s/element[@name='%s']/@type" % (self.view_xpath, element_name)
+        type = self.xml.get_value(xpath)
         if not type:
             xpath = "config/%s/element[@name='%s']/@type" % ("definition", element_name)
-            type = my.xml.get_value(xpath)
+            type = self.xml.get_value(xpath)
 
         return type
 
 
-    #def get_dependent_attr(my, element_name):
+    #def get_dependent_attr(self, element_name):
     #    '''get dependent attribute(s) of an element for an sobject. Delimited by commas'''
-    #    xpath = "config/%s/element[@name='%s']/@depend" % (my.view,element_name)
-    #    type = my.xml.get_value(xpath)
+    #    xpath = "config/%s/element[@name='%s']/@depend" % (self.view,element_name)
+    #    type = self.xml.get_value(xpath)
     #    if not type:
     #        xpath = "config/%s/element[@name='%s']/@depend" % ("definition",element_name)
-    #        type = my.xml.get_value(xpath)
+    #        type = self.xml.get_value(xpath)
     #    return type
 
 
-    def get_display_widget(my, element_name, extra_options={}):
-        display_handler = my.get_display_handler(element_name)
+    def get_display_widget(self, element_name, extra_options={}):
+        display_handler = self.get_display_handler(element_name)
         if not display_handler:
             return None
 
-        display_options = my.get_display_options(element_name)
+        display_options = self.get_display_options(element_name)
         for name, value in extra_options.items():
             display_options[name] = value
 
@@ -465,7 +465,7 @@ class WidgetConfig(Base):
 
 
 
-    def alter_xml_element(my, element_name, config_xml=None, node=None):
+    def alter_xml_element(self, element_name, config_xml=None, node=None):
         '''alter an element with the config_xml to current doc's view.  If it
         does not exist, append it
         '''
@@ -476,32 +476,32 @@ class WidgetConfig(Base):
             new_root_node = node
         else:
             raise SetupException()
-        view_node = my.get_view_node()
+        view_node = self.get_view_node()
         if view_node == None:
-            raise SetupException("The view node is not found for [%s]" %my.view)
+            raise SetupException("The view node is not found for [%s]" %self.view)
 
-        target_node = my.get_element_node(element_name)
+        target_node = self.get_element_node(element_name)
         if target_node != None:
-            my.xml.replace_child(view_node, target_node, new_root_node)
+            self.xml.replace_child(view_node, target_node, new_root_node)
         else:
-            my.xml.append_child(view_node, new_root_node)
-        #print(my.xml.to_string())
+            self.xml.append_child(view_node, new_root_node)
+        #print(self.xml.to_string())
 
 
 
-    def remove_xml_element(my, element_name):
+    def remove_xml_element(self, element_name):
         ''' remove node (remember to commit it in the db entry yourself)'''
-        view_node = my.get_view_node()
-        target_node = my.get_element_node(element_name)
+        view_node = self.get_view_node()
+        target_node = self.get_element_node(element_name)
         if target_node != None:
-            my.xml.remove_child(view_node, target_node)
+            self.xml.remove_child(view_node, target_node)
 
-    def append_xml_element(my, element_name, config_xml=None, node=None):
+    def append_xml_element(self, element_name, config_xml=None, node=None):
         '''append an element with the config_xml to current doc's view
         
         DEPRECATED: use alter_xml_element 
         '''
-        my.alter_xml_element(element_name, config_xml=config_xml, node=node)
+        self.alter_xml_element(element_name, config_xml=config_xml, node=node)
 
 
 
@@ -516,50 +516,50 @@ class WidgetConfig(Base):
 
 class WidgetConfigView(Base):
     '''Abstracts all the sources of configurations for a particular view'''
-    def __init__(my, search_type, view, configs, state=None, layout=None):
-        my.search_type = search_type
-        my.view = view
-        my.configs = configs
+    def __init__(self, search_type, view, configs, state=None, layout=None):
+        self.search_type = search_type
+        self.view = view
+        self.configs = configs
 
-        my.type_cache = {}
+        self.type_cache = {}
 
-        my.state = state
-        my.hash_id = Common.generate_random_key()
+        self.state = state
+        self.hash_id = Common.generate_random_key()
 
-        my.layout = layout
+        self.layout = layout
 
 
-    def get_view(my):
-        return my.view
+    def get_view(self):
+        return self.view
 
-    def get_xml(my):
+    def get_xml(self):
         '''returns the raw xml of the first config'''
-        if my.configs:
-            return my.configs[0].get_xml()
+        if self.configs:
+            return self.configs[0].get_xml()
         else:
             return None
 
-    def get_configs(my):
-        return my.configs
+    def get_configs(self):
+        return self.configs
 
-    def get_config(my):
+    def get_config(self):
         '''get first config'''
-        if my.configs:
-            return my.configs[0]
+        if self.configs:
+            return self.configs[0]
 
-    def add_config(my, config):
-        my.configs.append(config)
+    def add_config(self, config):
+        self.configs.append(config)
 
-    def insert_config(my, index, config):
-        my.configs.insert(index, config)
+    def insert_config(self, index, config):
+        self.configs.insert(index, config)
 
-    def get_views(my, layout="TableWdg"):
+    def get_views(self, layout="TableWdg"):
 
         views = []
 
         # list the views from the database
         search = Search("config/widget_config")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         db_configs = search.get_sobjects()
 
         # look in the database for the view
@@ -592,7 +592,7 @@ class WidgetConfigView(Base):
 
 
         # look at the first config
-        for config in my.configs:
+        for config in self.configs:
             xml = config.get_xml()
             view_nodes = xml.get_nodes("config/*")
             for view_node in view_nodes:
@@ -620,11 +620,11 @@ class WidgetConfigView(Base):
 
 
 
-    def get_view_attributes(my):
+    def get_view_attributes(self):
         '''get all the view level attributes'''
         attrs = {}
 
-        for config in my.configs:
+        for config in self.configs:
             # config could be WidgetConfigView and causes an exception
             # check for it and then continue if that's needed
             node = config.get_view_node()
@@ -641,24 +641,24 @@ class WidgetConfigView(Base):
   
 
 
-    def get_element_widths(my):
+    def get_element_widths(self):
         '''get the width of each element in a list.'''
         # the order dictates the order of preference
-        return my.get_element_names(type='', attrs=['width'], include_definition=True)
+        return self.get_element_names(type='', attrs=['width'], include_definition=True)
 
 
 
 
-    def get_element_titles(my):
+    def get_element_titles(self):
         '''get the title of each element in a list. If not specified, 
         it defaults to the name of the element'''
-        #return my.get_element_names(type='', attrs=['title'])
+        #return self.get_element_names(type='', attrs=['title'])
         # the following retrieves titles recursively instead of just getting the current level
         titles = []
-        element_names = my.get_element_names(type='')
+        element_names = self.get_element_names(type='')
         for element_name in element_names:
             title = ''
-            for config in my.configs:
+            for config in self.configs:
                 # get the element node
                 node = config.get_element_node(element_name)
                 if node is None:
@@ -678,13 +678,13 @@ class WidgetConfigView(Base):
         
 
 
-    def get_element_descriptions(my):
+    def get_element_descriptions(self):
         '''get the title of each element in a list.'''
         titles = []
-        element_names = my.get_element_names(type='')
+        element_names = self.get_element_names(type='')
         for element_name in element_names:
             title = ''
-            for config in my.configs:
+            for config in self.configs:
                 # get the element node
                 node = config.get_element_node(element_name)
                 if node is None:
@@ -705,14 +705,14 @@ class WidgetConfigView(Base):
 
 
 
-    def get_element_names(my, type='', attrs=['name'], include_definition=False):
-        if not my.configs:
+    def get_element_names(self, type='', attrs=['name'], include_definition=False):
+        if not self.configs:
             return []
 
         # if this view is a definition view, then the element names are those
         # of the definition
-        if my.view in ["definition", 'default_definition', 'edit_definition']:
-            for config in my.configs:
+        if self.view in ["definition", 'default_definition', 'edit_definition']:
+            for config in self.configs:
                 if config.get_view() in ['definition', 'default_definition', 'edit_definition']:
                     element_names = config.get_element_names(type, attrs)
                     if element_names:
@@ -721,7 +721,7 @@ class WidgetConfigView(Base):
 
         # look at the first config
         element_names = []
-        for config in my.configs:
+        for config in self.configs:
 
             # to get the element names, skip all of the definition configs
             if not include_definition and config.get_view() in ["definition", 'default_definition', 'edit_definition']:
@@ -739,8 +739,8 @@ class WidgetConfigView(Base):
         return element_names
 
 
-    def get_element_xml(my, element_name):
-        for config in my.configs:
+    def get_element_xml(self, element_name):
+        for config in self.configs:
             element_xml = config.get_element_xml(element_name)
             if element_xml:
                 return element_xml
@@ -748,27 +748,27 @@ class WidgetConfigView(Base):
 
 
 
-    def get_definition_config(my):
+    def get_definition_config(self):
         '''gets the first definition config'''
-        for config in my.configs:
+        for config in self.configs:
             if config.get_view() == "definition":
                 return config
         else:
             # if no definition has been found, use the default
-            #config = SObjectDefaultConfig(my.search_type, my.view)
+            #config = SObjectDefaultConfig(self.search_type, self.view)
             #return config
             return None
 
 
-    def get_layout_handler(my):
-        layout = my.layout
+    def get_layout_handler(self):
+        layout = self.layout
         if not layout:
-            attributes = my.get_view_attributes()
+            attributes = self.get_view_attributes()
             layout = attributes.get('layout')
 
         if not layout:
             # handle some hard coded defaults
-            if my.view in ["edit", "insert", "preview"]:
+            if self.view in ["edit", "insert", "preview"]:
                 layout = 'tactic.ui.panel.EditWdg'
             else:
                 layout = 'tactic.ui.panel.TableLayoutWdg'
@@ -791,7 +791,7 @@ class WidgetConfigView(Base):
     # Generalized methods for building defined handlers in an element
     #
 
-    def get_handler(my, element_name, type):
+    def get_handler(self, element_name, type):
         '''for the handler, go through each config file and
         look for a definition.  Each config file may also have a "definition"
         view as well.'''
@@ -799,7 +799,7 @@ class WidgetConfigView(Base):
 
         # we have a list of configs ... go through each to find the element
         handler = ""
-        for config in my.configs:
+        for config in self.configs:
 
             # get the handler
             handler = config.get_handler(element_name)
@@ -808,7 +808,7 @@ class WidgetConfigView(Base):
 
         '''
         if not handler:
-            layout = my.get_layout_handler()
+            layout = self.get_layout_handler()
 
             import_expr = Common.get_import_from_class_path(layout)
             exec( import_expr)
@@ -819,7 +819,7 @@ class WidgetConfigView(Base):
     
 
    
-    def get_options(my, element_name, type):
+    def get_options(self, element_name, type):
         '''generic function to get the options for the widget'''
         assert element_name
 
@@ -828,7 +828,7 @@ class WidgetConfigView(Base):
             cache = {}
             Container.put("WidgetConfigView:%s_options_cache" % type, cache)
 
-        key = "%s|%s" % (my, element_name)
+        key = "%s|%s" % (self, element_name)
         options = cache.get(key)
         if options != None:
             return options
@@ -836,7 +836,7 @@ class WidgetConfigView(Base):
 
         # we have a list of configs ... go through each to find the element
         options = {}
-        for config in my.configs:
+        for config in self.configs:
 
             # special consideration for edit and edit defintion views
             # for backwards compatibility
@@ -857,7 +857,7 @@ class WidgetConfigView(Base):
     # Specialized methods for getting specific handlers in an element.
     # Eventually, these will make use of the above generalized methods
     #
-    def get_display_handler(my, element_name):
+    def get_display_handler(self, element_name):
         '''for the display handler, go through each config file and
         look for a definition.  Each config file may also have a "definition"
         view as well.'''
@@ -865,13 +865,13 @@ class WidgetConfigView(Base):
 
         # we have a list of configs ... go through each to find the element
         display_handler = ""
-        for config in my.configs:
+        for config in self.configs:
             display_handler = config.get_display_handler(element_name)
             if display_handler:
                 break
 
         if not display_handler:
-            layout = my.get_layout_handler()
+            layout = self.get_layout_handler()
 
             import_expr = Common.get_import_from_class_path(layout)
             exec( import_expr)
@@ -881,7 +881,7 @@ class WidgetConfigView(Base):
 
 
 
-    def get_widget_key(my, element_name, type='display'):
+    def get_widget_key(self, element_name, type='display'):
         '''get the short for of the display widget.  This is often used
         instead of a full python class.  This method does not translate the
         name into a python class, but returns the actual value in the definition
@@ -890,7 +890,7 @@ class WidgetConfigView(Base):
 
         # we have a list of configs ... go through each to find the element
         widget_key = ""
-        for config in my.configs:
+        for config in self.configs:
             widget_key = config.get_widget_key(element_name, type)
             if widget_key:
                 break
@@ -903,9 +903,9 @@ class WidgetConfigView(Base):
 
     
 
-    def get_web_options(my, element_name):
+    def get_web_options(self, element_name):
         web_options = {}
-        for config in my.configs:
+        for config in self.configs:
             # get the web handler
             web_options = config.get_web_options(element_name)
             if web_options:
@@ -913,7 +913,7 @@ class WidgetConfigView(Base):
 
         return web_options
 
-    def get_display_options(my, element_name):
+    def get_display_options(self, element_name):
         '''for the display handler, go through each config file and
         look for a definition.  Each config file may also have a "definition"
         view as well.'''
@@ -924,7 +924,7 @@ class WidgetConfigView(Base):
             cache = {}
             Container.put("WidgetConfigView:display_options_cache", cache)
 
-        key = "%s|%s" % (my.hash_id, element_name)
+        key = "%s|%s" % (self.hash_id, element_name)
         display_options = cache.get(key)
         if display_options != None:
             return display_options
@@ -932,18 +932,18 @@ class WidgetConfigView(Base):
 
         # we have a list of configs ... go through each to find the element
         display_options = {}
-        for config in my.configs:
+        for config in self.configs:
             # get the display handler
             display_options = config.get_display_options(element_name)
             
             # if there is a state defind, then replace any expressions
             # DEPRECATED
             """
-            if my.state:
+            if self.state:
                 for name, value in display_options.items():
                     if isinstance(value, basestring):
                         if value.startswith("{") and value.endswith("}"):
-                            value = Search.eval(value, single=True, state=my.state)
+                            value = Search.eval(value, single=True, state=self.state)
                             display_options[name] = value
 
                     else:
@@ -961,7 +961,7 @@ class WidgetConfigView(Base):
 
 
 
-    def get_edit_handler(my, element_name):
+    def get_edit_handler(self, element_name):
         '''for the edit handler, go through each config file and
         look for a definition.
         '''
@@ -969,19 +969,19 @@ class WidgetConfigView(Base):
 
         # we have a list of configs ... go through each to find the element
         edit_handler = ""
-        for config in my.configs:
+        for config in self.configs:
 
             edit_handler = config.get_handler(element_name, "edit")
             # old method where we use the display tag in both "edit" and
             # "edit_definition" views
-            if not edit_handler and my.get_view() in ['edit','edit_definition','default_definition']:
+            if not edit_handler and self.get_view() in ['edit','edit_definition','default_definition']:
                 edit_handler = config.get_handler(element_name, "display")
 
             if edit_handler:
                 break
 
         if not edit_handler:
-            layout = my.get_layout_handler()
+            layout = self.get_layout_handler()
 
             import_expr = Common.get_import_from_class_path(layout)
             exec( import_expr)
@@ -992,25 +992,25 @@ class WidgetConfigView(Base):
 
 
 
-    def get_handler(my, element_name, type):
+    def get_handler(self, element_name, type):
         assert type in ['edit', 'table']
         if type == 'edit':
-            return my.get_edit_handler(element_name)
+            return self.get_edit_handler(element_name)
         elif type == 'display':
-            return my.get_display_handler(element_name)
+            return self.get_display_handler(element_name)
 
  
 
 
 
-    def get_element_node(my, element_name, prefer_child_nodes=False):
+    def get_element_node(self, element_name, prefer_child_nodes=False):
         '''get the element_node that has a definition. 
          @param: prefer_child_nodes - If set to True, it would prefer a node with childNodes
             like <display/>'''
         # we have a list of configs ... go through each to find the element
         assert element_name
         second_choices = []
-        for config in my.configs:
+        for config in self.configs:
             # get the element node
             node = config.get_element_node(element_name)
             if node is None:
@@ -1036,18 +1036,18 @@ class WidgetConfigView(Base):
             return second_choices[0]
 
         # just return the first one
-        if my.configs:       
-            return my.configs[0].get_element_node(element_name)
+        if self.configs:       
+            return self.configs[0].get_element_node(element_name)
         else:
             return None
 
 
 
-    def get_element_attributes(my, element_name):
+    def get_element_attributes(self, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element
         attrs = {}
-        for config in my.configs:
+        for config in self.configs:
             # get the element node
             node = config.get_element_node(element_name)
             if node is not None:
@@ -1062,18 +1062,18 @@ class WidgetConfigView(Base):
 
 
 
-    def get_element_attribute(my, element_name, name):
-        attrs = my.get_element_attributes(element_name)
+    def get_element_attribute(self, element_name, name):
+        attrs = self.get_element_attributes(element_name)
         return attrs.get(name)
 
 
 
 
-    def get_element_title(my, element_name):
+    def get_element_title(self, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element
         node_title = ''
-        for config in my.configs:
+        for config in self.configs:
             # get the element node
             node = config.get_element_node(element_name)
             if node is not None:
@@ -1089,11 +1089,11 @@ class WidgetConfigView(Base):
         return node_title
 
 
-    def get_element_description(my, element_name):
+    def get_element_description(self, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element
         node_desc = ''
-        for config in my.configs:
+        for config in self.configs:
             # get the element node
             node = config.get_element_node(element_name)
             if node is not None:
@@ -1108,14 +1108,14 @@ class WidgetConfigView(Base):
 
 
 
-    def get_action_handler(my, element_name):
+    def get_action_handler(self, element_name):
         '''for the action handler, go through each config file and
         look for a definition.'''
         assert element_name
 
         # we have a list of configs ... go through each to find the element
         action_handler = ""
-        for config in my.configs:
+        for config in self.configs:
             # get the action handler
             action_handler = config.get_action_handler(element_name)
             if action_handler:
@@ -1124,14 +1124,14 @@ class WidgetConfigView(Base):
         return action_handler
 
 
-    def get_action_options(my, element_name):
+    def get_action_options(self, element_name):
         '''for the action handler, go through each config file and
         look for a definition.'''
         assert element_name
 
         # we have a list of configs ... go through each to find the element
         action_handler = ""
-        for config in my.configs:
+        for config in self.configs:
             # get the action options
             action_options = config.get_action_options(element_name)
             if action_options:
@@ -1140,42 +1140,42 @@ class WidgetConfigView(Base):
         return action_options
 
 
-    def get_type(my, element_name):
-        type = my.type_cache.get(element_name)
+    def get_type(self, element_name):
+        type = self.type_cache.get(element_name)
         if type != None:
             return type
 
-        for config in my.configs:
+        for config in self.configs:
             # get the action options
             type = config.get_type(element_name)
             if type:
                 break
       
-        my.type_cache[element_name] = type
+        self.type_cache[element_name] = type
         
         return type
 
-    def get_dependent_attr(my, element_name):
+    def get_dependent_attr(self, element_name):
         '''get dependent attribute(s) of an element for an sobject'''
-        #type = my.type_cache.get(element_name)
+        #type = self.type_cache.get(element_name)
         #if type != None:
         #    return type
 
-        for config in my.configs:
+        for config in self.configs:
             # get the action options
             attr = config.get_dependent_attr(element_name)
             if attr:
                 break
       
-        #my.type_cache[element_name] = type
+        #self.type_cache[element_name] = type
         
         return attr
 
-    def get_display_widget(my, element_name, recurse=False, extra_options=None, kbd_handler=True):
-        #if not recurse and element_name not in my.get_element_names():
+    def get_display_widget(self, element_name, recurse=False, extra_options=None, kbd_handler=True):
+        #if not recurse and element_name not in self.get_element_names():
         #    return None
-        display_handler = my.get_display_handler(element_name)
-        display_options = my.get_display_options(element_name)
+        display_handler = self.get_display_handler(element_name)
+        display_options = self.get_display_options(element_name)
         if extra_options:
             for name, value in extra_options.items():
                 display_options[name] = value
@@ -1200,16 +1200,16 @@ class WidgetConfigView(Base):
                 if isinstance(widget, BaseInputWdg):
                     widget.set_options(display_options)
 
-        elif my.search_type == "CustomLayoutWdg":
+        elif self.search_type == "CustomLayoutWdg":
             raise WidgetConfigException("No display handler defined")
         else:
             # have the layout build it (ie EditWdg or TableLayoutWdg)
-            element_type = my.get_type(element_name)
+            element_type = self.get_type(element_name)
             if not element_type:
-                #search_type_obj = SearchType.get(my.search_type)
-                element_type = SearchType.get_tactic_type(my.search_type, element_name)
+                #search_type_obj = SearchType.get(self.search_type)
+                element_type = SearchType.get_tactic_type(self.search_type, element_name)
 
-            layout = my.get_layout_handler()
+            layout = self.get_layout_handler()
             import_expr = Common.get_import_from_class_path(layout)
             exec( import_expr)
             widget = eval('%s.get_default_display_wdg(element_name, display_options, element_type, kbd_handler)'% layout)
@@ -1220,11 +1220,11 @@ class WidgetConfigView(Base):
         return widget
 
 
-    def get_widget(my, element_name, type="display", extra_options=None):
+    def get_widget(self, element_name, type="display", extra_options=None):
         '''more generalized function to build a widget from a config'''
 
-        handler = my.get_handler(element_name, type)
-        options = my.get_options(element_name, type)
+        handler = self.get_handler(element_name, type)
+        options = self.get_options(element_name, type)
         if extra_options:
             for name, value in extra_options.items():
                 options[name] = value
@@ -1246,17 +1246,17 @@ class WidgetConfigView(Base):
                 widget = Common.create_from_class_path(handler)
                 widget.set_options(options)
 
-        elif my.search_type == "CustomLayoutWdg":
+        elif self.search_type == "CustomLayoutWdg":
             raise WidgetConfigException("No handler defined")
         else:
             # have the layout build it (ie EditWdg or TableLayoutWdg)
-            element_type = my.get_type(element_name)
+            element_type = self.get_type(element_name)
             if not element_type:
-                #search_type_obj = SearchType.get(my.search_type)
+                #search_type_obj = SearchType.get(self.search_type)
                 #element_type = search_type_obj.get_tactic_type(element_name)
-                element_type = SearchType.get_tactic_type(my.search_type, element_name)
+                element_type = SearchType.get_tactic_type(self.search_type, element_name)
 
-            layout = my.get_layout_handler()
+            layout = self.get_layout_handler()
             import_expr = Common.get_import_from_class_path(layout)
             exec( import_expr)
             widget = eval('%s.get_default_display_wdg(element_name, options, element_type)'% layout)
@@ -1809,7 +1809,7 @@ class WidgetConfigView(Base):
 
 
         xpath = "config/"
-        nodes = my.xml.get_nodes(xpath)
+        nodes = self.xml.get_nodes(xpath)
         node_names = [x.nodeName for x in nodes]
         return node_names
     get_view = staticmethod(get_view)
@@ -1869,11 +1869,11 @@ class WidgetConfigView(Base):
 class WidgetConfigTestCmd(Command):
     '''This is used for Client API testing only'''
 
-    def execute(my):
-        search_type = my.kwargs.get('search_type')
-        element_name = my.kwargs.get('element_name')
-        view = my.kwargs.get('view')
-        match = my.kwargs.get('match')
+    def execute(self):
+        search_type = self.kwargs.get('search_type')
+        element_name = self.kwargs.get('element_name')
+        view = self.kwargs.get('view')
+        match = self.kwargs.get('match')
         
         from tactic.ui.panel import SideBarBookmarkMenuWdg
         config_view = SideBarBookmarkMenuWdg.get_config(search_type, view)
@@ -1885,5 +1885,5 @@ class WidgetConfigTestCmd(Command):
             raise TacticException('Match falied ', match, expected)
         
         # send some info back for further assertion
-        my.info['display_options'] = display_options
-        my.info['display_handler'] = expected
+        self.info['display_options'] = display_options
+        self.info['display_handler'] = expected

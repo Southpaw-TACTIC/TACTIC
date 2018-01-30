@@ -19,16 +19,16 @@ class DeleteElementWdg(ButtonElementWdg):
     ARGS_KEYS = {
     }
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def preprocess(my):
+    def preprocess(self):
 
-        #my.set_option( "icon", "DELETE" )
-        my.set_option( "icon", "BS_REMOVE" )
+        #self.set_option( "icon", "DELETE" )
+        self.set_option( "icon", "BS_REMOVE" )
 
         # NOTE: not sure why this needs to be in kwargs and not option
-        my.kwargs["cbjs_action"] = '''
+        self.kwargs["cbjs_action"] = '''
         var layout = bvr.src_el.getParent(".spt_layout");
         spt.table.set_layout(layout);
 
@@ -40,8 +40,8 @@ class DeleteElementWdg(ButtonElementWdg):
         '''
 
 
-    def get_display(my):
+    def get_display(self):
 
-        return super(DeleteElementWdg, my).get_display()
+        return super(DeleteElementWdg, self).get_display()
 
 

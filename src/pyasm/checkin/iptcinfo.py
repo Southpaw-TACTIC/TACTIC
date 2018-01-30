@@ -179,7 +179,7 @@ DESCRIPTION
 
     For SQL, it goes like this:
 
-        my mappings = {
+        self mappings = {
                   'IPTC dataset name here': 'your table column name here',
                   'caption/abstract':       'caption',
                   'city':                   'city',

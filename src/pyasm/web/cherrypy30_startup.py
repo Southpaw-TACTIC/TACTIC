@@ -29,11 +29,11 @@ from cherrypy_startup import CherryPyStartup as CherryPyStartup20
 class Root:
     '''Dummy Root page'''
 
-    def test(my):
+    def test(self):
         return "OK"
     test.exposed = True
 
-    def index(my):
+    def index(self):
         return '''<META http-equiv="refresh" content="0;URL=/tactic">'''
     index.exposed = True
 
@@ -41,7 +41,7 @@ class Root:
 
 class TacticIndex:
     '''Dummy Index file'''
-    def index(my):
+    def index(self):
         # check if this project exists
         response = cherrypy.response
         request = cherrypy.request
@@ -64,9 +64,9 @@ class TacticIndex:
 class CherryPyStartup(CherryPyStartup20):
 
 
-    def execute(my):
+    def execute(self):
         #import pprint
-        #pprint.pprint( my.config )
+        #pprint.pprint( self.config )
 
         #try:
         #    import setproctitle
@@ -75,10 +75,10 @@ class CherryPyStartup(CherryPyStartup20):
         #    pass
 
 
-        cherrypy.config.update( my.config )
+        cherrypy.config.update( self.config )
 
-        cherrypy.config.update({'error_page.404': my.error_page})
-        cherrypy.config.update({'error_page.403': my.error_page})
+        cherrypy.config.update({'error_page.404': self.error_page})
+        cherrypy.config.update({'error_page.403': self.error_page})
 
         cherrypy.engine.start()
         cherrypy.engine.block()
@@ -86,7 +86,7 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-    def error_page(my, status, message, traceback, version):
+    def error_page(self, status, message, traceback, version):
 
         # check if this project exists
         response = cherrypy.response
@@ -279,10 +279,10 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-    def setup_sites(my):
+    def setup_sites(self):
 
-        context_path = "%s/src/context" % my.install_dir
-        doc_dir = "%s/doc" % my.install_dir
+        context_path = "%s/src/context" % self.install_dir
+        doc_dir = "%s/doc" % self.install_dir
         plugin_dir = Environment.get_plugin_dir()
         builtin_plugin_dir = Environment.get_builtin_plugin_dir()
         dist_dir = Environment.get_dist_dir()
@@ -401,24 +401,24 @@ class CherryPyStartup(CherryPyStartup20):
 
         for project in projects:
             project_code = project.get_code()
-            my.register_project(project_code, config)
-        my.register_project("default", config)
+            self.register_project(project_code, config)
+        self.register_project("default", config)
 
 
         from pyasm.security import Site
         site_obj = Site.get()
-        site_obj.register_sites(my, config)
+        site_obj.register_sites(self, config)
  
 
-        #my.register_project("vfx", config, site="vfx_demo")
-        #my.register_project("default", config, site="vfx_demo")
+        #self.register_project("vfx", config, site="vfx_demo")
+        #self.register_project("default", config, site="vfx_demo")
         return config
 
 
 
 
 
-    def register_project(my, project, config, site=None):
+    def register_project(self, project, config, site=None):
 
         # if there happend to be . in the project name, convert to _
         project = project.replace(".", "_")

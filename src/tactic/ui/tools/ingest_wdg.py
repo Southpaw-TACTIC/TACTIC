@@ -57,28 +57,28 @@ class IngestUploadWdg(BaseRefreshWdg):
     }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.sobjects = my.kwargs.get("sobjects")
+        self.sobjects = self.kwargs.get("sobjects")
 
         # if search_keys are passed in, then these are used to copy
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
         # add a project to copy to.  Check that it is permitted
-        my.project_code = my.kwargs.get("project_code")
+        self.project_code = self.kwargs.get("project_code")
 
         if search_keys:
-            my.sobjects = Search.get_by_search_keys(search_keys)
+            self.sobjects = Search.get_by_search_keys(search_keys)
 
             projects = Project.get_user_projects()
             project_codes = [x.get_code() for x in projects]
-            if my.project_code not in project_codes:
-                my.project_code = None
+            if self.project_code not in project_codes:
+                self.project_code = None
 
 
 
         asset_dir = Environment.get_asset_dir()
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         if base_dir:
             if not base_dir.startswith(asset_dir):
                 raise Exception("Path needs to be in asset root")
@@ -86,41 +86,41 @@ class IngestUploadWdg(BaseRefreshWdg):
                 relative_dir = base_dir.replace(asset_dir, "")
                 relative_dir = relative_dir.strip("/")
         else:
-            relative_dir = my.kwargs.get("relative_dir")
+            relative_dir = self.kwargs.get("relative_dir")
 
-        my.relative_dir = relative_dir
+        self.relative_dir = relative_dir
 
 
         # This is used to check into a search key (not create a new sobject)
-        my.orig_sobject = None
-        my.search_key = my.kwargs.get("search_key") or ""
-        if my.search_key:
-            my.sobject = Search.get_by_search_key(my.search_key)
+        self.orig_sobject = None
+        self.search_key = self.kwargs.get("search_key") or ""
+        if self.search_key:
+            self.sobject = Search.get_by_search_key(self.search_key)
 
-            if my.kwargs.get("use_parent") in [True, 'true']:
-                my.orig_sobject = my.sobject
-                my.sobject = my.sobject.get_parent()
-                my.search_key = my.sobject.get_search_key()
+            if self.kwargs.get("use_parent") in [True, 'true']:
+                self.orig_sobject = self.sobject
+                self.sobject = self.sobject.get_parent()
+                self.search_key = self.sobject.get_search_key()
 
-            my.search_type = my.sobject.get_search_type()
+            self.search_type = self.sobject.get_search_type()
 
-            my.show_settings = my.kwargs.get("show_settings")
-            if my.show_settings in [False, 'false']:
-                my.show_settings = False
+            self.show_settings = self.kwargs.get("show_settings")
+            if self.show_settings in [False, 'false']:
+                self.show_settings = False
 
 
 
         else: 
-            my.search_type = my.kwargs.get("search_type")
-            my.sobject = None
-            my.search_key = None
+            self.search_type = self.kwargs.get("search_type")
+            self.sobject = None
+            self.search_key = None
 
-            my.show_settings = my.kwargs.get("show_settings")
-            if my.show_settings == None:
-                my.show_settings = True
+            self.show_settings = self.kwargs.get("show_settings")
+            if self.show_settings == None:
+                self.show_settings = True
 
 
-        top = my.top
+        top = self.top
         top.add_class("spt_ingest_top")
 
 
@@ -130,8 +130,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         top.add(hidden)
         hidden.add_class("spt_parent_key")
 
-        if my.search_key:
-            hidden.set_value(my.search_key)
+        if self.search_key:
+            hidden.set_value(self.search_key)
 
 
 
@@ -142,10 +142,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
-        left.add( my.get_content_wdg() )
+        left.add( self.get_content_wdg() )
 
-        if not my.search_key or my.show_settings:
-            if my.show_settings:
+        if not self.search_key or self.show_settings:
+            if self.show_settings:
                 middle = table.add_cell()
                 middle.add_style("height: 10") # not sure why we need this height
                 middle.add_style("padding: 30px 20px")
@@ -162,20 +162,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             right = table.add_cell()
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
-            right.add( my.get_settings_wdg() )
-            if my.show_settings in [False, 'false']:
+            right.add( self.get_settings_wdg() )
+            if self.show_settings in [False, 'false']:
                 right.add_style("display: none")
 
         else:
-            if my.orig_sobject and my.orig_sobject.column_exists("process"):
+            if self.orig_sobject and self.orig_sobject.column_exists("process"):
                 hidden = HiddenWdg(name="process")
                 top.add(hidden)
                 hidden.add_class("spt_process")
-                process = my.orig_sobject.get_value("process")
+                process = self.orig_sobject.get_value("process")
                 hidden.set_value(process)
 
-            elif my.kwargs.get("process"):
-                process = my.kwargs.get("process")
+            elif self.kwargs.get("process"):
+                process = self.kwargs.get("process")
                 hidden = HiddenWdg(name="process")
                 top.add(hidden)
                 hidden.add_class("spt_process")
@@ -186,7 +186,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         return top
 
 
-    def get_file_wdg(my, sobject=None):
+    def get_file_wdg(self, sobject=None):
 
         # template for each file item
         file_template = DivWdg()
@@ -301,7 +301,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-    def get_settings_wdg(my):
+    def get_settings_wdg(self):
 
         div = DivWdg()
         div.add_style("width: 400px")
@@ -316,13 +316,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         process_names = set()
         from pyasm.biz import Pipeline
         from pyasm.widget import SelectWdg
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         base_type = search_type_obj.get_base_key()
 
 
         pipeline_search = Search("sthpw/pipeline")
-        if my.sobject:
-            pipeline_code = my.sobject.get_value("pipeline_code")
+        if self.sobject:
+            pipeline_code = self.sobject.get_value("pipeline_code")
             if pipeline_code:
                 pipeline_search.add_filter("code", pipeline_code)
             else:
@@ -335,7 +335,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         for pipeline in pipelines:
             process_names.update(pipeline.get_process_names())
   
-        selected_process = my.kwargs.get("process")
+        selected_process = self.kwargs.get("process")
         if selected_process:
             process_names.add(selected_process) 
         
@@ -353,7 +353,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         """
 
 
-        hidden_options = my.kwargs.get("hidden_options").split(',')
+        hidden_options = self.kwargs.get("hidden_options").split(',')
 
         process_wdg = DivWdg()
         div.add(process_wdg)
@@ -397,18 +397,18 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             from tactic.ui.panel import EditWdg
 
-            ingest_data_view = my.kwargs.get('metadata_view')
+            ingest_data_view = self.kwargs.get('metadata_view')
             if not ingest_data_view:
-                ingest_data_view = my.kwargs.get('ingest_data_view')
+                ingest_data_view = self.kwargs.get('ingest_data_view')
 
-            if my.search_key:
+            if self.search_key:
                 sobject = SearchType.create("sthpw/snapshot")
             else:
-                sobject = SearchType.create(my.search_type)
+                sobject = SearchType.create(self.search_type)
 
-            metadata_element_names = my.kwargs.get("metadata_element_names")
+            metadata_element_names = self.kwargs.get("metadata_element_names")
 
-            if my.show_settings: 
+            if self.show_settings: 
                 edit = EditWdg(
                         search_key=sobject.get_search_key(),
                         mode='view',
@@ -417,8 +417,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                         show_header=False,
                         width="100%",
                         display_mode="single_cell",
-                        extra_data=my.kwargs.get("extra_data"),
-                        default=my.kwargs.get("default"),
+                        extra_data=self.kwargs.get("extra_data"),
+                        default=self.kwargs.get("default"),
                 )
                 
                 div.add(edit)
@@ -453,7 +453,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             label_div.add_style("margin-top: 10px")
             label_div.add_style("margin-bottom: 8px")
 
-            update_mode_option = my.kwargs.get("update_mode")
+            update_mode_option = self.kwargs.get("update_mode")
             if not update_mode_option:
                 update_mode_option = "true"
             update_mode = SelectWdg(name="update mode")
@@ -476,14 +476,14 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        if not my.search_key and "ext_option" not in hidden_options:
+        if not self.search_key and "ext_option" not in hidden_options:
             label_div = DivWdg()
             label_div.add("Ignore File Extension")
             map_div.add(label_div)
             label_div.add_style("margin-top: 10px")
             label_div.add_style("margin-bottom: 8px")
 
-            ignore_ext_option = my.kwargs.get("ignore_ext")
+            ignore_ext_option = self.kwargs.get("ignore_ext")
             if not ignore_ext_option:
                 ignore_ext_option = "false"
             ignore_ext = SelectWdg(name="update mode")
@@ -496,14 +496,14 @@ class IngestUploadWdg(BaseRefreshWdg):
             map_div.add(ignore_ext)
 
 
-        if not my.search_key and "column_option" not in hidden_options:
+        if not self.search_key and "column_option" not in hidden_options:
             label_div = DivWdg()
             label_div.add("Map file name to column")
             map_div.add(label_div)
             label_div.add_style("margin-top: 10px")
             label_div.add_style("margin-bottom: 8px")
 
-            column_option = my.kwargs.get("column")
+            column_option = self.kwargs.get("column")
             if not column_option:
                 column_option = "name"
             column_select = SelectWdg(name="update mode")
@@ -524,7 +524,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             label_div.add_style("margin-top: 10px")
             label_div.add_style("margin-bottom: 8px")
 
-            column_option = my.kwargs.get("column")
+            column_option = self.kwargs.get("column")
             if not column_option:
                 column_option = "name"
             column_select = SelectWdg(name="zip mode")
@@ -539,7 +539,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        if not my.search_key and "context_mode" not in hidden_options:
+        if not self.search_key and "context_mode" not in hidden_options:
             map_div.add("<br/>")
             map_div.add("<hr/>")
 
@@ -550,7 +550,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             map_div.add("<br/>")
 
-            context_mode_option = my.kwargs.get("context_mode")
+            context_mode_option = self.kwargs.get("context_mode")
             if not context_mode_option:
                 context_mode_option = "case_sensitive"
             context_mode = SelectWdg(name="context_mode")
@@ -565,7 +565,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
         if not isinstance(extra_data, basestring):
             extra_data = jsondumps(extra_data)
 
@@ -584,12 +584,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
         """
         asset_dir = Environment.get_asset_dir()
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         if base_dir:
             if not base_dir.startswith(asset_dir):
                 raise Exception("Path needs to be in asset root")
@@ -597,9 +597,9 @@ class IngestUploadWdg(BaseRefreshWdg):
                 relative_dir = base_dir.replace(asset_dir, "")
                 relative_dir = relative_dir.strip("/")
         else:
-            relative_dir = my.kwargs.get("relative_dir")
+            relative_dir = self.kwargs.get("relative_dir")
 
-        my.relative_dir = relative_dir
+        self.relative_dir = relative_dir
         """
 
         div = DivWdg()
@@ -612,7 +612,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(header_div)
 
 
-        if my.show_settings:
+        if self.show_settings:
             button_div = DivWdg()
             header_div.add(button_div)
             button = IconButtonWdg(title="Expand Options", icon="BS_MENU_HAMBURGER")
@@ -629,10 +629,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             } )
 
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
-            if my.project_code:
-                project_title = Project.get_by_code(my.project_code).get_value("title")
+            if self.project_code:
+                project_title = Project.get_by_code(self.project_code).get_value("title")
                 title = "Copy files to '%s'" % project_title
                 title_description = "These will be copied to the asset library"
             else:
@@ -650,8 +650,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         # create the help button
         is_admin_site = Project.get().is_admin()
-        show_help = my.kwargs.get("show_help") or True
-        if my.kwargs.get("show_help") not in ['false', False] and is_admin_site:
+        show_help = self.kwargs.get("show_help") or True
+        if self.kwargs.get("show_help") not in ['false', False] and is_admin_site:
             help_button_wdg = DivWdg()
             header_div.add(help_button_wdg)
             help_button_wdg.add_styles("float: right; margin-top: 11px;")
@@ -669,29 +669,29 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(shelf_div)
         shelf_div.add_style("margin-bottom: 10px")
 
-        if my.search_key:
-            div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % my.search_key)
+        if self.search_key:
+            div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % self.search_key)
         else:
             div.add("<input class='spt_input' type='hidden' name='search_key' value=''/>")
 
 
-        if not my.search_type:
+        if not self.search_type:
             div.add("No search type specfied")
             return div
 
-        if my.relative_dir:
+        if self.relative_dir:
             folder_div = DivWdg()
             shelf_div.add(folder_div)
-            folder_div.add("Folder: %s" % my.relative_dir)
+            folder_div.add("Folder: %s" % self.relative_dir)
             folder_div.add_style("opacity: 0.5")
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
 
         # update_process
-        my.update_process = my.kwargs.get("update_process") or ""
+        self.update_process = self.kwargs.get("update_process") or ""
 
         # ignore_path_keywords
-        my.ignore_path_keywords = my.kwargs.get("ignore_path_keywords") or ""
+        self.ignore_path_keywords = self.kwargs.get("ignore_path_keywords") or ""
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -775,14 +775,14 @@ class IngestUploadWdg(BaseRefreshWdg):
          '''
          } )
 
-        ingest = my.get_ingest_button()
+        ingest = self.get_ingest_button()
         shelf_div.add(ingest)
         ingest.add_style("float: right")
 
         shelf_div.add("<br clear='all'/>")
 
 
-        progress_wdg = my.get_progress_div()
+        progress_wdg = self.get_progress_div()
         shelf_div.add(progress_wdg)
 
         border_color_light = div.get_color("background2", 8)
@@ -814,7 +814,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background = DivWdg()
         background.add_class("spt_files_background")
         files_div.add(background)
-        if my.sobjects:
+        if self.sobjects:
             background.add_style("display: none")
 
         background.add_style("text-align: center")
@@ -848,7 +848,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         } ) 
 
 
-        background.add( my.get_select_files_button() )
+        background.add( self.get_select_files_button() )
 
 
 
@@ -1097,30 +1097,30 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         # add the passed in sobject files
-        for sobject in my.sobjects:
-            files_div.add( my.get_file_wdg(sobject) )
+        for sobject in self.sobjects:
+            files_div.add( self.get_file_wdg(sobject) )
 
         
         # add the template
-        files_div.add( my.get_file_wdg() )
+        files_div.add( self.get_file_wdg() )
 
 
         div.add("<br/>")
 
 
-        #upload_wdg = my.get_ingest_button()
+        #upload_wdg = self.get_ingest_button()
         #div.add(upload_wdg)
 
         return div
 
 
 
-    def get_ingest_button(my):
+    def get_ingest_button(self):
 
         div = DivWdg()
 
-        library_mode = my.kwargs.get("library_mode") or False
-        dated_dirs = my.kwargs.get("dated_dirs") or False
+        library_mode = self.kwargs.get("library_mode") or False
+        dated_dirs = self.kwargs.get("dated_dirs") or False
  
 
 
@@ -1185,7 +1185,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         '''
         
         script_found = True 
-        oncomplete_script_path = my.kwargs.get("oncomplete_script_path")
+        oncomplete_script_path = self.kwargs.get("oncomplete_script_path")
         if oncomplete_script_path:
             script_folder, script_title = oncomplete_script_path.split("/")
             oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
@@ -1199,10 +1199,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
 
-        if my.kwargs.get("oncomplete_script"):
-            oncomplete_script = my.kwargs.get("oncomplete_script")
-        if my.kwargs.get("on_complete"):
-            oncomplete_script = my.kwargs.get("on_complete")
+        if self.kwargs.get("oncomplete_script"):
+            oncomplete_script = self.kwargs.get("oncomplete_script")
+        if self.kwargs.get("on_complete"):
+            oncomplete_script = self.kwargs.get("on_complete")
 
 
 
@@ -1310,7 +1310,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
 
         var return_array = false;
-        // non-existent when my.show_settings is False
+        // non-existent when self.show_settings is False
         var update_data = update_data_top ? spt.api.get_input_values(update_data_top, null, return_array): {};
 
 
@@ -1382,14 +1382,14 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div = DivWdg()
 
 
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
         if not search_keys:
             upload_div.add_style("display: none")
 
 
         upload_div.add_class("spt_upload_files_top")
         div.add(upload_div)
-        if my.sobjects:
+        if self.sobjects:
             button = ActionButtonWdg(title="Copy Files", width=200, color="primary")
         else:
             button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
@@ -1402,29 +1402,29 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add("<br clear='all'/>")
 
 
-        action_handler = my.kwargs.get("action_handler")
+        action_handler = self.kwargs.get("action_handler")
         if not action_handler:
             action_handler = 'tactic.ui.tools.IngestUploadCmd';
 
-        context = my.kwargs.get("context")
-        context_mode = my.kwargs.get("context_mode")
-        keyword_mode = my.kwargs.get("keyword_mode")
+        context = self.kwargs.get("context")
+        context_mode = self.kwargs.get("context_mode")
+        keyword_mode = self.kwargs.get("keyword_mode")
 
 
         button.add_behavior( {
             'type': 'click_up',
             'action_handler': action_handler,
             'kwargs': {
-                'search_type': my.search_type,
-                'relative_dir': my.relative_dir,
+                'search_type': self.search_type,
+                'relative_dir': self.relative_dir,
                 'script_found': script_found,
                 'context': context,
                 'library_mode': library_mode,
                 'dated_dirs' : dated_dirs,
                 'context_mode': context_mode,
-                'update_process': my.update_process,
-                'ignore_path_keywords': my.ignore_path_keywords,
-                'project_code': my.project_code,
+                'update_process': self.update_process,
+                'ignore_path_keywords': self.ignore_path_keywords,
+                'project_code': self.project_code,
                 'keyword_mode': keyword_mode
             },
             'cbjs_action': '''
@@ -1499,7 +1499,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-    def get_progress_div(my):
+    def get_progress_div(self):
 
         div = DivWdg()
         div.add_style("overflow-y: hidden")
@@ -1546,7 +1546,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-    def get_select_files_button(my):
+    def get_select_files_button(self):
 
 
         button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
@@ -1560,7 +1560,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         button.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
 
@@ -1728,17 +1728,17 @@ spt.ingest.select_files = function(top, files, normal_ext) {
 
 class IngestCheckCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         from pyasm.biz import FileRange
 
-        file_names = my.kwargs.get("file_names")
+        file_names = self.kwargs.get("file_names")
 
 
         info = FileRange.get_sequences(file_names)
 
         #info = FileRange.check(file_names)
-        my.info = info
+        self.info = info
 
 
 
@@ -1750,72 +1750,72 @@ class IngestUploadCmd(Command):
     # FOLDER_LIMIT can be adjusted as desired.
     FOLDER_LIMIT = 500
 
-    def get_server(my):
+    def get_server(self):
 
-        if not my.server:
-            project_code = my.kwargs.get("project_code")
+        if not self.server:
+            project_code = self.kwargs.get("project_code")
             if not project_code:
-                my.server = TacticServerStub.get()
+                self.server = TacticServerStub.get()
 
             else:
-                my.server = TacticServerStub(protocol="local")
-                my.server.set_project(project_code)
+                self.server = TacticServerStub(protocol="local")
+                self.server.set_project(project_code)
 
-        return my.server
+        return self.server
 
-    def execute(my):
+    def execute(self):
 
-        my.server = None
+        self.server = None
 
-        my.message_key = my.kwargs.get("message_key")        
+        self.message_key = self.kwargs.get("message_key")        
         try:
-            return my._execute()
+            return self._execute()
         except Exception as e:
-            if my.message_key:
+            if self.message_key:
                 msg = {
                     'progress': 100,
                     'error': '%s' % e,
                     'description': 'Error: %s' % e
                 }
 
-                server = my.get_server()
-                server.log_message(my.message_key, msg, status="in progress")
+                server = self.get_server()
+                server.log_message(self.message_key, msg, status="in progress")
 
                 raise
 
 
-    def _execute(my):
+    def _execute(self):
 
-        library_mode = my.kwargs.get("library_mode")
+        library_mode = self.kwargs.get("library_mode")
         current_folder = 0
 
-        dated_dirs = my.kwargs.get("dated_dirs")
+        dated_dirs = self.kwargs.get("dated_dirs")
         
-        filenames = my.kwargs.get("filenames")
-        relative_dir = my.kwargs.get("relative_dir")
+        filenames = self.kwargs.get("filenames")
+        relative_dir = self.kwargs.get("relative_dir")
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         if not base_dir:
             upload_dir = Environment.get_upload_dir()
             base_dir = upload_dir
 
-        context_mode = my.kwargs.get("context_mode")
+        context_mode = self.kwargs.get("context_mode")
         if not context_mode:
             context_mode = "case_sensitive"
-        update_mode = my.kwargs.get("update_mode")
-        ignore_ext = my.kwargs.get("ignore_ext")
-        column = my.kwargs.get("column")
+        update_mode = self.kwargs.get("update_mode")
+        ignore_ext = self.kwargs.get("ignore_ext")
+        column = self.kwargs.get("column")
         if not column:
             column = "name"
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
-            my.sobject = Search.get_by_search_key(search_key)
-            search_type = my.sobject.get_base_search_type()
+            self.sobject = Search.get_by_search_key(search_key)
+            search_type = self.sobject.get_base_search_type()
         else:
-            search_type = my.kwargs.get("search_type")
-            my.sobject = None
+            search_type = self.kwargs.get("search_type")
+            self.sobject = None
 
 
         if not relative_dir:
@@ -1824,19 +1824,19 @@ class IngestUploadCmd(Command):
             table = search_type_obj.get_table()
             relative_dir = "%s/%s" % (project_code, table)
 
-        server = my.get_server()
+        server = self.get_server()
 
-        parent_key = my.kwargs.get("parent_key")
-        category = my.kwargs.get("category")
-        keywords = my.kwargs.get("keywords")
-        update_process = my.kwargs.get("update_process")
-        ignore_path_keywords = my.kwargs.get("ignore_path_keywords")
+        parent_key = self.kwargs.get("parent_key")
+        category = self.kwargs.get("category")
+        keywords = self.kwargs.get("keywords")
+        update_process = self.kwargs.get("update_process")
+        ignore_path_keywords = self.kwargs.get("ignore_path_keywords")
         if ignore_path_keywords:
             ignore_path_keywords = ignore_path_keywords.split(",")
             ignore_path_keywords = [x.strip() for x in ignore_path_keywords]
 
-        update_data = my.kwargs.get("update_data")
-        extra_data = my.kwargs.get("extra_data")
+        update_data = self.kwargs.get("update_data")
+        extra_data = self.kwargs.get("extra_data")
         if extra_data:
             extra_data = jsonloads(extra_data)
         else:
@@ -1844,7 +1844,7 @@ class IngestUploadCmd(Command):
 
         update_sobject_found = False
         # TODO: use this to generate a category
-        category_script_path = my.kwargs.get("category_script_path")
+        category_script_path = self.kwargs.get("category_script_path")
         """
         ie:
             from pyasm.checkin import ExifMetadataParser
@@ -1918,13 +1918,13 @@ class IngestUploadCmd(Command):
                 import glob
                 abs_path = Environment.get_asset_dir() + "/" + relative_dir + "/*"
 
-                if len(glob.glob(abs_path)) > my.FOLDER_LIMIT:
+                if len(glob.glob(abs_path)) > self.FOLDER_LIMIT:
                     current_folder = current_folder + 1
                     relative_dir = "%s/%03d" % (relative_dir[:-4], current_folder)
 
 
-            unzip = my.kwargs.get("unzip")
-            zip_mode = my.kwargs.get("zip_mode")
+            unzip = self.kwargs.get("unzip")
+            zip_mode = self.kwargs.get("zip_mode")
             if zip_mode in ['unzip'] or unzip in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
                 unzip_dir = Environment.get_upload_dir()
@@ -1937,7 +1937,7 @@ class IngestUploadCmd(Command):
 
                 paths = ZipUtil.get_file_paths(zip_path)
 
-                new_kwargs = my.kwargs.copy()
+                new_kwargs = self.kwargs.copy()
                 new_kwargs['filenames'] = paths
                 new_kwargs['base_dir'] = unzip_dir
                 new_kwargs['zip_mode'] = "single"
@@ -1948,8 +1948,8 @@ class IngestUploadCmd(Command):
 
 
 
-            if my.sobject:
-                sobject = my.sobject
+            if self.sobject:
+                sobject = self.sobject
 
             elif update_mode in ["true", True, "update"]:
                 # first see if this sobjects still exists
@@ -1997,7 +1997,7 @@ class IngestUploadCmd(Command):
                 if update_mode not in ['true', True, "update"]:
                     sobjects = []
 
-                my.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
+                self.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
 
                 sobject = SearchType.create(search_type)
 
@@ -2028,7 +2028,7 @@ class IngestUploadCmd(Command):
             else:
                 path_for_keywords = new_filename
 
-            cmd_keyword_mode = my.kwargs.get("keyword_mode")
+            cmd_keyword_mode = self.kwargs.get("keyword_mode")
 
             if cmd_keyword_mode == "simplified":
                 file_keywords = []
@@ -2100,7 +2100,7 @@ class IngestUploadCmd(Command):
             """
             # TEST: convert on upload
             try:
-                convert = my.kwargs.get("convert")
+                convert = self.kwargs.get("convert")
                 if convert:
                     message_key = "IngestConvert001"
                     cmd = ConvertCbk(**convert)
@@ -2201,12 +2201,12 @@ class IngestUploadCmd(Command):
 
             # use API to check in file
 
-            process = my.kwargs.get("process")
+            process = self.kwargs.get("process")
             if not process:
                 process = "publish"
 
 
-            context = my.kwargs.get("context")
+            context = self.kwargs.get("context")
             if not context:
                 context = process
 
@@ -2263,7 +2263,7 @@ class IngestUploadCmd(Command):
                     # auto create icon
                     snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
                 
-            elif my.kwargs.get("base_dir"):
+            elif self.kwargs.get("base_dir"):
                 # auto create icon
                 snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move', version=version)
                 
@@ -2278,28 +2278,28 @@ class IngestUploadCmd(Command):
             percent = int((float(count)+1) / len(filenames)*100)
 
 
-            if my.message_key:
+            if self.message_key:
                 msg = {
                     'progress': percent,
                     'description': 'Checking in file [%s]' % filename,
                 }
 
-                server.log_message(my.message_key, msg, status="in progress")
+                server.log_message(self.message_key, msg, status="in progress")
 
 
 
-        if my.message_key:
+        if self.message_key:
             msg = {
                 'progress': '100',
                 'description': 'Check-ins complete'
             }
-            server.log_message(my.message_key, msg, status="complete")
+            server.log_message(self.message_key, msg, status="complete")
 
         
         return
 
 
-    def check_existing_file(my, search_type, new_filename, relative_dir, update_mode, sobjects):
+    def check_existing_file(self, search_type, new_filename, relative_dir, update_mode, sobjects):
         project_code = Project.get_project_code()
         file_search_type = SearchType.build_search_type(search_type, project_code)
 
@@ -2318,7 +2318,7 @@ class IngestUploadCmd(Command):
         elif file_sobjects:
             raise TacticException('A file with the same name as "%s" already exists in the file table with path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
 
-    def natural_sort(my,l):
+    def natural_sort(self,l):
         '''
         natural sort will makesure a list of names passed in is 
         sorted in an order of 1000 to be after 999 instead of right after 101
@@ -2329,7 +2329,7 @@ class IngestUploadCmd(Command):
 
 
     """
-    def find_sequences(my, filenames):
+    def find_sequences(self, filenames):
         '''
         Parse a list of filenames into a dictionary of sequences.  Filenames not
         part of a sequence are returned in the None key
@@ -2345,7 +2345,7 @@ class IngestUploadCmd(Command):
         # sort the files (by natural order) so we always generate a pattern
         # based on the first potential file in a sequence
 
-        local_filenames = my.natural_sort(local_filenames)
+        local_filenames = self.natural_sort(local_filenames)
 
         for filename in local_filenames:
             count = re.findall('\d+', filename)

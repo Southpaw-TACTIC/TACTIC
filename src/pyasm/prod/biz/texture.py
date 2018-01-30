@@ -21,14 +21,14 @@ class Texture(SObject):
 
 
     
-    def get_relation(my, name):
+    def get_relation(self, name):
         from asset import Asset
         relations = {}
         relations['asset'] = Asset
         relations['texture'] = Texture
         return relations[name]
 
-    def get_icon_context(my, context=None):
+    def get_icon_context(self, context=None):
         return "publish"
     
     # static functions
@@ -104,13 +104,13 @@ class TextureSource(Texture):
 class ShotTexture(Texture):
     SEARCH_TYPE = "prod/shot_texture"
 
-    def get_shot_code(my):
+    def get_shot_code(self):
         shot_code = ''
 
-        search_type = my.get_value('search_type')
+        search_type = self.get_value('search_type')
 
         search = Search( search_type )
-        search.add_filter( 'id', my.get_value('search_id') )
+        search.add_filter( 'id', self.get_value('search_id') )
         parent = search.get_sobject()
 
         if not parent:

@@ -21,7 +21,7 @@ class WorkHour(SObject):
     '''Work hour for task or various items'''
     SEARCH_TYPE = "sthpw/work_hour"
 
-    def get_defaults(my):
+    def get_defaults(self):
         '''specifies the defaults for this sobject'''
         project_code = Project.get_project_code()
         me = Environment.get_user_name()

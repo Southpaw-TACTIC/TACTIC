@@ -48,18 +48,18 @@ import random, sys, traceback
 
 class SwitchLayoutMenu(object):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.search_type = my.kwargs.get("search_type")
-        activator = my.kwargs.get("activator")
-        my.view = my.kwargs.get("view")
+        self.search_type = self.kwargs.get("search_type")
+        activator = self.kwargs.get("activator")
+        self.view = self.kwargs.get("view")
 
         menu = Menu(width=180, allow_icons=True)
         menu_item = MenuItem(type='title', label='Switch Layout')
         menu.add(menu_item)
 
-        config = WidgetConfigView.get_by_search_type(my.search_type, "table")
+        config = WidgetConfigView.get_by_search_type(self.search_type, "table")
         default_element_names = config.get_element_names()
 
 
@@ -67,7 +67,7 @@ class SwitchLayoutMenu(object):
         labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Collection', 'Overview']
 
         # this is fast table biased
-        if my.kwargs.get("is_refresh") in ['false', False]:
+        if self.kwargs.get("is_refresh") in ['false', False]:
             class_names = [
                 'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
@@ -129,7 +129,7 @@ class SwitchLayoutMenu(object):
             ['preview','name','task_pipeline_report','summary','completion'],
 	    ]
 
-        if not SearchType.column_exists(my.search_type, 'name'):
+        if not SearchType.column_exists(self.search_type, 'name'):
             element_names = [
             default_element_names,
             [],
@@ -148,13 +148,13 @@ class SwitchLayoutMenu(object):
 
 
         # add in the default
-        #views.insert(0, my.view)
-        #labels.insert(0, my.view)
+        #views.insert(0, self.view)
+        #labels.insert(0, self.view)
         #class_names.insert(0, 'tactic.ui.panel.FastTableLayoutWdg')
         #layouts.insert(0, "tile")
         #element_names.insert(0, None)
 
-        cbk = my.kwargs.get("cbk")
+        cbk = self.kwargs.get("cbk")
         if not cbk:
             cbk = '''
             var activator = spt.smenu.get_activator(bvr);
@@ -196,7 +196,7 @@ class SwitchLayoutMenu(object):
         from layout_util import LayoutUtil
 
         for i, view in enumerate(views):
-            #data = LayoutUtil.get_layout_data(search_type=my.search_type, layout=view)
+            #data = LayoutUtil.get_layout_data(search_type=self.search_type, layout=view)
             #layout = view
             #class_name = data.get("class_name")
             #element_names = data.get("element_names")
@@ -210,7 +210,7 @@ class SwitchLayoutMenu(object):
             label = labels[i]
 
             menu_item = MenuItem(type='action', label=label)
-            if my.view == views[i]:
+            if self.view == views[i]:
                 menu_item.set_icon(IconWdg.DOT_GREEN)
             menu.add(menu_item)
             menu_item.add_behavior( {
@@ -219,7 +219,7 @@ class SwitchLayoutMenu(object):
             'class_name': class_name,
             'element_names': element_name_list,
             'layout': layout,
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'cbjs_action': cbk
             } )
 
@@ -236,7 +236,7 @@ class SwitchLayoutMenu(object):
 class CellEditWdg(BaseRefreshWdg):
     '''Widget which allows the editing of a cell'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'the search type of table',
         'element_name': 'element name that this widget represents',
@@ -249,29 +249,29 @@ class CellEditWdg(BaseRefreshWdg):
 
 
 
-    def get_display_wdg(my):
+    def get_display_wdg(self):
         '''get the display widget that is contained in the cell edit'''
-        return my.display_wdg
+        return self.display_wdg
 
 
-    def init(my):
-        element_name = my.kwargs['element_name']
-        search_type = my.kwargs['search_type']
-        layout_version = my.kwargs['layout_version']
+    def init(self):
+        element_name = self.kwargs['element_name']
+        search_type = self.kwargs['search_type']
+        layout_version = self.kwargs['layout_version']
 
         configs = Container.get("CellEditWdg:configs")
         if not configs:
             configs = {}
             Container.put("CellEditWdg:configs", configs)
         key = "%s" % (search_type)
-        my.config = configs.get(key)
-        if not my.config:
+        self.config = configs.get(key)
+        if not self.config:
 
             # create one
             view = "edit"
 
-            my.config = WidgetConfigView.get_by_search_type(search_type, view)
-            configs[key] = my.config
+            self.config = WidgetConfigView.get_by_search_type(search_type, view)
+            configs[key] = self.config
 
             # add an override if it exists
             view = "edit_item"
@@ -279,51 +279,51 @@ class CellEditWdg(BaseRefreshWdg):
 
             db_config = WidgetDbConfig.get_by_search_type(search_type, view)
             if db_config:
-                my.config.get_configs().insert(0, db_config)
+                self.config.get_configs().insert(0, db_config)
 
-        my.sobject = None
+        self.sobject = None
 
 
         # create the edit widget
         try:
             # FIXME: This doesn't look right.. the type can only be display or action, not edit
-            my.display_wdg = my.config.get_widget(element_name, "edit")
+            self.display_wdg = self.config.get_widget(element_name, "edit")
         except ImportError, e:
             print("WARNING: create widget", str(e))
-            my.display_wdg = SimpleTableElementWdg()
-            my.display_wdg.add("No edit defined")
+            self.display_wdg = SimpleTableElementWdg()
+            self.display_wdg.add("No edit defined")
 
 
 
-        state = my.kwargs.get('state')
+        state = self.kwargs.get('state')
         state['search_type'] = search_type
-        if my.display_wdg:
-            my.display_wdg.set_state(state)
+        if self.display_wdg:
+            self.display_wdg.set_state(state)
 
             if layout_version == '1':
-                my.add_edit_behavior(my.display_wdg)
+                self.add_edit_behavior(self.display_wdg)
 			
 
         # find the type of this element
-        my.element_type = my.config.get_type(element_name)
-        if not my.element_type:
+        self.element_type = self.config.get_type(element_name)
+        if not self.element_type:
             # NOTE: this should be centralized!
             if element_name.endswith('_date'):
-                my.element_type = 'date'
+                self.element_type = 'date'
             elif element_name.endswith('_time'):
-                my.element_type = 'time'
+                self.element_type = 'time'
 
         # ask the edit widget!
-        if not my.element_type:
+        if not self.element_type:
             try:
-                my.element_type = my.display_wdg.get_type()
+                self.element_type = self.display_wdg.get_type()
             except AttributeError, e:
                 pass
                 
 
         # otherwise, base it on the database type
-        if not my.element_type:
-            my.element_type = SearchType.get_tactic_type(search_type, element_name)
+        if not self.element_type:
+            self.element_type = SearchType.get_tactic_type(search_type, element_name)
 
         
 
@@ -386,24 +386,24 @@ class CellEditWdg(BaseRefreshWdg):
     add_edit_behavior = classmethod(add_edit_behavior)
 
 
-    def get_display_wdg(my):
-        return my.display_wdg
+    def get_display_wdg(self):
+        return self.display_wdg
 
 
 
-    def get_element_type(my):
-        return my.element_type
+    def get_element_type(self):
+        return self.element_type
 
-    #def get_dependent_attrs(my):
-    #    return my.dependent_attrs
+    #def get_dependent_attrs(self):
+    #    return self.dependent_attrs
 
-    def set_sobject(my, sobject):
-        my.sobject = sobject
+    def set_sobject(self, sobject):
+        self.sobject = sobject
 
 
 
-    def get_display(my):
-        element_name = my.kwargs['element_name']
+    def get_display(self):
+        element_name = self.kwargs['element_name']
 
         div = DivWdg()
         div.set_id("CellEditWdg_%s" % element_name)
@@ -416,47 +416,47 @@ class CellEditWdg(BaseRefreshWdg):
             return widget
 
         try:
-            element_attrs = my.config.get_element_attributes(element_name)
+            element_attrs = self.config.get_element_attributes(element_name)
             edit_script = element_attrs.get("edit_script")
             if edit_script:
                 div.add_attr("edit_script", edit_script)
 
-            display = my.display_wdg.get_buffer_display()
+            display = self.display_wdg.get_buffer_display()
             div.add(display)
-            #div.add(my.display_wdg)
+            #div.add(self.display_wdg)
         except Exception as e:
             print("WARNING in CellEditWdg: ", e)
-            my.display_wdg = TextWdg(element_name)
-            my.display_wdg.set_value('Error in widget')
+            self.display_wdg = TextWdg(element_name)
+            self.display_wdg.set_value('Error in widget')
           
-            display = my.display_wdg.get_buffer_display()
+            display = self.display_wdg.get_buffer_display()
             div.add(display)
             
 
         # NOTE: this seems redundant, buffer display is already called at
         # this point
-        if not my.sobject:
-            my.sobject = my.kwargs.get('sobject')
-        my.display_wdg.set_sobject(my.sobject)
+        if not self.sobject:
+            self.sobject = self.kwargs.get('sobject')
+        self.display_wdg.set_sobject(self.sobject)
 
         return div
 
 
 
-    def get_values(my):
+    def get_values(self):
         '''method to get a data structure which can be used to populate the
         widget on the client side.  Generally the widgets are drawn unpopulated,
         so this information is need to dynamically load the informations'''
-        assert my.sobject
+        assert self.sobject
 
-        column = my.get_column()
+        column = self.get_column()
 
         values = {}
 
         # main element
-        if my.sobject.has_value(column):
-            value = my.sobject.get_value(column)
-            if my.element_type == 'time' and value and type(value) in types.StringTypes:
+        if self.sobject.has_value(column):
+            value = self.sobject.get_value(column)
+            if self.element_type == 'time' and value and type(value) in types.StringTypes:
                 # FIXME: this should use date util
                 try:
                     tmp, value = value.split(" ")
@@ -468,10 +468,10 @@ class CellEditWdg(BaseRefreshWdg):
         return values
 
 
-    def get_column(my):
+    def get_column(self):
         '''special method to get the column override to add the data to'''
-        element_name = my.kwargs['element_name']
-        display_options = my.config.get_display_options(element_name)
+        element_name = self.kwargs['element_name']
+        display_options = self.config.get_display_options(element_name)
         column = display_options.get("column")
         if not column:
             column = element_name
@@ -481,10 +481,10 @@ class CellEditWdg(BaseRefreshWdg):
         
 class CellWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
-        search_key = my.kwargs.get('search_key')
+        search_key = self.kwargs.get('search_key')
         cmd = CellCmd(search_key=search_key)
         Command.execute_cmd(cmd)
 
@@ -502,14 +502,14 @@ class CellWdg(BaseRefreshWdg):
 
 class CellCmd(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Table Cell Edit"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
 
-        search_key = my.kwargs.get('search_key')
-        my.sobject = Search.get_by_search_key(search_key)
+        search_key = self.kwargs.get('search_key')
+        self.sobject = Search.get_by_search_key(search_key)
 
         element_name = web.get_form_value("element_name")
         value = web.get_form_value(element_name)
@@ -517,21 +517,21 @@ class CellCmd(Command):
             value = web.get_form_value("main")
         if not value:
             value = web.get_form_value("name")
-        my.sobject.set_value(element_name, value)
-        my.sobject.commit()
+        self.sobject.set_value(element_name, value)
+        self.sobject.commit()
 
-        my.description = "Changed attribute [%s]" % element_name
+        self.description = "Changed attribute [%s]" % element_name
 
-        my.value = value
+        self.value = value
 
 
 
 
 class RowCmd(Command):
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
 
-        search_key = my.kwargs.get('search_key')
+        search_key = self.kwargs.get('search_key')
         sobject = Search.get_by_search_key(search_key)
 
         element_name = web.get_form_value("element_name")
@@ -543,7 +543,7 @@ class RowCmd(Command):
         sobject.set_value(element_name, value)
         sobject.commit()
 
-        my.value = value
+        self.value = value
 
 
 
@@ -554,18 +554,18 @@ from pyasm.widget import BaseTableElementWdg
 
 class RowSelectWdg(BaseTableElementWdg):
     '''The Table Element which contains just a checkbox for selection'''
-    def __init__(my, table_id, name=None, value=None):
+    def __init__(self, table_id, name=None, value=None):
        # Require "table_id" to be specified ... must be unique per table
-        super(RowSelectWdg, my).__init__(name, value)
-        my.table_id = table_id
+        super(RowSelectWdg, self).__init__(name, value)
+        self.table_id = table_id
 
         # Needed for MMS_COLOR_OVERRIDE ...
         web = WebContainer.get_web()
-        my.skin = web.get_skin()
+        self.skin = web.get_skin()
 
 
 
-    def handle_th(my, th, cell_idx=None):
+    def handle_th(self, th, cell_idx=None):
 
         th.set_id("maq_select_header")
         th.add_looks('dg_row_select_box')
@@ -576,21 +576,21 @@ class RowSelectWdg(BaseTableElementWdg):
         th.add_style('min-width: 30px')
 
         th.add_behavior( {'type': 'click_up', 'mouse_btn':'LMB', 'modkeys':'',
-                          'target_class': ('%s_row_target' % my.table_id),
+                          'target_class': ('%s_row_target' % self.table_id),
                           'cbjs_action': 'spt.dg_table.select_deselect_all_rows(evt, bvr)'} )
 
 
 
-    def get_title(my):
+    def get_title(self):
         return "&nbsp;"
 
 
-    def handle_tr(my, tr):
-        sobject = my.get_current_sobject()
+    def handle_tr(self, tr):
+        sobject = self.get_current_sobject()
         tr.set_attr( "spt_search_key", SearchKey.build_by_sobject(sobject, use_id=True) )
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
 
         # handle drag of row
         td.add_class("SPT_DRAG_ROW")
@@ -602,10 +602,10 @@ class RowSelectWdg(BaseTableElementWdg):
         # set the color of the row select
         td.add_color("background-color", "background", -10)
 
-        i = my.get_current_index()
-        sobject = my.get_current_sobject()
+        i = self.get_current_index()
+        sobject = self.get_current_sobject()
 
-        row_id_str = "%s_select_td_%s" % (my.table_id, str(i+1))
+        row_id_str = "%s_select_td_%s" % (self.table_id, str(i+1))
         
         # prevent insert/edit rows getting selected for select all functions
         if sobject.is_insert():
@@ -613,7 +613,7 @@ class RowSelectWdg(BaseTableElementWdg):
 
         td.add_class( 'SPT_ROW_SELECT_TD cell_left' )
         # add this to specify the parent table
-        td.add_class( 'SPT_ROW_SELECT_TD_%s' % my.table_id)
+        td.add_class( 'SPT_ROW_SELECT_TD_%s' % self.table_id)
 
         td.add_looks( 'dg_row_select_box' )
         td.add_behavior( {
@@ -658,12 +658,12 @@ class RowSelectWdg(BaseTableElementWdg):
         td.set_attr("selected", "no")
 
 
-    def get_display(my):
+    def get_display(self):
         x = DivWdg()
         x.add_style("min-width: 24px")
         x.add_style("width: 24px")
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             icon = IconWdg("New", IconWdg.NEW)
             x.add_style("padding: 2 0 0 4")
@@ -680,7 +680,7 @@ class RowSelectWdg(BaseTableElementWdg):
 
 class AddPredefinedColumnWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             "element_names": "list of the element_names",
             "search_type": "search_type to list all the possible columns",
@@ -689,7 +689,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         }
 
 
-    def get_columns_wdg(my, title, element_names, is_open=False):
+    def get_columns_wdg(self, title, element_names, is_open=False):
 
         # hardcode to insert at 3, this will be overridden on client side
         widget_idx = 3
@@ -764,7 +764,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             elements_wdg.add(menu_item)
             return content_wdg
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         search_type_obj = SearchType.get(search_type)
         table = search_type_obj.get_table()
         project_code = Project.get_project_code()
@@ -783,14 +783,14 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 checkbox.add_style("margin-top: 1px")
             # undo the click.. let the div bvr take care of the toggling
             checkbox.add_behavior({'type':'click', 'cbjs_action': 'bvr.src_el.checked=!bvr.src_el.checked;'})
-            if element_name in my.current_elements:
+            if element_name in self.current_elements:
                 checkbox.set_checked()
 
             checkbox.add_style("height: 16px")
             checkbox = DivWdg(checkbox)
             checkbox.add_style("float: left")
 
-            attrs = my.config.get_element_attributes(element_name)
+            attrs = self.config.get_element_attributes(element_name)
 
             default_access = attrs.get("access")
             if not default_access:
@@ -871,7 +871,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             spt.dg_table.toggle_column_cbk(table,'%s','%s');
             cb = bvr.src_el.getElement('input[type=checkbox]');
             cb.checked=!cb.checked;
-            ''' % (my.target_id, element_name, widget_idx )
+            ''' % (self.target_id, element_name, widget_idx )
             })
 
 
@@ -888,26 +888,26 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_style("width: 400px")
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         search_type_obj = SearchType.get(search_type)
 
 
-        #my.current_elements = ['asset_library', 'code']
-        my.current_elements = my.kwargs.get('element_names')
-        if not my.current_elements:
-            my.current_elements = []
+        #self.current_elements = ['asset_library', 'code']
+        self.current_elements = self.kwargs.get('element_names')
+        if not self.current_elements:
+            self.current_elements = []
 
 
 
-        my.target_id = my.kwargs.get("target_id")
+        self.target_id = self.kwargs.get("target_id")
 
 
 
-        #popup_wdg = PopupWdg(id=my.kwargs.get("popup_id"), opacity="0", allow_page_activity="true", width="400px")
+        #popup_wdg = PopupWdg(id=self.kwargs.get("popup_id"), opacity="0", allow_page_activity="true", width="400px")
         #title = "Column Manager (%s)" % search_type
         #popup_wdg.add(title, "title")
 
@@ -947,7 +947,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         shelf_wdg.add(add_button)
         shelf_wdg.add("<br clear='all'/>")
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         add_button.add_behavior( {
             'type': 'click_up',
             'title': title,
@@ -963,14 +963,14 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-        my.config = WidgetConfigView.get_by_search_type(search_type, "definition")
+        self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
 
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()
 
 
         # define a finger menu
-        finger_menu, menu = my.get_finger_menu()
+        finger_menu, menu = self.get_finger_menu()
         context_menu.add(finger_menu)
 
         menu.set_activator_over(context_menu, "spt_column", top_class='spt_column_manager', offset={'x':10,'y':0})
@@ -980,7 +980,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         defined_element_names = []
-        for config in my.config.get_configs():
+        for config in self.config.get_configs():
             if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
@@ -1001,16 +1001,16 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             if column not in defined_element_names:
                 defined_element_names.append(column)
 
-        #definition_config = my.config.get_definition_config()
+        #definition_config = self.config.get_definition_config()
         #if definition_config:
         #    defined_element_names = definition_config.get_element_names()
         #else:
-        #    #defined_element_names = my.config.get_element_names()
+        #    #defined_element_names = self.config.get_element_names()
         #    defined_element_names = []
 
         defined_element_names.sort()
         title = 'Custom Widgets'
-        context_menu.add( my.get_columns_wdg(title, defined_element_names, is_open=True) )
+        context_menu.add( self.get_columns_wdg(title, defined_element_names, is_open=True) )
 
 
 
@@ -1022,7 +1022,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             element_names = [x.get_value("view") for x in configs]
 
             title = "Custom Layout Columns"
-            context_menu.add( my.get_columns_wdg(title, element_names) )
+            context_menu.add( self.get_columns_wdg(title, element_names) )
 
 
 
@@ -1033,7 +1033,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             predefined_element_names.extend(element_names)
 
         title = "Built-in Widgets"
-        context_menu.add( my.get_columns_wdg(title, predefined_element_names) )
+        context_menu.add( self.get_columns_wdg(title, predefined_element_names) )
 
 
 
@@ -1067,7 +1067,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             #context_menu.add(HtmlElement.br())
             #title = "Schema Columns"
-            #context_menu.add( my.get_columns_wdg(title, element_names) )
+            #context_menu.add( self.get_columns_wdg(title, element_names) )
 
 
  
@@ -1087,7 +1087,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             columns = column_info.keys()
 
             columns.sort()
-            context_menu.add( my.get_columns_wdg("Database Columns", columns) )
+            context_menu.add( self.get_columns_wdg("Database Columns", columns) )
 
  
         #popup_wdg.add(context_menu, "content")
@@ -1095,7 +1095,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         return top
 
 
-    def get_finger_menu(my):
+    def get_finger_menu(self):
 
         # handle finger menu
         top_class = "spt_column_manager"
@@ -1133,7 +1133,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 class EditColumnDefinitionWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             "search_type": "search_type to list all the possible columns",
             "view": "view of the config",
@@ -1145,29 +1145,29 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
 
 
 
-    def set_as_panel(my, widget):
+    def set_as_panel(self, widget):
         widget.add_class("spt_panel")
 
-        widget.add_attr("spt_class_name", Common.get_full_class_name(my) )
-        for name, value in my.kwargs.items():
+        widget.add_attr("spt_class_name", Common.get_full_class_name(self) )
+        for name, value in self.kwargs.items():
             widget.add_attr("spt_%s" % name, value)
 
        
 
 
-    def init(my):
-        my.error = None
-        refresh = my.kwargs.get("refresh")
+    def init(self):
+        self.error = None
+        refresh = self.kwargs.get("refresh")
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        search_type = my.kwargs.get("search_type")
-        view = my.kwargs.get("view")
+        search_type = self.kwargs.get("search_type")
+        view = self.kwargs.get("view")
         
-        element_name = my.kwargs.get("element_name")
-        refresh = my.kwargs.get("refresh")
+        element_name = self.kwargs.get("element_name")
+        refresh = self.kwargs.get("refresh")
 
       
 
@@ -1184,11 +1184,11 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
 
         content_wdg = DivWdg()
 
-        if my.error:
-            content_wdg.add(my.error)
+        if self.error:
+            content_wdg.add(self.error)
 
         content_wdg.set_id("EditColumnDefinitionWdg_panel")
-        my.set_as_panel(content_wdg)
+        self.set_as_panel(content_wdg)
 
         # display definition
         content_wdg.add("Table Display")
@@ -1285,13 +1285,13 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
 
 class EditColumnDefinitionCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Edit Column Definition"
 
-    def execute(my):
-        search_type = my.kwargs.get('search_type')
-        element_name = my.kwargs.get('element_name')
-        #view = my.kwargs.get('view')
+    def execute(self):
+        search_type = self.kwargs.get('search_type')
+        element_name = self.kwargs.get('element_name')
+        #view = self.kwargs.get('view')
 
         search_type = SearchType.get(search_type).get_base_key()
 
@@ -1336,17 +1336,17 @@ class EditColumnDefinitionCbk(Command):
             
         config.commit_config()
 
-        my.add_description("Saved column definition [%s] for [%s] in view [%s]" %(element_name, search_type, save_view)) 
+        self.add_description("Saved column definition [%s] for [%s] in view [%s]" %(element_name, search_type, save_view)) 
         # update the edit definition
         #edit_definition = web.get_form_value("edit_definition")
         #edit_view = "edit_definition"
-        #edit_config = my.get_config(search_type, edit_view)
+        #edit_config = self.get_config(search_type, edit_view)
         #edit_config.append_xml_element(element_name, edit_definition)
         #edit_config.commit_config()
 
 
 
-    def get_config(my, search_type, view):
+    def get_config(self, search_type, view):
 
         # FIXME: taken from client API (set_config_definition() )
         # ... should centralize

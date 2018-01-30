@@ -20,7 +20,7 @@ import unittest
 class MayaParserTest(unittest.TestCase):
     '''Unit test that tests all of the interactions of Tactic with Maya'''
 
-    def test_all(my):
+    def test_all(self):
 
         file_path = "./test/whatever.ma"
         file_path = "./test/tree004_texture_v002_BAR.ma"

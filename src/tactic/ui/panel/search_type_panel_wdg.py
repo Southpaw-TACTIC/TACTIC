@@ -25,12 +25,12 @@ from panel_wdg import SideBarBookmarkMenuWdg, TableLayoutWdg
 class SearchTypePanelWdg(BaseRefreshWdg):
     '''Panel to manage search types'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type of the sobject to be display'
         }
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
         search_type = "prod/asset"
@@ -156,7 +156,7 @@ class SearchTypePanelWdg(BaseRefreshWdg):
         nav_td = table.add_cell()
         nav_td.add_style("width: 100px")
         nav_td.add_style("vertical-align: top")
-        #section_wdg = my.get_section_wdg(sobject)
+        #section_wdg = self.get_section_wdg(sobject)
         #nav_td.add( section_wdg )
 
         #from tactic.ui.panel import ManageViewPanelWdg
@@ -179,7 +179,7 @@ class SearchTypePanelWdg(BaseRefreshWdg):
 
 
 
-    def get_section_wdg(my, sobject):
+    def get_section_wdg(self, sobject):
 
         parent_key = SearchKey.get_by_sobject(sobject)
 

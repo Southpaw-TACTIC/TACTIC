@@ -27,10 +27,10 @@ from tactic.ui.widget import ActionButtonWdg, IconButtonWdg, SingleButtonWdg
 
 class TitleWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
 
         title_wdg = DivWdg()
         top.add(title_wdg)
@@ -49,9 +49,9 @@ class TitleWdg(BaseRefreshWdg):
 
 class BubbleWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        msg = my.kwargs.get("message")
+        msg = self.kwargs.get("message")
 
         arrow_div = DivWdg()
         icon = IconWdg(msg, IconWdg.ARROW_UP_LEFT_32)
@@ -75,12 +75,12 @@ class BubbleWdg(BaseRefreshWdg):
 
 class QuickLinksWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
 
         top = DivWdg()
@@ -228,9 +228,9 @@ class QuickLinksWdg(BaseRefreshWdg):
 
 class MainShelfWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         button_div = DivWdg()
         top.add(button_div)
@@ -271,9 +271,9 @@ class MainShelfWdg(BaseRefreshWdg):
         } )
 
 
-        top_class = my.kwargs.get("top_class")
-        list_class = my.kwargs.get("list_class")
-        height = my.kwargs.get("height")
+        top_class = self.kwargs.get("top_class")
+        list_class = self.kwargs.get("list_class")
+        height = self.kwargs.get("height")
         assert(top_class)
         assert(list_class)
         assert(height)

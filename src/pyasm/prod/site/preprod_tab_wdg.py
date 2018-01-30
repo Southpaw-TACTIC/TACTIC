@@ -23,20 +23,20 @@ from pyasm.prod.web import SequenceFilterWdg, SearchFilterWdg
 class PreprodTabWdg(BaseTabWdg):
 
 
-    def init(my):
+    def init(self):
         help = HelpItemWdg('Preproduction', 'The Preproduction area lets you organize art references, storyboard, scripts, and camera data.')
-        my.add(help)
-        my.setup_tab("preprod_pipeline_tab", css=TabWdg.SMALL)
+        self.add(help)
+        self.setup_tab("preprod_pipeline_tab", css=TabWdg.SMALL)
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         
-        tab.add(my.get_art_reference, _("Reference") )
-        tab.add(my.get_script_wdg, _("Scripts") )
-        tab.add(my.get_storyboard_wdg, _("Storyboards") )
-        tab.add(my.get_camera_wdg, _("Camera Data") )
+        tab.add(self.get_art_reference, _("Reference") )
+        tab.add(self.get_script_wdg, _("Scripts") )
+        tab.add(self.get_storyboard_wdg, _("Storyboards") )
+        tab.add(self.get_camera_wdg, _("Camera Data") )
         
-        tab.add(my.get_notes_wdg, _("Notes") )
+        tab.add(self.get_notes_wdg, _("Notes") )
         
 
 
@@ -44,11 +44,11 @@ class PreprodTabWdg(BaseTabWdg):
   
 
 
-    def get_art_reference(my):
+    def get_art_reference(self):
 
         widget = Widget()
         help = HelpItemWdg('References', 'References tab lets the user organize art references. Each reference can be [related] to one or more assets defined in TACTIC. It can be set up when you [Edit] the reference.')
-        my.add(help)
+        self.add(help)
         div = DivWdg(css="filter_box")
         
         widget.add(div)
@@ -77,10 +77,10 @@ class PreprodTabWdg(BaseTabWdg):
         return widget
     
 
-    def get_storyboard_wdg(my):
+    def get_storyboard_wdg(self):
         widget = Widget()
         help = HelpItemWdg('Storyboards', 'Storyboards tab lets the user organize storyboards. You are only required to [Insert] once per shot. Subsequent versions of the storyboard should be published via the [Publish] button.')
-        my.add(help)
+        self.add(help)
         div = DivWdg(css="filter_box")
 
         sequence_filter = SequenceFilterWdg()
@@ -116,7 +116,7 @@ class PreprodTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_script_wdg(my):
+    def get_script_wdg(self):
         table = TableWdg("prod/script")
         table.set_class("table")
         search = Search("prod/script")
@@ -125,7 +125,7 @@ class PreprodTabWdg(BaseTabWdg):
 
 
 
-    def get_camera_wdg(my):
+    def get_camera_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
@@ -156,7 +156,7 @@ class PreprodTabWdg(BaseTabWdg):
 
     
 
-    def get_notes_wdg(my):
+    def get_notes_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")

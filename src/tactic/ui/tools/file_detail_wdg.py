@@ -29,12 +29,12 @@ import os
 class FileDetailWdg(BaseRefreshWdg):
     '''Single File Widget'''
 
-    def get_display(my):
+    def get_display(self):
 
-        parser = my.kwargs.get("parser")
+        parser = self.kwargs.get("parser")
 
-        my.search_key = my.kwargs.get("search_key")
-        sobject = Search.get_by_search_key(my.search_key)
+        self.search_key = self.kwargs.get("search_key")
+        sobject = Search.get_by_search_key(self.search_key)
 
         if sobject.get_base_search_type() == "sthpw/snapshot":
             snapshot = sobject
@@ -63,8 +63,8 @@ class FileDetailWdg(BaseRefreshWdg):
         
         #parent = snapshot.get_parent()
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
 
         if ext == "pdf":
             iframe = HtmlElement.iframe()
@@ -276,12 +276,12 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("margin: 20px 0px 20px 10px")
         metadata_div.add_style("text-align: left")
 
-        use_tactic_tags = my.kwargs.get("use_tactic_tags")
+        use_tactic_tags = self.kwargs.get("use_tactic_tags")
 
         server_src = lib_path
 
         # get it dynamically by path
-        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags, search_key=my.search_key)
+        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags, search_key=self.search_key)
         metadata_div.add(metadata_wdg)
 
         top.add("<br/>")

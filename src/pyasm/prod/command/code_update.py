@@ -29,21 +29,21 @@ class BaseCodeUpdate(DatabaseAction):
     '''This class supports the naming convention:
        < asset_category >< unique_code >
     '''
-    def get_naming(my):
+    def get_naming(self):
         raise CommandException("override this to return a naming scheme")
     
-    def execute(my):
-        if not my.sobject.is_insert():
+    def execute(self):
+        if not self.sobject.is_insert():
             return
 
         # use naming to figure out the code for this asset
-        naming = my.get_naming()
-        code = naming.get_next_code(my.sobject)
-        my.sobject.set_value("code", code)
+        naming = self.get_naming()
+        code = naming.get_next_code(self.sobject)
+        self.sobject.set_value("code", code)
 
 class TemplateCodeUpdate(BaseCodeUpdate):
     
-    def get_naming(my):
+    def get_naming(self):
         return TemplateCodeNaming()
    
 
@@ -51,21 +51,21 @@ class TemplateCodeUpdate(BaseCodeUpdate):
 class AssetCodeUpdate(BaseCodeUpdate):
     SEARCH_TYPE = "prod/asset"
 
-    def get_naming(my):
+    def get_naming(self):
         return AssetCodeNaming()
 
-    def get_default_code(my):
+    def get_default_code(self):
         return "prod-asset_default"
 
-    def execute(my):
-        if not my.sobject.is_insert():
+    def execute(self):
+        if not self.sobject.is_insert():
             return
 
         if ProdSetting.get_value_by_key("use_name_as_asset_code") == "true":
-            name = my.sobject.get_value("name")
-            my.sobject.set_value("code", name)
+            name = self.sobject.get_value("name")
+            self.sobject.set_value("code", name)
         else:    
-            super(AssetCodeUpdate,my).execute()
+            super(AssetCodeUpdate,self).execute()
 
 
 
@@ -75,23 +75,23 @@ class TextureCodeUpdate(BaseCodeUpdate):
     <asset_code>_###_<asset_context>
     '''
 
-    def get_naming(my):
+    def get_naming(self):
         return TextureCodeNaming()
 
     """
-    def execute(my):
+    def execute(self):
         # register the trigger on renaming files
         #print "registering"
-        #Trigger.register(my,"UploadAction")
+        #Trigger.register(self,"UploadAction")
         pass
 
 
-    def handle_rename_files(my):
+    def handle_rename_files(self):
         '''called by trigger'''
 
         return
-        files = my.command.files
-        sobject = my.command.sobject
+        files = self.command.files
+        sobject = self.command.sobject
 
         asset_code = sobject.get_value("asset_code")
 
@@ -140,7 +140,7 @@ class TextureCodeUpdate(BaseCodeUpdate):
                 new_paths.append(file_path)
 
         # remap to the new paths
-        my.command.files = new_paths
+        self.command.files = new_paths
 
     """
 

@@ -26,7 +26,7 @@ import shutil, re
 
 class UploadServerWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         num_files = web.get_form_value("num_files")
@@ -44,8 +44,8 @@ class UploadServerWdg(Widget):
 
                 file_name = web.get_form_value("file_name%s"% i)
                 if not file_name:
-                    file_name = my.get_file_name(field_storage)
-                items = my.dump(field_storage, file_name)
+                    file_name = self.get_file_name(field_storage)
+                items = self.dump(field_storage, file_name)
                 files.extend(items)
 
 
@@ -57,9 +57,9 @@ class UploadServerWdg(Widget):
                     file_name = web.get_form_value("filename")
 
                 if not file_name:
-                    file_name = my.get_file_name(field_storage)
+                    file_name = self.get_file_name(field_storage)
 
-                files = my.dump(field_storage, file_name)
+                files = self.dump(field_storage, file_name)
 
         if files:
             print "files: ", files
@@ -69,7 +69,7 @@ class UploadServerWdg(Widget):
 
 
 
-    def get_file_name(my, field_storage):
+    def get_file_name(self, field_storage):
 
         # handle some spoofed upload case
         if isinstance(field_storage, basestring):
@@ -96,7 +96,7 @@ class UploadServerWdg(Widget):
 
 
 
-    def dump(my, field_storage, file_name):
+    def dump(self, field_storage, file_name):
 
         web = WebContainer.get_web()
 

@@ -31,19 +31,19 @@ class SnapshotFilesWdg(BaseRefreshWdg):
     '''This is used in the "Files" hidden row to display all the files of
     a snapshot'''
 
-    def init(my):
-        my.base_dir = None
+    def init(self):
+        self.base_dir = None
 
-    def get_files(my):
+    def get_files(self):
 
         paths = []
 
         # remember this here for now
-        my.files = {}
-        my.snapshots = {}
+        self.files = {}
+        self.snapshots = {}
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         sobject = SearchKey.get_by_search_key(search_key)
         # if it is deleted, return
         if not sobject:
@@ -68,14 +68,14 @@ class SnapshotFilesWdg(BaseRefreshWdg):
                         for filename in filenames:
                             item_path = "%s/%s" % (root, filename)
                             paths.append(item_path)
-                            my.files[item_path] = file
-                            my.snapshots[item_path] = snapshot
+                            self.files[item_path] = file
+                            self.snapshots[item_path] = snapshot
 
                         for dirname in dirnames:
                             item_path = "%s/%s/" % (root, dirname)
                             paths.append(item_path)
-                            my.files[item_path] = file
-                            my.snapshots[item_path] = snapshot
+                            self.files[item_path] = file
+                            self.snapshots[item_path] = snapshot
 
 
                     """
@@ -85,39 +85,39 @@ class SnapshotFilesWdg(BaseRefreshWdg):
                         if os.path.isdir(path):
                             item_path = "%s/" % item_path
                         paths.append(item_path)
-                        my.files[path] = file
+                        self.files[path] = file
                     """
 
                 else:
                     paths.append(path)
-                    my.files[path] = file
+                    self.files[path] = file
                     base_dir_alias =  file.get_value('base_dir_alias')
-                    if not my.base_dir and base_dir_alias:
-                        my.base_dir = Environment.get_asset_dir(alias=base_dir_alias)
+                    if not self.base_dir and base_dir_alias:
+                        self.base_dir = Environment.get_asset_dir(alias=base_dir_alias)
 
         return paths
 
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 10px")
         top.add_color("background", "background", -5)
         top.add_style("min-width: 600px")
 
-        paths = my.get_files()
+        paths = self.get_files()
 
        
         # assume that all the paths are part of the same repo
         repo = 'tactic'
-        for file in my.files.values():
+        for file in self.files.values():
             repo = file.get_value("repo_type", no_exception=True)
             break
 
         if repo == 'perforce':
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             sobject = SearchKey.get_by_search_key(search_key)
      
             project = sobject.get_project()
@@ -126,13 +126,13 @@ class SnapshotFilesWdg(BaseRefreshWdg):
                 depot = project.get_code()
             location = '//%s' % depot
 
-            dir_list = SnapshotDirListWdg(base_dir=location, location="scm", show_base_dir=True,paths=paths, all_open=True, files=my.files, snapshots=my.snapshots) 
+            dir_list = SnapshotDirListWdg(base_dir=location, location="scm", show_base_dir=True,paths=paths, all_open=True, files=self.files, snapshots=self.snapshots) 
         else:
             # If not discovered thru base_dir_alias, use the default
-            if not my.base_dir:
-                my.base_dir = Environment.get_asset_dir()
+            if not self.base_dir:
+                self.base_dir = Environment.get_asset_dir()
             
-            dir_list = SnapshotDirListWdg(base_dir=my.base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, files=my.files, snapshots=my.snapshots)
+            dir_list = SnapshotDirListWdg(base_dir=self.base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, files=self.files, snapshots=self.snapshots)
 
         top.add(dir_list)
 
@@ -146,16 +146,16 @@ class SnapshotFilesWdg(BaseRefreshWdg):
 
 class SnapshotDirListWdg(DirListWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         if kwargs.get("all_open") == None:
             kwargs["all_open"] = True
         
-        super(SnapshotDirListWdg, my).__init__(**kwargs)
-        my.snapshots = kwargs.get("snapshots")
-        if not my.snapshots:
-            my.snapshots = {}
+        super(SnapshotDirListWdg, self).__init__(**kwargs)
+        self.snapshots = kwargs.get("snapshots")
+        if not self.snapshots:
+            self.snapshots = {}
 
-    def add_top_behaviors(my, top):
+    def add_top_behaviors(self, top):
 
         # convert this to a repo directory
         asset_dir = Environment.get_asset_dir()
@@ -316,20 +316,20 @@ class SnapshotDirListWdg(DirListWdg):
             SmartMenu.attach_smart_context_menu( top, menus_in, False )
 
 
-        my.add_selection(top)
+        self.add_selection(top)
  
-        super(SnapshotDirListWdg, my).add_top_behaviors(top)
+        super(SnapshotDirListWdg, self).add_top_behaviors(top)
 
 
 
 
 
-    def add_file_behaviors(my, item_div, dirname, basename):
+    def add_file_behaviors(self, item_div, dirname, basename):
 
 
         path = "%s/%s" % (dirname, basename)
 
-        file_objects = my.kwargs.get("files")
+        file_objects = self.kwargs.get("files")
         file_object = file_objects.get(path)
         if not file_object:
             print "WARNING: No file object for [%s]" % path
@@ -344,12 +344,12 @@ class SnapshotDirListWdg(DirListWdg):
 
 
 
-    def get_info(my, dirname, basename):
-        location = my.kwargs.get("location")
+    def get_info(self, dirname, basename):
+        location = self.kwargs.get("location")
         # get some info about the file
         path = "%s/%s" % (dirname, basename)
 
-        snapshot = my.snapshots.get(path)
+        snapshot = self.snapshots.get(path)
         file_range = None
 
         if FileGroup.is_sequence(path) and snapshot:
@@ -358,19 +358,19 @@ class SnapshotDirListWdg(DirListWdg):
             #end_frame = file_range.get_frame_end()
 
         if location == 'server':
-            my.info = Common.get_dir_info(path, file_range=file_range)
+            self.info = Common.get_dir_info(path, file_range=file_range)
         else:
-            my.info = {}
-        return my.info
+            self.info = {}
+        return self.info
 
 
-    def handle_item_div(my, item_div, dirname, basename):
+    def handle_item_div(self, item_div, dirname, basename):
         path = "%s/%s" % (dirname, basename)
-        if my.info.get("file_type") == 'missing':
+        if self.info.get("file_type") == 'missing':
             icon_string = IconWdg.DELETE
             tip = 'Missing [%s]' %path
         else:
-            icon_string = my.get_file_icon(dirname, basename)
+            icon_string = self.get_file_icon(dirname, basename)
             tip = path
 
         icon_div = DivWdg()
@@ -388,8 +388,8 @@ class SnapshotDirListWdg(DirListWdg):
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
 
-        snapshot = my.snapshots.get(path)
-        file_type = my.info.get('file_type')
+        snapshot = self.snapshots.get(path)
+        file_type = self.info.get('file_type')
         if file_type == 'sequence':
             if snapshot:
                 file_range = snapshot.get_file_range()
@@ -424,7 +424,7 @@ class SnapshotDirListWdg(DirListWdg):
 
         # Right now, the size is taken from the file system, however,
         # should we be reporting the database size?
-        size = my.info.get('size')
+        size = self.info.get('size')
         if not size:
             size = 0
 
@@ -442,17 +442,17 @@ class SnapshotDirListWdg(DirListWdg):
 
 
 
-    def get_file_icon(my, dir, item):
-        if my.info.get("file_type") == 'link':
+    def get_file_icon(self, dir, item):
+        if self.info.get("file_type") == 'link':
             return IconWdg.LINK
         return IconWdg.DETAILS
 
-    def get_dir_icon(my, dir, item):
+    def get_dir_icon(self, dir, item):
         return IconWdg.LOAD
 
 
 
-    def add_selection(my, top):
+    def add_selection(self, top):
         '''adding the behavior to select/unselect items'''
         top.add_behavior( {
             'type': 'load',
@@ -577,53 +577,53 @@ spt.selection.get_selected = function() {
 class SObjectDirListWdg(DirListWdg):
     '''Widget to display all the files in an sobject'''
 
-    def get_files(my):
+    def get_files(self):
 
         paths = []
 
         # remember this here for now
-        my.files = {}
+        self.files = {}
 
-        my.snapshots = {}
+        self.snapshots = {}
 
 
-        search_key = my.kwargs.get("search_key")
-        search_keys = my.kwargs.get("search_keys")
+        search_key = self.kwargs.get("search_key")
+        search_keys = self.kwargs.get("search_keys")
         if search_key:
             sobject = SearchKey.get_by_search_key(search_key)
-            my.sobjects = [sobject]
+            self.sobjects = [sobject]
 
         if search_keys:
             if isinstance(search_keys, basestring):
                 search_keys = search_keys.replace("'", '"')
                 search_keys = jsonloads(search_keys)
-            my.sobjects = Search.get_by_search_keys(search_keys)
+            self.sobjects = Search.get_by_search_keys(search_keys)
 
-        if not my.sobjects:
+        if not self.sobjects:
             return []
 
-        my.sobject = my.sobjects[0]
+        self.sobject = self.sobjects[0]
 
 
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             
             if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
                 parent = sobject.get_parent()
-                sobject_paths = my.get_sobject_files(parent)
+                sobject_paths = self.get_sobject_files(parent)
                 paths.extend(sobject_paths)
 
             else:
-                sobject_paths = my.get_sobject_files(sobject)
+                sobject_paths = self.get_sobject_files(sobject)
                 paths.extend(sobject_paths)
 
 
         return paths
 
 
-    def get_sobject_files(my, sobject):
+    def get_sobject_files(self, sobject):
         paths = []
 
-        show_versionless = my.kwargs.get("show_versionless")
+        show_versionless = self.kwargs.get("show_versionless")
         if show_versionless in [True, 'true']:
             show_versionless = True
         else:
@@ -634,7 +634,7 @@ class SObjectDirListWdg(DirListWdg):
             snapshots = [sobject]
         else:
             # get the snapshots
-            versions = my.get_value("versions")
+            versions = self.get_value("versions")
             search = Search("sthpw/snapshot")
 
             search.add_parent_filter(sobject)
@@ -649,8 +649,8 @@ class SObjectDirListWdg(DirListWdg):
                 search.add_filter("version", -1)
                 search.add_op('or')
 
-            processes = my.kwargs.get("processes")
-            process = my.get_value("process")
+            processes = self.kwargs.get("processes")
+            process = self.get_value("process")
             if process and process != 'all':
                 search.add_filter("process", process)
             if processes:
@@ -674,64 +674,64 @@ class SObjectDirListWdg(DirListWdg):
                         for filename in filenames:
                             item_path = "%s/%s" % (root, filename)
                             paths.append(item_path)
-                            my.files[item_path] = file
+                            self.files[item_path] = file
 
                         for dirname in dirnames:
                             item_path = "%s/%s/" % (root, dirname)
                             paths.append(item_path)
-                            my.files[item_path] = file
+                            self.files[item_path] = file
 
                 else:
                     paths.append(path)
-                    my.snapshots[path] = snapshot
-                    my.files[path] = file
+                    self.snapshots[path] = snapshot
+                    self.files[path] = file
 
         return paths
 
 
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
         value = web.get_form_value(name)
         if not value:
-            value = my.kwargs.get(name)
+            value = self.kwargs.get(name)
         return value
 
 
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        paths = my.get_files()
+        paths = self.get_files()
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 10px")
         top.add_color("background", "background")
         top.add_style("min-width: 500px")
         top.add_style("font-size: 12px")
         top.add_class("spt_sobject_dir_list_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
 
 
-        show_title = my.kwargs.get("show_title")
+        show_title = self.kwargs.get("show_title")
         if show_title not in [False, 'false']:
             title_wdg = DivWdg()
             inner.add(title_wdg)
-            title_wdg.add("File Browser [%s]" % my.sobject.get_code())
+            title_wdg.add("File Browser [%s]" % self.sobject.get_code())
             title_wdg.add_color("background", "background3")
             title_wdg.add_style("padding: 16px 10px")
             title_wdg.add_style("margin: -10px -10px 10px -10px")
             title_wdg.add_style("font-weight: bold")
 
-        show_shelf = my.kwargs.get("show_shelf")
+        show_shelf = self.kwargs.get("show_shelf")
         if show_shelf not in [False, 'false']:
             shelf_wdg = DivWdg()
             inner.add(shelf_wdg)
-            shelf_wdg.add(my.get_shelf_wdg())
+            shelf_wdg.add(self.get_shelf_wdg())
             shelf_wdg.add_style("padding: 5px")
             shelf_wdg.add_style("margin: -5px -5px 15px -5px")
             shelf_wdg.add_style("font-weight: bold")
@@ -740,22 +740,22 @@ class SObjectDirListWdg(DirListWdg):
 
         base_dir = Environment.get_asset_dir()
 
-        dir_list = SnapshotDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, files=my.files, snapshots=my.snapshots)
+        dir_list = SnapshotDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, files=self.files, snapshots=self.snapshots)
 
         inner.add(dir_list)
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return top
 
 
 
-    def get_shelf_wdg(my):
+    def get_shelf_wdg(self):
 
-        process = my.get_value("process")
-        versions = my.get_value("versions")
+        process = self.get_value("process")
+        versions = self.get_value("versions")
 
         div = DivWdg()
 
@@ -775,7 +775,7 @@ class SObjectDirListWdg(DirListWdg):
         } )
 
         # get all of the pipelnes for this search type
-        pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
+        pipeline_code = self.sobject.get_value("pipeline_code", no_exception=True)
         processes = []
         if pipeline_code:
             pipeline = Pipeline.get_by_code(pipeline_code)
@@ -941,22 +941,22 @@ class SObjectDirListWdg(DirListWdg):
 __all__.append("SnapshotMetadataWdg")
 class SnapshotMetadataWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        search_key = my.kwargs.get("search_key")
-        snapshot = my.kwargs.get("snapshot")
+        search_key = self.kwargs.get("search_key")
+        snapshot = self.kwargs.get("snapshot")
 
         if snapshot:
-            my.snapshot = snapshot
+            self.snapshot = snapshot
         else:
-            my.snapshot = SearchKey.get_by_search_key(search_key)
+            self.snapshot = SearchKey.get_by_search_key(search_key)
 
 
-        assert my.snapshot
+        assert self.snapshot
 
-        metadata = my.snapshot.get_metadata()
+        metadata = self.snapshot.get_metadata()
 
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
 
 
@@ -1053,12 +1053,12 @@ class PathMetadataWdg(BaseRefreshWdg):
         },
     }
  
-    def get_display(my):
+    def get_display(self):
 
-        search_key = my.kwargs.get("search_key")
-        path = my.kwargs.get("path")
-        parser_str = my.kwargs.get("parser")
-        use_tactic_tags = my.kwargs.get("use_tactic_tags")
+        search_key = self.kwargs.get("search_key")
+        path = self.kwargs.get("path")
+        parser_str = self.kwargs.get("parser")
+        use_tactic_tags = self.kwargs.get("use_tactic_tags")
 
 
         from pyasm.checkin import BaseMetadataParser
@@ -1081,7 +1081,7 @@ class PathMetadataWdg(BaseRefreshWdg):
         parser_title = parser.get_title()
 
 
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
         top.add_class("spt_metadata_top")
 

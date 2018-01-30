@@ -25,15 +25,15 @@ class StatusTrigger(Trigger):
     ''' A trigger for changing the compositing task status to Pending when
         the rendering task status is set to Review'''
 
-    def __init__(my):
-        super(StatusTrigger, my).__init__()
-        my.cmd_attrs = {}
+    def __init__(self):
+        super(StatusTrigger, self).__init__()
+        self.cmd_attrs = {}
 
 
-    def get_title(my):
+    def get_title(self):
         return "StatusTrigger"
 
-    def check(my, sobject):
+    def check(self, sobject):
         # this is needed since this command is used on other search types as well
         if not isinstance(sobject, Task):
             return False
@@ -42,9 +42,9 @@ class StatusTrigger(Trigger):
         else:
             return False
        
-    def execute(my):
+    def execute(self):
         # get command sobject and the notification code associated with it
-        class_name = my.get_command().__class__.__name__
+        class_name = self.get_command().__class__.__name__
         cmd_sobj = CommandSObj.get_by_class_name(class_name)
         if class_name != 'SimpleStatusCmd':
             return
@@ -53,20 +53,20 @@ class StatusTrigger(Trigger):
 
         # get the search objects operated on by the command and iterate
         # through them
-        command = my.get_command()
+        command = self.get_command()
         sobjects = command.get_sobjects()
         if not sobjects:
             msg = "Command '%s' has no sobjects.  Triggers cannot be called" % class_name
             Environment.add_warning("Command has no sobjects", msg)
 
         for sobject in sobjects:
-            my.handle_sobject(sobject, command)
+            self.handle_sobject(sobject, command)
 
 
 
-    def handle_sobject(my, sobject, command):
+    def handle_sobject(self, sobject, command):
         # the sobject here is a task
-        if not my.check(sobject):
+        if not self.check(sobject):
             return
        
         # the parent is the asset or shot
@@ -83,7 +83,7 @@ class StatusTrigger(Trigger):
                 task_ids.append(task.get_id())
         print "Changed task status to [Pending] for task id %s'" %str(task_ids)
 
-    def handle_done(my):
+    def handle_done(self):
         pass
         
         

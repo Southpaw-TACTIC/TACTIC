@@ -22,15 +22,15 @@ from pyasm.widget import *
 
 class SessionVersionWdg(AuxDataWdg):
 
-    def preprocess(my):
-        my.show_context = FilterCheckboxWdg("show_loaded_context", \
+    def preprocess(self):
+        self.show_context = FilterCheckboxWdg("show_loaded_context", \
             "show loaded context", css="small smaller" )
 
-    def get_prefs(my):
-        return my.show_context
+    def get_prefs(self):
+        return self.show_context
 
-    def get_display(my):
-        aux_data = my.get_current_aux_data()
+    def get_display(self):
+        aux_data = self.get_current_aux_data()
         # latest actually means current here
         session_version = aux_data.get('session_version')
         latest_version =  aux_data.get('latest_version')
@@ -50,7 +50,7 @@ class SessionVersionWdg(AuxDataWdg):
             if session_revision:
                 session_display = "%s r%0.3d" % (session_display, int(session_revision) )
 
-            if my.show_context.get_value():
+            if self.show_context.get_value():
                 session_display = '%s (%s)' %(session_display, session_context)
             is_loaded = True
         
@@ -88,41 +88,41 @@ class SessionVersionWdg(AuxDataWdg):
         
         return widget
 
-    def get_simple_display(my):
-        return my.get_display()
+    def get_simple_display(self):
+        return self.get_display()
 
 class LatestVersionWdg(AuxDataWdg):
     '''This is used in the Latest Version column in Set items table'''
     
-    def get_prefs(my):
-        my.show_context = FilterCheckboxWdg("show_published_context",\
+    def get_prefs(self):
+        self.show_context = FilterCheckboxWdg("show_published_context",\
              "show published context", css="small smaller" )
-        return my.show_context
+        return self.show_context
 
    
-    def get_data(my):
-        aux_data = my.get_current_aux_data()
-        my.session_version = aux_data.get('session_version')
-        my.latest_version =  aux_data.get('latest_version')
-        my.latest_revision =  aux_data.get('latest_revision')
-        my.latest_context = aux_data.get('latest_context')
+    def get_data(self):
+        aux_data = self.get_current_aux_data()
+        self.session_version = aux_data.get('session_version')
+        self.latest_version =  aux_data.get('latest_version')
+        self.latest_revision =  aux_data.get('latest_revision')
+        self.latest_context = aux_data.get('latest_context')
         
-    def get_display(my):
+    def get_display(self):
         
-        my.get_data()
-        display = "v%0.3d" % int(my.latest_version)
-        if my.latest_revision:
-            display = '%s r0.3d' % (display, int(my.latest_version))
+        self.get_data()
+        display = "v%0.3d" % int(self.latest_version)
+        if self.latest_revision:
+            display = '%s r0.3d' % (display, int(self.latest_version))
 
-        if my.show_context.get_value():
-            display = '%s (%s)' %(display, my.latest_context)
+        if self.show_context.get_value():
+            display = '%s (%s)' %(display, self.latest_context)
         is_loaded = False
-        if my.session_version:
+        if self.session_version:
             is_loaded = True
             
         widget = Widget() 
         if is_loaded:    
-            if my.session_version == my.latest_version:
+            if self.session_version == self.latest_version:
                 # do not show it if it matches
                 pass
             else:
@@ -138,71 +138,71 @@ class LatestVersionWdg(AuxDataWdg):
 
 class LatestVersionContextWdg(BaseTableElementWdg):
     
-    def init(my):
-        my.has_data = False
-        my.is_loaded = None
+    def init(self):
+        self.has_data = False
+        self.is_loaded = None
 
-    def get_data(my):
-        my.is_loaded = True
-        my.session_version = my.get_option('session_version')
-        my.latest_version =  my.get_option('latest_version')
-        my.session_context = my.get_option('session_context')
-        my.latest_context = my.get_option('latest_context')
-        my.session_revision = my.get_option('session_revision')
-        my.latest_revision =  my.get_option('latest_revision')
+    def get_data(self):
+        self.is_loaded = True
+        self.session_version = self.get_option('session_version')
+        self.latest_version =  self.get_option('latest_version')
+        self.session_context = self.get_option('session_context')
+        self.latest_context = self.get_option('latest_context')
+        self.session_revision = self.get_option('session_revision')
+        self.latest_revision =  self.get_option('latest_revision')
 
-        if not my.latest_version:
-            my.latest_version = 0
+        if not self.latest_version:
+            self.latest_version = 0
         
-        if my.session_version in ['', None]:
-            my.session_version = 0
-            my.is_loaded = False
+        if self.session_version in ['', None]:
+            self.session_version = 0
+            self.is_loaded = False
                 
-        if not my.session_revision:
-            my.session_revision = 0
+        if not self.session_revision:
+            self.session_revision = 0
         else:
-            my.session_revision = int(my.session_revision)
-        if not my.latest_revision:
-            my.latest_revision = 0
+            self.session_revision = int(self.session_revision)
+        if not self.latest_revision:
+            self.latest_revision = 0
         else:
-            my.latest_revision = int(my.latest_revision)
-        my.has_data = True
+            self.latest_revision = int(self.latest_revision)
+        self.has_data = True
   
-    def get_status(my):
-        if not my.has_data:
-            my.get_data()
+    def get_status(self):
+        if not self.has_data:
+            self.get_data()
         '''
         is_loaded = False
-        if my.session_version:
+        if self.session_version:
             is_loaded = True
         '''
-        is_loaded = my.is_loaded
+        is_loaded = self.is_loaded
         if is_loaded:    
-            if my.session_context != my.latest_context:
+            if self.session_context != self.latest_context:
                 return VersionWdg.MISMATCHED_CONTEXT
-            elif my.session_version == my.latest_version:
-                if my.session_revision == my.latest_revision:
+            elif self.session_version == self.latest_version:
+                if self.session_revision == self.latest_revision:
                     return VersionWdg.UPDATED 
-                elif my.session_revision < my.latest_revision:
+                elif self.session_revision < self.latest_revision:
                     return VersionWdg.OUTDATED
                 else:
                     return VersionWdg.NOT_CURRENT
 
-            elif my.session_version < my.latest_version:
+            elif self.session_version < self.latest_version:
                 return VersionWdg.OUTDATED
             else: # session has a version not found in db
                 return VersionWdg.NOT_CURRENT
         else:
              return VersionWdg.NOT_LOADED
 
-    def get_display(my):
+    def get_display(self):
         
-        my.get_data()
-        display = "v%0.3d" % int(my.latest_version)
-        if my.latest_revision:
-            display = "%s r%0.3d" % (display, int(my.latest_revision))
+        self.get_data()
+        display = "v%0.3d" % int(self.latest_version)
+        if self.latest_revision:
+            display = "%s r%0.3d" % (display, int(self.latest_revision))
         
-        status = my.get_status()
+        status = self.get_status()
         widget = VersionWdg.get(status)
         widget.add(display)
         

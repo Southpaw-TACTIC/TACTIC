@@ -233,7 +233,7 @@ class ModuleTemplate(Template):
         e.g.::
         
         t = Template("this is a template")
-        f = file("mymodule.py", "w")
+        f = file("selfmodule.py", "w")
         f.write(t.code)
         f.close()
         

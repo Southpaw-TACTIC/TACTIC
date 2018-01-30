@@ -534,7 +534,7 @@ class Common(Base):
         if os.path.exists(to_path):
             # if it exists, check the MD5 checksum
             if md5_checksum:
-                if my._md5_check(to_path, md5_checksum):
+                if self._md5_check(to_path, md5_checksum):
                     print("skipping '%s', already exists" % to_path)
                     return to_path
             else:
@@ -877,7 +877,7 @@ class Common(Base):
     process_unicode_string = staticmethod(process_unicode_string)
 
 
-    def convert_to_strings(my, array):
+    def convert_to_strings(self, array):
         new = []
         for x in array:
             if not isinstance(array, basestring):
@@ -1339,16 +1339,16 @@ class Common(Base):
 
 class KillProcessThread(threading.Thread):
     '''Kill a Windows process'''
-    def __init__(my, pid):
-        super(KillProcessThread, my).__init__()
-        my.pid = pid
+    def __init__(self, pid):
+        super(KillProcessThread, self).__init__()
+        self.pid = pid
 
-    def run(my):
+    def run(self):
         """kill function for Win32 prior to Python2.7"""
        
         import ctypes
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.OpenProcess(1, 0, my.pid)
+        handle = kernel32.OpenProcess(1, 0, self.pid)
         kernel32.TerminateProcess(handle, -1)
         rtn = kernel32.CloseHandle(handle)
         return (0 != rtn)
@@ -1376,53 +1376,53 @@ class Marshaller:
     to marshal function calls to the server
     '''
 
-    def __init__(my, class_path=None):
-        my.set_class(class_path)
+    def __init__(self, class_path=None):
+        self.set_class(class_path)
 
-        my.options = {}
-        my.args = []
-        my.kwargs = {}
+        self.options = {}
+        self.args = []
+        self.kwargs = {}
 
 
-    def set_class(my, class_path):
+    def set_class(self, class_path):
         if not class_path:
-            my.class_path = None
+            self.class_path = None
         elif type(class_path) in types.StringTypes:
-            my.class_path = class_path
+            self.class_path = class_path
         elif type(class_path) == types.TypeType:
             # do some wonky stuff
             p = re.compile(r"<class '(.*)'>")
             m = p.findall(str(class_path))
             if not m:
                 raise Exception("Cannot find class name for: %s" % str(class_path))
-            my.class_path = m[0]
+            self.class_path = m[0]
             
         else:
-            my.class_path = Common.get_full_class_name(class_path)
+            self.class_path = Common.get_full_class_name(class_path)
 
 
-    def set_option(my, name, value):
-        my.options[name] = value
+    def set_option(self, name, value):
+        self.options[name] = value
 
-    def add_arg(my, arg):
-        my.args.append(arg)
+    def add_arg(self, arg):
+        self.args.append(arg)
 
-    def add_kwarg(my, name, value):
-        my.kwargs[name] = value
+    def add_kwarg(self, name, value):
+        self.kwargs[name] = value
     
-    def set_kwargs(my, kwargs):
+    def set_kwargs(self, kwargs):
         # ensure all keywords are strings
-        my.kwargs = {}
+        self.kwargs = {}
         for name, value in kwargs.items():
-            my.kwargs[str(name)] = value
-        #my.kwargs = kwargs
+            self.kwargs[str(name)] = value
+        #self.kwargs = kwargs
 
-    def get_object(my):
+    def get_object(self):
         # dynamic creation using a string argument like the command line
-        (module_name, class_name) = Common.breakup_class_path(my.class_path)
+        (module_name, class_name) = Common.breakup_class_path(self.class_path)
         unique_class_name = "%s%s" % (module_name.replace(".",""), class_name)
 
-        args = ",".join(["my.args[%s]" % i for i in range(0,len(my.args))] )
+        args = ",".join(["self.args[%s]" % i for i in range(0,len(self.args))] )
         try:
             if module_name.startswith("tactic.plugins."):
                 import tactic.plugins
@@ -1433,10 +1433,10 @@ class Marshaller:
                 module = tactic.plugins.import_plugin(plugin)
                 unique_class_name = "module.%s" % rest
 
-            if my.kwargs and args:
-                object = eval("%s(%s, **my.kwargs)" % (unique_class_name, args))
-            elif my.kwargs:
-                object = eval("%s(**my.kwargs)" % (unique_class_name) )
+            if self.kwargs and args:
+                object = eval("%s(%s, **self.kwargs)" % (unique_class_name, args))
+            elif self.kwargs:
+                object = eval("%s(**self.kwargs)" % (unique_class_name) )
             else:
                 object = eval("%s(%s)" % (unique_class_name, args) )
         except NameError:
@@ -1461,15 +1461,15 @@ class Marshaller:
                         try:
                             exec("from pyasm.web import %s" % class_name, gl, lc)
                         except ImportError:
-                            raise ImportError("Could not find '%s' for import" % my.class_path)
+                            raise ImportError("Could not find '%s' for import" % self.class_path)
 
 
             # now with module loaded, instantiate again
             try:
-                if my.kwargs and args:
-                    object = eval("%s(%s, **my.kwargs)" % (unique_class_name, args) )
-                elif my.kwargs:
-                    object = eval("%s(**my.kwargs)" % (unique_class_name) )
+                if self.kwargs and args:
+                    object = eval("%s(%s, **self.kwargs)" % (unique_class_name, args) )
+                elif self.kwargs:
+                    object = eval("%s(**self.kwargs)" % (unique_class_name) )
                 else:
                     object = eval("%s(%s)" % (unique_class_name, args) )
 
@@ -1482,7 +1482,7 @@ class Marshaller:
             raise
 
         # go through each option and set it explicitly
-        for option,value in my.options.items():
+        for option,value in self.options.items():
             eval( "object.set_%s(value)" % option )
 
         return object
@@ -1491,9 +1491,9 @@ class Marshaller:
 
 
     
-    def get_marshalled(my):
+    def get_marshalled(self):
         '''use to get a marshalled version of this class'''
-        coded = pickle.dumps(my)
+        coded = pickle.dumps(self)
         if HAS_ZLIB:
             coded = zlib.compress(coded)
         coded = binascii.hexlify(coded)
@@ -1532,26 +1532,26 @@ class RollbackImporter:
     uninstall function will be unloaded
 
     '''
-    def __init__(my):
+    def __init__(self):
         "Creates an instance and installs as the global importer"
-        my.previousModules = sys.modules.copy()
+        self.previousModules = sys.modules.copy()
         print("starting ... ")
-        my.realImport = __builtin__.__import__
-        __builtin__.__import__ = my._import
+        self.realImport = __builtin__.__import__
+        __builtin__.__import__ = self._import
         print("import: ", __builtin__.__import__)
-        my.newModules = {}
+        self.newModules = {}
 
-    def _import(my, name, globals=None, locals=None, fromlist=[]):
-        result = apply(my.realImport, (name, globals, locals, fromlist))
-        my.newModules[name] = (globals, locals)
+    def _import(self, name, globals=None, locals=None, fromlist=[]):
+        result = apply(self.realImport, (name, globals, locals, fromlist))
+        self.newModules[name] = (globals, locals)
         print("loading: ", name)
         return result
         
-    def uninstall(my):
+    def uninstall(self):
         print("uninstall ....")
-        __builtin__.__import__ = my.realImport
-        for modname, modinfo in my.newModules.items():
-            if not my.previousModules.has_key(modname):
+        __builtin__.__import__ = self.realImport
+        for modname, modinfo in self.newModules.items():
+            if not self.previousModules.has_key(modname):
                 # Force reload when modname next imported
                 print("modname: ", modname)
                 if not sys.modules.get(modname):
