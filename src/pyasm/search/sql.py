@@ -1655,6 +1655,8 @@ class Select(object):
 
         self.schema = ""
 
+        self.quoted_mode = None
+
 
     def copy(self):
         select = Select()
@@ -2000,6 +2002,9 @@ class Select(object):
         self.joins.append(expr)
 
 
+    def set_quoted_mode(self, mode):
+        self.quoted_mode = mode
+
 
     def add_column(self, column, distinct=False, table=None, as_column=None):
         if (column == "" or column in self.columns) and column != '*':
@@ -2097,6 +2102,15 @@ class Select(object):
                 'quoted': quoted,
                 'table': table
         } )
+
+
+
+        if self.quoted_mode == "none":
+            where = "%s %s '%s'" % (column, op, value)
+            self.add_where(where)
+            return
+
+
 
 
         if not table:
@@ -2460,6 +2474,10 @@ class Select(object):
                         quoted_col = 'distinct %s."%s"' % (prefix, column)
 
                         #quoted_col = 'distinct "%s"."%s"' % (self.column_tables[i],column)
+
+                    elif self.quoted_mode == "none":
+                        quoted_col = column
+
                     else:
                         #if column == '*':
                         #    quoted_col ='"%s".*' % (self.column_tables[i])
@@ -2476,6 +2494,7 @@ class Select(object):
                         else:
                             parts.append('"%s"' % column)
                         quoted_col = ".".join(parts)
+
 
                     # handle columns that have different names specified
                     if self.as_columns[i]:
@@ -2522,6 +2541,10 @@ class Select(object):
             # build full table string
             tables = []
             for table in self.tables:
+                if self.quoted_mode == "none":
+                   tables.append(table)
+                   continue
+
                 parts = []
                 if self.database:
                     parts.append(self.database)

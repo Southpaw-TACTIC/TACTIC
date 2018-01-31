@@ -784,6 +784,7 @@ class PipelineListWdg(BaseRefreshWdg):
             pipelines = search.get_sobjects()
 
             if pipelines:
+                inner.add("<br clear='all'/>")
 
                 # misc status pipelines
                 swap = SwapDisplayWdg()
