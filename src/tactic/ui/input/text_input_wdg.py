@@ -1619,7 +1619,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             results = search_dict.get(search_type).get('results')
 
-            labels = [x.get_value(column) for x in results]
+            display_column = column.split(",")[0]
+            labels = [x.get_value(display_column) for x in results]
             values = [x.get_value(value_column) for x in results]
 
             widget = self.get_results_wdg(results, values, labels)

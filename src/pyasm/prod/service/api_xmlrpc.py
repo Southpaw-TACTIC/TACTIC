@@ -911,7 +911,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 try:
                     # if there is a value2 and it has changed, then
                     # use that one
-                    if value2 != None and value2 != value:
+                    if value2 is not None and value2 != value:
                         result[column] = value2
                 except:
                     # do nothing

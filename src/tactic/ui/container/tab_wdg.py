@@ -1809,7 +1809,27 @@ spt.tab.close = function(src_el) {
         menu.add(menu_item)
 
 
+        menu_item = MenuItem(type='action', label='Rename Tab')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.container.TabRenameWdg';
+            var kwargs = {};
 
+            var activator = spt.smenu.get_activator(bvr);
+            var label = activator.getElement(".spt_tab_header_label");
+            name = label.innerHTML;
+
+            title = "Raname Tab ["+name+"]";
+            var popup = spt.panel.load_popup(title, class_name, kwargs);
+            popup.activator = activator;
+
+
+            '''
+        } )
+        menu.add(menu_item)
+
+
+        """
         menu_item = MenuItem(type='action', label='New Tab')
         menu_item.add_behavior( {
             'cbjs_action': '''
@@ -1820,6 +1840,7 @@ spt.tab.close = function(src_el) {
             '''
         } )
         menu.add(menu_item)
+        """
 
 
 
@@ -2459,7 +2480,77 @@ spt.tab.close = function(src_el) {
 
 
 
+__all__.append("TabRenameWdg")
+class TabRenameWdg(BaseRefreshWdg):
 
+    def get_display(self):
+
+        top = self.top
+        top.add_style("margin: 20px")
+
+        top.add_class("spt_tab_rename_top")
+
+        top.add("<div>New Name:</div>")
+
+        from tactic.ui.input import TextInputWdg
+        from tactic.ui.widget import ActionButtonWdg
+
+        text = TextInputWdg(name="new_name")
+        text.add_class("spt_tab_new_name")
+        top.add(text)
+
+        text.add_behavior( {
+            'type': 'load',
+            'cbjs_action': 'bvr.src_el.focus()'
+        } )
+
+
+
+        top.add("<br/>")
+
+        button = ActionButtonWdg(title="Rename", color="basic")
+        top.add(button)
+        button.add_style("float: right")
+
+
+
+        button.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var activator = popup.activator
+
+            var rename_top = bvr.src_el.getParent(".spt_tab_rename_top");
+            var input = rename_top.getElement(".spt_tab_new_name");
+            new_name = input.value
+
+            spt.popup.close(popup);
+
+            var label = activator.getElement(".spt_tab_header_label");
+            label.innerHTML = new_name;
+
+            label.setAttribute("title", new_name);
+            activator.setAttribute("spt_title", new_name);
+
+            var top = spt.tab.top;
+            if (!top) {
+                spt.tab.set_main_body_tab();
+                top = spt.tab.top;
+            }
+
+            if (top.hasClass("spt_tab_save_state") ) {
+                spt.tab.save_state();
+            }
+
+            
+            '''
+        } )
+
+
+        top.add("<br clear='all'/>")
+
+
+        return top
 
 
 
