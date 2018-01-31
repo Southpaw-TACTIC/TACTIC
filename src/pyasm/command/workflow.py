@@ -363,6 +363,9 @@ class BaseProcessTrigger(Trigger):
 
     def set_all_tasks(self, sobject, process, status):
 
+        full_process_name = my.get_full_process_name(process)
+        tasks = Task.get_by_sobject(sobject, process=full_process_name)
+
         # prevent TaskStatusChangeTrigger from setting a custom task status back to complete
         if not hasattr(self, "internal"):
             self.internal = self.input.get("internal") or False
@@ -370,15 +373,15 @@ class BaseProcessTrigger(Trigger):
         if self.internal:
             return
 
-        full_process_name = self.get_full_process_name(process)
-
-        tasks = Task.get_by_sobject(sobject, process=full_process_name)
         title = status.replace("-", " ")
         title = title.replace("_", " ")
         title = Common.get_display_title(title)
         for task in tasks:
             task.set_value("status", title)
             task.commit()
+
+        return tasks
+
  
 
     def run_callback(self, pipeline, process, status):
@@ -751,8 +754,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process = self.input.get("process")
         sobject = self.input.get("sobject")
 
-        print("check_input: ", process)
-
         # first check the inputs.  If there is only one input, then
         # skip this check
         input_processes = pipeline.get_input_processes(process)
@@ -918,10 +919,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
-
-
     def handle_reject(self):
-
         self.log_message(self.sobject, self.process, "reject")
         self.run_callback(self.pipeline, self.process, "reject")
 
@@ -959,37 +957,19 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         self.log_message(self.sobject, self.process, "revise")
         self.run_callback(self.pipeline, self.process, "revise")
+
         # set all tasks in the process to revise
-        self.set_all_tasks(self.sobject, self.process, "revise")
+        tasks = self.set_all_tasks(self.sobject, self.process, "revise")
+
+        # if there is a task on this node, then a revise message does not go back
+        # because the task is used to notify
+        if tasks:
+            return
+
 
         process_obj = self.pipeline.get_process(self.process)
 
         error = self.input.get("error")
-
-
-        """
-        if node_type in ["condition", "action", "approval"]:
-
-            self.set_all_tasks(sobject, process, "")
-
-            input_processes = pipeline.get_input_processes(process)
-            for input_process in input_processes:
-                input_process = input_process.get_name()
-
-                input = {
-                    'pipeline': pipeline,
-                    'sobject': sobject,
-                    'process': input_process
-                }
-
-                event = "process|revise"
-                Trigger.call(self, event, input)
-
-
-        else:
-            self.set_all_tasks(sobject, process, self.get_status())
-        """
-
 
 
         # send revise single to previous processes
@@ -1012,6 +992,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
             event = "process|revise"
             Trigger.call(self, event, input)
+
+
 
 
 
@@ -1175,6 +1157,7 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
         self.log_message(self.sobject, self.process, "in_progress")
         self.set_all_tasks(self.sobject, self.process, "in_progress")
+
 
         process_obj = self.pipeline.get_process(self.process)
 

@@ -199,17 +199,30 @@ class ScriptTrigger(Handler):
         input_data = self.get_input_data()
         trigger.set_input(input_data)
 
-
-
         try:
             trigger.execute()
 
-            self.set_pipeline_status("complete")
+            info = trigger.get_info()
+            result = info.get("result")
+            if result is not None:
+
+                # map booleans to a message
+                if result in ['true', True]:
+                    result = 'complete'
+
+                elif result in ['false', False]:
+                    result = 'revise'
+
+                self.set_pipeline_status(result)
+            else:
+                self.set_pipeline_status("complete")
 
 
         except Exception as e:
             #self.set_pipeline_status("error", {"error": str(e)})
-            self.set_pipeline_status("reject", {"error": str(e)})
+
+
+            self.set_pipeline_status("revise", {"error": str(e)})
 
             import sys,traceback
 
