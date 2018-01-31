@@ -20,13 +20,13 @@ from security import Login
 
 class Authenticate(object):
 
-    def __init__(my):
-        my.login = None
+    def __init__(self):
+        self.login = None
 
-    def get_login(my):
-        return my.login
+    def get_login(self):
+        return self.login
 
-    def get_mode(my):
+    def get_mode(self):
         '''determines the mode of the authentication process. There are 3 types
         of authentications modes:
 
@@ -41,7 +41,7 @@ class Authenticate(object):
         '''
         return 'default'
 
-    def verify(my, login_name, password):
+    def verify(self, login_name, password):
         '''Method to authenticate the user with a given login name and a
         given password
 
@@ -54,7 +54,7 @@ class Authenticate(object):
         raise SecurityException("Custom Authenticate class must override verify method")
 
 
-    def add_user_info(my, login, password=None):
+    def add_user_info(self, login, password=None):
         ''' sets all the information about the user'''
         # EXAMPLES
         #login.set_value("first_name", user.get_value("login") )
@@ -64,12 +64,12 @@ class Authenticate(object):
 
 
     # DEPRECATED as of 2.5
-    def authenticate(my, login, password):
+    def authenticate(self, login, password):
         # This function must be override and must return True to authenticate
         raise SecurityException("Must override authenticate method")
 
 
-    def postprocess(my, login, ticket):
+    def postprocess(self, login, ticket):
         pass
 
 
@@ -80,28 +80,28 @@ class Authenticate(object):
 class TacticAuthenticate(Authenticate):
     '''Authenticate using the TACTIC database'''
 
-    def verify(my, login_name, password):
+    def verify(self, login_name, password):
         encrypted = hashlib.md5(password).hexdigest()
 
         # get the login sobject from the database
-        my.login = Login.get_by_login(login_name, use_upn=True)
-        if not my.login:
+        self.login = Login.get_by_login(login_name, use_upn=True)
+        if not self.login:
             raise SecurityException("Login/Password combination incorrect")
 
         # encrypt and check the password
-        if encrypted != my.login.get_value("password"):
+        if encrypted != self.login.get_value("password"):
             raise SecurityException("Login/Password combination incorrect")
         return True
 
 
-    def add_user_info(my, login, password):
+    def add_user_info(self, login, password):
         #encrypted = md5.new(password).hexdigest()
         encrypted = hashlib.md5(password).hexdigest()
         login.set_value("password", encrypted)
         
 
     # DEPRECATED
-    def authenticate(my, login, password):
+    def authenticate(self, login, password):
         # encrypt and check the password
         #encrypted = md5.new(password).hexdigest()
         encrypted = hashlib.md5(password).hexdigest()
@@ -122,7 +122,7 @@ class UnixAuthenticate(Authenticate):
 class LdapAuthenticate(Authenticate):
     '''Authenticate using LDAP logins'''
 
-    def verify(my, login_name, password):
+    def verify(self, login_name, password):
         path = Config.get_value("checkin", "ldap_path")
         server = Config.get_value("checkin", "ldap_server")
         assert path, server

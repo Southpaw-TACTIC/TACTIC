@@ -23,7 +23,7 @@ from panel_wdg import ViewPanelWdg
 
 class SqlPanelWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         "search_type": "search type to be used for editing",
         "view": "view of item to be edited",
@@ -31,11 +31,11 @@ class SqlPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
-        search_type = my.kwargs.get('search_type')
-        view = my.kwargs.get('view')
+    def get_display(self):
+        search_type = self.kwargs.get('search_type')
+        view = self.kwargs.get('view')
 
-        sobjects = my.get_sobjects()
+        sobjects = self.get_sobjects()
 
         view_panel_wdg = ViewPanelWdg(search_type=search_type, view=view)
         view_panel_wdg.set_sobjects(sobjects)
@@ -66,7 +66,7 @@ class SqlPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_sobjects(my):
+    def get_sobjects(self):
         columns = ['product_name', 'login_id', 'sample_size', 'labor_average']
 
         sql = '''
@@ -103,7 +103,7 @@ class SqlPanelWdg(BaseRefreshWdg):
         db = DbContainer.get("MMS")
 
         from pyasm.search import Select, Search
-        search_type = my.kwargs.get('search_type')
+        search_type = self.kwargs.get('search_type')
         select = Select()
         select.set_statement(sql)
         statement =  select.get_statement()
@@ -124,7 +124,7 @@ __all__.append("ProductEstimateReport")
 class ProductEstimateReport(SqlPanelWdg):
 
 
-    def get_sobjects(my):
+    def get_sobjects(self):
         columns = ['product_name', 'sample_size', 'labor_average', 'material_average_cost', 'average_time_taken']
 
 
@@ -179,7 +179,7 @@ order by X."product_name"
         db = DbContainer.get("MMS")
 
         from pyasm.search import Select, Search
-        search_type = my.kwargs.get('search_type')
+        search_type = self.kwargs.get('search_type')
         select = Select()
         select.set_statement(sql)
         statement =  select.get_statement()

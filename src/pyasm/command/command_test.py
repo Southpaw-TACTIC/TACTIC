@@ -36,34 +36,34 @@ class SampleCmdException(Exception):
 class SampleCopyCmd(Command):
     '''copies a file to directory'''
 
-    def __init__(my, from_file, to_file):
-        super(SampleCopyCmd,my).__init__()
-        my.from_file = from_file
-        my.to_file = to_file
+    def __init__(self, from_file, to_file):
+        super(SampleCopyCmd,self).__init__()
+        self.from_file = from_file
+        self.to_file = to_file
 
 
-    def preprocess(my):
+    def preprocess(self):
         '''check that everything is ok'''
 
         # make sure the file exists
-        if not os.path.exists(my.from_file):
-            raise SampleCmdException("File [%s] does not exist" % my.from_file)
+        if not os.path.exists(self.from_file):
+            raise SampleCmdException("File [%s] does not exist" % self.from_file)
 
-        to_dir = os.path.dirname(my.to_file)
+        to_dir = os.path.dirname(self.to_file)
         if not os.path.exists(to_dir):
             raise SampleCmdException("Directory [%s] does not exist" % to_dir)
 
 
-    def execute(my):
-        shutil.copy( my.from_file, my.to_file )
+    def execute(self):
+        shutil.copy( self.from_file, self.to_file )
 
 
-    def rollback(my):
-        if os.path.exists(my.to_file):
-            os.unlink(my.to_file)
+    def rollback(self):
+        if os.path.exists(self.to_file):
+            os.unlink(self.to_file)
 
 
-    def get_undo(my):
+    def get_undo(self):
         return "Test"
 
     def undo(data):
@@ -89,15 +89,15 @@ class SampleCopyCmd(Command):
 class SampleCmd(Command):
     '''does nothing'''
 
-    def execute(my):
+    def execute(self):
         Container.put(Trigger.KEY,  None)
-        Trigger.call(my, "test_trigger")
-        Trigger.call(my, "test_api_handler")
+        Trigger.call(self, "test_trigger")
+        Trigger.call(self, "test_api_handler")
 
 class SampleTaskCmd(Command):
     '''create a task for a person'''
 
-    def execute(my):
+    def execute(self):
         person = SearchType.create('unittest/person')
         person.set_value('name_first', 'john')
         person.commit(triggers=False)
@@ -110,7 +110,7 @@ class SampleTaskCmd(Command):
 
 class TestTrigger(Trigger):
 
-    def execute(my):
+    def execute(self):
         Container.put("TestTrigger", "test_trigger")
 
         # this ensure non ASCII string can be used in trigger
@@ -121,7 +121,7 @@ class TestTrigger(Trigger):
 
 class TestTaskTrigger(Trigger):
 
-    def execute(my):
+    def execute(self):
        
         Container.put("TestTaskTrigger", "done")
 
@@ -129,7 +129,7 @@ from tactic_client_lib import TacticServerStub
 from tactic_client_lib.interpreter import Handler
 class TestApiHandler(Handler):
 
-    def execute(my):
+    def execute(self):
         Container.put("TestApiHandler", "test_api_handler")
         
         # test that you can run the client api from here
@@ -160,51 +160,51 @@ class TestApiHandler(Handler):
 class TestInsertHandler(Handler):
     '''This actually runs on the server'''
 
-    def execute(my):
+    def execute(self):
         # ensure that the protocol is "local"
         server = TacticServerStub.get()
         if server.get_protocol() != "local":
             raise Exception("TacticServerStub protocol is not 'local'")
 
         # test some inputs
-        is_insert = my.get_input_value("is_insert")
+        is_insert = self.get_input_value("is_insert")
         if is_insert != True:
             raise Exception("is_insert != True")
 
-        is_insert = my.get_input_value("is_insert")
+        is_insert = self.get_input_value("is_insert")
         if is_insert != True:
             raise Exception("is_insert != True")
 
-        search_key = my.get_input_value('search_key')
+        search_key = self.get_input_value('search_key')
         if search_key != 'unittest/person?project=unittest&code=fred':
             raise Exception("search_key != 'unittest/person?project=unittest&code=fred'")
 
-        prev_data = my.get_input_value('prev_data')
+        prev_data = self.get_input_value('prev_data')
         if prev_data.get('code') != None:
             raise Exception("prev_data['code'] != None")
 
-        prev_data = my.get_input_value('update_data')
+        prev_data = self.get_input_value('update_data')
         if prev_data.get('code') != 'fred':
             raise Exception("update_data['code'] != 'fred'")
 
 class SampleCmd2(Command):
 
-    def execute(my):
-        a = "my custom command description"
-        my.add_description(a)
-        my.info['extra']= 'some info'
-        my.info['processed'] = 10
+    def execute(self):
+        a = "self custom command description"
+        self.add_description(a)
+        self.info['extra']= 'some info'
+        self.info['processed'] = 10
 
 
 class CommandTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         # intialiaze the framework as a batch process
         batch = Batch()
         Project.set_project("unittest")
 
 
-    def test_all(my):
+    def test_all(self):
         Batch()
         from pyasm.web.web_init import WebInit
         WebInit().execute()
@@ -213,17 +213,17 @@ class CommandTest(unittest.TestCase):
         test_env.create()
 
 
-        my._test_command()
-        my._test_trigger()
+        self._test_command()
+        self._test_trigger()
         trigger_key = "triggers:cache"
         Container.put(trigger_key, None)
 
         try:
-            my._test_api_trigger()
-            my._test_insert_trigger()
+            self._test_api_trigger()
+            self._test_insert_trigger()
 
             # test copy project from template
-            my._test_copy_project()
+            self._test_copy_project()
             # clear again for subsequent Client API test
             trigger_key = "triggers:cache"
 
@@ -235,7 +235,7 @@ class CommandTest(unittest.TestCase):
             test_env.delete()
 
 
-    def _test_command(my):
+    def _test_command(self):
 
         # create a temp file
         tmp_dir = Environment.get_tmp_dir()
@@ -259,17 +259,17 @@ class CommandTest(unittest.TestCase):
         cmd = SampleCopyCmd(from_path, to_path )
         Command.execute_cmd(cmd)
 
-        my.assertEquals( True, os.path.exists(to_path) )
+        self.assertEquals( True, os.path.exists(to_path) )
 
         transaction.rollback()
 
         # make sure the rollback worked
-        my.assertEquals( False, os.path.exists(to_path) )
+        self.assertEquals( False, os.path.exists(to_path) )
 
         os.unlink(from_path)
 
 
-    def _test_trigger(my):
+    def _test_trigger(self):
 
         # create a db trigger
         transaction = Transaction.get(create=True)
@@ -309,16 +309,16 @@ class CommandTest(unittest.TestCase):
             #print "You should see the message: sending email!!! once"
             # confirm by notification log
             log_msgs = Search.eval("@GET(sthpw/notification_log['subject', 'NEQ', 'Note']['@ORDER_BY', 'timestamp desc']['@LIMIT','4'].subject)")
-            my.assertEquals(log_msgs[0] , 'Sub: Unittest a task is created for john')
+            self.assertEquals(log_msgs[0] , 'Sub: Unittest a task is created for john')
           
-            my.assertEquals(log_msgs[1] , 'Sub: Unittest a task is created for zoe')
+            self.assertEquals(log_msgs[1] , 'Sub: Unittest a task is created for zoe')
             # random check against duplicates
 
-            my.assertEquals(log_msgs[2] != 'Sub: Unittest a task is created for zoe', True)
+            self.assertEquals(log_msgs[2] != 'Sub: Unittest a task is created for zoe', True)
             value = Container.get("TestTrigger")
-            my.assertEquals("test_trigger", value)
+            self.assertEquals("test_trigger", value)
             value = Container.get("TestTaskTrigger")
-            my.assertEquals("done", value)
+            self.assertEquals("done", value)
 
 
         finally:
@@ -327,7 +327,7 @@ class CommandTest(unittest.TestCase):
 
 
 
-    def _test_api_trigger(my):
+    def _test_api_trigger(self):
         # create a db trigger
 
         transaction = Transaction.get(create=True)
@@ -346,19 +346,19 @@ class CommandTest(unittest.TestCase):
 
             # test that the api handler was executed
             value = Container.get("TestApiHandler")
-            my.assertEquals("test_api_handler", value)
+            self.assertEquals("test_api_handler", value)
 
             # test that ping test worked
             value = Container.get("TestApiHandler/ping")
-            my.assertEquals("OK", value)
+            self.assertEquals("OK", value)
 
             # test that search_key worked
             value = Container.get("TestApiHandler/search_key")
-            my.assertEquals("unittest/person?project=unittest&code=jack", value)
+            self.assertEquals("unittest/person?project=unittest&code=jack", value)
 
             # test that insert/query worked
             value = Container.get("TestApiHandler/code")
-            my.assertEquals("jack", value)
+            self.assertEquals("jack", value)
 
         finally:
             #transaction = Transaction.get()
@@ -366,7 +366,7 @@ class CommandTest(unittest.TestCase):
             print "Ensure the unittest trigger is removed"
 
 
-    def _test_insert_trigger(my):
+    def _test_insert_trigger(self):
 
 
 
@@ -409,10 +409,10 @@ class CommandTest(unittest.TestCase):
         search = Search('sthpw/trigger')
         search.add_filter('event', 'insert|unittest/person')
         trig = search.get_sobject()
-        my.assertEquals(trig, None)
+        self.assertEquals(trig, None)
 
 
-    def _test_copy_project(my):
+    def _test_copy_project(self):
 
         #transaction = Transaction.get(create=True)
         try:
@@ -423,16 +423,16 @@ class CommandTest(unittest.TestCase):
         
 
             schema_entry = Search.eval("@GET(sthpw/schema['code','game_copy'].code)", single=True)
-            my.assertEquals(schema_entry, 'game_copy')
+            self.assertEquals(schema_entry, 'game_copy')
             project_entry = Search.eval("@GET(sthpw/project['code','game_copy'].code)", single=True)
-            my.assertEquals(project_entry, 'game_copy')
+            self.assertEquals(project_entry, 'game_copy')
             Project.set_project('game_copy')
 
             widget_config_st = Search.eval("@GET(config/widget_config['code','1GAME'].search_type)", single=True) 
-            my.assertEquals(widget_config_st, 'game/ticket')
+            self.assertEquals(widget_config_st, 'game/ticket')
 
             widget_config_counts = Search.eval("@COUNT(config/widget_config)") 
-            my.assertEquals(widget_config_counts, 133)
+            self.assertEquals(widget_config_counts, 133)
             Project.set_project('unittest')
         finally:
             

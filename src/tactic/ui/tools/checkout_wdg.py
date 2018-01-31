@@ -23,10 +23,10 @@ from tactic.ui.panel import TableLayoutWdg, ViewPanelWdg
 
 class CheckoutWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_checkout_top")
         top.add_color("background", "background")
         top.add_style("width: 800px")
@@ -34,8 +34,8 @@ class CheckoutWdg(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
-        snapshot_codes = my.kwargs.get("snapshot_codes")
-        search_keys = my.kwargs.get("search_keys")
+        snapshot_codes = self.kwargs.get("snapshot_codes")
+        search_keys = self.kwargs.get("search_keys")
 
         if snapshot_codes:
             if isinstance(snapshot_codes, basestring):
@@ -71,7 +71,7 @@ class CheckoutWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
         sandbox_dir = "%s/%s" % (sandbox_dir, project_code)
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
 
         if base_dir:
             title_div = DivWdg()
@@ -188,7 +188,7 @@ class CheckoutWdg(BaseRefreshWdg):
         layout.set_sobjects(snapshots[:50])
 
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top

@@ -25,17 +25,17 @@ from table_element_wdg import BaseTableElementWdg
 
 class ProjectWdg(BaseTableElementWdg):
 
-    def get_title(my):
+    def get_title(self):
         return "Database"
 
-    def preprocess(my):
-        my.version = Environment.get_release_version()
+    def preprocess(self):
+        self.version = Environment.get_release_version()
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
-        project = my.get_current_sobject()
+        project = self.get_current_sobject()
 
         table = Table()
         widget.add(table)
@@ -62,7 +62,7 @@ class ProjectWdg(BaseTableElementWdg):
         table.add_cell("Version: ")
         last_version_update = project.get_value("last_version_update")
         table.add_cell( last_version_update)
-        if last_version_update >= my.version:
+        if last_version_update >= self.version:
             table.add_cell( IconWdg("database", IconWdg.DOT_GREEN) )
         else:
             table.add_cell( IconWdg("database", IconWdg.DOT_RED) )
@@ -86,11 +86,11 @@ class ProjectWdg(BaseTableElementWdg):
 class ProjectClassWdg(BaseTableElementWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
-        project = my.get_current_sobject()
+        project = self.get_current_sobject()
 
         table = Table()
         table.set_class("minimal")
@@ -111,7 +111,7 @@ class ProjectClassWdg(BaseTableElementWdg):
 class ProjectSummaryWdg(BaseTableElementWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
@@ -122,7 +122,7 @@ class ProjectSummaryWdg(BaseTableElementWdg):
         search_id = args['search_id']
         project = Search.get_by_id(search_type, search_id)
 
-        #project = my.sobject
+        #project = self.sobject
         project_code = project.get_code()
         project_type = project.get_type()
 
@@ -135,7 +135,7 @@ class ProjectSummaryWdg(BaseTableElementWdg):
         install_dir = Environment.get_install_dir()
         summary_exec = "%s/src/pyasm/search/upgrade/summary.py" % install_dir
         cmd = 'python "%s" %s %s' % (summary_exec, project_code, project_type)
-        pre = my.get_results_wdg(cmd)
+        pre = self.get_results_wdg(cmd)
         widget.add(pre)
 
         if project_type == "prod":
@@ -147,12 +147,12 @@ class ProjectSummaryWdg(BaseTableElementWdg):
             for table in ['search_object', 'notification']:
                 cmd = 'python "%s" %s %s %s' % (data_exec, project_code, project_type, table)
                 print cmd
-                pre = my.get_results_wdg(cmd)
+                pre = self.get_results_wdg(cmd)
                 widget.add(pre)
 
         return widget
 
-    def get_results_wdg(my, cmd):
+    def get_results_wdg(self, cmd):
         '''get results from a piped command'''
         pipe = os.popen(cmd)
         result = pipe.readlines()
@@ -165,7 +165,7 @@ class ProjectSummaryWdg(BaseTableElementWdg):
 
         return widget
 
-    def get_results_wdg(my, cmd):
+    def get_results_wdg(self, cmd):
         '''get results from a piped command'''
         pipe = os.popen(cmd)
         result = pipe.readlines()

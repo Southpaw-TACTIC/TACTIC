@@ -28,25 +28,25 @@ from tactic.ui.common import BaseRefreshWdg
 
 class DbRegisterWdg(BaseRefreshWdg):
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
         value = web.get_form_value(name)
         if not value:
             return value
-        return my.kwargs.get("value")
+        return self.kwargs.get("value")
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 20px")
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("width", "500px")
 
         top.add_class("spt_db_register_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
 
         inner = DivWdg()
@@ -54,7 +54,7 @@ class DbRegisterWdg(BaseRefreshWdg):
 
 
         # db resource
-        db_resource = my.get_value("db_resource")
+        db_resource = self.get_value("db_resource")
 
         db_resource_wdg = DivWdg()
         inner.add(db_resource_wdg)
@@ -109,7 +109,7 @@ class DbRegisterWdg(BaseRefreshWdg):
 
 
 
-        if my.kwargs.get('is_refresh') == 'true':
+        if self.kwargs.get('is_refresh') == 'true':
             return inner
         else:
             return top
@@ -121,7 +121,7 @@ class DbRegisterWdg(BaseRefreshWdg):
 
 class RegisterDbResourceCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         # create project if it exists
         project_code = "tims"

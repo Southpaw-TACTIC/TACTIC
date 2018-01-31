@@ -22,28 +22,28 @@ from tactic.ui.common import BaseRefreshWdg
 
 class ArrowWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        offset_x = my.kwargs.get("offset_x")
+        offset_x = self.kwargs.get("offset_x")
         if not offset_x:
             offset_x = 30
 
-        offset_y = my.kwargs.get("offset_y")
+        offset_y = self.kwargs.get("offset_y")
         if not offset_y:
             offset_y = 0
 
 
-        size = my.kwargs.get("size")
+        size = self.kwargs.get("size")
         if not size:
             size = 15 
 
-        color = my.kwargs.get("color")
+        color = self.kwargs.get("color")
         if not color:
             color = top.get_color("background")
 
-        border_color = my.kwargs.get("border_color")
+        border_color = self.kwargs.get("border_color")
         if not border_color:
             border_color = top.get_color("border")
 

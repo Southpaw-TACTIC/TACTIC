@@ -19,12 +19,12 @@ from pyasm.widget import BaseInputWdg, SelectWdg, TextWdg, IconButtonWdg, IconWd
 
 class PipelineInputWdg(BaseInputWdg):
     
-    def get_display(my):
+    def get_display(self):
 
 
-        state = my.get_state()
+        state = self.get_state()
         search_type = state.get("search_type")
-        sobj = my.get_current_sobject()
+        sobj = self.get_current_sobject()
 
         if search_type:
             st = search_type
@@ -51,7 +51,7 @@ class PipelineInputWdg(BaseInputWdg):
 
         codes = [x.get_code() for x in sobjects]
 
-        if my.get_option("use_code") in [True, 'true']:
+        if self.get_option("use_code") in [True, 'true']:
             names = codes
         else:
 
@@ -62,7 +62,7 @@ class PipelineInputWdg(BaseInputWdg):
                     name = x.get_value("code")
                 names.append(name)
 
-        select = SelectWdg(my.get_input_name())
+        select = SelectWdg(self.get_input_name())
         
         # Only on insert, a default pipeline will
         # be assigned.
@@ -74,7 +74,7 @@ class PipelineInputWdg(BaseInputWdg):
         select.set_option("labels", names)
         
         if sobj:
-            value = sobj.get_value(my.get_name(), no_exception=True)
+            value = sobj.get_value(self.get_name(), no_exception=True)
             if value:
                 select.set_value(value)
 

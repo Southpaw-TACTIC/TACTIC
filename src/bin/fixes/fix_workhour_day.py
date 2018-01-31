@@ -15,13 +15,13 @@ class FixDay(Command):
     '''Fix the work hours getting offset issue by bringing the time forward to the mid-night of the day entered'''
     
    
-    def execute(my):
-        my.count = 0
-        my.verbose = my.kwargs.get('verbose')
-        my.fix_day(my.verbose)
-        my.add_description('Fixed [%s] work hours offset'%my.count)
+    def execute(self):
+        self.count = 0
+        self.verbose = self.kwargs.get('verbose')
+        self.fix_day(self.verbose)
+        self.add_description('Fixed [%s] work hours offset'%self.count)
 
-    def fix_day(my, verbose=False):
+    def fix_day(self, verbose=False):
         search = Search('sthpw/work_hour')
         sobjects = search.get_sobjects()
         if verbose:
@@ -42,13 +42,13 @@ class FixDay(Command):
                     print "adjusted day ", date
                     sobject.set_value("day", str(date))
                     sobject.commit(triggers=False)
-                    my.count += 1
+                    self.count += 1
 
             except Exception, e:
                 if verbose:
                     print "ERROR: ", e, " for sobject: ", sobject.get_search_type(), sobject.get_code()
 
-        print 'Fixed [%s] work hours offset'%my.count
+        print 'Fixed [%s] work hours offset'%self.count
             
 if __name__ == '__main__':
     Batch(login_code='admin')

@@ -26,15 +26,15 @@ from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, IconButtonWdg
 
 class ColumnEditWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
         top.add_class("spt_columns_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_style("padding: 10px")
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         search_type_obj = SearchType.get(search_type)
 
         inner = DivWdg()
@@ -267,7 +267,7 @@ class ColumnEditWdg(BaseRefreshWdg):
 
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return top
@@ -276,12 +276,12 @@ class ColumnEditWdg(BaseRefreshWdg):
 
 class ColumnEditCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         column_info = SearchType.get_column_info(search_type)
 
-        values = my.kwargs.get("values")
+        values = self.kwargs.get("values")
 
         # get the definition config for this search_type
         from pyasm.search import WidgetDbConfig
@@ -327,7 +327,7 @@ class ColumnEditCbk(Command):
             from pyasm.command import ColumnAddCmd
             cmd = ColumnAddCmd(search_type, name, data_type)
             cmd.execute()
-            #(my, search_type, attr_name, attr_type, nullable=True):
+            #(self, search_type, attr_name, attr_type, nullable=True):
 
 
             class_name = 'tactic.ui.table.FormatElementWdg'
@@ -362,23 +362,23 @@ class ColumnEditCbk(Command):
 
 
 class NewTextWdg(TextWdg):
-    def init(my):
+    def init(self):
 
-        #color = my.get_color("border", -20)
-        color2 = my.get_color("border")
-        color = my.get_color("border", -20)
+        #color = self.get_color("border", -20)
+        color2 = self.get_color("border")
+        color = self.get_color("border", -20)
 
-        my.add_event("onfocus", "this.focused=true")
-        my.add_event("onblur", "this.focused=false;$(this).setStyle('border-color','%s')" % color2)
+        self.add_event("onfocus", "this.focused=true")
+        self.add_event("onblur", "this.focused=false;$(this).setStyle('border-color','%s')" % color2)
 
-        my.add_behavior( {
+        self.add_behavior( {
         'type': 'mouseover',
         'color': color,
         'cbjs_action': '''
         bvr.src_el.setStyle("border-color", bvr.color);
         '''
         } )
-        my.add_behavior( {
+        self.add_behavior( {
         'type': 'mouseout',
         'color': color2,
         'cbjs_action': '''
@@ -388,6 +388,6 @@ class NewTextWdg(TextWdg):
         '''
         } )
 
-        super(NewTextWdg,my).init()
+        super(NewTextWdg,self).init()
 
 

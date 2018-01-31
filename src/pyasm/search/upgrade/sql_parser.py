@@ -19,83 +19,83 @@ import sys, os, re
 
 
 class Postgres(object):
-    def get_create_table(my):
+    def get_create_table(self):
         return "CREATE TABLE"
 
-    def get_alter_table(my):
+    def get_alter_table(self):
         return "ALTER TABLE ONLY"
 
-    def get_add_constraint(my):
+    def get_add_constraint(self):
         return "ADD CONSTRAINT"
 
-    def get_create_index(my):
+    def get_create_index(self):
         return "CREATE INDEX"
 
-    def get_create_unique_index(my):
+    def get_create_unique_index(self):
         return "CREATE UNIQUE INDEX"
 
 
 class TableData:
 
-    def __init__(my, table):
-        my.table = table
-        my.database = Postgres()
+    def __init__(self, table):
+        self.table = table
+        self.database = Postgres()
 
-        my.columns = {}
-        my.columns_order = []
+        self.columns = {}
+        self.columns_order = []
 
-        my.constraints = []
-        my.indexes = []
+        self.constraints = []
+        self.indexes = []
 
-        my.rows = {}
-
-
-    def add_column(my, column, create):
-        my.columns[column] = create
-        my.columns_order.append(column)
+        self.rows = {}
 
 
-    def get_create_table(my):
+    def add_column(self, column, create):
+        self.columns[column] = create
+        self.columns_order.append(column)
+
+
+    def get_create_table(self):
 
         create = ""
         create += "--\n"
-        create += "-- Create table: %s\n" % my.table
+        create += "-- Create table: %s\n" % self.table
         create += "--\n"
-        create += "%s %s (\n" % (my.database.get_create_table(), my.table)
+        create += "%s %s (\n" % (self.database.get_create_table(), self.table)
         tmp = []
-        for column in my.columns_order:
-            value = my.columns[column]
+        for column in self.columns_order:
+            value = self.columns[column]
             tmp.append("    %s %s" % (column,value) )
         create += ",\n".join(tmp)
         create += "\n);\n"
 
-        for constraint in my.constraints:
-            create += "%s %s\n" % (my.database.get_alter_table(), my.table)
+        for constraint in self.constraints:
+            create += "%s %s\n" % (self.database.get_alter_table(), self.table)
             create += "    %s\n" % constraint
 
-        for index in my.indexes:
-            #create += "%s %s\n" % (my.database.get_create_unique_index(), my.table)
+        for index in self.indexes:
+            #create += "%s %s\n" % (self.database.get_create_unique_index(), self.table)
             create += "%s\n" % index
 
 
         return create
 
 
-    def get_alter_table(my, column):
-        alter =  "%s %s\n" % (my.database.get_alter_table(), my.table)
-        alter += "    ADD COLUMN %s %s;" % (column, my.columns[column])
+    def get_alter_table(self, column):
+        alter =  "%s %s\n" % (self.database.get_alter_table(), self.table)
+        alter += "    ADD COLUMN %s %s;" % (column, self.columns[column])
         return alter
 
 
-    def get_diff(my,standard_data):
+    def get_diff(self,standard_data):
         '''gets the sql difference between the two tables'''
 
         # print add columns
-        extra_columns = [x for x in standard_data.columns if x not in my.columns]
+        extra_columns = [x for x in standard_data.columns if x not in self.columns]
         for column in extra_columns:
             print standard_data.get_alter_table(column)
 
-        #for column, definition in my.columns.items():
+        #for column, definition in self.columns.items():
         #    if column in extra_columns:
         #        continue
         #    definition2 = data.columns[column]
@@ -108,9 +108,9 @@ class TableData:
 
 
 
-    def compare(my, data):
-        missing_columns = [x for x in my.columns if x not in data.columns]
-        extra_columns = [x for x in data.columns if x not in my.columns]
+    def compare(self, data):
+        missing_columns = [x for x in self.columns if x not in data.columns]
+        extra_columns = [x for x in data.columns if x not in self.columns]
 
         if missing_columns:
             print "missing columns: ", missing_columns
@@ -120,8 +120,8 @@ class TableData:
             for extra_column in extra_columns:
                 print data.get_alter_table(extra_column)
 
-        missing_constraints = [x for x in my.constraints if x not in data.constraints]
-        extra_constraints = [x for x in data.constraints if x not in my.constraints]
+        missing_constraints = [x for x in self.constraints if x not in data.constraints]
+        extra_constraints = [x for x in data.constraints if x not in self.constraints]
         if missing_constraints:
             print "missing constraints: ", missing_constraints
         if extra_constraints:
@@ -134,26 +134,26 @@ class TableData:
 
 class SqlParser:
 
-    def __init__(my):
-        my.tables = {}
-        my.database = Postgres()
+    def __init__(self):
+        self.tables = {}
+        self.database = Postgres()
 
 
-    def get_tables(my):
-        tables = my.tables.keys()
+    def get_tables(self):
+        tables = self.tables.keys()
         tables.sort()
         return tables
 
 
-    def get_data(my, table):
-        if my.tables.has_key(table):
-            return my.tables[table]
+    def get_data(self, table):
+        if self.tables.has_key(table):
+            return self.tables[table]
         else:
             return TableData(table)
 
 
 
-    def _extract_values(my, expr, line):
+    def _extract_values(self, expr, line):
         p = re.compile(expr, re.DOTALL)
         m = p.search(line)
         if not m:
@@ -162,20 +162,20 @@ class SqlParser:
         return values
 
 
-    def _extract_value(my, expr, line):
-        values = my._extract_values(expr,line)
+    def _extract_value(self, expr, line):
+        values = self._extract_values(expr,line)
         if not values:
             return None
         return values[0]
 
 
-    def _extract_table(my, expr, line):
-        table = my._extract_value(expr, line)
+    def _extract_table(self, expr, line):
+        table = self._extract_value(expr, line)
         table = table.replace('"','')
         return table
 
  
-    def parse(my, file_path):
+    def parse(self, file_path):
 
         # open file and read
         file = open(file_path)
@@ -194,12 +194,12 @@ class SqlParser:
             line = line.lstrip()
 
             # handle create
-            if line.startswith(my.database.get_create_table()):
-                expr = '%s "?(\w+)"? \(' % my.database.get_create_table()
-                create_table = my._extract_table(expr, line)
+            if line.startswith(self.database.get_create_table()):
+                expr = '%s "?(\w+)"? \(' % self.database.get_create_table()
+                create_table = self._extract_table(expr, line)
 
                 data = TableData(create_table)
-                my.tables[create_table] = data
+                self.tables[create_table] = data
 
                 continue
 
@@ -214,15 +214,15 @@ class SqlParser:
                 column = tmp[0]
                 column = column.replace('"','')
                 create = " ".join(tmp[1:])
-                my.tables[create_table].add_column(column, create)
+                self.tables[create_table].add_column(column, create)
                 continue
 
 
 
             # handle alter table
-            if line.startswith(my.database.get_alter_table()):
-                expr = '%s "?(\w+)"?' % my.database.get_alter_table()
-                alter_table = my._extract_table(expr, line)
+            if line.startswith(self.database.get_alter_table()):
+                expr = '%s "?(\w+)"?' % self.database.get_alter_table()
+                alter_table = self._extract_table(expr, line)
                 alter_table_line = line
                 continue
 
@@ -234,22 +234,22 @@ class SqlParser:
                     continue
 
                 alter_table_line += " %s" % line
-                my.tables[alter_table].constraints.append(alter_table_line)
+                self.tables[alter_table].constraints.append(alter_table_line)
 
 
             # handle create index
-            if line.startswith(my.database.get_create_index()):
-                expr = '%s \w+ ON "?(\w+)"?' % (my.database.get_create_index())
-                index_table = my._extract_table(expr, line)
+            if line.startswith(self.database.get_create_index()):
+                expr = '%s \w+ ON "?(\w+)"?' % (self.database.get_create_index())
+                index_table = self._extract_table(expr, line)
                 if index_table:
-                    my.tables[index_table].indexes.append(line)
+                    self.tables[index_table].indexes.append(line)
 
             # handle create index
-            if line.startswith(my.database.get_create_unique_index()):
-                expr = '%s \w+ ON "?(\w+)"?' % (my.database.get_create_unique_index())
-                index_table = my._extract_table(expr, line)
+            if line.startswith(self.database.get_create_unique_index()):
+                expr = '%s \w+ ON "?(\w+)"?' % (self.database.get_create_unique_index())
+                index_table = self._extract_table(expr, line)
                 if index_table:
-                    my.tables[index_table].indexes.append(line)
+                    self.tables[index_table].indexes.append(line)
 
 
             # handle inserts
@@ -266,10 +266,10 @@ class SqlParser:
 
 
                 expr = '%s "?(\w+)"? \(' % ("INSERT INTO")
-                data_table = my._extract_table(expr, line)
+                data_table = self._extract_table(expr, line)
 
                 expr = '\((.*)\) VALUES \((.*)\);$'
-                info = my._extract_values(expr, line)
+                info = self._extract_values(expr, line)
                 if not info:
                     print "Error: "
                     print line
@@ -288,9 +288,9 @@ class SqlParser:
                     rows[columns[i]] = values[i]
 
                 # ensure that the data object exists
-                if not my.tables.has_key(data_table):
+                if not self.tables.has_key(data_table):
                     data = TableData(create_table)
-                    my.tables[data_table] = data
+                    self.tables[data_table] = data
 
 
                 # store the data by the unique identifier
@@ -305,11 +305,11 @@ class SqlParser:
                     primary_index = 1
 
                 primary_value = values[primary_index]
-                my.tables[data_table].rows[primary_value] = rows
+                self.tables[data_table].rows[primary_value] = rows
 
 
 
-    def compare(my, data, data2):
+    def compare(self, data, data2):
 
         columns = data.columns
         columns2 = data2.columns

@@ -22,37 +22,37 @@ Xml = None
 
 class XmlTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         global Xml
 
 
         print "Testing: 4Suite"
-        my.mode = "4Suite"
+        self.mode = "4Suite"
         from pyasm.common.xml_wrapper import Xml as classXml
         Xml = classXml
-        my._test_all()
+        self._test_all()
 
         print "Testing: lxml"
-        my.mode = "lxml"
+        self.mode = "lxml"
         from pyasm.common.lxml_wrapper import Xml as classXml
         Xml = classXml
-        my._test_all()
+        self._test_all()
 
 
-    def _test_all(my):
-        #my._test_read_string()
-        my._test_attribute()
-        my._test_create_doc()
-        my._test_xpath()
-        my._test_node_values()
-        my._test_comment()
-        #my._test_colon()
-        my._test_to_string()
+    def _test_all(self):
+        #self._test_read_string()
+        self._test_attribute()
+        self._test_create_doc()
+        self._test_xpath()
+        self._test_node_values()
+        self._test_comment()
+        #self._test_colon()
+        self._test_to_string()
 
-        my._test_color()
+        self._test_color()
 
 
-    def _test_read_string(my):
+    def _test_read_string(self):
         xml = Xml()
         xml_string = '''
         <snapshot>
@@ -78,20 +78,20 @@ class XmlTest(unittest.TestCase):
         print "[%s]" % xml.to_string()
         print "[%s]" % expected
 
-        my.assertEquals(expected, xml.to_string())
+        self.assertEquals(expected, xml.to_string())
 
 
 
-    def _test_create_doc(my):
+    def _test_create_doc(self):
         xml = Xml()
 
         # create a new document
         doc = xml.create_doc("element")
-        my.assertEquals(True, doc != None)
+        self.assertEquals(True, doc != None)
 
         # get the root element
         root = xml.get_root_node()
-        my.assertEquals(True, doc != None)
+        self.assertEquals(True, doc != None)
 
         # create a new element with attributes
         display_node = xml.create_element("display")
@@ -101,16 +101,16 @@ class XmlTest(unittest.TestCase):
 
         # get the node name
         name = xml.get_node_name(display_node)
-        my.assertEquals("display", name)
+        self.assertEquals("display", name)
 
         # test get attribute
         value = xml.get_attribute(display_node, "widget")
-        my.assertEquals("expression", value)
+        self.assertEquals("expression", value)
 
         # test delete attribute
         xml.set_attribute(display_node, "garbage", "!!!!")
         value = xml.del_attribute(display_node, "garbage")
-        my.assertEquals("!!!!", value)
+        self.assertEquals("!!!!", value)
         xml.del_attribute(display_node, "garbage2")
 
 
@@ -120,7 +120,7 @@ class XmlTest(unittest.TestCase):
         xml.append_child(display_node, expr_node)
 
         value = xml.get_node_value(expr_node)
-        my.assertEquals("@GET(.completion)", value)
+        self.assertEquals("@GET(.completion)", value)
 
 
         # create a new element with text
@@ -130,7 +130,7 @@ class XmlTest(unittest.TestCase):
         # get all of the children values as a dict
         values = xml.get_node_values_of_children(display_node)
         expected = {'expression': '@GET(.completion)', 'mode': 'check'}
-        my.assertEquals(expected, values)
+        self.assertEquals(expected, values)
 
 
         # FIXME: add CDATA element
@@ -140,7 +140,7 @@ class XmlTest(unittest.TestCase):
         #print xml.to_string()
 
 
-    def _test_attribute(my):
+    def _test_attribute(self):
         xml = Xml()
         xml.create_doc()
         element = xml.create_element("test")
@@ -151,13 +151,13 @@ class XmlTest(unittest.TestCase):
         keys = attrs.keys()
         keys.sort()
 
-        my.assertEquals('wow1', keys[0])
-        my.assertEquals('wow2', keys[1])
+        self.assertEquals('wow1', keys[0])
+        self.assertEquals('wow2', keys[1])
 
 
 
 
-    def _test_xpath(my):
+    def _test_xpath(self):
         xml_string = """
         <snapshot>
             <a>pig</a>
@@ -178,17 +178,17 @@ class XmlTest(unittest.TestCase):
 
         # test get_node
         nodes = xml.get_nodes("snapshot/a")
-        my.assertEquals(3, len(nodes) )
+        self.assertEquals(3, len(nodes) )
         node = xml.get_node("snapshot/b")
-        my.assertEquals(1, node != None)
+        self.assertEquals(1, node != None)
 
         # test not with no elements
         # WARNING: this is different in lxml
         xpath = "snapshot/not_test"
         node = xml.get_node(xpath)
-        my.assertEquals(True, node != None)
+        self.assertEquals(True, node != None)
         if node == None:
-            my.fail()
+            self.fail()
         # Do not use!!!
         #if not node:
         #    ERROR
@@ -198,40 +198,40 @@ class XmlTest(unittest.TestCase):
         xpath = "snapshot/a"
         values = xml.get_values(xpath)
 
-        my.assertEqual("pig",values[0])
-        my.assertEqual("cow",values[1])
-        my.assertEqual("horse",values[2])
+        self.assertEqual("pig",values[0])
+        self.assertEqual("cow",values[1])
+        self.assertEqual("horse",values[2])
 
         # test single value
         value = xml.get_value("snapshot/b")
-        my.assertEqual("child",value)
+        self.assertEqual("child",value)
 
         # test getting an attribute
         value = xml.get_value("snapshot/c/@name")
-        my.assertEqual("horse",value)
+        self.assertEqual("horse",value)
 
         # try "or" with nodes
         nodes = xml.get_nodes("snapshot/b | snapshot/c")
-        my.assertEqual(len(nodes), 2)
+        self.assertEqual(len(nodes), 2)
 
         # try "or" with attributes
         nodes = xml.get_nodes("snapshot/d[@name='cow' or @name='pig']")
-        my.assertEqual(len(nodes), 2)
+        self.assertEqual(len(nodes), 2)
 
         # try "and" with attributes
         nodes = xml.get_nodes("snapshot/d[@name='dog' and @xx='1']")
-        my.assertEqual(len(nodes), 1)
+        self.assertEqual(len(nodes), 1)
         #xml.dump()
 
         # test none returned
         node = xml.get_node("snapshot/xxxxxx")
-        my.assertEqual(None,node)
+        self.assertEqual(None,node)
 
 
 
 
 
-    def _test_node_values(my):
+    def _test_node_values(self):
 
         xml_string = '''
         <element name='cow'>
@@ -253,7 +253,7 @@ class XmlTest(unittest.TestCase):
           'b': '2',
           'c': '3',
         }
-        my.assertEquals(expected, values)
+        self.assertEquals(expected, values)
 
 
 
@@ -285,7 +285,7 @@ class XmlTest(unittest.TestCase):
           },
           'c': '3',
         }
-        my.assertEquals(expected, values)
+        self.assertEquals(expected, values)
 
 
         # get all of the children values as a dict
@@ -302,12 +302,12 @@ class XmlTest(unittest.TestCase):
               'c': '3',
             }
         }
-        my.assertEquals(expected, values)
+        self.assertEquals(expected, values)
 
 
 
 
-    def _test_comment(my):
+    def _test_comment(self):
 
         xml_string = '''
         <element>
@@ -320,11 +320,11 @@ class XmlTest(unittest.TestCase):
         xml.read_string(xml_string)
         root = xml.get_root_node()
         children = xml.get_children(root)
-        my.assertEquals( len(children), 1)
+        self.assertEquals( len(children), 1)
 
 
 
-    def _test_colon(my):
+    def _test_colon(self):
 
         xml_string = '''<?xml version='1.0' encoding='UTF-8'?>
         <config>
@@ -340,7 +340,7 @@ class XmlTest(unittest.TestCase):
 
 
 
-    def _test_to_string(my):
+    def _test_to_string(self):
         xml_string = '''<?xml version='1.0' encoding='UTF-8'?>
         <config>
         <snapshot>
@@ -357,7 +357,7 @@ class XmlTest(unittest.TestCase):
         node = xml.get_node("config/snapshot")
 
         node_string = xml.get_node_xml(node)
-        if my.mode == '4Suite':
+        if self.mode == '4Suite':
             expected = u'''<snapshot>
   <a>pig</a>
   <a>cow</a>
@@ -374,16 +374,16 @@ class XmlTest(unittest.TestCase):
   <c name="horse"/>
 </snapshot>'''
 
-        my.assertEquals(expected, node_string.strip() )
+        self.assertEquals(expected, node_string.strip() )
 
         node = xml.get_node("config")
         nodes = xml.xpath(node, "snapshot")
         child = nodes[0]
 
-        my.assertEquals( "snapshot", Xml.get_node_name(child) )
+        self.assertEquals( "snapshot", Xml.get_node_name(child) )
 
 
-    def _test_color(my):
+    def _test_color(self):
         xml_string = '''<?xml version='1.0' encoding='UTF-8'?>
 <config>
   <color>
@@ -420,8 +420,8 @@ class XmlTest(unittest.TestCase):
         bg_color_node = xml.get_node(xpath)
         bg_color_map = xml.get_node_values_of_children(bg_color_node)
 
-        my.assertEquals("#FF0000", bg_color_map.get("AAA"))
-        my.assertEquals("#FF8000", bg_color_map.get("BBB"))
+        self.assertEquals("#FF0000", bg_color_map.get("AAA"))
+        self.assertEquals("#FF8000", bg_color_map.get("BBB"))
 
 
 if __name__ == '__main__':

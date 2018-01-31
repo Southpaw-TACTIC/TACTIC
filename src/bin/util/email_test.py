@@ -4,34 +4,34 @@ from email.MIMEText import MIMEText
 
 class EmailTest(object):
 
-    def __init__(my):
-        my.mailserver = 'smtp.gmail.com'
-        my.user =''
-        my.password = ''
-        my.port = '587'
-        my.sender_email = 'name@emailserver.com'
-        my.mail_tls_enabled = True 
-        my.mail_sender_disabled = False
-        my.recipient_emails = ['name@emailserver.com']
-        my.msg = 'Subject: test \n testing'
+    def __init__(self):
+        self.mailserver = 'smtp.gmail.com'
+        self.user =''
+        self.password = ''
+        self.port = '587'
+        self.sender_email = 'name@emailserver.com'
+        self.mail_tls_enabled = True 
+        self.mail_sender_disabled = False
+        self.recipient_emails = ['name@emailserver.com']
+        self.msg = 'Subject: test \n testing'
     
-    def email(my):    
+    def email(self):    
         s = smtplib.SMTP()
-        s.connect(my.mailserver, my.port)
+        s.connect(self.mailserver, self.port)
 
-        if my.mail_tls_enabled:
+        if self.mail_tls_enabled:
             s.ehlo()
             s.starttls()
             s.ehlo()
 
-        if my.user:
-            s.login(my.user,my.password)
+        if self.user:
+            s.login(self.user,self.password)
         s.set_debuglevel(1)
-        if my.mail_sender_disabled:
+        if self.mail_sender_disabled:
             # to get around some email server security check if the addr 
             # is owned by the sender email address's owner
-            my.sender_email = ''
-        s.sendmail(my.sender_email, my.recipient_emails, my.msg)
+            self.sender_email = ''
+        s.sendmail(self.sender_email, self.recipient_emails, self.msg)
         s.quit()
 
 if __name__ == '__main__':

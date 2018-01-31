@@ -58,54 +58,54 @@ class LayoutException(TacticException):
     pass
     
 class BaseConfigWdg(HtmlElement):
-    def __init__(my, search_type, config_base, input_prefix='', config=None):
+    def __init__(self, search_type, config_base, input_prefix='', config=None):
 
         if type(search_type) in types.StringTypes:
-            my.search_type_obj = SearchType.get(search_type)
-            my.search_type = search_type
+            self.search_type_obj = SearchType.get(search_type)
+            self.search_type = search_type
         elif isinstance(search_type, SearchType):
-            my.search_type_obj = search_type
-            my.search_type = my.search_type_obj.get_base_key() 
+            self.search_type_obj = search_type
+            self.search_type = self.search_type_obj.get_base_key() 
         elif inspect.isclass(search_type) and issubclass(search_type, SObject):
-            my.search_type_obj = SearchType.get(search_type.SEARCH_TYPE)
-            my.search_type = my.search_type_obj.get_base_key()
+            self.search_type_obj = SearchType.get(search_type.SEARCH_TYPE)
+            self.search_type = self.search_type_obj.get_base_key()
         else:
             raise LayoutException('search_type must be a string or an sobject')
-        my.config = config
-        my.config_base = config_base
-        my.input_prefix = input_prefix
-        my.element_names = []
-        my.element_titles = []
+        self.config = config
+        self.config_base = config_base
+        self.input_prefix = input_prefix
+        self.element_names = []
+        self.element_titles = []
 
         # Layout widgets compartmentalize their widgets in sections for drawing
-        my.sections = {}
+        self.sections = {}
 
-        super(BaseConfigWdg,my).__init__() 
+        super(BaseConfigWdg,self).__init__() 
 
     def get_default_display_handler(cls, element_name):
         raise Exception("Must override 'get_default_display_handler()'")
     get_default_display_handler = classmethod(get_default_display_handler)
 
 
-    def get_config_base(my):
-        return my.config_base
+    def get_config_base(self):
+        return self.config_base
 
-    def get_view(my):
-        return my.config_base
+    def get_view(self):
+        return self.config_base
         
 
-    def init(my):
+    def init(self):
 
         # create all of the display elements
-        if not my.config:
-            my.config = WidgetConfigView.get_by_search_type(my.search_type_obj,my.config_base)
-        my.element_names = my.config.get_element_names()
-        my.element_titles = my.config.get_element_titles()  
+        if not self.config:
+            self.config = WidgetConfigView.get_by_search_type(self.search_type_obj,self.config_base)
+        self.element_names = self.config.get_element_names()
+        self.element_titles = self.config.get_element_titles()  
 
         # TODO: should probably be all the attrs
-        my.element_widths = my.config.get_element_widths()  
+        self.element_widths = self.config.get_element_widths()  
 
-        invisible_elements = ProdSetting.get_seq_by_key("invisible_elements", my.search_type_obj.get_base_search_type() )
+        invisible_elements = ProdSetting.get_seq_by_key("invisible_elements", self.search_type_obj.get_base_search_type() )
 
         simple_view = FilterCheckboxWdg('show_simple_view')
         
@@ -116,11 +116,11 @@ class BaseConfigWdg(HtmlElement):
         # account for on or on||on
         simple_view_checked = 'on' in value
         
-        is_edit = my.config_base in ['edit','insert','insert_multi','insert_template','edit_template'] or my.input_prefix == 'edit'
+        is_edit = self.config_base in ['edit','insert','insert_multi','insert_template','edit_template'] or self.input_prefix == 'edit'
 
 
         # go through each element name and construct the handlers
-        for idx, element_name in enumerate(my.element_names):
+        for idx, element_name in enumerate(self.element_names):
 
             # check to see if these are removed for this production
             if element_name in invisible_elements:
@@ -130,14 +130,14 @@ class BaseConfigWdg(HtmlElement):
 
 
             # build based on display widget
-            display_handler = my.config.get_display_handler(element_name)
+            display_handler = self.config.get_display_handler(element_name)
             if not display_handler:
                 # else get it from default of this type
-                display_handler = my.get_default_display_handler(element_name)
+                display_handler = self.get_default_display_handler(element_name)
 
             #try:
             if not display_handler:
-                element = my.config.get_display_widget(element_name)
+                element = self.config.get_display_widget(element_name)
             else:
                 element = WidgetConfig.create_widget( display_handler )
             #except ImportError, e:
@@ -164,50 +164,50 @@ class BaseConfigWdg(HtmlElement):
 
 
             element.set_name(element_name)
-            title = my.element_titles[idx]
+            title = self.element_titles[idx]
 
             element.set_title(title)
 
             # TODO: should convert this to ATTRS or someting like that.  Not
             # just width
-            element.width = my.element_widths[idx]
+            element.width = self.element_widths[idx]
 
-            if my.input_prefix:
-                element.set_input_prefix(my.input_prefix)
+            if self.input_prefix:
+                element.set_input_prefix(self.input_prefix)
 
 
             # get the display options
-            display_options = my.config.get_display_options(element_name)
+            display_options = self.config.get_display_options(element_name)
             for key in display_options.keys():
                 element.set_option(key, display_options.get(key))
 
-            my.add_widget(element,element_name)
+            self.add_widget(element,element_name)
 
             # layout widgets also categorize their widgets based on type
             if element_name == "Filter":
                 section_name = 'filter'
             else:
                 section_name = 'default'
-            section = my.sections.get(section_name)
+            section = self.sections.get(section_name)
             if not section:
                 section = []
-                my.sections[section_name] = section
+                self.sections[section_name] = section
             section.append(element)
 
 
         # initialize all of the child widgets
-        super(BaseConfigWdg,my).init()
+        super(BaseConfigWdg,self).init()
 
 
 
-    def rename_widget(my,name, new_name):
-        widget = my.get_widget(name)
+    def rename_widget(self,name, new_name):
+        widget = self.get_widget(name)
         widget.set_name(new_name)
 
-    def remove_widget(my,name):
-        widget = my.get_widget(name)
+    def remove_widget(self,name):
+        widget = self.get_widget(name)
         try:
-            my.widgets.remove(widget)
+            self.widgets.remove(widget)
         except:
             print("WARNING: cannot remove widget")
 
@@ -218,7 +218,7 @@ class BaseConfigWdg(HtmlElement):
 class TableWdg(BaseConfigWdg, AjaxWdg):
 
     ROW_PREFIX = 'table_row_'
-    def __init__(my, search_type, config_base="table", css='table', header_css=None, config=None, is_dynamic=False):
+    def __init__(self, search_type, config_base="table", css='table', header_css=None, config=None, is_dynamic=False):
         if not config_base:
             config_base = "table"
 
@@ -226,101 +226,101 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         web = WebContainer.get_web()
         web.set_form_value("search_type", search_type)
 
-        my.table = Table()
-        my.table.is_dynamic(is_dynamic)
-        my.widget_id = None
-        my.table_id = None
-        my.table.set_class(css)
-        my.set_id(search_type)
-        my.header_flag = True
-        my.show_property = True
-        my.header_css = header_css
-        my.aux_data = []
-        my.row_ids = {}
+        self.table = Table()
+        self.table.is_dynamic(is_dynamic)
+        self.widget_id = None
+        self.table_id = None
+        self.table.set_class(css)
+        self.set_id(search_type)
+        self.header_flag = True
+        self.show_property = True
+        self.header_css = header_css
+        self.aux_data = []
+        self.row_ids = {}
 
-        my.content_height = 0
-        my.content_width = ''
-        my.no_results_wdg = HtmlElement.h2("Search produced no results")
-        my.retired_filter = RetiredFilterWdg()
+        self.content_height = 0
+        self.content_width = ''
+        self.no_results_wdg = HtmlElement.h2("Search produced no results")
+        self.retired_filter = RetiredFilterWdg()
         limit_label = '%s_showing' %search_type
         limit_count = '%s_limit'%search_type
-        my.search_limit_filter = SearchLimitWdg(name=limit_count, label=limit_label, limit=20)
-        my.search_limit_filter_bottom = SearchLimitWdg(name=limit_count, label=limit_label, limit=20)
-        my.search_limit_filter_bottom.set_style( SearchLimitWdg.SIMPLE )
+        self.search_limit_filter = SearchLimitWdg(name=limit_count, label=limit_label, limit=20)
+        self.search_limit_filter_bottom = SearchLimitWdg(name=limit_count, label=limit_label, limit=20)
+        self.search_limit_filter_bottom.set_style( SearchLimitWdg.SIMPLE )
    
         # This must be executed after the defaults to ensure that base
         # classes and ajax refreshes can override the above default settings
-        super(TableWdg,my).__init__(search_type, config_base, config=config)
+        super(TableWdg,self).__init__(search_type, config_base, config=config)
 
-        my.order_by_wdg = HiddenWdg(my.get_order_by_id())
-        my.order_by_wdg.set_persistence()
+        self.order_by_wdg = HiddenWdg(self.get_order_by_id())
+        self.order_by_wdg.set_persistence()
 
-        my.refresh_mode = None
+        self.refresh_mode = None
 
         # the sql statement that created this table
-        my.sql_statement = None
+        self.sql_statement = None
 
 
-    def set_id(my, id):
-        my.table_id = id
-        my.table.set_id(id)
+    def set_id(self, id):
+        self.table_id = id
+        self.table.set_id(id)
 
-    def get_order_by_id(my):
-        return "order_by_%s" % my.search_type.replace("/","_")
+    def get_order_by_id(self):
+        return "order_by_%s" % self.search_type.replace("/","_")
 
 
-    def set_no_results_wdg(my, wdg):
-        my.no_results_wdg = wdg
+    def set_no_results_wdg(self, wdg):
+        self.no_results_wdg = wdg
 
-    def set_refresh_mode(my, refresh_mode):
+    def set_refresh_mode(self, refresh_mode):
         assert refresh_mode in ['table', 'page']
-        my.refresh_mode = refresh_mode
+        self.refresh_mode = refresh_mode
 
-    def set_sql_statement(my, statement):
-        my.sql_statement = statement
+    def set_sql_statement(self, statement):
+        self.sql_statement = statement
 
 
-    def set_search_limit(my, limit):
+    def set_search_limit(self, limit):
         ''' minimum 20 as defined in SearchLimitWdg'''
-        my.search_limit_filter.set_limit(limit)
-        my.search_limit_filter_bottom.set_limit(limit)
+        self.search_limit_filter.set_limit(limit)
+        self.search_limit_filter_bottom.set_limit(limit)
 
-    def set_aux_data(my, new_list):
+    def set_aux_data(self, new_list):
         ''' this should be a list of dict corresponding to each sobject 
             in the TableWdg as auxilliary data'''
 
-        if my.aux_data:
-            for idx, item in enumerate(my.aux_data):
+        if self.aux_data:
+            for idx, item in enumerate(self.aux_data):
                 new_dict = new_list[idx]
                 for new_key, new_value in new_dict.items():
                     item[new_key] = new_value
         else:
-            my.aux_data = new_list
+            self.aux_data = new_list
        
 
     # DEPRECATED: use set_show_header
-    def set_header_flag(my,flag):
-        my.header_flag = flag
+    def set_header_flag(self,flag):
+        self.header_flag = flag
 
-    def set_show_header(my,flag):
-        my.header_flag = flag
+    def set_show_header(self,flag):
+        self.header_flag = flag
 
-    def set_show_property(my, flag):
-        my.show_property = flag
+    def set_show_property(self, flag):
+        self.show_property = flag
 
 
-    def check_security(my):
+    def check_security(self):
         widgets_to_remove = []
-        for widget in my.widgets:
+        for widget in self.widgets:
             try:
                 # set the table first
-                widget.set_parent_wdg(my)
+                widget.set_parent_wdg(self)
                 widget.check_security()
             except SecurityException:
                 widgets_to_remove.append(widget)
 
         for widget in widgets_to_remove:
-            my.widgets.remove(widget)
+            self.widgets.remove(widget)
 
 
     def get_default_display_handler(cls, element_name):
@@ -328,76 +328,76 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         return "tactic.ui.common.SimpleTableElementWdg"
     get_default_display_handler = classmethod(get_default_display_handler)
 
-    def set_content_width(my, width):
-        my.content_width = width
+    def set_content_width(self, width):
+        self.content_width = width
 
-    def set_content_height(my, height):
-        my.content_height = height
+    def set_content_height(self, height):
+        self.content_height = height
 
-    def alter_search(my, search):
-        if my.retired_filter.get_value() == 'true':
+    def alter_search(self, search):
+        if self.retired_filter.get_value() == 'true':
             search.set_show_retired(True)
 
-        order_by = my.order_by_wdg.get_value()
+        order_by = self.order_by_wdg.get_value()
         if order_by:
             success = search.add_order_by(order_by)
             if not success:
-                my.order_by_wdg.set_value('default')
+                self.order_by_wdg.set_value('default')
 
 
         # filters
-        filters = my.sections.get("filter")
+        filters = self.sections.get("filter")
         if filters:
             for filter in filters:
                 filter.alter_search(search)
 
         
         # IMPORTANT: search limit must come last
-        my.search_limit_filter.alter_search(search)   
-        my.search_limit_filter_bottom.alter_search(search)   
+        self.search_limit_filter.alter_search(search)   
+        self.search_limit_filter_bottom.alter_search(search)   
 
-    def do_search(my):
+    def do_search(self):
         '''Perform any searches that were created in the init function.
         Returns a list of SObjects'''
         # if no search is defined in this class, then skip this
         # it does not inherit its parent's search until its parent
         # has obtained its search_objects
-        if my.search != None:
-            my.alter_search( my.search )
-            my.sobjects = my.search.get_sobjects()
+        if self.search != None:
+            self.alter_search( self.search )
+            self.sobjects = self.search.get_sobjects()
 
 
         # set the sobjects from this search
-        if my.search != None:
-            my.set_sobjects( my.sobjects, my.search )
+        if self.search != None:
+            self.set_sobjects( self.sobjects, self.search )
 
 
-    def init_cgi(my):
+    def init_cgi(self):
         web = WebContainer.get_web()
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search_ids = web.get_form_value("search_ids")
         statement = web.get_form_value("statement")
         show_property = web.get_form_value("show_property")
         if show_property:
             if show_property == "True":
-                my.show_property = True
+                self.show_property = True
             else:
-                my.show_property = False
+                self.show_property = False
 
         if statement:
             sobjects = search.get_sobjects(statement=statement)
-            my.set_sobjects( sobjects )
+            self.set_sobjects( sobjects )
 
 
-    def get_hide_column_wdg(my):
+    def get_hide_column_wdg(self):
         return Widget()
 
-        if not my.table_id:
-            table_id = "table_%s" % my.widget_id
+        if not self.table_id:
+            table_id = "table_%s" % self.widget_id
         else:
-            table_id = my.table_id
+            table_id = self.table_id
 
-        table = my.table
+        table = self.table
         table.set_id(table_id)
         div = DivWdg()
 
@@ -406,7 +406,7 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         popup.add_style("position: absolute")
         popup.set_id("popup_%s" % table_id)
         table = Table()
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
             table.add_row()
             checkbox = CheckboxWdg("%s_column_%s" % (table_id,i) )
             checkbox.set_checked()
@@ -423,64 +423,64 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         return div
 
 
-    def add_table_refresher(my, div):
+    def add_table_refresher(self, div):
         web = WebContainer.get_web()
 
         ajax = AjaxLoader()
-        if ajax.is_refresh() and my.is_top:
+        if ajax.is_refresh() and self.is_top:
             # reuse the id
-            my.widget_id = ajax.get_refresh_id()
+            self.widget_id = ajax.get_refresh_id()
         else:
             # generate a new one
-            unique = my.generate_unique_id('table', is_random=True)
-            my.widget_id = "%s|%s" % (unique, my.search_type)
+            unique = self.generate_unique_id('table', is_random=True)
+            self.widget_id = "%s|%s" % (unique, self.search_type)
 
         div.add_style("display: block")
-        div.set_id(my.widget_id)
-        ajax.set_display_id(my.widget_id)
-        args = [my.search_type, my.config_base]
+        div.set_id(self.widget_id)
+        ajax.set_display_id(self.widget_id)
+        args = [self.search_type, self.config_base]
 
         # try to reproduce the sql statement the produced the current contents
-        if my.search:
+        if self.search:
             # use the search, if available ... best source
-            ajax.set_option("statement", my.search.get_statement() )
-        elif my.sql_statement:
-            ajax.set_option("statement", my.sql_statement )
+            ajax.set_option("statement", self.search.get_statement() )
+        elif self.sql_statement:
+            ajax.set_option("statement", self.sql_statement )
         else:
             # if not, then refresh the whole page, because we can't reproduce
             # the sql statements
-            my.refresh_mode = "page"
+            self.refresh_mode = "page"
 
 
-        ajax.set_option("show_property", my.show_property )
+        ajax.set_option("show_property", self.show_property )
         ajax.set_load_class("pyasm.widget.TableWdg", args)
-        if not (ajax.is_refresh() and my.is_top):
+        if not (ajax.is_refresh() and self.is_top):
             event_container = WebContainer.get_event_container()
             # if refresh mode is "table", then this table updates on every data
             # update
-            if my.refresh_mode == "table":
+            if self.refresh_mode == "table":
                 event_name = event_container.DATA_INSERT
                 event_container.add_listener(event_name, ajax.get_refresh_script(show_progress=False) )
-            elif my.refresh_mode == "page":
+            elif self.refresh_mode == "page":
                 event_name = event_container.DATA_INSERT
                 event_container.add_refresh_listener(event_name)
             else:
-                event_name = "refresh|%s" % my.search_type_obj.get_base_key()
+                event_name = "refresh|%s" % self.search_type_obj.get_base_key()
                 event_container.add_listener(event_name, ajax.get_refresh_script(show_progress=False) )
        
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
-        table = my.table
+        table = self.table
 
         # create the main div
         div = DivWdg()
 
         # create the filter div
-        filters = my.sections.get("filter")
+        filters = self.sections.get("filter")
         if filters:
             filter_div = DivWdg(css="filter_box")
             div.add(filter_div)
@@ -494,16 +494,16 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
                 filter_div.add(span)
 
                 # HACK: remove the filter widgets
-                my.widgets.remove(filter)
+                self.widgets.remove(filter)
 
 
 
         # make it so that the TableWdg is reloadble
-        my.add_table_refresher(div)
+        self.add_table_refresher(div)
         
 
-        if my.content_width:
-            table.set_attr('width', my.content_width)
+        if self.content_width:
+            table.set_attr('width', self.content_width)
         else:
             # set a separate width for IE, which can't draw tables properly
             table.set_max_width()
@@ -513,16 +513,16 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         # go through each widget and detect if they are hidden or not
         #hidden = web.get_form_values("hidden_table_rows")
         #widgets_to_remove = []
-        #for widget in my.widgets:
+        #for widget in self.widgets:
         #    if widget.name in hidden:
         #        widgets_to_remove.append(widget)
         #for widget in widgets_to_remove:
-        #    my.widgets.remove(widget)
+        #    self.widgets.remove(widget)
 
         # add columns
-        for widget in my.widgets:
+        for widget in self.widgets:
             # set the table
-            widget.set_parent_wdg(my)
+            widget.set_parent_wdg(self)
 
             col = table.add_col()
             width = widget.get_option("width")
@@ -531,13 +531,13 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
 
         # allow widgets preprocess to preprocess information for all of the
         # rows
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.preprocess()
 
         # get the prefs before the header but display afterwards
         pref_widgets = []
 
-        for widget in my.widgets:
+        for widget in self.widgets:
             pref_widgets.append( widget.get_prefs() )
            
  
@@ -545,18 +545,18 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         app_css = ''
         if WebContainer.get_web().get_app_name() != 'Browser':
             app_css = 'smaller'
-        app_css = '%s %s' %(app_css, my.header_css)
+        app_css = '%s %s' %(app_css, self.header_css)
 
         # if the header is being shown
-        if my.header_flag:
+        if self.header_flag:
             tr = table.add_row(css=app_css)
             # this prevents button in this row shifting all the elements 
             # when clicked
             tr.add_style('height','2.8em')
-            order_value = my.order_by_wdg.get_value(for_display=True)
+            order_value = self.order_by_wdg.get_value(for_display=True)
 
 
-            for widget in my.widgets:
+            for widget in self.widgets:
                 title = widget.get_title()
                 th_css = ''
                 if widget.name == order_value:
@@ -566,7 +566,7 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
 
             # add a row for UI controls
             #tr = table.add_row(css=app_css)
-            #for widget in my.widgets:
+            #for widget in self.widgets:
             #    #controls = widget.get_control_wdg()
             #    controls = widget.get_title()
             #    controls = '&nbsp;'
@@ -574,7 +574,7 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
 
 
         # add hidden prefs row        
-        prefs_row_id = my.generate_unique_id('hidden_row_prefs')
+        prefs_row_id = self.generate_unique_id('hidden_row_prefs')
         action = "toggle_display('%s')" % prefs_row_id
         tr = table.add_row(css='hand prefs_row')
         tr.add_style('line-height: 1px')
@@ -598,34 +598,34 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
             table.add_cell( pref_widget )
             
         # add the rows for each sobject
-        for i in range(0, len(my.sobjects)):
+        for i in range(0, len(self.sobjects)):
             # AuxDataWdg allows a NoneType in the array
-            if my.sobjects[i] == None:
+            if self.sobjects[i] == None:
                 continue
 
-            my._add_prev_row(table, i)
+            self._add_prev_row(table, i)
 
             # add a tbody with an event container
             tbody = table.add_tbody()
 
             ajax = AjaxLoader()
-            unique = my.generate_unique_id('tbody', is_random=True)
-            search_key = my.sobjects[i].get_search_key()
+            unique = self.generate_unique_id('tbody', is_random=True)
+            search_key = self.sobjects[i].get_search_key()
             tbody_id = "%s|%s" % (unique,search_key)
             
             # used for some TableElementWdg
-            my.row_ids[search_key] = tbody_id
+            self.row_ids[search_key] = tbody_id
             tbody.set_id(tbody_id)
             ajax.set_display_id(tbody_id)
-            args = [my.search_type, my.config_base]
+            args = [self.search_type, self.config_base]
             ajax.set_load_class("pyasm.widget.layout_wdg.TbodyWdg", args)
-            ajax.set_option("sthpw_edit", my.sobjects[i].get_search_key() )
+            ajax.set_option("sthpw_edit", self.sobjects[i].get_search_key() )
             if not ajax.is_refresh():
                 event_container = WebContainer.get_event_container()
-                event_name = "refresh|%s" % my.sobjects[i].get_search_key()
+                event_name = "refresh|%s" % self.sobjects[i].get_search_key()
                 event_container.add_listener(event_name, ajax.get_refresh_script(show_progress=False) )
             #event_container = WebContainer.get_event_container()
-            #event_name = "refresh|%s" % my.sobjects[i].get_search_key()
+            #event_name = "refresh|%s" % self.sobjects[i].get_search_key()
             #event_container.add_listener(event_name, ajax.get_refresh_script(show_progress=False) )
 
             # -- Reverted to previous row highlight code ... removed use of new UI behavior mechanism ...
@@ -641,30 +641,30 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
             '''
             tr = HtmlElement.tr()
             tr = table.add_row(tr=tr)
-            #tr_id = "tr|%s" % my.sobjects[i].get_search_key()
-            tr_id = "%s%s" % (my.ROW_PREFIX, my.sobjects[i].get_search_key())
+            #tr_id = "tr|%s" % self.sobjects[i].get_search_key()
+            tr_id = "%s%s" % (self.ROW_PREFIX, self.sobjects[i].get_search_key())
             tr.set_id(tr_id)
             ajax = AjaxLoader()
             ajax.set_display_id(tr_id)
-            args = [my.search_type, my.config_base]
+            args = [self.search_type, self.config_base]
             ajax.set_load_class("pyasm.widget.TrWdg", args)
-            ajax.set_option("sthpw_edit", my.sobjects[i].get_search_key() )
+            ajax.set_option("sthpw_edit", self.sobjects[i].get_search_key() )
             if not ajax.is_refresh():
                 event_container = WebContainer.get_event_container()
-                event_name = "refresh|%s" % my.sobjects[i].get_search_key()
+                event_name = "refresh|%s" % self.sobjects[i].get_search_key()
                 event_container.add_listener(event_name, ajax.get_refresh_script(show_progress=False) )
             ''' 
 
             tr.add_style("border-top: 0px")
             #tr.add_class("table")
-            if my.sobjects[i].is_retired():
+            if self.sobjects[i].is_retired():
                  tr.add_class("retired_row")
             tr.add_style("display", "table-row")
-            row_id = "%s%s" % (my.ROW_PREFIX, my.sobjects[i].get_search_key())
+            row_id = "%s%s" % (self.ROW_PREFIX, self.sobjects[i].get_search_key())
             tr.set_id(row_id)
 
             hidden_row_wdgs = []
-            for widget in my.widgets:
+            for widget in self.widgets:
                  
                 # custom handle security exceptions
                 if widget.__class__.__name__ == "HiddenRowToggleWdg":
@@ -703,33 +703,33 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
             table.add_hidden_row(hidden_row_wdgs) 
                            
         # display something if no records are found
-        if len(my.sobjects) == 0:
-            num_cols = len(my.widgets)
+        if len(self.sobjects) == 0:
+            num_cols = len(self.widgets)
 
             table.add_row()
 
-            td = table.add_cell(my.no_results_wdg)
+            td = table.add_cell(self.no_results_wdg)
             td.set_style("text-align: center")
             td.set_attr("colspan", num_cols)
 
         else:
             table.add_row()
-            for widget in my.widgets:
+            for widget in self.widgets:
                 bottom_html = widget.get_bottom()
                 td = table.add_cell(bottom_html)
                 # the hidden widget can be used to store data or support the widget
                 div.add(widget.get_hidden())
 
         # add the property div only if show_property is True
-        if my.show_property:
+        if self.show_property:
             property_div = DivWdg(css='right smaller')
-            property_div.add(SpanWdg('count: %s' %len(my.sobjects), css='small'))
+            property_div.add(SpanWdg('count: %s' %len(self.sobjects), css='small'))
 
             # add a hidden widget for purposes of storing ordering information
-            property_div.add(my.order_by_wdg)
+            property_div.add(self.order_by_wdg)
             order_span = SpanWdg('order: ')
-            if my.search:
-                order_span.add_tip('%s' %','.join(my.search.get_order_bys()))
+            if self.search:
+                order_span.add_tip('%s' %','.join(self.search.get_order_bys()))
             if order_value:
                 order_span.add(order_value)
             else:
@@ -746,22 +746,22 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
             property_div.add(export)
 
             # add the hide column widget
-            property_div.add(my.get_hide_column_wdg())
+            property_div.add(self.get_hide_column_wdg())
 
 
             # add csv export
-            filename = "%s_%s.csv" % (my.search_type.replace("/","_"), my.config_base)
+            filename = "%s_%s.csv" % (self.search_type.replace("/","_"), self.config_base)
             url = WebContainer.get_web().get_widget_url()
             url.set_option("dynamic_file", "true")
             url.set_option("widget", "pyasm.widget.CsvDownloadWdg")
-            url.set_option("search_type", my.search_type)
-            url.set_option("view", my.config_base)
+            url.set_option("search_type", self.search_type)
+            url.set_option("view", self.config_base)
             url.set_option("filename", filename)
 
             # remember all of the sobject keys
             # TODO: need to make this a post request so that we can store
             # any number of search_ids
-            search_ids = [str(x.get_id()) for x in my.sobjects ]
+            search_ids = [str(x.get_id()) for x in self.sobjects ]
             url.set_option("search_ids", "|".join(search_ids) )
 
             export.add_event("onclick", "document.location='%s'" % url.to_string() )
@@ -773,11 +773,11 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
             url = WebContainer.get_web().get_widget_url()
             url.set_option("dynamic_file", "true")
             url.set_option("widget", "pyasm.widget.PicLensRssWdg")
-            url.set_option("search_type", my.search_type)
+            url.set_option("search_type", self.search_type)
             # remember all of the sobject keys
             # TODO: need to make this a post request so that we can store
             # any number of search_ids
-            search_ids = [str(x.get_id()) for x in my.sobjects ]
+            search_ids = [str(x.get_id()) for x in self.sobjects ]
             url.set_option("search_ids", "|".join(search_ids) )
 
             #export.add_event("onclick", "PicLensLite.start()")
@@ -795,27 +795,27 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
 
 
             div.add(property_div)
-            if my.search: 
-                property_div.add(my.retired_filter)
-                property_div.add(my.search_limit_filter)
+            if self.search: 
+                property_div.add(self.retired_filter)
+                property_div.add(self.search_limit_filter)
 
 
         div.add(table)
-        my.add_table_inputs(div)
+        self.add_table_inputs(div)
 
-        if my.search:
+        if self.search:
             bottom_div = DivWdg()
             bottom_div.set_style("text-align: right")
-            bottom_div.add(my.search_limit_filter_bottom)
+            bottom_div.add(self.search_limit_filter_bottom)
             div.add(bottom_div)
 
         # set content height
-        if my.content_height:
-            div.add_style("height: %spx" % my.content_height)
+        if self.content_height:
+            div.add_style("height: %spx" % self.content_height)
             div.add_style("overflow: auto")
         return div
 
-    def add_table_inputs(my, widget):      
+    def add_table_inputs(self, widget):      
         ''' add some inputs used by DynamicTableElementWdg'''
         hidden = HiddenWdg('skey_DynamicTableElementWdg')
         widget.add(hidden)
@@ -824,12 +824,12 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
         hidden = HiddenWdg('update_DynamicTableElementWdg')
         widget.add(hidden)
 
-    def _add_prev_row(my, table, idx):
+    def _add_prev_row(self, table, idx):
         prev_sobj = None
         if idx > 0:
-            prev_sobj = my.sobjects[idx-1]
+            prev_sobj = self.sobjects[idx-1]
            
-        for widget in my.widgets:
+        for widget in self.widgets:
             # set the index here instead
             widget.set_current_index(idx)
             widget.add_prev_row(table, prev_sobj)   
@@ -837,20 +837,20 @@ class TableWdg(BaseConfigWdg, AjaxWdg):
 
 class TableElementHideCmd(Command):
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         invisible = web.get_form_value("invisible")
         if not invisible:
             return
 
-        ProdSetting.add_value_by_key("invisible_elements", invisible, my.search_type)
+        ProdSetting.add_value_by_key("invisible_elements", invisible, self.search_type)
 
-        title = SearchType.get(my.search_type).get_title()
+        title = SearchType.get(self.search_type).get_title()
 
-        my.description = "Hid column %s for %s" % (invisible, title)
+        self.description = "Hid column %s for %s" % (invisible, title)
 
 
       
@@ -858,60 +858,60 @@ class TableElementHideCmd(Command):
 class TbodyWdg(TableWdg, AjaxWdg):
     '''A widget that represents a section of a TableWdg used to replace a tbody in a table'''
    
-    def __init__(my, search_type, config_base="tbody", css=None, header_css=None):
+    def __init__(self, search_type, config_base="tbody", css=None, header_css=None):
         if not config_base:
             config_base = "table"
-        my.search_ids = None 
+        self.search_ids = None 
 
-        TableWdg.__init__(my, search_type, config_base)
-        AjaxWdg.__init__(my)
+        TableWdg.__init__(self, search_type, config_base)
+        AjaxWdg.__init__(self)
 
-    def init_cgi(my):
-        edit_ids = my.web.get_form_values('sthpw_edit')
+    def init_cgi(self):
+        edit_ids = self.web.get_form_values('sthpw_edit')
 
         # these may contain search_keys
-        my.search_ids = []
+        self.search_ids = []
         for edit_id in edit_ids:
             if edit_id.count("|") == 1:
                 search_type, edit_id = edit_id.split("|",1)
-            my.search_ids.append(edit_id)
+            self.search_ids.append(edit_id)
             
-    def get_display(my):
-        if not my.search_ids or my.search_ids == ['']:
+    def get_display(self):
+        if not self.search_ids or self.search_ids == ['']:
             return ''
 
         tbody = Tbody()
     
-        for widget in my.widgets:
+        for widget in self.widgets:
             # set the parent wdg
-            widget.set_parent_wdg(my)
+            widget.set_parent_wdg(self)
 
-        if not my.sobjects:
-            my.sobjects = Search.get_by_id(my.search_type, my.search_ids)
+        if not self.sobjects:
+            self.sobjects = Search.get_by_id(self.search_type, self.search_ids)
         
-        for widget in my.widgets:
-            widget.set_sobjects(my.sobjects)
+        for widget in self.widgets:
+            widget.set_sobjects(self.sobjects)
 
         # allow widgets preprocess to preprocess information for all of the
         # rows
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.preprocess()
  
         # add the rows for each sobject
-        for i in range(0, len(my.sobjects)):
+        for i in range(0, len(self.sobjects)):
             # AuxDataWdg allows a NoneType in the array
-            if my.sobjects[i] == None:
+            if self.sobjects[i] == None:
                 continue
-            #my._add_prev_row(tbody, i)
+            #self._add_prev_row(tbody, i)
             
             tr = tbody.add_row()
             tr.add_style("border-top: 0px")
             tr.add_style("display", "table-row")
             
-            tr.set_id("%s%s" % (my.ROW_PREFIX, my.sobjects[i].get_search_key()) )
+            tr.set_id("%s%s" % (self.ROW_PREFIX, self.sobjects[i].get_search_key()) )
 
             hidden_row_wdgs = []
-            for widget in my.widgets:
+            for widget in self.widgets:
                 widget.set_current_index(i)
                 # custom handle security exceptions
                 if widget.__class__.__name__ == "HiddenRowToggleWdg":
@@ -940,8 +940,8 @@ class TbodyWdg(TableWdg, AjaxWdg):
             tbody.add_hidden_row(hidden_row_wdgs) 
                            
         # display something if no records are found
-        if len(my.sobjects) == 0:
-            num_cols = len(my.widgets)
+        if len(self.sobjects) == 0:
+            num_cols = len(self.widgets)
 
             tbody.add_row()
 
@@ -956,8 +956,8 @@ class TbodyWdg(TableWdg, AjaxWdg):
 
 class TrWdg(TbodyWdg):
     '''A widget that represents a row of a TableWdg used to replace a tr in a table'''
-    def get_display(my):
-        if not my.search_ids or my.search_ids == ['']:
+    def get_display(self):
+        if not self.search_ids or self.search_ids == ['']:
             return ''
 
         # set the index to 0
@@ -971,21 +971,21 @@ class TrWdg(TbodyWdg):
             tr.add_style("display", "table-row")
             
 
-            if my.sobjects:
-                tr.set_id("%s%s" % (my.ROW_PREFIX, my.sobjects[i].get_search_key()) )
-        for widget in my.widgets:
+            if self.sobjects:
+                tr.set_id("%s%s" % (self.ROW_PREFIX, self.sobjects[i].get_search_key()) )
+        for widget in self.widgets:
             # set the parent wdg
-            widget.set_parent_wdg(my)
+            widget.set_parent_wdg(self)
 
-        if not my.sobjects:
-            my.sobjects = Search.get_by_id(my.search_type, my.search_ids)
+        if not self.sobjects:
+            self.sobjects = Search.get_by_id(self.search_type, self.search_ids)
         
-        for widget in my.widgets:
-            widget.set_sobjects(my.sobjects)
+        for widget in self.widgets:
+            widget.set_sobjects(self.sobjects)
 
         # allow widgets preprocess to preprocess information for all of the
         # rows
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.preprocess()
  
 
@@ -994,7 +994,7 @@ class TrWdg(TbodyWdg):
        
         
         hidden_row_wdgs = []
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.set_current_index(i)
             try:
                 # have to bake the widget in a new buffer
@@ -1021,8 +1021,8 @@ class TrWdg(TbodyWdg):
         
                            
         # display something if no records are found
-        if len(my.sobjects) == 0:
-            num_cols = len(my.widgets)
+        if len(self.sobjects) == 0:
+            num_cols = len(self.widgets)
 
             td = HtmlElement.td()
             td.add("Search produced no results")
@@ -1036,55 +1036,55 @@ class TrWdg(TbodyWdg):
 
 
 class LayoutWdg(DivWdg):
-    def __init__(my, search_type):
-        super(LayoutWdg,my).__init__()
-        my.layout_cells = {}
+    def __init__(self, search_type):
+        super(LayoutWdg,self).__init__()
+        self.layout_cells = {}
 
 
-    def get_display(my):
+    def get_display(self):
 
         table = Table()
 
-        my.set_layout(table)
+        self.set_layout(table)
 
-        for cell_name, cell in my.layout_cells.items():
-            my.set_content(cell_name, cell)
+        for cell_name, cell in self.layout_cells.items():
+            self.set_content(cell_name, cell)
 
-        my.add(table)
+        self.add(table)
 
-        return super(LayoutWdg,my).get_display()
+        return super(LayoutWdg,self).get_display()
 
     
-    def set_cell( my, td, title ):
-        my.layout_cells[title] = td
+    def set_cell( self, td, title ):
+        self.layout_cells[title] = td
 
             
-    def set_layout(my, table):
+    def set_layout(self, table):
         table.add_row()
         td = table.add_cell()
-        my.set_cell(td, 'header')
+        self.set_cell(td, 'header')
 
         table.add_row()
         td = table.add_cell()
         td.add_style("width: 150px")
         td.set_attr("valign", "top")
-        my.set_cell(td, 'left')
+        self.set_cell(td, 'left')
 
         td = table.add_cell()
         td.add_style("padding", "5px")
-        my.set_cell(td, 'right')
+        self.set_cell(td, 'right')
 
 
 
-    def set_content(my,cell_name,cell):
+    def set_content(self,cell_name,cell):
         function = "get_cell_%s" % cell_name
         try:
             # test existance of functions
-            wdg = eval( "my.%s" % function )
+            wdg = eval( "self.%s" % function )
         except AttributeError:
             wdg = function
         else:
-            wdg = eval( "my.%s()" % function )
+            wdg = eval( "self.%s()" % function )
 
         cell.add( wdg )
 
@@ -1095,10 +1095,10 @@ class LayoutWdg(DivWdg):
 
 
 class SObjectLayoutWdg(BaseConfigWdg):
-    def __init__(my, search_type):
-        super(SObjectLayoutWdg,my).__init__(search_type,"layout")
+    def __init__(self, search_type):
+        super(SObjectLayoutWdg,self).__init__(search_type,"layout")
 
-        my.layout_cells = {}
+        self.layout_cells = {}
 
 
     def get_default_display_handler(cls, element_name):
@@ -1106,60 +1106,60 @@ class SObjectLayoutWdg(BaseConfigWdg):
     get_default_display_handler = classmethod(get_default_display_handler)
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = HtmlElement.div()
 
         index = 0
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
 
             table = Table()
             table.add_style("border-style: solid")
             table.add_style("border-width: 1px")
             table.add_style("margin-bottom: 15px")
 
-            my.set_layout(table)
+            self.set_layout(table)
 
-            for cell_name, cell in my.layout_cells.items():
-                my.set_content(sobject, cell_name, cell)
+            for cell_name, cell in self.layout_cells.items():
+                self.set_content(sobject, cell_name, cell)
 
             div.add(table)
 
             index += 1
 
-        my.add(div)
+        self.add(div)
 
-        return super(SObjectLayoutWdg,my).get_display()
+        return super(SObjectLayoutWdg,self).get_display()
 
 
             
-    def set_layout(my, table):
+    def set_layout(self, table):
         table.add_row()
         td = table.add_cell()
         td.set_attr("colspan", "2")
         td.add_style("background-color", "#f0f0f0")
-        my.layout_cells['title'] = td
+        self.layout_cells['title'] = td
 
         table.add_row()
         td = table.add_cell()
-        my.layout_cells['icon'] = td
+        self.layout_cells['icon'] = td
 
         td = table.add_cell()
         td.set_attr("valign", "top")
         td.add_style("width", "400px")
-        my.layout_cells['discussion'] = td
+        self.layout_cells['discussion'] = td
 
 
 
-    def set_content(my,sobject,cell_name,cell):
+    def set_content(self,sobject,cell_name,cell):
         function = "get_cell_%s" % cell_name
         try:
             # test existance of functions
-            wdg = eval( "my.%s" % function )
+            wdg = eval( "self.%s" % function )
         except AttributeError:
             wdg = function
         else:
-            wdg = eval( "my.%s(sobject)" % function )
+            wdg = eval( "self.%s(sobject)" % function )
 
         cell.add( wdg )
 
@@ -1171,14 +1171,14 @@ class EditWdg(BaseConfigWdg):
 
     CLOSE_WDG = "close_wdg"
 
-    def __init__(my, search_type,base_config="edit", input_prefix='edit',config=None, default_action_handler=None):
-        my.current_id = -1
+    def __init__(self, search_type,base_config="edit", input_prefix='edit',config=None, default_action_handler=None):
+        self.current_id = -1
         if not default_action_handler:
-            my.default_action_handler = "pyasm.command.EditCmd"
+            self.default_action_handler = "pyasm.command.EditCmd"
         else:   
-            my.default_action_handler = default_action_handler
+            self.default_action_handler = default_action_handler
 
-        super(EditWdg,my).__init__(search_type,base_config, input_prefix=input_prefix,config=config)
+        super(EditWdg,self).__init__(search_type,base_config, input_prefix=input_prefix,config=config)
 
     def get_default_display_handler(cls, element_name):
         # FIXME: should use type from database
@@ -1200,49 +1200,49 @@ class EditWdg(BaseConfigWdg):
     get_default_display_handler = classmethod(get_default_display_handler)
 
 
-    def set_default_action_handler(my, handler):
-        my.default_action_handler = handler
+    def set_default_action_handler(self, handler):
+        self.default_action_handler = handler
 
 
-    def get_default_action_handler(my):
+    def get_default_action_handler(self):
         web = WebContainer.get_web()
         action = web.get_form_value("action")
         if action:
             return action
         else:
-            return my.default_action_handler
+            return self.default_action_handler
 
 
-    def init(my):
-        super(EditWdg,my).init()
+    def init(self):
+        super(EditWdg,self).init()
         web = WebContainer.get_web()
 
         # if we have edit/close and it's error-free, then do nothing
-        #if my.is_error_free(web):
+        #if self.is_error_free(web):
         #    return
 
         id = web.get_form_value("search_id")
         if id == "" or id == "-1":
-            my.mode = "insert"
+            self.mode = "insert"
         else:
-            my.mode = "edit"
+            self.mode = "edit"
 
         # this can be set to True to force a full page refresh instead of an
         # event refresh
-        my.refresh_mode = web.get_form_value("refresh_mode")
+        self.refresh_mode = web.get_form_value("refresh_mode")
 
        
         # get the edit command
-        edit_action_handler = my.get_default_action_handler()
+        edit_action_handler = self.get_default_action_handler()
         WebContainer.register_cmd(edit_action_handler)
 
         # for Edit/Next ... remember last sobject edited
-        my.last_sobject = None
+        self.last_sobject = None
 
 
 
 
-    def do_search(my):
+    def do_search(self):
         '''this widget has its own search mechanism'''
 
         web = WebContainer.get_web()
@@ -1253,10 +1253,10 @@ class EditWdg(BaseConfigWdg):
         # if no id is given, then create a new one for insert
         search = None
         sobject = None
-        search_type_base = SearchType.get(my.search_type).get_base_key()
-        if my.mode == "insert":
-            sobject = SObjectFactory.create(my.search_type)
-            my.current_id = -1
+        search_type_base = SearchType.get(self.search_type).get_base_key()
+        if self.mode == "insert":
+            sobject = SObjectFactory.create(self.search_type)
+            self.current_id = -1
             # prefilling default values if available
             url_dict = web.get_form_value("url_dict")
             if url_dict:
@@ -1265,53 +1265,53 @@ class EditWdg(BaseConfigWdg):
                     key, value = x.split(':', 1)
                     sobject.set_value(key, value)
         else:
-            search = Search(my.search_type)
+            search = Search(self.search_type)
 
             # figure out which id to search for
             if web.get_form_value("do_edit") == "Edit/Next":
                 search_ids = web.get_form_value("%s_search_ids" %search_type_base)
                 if search_ids == "":
-                    my.current_id = id
+                    self.current_id = id
                 else:
                     search_ids = search_ids.split("|")
                     next = search_ids.index(str(id)) + 1
                     if next == len(search_ids):
                         next = 0
-                    my.current_id = search_ids[next]
+                    self.current_id = search_ids[next]
 
-                    last_search = Search(my.search_type)
+                    last_search = Search(self.search_type)
                     last_search.add_id_filter( id )
-                    my.last_sobject = last_search.get_sobject()
+                    self.last_sobject = last_search.get_sobject()
 
             else:
-                my.current_id = id
+                self.current_id = id
 
-            search.add_id_filter( my.current_id )
+            search.add_id_filter( self.current_id )
             sobject = search.get_sobject()
 
         if not sobject:
             raise EditException("No SObject found")
 
         # set all of the widgets to contain this sobject
-        my.set_sobjects( [sobject], search )
+        self.set_sobjects( [sobject], search )
        
 
-    def is_error_free(my, web):
+    def is_error_free(self, web):
         ''' if it is instructed to close and is error-free , return True'''
-        if web.get_form_value(my.CLOSE_WDG) and\
+        if web.get_form_value(self.CLOSE_WDG) and\
             not Container.get("cmd_report").get_errors():
             return True
 
         return False
 
-    def add_header(my, table, title):
-        th = table.add_header( my.mode.capitalize() + " - " + title )
+    def add_header(self, table, title):
+        th = table.add_header( self.mode.capitalize() + " - " + title )
         th.set_attr("colspan", "2")
         
-    def add_hidden_inputs(my, div):
+    def add_hidden_inputs(self, div):
         pass
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         event_container = WebContainer.get_event_container()
@@ -1323,27 +1323,27 @@ class EditWdg(BaseConfigWdg):
         div = HtmlElement.div()
 
         # remember the action
-        edit_action_handler = my.get_default_action_handler()
+        edit_action_handler = self.get_default_action_handler()
         div.add( HiddenWdg("action",edit_action_handler) )
 
-        my.iframe = WebContainer.get_iframe(layout)
-        if web.get_form_value("do_edit") == "Edit/Next" and my.last_sobject:
-            search_key = my.last_sobject.get_search_key()
+        self.iframe = WebContainer.get_iframe(layout)
+        if web.get_form_value("do_edit") == "Edit/Next" and self.last_sobject:
+            search_key = self.last_sobject.get_search_key()
             refresh_script = "window.parent.%s" % event_container.get_event_caller("refresh|%s" % search_key )
             div.add(HtmlElement.script(refresh_script))
 
 
-        elif my.is_error_free(web):
+        elif self.is_error_free(web):
             
             # multi-edit always refreshes table
             selected_keys = web.get_form_value(EditCheckboxWdg.CB_NAME)
-            if my.refresh_mode == "page" or web.is_IE():
+            if self.refresh_mode == "page" or web.is_IE():
                 refresh_script = "window.parent.%s" % event_container.get_refresh_caller()
-            elif selected_keys or my.mode == "insert":
-                refresh_script = "window.parent.%s" % event_container.get_event_caller("refresh|%s" % my.search_type )
+            elif selected_keys or self.mode == "insert":
+                refresh_script = "window.parent.%s" % event_container.get_event_caller("refresh|%s" % self.search_type )
                 refresh_script = "%s;window.parent.%s" % (refresh_script, event_container.get_data_insert_caller())
-            elif my.mode == "edit":
-                search_key = my.sobjects[0].get_search_key()
+            elif self.mode == "edit":
+                search_key = self.sobjects[0].get_search_key()
                 refresh_script = "window.parent.%s" % event_container.get_event_caller("refresh|%s" % search_key )
                 #print(refresh_script)
             else:
@@ -1351,7 +1351,7 @@ class EditWdg(BaseConfigWdg):
 
             undo_script = "window.parent.%s" % event_container.get_event_caller("SiteMenuWdg_refresh")
 
-            off_script = "window.parent.%s" % my.iframe.get_off_script()
+            off_script = "window.parent.%s" % self.iframe.get_off_script()
 
             script = HtmlElement.script('''
             %s
@@ -1361,24 +1361,24 @@ class EditWdg(BaseConfigWdg):
             return script
         
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         title = search_type_obj.get_title()
 
-        div.add( HiddenWdg("search_type",my.search_type) )
-        div.add( HiddenWdg("search_id",my.current_id).get_display() )
-        div.add( HiddenWdg(my.CLOSE_WDG) )
-        my.add_hidden_inputs(div)        
+        div.add( HiddenWdg("search_type",self.search_type) )
+        div.add( HiddenWdg("search_id",self.current_id).get_display() )
+        div.add( HiddenWdg(self.CLOSE_WDG) )
+        self.add_hidden_inputs(div)        
 
         table = Table(css='edit')
         table.center()
         
         table.add_row()
-        my.add_header(table, title)
+        self.add_header(table, title)
         
         security = Environment.get_security()
 
         # go through each widget and draw it
-        for widget in my.widgets:
+        for widget in self.widgets:
             # check security on widget
             if not security.check_access( "sobject|column",\
                 widget.get_name(), "edit"):
@@ -1412,14 +1412,14 @@ class EditWdg(BaseConfigWdg):
                     table.add_data( HintWdg(hint) ) 
             edit_all = widget.get_option("edit_all")
             insert_multi = widget.get_option("insert_multi")
-            if my.mode == "edit" and edit_all == 'true':
+            if self.mode == "edit" and edit_all == 'true':
                 table.add_cell( EditAllWdg(widget), css="right_content" )
-            elif my.mode == "insert" and insert_multi == 'true':
+            elif self.mode == "insert" and insert_multi == 'true':
                 table.add_cell( InsertMultiWdg(widget), css="right_content" )
             else:
                 table.add_blank_cell()
 
-        table.add_row_cell( my.get_action_html() )
+        table.add_row_cell( self.get_action_html() )
 
         div.add( table )
         # add the warning menu for the iframe
@@ -1431,12 +1431,12 @@ class EditWdg(BaseConfigWdg):
 
 
 
-    def get_action_html(my):
+    def get_action_html(self):
         
-        edit = SubmitWdg("do_edit", "%s/Next" % my.mode.capitalize() )
-        edit_continue = SubmitWdg("do_edit", "%s/Close" % my.mode.capitalize() )
+        edit = SubmitWdg("do_edit", "%s/Next" % self.mode.capitalize() )
+        edit_continue = SubmitWdg("do_edit", "%s/Close" % self.mode.capitalize() )
         
-        edit_continue.add_event("onclick", "document.form.%s.value='true'" %my.CLOSE_WDG)
+        edit_continue.add_event("onclick", "document.form.%s.value='true'" %self.CLOSE_WDG)
         
         # call an edit event
         event = WebContainer.get_event("sthpw:submit")
@@ -1445,7 +1445,7 @@ class EditWdg(BaseConfigWdg):
 
         # create a cancel button to close the window
         cancel = ButtonWdg(_("Cancel"))
-        iframe_close_script = "window.parent.%s" % my.iframe.get_off_script() 
+        iframe_close_script = "window.parent.%s" % self.iframe.get_off_script() 
         cancel.add_event("onclick", iframe_close_script)
 
         div = DivWdg(css='centered')
@@ -1463,12 +1463,12 @@ class EditWdg(BaseConfigWdg):
 class InsertWdg(EditWdg):
     ''' Almost like the EditWdg, but with a different logic for hiding the 
         Insert/Close button'''
-    def get_action_html(my):
+    def get_action_html(self):
         
-        edit = SubmitWdg("do_edit", "%s/Next" % my.mode.capitalize() )
-        edit_continue = SubmitWdg("do_edit", "%s/Close" % my.mode.capitalize() )
+        edit = SubmitWdg("do_edit", "%s/Next" % self.mode.capitalize() )
+        edit_continue = SubmitWdg("do_edit", "%s/Close" % self.mode.capitalize() )
         
-        edit_continue.add_event("onclick", "document.form.%s.value='true'" %my.CLOSE_WDG)
+        edit_continue.add_event("onclick", "document.form.%s.value='true'" %self.CLOSE_WDG)
         
         # call an edit event
         event = WebContainer.get_event("sthpw:submit")
@@ -1477,7 +1477,7 @@ class InsertWdg(EditWdg):
 
         # create a cancel button to close the window
         cancel = ButtonWdg(_("Cancel"))
-        iframe_close_script = "window.parent.%s" % my.iframe.get_off_script() 
+        iframe_close_script = "window.parent.%s" % self.iframe.get_off_script() 
         cancel.add_event("onclick", iframe_close_script)
 
         div = DivWdg(css='centered')
@@ -1495,43 +1495,43 @@ class InsertWdg(EditWdg):
 
 class PublishWdg(EditWdg):
     ''' a dialog widget for manual publishing '''
-    def __init__(my, search_type, base_config="edit", input_prefix='edit',config=None, commit=False):
-        super(PublishWdg, my).__init__(search_type, base_config, input_prefix=input_prefix,config=config)
-        my.commit_flag = commit
+    def __init__(self, search_type, base_config="edit", input_prefix='edit',config=None, commit=False):
+        super(PublishWdg, self).__init__(search_type, base_config, input_prefix=input_prefix,config=config)
+        self.commit_flag = commit
 
     
 
 class IconLayoutWdg(BaseConfigWdg):
 
-    def __init__(my, search_type):
-        super(IconLayoutWdg,my).__init__(search_type,"asset")
-        my.category_col = None
-        my.shot_edit_flag = True
+    def __init__(self, search_type):
+        super(IconLayoutWdg,self).__init__(search_type,"asset")
+        self.category_col = None
+        self.shot_edit_flag = True
 
-    def set_category(my, category):
-        my.category_col = category
+    def set_category(self, category):
+        self.category_col = category
 
-    def set_show_edit(my, show_edit_flag):
-        my.show_edit_flag = show_edit_flag
-
-
-    def alter_search(my, search):
-        if my.category_col != None:
-            search.add_order_by(my.category_col)
+    def set_show_edit(self, show_edit_flag):
+        self.show_edit_flag = show_edit_flag
 
 
-    def get_display(my):
+    def alter_search(self, search):
+        if self.category_col != None:
+            search.add_order_by(self.category_col)
+
+
+    def get_display(self):
 
         # preprocess through all of the sobjects to find the categories
         # to be displayed
         #categories = []
-        #for sobject in my.sobjects:
-        #    category = sobject.get_value( my.category_col )
+        #for sobject in self.sobjects:
+        #    category = sobject.get_value( self.category_col )
         #    if category not in categories:
         #        categories.append(category)
 
         num_cols = 4
-        num_sobjects = len(my.sobjects)
+        num_sobjects = len(self.sobjects)
 
         web = WebContainer.get_web()
 
@@ -1545,27 +1545,27 @@ class IconLayoutWdg(BaseConfigWdg):
             table.add_style("width", "95%")
 
 
-        my.last_category = None
+        self.last_category = None
         col_count = 0
         for i in range(0, num_sobjects):
 
-            sobject = my.sobjects[i]
+            sobject = self.sobjects[i]
 
             # handle category
-            if my.category_col != None:
-                category = sobject.get_value( my.category_col )
+            if self.category_col != None:
+                category = sobject.get_value( self.category_col )
 
-                if my.last_category == None or category != my.last_category:
+                if self.last_category == None or category != self.last_category:
                     # fill in the rest
-                    if my.last_category != None:
+                    if self.last_category != None:
                         for i in range(col_count, num_cols):
                             td = table.add_cell("&nbsp;")
 
-                    my.add_category(table, category )
+                    self.add_category(table, category )
                     table.add_row()
 
                     col_count = 0
-                    my.last_category = category
+                    self.last_category = category
 
                 elif col_count == num_cols:
                     table.add_row()
@@ -1577,7 +1577,7 @@ class IconLayoutWdg(BaseConfigWdg):
 
 
             td = table.add_cell()
-            td.add( my.get_sobject_wdg(sobject) )
+            td.add( self.get_sobject_wdg(sobject) )
 
             col_count += 1
 
@@ -1586,7 +1586,7 @@ class IconLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_sobject_wdg(my, sobject):
+    def get_sobject_wdg(self, sobject):
 
         table = Table()
         td = table.add_cell()
@@ -1605,7 +1605,7 @@ class IconLayoutWdg(BaseConfigWdg):
         detail.set_sobject(sobject)
         td.add(detail)
 
-        if my.show_edit_flag:
+        if self.show_edit_flag:
             update = UpdateWdg("update")
             update.set_sobject(sobject)
             td.add(update)
@@ -1614,7 +1614,7 @@ class IconLayoutWdg(BaseConfigWdg):
 
 
 
-    def add_category(my, table, category):
+    def add_category(self, table, category):
 
         if category == "":
             category = "No category"
@@ -1628,8 +1628,8 @@ class IconLayoutWdg(BaseConfigWdg):
         div.add_style("padding-bottom", "3px")
 
 
-        if my.show_edit_flag:
-            insert = InsertLinkWdg(my.search_type)
+        if self.show_edit_flag:
+            insert = InsertLinkWdg(self.search_type)
             insert.add_style("float", "right")
             div.add(insert)
 
@@ -1646,44 +1646,44 @@ class EditAllWdg(Widget):
     ELEMENT_NAME = "edit_all_element"
     EDIT_ALL = "edit_all"
         
-    def __init__(my, widget):
-        my.edit_element = widget
-        super(EditAllWdg, my).__init__()
+    def __init__(self, widget):
+        self.edit_element = widget
+        super(EditAllWdg, self).__init__()
         
-    def class_init(my):
-        my.add(HiddenWdg(my.ELEMENT_NAME))
-        my.add(HiddenWdg(my.EDIT_ALL))
+    def class_init(self):
+        self.add(HiddenWdg(self.ELEMENT_NAME))
+        self.add(HiddenWdg(self.EDIT_ALL))
         WebContainer.register_cmd('pyasm.command.EditAllCmd')
         
-    def init(my):
+    def init(self):
        
-        icon = IconSubmitWdg(my.EDIT_ALL, icon=IconWdg.EDIT_ALL, add_hidden=False)
+        icon = IconSubmitWdg(self.EDIT_ALL, icon=IconWdg.EDIT_ALL, add_hidden=False)
         icon.add_event("onclick", "document.form.elements['%s'].value='%s';"\
-            % (my.ELEMENT_NAME, my.edit_element.name))
+            % (self.ELEMENT_NAME, self.edit_element.name))
         icon.add_event("onclick", "document.form.%s.value='true'" %EditWdg.CLOSE_WDG)
         icon.add_class('hand')
 
-        my.add(icon)
+        self.add(icon)
 
 class InsertMultiWdg(Widget):
 
     ELEMENT_NAME = "insert_multi_element"
     INSERT_MULTI = "insert_multi"
         
-    def __init__(my, widget):
-        my.edit_element = widget
-        super(InsertMultiWdg, my).__init__()
+    def __init__(self, widget):
+        self.edit_element = widget
+        super(InsertMultiWdg, self).__init__()
         
-    def class_init(my):
-        my.add(HiddenWdg(my.ELEMENT_NAME))
-        my.add(HiddenWdg(my.INSERT_MULTI))
+    def class_init(self):
+        self.add(HiddenWdg(self.ELEMENT_NAME))
+        self.add(HiddenWdg(self.INSERT_MULTI))
         WebContainer.register_cmd('pyasm.command.InsertMultiCmd')
         
-    def init(my):
-        icon = IconSubmitWdg(my.INSERT_MULTI, icon=IconWdg.INSERT_MULTI, add_hidden=False)
+    def init(self):
+        icon = IconSubmitWdg(self.INSERT_MULTI, icon=IconWdg.INSERT_MULTI, add_hidden=False)
         icon.add_event("onclick", "document.form.elements['%s'].value='%s';"\
-            % (my.ELEMENT_NAME, my.edit_element.name))
+            % (self.ELEMENT_NAME, self.edit_element.name))
         icon.add_event("onclick", "document.form.%s.value='true'" %EditWdg.CLOSE_WDG)
         icon.add_class('hand')
 
-        my.add(icon)
+        self.add(icon)

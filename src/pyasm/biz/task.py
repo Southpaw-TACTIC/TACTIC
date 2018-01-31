@@ -318,14 +318,14 @@ class Task(SObject):
 
 
 
-    def get_defaults(my):
+    def get_defaults(self):
         '''specifies the defaults for this sobject'''
         pipeline_code =''
-        task_process = my.get_value("process")
+        task_process = self.get_value("process")
         parent = None
         if task_process:
             # TODO: this is slow.  Need presearch all of the parents
-            parent = my.get_parent()
+            parent = self.get_parent()
             if parent:
                 parent_pipeline_code = parent.get_value('pipeline_code', no_exception=True)
                 pipeline = Pipeline.get_by_code(parent_pipeline_code)
@@ -347,7 +347,7 @@ class Task(SObject):
 
         # in case it's a subpipeline
         context = task_process
-        context = my._add_context_suffix(context, task_process, parent)
+        context = self._add_context_suffix(context, task_process, parent)
 
         # then use the project as a parent
         project = Project.get()
@@ -373,12 +373,12 @@ class Task(SObject):
 
     # Not sure why we need to have this restriction.  This restriction
     # could be put on a specific UI, but not at the lowest level.
-    #def validate(my):
+    #def validate(self):
     #    for column in ['search_type', 'context']:
-    #        if not my.get_value(column):
+    #        if not self.get_value(column):
     #            raise SObjectValueException('%s cannot be empty for task.'%column)
 
-    def _add_context_suffix(my,context,task_process,parent):
+    def _add_context_suffix(self,context,task_process,parent):
 
         if '/' in task_process:
             context = task_process.split('/')[1]
@@ -415,9 +415,9 @@ class Task(SObject):
         return context
 
 
-    def get_pipeline(my):
+    def get_pipeline(self):
         # for now assume the "task" pipeline if none found
-        pipe_code = my.get_value("pipeline_code")
+        pipe_code = self.get_value("pipeline_code")
         if not pipe_code:
             pipe_code = "task"
 
@@ -429,9 +429,9 @@ class Task(SObject):
 
         return pipeline
 
-    def get_completion(my):
-        pipeline = my.get_pipeline()
-        status = my.get_value("status")
+    def get_completion(self):
+        pipeline = self.get_pipeline()
+        status = self.get_value("status")
         if not status:
             return 0
         process = pipeline.get_process(status)
@@ -446,34 +446,34 @@ class Task(SObject):
 
 
 
-    def get_name(my, long=False):
-        return "%s (%s)" % (my.get_value("process"), my.get_id())
+    def get_name(self, long=False):
+        return "%s (%s)" % (self.get_value("process"), self.get_id())
    
 
-    def get_assigned(my):
-        return my.get_value('assigned')
+    def get_assigned(self):
+        return self.get_value('assigned')
 
-    def get_supervisor(my):
-        return my.get_value('supervisor')
+    def get_supervisor(self):
+        return self.get_value('supervisor')
 
-    def get_process(my):
-        return my.get_value('process')
+    def get_process(self):
+        return self.get_value('process')
 
 
-    def build_update_description(my, is_insert):
+    def build_update_description(self, is_insert):
         if is_insert:
             action = "Inserted task "
         else:
             action = "Updated task "
 
-        process = my.get_value("process")
-        description = my.get_value("description")
+        process = self.get_value("process")
+        description = self.get_value("description")
 
-        if my.get_value("s_status") == "__TEMPLATE__":
+        if self.get_value("s_status") == "__TEMPLATE__":
             msg = "Created template task: %s, %s" % (process, description)
         else:
             try:
-                parent = my.get_parent()
+                parent = self.get_parent()
             except Exception, e:
                 print "WARNING: ", e
                 parent = Project.get()
@@ -485,9 +485,9 @@ class Task(SObject):
         return msg
 
 
-    def get_dependent_tasks(my):
+    def get_dependent_tasks(self):
         search = Search(Task)
-        search.add_filter("depend_id", my.get_id() )
+        search.add_filter("depend_id", self.get_id() )
         tasks = search.get_sobjects()
         return tasks
 
@@ -496,16 +496,16 @@ class Task(SObject):
 
 
 
-    def update_dependent_tasks(my, top=True):
+    def update_dependent_tasks(self, top=True):
         '''for purposes of dependent tasks'''
         if top:
             Task.tasks_updated = set()
-            Task.tasks_updated.add(my.get_id())
+            Task.tasks_updated.add(self.get_id())
 
         # get the dependent tasks
-        tasks = my.get_dependent_tasks()
+        tasks = self.get_dependent_tasks()
 
-        pipeline = my.get_pipeline()
+        pipeline = self.get_pipeline()
 
 
         use_time = False
@@ -513,7 +513,7 @@ class Task(SObject):
 
 
         # set the start date to the next day of the previous task
-        prev_task = my
+        prev_task = self
         prev_task_start_date = prev_task.get_datetime_value("bid_start_date")
         prev_task_end_date = prev_task.get_datetime_value("bid_end_date")
 
@@ -531,7 +531,7 @@ class Task(SObject):
                 Environment.add_warning("Circular dependency", "Circular dependency with task '%s'" % task.get_id() )
                 continue
 
-            Task.tasks_updated.add(my.get_id())
+            Task.tasks_updated.add(self.get_id())
 
             # get the current length of this task
             task_start_date = task.get_datetime_value("bid_start_date")
@@ -574,7 +574,7 @@ class Task(SObject):
 
         # if there is no end date specified, return
         if not bid_end_date:
-            bid_duration = my.get_value("bid_duration")
+            bid_duration = self.get_value("bid_duration")
             if bid_duration and bid_start_date:
                 date = Date(db=bid_start_date)
                 bid_duration = float(bid_duration)
@@ -590,10 +590,10 @@ class Task(SObject):
 
 
 
-    def get_input_tasks(my):
+    def get_input_tasks(self):
 
-        process = my.get_value("process")
-        parent = my.get_parent()
+        process = self.get_value("process")
+        parent = self.get_parent()
 
         # get the pipeline
         pipeline_code = parent.get_value("pipeline_code", no_exception=True)
@@ -620,10 +620,10 @@ class Task(SObject):
         return tasks
 
 
-    def get_output_tasks(my, type=None):
+    def get_output_tasks(self, type=None):
 
-        process = my.get_value("process")
-        parent = my.get_parent()
+        process = self.get_value("process")
+        parent = self.get_parent()
 
         # get the pipeline
         pipeline_code = parent.get_value("pipeline_code", no_exception=True)
@@ -1283,8 +1283,8 @@ class Task(SObject):
 class TaskAutoSchedule(object):
     '''Class to handle various auto schedule methods'''
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
     def get_diff_seconds(start_date, end_date):
 
@@ -1336,7 +1336,7 @@ class TaskAutoSchedule(object):
     round_second = staticmethod(round_second)
 
 
-    def set_from_end_date_schedule(my, tasks, end_date):
+    def set_from_end_date_schedule(self, tasks, end_date):
         # make a copy
         reverse_tasks = tasks[:]
         reverse_tasks.reverse()
@@ -1361,7 +1361,7 @@ class TaskAutoSchedule(object):
 
 
 
-    def set_even_schedule(my, tasks, start_date, end_date):
+    def set_even_schedule(self, tasks, start_date, end_date):
         '''sets an even schedule for all tasks using all 24 hours.  This is a
         simple implementation that ignores the workday and is most suited
         for jobs that usually take less than a day to complete.
@@ -1369,7 +1369,7 @@ class TaskAutoSchedule(object):
 
         num_tasks = len(tasks)
 
-        diff = my.get_diff_seconds(start_date, end_date)
+        diff = self.get_diff_seconds(start_date, end_date)
         interval = diff / float(num_tasks)
 
 
@@ -1380,8 +1380,8 @@ class TaskAutoSchedule(object):
 
             #print tmp_start_date, tmp_end_date
             #print round_second(tmp_start_date), round_second(tmp_end_date)
-            start = my.round_second(tmp_start_date)
-            end = my.round_second(tmp_end_date)
+            start = self.round_second(tmp_start_date)
+            end = self.round_second(tmp_end_date)
 
             task.set_value("bid_start_date", start)
             task.set_value("bid_end_date", end)
@@ -1391,14 +1391,14 @@ class TaskAutoSchedule(object):
 
 
 
-    def set_even_day_schedule(my, tasks, start_date, end_date, workday=8):
+    def set_even_day_schedule(self, tasks, start_date, end_date, workday=8):
         '''sets an even day schedule which ignores time.  Each task is
         given an equal number of days.  They are allowed to overlap
         a single day'''
 
         tmp_start_date = start_date
 
-        diff = my.get_diff_days(start_date, end_date)
+        diff = self.get_diff_days(start_date, end_date)
         interval = diff / float(len(tasks))
 
         for task in tasks:
@@ -1415,12 +1415,12 @@ class TaskAutoSchedule(object):
 
 
 
-    def execute(my):
+    def execute(self):
 
-        search_key = my.kwargs.get("search_key")
-        sobject = my.kwargs.get("sobject")
-        tasks = my.kwargs.get("tasks")
-        mode = my.kwargs.get("mode")
+        search_key = self.kwargs.get("search_key")
+        sobject = self.kwargs.get("sobject")
+        tasks = self.kwargs.get("tasks")
+        mode = self.kwargs.get("mode")
         if not mode:
             return
 
@@ -1444,11 +1444,11 @@ class TaskAutoSchedule(object):
         end_date = sobject.get_datetime_value("due_date")
 
         if mode == "even":
-            my.set_even_schedule(tasks, start_date, end_date)
+            self.set_even_schedule(tasks, start_date, end_date)
         elif mode == "even_day":
-            my.set_even_day_schedule(tasks, start_date, end_date, workday=8)
+            self.set_even_day_schedule(tasks, start_date, end_date, workday=8)
         elif mode == "from_end_date":
-            my.set_from_end_date_schedule(tasks, end_date)
+            self.set_from_end_date_schedule(tasks, end_date)
 
 
 
@@ -1458,35 +1458,35 @@ class TaskAutoSchedule(object):
 class TaskGenerator(object):
     '''Class to handle various auto schedule methods'''
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.process_tasks = {}
-        my.tasks = []
+        self.process_tasks = {}
+        self.tasks = []
 
  
 
-    def execute(my, sobject, pipeline, parent_process=None, start_date=None, end_date=None):
+    def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None):
 
-        my.sobject = sobject
+        self.sobject = sobject
 
-        my.pipeline = pipeline
-        my.process_sobjects = pipeline.get_process_sobjects()
+        self.pipeline = pipeline
+        self.process_sobjects = pipeline.get_process_sobjects()
 
-        my.first_start_date = start_date
-        my.start_date = start_date
-        my.end_date = end_date
-        my.parent_process = parent_process
+        self.first_start_date = start_date
+        self.start_date = start_date
+        self.end_date = end_date
+        self.parent_process = parent_process
 
 
 
         # remember which ones already exist
         existing_tasks = Task.get_by_sobject(sobject, order=False)
     
-        my.existing_task_set = set()
+        self.existing_task_set = set()
         for x in existing_tasks:
             key = '%s:%s' %(x.get_value('process'),x.get_value("context"))
-            my.existing_task_set.add(key)
+            self.existing_task_set.add(key)
 
 
 
@@ -1514,16 +1514,16 @@ class TaskGenerator(object):
 
 
 
-        my.handled_processes = set()
-        my._generate_tasks()
+        self.handled_processes = set()
+        self._generate_tasks()
 
-        return my.tasks
+        return self.tasks
 
 
 
-    def _get_context(my, process_name, context=None):
+    def _get_context(self, process_name, context=None):
         existed = False
-        if not my.existing_task_set:
+        if not self.existing_task_set:
             if context:
                 context = context
             else:
@@ -1532,7 +1532,7 @@ class TaskGenerator(object):
 
             compare_key = "%s:%s" %(process_name, context)
             max_num = 0
-            for item in my.existing_task_set:
+            for item in self.existing_task_set:
                 item_stripped = re.sub('/\d+$', '', item)
                 
                 #if item.startswith(compare_key):
@@ -1559,14 +1559,14 @@ class TaskGenerator(object):
 
 
 
-    def _generate_tasks(my):
+    def _generate_tasks(self):
 
-        process_names = my.pipeline.get_process_names()
+        process_names = self.pipeline.get_process_names()
 
         # find all of the processes that do not have inputs
         start_processes = []
         for process_name in process_names:
-            if not my.pipeline.get_input_processes(process_name):
+            if not self.pipeline.get_input_processes(process_name):
                 start_processes.append(process_name)
 
 
@@ -1574,21 +1574,21 @@ class TaskGenerator(object):
         for start_process in start_processes:
 
             # reset the start date for each start process
-            my.start_date = my.first_start_date
+            self.start_date = self.first_start_date
 
-            my.handle_process(start_process)
+            self.handle_process(start_process)
 
-            my._handle_downstream_tasks(start_process)
-
-
+            self._handle_downstream_tasks(start_process)
 
 
-    def _handle_downstream_tasks(my, process):
+
+
+    def _handle_downstream_tasks(self, process):
 
         # we have a new pipeline
-        pipeline = my.pipeline
-        handled_processes = my.handled_processes
-        process_sobjects = my.process_sobjects
+        pipeline = self.pipeline
+        handled_processes = self.handled_processes
+        process_sobjects = self.process_sobjects
 
 
         output_processes = pipeline.get_output_process_names(process)
@@ -1601,7 +1601,7 @@ class TaskGenerator(object):
                 # find out if all the input processes have been handled
                 inputs_handled = True
                 for input_process in input_processes:
-                    if input_process not in my.handled_processes:
+                    if input_process not in self.handled_processes:
                         inputs_handled = False
                         break
 
@@ -1617,37 +1617,37 @@ class TaskGenerator(object):
 
             # remap the start date from the inputs and reset the end date
             if input_processes:
-                last_end_date = my.first_start_date
+                last_end_date = self.first_start_date
                 for input_process in input_processes:
-                    last_task = my.process_tasks.get(input_process)
+                    last_task = self.process_tasks.get(input_process)
                     if last_task and last_task.get_datetime_value("bid_end_date") > last_end_date:
                         last_end_date = last_task.get_datetime_value("bid_end_date")
-                my.start_date = last_end_date + timedelta(days=1)
+                self.start_date = last_end_date + timedelta(days=1)
             else:
-                my.start_date = my.first_start_date
+                self.start_date = self.first_start_date
 
-            my.end_date = None
+            self.end_date = None
 
 
 
             # create the tasks
-            my.handle_process(output_process)
+            self.handle_process(output_process)
 
 
             # add process ot the handled
             handled_processes.add(output_process)
 
             # go to all the downstream processes
-            my._handle_downstream_tasks(output_process)
+            self._handle_downstream_tasks(output_process)
 
 
 
-    def handle_process(my, process_name):
+    def handle_process(self, process_name):
 
         # we have a new pipeline
-        pipeline = my.pipeline
-        handled_processes = my.handled_processes
-        process_sobjects = my.process_sobjects
+        pipeline = self.pipeline
+        handled_processes = self.handled_processes
+        process_sobjects = self.process_sobjects
 
 
         process_sobject = process_sobjects.get(process_name)
@@ -1679,21 +1679,21 @@ class TaskGenerator(object):
 
                     if subpipeline:
                         generator = TaskGenerator()
-                        subtasks = generator.execute(my.sobject, subpipeline, start_date=my.start_date, parent_process=process_name)
+                        subtasks = generator.execute(self.sobject, subpipeline, start_date=self.start_date, parent_process=process_name)
 
 
-                        my.tasks.extend(subtasks)
+                        self.tasks.extend(subtasks)
 
 
 
                 # if we only have subtasks then store the last task from the subtasks
                 if task_creation == "subtasks_only":
                     if subtasks:
-                        #my.start_date = subtasks[-1].get_datetime_value("bid_end_date")
+                        #self.start_date = subtasks[-1].get_datetime_value("bid_end_date")
 
                         # store the last task 
                         last_task = subtasks[-1]
-                        my.process_tasks[process_name] = last_task
+                        self.process_tasks[process_name] = last_task
 
 
                     # don't create any further tasks
@@ -1732,8 +1732,8 @@ class TaskGenerator(object):
         skip_duplicate = True
 
 
-        pipeline = my.pipeline
-        process_sobjects = my.process_sobjects
+        pipeline = self.pipeline
+        process_sobjects = self.process_sobjects
 
         for i in range(0, num_activities):
 
@@ -1780,29 +1780,29 @@ class TaskGenerator(object):
 
 
             # check to see how many weekends there are between these two dates
-            if my.start_date.weekday() == 5:
-                my.start_date = my.start_date + timedelta(days=2)
-            if my.start_date.weekday() == 6:
-                my.start_date = my.start_date + timedelta(days=1)
+            if self.start_date.weekday() == 5:
+                self.start_date = self.start_date + timedelta(days=2)
+            if self.start_date.weekday() == 6:
+                self.start_date = self.start_date + timedelta(days=1)
 
 
             # determine the start and end date of the task
-            start_date = my.start_date
-            end_date = my.start_date + timedelta(days=0) # make a copy
+            start_date = self.start_date
+            end_date = self.start_date + timedelta(days=0) # make a copy
 
             skip_weekends = True
             if skip_weekends:
                 # add duration of days that aren't weekdays
-                end_date = SPTDate.add_business_days(my.start_date, duration)
+                end_date = SPTDate.add_business_days(self.start_date, duration)
             else:
                 # for a task to be x days long, we need duration x-1.
                 end_date += timedelta(days=(duration-1))
 
             # shift the end date outside of the weekend
             if end_date.weekday() == 5:
-                end_date = my.start_date + timedelta(days=2)
+                end_date = self.start_date + timedelta(days=2)
             if start_date.weekday() == 6:
-                end_date = my.start_date + timedelta(days=1)
+                end_date = self.start_date + timedelta(days=1)
 
             
 
@@ -1816,15 +1816,15 @@ class TaskGenerator(object):
 
             for context in output_contexts:
 
-                if my.parent_process:
-                    full_process_name = "%s/%s" % (my.parent_process, process_name)
+                if self.parent_process:
+                    full_process_name = "%s/%s" % (self.parent_process, process_name)
                 else:
                     full_process_name = process_name
 
                 # first check if it already exists when skip_duplicate is True
                 key1 = '%s:%s' %(full_process_name, context)
                 task_existed = False
-                for item in my.existing_task_set:
+                for item in self.existing_task_set:
                     if item.startswith(key1):
                         task_existed = True
                         break
@@ -1836,30 +1836,30 @@ class TaskGenerator(object):
 
                 if contexts and context not in contexts:
                     continue
-                context = my._get_context(process_name, context)
+                context = self._get_context(process_name, context)
 
-                new_task = Task.create(my.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
+                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )
-                my.existing_task_set.add(new_key)
+                self.existing_task_set.add(new_key)
 
-                my.tasks.append(new_task)
-                my.process_tasks[process_name] = new_task
+                self.tasks.append(new_task)
+                self.process_tasks[process_name] = new_task
 
 
                 # set a new end_date
-                my.end_date = end_date
+                self.end_date = end_date
 
 
             # set the start date to after the end_date
-            #my.start_date = my.end_date + timedelta(days=1)
+            #self.start_date = self.end_date + timedelta(days=1)
 
 
 
 
 
-    def test(my):
+    def test(self):
         start_date = parser.parse("2017-01-20")
         end_date = parser.parse("2017-02-27 12:00")
         tasks = [1,2,3,4,5,6,7]
@@ -1946,11 +1946,11 @@ class Timecard(SObject):
 
 class Milestone(SObject):
 
-    def get_defaults(my):
+    def get_defaults(self):
 
-        defaults = super(Milestone, my).get_defaults()
+        defaults = super(Milestone, self).get_defaults()
 
-        project_code = my.get_value("project_code")
+        project_code = self.get_value("project_code")
         if not project_code:
             project_code = Project.get_project_code()
             defaults['project_code'] = project_code

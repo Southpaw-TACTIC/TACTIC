@@ -43,19 +43,19 @@ class SimpleCheckinWdg(BaseRefreshWdg):
   
     }
 
-    def init(my):
-        my.checkin_action = my.kwargs.get('checkin_action') 
-        if not my.checkin_action:
-            my.checkin_action = 'browse_and_checkin'
-        my.checkout_action = my.kwargs.get('checkout_action') 
-        if not my.checkout_action:
-            my.checkout_action = 'latest'
-        my.process = '' 
-        my.context = ''
+    def init(self):
+        self.checkin_action = self.kwargs.get('checkin_action') 
+        if not self.checkin_action:
+            self.checkin_action = 'browse_and_checkin'
+        self.checkout_action = self.kwargs.get('checkout_action') 
+        if not self.checkout_action:
+            self.checkout_action = 'latest'
+        self.process = '' 
+        self.context = ''
 
-    def get_display(my):
+    def get_display(self):
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         msg = None
         base_search_type = SearchKey.extract_search_type(search_key)
         sobject = SearchKey.get_by_search_key(search_key)
@@ -63,10 +63,10 @@ class SimpleCheckinWdg(BaseRefreshWdg):
         process_div.add_style('padding-top: 10px')
 
         if base_search_type  in ['sthpw/task', 'sthpw/note']:
-            my.process = sobject.get_value('process')
-            my.context = sobject.get_value('context')
-            if not my.process:
-                my.process = ''
+            self.process = sobject.get_value('process')
+            self.context = sobject.get_value('context')
+            if not self.process:
+                self.process = ''
 
             parent = sobject.get_parent()
             if parent:
@@ -75,10 +75,10 @@ class SimpleCheckinWdg(BaseRefreshWdg):
                 msg = "Parent for [%s] not found"%search_key
             
         else:
-            my.process = my.kwargs.get('process')
+            self.process = self.kwargs.get('process')
 
         
-        top = my.top
+        top = self.top
         top.add_class('spt_simple_checkin')
         top.add_color("background", "background")
         top.add_styles("position: relative")
@@ -106,7 +106,7 @@ class SimpleCheckinWdg(BaseRefreshWdg):
         content.add(button_div)
         button = IconWdg(title="Check-In", icon=IconWdg.CHECK_IN_3D_LG)
 
-        title = Common.get_display_title(my.checkin_action)
+        title = Common.get_display_title(self.checkin_action)
         button.add_attr('title', title)
 
 
@@ -125,8 +125,8 @@ class SimpleCheckinWdg(BaseRefreshWdg):
         button_div.add("Check-in")
 
         # to be consistent with Check-in New File
-        if my.process:
-            checkin_process = my.process
+        if self.process:
+            checkin_process = self.process
         else:
             # Dont' specify, the user can choose later in check-in widget
             checkin_process = ''
@@ -134,7 +134,7 @@ class SimpleCheckinWdg(BaseRefreshWdg):
             'type': 'click_up',
             'search_key': search_key,
             'process': checkin_process,
-            'context': my.context,
+            'context': self.context,
             'cbjs_action': '''
             var class_name = 'tactic.ui.widget.CheckinWdg';
             var applet = spt.Applet.get();
@@ -215,16 +215,16 @@ class SimpleCheckinWdg(BaseRefreshWdg):
         # for loading as real_time snapshot query option is used. 
         search = Search("sthpw/snapshot")
         search.add_sobject_filter(sobject)
-        if my.process:
-            search.add_filter("process", my.process)
+        if self.process:
+            search.add_filter("process", self.process)
         search.add_filter("is_latest", True)
         snapshot = search.get_sobject()
 
-        if not my.process and snapshot:
-            my.process = snapshot.get_value('process')
+        if not self.process and snapshot:
+            self.process = snapshot.get_value('process')
             # for old process-less snapshots
-            if not my.process:
-                my.process = snapshot.get_value('context')
+            if not self.process:
+                self.process = snapshot.get_value('context')
 
         process_wdg = DivWdg(HtmlElement.b(checkin_process))
         if checkin_process:
@@ -238,24 +238,24 @@ class SimpleCheckinWdg(BaseRefreshWdg):
         snapshot_codes = []
    
         show_status = True
-        if my.checkout_action == 'latest':
-            cbjs_action = CheckinSandboxListWdg.get_checkout_cbjs_action(my.process, show_status)
+        if self.checkout_action == 'latest':
+            cbjs_action = CheckinSandboxListWdg.get_checkout_cbjs_action(self.process, show_status)
             bvr = {'snapshot_codes': snapshot_codes,
                     'real_time': True,
                     'file_types': ['main'],
                     'filename_mode': 'repo',
                     'cbjs_action': cbjs_action}
 
-        elif my.checkout_action == 'latest (version_omitted)':
-            cbjs_action = CheckinSandboxListWdg.get_checkout_cbjs_action(my.process, show_status)
+        elif self.checkout_action == 'latest (version_omitted)':
+            cbjs_action = CheckinSandboxListWdg.get_checkout_cbjs_action(self.process, show_status)
             bvr = {'snapshot_codes':snapshot_codes,
                     'real_time': True,
                     'file_types': ['main'],
                     'filename_mode': 'versionless',
                     'cbjs_action': cbjs_action}
 
-        elif my.checkout_action == 'latest versionless':
-            cbjs_action = CheckinSandboxListWdg.get_checkout_cbjs_action(my.process, show_status)
+        elif self.checkout_action == 'latest versionless':
+            cbjs_action = CheckinSandboxListWdg.get_checkout_cbjs_action(self.process, show_status)
             bvr = {'snapshot_codes':snapshot_codes,
                     'real_time': True,
                     'versionless': True,
@@ -263,7 +263,7 @@ class SimpleCheckinWdg(BaseRefreshWdg):
                     'filename_mode': 'versionless',
                     'cbjs_action': cbjs_action}
        
-        elif my.checkout_action == 'open file browser':
+        elif self.checkout_action == 'open file browser':
             bvr =  {
            
             'cbjs_action': '''
@@ -273,11 +273,11 @@ class SimpleCheckinWdg(BaseRefreshWdg):
                 process: '%s' 
             };
             spt.panel.load_popup("Check-out", class_name, kwargs);
-            '''%my.process
+            '''%self.process
             }
         bvr.update({ 'type': 'click_up', 'search_key': search_key})
         button.add_behavior(bvr)
-        title = Common.get_display_title(my.checkout_action)
+        title = Common.get_display_title(self.checkout_action)
         button.add_attr('title', title)
 
 

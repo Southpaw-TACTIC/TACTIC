@@ -27,55 +27,55 @@ from perforce import PerforceImpl
 
 class BaseCmd():
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        my.ret_val = {}
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.ret_val = {}
 
         # the the scm user and password
-        user = my.kwargs.get("user")
-        password = my.kwargs.get("password")
-        root = my.kwargs.get("root")
-        sync_dir = my.kwargs.get("sync_dir")
-        branch = my.kwargs.get("branch")
+        user = self.kwargs.get("user")
+        password = self.kwargs.get("password")
+        root = self.kwargs.get("root")
+        sync_dir = self.kwargs.get("sync_dir")
+        branch = self.kwargs.get("branch")
 
-        sync_path = my.kwargs.get("sync_path")
+        sync_path = self.kwargs.get("sync_path")
 
-        #my.scm = Subversion(user=user, password=password)
-        my.scm = PerforceImpl(**kwargs)
-        my.scm.set_root(root)
-        my.scm.set_branch(branch)
-        my.scm.set_sync_dir(sync_dir)
+        #self.scm = Subversion(user=user, password=password)
+        self.scm = PerforceImpl(**kwargs)
+        self.scm.set_root(root)
+        self.scm.set_branch(branch)
+        self.scm.set_sync_dir(sync_dir)
 
 
-    def get_log(my):
-        return my.scm.get_log()
+    def get_log(self):
+        return self.scm.get_log()
 
 
 class DelegateCmd(BaseCmd):
-    def execute(my):
-        method = my.kwargs.get("method")
-        args = my.kwargs.get("args")
+    def execute(self):
+        method = self.kwargs.get("method")
+        args = self.kwargs.get("args")
         if args:
-            ret_val = eval("my.scm.%s(*args)" % method)
+            ret_val = eval("self.scm.%s(*args)" % method)
         else:
-            ret_val = eval("my.scm.%s()" % method)
+            ret_val = eval("self.scm.%s()" % method)
 
         return {
            "value": ret_val,
            "error": None,
-           "log": my.scm.get_log()
+           "log": self.scm.get_log()
         }
 
 
 
 __all__.append('CmdWrapper')
 class CmdWrapper():
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
-    def execute(my):
-        return run( my.kwargs)
+    def execute(self):
+        return run( self.kwargs)
 
 
 

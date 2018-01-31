@@ -29,26 +29,26 @@ import time, datetime, types
 class Scheduler(object):
     '''Wrapper around kronos'''
 
-    def __init__(my):
-        my.scheduler = KronosScheduler()
-        my.tasks = {}
-        my.is_started = False
+    def __init__(self):
+        self.scheduler = KronosScheduler()
+        self.tasks = {}
+        self.is_started = False
 
 
-    def cancel_task(my, name, delay=0):
-        task = my.tasks.get(name)
+    def cancel_task(self, name, delay=0):
+        task = self.tasks.get(name)
         if not task:
             return
 
         class CancelTask(SchedulerTask):
-            def execute(my2):
+            def execute(self2):
                 print "Cancelling task [%s]" % name
-                my.scheduler.cancel(task)
-                del(my.tasks[name])
-        my.add_single_task( CancelTask(), delay=delay )
+                self.scheduler.cancel(task)
+                del(self.tasks[name])
+        self.add_single_task( CancelTask(), delay=delay )
 
 
-    def _process_task(my, task, mode):
+    def _process_task(self, task, mode):
         project = Project.get_project_code()
         if not task.kwargs.get("user"):
             user = Environment.get_user_name()
@@ -58,25 +58,25 @@ class Scheduler(object):
 
         task.kwargs['mode'] = mode
 
-    def add_single_task(my, task, delay=0, mode='threaded'):
+    def add_single_task(self, task, delay=0, mode='threaded'):
         action = task._do_execute
-        my._process_task(task, mode)
-        my.scheduler.add_single_task(
+        self._process_task(task, mode)
+        self.scheduler.add_single_task(
             action=action, taskname=task.get_name(),
             initialdelay=delay,
             processmethod=mode, args=None, kw=None )
 
-    def add_interval_task(my, task, interval, mode='threaded',delay=0):
+    def add_interval_task(self, task, interval, mode='threaded',delay=0):
         action = task._do_execute
-        my._process_task(task, mode)
-        scheduler_task = my.scheduler.add_interval_task(
+        self._process_task(task, mode)
+        scheduler_task = self.scheduler.add_interval_task(
             action=action, taskname=task.get_name(),
             initialdelay=delay, interval=interval,
             processmethod=mode, args=None, kw=None )
-        my.tasks[task.get_name()] = scheduler_task
+        self.tasks[task.get_name()] = scheduler_task
 
 
-    def add_daily_task(my, task, time, mode="threaded", weekdays=range(1,8)):
+    def add_daily_task(self, task, time, mode="threaded", weekdays=range(1,8)):
 
         if isinstance(time, basestring):
             hour, minute = time.split(":")
@@ -89,50 +89,50 @@ class Scheduler(object):
 
         weekdays = weekdays
         action = task._do_execute
-        my._process_task(task, mode)
+        self._process_task(task, mode)
 
-        my.scheduler.add_daytime_task(
+        self.scheduler.add_daytime_task(
             action=action, taskname=task.get_name(),
             weekdays=weekdays, monthdays=None, timeonday=timeonday,
             processmethod=mode, args=None, kw=None )
 
-    def add_weekly_task(my, task, weekday, time, mode='threaded'):
+    def add_weekly_task(self, task, weekday, time, mode='threaded'):
 
         weekdays = (weekday)
         timeonday = (time.hour, time.minute)
         action = task._do_execute
-        my._process_task(task, mode)
+        self._process_task(task, mode)
 
-        my.scheduler.add_daytime_task(
+        self.scheduler.add_daytime_task(
             action=action, taskname=task.get_name(),
             weekdays=weekdays, monthdays=None, timeonday=timeonday,
             processmethod=mode, args=None, kw=None )
 
 
-    def start(my):
-        my.scheduler.start()
+    def start(self):
+        self.scheduler.start()
 
 
 
-    def start_thread(my):
-        if my.is_started:
+    def start_thread(self):
+        if self.is_started:
             return
             
         import threading
-        my.thread = threading.Thread(None, my.start)
-        #my.thread.daemon = True
-        my.thread.setDaemon(True)
-        my.thread.start()
+        self.thread = threading.Thread(None, self.start)
+        #self.thread.daemon = True
+        self.thread.setDaemon(True)
+        self.thread.start()
 
-        my.is_started = True
-
-
-    def stop(my):
-        my.scheduler.stop()
+        self.is_started = True
 
 
+    def stop(self):
+        self.scheduler.stop()
 
-    def add_sobject(my, sobject):
+
+
+    def add_sobject(self, sobject):
 
         '''
         <task class="TestTask">
@@ -172,56 +172,56 @@ class Scheduler(object):
 
 class SchedulerTask(object):
     '''Base class for the scheduler'''
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        user = my.kwargs.get('user')
-        project = my.kwargs.get('project')
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        user = self.kwargs.get('user')
+        project = self.kwargs.get('project')
 
-        my.site = my.kwargs.get('site')
-        if not my.site:
+        self.site = self.kwargs.get('site')
+        if not self.site:
             # if not explicitly set, keep the site that is current
-            my.site = Site.get_site()
+            self.site = Site.get_site()
 
         if user and project:
             from pyasm.security import Batch
-            Batch(site=my.site, login_code=user, project_code=project)
+            Batch(site=self.site, login_code=user, project_code=project)
 
-        my.security = Environment.get_security()
+        self.security = Environment.get_security()
 
 
-    def get_name(my):
-        return my.kwargs.get("name")
+    def get_name(self):
+        return self.kwargs.get("name")
 
-    def _do_execute(my):
+    def _do_execute(self):
         # reestablish the site
-        if my.site:
+        if self.site:
             try:
-                Site.set_site(my.site)
+                Site.set_site(self.site)
             except:
                 return
         try:
-            Environment.set_security(my.security)
-            my.execute()
+            Environment.set_security(self.security)
+            self.execute()
         finally:
-            if my.site:
+            if self.site:
                 Site.pop_site()
 
-    def execute(my):
-        print my.kwargs
+    def execute(self):
+        print self.kwargs
 
-    def execute_test(my):
-        print my.kwargs
+    def execute_test(self):
+        print self.kwargs
 
 
 class TestTask(SchedulerTask):
-    def execute(my):
-        print "!!!! TestTask: ", my.get_name()
+    def execute(self):
+        print "!!!! TestTask: ", self.get_name()
         print "\ttime: ", datetime.datetime.now()
 
 
 
 class TestTask2(SchedulerTask):
-    def execute(my):
+    def execute(self):
         print "time: ", datetime.datetime.now()
         now = datetime.datetime.now()
         now, xx = str(now).split(".")
@@ -238,8 +238,8 @@ class TestTask2(SchedulerTask):
 
 
 class SystemTask(SchedulerTask):
-    def execute(my):
-        command = my.kwargs.get("command")
+    def execute(self):
+        command = self.kwargs.get("command")
         import os
         os.system(command)
 

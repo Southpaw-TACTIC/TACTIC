@@ -24,44 +24,44 @@ import time
 
 # custom cache class
 class TableInfoCache(BaseCache):
-    def __init__(my, **kwargs):
-        my.key = kwargs.get("key")
-        my.database = kwargs.get("database")
-        my.tables = kwargs.get("tables")
-        super(TableInfoCache, my).__init__(my.key)
+    def __init__(self, **kwargs):
+        self.key = kwargs.get("key")
+        self.database = kwargs.get("database")
+        self.tables = kwargs.get("tables")
+        super(TableInfoCache, self).__init__(self.key)
 
-    def init_cache(my):
+    def init_cache(self):
         from pyasm.search import DatabaseImpl, DbContainer
-        my.caches = {}
+        self.caches = {}
 
         data = {}
-        for table in my.tables:
-            column_data = DatabaseImpl.get().get_column_info(my.database, table)
+        for table in self.tables:
+            column_data = DatabaseImpl.get().get_column_info(self.database, table)
             data[table] = column_data
-        my.caches['data'] = data
+        self.caches['data'] = data
 
         # get the order columns
         columns = {}
-        sql = DbContainer.get(my.database)
-        for table in my.tables:
+        sql = DbContainer.get(self.database)
+        for table in self.tables:
             column_list = sql.get_columns(table)
             columns[table] = column_list
 
-        my.caches = {}
-        my.caches['data'] = data
-        my.caches['columns'] = columns
+        self.caches = {}
+        self.caches['data'] = data
+        self.caches['columns'] = columns
 
 
 
 class CacheStartup(object):
     '''do a bunch of caching on startup of the web process'''
 
-    def __init__(my, mode='complete'):
+    def __init__(self, mode='complete'):
         '''Windows uses basic mode'''
-        my.mode = mode
+        self.mode = mode
 
-    def execute(my):
-        if my.mode == 'basic':
+    def execute(self):
+        if self.mode == 'basic':
             return
 
         # cache sthpw tables definitions
@@ -104,25 +104,25 @@ class CacheStartup(object):
 
 
 
-    def init_scheduler(my):
+    def init_scheduler(self):
 
         scheduler = Scheduler.get()
 
-        if my.mode == 'basic':
-            my.start_basic_tasks(scheduler)
+        if self.mode == 'basic':
+            self.start_basic_tasks(scheduler)
         else:
-            my.start_cache_tasks(scheduler)
-            my.start_basic_tasks(scheduler)
+            self.start_cache_tasks(scheduler)
+            self.start_basic_tasks(scheduler)
 
         print "Starting Scheduler ...."
         scheduler.start_thread()
 
-    def start_cache_tasks(my, scheduler):
+    def start_cache_tasks(self, scheduler):
 
         
         # do a dirty check every X seconds
         class DirtyTask(SchedulerTask):
-            def execute(my):
+            def execute(self):
                 #Batch()
 
                 dirty_caches = CacheContainer.get_dirty()
@@ -145,7 +145,7 @@ class CacheStartup(object):
 
         # do a full cache refresh every 180 seconds
         class RefreshTask(SchedulerTask):
-            def execute(my):
+            def execute(self):
                 start = time.time()
                 #Batch()
 
@@ -164,11 +164,11 @@ class CacheStartup(object):
         scheduler.add_interval_task(task, interval=interval, mode='threaded', delay=30)
 
 
-    def start_basic_tasks(my, scheduler):
+    def start_basic_tasks(self, scheduler):
 
         # close all extraneous database connections 15 minutes
         class DatabaseCloseTask(SchedulerTask):
-            def execute(my):
+            def execute(self):
                 #print "Closing all connections"
                 DbContainer.close_all_global_connections()
 
@@ -184,7 +184,7 @@ class CacheStartup(object):
         # proper failover is used
         #
         class KillTacticTask(SchedulerTask):
-            def execute(my):
+            def execute(self):
                 # wait until KillThread is premitted
                 while GlobalContainer.get("KillThreadCmd:allow") == "false":
                     print "Kill locked ... waiting 5 seconds"

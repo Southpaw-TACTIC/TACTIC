@@ -29,12 +29,12 @@ from help_wdg import HelpWdg
 
 class PageNavContainerWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
 
-        link = my.kwargs.get('link')
-        hash = my.kwargs.get('hash')
+        link = self.kwargs.get('link')
+        hash = self.kwargs.get('hash')
         
-        my.widget = None
+        self.widget = None
 
         if link:
             from tactic.ui.panel import SideBarBookmarkMenuWdg
@@ -76,15 +76,15 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
         elif hash:
             from tactic.ui.panel import HashPanelWdg
-            my.widget = HashPanelWdg.get_widget_from_hash(hash, force_no_index=True)
+            self.widget = HashPanelWdg.get_widget_from_hash(hash, force_no_index=True)
             config = None
  
         else:
             security = Environment.get_security()
             start_link = security.get_start_link()
             if start_link:
-                my.kwargs['link'] = start_link
-                return my.init()
+                self.kwargs['link'] = start_link
+                return self.init()
 
 
 
@@ -101,16 +101,16 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
         if not config:
-            config = my.get_default_config()
+            config = self.get_default_config()
 
 
-        my.config_xml = Xml()
-        my.config_xml.read_string(config)
+        self.config_xml = Xml()
+        self.config_xml.read_string(config)
 
 
 
-    def get_default_config(my):
-        use_sidebar = my.kwargs.get('use_sidebar')
+    def get_default_config(self):
+        use_sidebar = self.kwargs.get('use_sidebar')
         if use_sidebar==False:
             config = '''
             <config>
@@ -149,73 +149,73 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
 
-    def set_state(my, panel_name, widget_class, options, values):
+    def set_state(self, panel_name, widget_class, options, values):
         '''this is called by side_bar.js mostly'''
 
         # set the class name
-        display_node = my.config_xml.get_node("config/application/element[@name='%s']/display" % (panel_name) )
-        my.config_xml.set_attribute(display_node, "class", widget_class)
+        display_node = self.config_xml.get_node("config/application/element[@name='%s']/display" % (panel_name) )
+        self.config_xml.set_attribute(display_node, "class", widget_class)
 
         # remove all the old options
-        #display_node = my.config_xml.get_node("config/application/element[@name='%s']/display" % panel_name )
-        for child_node in my.config_xml.get_children(display_node):
-            my.config_xml.remove_child(display_node, child_node)
+        #display_node = self.config_xml.get_node("config/application/element[@name='%s']/display" % panel_name )
+        for child_node in self.config_xml.get_children(display_node):
+            self.config_xml.remove_child(display_node, child_node)
 
         # set the options
         for name, value in options.items():
-            node = my.config_xml.get_node("config/application/element[@name='%s']/display/%s" % (panel_name, name) )
+            node = self.config_xml.get_node("config/application/element[@name='%s']/display/%s" % (panel_name, name) )
 
             if isinstance( value, basestring ):
                 #print "WARNING: set application: skipping [%s] with value [%s]" % (name, value)
                 #continue
-                element = my.config_xml.create_text_element(name, value)
-                my.config_xml.append_child(display_node, element)
+                element = self.config_xml.create_text_element(name, value)
+                self.config_xml.append_child(display_node, element)
 
             elif isinstance( value, dict): # if it is a dictionary
                 # TODO: run recursively.. supports 2 level only now
-                sub_element = my.config_xml.create_element(name)
-                my.config_xml.append_child(display_node, element)
+                sub_element = self.config_xml.create_element(name)
+                self.config_xml.append_child(display_node, element)
                 for name2, value2 in value.items():
                     if isinstance(value2, dict):
-                        sub_element2 = my.config_xml.create_element(name2)
-                        my.config_xml.append_child(sub_element, sub_element2)
+                        sub_element2 = self.config_xml.create_element(name2)
+                        self.config_xml.append_child(sub_element, sub_element2)
                         for name3, value3 in value2.items():
-                            element = my.config_xml.create_text_element(name3, value3)
-                            my.config_xml.append_child(sub_element2, element)
+                            element = self.config_xml.create_text_element(name3, value3)
+                            self.config_xml.append_child(sub_element2, element)
                     else:        
-                        element = my.config_xml.create_text_element(name2, value2)
-                        my.config_xml.append_child(sub_element, element)
+                        element = self.config_xml.create_text_element(name2, value2)
+                        self.config_xml.append_child(sub_element, element)
                     
                 
         # web value node
-        value_node = my.config_xml.get_node("config/application/element[@name='%s']/web" % (panel_name) )
+        value_node = self.config_xml.get_node("config/application/element[@name='%s']/web" % (panel_name) )
         if value_node != None:
-            for child_node in my.config_xml.get_children(value_node):
-                my.config_xml.remove_child(value_node, child_node)
+            for child_node in self.config_xml.get_children(value_node):
+                self.config_xml.remove_child(value_node, child_node)
         else: # create it
-            value_node = my.config_xml.create_element('web')
-            element_node = my.config_xml.get_node("config/application/element[@name='%s']" % (panel_name) )
-            my.config_xml.append_child(element_node, value_node)
+            value_node = self.config_xml.create_element('web')
+            element_node = self.config_xml.get_node("config/application/element[@name='%s']" % (panel_name) )
+            self.config_xml.append_child(element_node, value_node)
 
         # set the values
         for name, value in values.items():
-            node = my.config_xml.get_node("config/application/element[@name='%s']/web/%s" % (panel_name, name) )
+            node = self.config_xml.get_node("config/application/element[@name='%s']/web/%s" % (panel_name, name) )
 
             if not isinstance(value, basestring):
                 print "WARNING: set application: skipping [%s] with value [%s]" % (name, value)
                 continue
-            element = my.config_xml.create_text_element(name, value)
-            my.config_xml.append_child(value_node, element)
-        WidgetSettings.set_key_values("top_layout", [my.config_xml.to_string()])
+            element = self.config_xml.create_text_element(name, value)
+            self.config_xml.append_child(value_node, element)
+        WidgetSettings.set_key_values("top_layout", [self.config_xml.to_string()])
 
 
 
-    def get_state(my):
-        return my.config_xml
+    def get_state(self):
+        return self.config_xml
 
 
 
-    def get_side_bar_cache(my, left_nav_wdg):
+    def get_side_bar_cache(self, left_nav_wdg):
         project = Project.get()
         project_code = project.get_code()
 
@@ -252,14 +252,14 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
         is_admin_project = Project.get().is_admin()
         security = Environment.get_security() 
         if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
             return Error403Wdg()
                 
         # create the elements
-        config = WidgetConfig.get(xml=my.config_xml, view="application")
+        config = WidgetConfig.get(xml=self.config_xml, view="application")
 
         left_nav_handler = config.get_display_handler("left_nav")
         left_nav_options = config.get_display_options("left_nav")
@@ -269,7 +269,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
             left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
 
             # caching
-            side_bar_cache = my.get_side_bar_cache(left_nav_wdg)
+            side_bar_cache = self.get_side_bar_cache(left_nav_wdg)
         else:
             view_side_bar = False
 
@@ -460,9 +460,9 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
         # add the content to the main body panel
         try:
-            if my.widget:
-                tab.add(my.widget)
-                element_name = my.widget.get_name()
+            if self.widget:
+                tab.add(self.widget)
+                element_name = self.widget.get_name()
 
             else:
                 main_body_handler = config.get_display_handler("main_body")
@@ -481,7 +481,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
                 main_body_content.set_name(element_name)
                 tab.add(main_body_content, element_name, title)
 
-                my.set_as_panel(main_body_panel, class_name=main_body_handler, kwargs=main_body_options)
+                self.set_as_panel(main_body_panel, class_name=main_body_handler, kwargs=main_body_options)
 
             main_body_panel.add_behavior( {
                 'type': 'load',
@@ -496,8 +496,8 @@ class PageNavContainerWdg(BaseRefreshWdg):
            
         except Exception, e:
             # handle an error in the drawing
-            buffer = my.get_buffer_on_exception()
-            error_wdg = my.handle_exception(e)
+            buffer = self.get_buffer_on_exception()
+            error_wdg = self.handle_exception(e)
             main_body_content = DivWdg()
             main_body_content.add(error_wdg)
             main_body_content = main_body_content.get_buffer_display()
@@ -519,7 +519,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
         """
         # get the global drag_ghost_div
-        drag_ghost_div = my.get_drag_ghost_div()
+        drag_ghost_div = self.get_drag_ghost_div()
         drag_ghost_div.set_id( "drag_ghost_copy" )
         drag_ghost_div.add_class( "SPT_PUW" )  # make it a Page Utility Widget (now processed client side)
 
@@ -568,21 +568,21 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
 
-    def handle_exception(my, e):
+    def handle_exception(self, e):
         '''The tab widget is a special widget concerning exceptions because
         it usually represents the outer skin of the content of the web page.
         The titles of the tab must be displayed in order for the site to remain
         functional in the case of an exception'''
         from pyasm.widget import ExceptionWdg
         widget = ExceptionWdg(e)
-        my.error_wdg = Widget()
-        my.error_wdg.add(widget)
-        return my.error_wdg
+        self.error_wdg = Widget()
+        self.error_wdg.add(widget)
+        return self.error_wdg
 
 
 
     """
-    def get_drag_ghost_div(my):
+    def get_drag_ghost_div(self):
         drag_ghost_div = HtmlElement.div()
         drag_ghost_div.set_attr( "id", "drag_ghost_copy" )
         drag_ghost_div.set_attr( "element_copied", "_NONE_" )
@@ -596,7 +596,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
     """
 
 
-    def get_drag_div(my):
+    def get_drag_div(self):
         drag_div = HtmlElement.div()
         drag_div.set_style( "position: absolute; left: 100px; top: 400px; min-width: 400px; width: 400px; " +
                             "background-color: white; border: solid black;" )
@@ -626,22 +626,22 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 class MainBodyTabWdg(BaseRefreshWdg):
 
-    def get_config(my):
+    def get_config(self):
         config = None
 
         if not config:
             search = Search("config/widget_config")
-            if my.category:
+            if self.category:
                 search.add_filter("category", 'TabWdg')
-            if my.search_type:
-                search.add_filter("search_type", my.search_type)
-            search.add_filter("view", my.view)
+            if self.search_type:
+                search.add_filter("search_type", self.search_type)
+            search.add_filter("view", self.view)
             config = search.get_sobject()
 
         return config
 
 
-    def get_config_xml(my):
+    def get_config_xml(self):
 
         from pyasm.web import WidgetSettings
         config_xml  = WidgetSettings.get_value_by_key("main_body_tab")
@@ -665,19 +665,19 @@ class MainBodyTabWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.search_type = None
+        self.search_type = None
 
-        my.view = 'tab'
-        config_xml = my.get_config_xml()
-        config = WidgetConfig.get(view=my.view, xml=config_xml)
+        self.view = 'tab'
+        config_xml = self.get_config_xml()
+        config = WidgetConfig.get(view=self.view, xml=config_xml)
 
         top = DivWdg()
         #tab = TabWdg(width=1000, save_state="admin_tab_state")
-        tab = TabWdg(config=config, view=my.view, width=1000)
+        tab = TabWdg(config=config, view=self.view, width=1000)
         top.add(tab)
-        for widget in my.widgets:
+        for widget in self.widgets:
             tab.add(widget)
 
 
@@ -709,11 +709,11 @@ class MainBodyTabWdg(BaseRefreshWdg):
 """
 from pyasm.command import Command
 class TabSaveStateCmd(Command):
-    def execute(my):
+    def execute(self):
 
-        class_names = my.kwargs.get("class_names")
-        attrs_list = my.kwargs.get("attrs_list")
-        kwargs_list = my.kwargs.get("kwargs_list")
+        class_names = self.kwargs.get("class_names")
+        attrs_list = self.kwargs.get("attrs_list")
+        kwargs_list = self.kwargs.get("kwargs_list")
 
         xml = Xml()
         xml.create_doc("config")

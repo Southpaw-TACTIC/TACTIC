@@ -25,11 +25,11 @@ from scm_dir_list_wdg import get_onload_js as scm_get_onload_js
 class ChangelistWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_changelist_content")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_color("color", "color")
         top.add_color("background", "background")
         #top.add_border()
@@ -53,7 +53,7 @@ class ChangelistWdg(BaseRefreshWdg):
         location = '//%s' % depot
 
 
-        changelist = my.kwargs.get("changelist")
+        changelist = self.kwargs.get("changelist")
         if not changelist:
             changelist = WidgetSettings.get_value_by_key("current_changelist")
         else:
@@ -63,7 +63,7 @@ class ChangelistWdg(BaseRefreshWdg):
             changelist = 'default'
 
 
-        changelists = my.kwargs.get("changelists")
+        changelists = self.kwargs.get("changelists")
         if not changelists:
             changelists = []
         elif isinstance(changelists, basestring):
@@ -199,7 +199,7 @@ class ChangelistWdg(BaseRefreshWdg):
         inner.add("<hr/>")
 
 
-        files = my.kwargs.get("files")
+        files = self.kwargs.get("files")
         if isinstance(files, basestring):
             files = files.replace("'", '"')
             files = jsonloads(files)
@@ -299,8 +299,8 @@ spt.changelist.load(bvr.src_el, bvr.changelist);
             content.add("<br/>")
 
             paths = [x.get("path") for x in files]
-            sizes = my.kwargs.get("sizes")
-            path_info = my.kwargs.get("path_info")
+            sizes = self.kwargs.get("sizes")
+            path_info = self.kwargs.get("path_info")
             from scm_dir_list_wdg import ScmDirListWdg
             # dummy search_key
             search_key = "sthpw/virtual?code=xx001"

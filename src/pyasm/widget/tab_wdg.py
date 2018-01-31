@@ -39,37 +39,37 @@ class TabWdg(Widget):
     REG = 'regular'
     SMALL = 'small'
     TAB_REDIRECT = 'tab_redirect'
-    def __init__(my, dynamic_load=0, tab_key="tab", css=REG):
+    def __init__(self, dynamic_load=0, tab_key="tab", css=REG):
 
-        my.tab_names = []
-        my.wdg_dict = {}
-        my.dynamic_load = dynamic_load
-        my.set_tab_key(tab_key)
-        my.tab_style = css
-        my.content_height = 0
+        self.tab_names = []
+        self.wdg_dict = {}
+        self.dynamic_load = dynamic_load
+        self.set_tab_key(tab_key)
+        self.tab_style = css
+        self.content_height = 0
 
-        my.mode = Container.get("tab_mode")
+        self.mode = Container.get("tab_mode")
 
         # setting tab path
-        my.tab_path = Container.get("tab_path")
-        if not my.tab_path:
-            my.tab_path = "Main"
+        self.tab_path = Container.get("tab_path")
+        if not self.tab_path:
+            self.tab_path = "Main"
 
-        my.error_wdg = None
-        my.div = DivWdg(css='left_content')
+        self.error_wdg = None
+        self.div = DivWdg(css='left_content')
 
         if Environment.has_tactic_database():
-            my.invisible_list = ProdSetting.get_seq_by_key('invisible_tabs')
+            self.invisible_list = ProdSetting.get_seq_by_key('invisible_tabs')
         else:
-            my.invisible_list = []
+            self.invisible_list = []
 
-        super(TabWdg,my).__init__()
+        super(TabWdg,self).__init__()
 
-    def class_init(my):
+    def class_init(self):
         '''this is used for tab redirection. The set_redirect() takes
         presecedence'''
-        tab_redirect = HiddenWdg(my.TAB_REDIRECT)
-        my.div.add(tab_redirect)
+        tab_redirect = HiddenWdg(self.TAB_REDIRECT)
+        self.div.add(tab_redirect)
 
 
     def set_mode(mode):
@@ -77,33 +77,33 @@ class TabWdg(Widget):
         Container.put("tab_mode", mode)
     set_mode = staticmethod(set_mode)
 
-    def get_tab_names(my):
-        return my.tab_names
+    def get_tab_names(self):
+        return self.tab_names
     
-    def get_tab_key(my):
-        return my.tab_key
+    def get_tab_key(self):
+        return self.tab_key
 
-    def get_tab_value(my):
-        return my.tab_value
+    def get_tab_value(self):
+        return self.tab_value
 
-    def set_tab_style(my, style):
-        my.tab_style = style
+    def set_tab_style(self, style):
+        self.tab_style = style
 
-    def set_content_height(my, height):
-        my.content_height = height
+    def set_content_height(self, height):
+        self.content_height = height
 
 
-    def set_tab_key(my,tab_key):
+    def set_tab_key(self,tab_key):
         ''' set the name of the tab for redirection. If one value is passed in,
         it assumes it's one the current set of subtabs. To jump to a tab from 
         a totally different category, pass in a dict using set_redirect or 
         get_redirect_script'''
         web = WebContainer.get_web()
-        my.tab_key = tab_key
-        redirect = Container.get(my.TAB_REDIRECT)
+        self.tab_key = tab_key
+        redirect = Container.get(self.TAB_REDIRECT)
         if not redirect:
             # find it from the web form
-            redirect = web.get_form_value(my.TAB_REDIRECT)
+            redirect = web.get_form_value(self.TAB_REDIRECT)
             if redirect:
                 redirect_dict = {}
                 redirect = redirect.split(',')
@@ -128,45 +128,45 @@ class TabWdg(Widget):
             web.set_form_value('is_form_submitted','init')
 
         # this implicitly sets the tab value
-        class_name = my.__class__.__name__
-        my.tab_value = WidgetSettings.get_key_value(class_name,my.tab_key)
+        class_name = self.__class__.__name__
+        self.tab_value = WidgetSettings.get_key_value(class_name,self.tab_key)
 
 
-    def handle_exception(my, e):
+    def handle_exception(self, e):
         '''The tab widget is a special widget concerning exceptions because
         it usually represents the outer skin of the content of the web page.
         The titles of the tab must be displayed in order for the site to remain
         functional in the case of an exception'''
         from web_wdg import ExceptionWdg
         widget = ExceptionWdg(e)
-        my.error_wdg = Widget()
-        my.error_wdg.add(widget)
+        self.error_wdg = Widget()
+        self.error_wdg.add(widget)
         
 
         
 
 
 
-    def init(my):
+    def init(self):
         try:
-            super(TabWdg,my).init()
+            super(TabWdg,self).init()
         except Exception as e:
-            my.handle_exception(e)
+            self.handle_exception(e)
 
 
 
-    def do_search(my):
+    def do_search(self):
         try:
-            super(TabWdg,my).do_search()
+            super(TabWdg,self).do_search()
         except Exception as e:
-            my.handle_exception(e)
+            self.handle_exception(e)
 
 
 
-    def add_widget(my,widget,title=None):
-        return my.add(widget,title)
+    def add_widget(self,widget,title=None):
+        return self.add(widget,title)
 
-    def add(my,widget,title=None,index=None):
+    def add(self,widget,title=None,index=None):
         if title == None:
             title = widget.__class__.__name__
 
@@ -176,7 +176,7 @@ class TabWdg(Widget):
         check = "%s|%s" % (url_selector,title)
 
         # check tab security
-        if my.mode != "check":
+        if self.mode != "check":
             security = WebContainer.get_security()
             if not security.check_access("url", check, "view"):
                 return
@@ -184,44 +184,44 @@ class TabWdg(Widget):
             if not security.check_access("tab_title", title, "view"):
                 return
             # new, new security mechanism
-            tab_path = my.get_tab_path(title)
+            tab_path = self.get_tab_path(title)
             if not security.check_access("tab", tab_path, "view"):
                 return
 
             # check if this tab is invisible
-            if not my.check_visibility(tab_path):
+            if not self.check_visibility(tab_path):
                 return
 
         if index == None:
-            my.tab_names.append(title)
+            self.tab_names.append(title)
         else:
-            my.tab_names.insert(index,title)
+            self.tab_names.insert(index,title)
 
-        my.wdg_dict[title] = widget
+        self.wdg_dict[title] = widget
         # for tabs, the widget passed in can be None.  Only the
         # title is added
         if widget == None:
             return
 
         # only the selected one really gets added
-        if not my.tab_value or title == my.tab_value:
-            Container.put("tab_path", my.get_tab_path(title))
+        if not self.tab_value or title == self.tab_value:
+            Container.put("tab_path", self.get_tab_path(title))
 
-            widget = my.init_widget(widget, title)
+            widget = self.init_widget(widget, title)
             # the very first time user click on the main tab
-            if not my.tab_value:
-                my.tab_value = title
+            if not self.tab_value:
+                self.tab_value = title
 
-            super(TabWdg,my)._add_widget(widget, title)
+            super(TabWdg,self)._add_widget(widget, title)
 
 
 
-    def init_widget(my, widget, title=None):
+    def init_widget(self, widget, title=None):
         ''' instantiate the widget if selected. This can be called externally
             to instantiate any widgets added to a TabWdg'''
         try:
             # if a method was passed in, then execute it
-            if my.mode == "check":
+            if self.mode == "check":
                 from base_tab_wdg import BaseTabWdg
                 try:
                     if not issubclass(widget, BaseTabWdg):
@@ -251,43 +251,43 @@ class TabWdg(Widget):
 
         # catch all exceptions and log them
         except Exception as e:
-            my.handle_exception(e)
+            self.handle_exception(e)
 
 
         return widget
 
 
-    def check_visibility(my, tab_path):
+    def check_visibility(self, tab_path):
         ''' determine if a tab is visible or not '''
         if not Environment.has_tactic_database():
             return True
 
-        if my.invisible_list and tab_path in my.invisible_list:
+        if self.invisible_list and tab_path in self.invisible_list:
             return False
         else:
             return True
 
 
-    def get_tab_path(my, title=None):
+    def get_tab_path(self, title=None):
         if title:
-            if my.tab_path == "Main":
+            if self.tab_path == "Main":
                 return title
             else:
-                return "%s/%s" % (my.tab_path, title)
+                return "%s/%s" % (self.tab_path, title)
         else:
-            return my.tab_path
+            return self.tab_path
 
 
-    def get_display(my):
+    def get_display(self):
 
-        new_tab_names = my.tab_names
+        new_tab_names = self.tab_names
         
         app_css = app_style = None    
         if WebContainer.get_web().get_app_name_by_uri() != 'Browser':
             app_css = 'smaller'
             app_style = 'padding: 0px 2px 3px 2px' 
             
-        div = my.div
+        div = self.div
         div.set_style("margin-top: 10px; margin-bottom: 20px")
         
         # add some spacing
@@ -300,37 +300,37 @@ class TabWdg(Widget):
         selected_index = 0
         for i in range(0, len(new_tab_names)):
             tab_name = new_tab_names[i]
-            if tab_name == my.tab_value:
+            if tab_name == self.tab_value:
                 selected_index = i
                 break
 
         for i in range(0, len(new_tab_names)):
             tab_name = new_tab_names[i]
-            widget = my.get_widget(tab_name)
+            widget = self.get_widget(tab_name)
 
             tab = SpanWdg()
             if i == selected_index:
                 # selected tab
-                tab.set_class("%s_selected" %my.get_style_prefix())
+                tab.set_class("%s_selected" %self.get_style_prefix())
                 if app_style:
                     tab.add_style(app_style)
                 selected_widget = widget
             else:
                 # unselected tab
-                tab.set_class("%s_unselected" %my.get_style_prefix())
+                tab.set_class("%s_unselected" %self.get_style_prefix())
                 if app_style:
                     tab.add_style(app_style)
-            tab.add( my.get_header(tab_name, selected_index, app_css))
+            tab.add( self.get_header(tab_name, selected_index, app_css))
             div.add(tab)
 
         # FIXME: hide this for now 
-        #div.add( my.get_add_tab_wdg() )
+        #div.add( self.get_add_tab_wdg() )
 
 
-        tab_hidden = HiddenWdg(my.tab_key)
+        tab_hidden = HiddenWdg(self.tab_key)
         tab_hidden.set_persistence()
         # explicitly records this value for init-type submit
-        tab_hidden._set_persistent_values([my.tab_value])
+        tab_hidden._set_persistent_values([self.tab_value])
 
         # TODO: not sure if this is legal ... This is rather redundant,
         # but set_value is a pretty complex function.  In the end this
@@ -344,72 +344,72 @@ class TabWdg(Widget):
         
         
         # if an error occured, draw the error 
-        if my.error_wdg:
-            div.add(my.error_wdg)
+        if self.error_wdg:
+            div.add(self.error_wdg)
         else:
             # display the content
             content_div = HtmlElement.div()
-            if my.content_height:
-                content_div.add_style("height: %spx" % my.content_height)
+            if self.content_height:
+                content_div.add_style("height: %spx" % self.content_height)
                 content_div.add_style("padding: 10px 0 10px 0")
                 content_div.add_style("overflow: auto")
                 content_div.add_style("border-style: solid")
             
-            content_div.set_class("%s_content" %my.get_style_prefix())
+            content_div.set_class("%s_content" %self.get_style_prefix())
             content_div.add_style("display: block")
 
             try:
-                content = my.get_content(selected_widget)
+                content = self.get_content(selected_widget)
                 if isinstance( content, Widget):
                     content = content.get_buffer_display()
             except Exception as e:
-                my.handle_exception(e)
+                self.handle_exception(e)
 
                 # TODO: need some way to make this automatic in Widget.
-                #if my.tab_path:
-                #    last_buffer = len(my.tab_path)+1
-                #    buffer = my.get_buffer_on_exception(last_buffer)
+                #if self.tab_path:
+                #    last_buffer = len(self.tab_path)+1
+                #    buffer = self.get_buffer_on_exception(last_buffer)
                 #else:
-                buffer = my.get_buffer_on_exception()
+                buffer = self.get_buffer_on_exception()
 
                 div.add(buffer)
 
 
-                content = my.error_wdg
+                content = self.error_wdg
 
             content_div.add( content )
             div.add(content_div)
 
         return div
 
-    def get_style_prefix(my):
-        if my.tab_style == my.SMALL:
+    def get_style_prefix(self):
+        if self.tab_style == self.SMALL:
             return "tab_sm"
         else:
             return "tab"
    
-    def get_header(my, tab_name, selected_index, app_css):
-        #link = HtmlElement.href(tab_name,"?%s=%s" % (my.tab_key,tab_name) )
+    def get_header(self, tab_name, selected_index, app_css):
+        #link = HtmlElement.href(tab_name,"?%s=%s" % (self.tab_key,tab_name) )
         link = HtmlElement.js_href("document.form.elements['%s'].value='%s';\
             document.form.is_form_submitted.value='init';document.form.submit()"
-            %(my.tab_key, tab_name), tab_name, ref='#')
+            %(self.tab_key, tab_name), tab_name, ref='#')
         if app_css:
             link.add_class(app_css)
-        my.add_event_to_header(tab_name, link)
+        self.add_event_to_header(tab_name, link)
         return link
 
 
-    def add_event_to_header(my, tab_name, link):
+    def add_event_to_header(self, tab_name, link):
         '''provides the opportunity to add javascript calls to clicking on a
         tab link'''
         pass
 
     
-    def get_content(my, selected_widget):
+    def get_content(self, selected_widget):
         return selected_widget
 
 
-    def get_add_tab_wdg(my):
+    def get_add_tab_wdg(self):
         span = SpanWdg(css="hand")
         span.add("+Add+")
 
@@ -466,22 +466,22 @@ class CustomXmlWdg(BaseTableElementWdg):
         </display>
     </widget>
     '''
-    def __init__(my, xml_string):
+    def __init__(self, xml_string):
 
-        my.xml_string = xml_string
-        my.xml = Xml(string=my.xml_string)
-        super(CustomXmlWdg, my).__init__()
+        self.xml_string = xml_string
+        self.xml = Xml(string=self.xml_string)
+        super(CustomXmlWdg, self).__init__()
 
-    def init(my):
-        my.widget_class = my.xml.get_value("widget/display/@class")
-        my.draw = my.xml.get_value("widget/display/@draw")
-        my.title = my.xml.get_value("widget/@name")
-        my.name = my.title
+    def init(self):
+        self.widget_class = self.xml.get_value("widget/display/@class")
+        self.draw = self.xml.get_value("widget/display/@draw")
+        self.title = self.xml.get_value("widget/@name")
+        self.name = self.title
 
 
         # convert the widget data
         options = {}
-        nodes = my.xml.get_nodes("widget/display/*")
+        nodes = self.xml.get_nodes("widget/display/*")
         for node in nodes:
             name = node.nodeName
             value = Xml.get_node_value(node)
@@ -495,89 +495,89 @@ class CustomXmlWdg(BaseTableElementWdg):
             else:
                 options[name] = value
 
-        my.options = options
-        my.widget = Common.create_from_class_path(my.widget_class, [my.title])
+        self.options = options
+        self.widget = Common.create_from_class_path(self.widget_class, [self.title])
    
 
 
-    def get_child_widget_class(my):
-        return my.xml.get_value("widget/display/@class")
+    def get_child_widget_class(self):
+        return self.xml.get_value("widget/display/@class")
 
-    def get_child_widget(my):
-        return my.widget
+    def get_child_widget(self):
+        return self.widget
 
 
-    def get_title(my): 
-        my.widget = Common.create_from_class_path(my.widget_class, [my.title])
-        my.widget.options = my.options
-        my.widget.set_title(my.title)
-        my.widget.set_name(my.title)
-        Container.put_dict("widgets", my.title, my.widget)
+    def get_title(self): 
+        self.widget = Common.create_from_class_path(self.widget_class, [self.title])
+        self.widget.options = self.options
+        self.widget.set_title(self.title)
+        self.widget.set_name(self.title)
+        Container.put_dict("widgets", self.title, self.widget)
 
-        index = my.get_current_index()
-        my.widget.set_sobjects(my.sobjects)
-        my.widget.set_current_index(index)
-        if my.draw == "false":
+        index = self.get_current_index()
+        self.widget.set_sobjects(self.sobjects)
+        self.widget.set_current_index(index)
+        if self.draw == "false":
             return ""
         else:
-            return my.widget.get_title()
+            return self.widget.get_title()
         
 
-    def get_display_widget(my):
-        return my.widget
+    def get_display_widget(self):
+        return self.widget
 
-    def get_display(my):
-        my.widget.options = my.options
-        my.widget.set_title(my.title)
-        my.widget.set_name(my.title)
-        my.widget.parent_wdg = my.parent_wdg
-        Container.put_dict("widgets", my.title, my.widget)
+    def get_display(self):
+        self.widget.options = self.options
+        self.widget.set_title(self.title)
+        self.widget.set_name(self.title)
+        self.widget.parent_wdg = self.parent_wdg
+        Container.put_dict("widgets", self.title, self.widget)
 
-        index = my.get_current_index()
-        my.widget.set_sobjects(my.sobjects)
-        my.widget.set_search(my.search)
-        my.widget.set_current_index(index)
-        if my.draw == "false":
+        index = self.get_current_index()
+        self.widget.set_sobjects(self.sobjects)
+        self.widget.set_search(self.search)
+        self.widget.set_current_index(index)
+        if self.draw == "false":
             return None
         else:
-            return my.widget
+            return self.widget
             
 
 
 class TabExtendWdg(Widget):
     '''class that uses the database to extend widgets'''
-    def set_tab(my, parent):
-        my.parent_wdg = parent
+    def set_tab(self, parent):
+        self.parent_wdg = parent
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
 
-    def get_display(my):
+    def get_display(self):
 
         #parent_class = "TabWdg"
-        my.parent_class = my.parent_wdg.__class__.__name__
-        if my.parent_class == "TbodyWdg":
-            my.parent_class = "TableWdg"
-        elif my.parent_class == "MayaTabWdgImpl":
-            my.parent_class = "TabWdg"
+        self.parent_class = self.parent_wdg.__class__.__name__
+        if self.parent_class == "TbodyWdg":
+            self.parent_class = "TableWdg"
+        elif self.parent_class == "MayaTabWdgImpl":
+            self.parent_class = "TabWdg"
 
         # get the key
-        if my.parent_class == "TabWdg":
-            key = my.parent_wdg.get_tab_path()
-        elif my.parent_class == "TableWdg":
-            key = "%s|%s" % (my.search_type, my.parent_wdg.get_view() )
+        if self.parent_class == "TabWdg":
+            key = self.parent_wdg.get_tab_path()
+        elif self.parent_class == "TableWdg":
+            key = "%s|%s" % (self.search_type, self.parent_wdg.get_view() )
         else:
-            key = my.parent_wdg.get_name()
+            key = self.parent_wdg.get_name()
 
         # set sobjects from the parent, if there are any
-        my.sobjects = my.parent_wdg.get_sobjects()
+        self.sobjects = self.parent_wdg.get_sobjects()
         
         # search for these
         from pyasm.search import Search
         search = Search("sthpw/widget_extend")
         search.add_project_filter()
-        search.add_filter("type", my.parent_class)
+        search.add_filter("type", self.parent_class)
         search.add_filter("key", key)
         extends = search.get_sobjects()
 
@@ -599,21 +599,21 @@ class TabExtendWdg(Widget):
                     child_widget = CustomXmlWdg(node_string)
                     if not child_widget:
                         continue
-                    if my.sobjects:
-                        child_widget.set_sobjects(my.sobjects)
+                    if self.sobjects:
+                        child_widget.set_sobjects(self.sobjects)
                     widget.add(child_widget)
 
 
             else:
                 widget = CustomXmlWdg(xml.to_string())
-                if my.sobjects:
-                    widget.set_sobjects(my.sobjects)
+                if self.sobjects:
+                    widget.set_sobjects(self.sobjects)
 
             
-            if my.parent_class == 'TableWdg':
+            if self.parent_class == 'TableWdg':
                 table_element = widget.get_display_widget()
-                table_element.set_parent_wdg(my.parent_wdg)
-            my.parent_wdg.add(widget, title, index=index)
+                table_element.set_parent_wdg(self.parent_wdg)
+            self.parent_wdg.add(widget, title, index=index)
             
 
 
@@ -626,28 +626,28 @@ class DynTabWdg(TabWdg):
     REG = 'regular'
     SMALL = 'small'
     XS = 'xsmall' # unused now
-    def __init__(my, tab_key="tab", css=REG):
-        super(DynTabWdg,my).__init__(True, tab_key, css)
-        my.inputs = []
-        my.options = {}
-        my.preload_script = None
-        my.tab_group_name = my.generate_unique_id(tab_key)
-        my.content_div_id = "%s|tab_content" % my.tab_group_name
-        my.content_div = HtmlElement.div()
+    def __init__(self, tab_key="tab", css=REG):
+        super(DynTabWdg,self).__init__(True, tab_key, css)
+        self.inputs = []
+        self.options = {}
+        self.preload_script = None
+        self.tab_group_name = self.generate_unique_id(tab_key)
+        self.content_div_id = "%s|tab_content" % self.tab_group_name
+        self.content_div = HtmlElement.div()
 
-    def add_ajax_input(my, widget):
-        my.inputs.append(widget)
+    def add_ajax_input(self, widget):
+        self.inputs.append(widget)
 
-    def add_preload_script(my, script):
-        my.preload_script = script
+    def add_preload_script(self, script):
+        self.preload_script = script
 
-    def set_option(my, name, value):
-        my.options[name] = value
+    def set_option(self, name, value):
+        self.options[name] = value
 
-    def get_content_div(my):
-        return my.content_div
+    def get_content_div(self):
+        return self.content_div
     
-    def add(my,widget,title=None):
+    def add(self,widget,title=None):
         if title == None:
             title = widget.__class__.__name__
 
@@ -666,7 +666,7 @@ class DynTabWdg(TabWdg):
         if not security.check_access("tab", title, "view"):
             return
 
-        my.tab_names.append(title)
+        self.tab_names.append(title)
 
         # for tabs, the widget passed in can be None.  Only the
         # title is added
@@ -684,12 +684,12 @@ class DynTabWdg(TabWdg):
                 
         # catch all exceptions and log them
         except Exception as e:
-            my.handle_exception(e)
+            self.handle_exception(e)
 
-        super(DynTabWdg,my)._add_widget(widget, title)
+        super(DynTabWdg,self)._add_widget(widget, title)
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg(css='left_content')
         div.set_style("margin-top: 10px; margin-bottom: 20px;")
@@ -701,57 +701,57 @@ class DynTabWdg(TabWdg):
 
         # figure out which is the selected one
         selected_index = 0
-        for i in range(0, len(my.tab_names)):
-            tab_name = my.tab_names[i]
-            if tab_name == my.tab_value:
+        for i in range(0, len(self.tab_names)):
+            tab_name = self.tab_names[i]
+            if tab_name == self.tab_value:
                 selected_index = i
                 break
             
         
-        for i in range(0, len(my.tab_names)):
-            tab_name = my.tab_names[i]
-            widget = my.get_widget(tab_name)
+        for i in range(0, len(self.tab_names)):
+            tab_name = self.tab_names[i]
+            widget = self.get_widget(tab_name)
 
             tab = HtmlElement.span()
-            tab.set_attr('name', my.tab_group_name)
+            tab.set_attr('name', self.tab_group_name)
             # required by IE
-            tab.set_id(my.tab_group_name)
+            tab.set_id(self.tab_group_name)
             
             tab.set_attr('tab', tab_name)
            
             if i == selected_index:
                 # selected tab
-                tab.set_class("%s_selected" %my.get_style_prefix())
-                my.content_div.add(widget)
+                tab.set_class("%s_selected" %self.get_style_prefix())
+                self.content_div.add(widget)
             else:
                 # unselected tab
-                tab.set_class("%s_unselected" %my.get_style_prefix())
+                tab.set_class("%s_unselected" %self.get_style_prefix())
             
-            tab.add( my.get_header(tab_name) )
+            tab.add( self.get_header(tab_name) )
             div.add(tab)
        
         
 
         # display the content
         
-        my.content_div.set_id(my.content_div_id)
-        my.content_div.set_class("%s_content" %my.get_style_prefix())
-        my.content_div.add_style("display: block")
-        div.add(my.content_div)
+        self.content_div.set_id(self.content_div_id)
+        self.content_div.set_class("%s_content" %self.get_style_prefix())
+        self.content_div.add_style("display: block")
+        div.add(self.content_div)
 
         return div
 
-    def get_style_prefix(my):
-        if my.tab_style == my.SMALL:
+    def get_style_prefix(self):
+        if self.tab_style == self.SMALL:
             return "tab_sm"
         else:
             return "tab"
 
-    def get_ajax_script(my, tab_name):
+    def get_ajax_script(self, tab_name):
 
-        widget = my.get_widget(tab_name)    
+        widget = self.get_widget(tab_name)    
         # load tab thru ajax
-        ajax = AjaxLoader(my.content_div_id)
+        ajax = AjaxLoader(self.content_div_id)
         
         load_args = None
         widget_class = widget.get_class_name()
@@ -760,44 +760,44 @@ class DynTabWdg(TabWdg):
         if isinstance(widget, MethodWdg):
             ajax.set_option('method',  widget.get_function_name())
 
-        for input in my.inputs:
+        for input in self.inputs:
             ajax.add_element_name(input)
 
-        for name, value in my.options.items():
+        for name, value in self.options.items():
             ajax.set_option(name, value)
         script = []
-        if my.preload_script:
-            script.append(my.preload_script)
+        if self.preload_script:
+            script.append(self.preload_script)
         script.append(ajax.get_on_script())
-        script.append(my._get_update_script(tab_name)) 
+        script.append(self._get_update_script(tab_name)) 
          
         return ';'.join(script)
 
-    def get_header(my, tab_name):
-        script = my.get_tab_script(tab_name)
+    def get_header(self, tab_name):
+        script = self.get_tab_script(tab_name)
         return HtmlElement.js_href(script, tab_name, '#')
 
-    def get_tab_script(my, tab_name):
+    def get_tab_script(self, tab_name):
         
-        script = [my.get_ajax_script(tab_name)]
+        script = [self.get_ajax_script(tab_name)]
         script.append("var a=get_elements('%s');a.tab_me('%s','%s_selected','%s_unselected');" \
-            %(my.tab_group_name, tab_name, my.get_style_prefix(), \
-            my.get_style_prefix()))
+            %(self.tab_group_name, tab_name, self.get_style_prefix(), \
+            self.get_style_prefix()))
 
         return ";".join(script)
     
-    def _get_update_script(my, tab_name ):
+    def _get_update_script(self, tab_name ):
         '''script to update widget settings'''
         ajax = AjaxLoader('update')
         
         marshaller = ajax.register_cmd("pyasm.command.WidgetSettingsCmd")
-        marshaller.set_option("widget_name", my.tab_key)
-        #marshaller.set_option("key", my.url.get_base())
-        marshaller.set_option("key", my.__class__.__name__)
+        marshaller.set_option("widget_name", self.tab_key)
+        #marshaller.set_option("key", self.url.get_base())
+        marshaller.set_option("key", self.__class__.__name__)
         marshaller.set_option("value", tab_name)
         
         return ajax.get_on_script(True)
 
-    def get_content(my, selected_widget):
+    def get_content(self, selected_widget):
         return ''
 

@@ -19,37 +19,37 @@ import re
 
 class BaseRestHandler(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        method = my.kwargs.get("Method")
+        method = self.kwargs.get("Method")
         if not method:
             raise Exception("No method specified")
 
         if method == "GET":
-            ret_val = my.GET()
+            ret_val = self.GET()
         elif method == "POST":
-            ret_val = my.POST()
+            ret_val = self.POST()
         elif method == "PUT":
-            ret_val = my.PUT()
+            ret_val = self.PUT()
         elif method == "DELETE":
-            ret_val = my.PUT()
+            ret_val = self.PUT()
         else:
-            ret_val = my.GET()
+            ret_val = self.GET()
 
         return ret_val
 
 
 
-    def GET(my):
+    def GET(self):
         pass
 
-    def POST(my):
-        return my.GET()
+    def POST(self):
+        return self.GET()
 
-    def PUT(my):
+    def PUT(self):
         pass
 
-    def DELETE(my):
+    def DELETE(self):
         pass
 
 
@@ -58,10 +58,10 @@ class BaseRestHandler(BaseRefreshWdg):
 
 class TestCustomRestHandler(BaseRestHandler):
 
-    def GET(my):
+    def GET(self):
         return "Test Custom GET"
 
-    def POST(my):
+    def POST(self):
         return "Test Custom POST"
 
 
@@ -70,18 +70,18 @@ from tactic_client_lib import TacticServerStub
 
 class SObjectRestHandler(BaseRestHandler):
 
-    def GET(my):
-        method = my.kwargs.get("method")
-        print my.kwargs
+    def GET(self):
+        method = self.kwargs.get("method")
+        print self.kwargs
         print "method: ", method
-        print "expression: ", my.kwargs.get("expression")
+        print "expression: ", self.kwargs.get("expression")
 
 
         # /rest/get_by_code/cars/CAR00009
 
         # /rest/query?search_type=sthpw/cars
         if method == "query":
-            code = my.kwargs.get("data")
+            code = self.kwargs.get("data")
             from pyasm.search import Search
             sobject = Search.get_by_code(search_type, code)
             sobject_dict = sobject.get_sobject_dict()
@@ -89,13 +89,13 @@ class SObjectRestHandler(BaseRestHandler):
 
         # /rest/expression/@SOBJECT(sthpw/task)
         elif method == "expression":
-            expression = my.kwargs.get("expression")
+            expression = self.kwargs.get("expression")
             server = TacticServerStub.get()
             return server.eval(expression)
 
         # /rest/simple_checkin?search_key=dfadfdsas&data={}
         elif method == "expression":
-            expression = my.kwargs.get("expression")
+            expression = self.kwargs.get("expression")
             server = TacticServerStub.get()
             return server.eval(expression)
 
@@ -106,16 +106,16 @@ class SObjectRestHandler(BaseRestHandler):
 
 
 class APIRestHandler(BaseRestHandler):
-    def get_content_type(my):
+    def get_content_type(self):
         return "application/json"
 
-    def GET(my):
+    def GET(self):
 
         return "TACTIC REST Interface"
 
 
 
-    def POST(my):
+    def POST(self):
 
         from pyasm.web import WebContainer
         web = WebContainer.get_web()

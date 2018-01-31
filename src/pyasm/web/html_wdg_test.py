@@ -19,24 +19,24 @@ from web_state import *
 
 class HtmlWdgTest(unittest.TestCase):
 
-    def test_element(my):
+    def test_element(self):
 
         br = HtmlElement("br")
-        my.assertEquals("<br/>\n", br.get_display() )
+        self.assertEquals("<br/>\n", br.get_display() )
 
-    def test_children(my):
+    def test_children(self):
         href = HtmlElement.href("yahoo", "http://www.yahoo.com")
-        my.assertEquals("<a href=\"http://www.yahoo.com\">yahoo</a>\n", href.get_display() )
+        self.assertEquals("<a href=\"http://www.yahoo.com\">yahoo</a>\n", href.get_display() )
 
-    def test_style(my):
+    def test_style(self):
         div = HtmlElement.div("Hello")
         style = "background-color: #f0f0f0"
         div.set_style(style)
 
-        my.assertEquals("<div style=\"%s\">Hello</div>\n" % style, div.get_display() )
+        self.assertEquals("<div style=\"%s\">Hello</div>\n" % style, div.get_display() )
 
 
-    def test_table(my):
+    def test_table(self):
         table = Table()
         table.add_row()
         table.add_cell( "Name:")
@@ -57,7 +57,7 @@ class HtmlWdgTest(unittest.TestCase):
         b = table.get_display()
         b = string.replace( b ,"\n", "")
 
-        my.assertEquals( a, b )
+        self.assertEquals( a, b )
 
 
 

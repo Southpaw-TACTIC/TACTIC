@@ -23,7 +23,7 @@ from custom_view_wdg import *
 
 class CustomViewAppWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
@@ -86,12 +86,12 @@ class CustomViewAppWdg(Widget):
         span.add(view_select)
         div.add(span)
 
-        div.add( my.get_create_view_wdg(search_type))
+        div.add( self.get_create_view_wdg(search_type))
 
         div.add( HtmlElement.br(2) )
 
 
-        div.add( my.get_new_tab_wdg() )
+        div.add( self.get_new_tab_wdg() )
 
 
         widget.add(div)
@@ -180,7 +180,7 @@ class CustomViewAppWdg(Widget):
         return widget
 
 
-    def get_create_view_wdg(my, search_type):
+    def get_create_view_wdg(self, search_type):
 
         # create popup
         create_popup = PopupWdg("create_action")
@@ -232,7 +232,7 @@ class CustomViewAppWdg(Widget):
 
 
 
-    def get_new_tab_wdg(my):
+    def get_new_tab_wdg(self):
         widget = Widget()
 
         span = SpanWdg()
@@ -286,7 +286,7 @@ class CustomViewAppWdg(Widget):
 
 class CreateTabCmd(Command):
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         if web.get_form_value("Create Tab"):
             title = web.get_form_value("tab")
@@ -338,15 +338,15 @@ class CreateTabCmd(Command):
 
 
 class CustomCreateViewPopupWdg(Widget):
-    def __init__(my, search_type, view=None):
-        my.search_type = search_type
-        my.view = view
-        super(CustomCreateViewPopupWdg,my).__init__()
+    def __init__(self, search_type, view=None):
+        self.search_type = search_type
+        self.view = view
+        super(CustomCreateViewPopupWdg,self).__init__()
 
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
-        if not my.view:
+        if not self.view:
             view = web.get_form_value("filter|view")
 
         # create popup
@@ -370,10 +370,10 @@ class CustomCreateViewPopupWdg(Widget):
         ajax.register_cmd("pyasm.widget.CustomCreateViewCbk")
         ajax.add_element_name("create_view_name")
         ajax.add_element_name("auto_create_edit")
-        ajax.set_option("search_type", my.search_type)
+        ajax.set_option("search_type", self.search_type)
         ajax.set_option("project", Project.get_project_code() )
-        if my.view:
-            ajax.set_option("template_view", my.view )
+        if self.view:
+            ajax.set_option("template_view", self.view )
         create_icon.add_event("onclick", "%s;%s" % (ajax.get_on_script(),"toggle_display('create_action');setTimeout('document.form.submit()',1000)") )
 
         cancel_icon = ProdIconButtonWdg('Cancel')

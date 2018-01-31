@@ -55,48 +55,48 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
     }
  
-    def __init__(my, **kwargs):
-        my.widget = None
-        super(SObjectDetailElementWdg, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        self.widget = None
+        super(SObjectDetailElementWdg, self).__init__(**kwargs)
 
-    def init(my):
-        my.show_task_process = my.kwargs.get('show_task_process')
+    def init(self):
+        self.show_task_process = self.kwargs.get('show_task_process')
 
-    def set_widget(my, widget):
-        my.widget = widget
+    def set_widget(self, widget):
+        self.widget = widget
 
-    def get_width(my):
+    def get_width(self):
         return 50
 
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        use_parent = my.get_option("use_parent")
+        use_parent = self.get_option("use_parent")
         use_parent = use_parent in ['true', True]
         #if use_parent in ['true', True]:
         #    sobject = sobject.get_parent()
         #    if not sobject:
         #        return DivWdg()
 
-        my.search_key = SearchKey.get_by_sobject(sobject)
+        self.search_key = SearchKey.get_by_sobject(sobject)
     
         div = DivWdg()
         div.add_class("hand")
         target_id = "main_body"
 
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         #mode = "link"
 
         title = "Show Item Details"
-        if my.widget:
-            widget = my.widget
+        if self.widget:
+            widget = self.widget
         elif mode == "link":
             widget = HtmlElement.href()
-            column = my.get_option("link_column")
+            column = self.get_option("link_column")
             if not column:
                 column = "code"
             widget.add( sobject.get_value(column) )
@@ -123,20 +123,20 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         title = _(title)
 
 
-        tab_element_names = my.kwargs.get("tab_element_names") or ""
-        detail_view = my.kwargs.get("detail_view") or ""
+        tab_element_names = self.kwargs.get("tab_element_names") or ""
+        detail_view = self.kwargs.get("detail_view") or ""
         
         show_default_elements = "true"
-        if my.kwargs.get("show_default_elements") in ['false', False]:
+        if self.kwargs.get("show_default_elements") in ['false', False]:
             show_default_elements = "false"
 
         widget.add_behavior( {
         'type': 'click_up',
-        'search_key': my.search_key,
+        'search_key': self.search_key,
         'use_parent': use_parent,
         'tab_element_names': tab_element_names,
         'detail_view': detail_view,
-        'show_task_process': my.show_task_process,
+        'show_task_process': self.show_task_process,
         'show_default_elements': show_default_elements,
         'code': code,
         'name': name,
@@ -175,7 +175,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         } )
 
 
-        #link_wdg = my.get_link_wdg(target_id, title, widget)
+        #link_wdg = self.get_link_wdg(target_id, title, widget)
         #div.add( link_wdg )
         div.add(widget)
 
@@ -192,18 +192,18 @@ class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
     }
  
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        my.search_key = SearchKey.get_by_sobject(sobject)
+        self.search_key = SearchKey.get_by_sobject(sobject)
     
         div = DivWdg()
         div.add_class("hand")
 
         title = "Show Item Details"
-        if my.widget:
-            widget = my.widget
+        if self.widget:
+            widget = self.widget
         else:
             widget = IconButtonWdg(title=title, icon="BS_SEARCH")
 
@@ -221,12 +221,12 @@ class SObjectTaskStatusElementWdg(SObjectDetailElementWdg):
         title = _(title)
 
 
-        tab_element_names = my.kwargs.get("tab_element_names") or ""
-        detail_view = my.kwargs.get("detail_view") or ""
+        tab_element_names = self.kwargs.get("tab_element_names") or ""
+        detail_view = self.kwargs.get("detail_view") or ""
 
         widget.add_behavior( {
         'type': 'click_up',
-        'search_key': my.search_key,
+        'search_key': self.search_key,
         'label': title,
         'code': code,
         'name': name,
@@ -271,18 +271,18 @@ class TaskDetailPanelElementWdg(SObjectDetailElementWdg):
     }
  
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        my.search_key = SearchKey.get_by_sobject(sobject)
+        self.search_key = SearchKey.get_by_sobject(sobject)
     
         div = DivWdg()
         div.add_class("hand")
 
         title = "Show Item Details"
-        if my.widget:
-            widget = my.widget
+        if self.widget:
+            widget = self.widget
         else:
             widget = IconButtonWdg(title=title, icon="BS_SEARCH")
 
@@ -295,7 +295,7 @@ class TaskDetailPanelElementWdg(SObjectDetailElementWdg):
 
         widget.add_behavior( {
         'type': 'click_up',
-        'search_key': my.search_key,
+        'search_key': self.search_key,
         'code': code,
         'name': name,
         'cbjs_action': '''

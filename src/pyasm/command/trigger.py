@@ -38,83 +38,83 @@ class Trigger(Command):
     TRIGGER_EVENT_KEY = "triggers:cache"
     NOTIFICATION_EVENT_KEY = "notifications:cache"
 
-    def __init__(my, **kwargs):
-        my.caller = None
-        my.message = None
-        my.trigger_sobj = None
-        my.input = {}
-        my.output = {}
-        my.description = ''
-        my.kwargs = kwargs
-        super(Trigger,my).__init__()
+    def __init__(self, **kwargs):
+        self.caller = None
+        self.message = None
+        self.trigger_sobj = None
+        self.input = {}
+        self.output = {}
+        self.description = ''
+        self.kwargs = kwargs
+        super(Trigger,self).__init__()
 
-    def get_title(my):
-        print("WARNING: Should override 'get_title' function for %s" % my)
-        return Common.get_full_class_name(my)
+    def get_title(self):
+        print("WARNING: Should override 'get_title' function for %s" % self)
+        return Common.get_full_class_name(self)
 
 
-    def set_trigger_sobj(my, trigger_sobj):
-        my.trigger_sobj = trigger_sobj
+    def set_trigger_sobj(self, trigger_sobj):
+        self.trigger_sobj = trigger_sobj
 
-    def get_trigger_sobj(my):
-        return my.trigger_sobj
+    def get_trigger_sobj(self):
+        return self.trigger_sobj
 
-    def get_trigger_data(my):
-        data = my.trigger_sobj.get_value("data")
+    def get_trigger_data(self):
+        data = self.trigger_sobj.get_value("data")
         if not data:
             return {}
         else:
             return jsonloads(data)
 
 
-    def set_command(my, command):
-        my.caller = command
+    def set_command(self, command):
+        self.caller = command
 
-    def set_message(my, message):
-        my.message = message
+    def set_message(self, message):
+        self.message = message
 
-    def get_message(my):
-        return my.message
+    def get_message(self):
+        return self.message
 
-    def set_event(my, event):
-        my.message = event
+    def set_event(self, event):
+        self.message = event
 
-    def get_event(my):
-        return my.message
+    def get_event(self):
+        return self.message
     
-    def get_command(my):
-        return my.caller
+    def get_command(self):
+        return self.caller
 
-    def set_caller(my, caller):
-        my.caller = caller
+    def set_caller(self, caller):
+        self.caller = caller
 
-    def get_caller(my):
-        return my.caller
+    def get_caller(self):
+        return self.caller
 
-    def get_command_class(my):
-        command_class = my.caller.__class__.__name__
+    def get_command_class(self):
+        command_class = self.caller.__class__.__name__
         return command_class
 
 
     # set inputs and outputs
-    def set_input(my, input):
-        my.input = input
+    def set_input(self, input):
+        self.input = input
     
-    def get_input(my):
-        return my.input
+    def get_input(self):
+        return self.input
 
-    def set_output(my, output):
-        my.output = output
+    def set_output(self, output):
+        self.output = output
     
-    def get_output(my):
-        return my.output
+    def get_output(self):
+        return self.output
 
-    def set_description(my, description):
-        my.description = description
-    def get_description(my):
-        return my.description
+    def set_description(self, description):
+        self.description = description
+    def get_description(self):
+        return self.description
 
-    def execute(my):
+    def execute(self):
         raise TriggerException("Must override execute function")
 
 
@@ -816,8 +816,8 @@ class SnapshotIsLatestTrigger(Trigger):
     is_undoable = classmethod(is_undoable)
 
 
-    def execute(my):
-        input = my.get_input()
+    def execute(self):
+        input = self.get_input()
         mode = input.get("mode")
         # NOTE: this could be run during update and insert of snapshot
         # during insert, for simple snapshot creation like server.create_snaphot()
@@ -889,10 +889,10 @@ __all__.append('SearchTypeCacheTrigger')
 from tactic_client_lib.interpreter import Handler
 class SearchTypeCacheTrigger(Handler):
 
-    def execute(my):
+    def execute(self):
         from pyasm.biz import CacheContainer
         print("running cache trigger")
-        search_type = my.input.get("search_type")
+        search_type = self.input.get("search_type")
         assert search_type
         cache = CacheContainer.get(search_type)
         cache.make_dirty()
@@ -902,9 +902,9 @@ class SearchTypeCacheTrigger(Handler):
 
 
 class SampleTrigger(Trigger):
-    def execute(my):
+    def execute(self):
         # filter this to the specific command
-        command_class = my.get_command_class()
+        command_class = self.get_command_class()
         if command_class != "SimpleStatusCmd":
             return
 
@@ -917,48 +917,48 @@ import time
 
 class TimedTrigger(Base):
 
-    def __init__(my):
+    def __init__(self):
         # start the clock on creation time
-        my.start_interval = time.time()
-        my.interval = 0
-        my.is_executing = False
+        self.start_interval = time.time()
+        self.interval = 0
+        self.is_executing = False
 
 
-    def get_execute_interval(my):
+    def get_execute_interval(self):
         '''return number of seconds between execution'''
         return 
 
-    def get_execute_time(my):
+    def get_execute_time(self):
         '''return time of day this needs to be executed'''
         return
 
 
-    def get_time(my):
+    def get_time(self):
         '''return time when this should be executed'''
         pass
 
-    def is_in_separate_thread(my):
+    def is_in_separate_thread(self):
         '''determines whether this trigger should be run in an independent
         separate thread'''
         return False
 
 
-    def is_ready(my):
+    def is_ready(self):
 
-        if my.is_executing:
+        if self.is_executing:
             return False
 
-        execute_interval = my.get_execute_interval()
+        execute_interval = self.get_execute_interval()
 
         current = time.time()
-        my.interval = current - my.start_interval
+        self.interval = current - self.start_interval
 
         # check if the execute interval is exceeded
-        if execute_interval and my.interval >= execute_interval:
+        if execute_interval and self.interval >= execute_interval:
             return True
 
         # check time of day
-        execute_time = my.get_execute_time()
+        execute_time = self.get_execute_time()
         if execute_time:
             execute_hour, execute_minute = execute_time.split(":")
 
@@ -975,26 +975,26 @@ class TimedTrigger(Base):
 
 
 
-    def _do_execute(my):
+    def _do_execute(self):
         current = time.time()
-        my.is_executing = True
-        my.execute()
-        my.is_executing = False
-        my.start_interval = current
+        self.is_executing = True
+        self.execute()
+        self.is_executing = False
+        self.start_interval = current
        
 
-    def execute(my):
+    def execute(self):
         raise TriggerException("Must override execute function")
 
 
 
 class SampleTimedTrigger(TimedTrigger):
 
-    def get_execute_interval(my):
+    def get_execute_interval(self):
         '''return number of seconds between execution'''
         return 3600
 
-    def execute(my):
+    def execute(self):
         print("doing a bunch of stuff")
         print("sleeping")
         time.sleep(15)
@@ -1010,25 +1010,25 @@ from email_handler import EmailHandler
 
 class BurnDownTimedTrigger(TimedTrigger):
 
-    def __init__(my):
-        my.notified = {}
-        my.keyed = {}
-        super(BurnDownTimedTrigger, my).__init__()
+    def __init__(self):
+        self.notified = {}
+        self.keyed = {}
+        super(BurnDownTimedTrigger, self).__init__()
 
-    def get_execute_interval(my):
+    def get_execute_interval(self):
         '''return number of seconds between execution'''
         return 5
         #pass
 
-    def get_execute_time(my):
+    def get_execute_time(self):
         #return "00:20"
         pass
 
-    def is_in_separate_thread(my):
+    def is_in_separate_thread(self):
         return False
 
 
-    def execute(my):
+    def execute(self):
         date = Date()
         cur_time = date.get_utc()
 
@@ -1111,15 +1111,15 @@ class BurnDownTimedTrigger(TimedTrigger):
 
         from pyasm.command import Command
         class BurnDownCmd(Command):
-            def get_title(my):
+            def get_title(self):
                 return "Burn Down Command"
-            def set_sobjects(my, sobjects):
-                my.sobjects = [sobject]
-            def execute(my):
+            def set_sobjects(self, sobjects):
+                self.sobjects = [sobject]
+            def execute(self):
                 # call email trigger
                 from email_trigger import EmailTrigger
                 email_trigger = EmailTrigger()
-                email_trigger.set_command(my)
+                email_trigger.set_command(self)
                 email_trigger.execute()
 
 
@@ -1131,7 +1131,7 @@ class BurnDownTimedTrigger(TimedTrigger):
         # remember the time of each email
         for sobject in ready_sobjects:
             search_key = sobject.get_search_key()
-            my.notified[search_key] = cur_time
+            self.notified[search_key] = cur_time
             
 
 
@@ -1139,13 +1139,13 @@ class BurnDownTimedTrigger(TimedTrigger):
     
 class BurnDownEmailHandler(EmailHandler):
 
-    def get_subject(my):
-        parent = my.sobject.get_parent()
+    def get_subject(self):
+        parent = self.sobject.get_parent()
         search_type_obj = parent.get_search_type_obj()
         title = search_type_obj.get_title()
 
-        process = my.sobject.get_value("process")
-        assigned = my.sobject.get_value("assigned")
+        process = self.sobject.get_value("process")
+        assigned = self.sobject.get_value("assigned")
 
         return "Task In Progress: %s, %s, %s, %s" % (title, parent.get_code(), process, assigned )
 

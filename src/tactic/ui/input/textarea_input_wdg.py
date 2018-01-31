@@ -19,20 +19,20 @@ from pyasm.widget import TextAreaWdg, BaseInputWdg
 
 class TextAreaInputWdg(BaseInputWdg):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.name = my.kwargs.get("name")
-        my.text = TextAreaWdg(my.name)
-        my.text.add_class("form-control")
-        my.text.add_attr("rows", "3")
-        my.top = my.text
+        self.name = self.kwargs.get("name")
+        self.text = TextAreaWdg(self.name)
+        self.text.add_class("form-control")
+        self.text.add_attr("rows", "3")
+        self.top = self.text
 
-    def add_class(my, class_name):
-        my.text.add_class(class_name)
+    def add_class(self, class_name):
+        self.text.add_class(class_name)
 
 
-    def get_display(my):
+    def get_display(self):
 
-        return my.top
+        return self.top
 

@@ -35,16 +35,16 @@ from pyasm.biz import Pipeline
 class Dataflow(object):
 
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
-    def get_state_key(my, sobject, process):
+    def get_state_key(self, sobject, process):
         key = "%s|%s|state" % (sobject.get_search_key(), process)
         return key
 
 
-    def get_input_state(my, sobject, process):
+    def get_input_state(self, sobject, process):
 
         pipeline = Pipeline.get_by_sobject(sobject)
 
@@ -58,7 +58,7 @@ class Dataflow(object):
 
         process_name = p.get_name()
 
-        key = my.get_state_key(sobject, process_name)
+        key = self.get_state_key(sobject, process_name)
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
@@ -75,10 +75,10 @@ class Dataflow(object):
 
 
 
-    def get_input_path(my, sobject, process):
+    def get_input_path(self, sobject, process):
         '''Assumes a single input path'''
 
-        state = my.get_input_state(sobject, process)
+        state = self.get_input_state(sobject, process)
         if not state:
             return ""
 
@@ -86,7 +86,7 @@ class Dataflow(object):
         return path
 
 
-    def get_output_path(my, sobject, process):
+    def get_output_path(self, sobject, process):
         pass
 
 
@@ -98,7 +98,7 @@ class Dataflow(object):
 
 class WorkflowTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         Batch()
         from pyasm.web.web_init import WebInit
 
@@ -106,7 +106,7 @@ class WorkflowTest(unittest.TestCase):
         test_env.create()
 
         try:
-            my._test_complete_trigger()
+            self._test_complete_trigger()
         finally:
             test_env.delete()
 
@@ -125,13 +125,13 @@ class WorkflowTest(unittest.TestCase):
            
  
  
-    def _test_complete_trigger(my):
+    def _test_complete_trigger(self):
         cmd = WorkflowCmd()
         Command.execute_cmd(cmd)
 
 
 class WorkflowCmd(Command):
-    def execute(my):
+    def execute(self):
 
         #from pyasm.security import Site
         #from pyasm.biz import Project
@@ -140,15 +140,15 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            #my._test_file()
-            #my._test_checkin()
-            my._test_context_output()
+            #self._test_file()
+            #self._test_checkin()
+            self._test_context_output()
         except Exception, e:
             print "Error: ", e
             raise
 
 
-    def get_pipeline(my, pipeline_xml, add_tasks=False):
+    def get_pipeline(self, pipeline_xml, add_tasks=False):
 
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
@@ -214,7 +214,7 @@ class WorkflowCmd(Command):
 
 
 
-    def setup(my):
+    def setup(self):
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/city")
@@ -243,10 +243,10 @@ class WorkflowCmd(Command):
 
 
 
-    def _test_file(my):
+    def _test_file(self):
 
         # create a dummy sobject
-        sobject = my.setup()
+        sobject = self.setup()
 
         # create a pipeline
         pipeline_xml = '''
@@ -258,7 +258,7 @@ class WorkflowCmd(Command):
           <connect from="b" to="c"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code())
         sobject.commit()
@@ -293,7 +293,7 @@ class WorkflowCmd(Command):
             path = data.get("path")
             print "path: ", path
 
-            my.output = {
+            self.output = {
                 'type': 'file',
                 'path': '/tmp/whatever3.txt',
             }
@@ -335,17 +335,17 @@ class WorkflowCmd(Command):
 
         import time
         start = time.time()
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
         print time.time() - start
 
 
 
 
 
-    def _test_checkin(my):
+    def _test_checkin(self):
 
         # create a dummy sobject
-        sobject = my.setup()
+        sobject = self.setup()
 
         # create a pipeline
         pipeline_xml = '''
@@ -357,7 +357,7 @@ class WorkflowCmd(Command):
           <connect from="b" to="c"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code())
         sobject.commit()
@@ -454,13 +454,13 @@ class WorkflowCmd(Command):
             "process": process,
             "data": data
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
-    def _test_context_output(my):
+    def _test_context_output(self):
 
         # create a dummy sobject
-        sobject = my.setup()
+        sobject = self.setup()
 
         # create a pipeline
         pipeline_xml = '''
@@ -470,7 +470,7 @@ class WorkflowCmd(Command):
           <connect from="a" to="b"/>
         </pipeline>
         '''
-        pipeline, processes = my.get_pipeline(pipeline_xml)
+        pipeline, processes = self.get_pipeline(pipeline_xml)
 
         sobject.set_value("pipeline_code", pipeline.get_code())
         sobject.commit()
@@ -519,11 +519,11 @@ class WorkflowCmd(Command):
             "sobject": sobject,
             "process": process,
         }
-        Trigger.call(my, "process|pending", output)
+        Trigger.call(self, "process|pending", output)
 
 
         # use data flow to get the input path.  Basically, this states
-        # "get me whatever my input is delivering"
+        # "get me whatever self input is delivering"
         dataflow = Dataflow()
         path = dataflow.get_input_path(sobject, "b")
 
@@ -537,7 +537,7 @@ class WorkflowCmd(Command):
 
 
 
-    def assertEquals(my, a, b):
+    def assertEquals(self, a, b):
         if a == b:
             return
         else:

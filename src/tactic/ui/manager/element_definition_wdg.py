@@ -34,7 +34,7 @@ import types
 
 class ElementDefinitionWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'view': 'the top level view we are looking at',
@@ -46,7 +46,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
    
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_element_top")
         top.add_color("color", "color")
@@ -54,17 +54,17 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
        
 
-        is_insert = my.kwargs.get("is_insert")
+        is_insert = self.kwargs.get("is_insert")
         if is_insert in ['true', True]:
-            my.is_insert = 'true'
+            self.is_insert = 'true'
         else:
-            my.is_insert = 'false'
+            self.is_insert = 'false'
 
 
-        search_type = my.kwargs.get("search_type")
-        my.search_type = search_type
-        view = my.kwargs.get("view")
-        element_name = my.kwargs.get("element_name")
+        search_type = self.kwargs.get("search_type")
+        self.search_type = search_type
+        view = self.kwargs.get("view")
+        element_name = self.kwargs.get("element_name")
 
 
         # add hidden elements for the search_type and view
@@ -83,9 +83,9 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         # This variable may be obsolete now
         # find out this so we don't draw Display if it is a edit layout
         view_attributes = config_view.get_view_attributes()
-        my.is_edit_layout = 'false'
+        self.is_edit_layout = 'false'
         if view in ['edit','edit_definition', 'insert'] or view_attributes.get('layout') == 'EditWdg':
-            my.is_edit_layout = 'true'
+            self.is_edit_layout = 'true'
 
        
 
@@ -96,7 +96,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         top.add(inner_div)
 
         #view = config_view.get_view()
-        if my.is_edit_layout == 'true':
+        if self.is_edit_layout == 'true':
             config_xml = '''
              <config>
               <tab>
@@ -110,7 +110,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             </display>
           </element>
         </tab>
-        </config>'''%{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': my.is_insert}
+        </config>'''%{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert}
         else:
             config_xml = '''
             <config>
@@ -135,10 +135,10 @@ class ElementDefinitionWdg(BaseRefreshWdg):
               </element>
             </tab>
             </config>
-            ''' %{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': my.is_insert}
+            ''' %{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert}
        
 
-        if my.is_insert =='true':
+        if self.is_insert =='true':
             from tactic.ui.container import WizardWdg
             wizard = WizardWdg(title="none")
             config = WidgetConfig.get(view='tab', xml=config_xml)
@@ -148,7 +148,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             edit_display = config.get_display_widget('Edit Mode')
             wizard.add(edit_display, "Edit Mode")
 
-            submit_input = my.get_submit_input()
+            submit_input = self.get_submit_input()
             wizard.add_submit_button(submit_input)
 
             inner_div.add(wizard)
@@ -160,12 +160,12 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
         return top
 
-    def get_submit_input(my):
+    def get_submit_input(self):
         submit_input = ActionButtonWdg(title='Create >>', tip="Create New Column")
 
         behavior = {
             'type':         'click_up',
-            'cbjs_action': my._get_save_cbjs_action()
+            'cbjs_action': self._get_save_cbjs_action()
         }
         submit_input.add_behavior(behavior)
         submit_input.add_style("float: right")
@@ -173,10 +173,10 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         return submit_input
 
 
-    def get_definitions(my, element_name):
+    def get_definitions(self, element_name):
         '''get all the definitions for this element'''
-        search_type = my.kwargs.get("search_type")
-        view = my.kwargs.get("view")
+        search_type = self.kwargs.get("search_type")
+        view = self.kwargs.get("view")
         config_view = WidgetConfigView.get_by_search_type(search_type, view)
 
         display_class = config_view.get_display_handler(element_name)
@@ -190,7 +190,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
             xml = config.get_element_xml(element_name)
 
-    def _get_save_cbjs_action(my):
+    def _get_save_cbjs_action(self):
         ''' this takes input from both table and edit display and save a new column'''
         return  '''
             var server = TacticServerStub.get();
@@ -273,7 +273,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                 throw(e)
                 spt.alert('Definition modified. Please refresh this table manually');
             }
-            '''%(my.is_insert, my.is_edit_layout, my.search_type)
+            '''%(self.is_insert, self.is_edit_layout, self.search_type)
 
     
 
@@ -283,12 +283,12 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
 class ViewElementDefinitionWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.main_xml_text = None
-        my.main_xml = None
+    def init(self):
+        self.main_xml_text = None
+        self.main_xml = None
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'view': 'the top level view we are looking at',
@@ -300,7 +300,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         }
 
 
-    def _get_save_cbjs_action(my):
+    def _get_save_cbjs_action(self):
         return  '''
             var server = TacticServerStub.get();
             var top = bvr.src_el.getParent(".spt_element_definition");
@@ -383,25 +383,25 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 // definition
                 spt.alert('Definition modified. Please refresh this table manually');
             }
-            '''%(str(my.is_insert).lower(), my.is_edit_layout, my.search_type)
+            '''%(str(self.is_insert).lower(), self.is_edit_layout, self.search_type)
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_element_definition")
         #top.add_style("width: 530px")
 
-        my.is_edit_layout = my.kwargs.get("is_edit_layout")
-        my.is_insert = my.kwargs.get("is_insert")
+        self.is_edit_layout = self.kwargs.get("is_edit_layout")
+        self.is_insert = self.kwargs.get("is_insert")
         
-        if my.is_insert in ['true', True]:
-            my.is_insert = True
+        if self.is_insert in ['true', True]:
+            self.is_insert = True
         else:
-            my.is_insert = False
+            self.is_insert = False
 
-        element_name = my.kwargs.get('element_name')
-        search_type = my.kwargs.get('search_type')
-        my.search_type = search_type
-        view = my.kwargs.get('view')
+        element_name = self.kwargs.get('element_name')
+        search_type = self.kwargs.get('search_type')
+        self.search_type = search_type
+        view = self.kwargs.get('view')
 
         config_view = WidgetConfigView.get_by_search_type(search_type, view)
         configs = WidgetConfigView.get_by_type("column")
@@ -410,7 +410,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         edit_config_view = WidgetConfigView.get_by_search_type(search_type, "edit")
 
-        if not my.is_insert:
+        if not self.is_insert:
 
             display_class = config_view.get_display_handler(element_name)
             widget_key = config_view.get_widget_key(element_name,'display')
@@ -429,7 +429,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
             
             if is_editable:
-                #edit_config_view = my.kwargs.get("edit_config_view")
+                #edit_config_view = self.kwargs.get("edit_config_view")
                 edit_class = edit_config_view.get_edit_handler(element_name)
                 edit_widget_key = edit_config_view.get_widget_key(element_name)
                 edit_options = edit_config_view.get_options(element_name, "edit")
@@ -533,7 +533,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         save_button.add_style("float: right")
         save_button.add_behavior( {
         'type': 'click_up',
-        'cbjs_action': my._get_save_cbjs_action()
+        'cbjs_action': self._get_save_cbjs_action()
         } )
 
 
@@ -546,14 +546,14 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         #title_div.add_style("width: 520px")
         title_div.add_style("height: 30px")
         title_div.add_border()
-        if my.is_insert:
+        if self.is_insert:
             title_div.add("Add New Column")
         else:
             title_div.add("Edit Column Definition")
 
-        if not my.is_insert:
+        if not self.is_insert:
             title_div.add(mode_wdg)
-            gear = my.get_gear_menu(view)
+            gear = self.get_gear_menu(view)
             gear.add_style("float: right")
             gear.add_style("margin: 5px 0px 5px 10px")
                 
@@ -569,11 +569,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 
         # add in the pure xml wdg
-        xml_wdg = my.get_xml_wdg(xml_str)
+        xml_wdg = self.get_xml_wdg(xml_str)
         if mode != 'xml':
             xml_wdg.add_style("display: none")
 
-        config_wdg = my.get_definition_configs(config_view, element_name)
+        config_wdg = self.get_definition_configs(config_view, element_name)
         xml_wdg.add('<br/>')
         xml_wdg.add(config_wdg)
 
@@ -644,8 +644,8 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td = attr_table.add_cell("Name: ")
         td.add_style("padding: 5px")
         td = attr_table.add_cell()
-        name = my.kwargs.get("element_name")
-        if my.is_insert:
+        name = self.kwargs.get("element_name")
+        if self.is_insert:
             name_text = TextWdg("name")
             name_text.add_style("margin-bottom: 8px")
             name_text.add_class("form-control")
@@ -712,7 +712,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         attr_table.add_cell(width_text)
 
  
-        if not my.is_insert:
+        if not self.is_insert:
 
             tr, td = attr_table.add_row_cell()
             span = DivWdg("Enable Colors: ")
@@ -744,7 +744,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td.add_style("padding-top: 20px")
 
        
-        is_edit_layout = my.kwargs.get('is_edit_layout') == 'true'
+        is_edit_layout = self.kwargs.get('is_edit_layout') == 'true'
 
         if not is_edit_layout:
             tr, td = table.add_row_cell()
@@ -764,7 +764,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 
             if not display_class:
-                display_class = my.kwargs.get('display_handler')
+                display_class = self.kwargs.get('display_handler')
 
             # add the widget information
             class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', 'Python', '-- Class Path --']
@@ -780,7 +780,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td.add(HtmlElement.br())
 
    
-        if not my.is_insert:
+        if not self.is_insert:
             tr, td = table.add_row_cell()
 
             title_wdg = DivWdg()
@@ -801,24 +801,24 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             td.add(color_wdg)
 
             # add the color widget information
-            color_wdg.add( my.get_color_wdg() )
+            color_wdg.add( self.get_color_wdg() )
 
             # add definition configs
             tr, td = table.add_row_cell()
 
-            config_wdg = my.get_definition_configs(config_view, element_name)
+            config_wdg = self.get_definition_configs(config_view, element_name)
             td.add(config_wdg)
         
         top.add_style("margin-bottom: 10px")
 
         # set the main xml value if one with display handler is found
-        if my.main_xml:
-            my.main_xml_text.set_value(my.main_xml)
+        if self.main_xml:
+            self.main_xml_text.set_value(self.main_xml)
         return top
 
 
 
-    def get_gear_menu(my, view):
+    def get_gear_menu(self, view):
 
         # FIXME: the gear menu widget should be here
         from tactic.ui.container import GearMenuWdg, Menu, MenuItem
@@ -853,7 +853,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             }
 
             spt.app_busy.hide();
-        ''' %(str(my.is_insert).lower(), my.is_edit_layout, my.search_type)}
+        ''' %(str(self.is_insert).lower(), self.is_edit_layout, self.search_type)}
 
         menu_item.add_behavior(behavior)
         menu.add(menu_item)
@@ -884,7 +884,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             }
             spt.app_busy.hide();
             }
-        '''%( view, str(my.is_insert).lower(), my.is_edit_layout, my.search_type, view)}
+        '''%( view, str(self.is_insert).lower(), self.is_edit_layout, self.search_type, view)}
         menu_item.add_behavior(behavior)
         menu.add(menu_item)
 
@@ -926,7 +926,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         return gear_menu
 
-    def get_xml_wdg(my, xml_str):
+    def get_xml_wdg(self, xml_str):
 
         xml_wdg = DivWdg()
         #xml_wdg.add_style('width: 550px')
@@ -939,23 +939,23 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         xml_wdg.add(title_wdg)
 
 
-        my.main_xml_text = TextAreaWdg("xml_def")
-        my.main_xml_text.add_style('overflow: auto')
-        my.main_xml_text.add_style("margin: 10px")
-        my.main_xml_text.set_option("rows", "20")
-        my.main_xml_text.set_option("cols", "75")
+        self.main_xml_text = TextAreaWdg("xml_def")
+        self.main_xml_text.add_style('overflow: auto')
+        self.main_xml_text.add_style("margin: 10px")
+        self.main_xml_text.set_option("rows", "20")
+        self.main_xml_text.set_option("cols", "75")
 
         if xml_str:
-            my.main_xml_text.set_value(xml_str)
+            self.main_xml_text.set_value(xml_str)
 
-        xml_wdg.add(my.main_xml_text)
+        xml_wdg.add(self.main_xml_text)
         return xml_wdg
 
 
 
-    def get_color_wdg(my):
-        search_type = my.kwargs.get('search_type')
-        element_name = my.kwargs.get('element_name')
+    def get_color_wdg(self):
+        search_type = self.kwargs.get('search_type')
+        element_name = self.kwargs.get('element_name')
 
         # get the color maps
         color_config = WidgetConfigView.get_by_search_type(search_type, "color")
@@ -1130,7 +1130,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         return top
 
 
-    def get_definition_configs(my, config_view, element_name):
+    def get_definition_configs(self, config_view, element_name):
         config_wdg = DivWdg()
         
 
@@ -1152,18 +1152,18 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         content_div.add_style("padding: 10px")
         content_div.add_border()
     
-        my.main_xml = None
+        self.main_xml = None
 
         for config in config_view.get_configs():
             view = config.get_view()
             xml = config.get_element_xml(element_name)
 
             # find out which one to display up in the top text area
-            if not my.main_xml:
+            if not self.main_xml:
                 display_handler = config.get_display_handler(element_name)
                 action_handler = config.get_action_handler(element_name)
                 if display_handler or action_handler:
-                    my.main_xml = xml
+                    self.main_xml = xml
 
             config_div = DivWdg()
             content_div.add(config_div)
@@ -1230,11 +1230,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
-    def init(my):
-        my.main_xml_text = None
-        my.main_xml = None
+    def init(self):
+        self.main_xml_text = None
+        self.main_xml = None
     
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'view': 'the top level view we are looking at',
@@ -1246,7 +1246,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         }
 
 
-    def get_insert_view(my):
+    def get_insert_view(self):
         '''the insert view is less complicated with less options'''
         widget_key = ''
         edit_widget_key = ''
@@ -1350,7 +1350,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         attr_wdg = DivWdg()
         
-        SwapDisplayWdg.create_swap_title(title_wdg, swap, attr_wdg, is_open=my.is_edit_layout)
+        SwapDisplayWdg.create_swap_title(title_wdg, swap, attr_wdg, is_open=self.is_edit_layout)
         attr_wdg.add_class("spt_element_edit")
         
         #attr_wdg.add_style("display: none")
@@ -1378,32 +1378,32 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         return widget
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_element_definition")
         #top.add_style("width: 530px")
         top.add_style("margin-bottom: 10px")
 
-        my.is_insert = my.kwargs.get("is_insert")
-        if my.is_insert in ['true', True]:
-            my.is_insert = True
+        self.is_insert = self.kwargs.get("is_insert")
+        if self.is_insert in ['true', True]:
+            self.is_insert = True
         else:
-            my.is_insert = False
+            self.is_insert = False
 
 
-        my.is_edit_layout = my.kwargs.get('is_edit_layout')
-        element_name = my.kwargs.get('element_name')
-        search_type = my.kwargs.get('search_type')
-        my.search_type = search_type
+        self.is_edit_layout = self.kwargs.get('is_edit_layout')
+        element_name = self.kwargs.get('element_name')
+        search_type = self.kwargs.get('search_type')
+        self.search_type = search_type
 
-        view = my.kwargs.get('view')
+        view = self.kwargs.get('view')
 
         config_view = WidgetConfigView.get_by_search_type(search_type, view)
         edit_config_view = WidgetConfigView.get_by_search_type(search_type, "edit")
 
        
 
-        if not my.is_insert:
+        if not self.is_insert:
             display_class = config_view.get_display_handler(element_name)
             widget_key = config_view.get_widget_key(element_name,'display')
             display_options = config_view.get_display_options(element_name)
@@ -1460,7 +1460,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         else:
          
-            top.add( my.get_insert_view())
+            top.add( self.get_insert_view())
             return top
 
 
@@ -1516,7 +1516,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         save_button.add_style("float: right")
         save_button.add_behavior( {
         'type': 'click_up',
-        'cbjs_action': my._get_save_cbjs_action()
+        'cbjs_action': self._get_save_cbjs_action()
         } )
            
 
@@ -1529,7 +1529,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         title_div.add_style("width: auto")
         title_div.add_style("height: 20px")
         title_div.add_border()
-        if my.is_insert:
+        if self.is_insert:
             title_div.add(IconWdg("New Element", IconWdg.NEW))
             title_div.add("New Column")
         else:
@@ -1541,7 +1541,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
        
         # edit mode shouldn't use gear
         """
-        gear = my.get_gear_menu()
+        gear = self.get_gear_menu()
         gear.add_style("float: right")
             
         # add gear menu 
@@ -1554,7 +1554,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
 
         # add in the pure xml wdg
-        xml_wdg = my.get_xml_wdg(xml_str)
+        xml_wdg = self.get_xml_wdg(xml_str)
         if mode != 'xml':
             xml_wdg.add_style("display: none")
         
@@ -1564,7 +1564,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         # add definition configs
         #tr, td = table.add_row_cell()
 
-        config_wdg = my.get_definition_configs(edit_config_view, element_name)
+        config_wdg = self.get_definition_configs(edit_config_view, element_name)
         xml_wdg.add('<br/>')
         xml_wdg.add(config_wdg)
 
@@ -1613,8 +1613,8 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         td = attr_table.add_cell("Name: ")
         td.add_style("padding: 5px")
         td = attr_table.add_cell()
-        name = my.kwargs.get("element_name")
-        if my.is_insert:
+        name = self.kwargs.get("element_name")
+        if self.is_insert:
             name_text = TextWdg("name")
             name_text.add_class("spt_element_definition_name")
             name_text.add_attr("size", "50")
@@ -1696,7 +1696,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         attr_wdg = DivWdg()
         
-        SwapDisplayWdg.create_swap_title(title_wdg, swap, attr_wdg, is_open=my.is_edit_layout)
+        SwapDisplayWdg.create_swap_title(title_wdg, swap, attr_wdg, is_open=self.is_edit_layout)
         attr_wdg.add_class("spt_element_edit")
         
         #attr_wdg.add_style("display: none")
@@ -1725,19 +1725,19 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         #td.add(HtmlElement.br())
 
-        config_wdg = my.get_definition_configs(edit_config_view, element_name)
+        config_wdg = self.get_definition_configs(edit_config_view, element_name)
         td.add(config_wdg)
        
         # set the main xml value if one with display handler is found
-        if my.main_xml:
-            my.main_xml_text.set_value(my.main_xml)
+        if self.main_xml:
+            self.main_xml_text.set_value(self.main_xml)
         
 
         return top
 
 
 
-    def get_xml_wdg(my, xml_str):
+    def get_xml_wdg(self, xml_str):
 
         xml_wdg = DivWdg()
         xml_wdg.add_style('width: auto')
@@ -1751,16 +1751,16 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         xml_wdg.add(title_wdg)
 
 
-        my.main_xml_text = TextAreaWdg("xml_def")
-        my.main_xml_text.add_style('overflow: auto')
-        my.main_xml_text.add_style("margin: 10px")
-        my.main_xml_text.set_option("rows", "20")
-        my.main_xml_text.add_style("width: auto")
+        self.main_xml_text = TextAreaWdg("xml_def")
+        self.main_xml_text.add_style('overflow: auto')
+        self.main_xml_text.add_style("margin: 10px")
+        self.main_xml_text.set_option("rows", "20")
+        self.main_xml_text.add_style("width: auto")
 
         if xml_str:
-            my.main_xml_text.set_value(xml_str)
+            self.main_xml_text.set_value(xml_str)
 
-        xml_wdg.add(my.main_xml_text)
+        xml_wdg.add(self.main_xml_text)
 
        
         
@@ -1774,22 +1774,22 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
     ''' Choice of Table Layout, Tile Layout, Custom Layout'''
 
 
-    def get_display(my):
-        widget_key = my.kwargs.get("widget_key")
-        display_class = my.kwargs.get("display_class")
-        display_options = my.kwargs.get("display_options")
-        action_class = my.kwargs.get("action_class")
-        action_options = my.kwargs.get("action_options")
-        show_action = my.kwargs.get('show_action')
+    def get_display(self):
+        widget_key = self.kwargs.get("widget_key")
+        display_class = self.kwargs.get("display_class")
+        display_options = self.kwargs.get("display_options")
+        action_class = self.kwargs.get("action_class")
+        action_options = self.kwargs.get("action_options")
+        show_action = self.kwargs.get('show_action')
 
         # pass in an optional element name.  some widgets make use of this
         # display extra options (ie: CustomLayoutElementWdg)
-        element_name = my.kwargs.get("element_name")
+        element_name = self.kwargs.get("element_name")
 
-        class_labels = my.kwargs.get("class_labels")
-        class_values = my.kwargs.get("class_values")
-        default_class = my.kwargs.get("default_class")
-        prefix = my.kwargs.get("prefix")
+        class_labels = self.kwargs.get("class_labels")
+        class_values = self.kwargs.get("class_values")
+        default_class = self.kwargs.get("default_class")
+        prefix = self.kwargs.get("prefix")
         if not prefix:
             prefix = 'option'
 
@@ -1800,7 +1800,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # add the widget
         top = DivWdg()
         top.add_class("spt_widget_selector_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         table = Table()
 
@@ -2043,23 +2043,23 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
 class ActionClassOptionsWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'action_class': 'the display class to show all of the options',
         'action_options': 'the display options for this class',
         'prefix': 'the prefix to put before the input names'
         }
 
-    def init(my):
-        my.table = Table()
+    def init(self):
+        self.table = Table()
 
 
-    def add_style(my, style):
-        my.table.add_style(style)
+    def add_style(self, style):
+        self.table.add_style(style)
 
-    def get_display(my):
+    def get_display(self):
 
-        prefix = my.kwargs.get('prefix')
+        prefix = self.kwargs.get('prefix')
         if not prefix:
             prefix = 'action'
 
@@ -2073,14 +2073,14 @@ class ActionClassOptionsWdg(BaseRefreshWdg):
         if not action_class:
             action_class = web.get_form_value("xxx_%s|action_class" % prefix)
         if not action_class:
-            action_class = my.kwargs.get("action_class")
+            action_class = self.kwargs.get("action_class")
 
         if not action_class:
             action_class = "pyasm.command.DatabaseAction"
             is_default = True
 
         
-        action_options = my.kwargs.get("action_options")
+        action_options = self.kwargs.get("action_options")
         
         #if is_default:
         #    return None
@@ -2095,7 +2095,7 @@ class ActionClassOptionsWdg(BaseRefreshWdg):
         if not action_options:
             action_options = {}
 
-        table = my.table
+        table = self.table
         table.add_class('spt_action')
         table.add_color("color", "color")
         table.add_style("margin-top", "10px")
@@ -2134,7 +2134,7 @@ class ActionClassOptionsWdg(BaseRefreshWdg):
 
 class WidgetClassOptionsWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'widget_key': 'the widget key to map the display class to',
         'display_class': 'the display class to show all of the options',
@@ -2143,11 +2143,11 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         'args_keys': 'explicitly set an args_keys data structure'
         }
 
-    def init(my):
+    def init(self):
         top = DivWdg()
        
         top.add_class("spt_widget_options_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
 
     # sort
@@ -2201,11 +2201,11 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        prefix = my.kwargs.get('prefix')
+        prefix = self.kwargs.get('prefix')
         if not prefix:
             prefix = 'option'
 
@@ -2221,12 +2221,12 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         if not display_class:
             display_class = web.get_form_value("xxx_%s|display_class" % prefix)
         if not display_class:
-            display_class = my.kwargs.get("display_class")
+            display_class = self.kwargs.get("display_class")
 
         if not display_class:
             display_class = "pyasm.widget.SimpleTableElementWdg"
 
-        display_options = my.kwargs.get("display_options")
+        display_options = self.kwargs.get("display_options")
 
         import types
         if type(display_options) in types.StringTypes:
@@ -2239,8 +2239,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             display_options = {}
 
 
-        class_options = my.kwargs.get("args_keys")
-        category_options = my.kwargs.get("category_keys") or {}
+        class_options = self.kwargs.get("args_keys")
+        category_options = self.kwargs.get("category_keys") or {}
 
         if not class_options:
             class_options = {}
@@ -2285,7 +2285,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             # get the custom layout defintion
             element_name = display_options.get("view")
             if not element_name:
-                element_name = my.kwargs.get("element_name")
+                element_name = self.kwargs.get("element_name")
 
             search = Search("config/widget_config")
             search.add_filter("view", element_name)
@@ -2352,7 +2352,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 class_options_array.append(value)
 
-        class_options_array.sort(my.options_sort)
+        class_options_array.sort(self.options_sort)
 
         current_div = DivWdg()
         top.add(current_div)
@@ -2496,7 +2496,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 select.add_behavior( {
                 'type': 'change',
-                #'search_type': my.search_type,
+                #'search_type': self.search_type,
                 #'element_name': element_name,
                 'search_type': "prod/asset",
                 'element_name': "file_usage",
@@ -2734,20 +2734,20 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 class SimpleElementDefinitionCbk(Command):
 
     EDIT_VIEW = 'edit_definition'
-    def get_title(my):
+    def get_title(self):
         return "Element definition update"
 
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
-        my.is_insert = my.kwargs.get('is_insert')
-        my.is_edit_layout = my.kwargs.get('is_edit_layout') == 'true'
+        self.is_insert = self.kwargs.get('is_insert')
+        self.is_edit_layout = self.kwargs.get('is_edit_layout') == 'true'
 
-        my.search_type = my.kwargs.get("search_type")
+        self.search_type = self.kwargs.get("search_type")
 
         # get the view
         user_view = web.get_form_value('view')
-        view = my.kwargs.get('view')
+        view = self.kwargs.get('view')
         
         # one exception:
         if user_view=='edit_definition':
@@ -2761,15 +2761,15 @@ class SimpleElementDefinitionCbk(Command):
         if not view:
             view = 'definition'
 
-        my.element_name = web.get_form_value("name")
-        my.element_name = my.element_name.strip()
-        if not my.element_name:
+        self.element_name = web.get_form_value("name")
+        self.element_name = self.element_name.strip()
+        if not self.element_name:
             raise TacticException('Column name cannot be empty')
         try:
-            my.element_name.encode('ascii')
+            self.element_name.encode('ascii')
         except UnicodeEncodeError:
             raise TacticException('Column name needs to be in English.. Non-English characters can be used in Title.')
-        assert my.element_name
+        assert self.element_name
 
 
 
@@ -2779,11 +2779,11 @@ class SimpleElementDefinitionCbk(Command):
 
             element_xml = Xml()
             element_xml.read_string(xml_str)
-            my.element_name = element_xml.get_value("element/@name")
+            self.element_name = element_xml.get_value("element/@name")
            
-            if my.is_edit_layout:
-                view = my.EDIT_VIEW
-            my.save_to_view(my.search_type, view, my.element_name, element_xml)
+            if self.is_edit_layout:
+                view = self.EDIT_VIEW
+            self.save_to_view(self.search_type, view, self.element_name, element_xml)
             
         else:
             # put an xxx in front to separate it from the normal options
@@ -2799,32 +2799,32 @@ class SimpleElementDefinitionCbk(Command):
                 edit_class = ''
 
             # During insert, we save both view and edit.
-            if my.is_insert:
+            if self.is_insert:
                 # only if it's not edit layout, we save the definition view
 
-                if not my.is_edit_layout:
-                    my.save(my.search_type, view, my.element_name, widget_key, display_class)
+                if not self.is_edit_layout:
+                    self.save(self.search_type, view, self.element_name, widget_key, display_class)
 
                 # hard code for drop_item to include the DropElementAction
                 if widget_key=='drop_item':
                     action_class = "tactic.ui.table.DropElementAction"
-                    options = my.get_options("option")
+                    options = self.get_options("option")
                     web.set_form_value('action|instance_type', options.get('instance_type'))
-                my.save(my.search_type, my.EDIT_VIEW, my.element_name, edit_widget_key, edit_class, action_class)
+                self.save(self.search_type, self.EDIT_VIEW, self.element_name, edit_widget_key, edit_class, action_class)
             else:
-                if my.is_edit_layout:
-                    my.save(my.search_type, my.EDIT_VIEW, my.element_name, edit_widget_key, edit_class, action_class, user_view=view)
+                if self.is_edit_layout:
+                    self.save(self.search_type, self.EDIT_VIEW, self.element_name, edit_widget_key, edit_class, action_class, user_view=view)
                 else:
-                    my.save(my.search_type, view, my.element_name, widget_key, display_class)
+                    self.save(self.search_type, view, self.element_name, widget_key, display_class)
 
 
         # save the color
 
-        if not my.is_edit_layout:
-            my.save_color()
+        if not self.is_edit_layout:
+            self.save_color()
 
 
-    def save(my, search_type, view, element_name, widget_key, display_class, action_class=None, user_view=''):
+    def save(self, search_type, view, element_name, widget_key, display_class, action_class=None, user_view=''):
         '''user_view is the view the user is looking at'''
         web = WebContainer.get_web()
         
@@ -2842,7 +2842,7 @@ class SimpleElementDefinitionCbk(Command):
         element_xml.set_attribute(root, "name", element_name)
 
         # add non-edit element properties
-        if view != my.EDIT_VIEW:
+        if view != self.EDIT_VIEW:
             if title:
                 element_xml.set_attribute(root, "title", title)
             else:
@@ -2874,14 +2874,14 @@ class SimpleElementDefinitionCbk(Command):
             element_xml.set_attribute(display_node, "class", display_class)
             element_xml.append_child(root, display_node)
 
-        if view == my.EDIT_VIEW:
+        if view == self.EDIT_VIEW:
             # access the view mode user_view(usually definition for now) to change its edit attribute
             # if it's just a built-in view, ignore it now
             # prevent saving non-editable column to edit view
             config = WidgetDbConfig.get_by_search_type(search_type, user_view)
             if not editable:
                 # remove the element from edit view
-                my.process_edit_view(search_type, element_name, remove=True)
+                self.process_edit_view(search_type, element_name, remove=True)
                 # TODO: redefine user_view
                 if config:
                     view_mode_xml = config.get_xml()
@@ -2908,21 +2908,21 @@ class SimpleElementDefinitionCbk(Command):
                     config.commit()
             
                 
-            options = my.get_options("edit")
-            my.process_edit_view(search_type, element_name)
+            options = self.get_options("edit")
+            self.process_edit_view(search_type, element_name)
         else:
-            options = my.get_options("option")
+            options = self.get_options("option")
 
         for name, value in options.items():
             option_node = element_xml.create_text_element(name, value)
             element_xml.append_child(display_node, option_node)
 
     
-        if view == my.EDIT_VIEW:
+        if view == self.EDIT_VIEW:
         
             # create the optional action node
             action_node = element_xml.create_element("action")
-            options = my.get_options("action") 
+            options = self.get_options("action") 
             if action_class:
                 element_xml.set_attribute(action_node, "class", action_class)
                 element_xml.append_child(root, action_node)
@@ -2931,10 +2931,10 @@ class SimpleElementDefinitionCbk(Command):
                     option_node = element_xml.create_text_element(name, value)
                     element_xml.append_child(action_node, option_node)
        
-        my.save_to_view(search_type, view, element_name, element_xml)
+        self.save_to_view(search_type, view, element_name, element_xml)
 
 
-    def process_edit_view(my, search_type, element_name, remove=False):
+    def process_edit_view(self, search_type, element_name, remove=False):
         ''' this one is special as it has to look for one in edit view first
            and strip it down to a plain element as the new one will be saved in the edit_definition
            view level'''
@@ -2957,10 +2957,10 @@ class SimpleElementDefinitionCbk(Command):
             node_xml = '<element name="%s"/>' %element_name
             xml = Xml()
             xml.read_string(node_xml)
-            my.save_to_view(search_type, "edit", element_name, xml)
+            self.save_to_view(search_type, "edit", element_name, xml)
         
     
-    def save_to_view(my, search_type, view, element_name, element_xml):
+    def save_to_view(self, search_type, view, element_name, element_xml):
 
         # save to view
         search_type_obj = SearchType.get(search_type)
@@ -3011,14 +3011,14 @@ class SimpleElementDefinitionCbk(Command):
             #return
 
        
-        if widget and view != my.EDIT_VIEW:
+        if widget and view != self.EDIT_VIEW:
             try:
                 # TODO: should check if the coluns exist! or only on insert
                 project_code = Project.get_project_code()
                 full_st = Project.get_full_search_type(search_type, project_code=project_code)
                 widget.create_required_columns(full_st)
             except (TacticException, AttributeError), e: # for add column sql error
-                if my.is_insert: # will be caught in AlterTableCmd
+                if self.is_insert: # will be caught in AlterTableCmd
                     raise
                 else: # in edit mode, it's ok for now
                     print("WARNING when creating required columns: ", e.message)
@@ -3038,7 +3038,7 @@ class SimpleElementDefinitionCbk(Command):
 
       
 
-    def get_options(my, prefix):
+    def get_options(self, prefix):
         web = WebContainer.get_web()
 
         # get all of the options
@@ -3107,8 +3107,8 @@ class SimpleElementDefinitionCbk(Command):
 
                 from tactic.ui.app.aggregate_wdg import AggregateRegisterCmd
                 kwargs = {
-                    'search_type': my.search_type,
-                    'element_name': my.element_name,
+                    'search_type': self.search_type,
+                    'element_name': self.element_name,
                     'interval': interval
                 }
                 cmd = AggregateRegisterCmd(**kwargs)
@@ -3117,16 +3117,16 @@ class SimpleElementDefinitionCbk(Command):
         return options
 
 
-    def save_color(my):
+    def save_color(self):
         web = WebContainer.get_web()
 
         search = Search("config/widget_config")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         search.add_filter("view", "color")
         config = search.get_sobject()
         if not config:
             config = SearchType.create("config/widget_config")
-            config.set_value("search_type", my.search_type)
+            config.set_value("search_type", self.search_type)
             config.set_value("view", "color")
             config.set_value("config", "<config><color/></config>")
             config.set_view("color")
@@ -3166,7 +3166,7 @@ class SimpleElementDefinitionCbk(Command):
         '''
  
         element_xml = []
-        element_xml.append( '''<element name='%s'>''' % my.element_name )
+        element_xml.append( '''<element name='%s'>''' % self.element_name )
 
 
 
@@ -3189,7 +3189,7 @@ class SimpleElementDefinitionCbk(Command):
         element_xml = "\n".join(element_xml)
 
 
-        config.append_xml_element(my.element_name, element_xml)
+        config.append_xml_element(self.element_name, element_xml)
         config.commit_config()
 
 

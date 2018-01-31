@@ -34,7 +34,7 @@ from swap_display_wdg import SwapDisplayWdg
 
 class CsvExportWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {'search_type': 'Search Type', \
                 'view': 'View of the search type', \
                 'related_view': 'Related View of search type',
@@ -44,64 +44,64 @@ class CsvExportWdg(BaseRefreshWdg):
                 }
 
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
         # reconstruct the full search_type if it's base SType
-        if my.search_type.find("?") == -1:
+        if self.search_type.find("?") == -1:
             project_code = Project.get_project_code()
-            my.search_type = SearchType.build_search_type(my.search_type, project_code)
+            self.search_type = SearchType.build_search_type(self.search_type, project_code)
         
-        my.view = my.kwargs.get('view')
-        my.element_names = my.kwargs.get('element_names')
-        my.related_view = my.kwargs.get('related_view')
-        my.search_class = my.kwargs.get('search_class')
-        my.search_view = my.kwargs.get('search_view')
-        my.simple_search_view = my.kwargs.get('simple_search_view')
-        my.mode = my.kwargs.get('mode')
-        my.close_cbfn = my.kwargs.get('close_cbfn')
-        my.input_search_keys = my.kwargs.get('selected_search_keys')
-        my.selected_search_keys = []
-        my.error_msg = ''
-        my.search_type_list = []
-        my.is_test = my.kwargs.get('test') == True
-        my.table = None
+        self.view = self.kwargs.get('view')
+        self.element_names = self.kwargs.get('element_names')
+        self.related_view = self.kwargs.get('related_view')
+        self.search_class = self.kwargs.get('search_class')
+        self.search_view = self.kwargs.get('search_view')
+        self.simple_search_view = self.kwargs.get('simple_search_view')
+        self.mode = self.kwargs.get('mode')
+        self.close_cbfn = self.kwargs.get('close_cbfn')
+        self.input_search_keys = self.kwargs.get('selected_search_keys')
+        self.selected_search_keys = []
+        self.error_msg = ''
+        self.search_type_list = []
+        self.is_test = self.kwargs.get('test') == True
+        self.table = None
 
-    def check(my):
-        if my.mode == 'export_matched':
+    def check(self):
+        if self.mode == 'export_matched':
             from tactic.ui.panel import TableLayoutWdg
-            my.table = TableLayoutWdg(search_type=my.search_type, view=my.view,\
-                show_search_limit='false', search_limit=-1, search_view=my.search_view,\
-                search_class=my.search_class, simple_search_view=my.simple_search_view, init_load_num=-1)
-            my.table.handle_search()
-            search_objs = my.table.sobjects
-            my.selected_search_keys = SearchKey.get_by_sobjects(search_objs, use_id=True)
+            self.table = TableLayoutWdg(search_type=self.search_type, view=self.view,\
+                show_search_limit='false', search_limit=-1, search_view=self.search_view,\
+                search_class=self.search_class, simple_search_view=self.simple_search_view, init_load_num=-1)
+            self.table.handle_search()
+            search_objs = self.table.sobjects
+            self.selected_search_keys = SearchKey.get_by_sobjects(search_objs, use_id=True)
             return True
 
-        for sk in my.input_search_keys:
+        for sk in self.input_search_keys:
             st = SearchKey.extract_search_type(sk)
-            if st not in my.search_type_list:
-                my.search_type_list.append(st)
+            if st not in self.search_type_list:
+                self.search_type_list.append(st)
 
             id = SearchKey.extract_id(sk)
             if id == '-1':
                 continue
             
-            my.selected_search_keys.append(sk)
+            self.selected_search_keys.append(sk)
         
-        if len(my.search_type_list) > 1:
-            my.check_passed = False
-            my.error_msg = 'More than 1 search type is selected. Please keep the selection to one type only.'
+        if len(self.search_type_list) > 1:
+            self.check_passed = False
+            self.error_msg = 'More than 1 search type is selected. Please keep the selection to one type only.'
             return False
 
-        if not my.search_type_list and my.mode == 'export_selected':
-            my.check_passed = False
-            my.error_msg = 'Search type cannot be identified. Please select a valid item.'
+        if not self.search_type_list and self.mode == 'export_selected':
+            self.check_passed = False
+            self.error_msg = 'Search type cannot be identified. Please select a valid item.'
             return False
         return True
 
-    def get_display(my): 
+    def get_display(self): 
       
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("padding: 10px")
@@ -113,23 +113,23 @@ class CsvExportWdg(BaseRefreshWdg):
         help_wdg.add_style("float: right")
         help_wdg.add_style("margin-top: -3px")
         
-        if not my.check(): 
-            top.add(DivWdg('Error: %s' %my.error_msg))
+        if not self.check(): 
+            top.add(DivWdg('Error: %s' %self.error_msg))
             top.add(HtmlElement.br(2))
-            return super(CsvExportWdg, my).get_display()
+            return super(CsvExportWdg, self).get_display()
 
-        if my.search_type_list and my.search_type_list[0] != my.search_type:
-            st = SearchType.get(my.search_type_list[0])
+        if self.search_type_list and self.search_type_list[0] != self.search_type:
+            st = SearchType.get(self.search_type_list[0])
             title_div =DivWdg('Exporting related items [%s]' % st.get_title())
             top.add(title_div)
             top.add(HtmlElement.br())
-            my.search_type = my.search_type_list[0]
-            my.view = my.related_view
+            self.search_type = self.search_type_list[0]
+            self.view = self.related_view
 
-        if my.mode != 'export_all':
-            num = len(my.selected_search_keys)
+        if self.mode != 'export_all':
+            num = len(self.selected_search_keys)
         else:
-            search = Search(my.search_type)
+            search = Search(self.search_type)
             num = search.get_count()
         msg_div = DivWdg('Total: %s items to export'% num)
         msg_div.add_style("font-size: 12px")
@@ -186,15 +186,15 @@ class CsvExportWdg(BaseRefreshWdg):
         col1.add_style('width: 35px')
         col2 = table.add_col()
         
-        if not my.search_type or not my.view:
+        if not self.search_type or not self.view:
             return table
 
         # use overriding element names and derived titles if available
-        config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
-        if my.element_names and config:
-            filtered_columns = my.element_names
+        config = WidgetConfigView.get_by_search_type(self.search_type, self.view)
+        if self.element_names and config:
+            filtered_columns = self.element_names
             titles = []
-            for name in my.element_names:
+            for name in self.element_names:
                 title = config.get_element_title(name)
                 titles.append(title)
 
@@ -249,27 +249,27 @@ class CsvExportWdg(BaseRefreshWdg):
         widget.add(" ")
         widget.add(hint)
 
-        label = string.capwords(my.mode.replace('_', ' '))
+        label = string.capwords(self.mode.replace('_', ' '))
         button = ActionButtonWdg(title=label, size='l')
-        is_export_all  = my.mode == 'export_all'
+        is_export_all  = self.mode == 'export_all'
         button.add_behavior({
             'type': "click_up",
             'cbfn_action': 'spt.dg_table_action.csv_export',
             'element': 'csv_export',
             'column_names': 'csv_column_name',
-            'search_type': my.search_type,
-            'view': my.view,
-            'search_keys' : my.selected_search_keys,
+            'search_type': self.search_type,
+            'view': self.view,
+            'search_keys' : self.selected_search_keys,
             'is_export_all' : is_export_all
             
         })
 
-        my.close_action = "var popup = bvr.src_el.getParent('.spt_popup');spt.popup.close(popup)"
-        if my.close_action:
+        self.close_action = "var popup = bvr.src_el.getParent('.spt_popup');spt.popup.close(popup)"
+        if self.close_action:
             close_button = ActionButtonWdg(title='Close')
             close_button.add_behavior({
                 'type': "click",
-                'cbjs_action': my.close_action
+                'cbjs_action': self.close_action
             })
 
 
@@ -287,10 +287,10 @@ class CsvExportWdg(BaseRefreshWdg):
         top.add(HtmlElement.br())
         top.add(action_div)
 
-        if my.is_test:
-            rtn_data = {'columns': my.element_names, 'count': len(my.selected_search_keys)}
-            if my.mode == 'export_matched':
-                rtn_data['sql'] =  my.table.search_wdg.search.get_statement()
+        if self.is_test:
+            rtn_data = {'columns': self.element_names, 'count': len(self.selected_search_keys)}
+            if self.mode == 'export_matched':
+                rtn_data['sql'] =  self.table.search_wdg.search.get_statement()
             from pyasm.common import jsondumps
             rtn_data = jsondumps(rtn_data)
             return rtn_data
@@ -300,78 +300,78 @@ class CsvExportWdg(BaseRefreshWdg):
 
 class CsvImportWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
                 'search_type': 'Search Type to import'}
 
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
         
-        my.is_refresh = my.kwargs.get('is_refresh')
-        if not my.is_refresh:
-            my.is_refresh = web.get_form_value('is_refresh')
+        self.is_refresh = self.kwargs.get('is_refresh')
+        if not self.is_refresh:
+            self.is_refresh = web.get_form_value('is_refresh')
 
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = web.get_form_value('search_type_filter')
-        my.close_cbfn = my.kwargs.get('close_cbfn')
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = web.get_form_value('search_type_filter')
+        self.close_cbfn = self.kwargs.get('close_cbfn')
 
-        my.data = web.get_form_value("data")
-        my.web_url = web.get_form_value("web_url")
-        my.file_path = None
-        if my.web_url:
+        self.data = web.get_form_value("data")
+        self.web_url = web.get_form_value("web_url")
+        self.file_path = None
+        if self.web_url:
             import urllib2
-            response = urllib2.urlopen(my.web_url)
+            response = urllib2.urlopen(self.web_url)
             csv = response.read()
-            my.file_path = "/tmp/test.csv"
-            f = open(my.file_path, 'w')
+            self.file_path = "/tmp/test.csv"
+            f = open(self.file_path, 'w')
             f.write(csv)
             f.close()
 
-        if not my.file_path:
-            my.file_path =  web.get_form_value('file_path')
+        if not self.file_path:
+            self.file_path =  web.get_form_value('file_path')
 
-        if not my.file_path:
+        if not self.file_path:
             ticket = web.get_form_value('html5_ticket')
             if not ticket:
                 ticket =  web.get_form_value('csv_import|ticket')
 
             file_name =  web.get_form_value('file_name')
-            if my.data:
+            if self.data:
                 if not file_name:
                     file_name = "%s.csv" % ticket
 
-                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
-                f = open(my.file_path, "wb")
-                f.write(my.data)
+                self.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                f = open(self.file_path, "wb")
+                f.write(self.data)
                 f.close()
             elif file_name:
-                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                self.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
                 
 
-        my.columns = my.kwargs.get("columns")
-        if not my.columns:
-            my.columns = web.get_form_value("columns")
-        if my.columns and isinstance(my.columns, basestring):
-            my.columns = my.columns.split("|")
+        self.columns = self.kwargs.get("columns")
+        if not self.columns:
+            self.columns = web.get_form_value("columns")
+        if self.columns and isinstance(self.columns, basestring):
+            self.columns = self.columns.split("|")
 
-        my.labels = my.kwargs.get("labels")
-        if not my.labels:
-            my.labels = web.get_form_value("labels")
-        if my.labels and isinstance(my.labels, basestring):
-            my.labels = my.labels.split("|")
-
-
+        self.labels = self.kwargs.get("labels")
+        if not self.labels:
+            self.labels = web.get_form_value("labels")
+        if self.labels and isinstance(self.labels, basestring):
+            self.labels = self.labels.split("|")
 
 
-    def get_display(my):
+
+
+    def get_display(self):
         
         widget = DivWdg()
 
-        show_title = my.kwargs.get("show_title") not in [False, 'false']
+        show_title = self.kwargs.get("show_title") not in [False, 'false']
 
-        if show_title and not my.is_refresh:
+        if show_title and not self.is_refresh:
             title_div = DivWdg()
             widget.add(title_div)
             title_div.add_style("margin: 10px 20px")
@@ -397,15 +397,15 @@ class CsvImportWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         widget.add(inner)
-        inner.add( my.get_first_row_wdg() )
+        inner.add( self.get_first_row_wdg() )
         inner.add(ProgressWdg())
 
-        if my.is_refresh:
+        if self.is_refresh:
             return inner
         else:
             return widget
 
-    def get_upload_wdg(my):
+    def get_upload_wdg(self):
         '''get search type select and upload wdg'''
 
         key = 'csv_import'
@@ -422,8 +422,8 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
 
-        show_stype_select = my.kwargs.get("show_stype_select")
-        if show_stype_select in ['true',True] or not my.search_type:
+        show_stype_select = self.kwargs.get("show_stype_select")
+        if show_stype_select in ['true',True] or not self.search_type:
 
             title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
             stype_div.add( title )
@@ -432,7 +432,7 @@ class CsvImportWdg(BaseRefreshWdg):
             search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
             search_type_select.add_empty_option("-- Select --")
             if not search_type_select.get_value():
-                search_type_select.set_value(my.search_type)
+                search_type_select.set_value(self.search_type)
             search_type_select.set_persist_on_submit()
 
             stype_div.add(search_type_select)
@@ -441,24 +441,24 @@ class CsvImportWdg(BaseRefreshWdg):
 
             search_type_select.add_behavior( {'type': 'change', \
                   'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
-                  'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+                  'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(self)) } )
 
         else:
             hidden = HiddenWdg("search_type_filter")
             stype_div.add(hidden)
-            hidden.set_value(my.search_type)
+            hidden.set_value(self.search_type)
 
 
-        if my.search_type:
+        if self.search_type:
             sobj = None
             try:
-                sobj = SObjectFactory.create(my.search_type)
+                sobj = SObjectFactory.create(self.search_type)
             except ImportError:
                 widget.add(HtmlElement.br())
                 widget.add(SpanWdg('WARNING: Import Error encountered. Please choose another search type.', css='warning')) 
                 return widget
 
-            extra_data = my.kwargs.get("extra_data")
+            extra_data = self.kwargs.get("extra_data")
 
             required_columns = sobj.get_required_columns()
             if required_columns:
@@ -473,36 +473,36 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
 
-            if my.file_path:
-                hidden = HiddenWdg("file_path", my.file_path)
+            if self.file_path:
+                hidden = HiddenWdg("file_path", self.file_path)
                 widget.add(hidden)
 
                 button = ActionButtonWdg(title='Start Again')
                 button.add_style('float','right')
                 button.add_behavior( {
                     'type': 'click_up', 
-                    'columns': "|".join(my.columns),
-                    'labels': "|".join(my.labels),
+                    'columns': "|".join(self.columns),
+                    'labels': "|".join(self.labels),
                     'cbjs_action': '''
                     spt.panel.load('csv_import_main','%s', {}, {
                         search_type_filter: '%s',
                         columns: bvr.columns,
                         labels: bvr.labels,
                         is_refresh: true
-                    });''' %(Common.get_full_class_name(my), my.search_type)
+                    });''' %(Common.get_full_class_name(self), self.search_type)
                 } )
                 widget.add(button)
 
 
                 
-                if my.web_url:
-                    file_div = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %my.web_url, css='med')
+                if self.web_url:
+                    file_div = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %self.web_url, css='med')
 
                 else:
-                    if not my.data:
-                        file_div = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                    if not self.data:
+                        file_div = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(self.file_path), css='med')
                     else:
-                        lines = len(my.data.split("\n"))
+                        lines = len(self.data.split("\n"))
                         file_div = DivWdg("Found <b>%s</b> entries." % lines)
 
                 file_div.add_color('color','color')
@@ -590,8 +590,8 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
-                'columns': "|".join(my.columns),
-                'labels': "|".join(my.labels),
+                'columns': "|".join(self.columns),
+                'labels': "|".join(self.labels),
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_import_top");
                 var el = top.getElement(".spt_import_cut_paste");
@@ -658,32 +658,32 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
 
-    def get_first_row_wdg(my):
+    def get_first_row_wdg(self):
 
         # read the csv file
-        #my.file_path = ""
+        #self.file_path = ""
 
         div = DivWdg(id='csv_import_main')
         div.add_class('spt_panel')
         
-        div.add( my.get_upload_wdg() )
-        if not my.search_type:
+        div.add( self.get_upload_wdg() )
+        if not self.search_type:
             return div
 
-        if not my.file_path:
+        if not self.file_path:
             return div
 
 
-        if not my.file_path.endswith(".csv"):
+        if not self.file_path.endswith(".csv"):
             div.add('<br/>')
-            div.add( "Uploaded file [%s] is not a csv file. Refreshing in 3 seconds. . ."% os.path.basename(my.file_path))
+            div.add( "Uploaded file [%s] is not a csv file. Refreshing in 3 seconds. . ."% os.path.basename(self.file_path))
             div.add_behavior( {'type': 'load', \
                                   'cbjs_action': "setTimeout(function() {spt.panel.load('csv_import_main','%s', {}, {\
-                                    'search_type_filter': '%s'});}, 3000);" %(Common.get_full_class_name(my), my.search_type) } )
+                                    'search_type_filter': '%s'});}, 3000);" %(Common.get_full_class_name(self), self.search_type) } )
             return div
 
-        if not os.path.exists(my.file_path):
-            raise TacticException("Path '%s' does not exist" % my.file_path)
+        if not os.path.exists(self.file_path):
+            raise TacticException("Path '%s' does not exist" % self.file_path)
 
         
 
@@ -701,7 +701,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
         option_div_top.add_style("margin-right: 30px")
 
-        my.search_type_obj = SearchType.get(my.search_type)
+        self.search_type_obj = SearchType.get(self.search_type)
 
         option_div = DivWdg()
         swap.set_content_id(option_div.set_unique_id() )
@@ -776,8 +776,8 @@ class CsvImportWdg(BaseRefreshWdg):
         select_wdg.set_option('empty','true')
         select_wdg.add_style('float','left')
         select_wdg.add_style('width','80%')
-        #columns = my.search_type_obj.get_columns()
-        columns = SearchType.get_columns(my.search_type)
+        #columns = self.search_type_obj.get_columns()
+        columns = SearchType.get_columns(self.search_type)
         
         # make sure it starts off with id, code where applicable
         if 'code' in columns:
@@ -812,71 +812,71 @@ class CsvImportWdg(BaseRefreshWdg):
 
         div.add(option_div_top)
 
-        my.has_title = title_row_checkbox.is_checked()
+        self.has_title = title_row_checkbox.is_checked()
         
         
         # need to somehow specify defaults for columns
-        div.add(my.get_preview_wdg())
+        div.add(self.get_preview_wdg())
 
 
         return div          
 
 
     
-    def get_preview_wdg(my):
-        columns = my.columns
-        labels = my.labels
-        preview = PreviewDataWdg(file_path=my.file_path, search_type=my.search_type, columns=columns, labels=labels)
+    def get_preview_wdg(self):
+        columns = self.columns
+        labels = self.labels
+        preview = PreviewDataWdg(file_path=self.file_path, search_type=self.search_type, columns=columns, labels=labels)
         return preview
 
 class PreviewDataWdg(BaseRefreshWdg):
 
     
-    def init(my):
+    def init(self):
 
-        my.is_refresh = my.kwargs.get('is_refresh') 
-        my.file_path = my.kwargs.get('file_path') 
-        my.search_type = my.kwargs.get('search_type')
-        my.search_type_obj = SearchType.get(my.search_type)
+        self.is_refresh = self.kwargs.get('is_refresh') 
+        self.file_path = self.kwargs.get('file_path') 
+        self.search_type = self.kwargs.get('search_type')
+        self.search_type_obj = SearchType.get(self.search_type)
         web = WebContainer.get_web()
-        my.encoder = web.get_form_value('encoder')
+        self.encoder = web.get_form_value('encoder')
         title_row_checkbox = CheckboxWdg("has_title")
 
-        my.has_title = title_row_checkbox.is_checked()
+        self.has_title = title_row_checkbox.is_checked()
 
         lowercase_title_checkbox = CheckboxWdg("lowercase_title")
 
-        my.lowercase_title = lowercase_title_checkbox.is_checked()
+        self.lowercase_title = lowercase_title_checkbox.is_checked()
 
 
-        my.columns = web.get_form_value("columns")
-        if not my.columns: 
-            my.columns = my.kwargs.get("columns")
-        if my.columns and isinstance(my.columns, basestring):
-            my.columns = my.columns.split("|")
+        self.columns = web.get_form_value("columns")
+        if not self.columns: 
+            self.columns = self.kwargs.get("columns")
+        if self.columns and isinstance(self.columns, basestring):
+            self.columns = self.columns.split("|")
 
-        my.labels = web.get_form_value("labels")
-        if not my.labels: 
-            my.labels = my.kwargs.get("labels")
-        if my.labels and isinstance(my.labels, basestring):
-            my.labels = my.labels.split("|")
+        self.labels = web.get_form_value("labels")
+        if not self.labels: 
+            self.labels = self.kwargs.get("labels")
+        if self.labels and isinstance(self.labels, basestring):
+            self.labels = self.labels.split("|")
  
-        my.csv_column_data = {}
+        self.csv_column_data = {}
 
 
 
-    def get_column_preview(my, div):
+    def get_column_preview(self, div):
         # parse the first fow
-        csv_parser = CsvParser(my.file_path)
-        if my.has_title:
+        csv_parser = CsvParser(self.file_path)
+        if self.has_title:
             csv_parser.set_has_title_row(True)
         else:
             csv_parser.set_has_title_row(False)
 
-        if my.lowercase_title:
+        if self.lowercase_title:
             csv_parser.set_lowercase_title(True)
-        if my.encoder:
-            csv_parser.set_encoder(my.encoder)
+        if self.encoder:
+            csv_parser.set_encoder(self.encoder)
         try:    
             csv_parser.parse()
         # that can be all kinds of encoding/decoding exception
@@ -915,13 +915,13 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         columns_wdg = HiddenWdg("columns")
         div.add(columns_wdg)
-        if my.columns:
-            columns_wdg.set_value("|".join(my.columns))
+        if self.columns:
+            columns_wdg.set_value("|".join(self.columns))
 
         labels_wdg = HiddenWdg("labels")
         div.add(labels_wdg)
-        if my.labels:
-            labels_wdg.set_value("|".join(my.labels))
+        if self.labels:
+            labels_wdg.set_value("|".join(self.labels))
 
 
 
@@ -979,13 +979,13 @@ class PreviewDataWdg(BaseRefreshWdg):
         th.add_class('smaller')
 
         # set the columns and labels
-        columns = my.columns
-        labels = my.labels
+        columns = self.columns
+        labels = self.labels
         
         # Get columns or labels if missing
         if not columns:
-            columns = SearchType.get_columns(my.search_type)
-            sobj = SObjectFactory.create(my.search_type)
+            columns = SearchType.get_columns(self.search_type)
+            sobj = SObjectFactory.create(self.search_type)
             required_columns = sobj.get_required_columns()
 
             columns.sort()
@@ -1008,8 +1008,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                 labels.append(label)
 
         row = csv_data[data_row]
-        my.num_columns = len(row)
-        hidden = HiddenWdg("num_columns", my.num_columns)
+        self.num_columns = len(row)
+        hidden = HiddenWdg("num_columns", self.num_columns)
         div.add(hidden)
  
         skipped_columns = []
@@ -1020,7 +1020,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         column_option_message.add_style("padding: 10px")
         column_option_message.add("Select <div class='glyphicon glyphicon-cog'></div> to edit column definition.")
          
-        csv_column_data = my.csv_column_data
+        csv_column_data = self.csv_column_data
         
         # Build the column selection table
         for j, cell in enumerate(row):
@@ -1062,7 +1062,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 } )
             else:
                 # if it is not a new column, and column selected is empty, we don't select the checkbox by default
-                if sel_val != '' or not my.is_refresh:
+                if sel_val != '' or not self.is_refresh:
                     cb.set_default_checked()
 
             td = table.add_cell(cb) 
@@ -1098,7 +1098,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             processed_title = ""
             processed_type = ""
             process_value = ""
-            if column_data and my.has_title:
+            if column_data and self.has_title:
                 processed_title = column_data.get("name")
                 if processed_title == "(note)":
                     process_value = column_data.get("process")
@@ -1112,7 +1112,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                     
                     processed_type = column_data.get("type")
                     if not processed_type:
-                        processed_type = my._guess_column_type(csv_data, j)
+                        processed_type = self._guess_column_type(csv_data, j)
             
             
             column_select.add_empty_option("%s (New)" % processed_title)
@@ -1229,7 +1229,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 
                 # Get processes from pipelines, and add 'publish' and 'custom' options
                 from pyasm.biz import Pipeline
-                search_type_obj = SearchType.get(my.search_type)
+                search_type_obj = SearchType.get(self.search_type)
                 base_type = search_type_obj.get_base_key()
                 pipelines = Pipeline.get_by_search_type(base_type)
                 all_processes = []
@@ -1324,14 +1324,14 @@ class PreviewDataWdg(BaseRefreshWdg):
      
     
 
-    def get_display(my):
+    def get_display(self):
 
 
         web = WebContainer.get_web()
 
-        csv_parser = CsvParser(my.file_path)
-        if my.encoder:
-            csv_parser.set_encoder(my.encoder)
+        csv_parser = CsvParser(self.file_path)
+        if self.encoder:
+            csv_parser.set_encoder(self.encoder)
 
         try:    
             csv_parser.parse()
@@ -1362,7 +1362,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 columns.append('Note: %s' % note_process)
             elif column == "":
                 new_column_name = web.get_form_value("new_column_%s" % i)
-                if not new_column_name and my.has_title:
+                if not new_column_name and self.has_title:
                     new_column_name = csv_titles[i]
                 column_type = web.get_form_value("column_type_%s" % i)
                 csv_column_data[i] = {'name': new_column_name, 'type': column_type}
@@ -1370,15 +1370,15 @@ class PreviewDataWdg(BaseRefreshWdg):
             else:
                 csv_column_data[i] = {'name': column}
                 columns.append(column)
-        my.csv_column_data = csv_column_data
+        self.csv_column_data = csv_column_data
 
         # Preview data and column selection 
         widget = DivWdg(id='preview_data')
         widget.add_style('padding: 6px')
-        my.set_as_panel(widget)
+        self.set_as_panel(widget)
         widget.add(SpanWdg(), 'warning')
         widget.add(HtmlElement.br(2))
-        my.get_column_preview(widget)
+        self.get_column_preview(widget)
 
         response_div = DivWdg(css='spt_cmd_response')
         #response_div.add_style('color','#F0C956') 
@@ -1390,7 +1390,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         widget.add(response_div)
         widget.add(HtmlElement.br(2))
 
-        sobject_title = my.search_type_obj.get_title()
+        sobject_title = self.search_type_obj.get_title()
         div = DivWdg(css='spt_csv_sample')
         widget.add(div)
         h3 = DivWdg("Preview Data") 
@@ -1559,20 +1559,20 @@ class PreviewDataWdg(BaseRefreshWdg):
                 td = table.add_cell(cell)
 
                 # If data does not match selected column type, then let user know.
-                if column_type == 'timestamp' and not my._check_timestamp(cell):
+                if column_type == 'timestamp' and not self._check_timestamp(cell):
                     td.add_style("color: red")
-                elif column_type == 'boolean' and not my._check_boolean(cell):
+                elif column_type == 'boolean' and not self._check_boolean(cell):
                     td.add_style("color: red")
-                elif column_type == 'integer' and not my._check_integer(cell):
+                elif column_type == 'integer' and not self._check_integer(cell):
                     td.add_style("color: red")
-                elif column_type == 'float' and not my._check_float(cell):
+                elif column_type == 'float' and not self._check_float(cell):
                     td.add_style("color: red")
-                elif column_type == 'varchar(256)' and not my._check_varchar(cell):
+                elif column_type == 'varchar(256)' and not self._check_varchar(cell):
                     td.add_style("color: red")
                 
         return widget 
 
-    def _guess_column_type(my, csv_data, idx):
+    def _guess_column_type(self, csv_data, idx):
         ''' given csv data and a column idx, determine appropriate data type '''
         column_types = {}
         data_cell_list = []
@@ -1586,15 +1586,15 @@ class PreviewDataWdg(BaseRefreshWdg):
                 continue
             
             # Use democracy to determine type
-            column_type = my._check_timestamp(data)
+            column_type = self._check_timestamp(data)
             if not column_type:
-                column_type = my._check_boolean(data)
+                column_type = self._check_boolean(data)
                 if not column_type:
-                    column_type = my._check_integer(data)
+                    column_type = self._check_integer(data)
                     if not column_type:
-                        column_type = my._check_float(data)
+                        column_type = self._check_float(data)
                         if not column_type:
-                            column_type = my._check_varchar(data)
+                            column_type = self._check_varchar(data)
 
             if column_types.get(column_type) == None:
                 column_types[column_type] = 1
@@ -1614,7 +1614,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             return column_type
     
     # ensure this is not a partial date, which should be treated as a regular integer
-    def _parse_date(my, dt_str):    
+    def _parse_date(self, dt_str):    
         from dateutil import parser
         dt = parser.parse(dt_str, default=datetime.datetime(1900, 1, 1)).date()
         dt2 = parser.parse(dt_str, default=datetime.datetime(1901, 2, 2)).date()
@@ -1624,7 +1624,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             return None
 
 
-    def _check_varchar(my, data):
+    def _check_varchar(self, data):
         column_type = None
         if len(data) <= 256:
             column_type = 'varchar(256)'
@@ -1633,14 +1633,14 @@ class PreviewDataWdg(BaseRefreshWdg):
        
         return column_type
 
-    def _check_boolean(my, data):
+    def _check_boolean(self, data):
         column_type = None
         if data in ['true', 'True', 'False', 'false', '0','1']:
             column_type = 'boolean'
 
         return column_type
 
-    def _check_integer(my, data):
+    def _check_integer(self, data):
         column_type = None
         try:
             int(data)
@@ -1650,7 +1650,7 @@ class PreviewDataWdg(BaseRefreshWdg):
        
         return column_type
 
-    def _check_float(my, data):
+    def _check_float(self, data):
         column_type = None
         try:
             float(data)
@@ -1660,15 +1660,15 @@ class PreviewDataWdg(BaseRefreshWdg):
         
         return column_type
 
-    def _check_timestamp(my, data):
+    def _check_timestamp(self, data):
         column_type = None
         try: 
-            timestamp = my._parse_date(data)
+            timestamp = self._parse_date(data)
             if timestamp:
                 column_type = 'timestamp'
             else:
                 # if it is just some number instead of a real date or timestamp
-                column_type = my._check_integer(data)
+                column_type = self._check_integer(data)
         except Exception as e:
             pass
            

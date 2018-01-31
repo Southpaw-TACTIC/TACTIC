@@ -119,67 +119,67 @@ class Queue:
 # create a task from the job
 class JobTask(SchedulerTask):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
         #print("JobTask: init")
-        my.job = None
-        my.jobs = []
+        self.job = None
+        self.jobs = []
 
-        my.check_interval = kwargs.get("check_interval")
-        if not my.check_interval:
-            my.check_interval = 1
+        self.check_interval = kwargs.get("check_interval")
+        if not self.check_interval:
+            self.check_interval = 1
 
-        my.jobs_completed = 0
-        my.max_jobs_completed = kwargs.get("max_jobs_completed")
-        if not my.max_jobs_completed:
-            my.max_jobs_completed = -1
+        self.jobs_completed = 0
+        self.max_jobs_completed = kwargs.get("max_jobs_completed")
+        if not self.max_jobs_completed:
+            self.max_jobs_completed = -1
 
-        my.max_jobs = 2
+        self.max_jobs = 2
 
-        my.queue_type = kwargs.get("queue")
-        super(JobTask, my).__init__()
-
-
-    def get_check_interval(my):
-        return my.check_interval
+        self.queue_type = kwargs.get("queue")
+        super(JobTask, self).__init__()
 
 
-    def set_check_interval(my, interval):
-        my.check_interval = interval
+    def get_check_interval(self):
+        return self.check_interval
 
-    def get_process_key(my):
+
+    def set_check_interval(self, interval):
+        self.check_interval = interval
+
+    def get_process_key(self):
         import platform;
         host = platform.uname()[1]
         pid = os.getpid()
         return "%s:%s" % (host, pid)
 
 
-    def get_job_search_type(my):
+    def get_job_search_type(self):
         return "sthpw/queue"
 
 
-    def get_next_job(my, queue_type=None):
+    def get_next_job(self, queue_type=None):
         return Queue.get_next_job(queue_type=queue_type)
 
 
 
 
-    def cleanup_db_jobs(my):
+    def cleanup_db_jobs(self):
         # clean up the jobs that this host previously had
 
-        process_key = my.get_process_key()
-        job_search = Search(my.get_job_search_type())
+        process_key = self.get_process_key()
+        job_search = Search(self.get_job_search_type())
         job_search.add_filter("host", process_key)
-        my.jobs = job_search.get_sobjects()
-        my.cleanup()
+        self.jobs = job_search.get_sobjects()
+        self.cleanup()
 
 
 
-    def cleanup(my, count=0):
+    def cleanup(self, count=0):
         if count >= 3:
             return
         try:
-            for job in my.jobs:
+            for job in self.jobs:
                 # reset all none complete jobs to pending
 
                 current_state = job.get_value("state")
@@ -191,28 +191,28 @@ class JobTask(SchedulerTask):
                 job.set_value("host", "")
                 job.commit()
 
-            my.jobs = []
+            self.jobs = []
 
         except Exception as e:
             print("Exception: ", e.message)
             count += 1
-            my.cleanup(count)
+            self.cleanup(count)
             
 
 
-    def execute(my):
+    def execute(self):
 
         import atexit
         import time
-        atexit.register( my.cleanup )
+        atexit.register( self.cleanup )
         while 1:
             
-            my.check_existing_jobs()
-            my.check_new_job()
-            time.sleep(my.check_interval)
+            self.check_existing_jobs()
+            self.check_new_job()
+            time.sleep(self.check_interval)
             DbContainer.close_thread_sql()
 
-            if my.max_jobs_completed != -1 and my.jobs_completed > my.max_jobs_completed:
+            if self.max_jobs_completed != -1 and self.jobs_completed > self.max_jobs_completed:
                 Common.restart()
                 while 1:
                     print("Waiting to restart...")
@@ -220,11 +220,11 @@ class JobTask(SchedulerTask):
 
 
 
-    def check_existing_jobs(my):
-        my.keep_jobs = []
-        for job in my.jobs:
+    def check_existing_jobs(self):
+        self.keep_jobs = []
+        for job in self.jobs:
             job_code = job.get_code()
-            search = Search(my.get_job_search_type())
+            search = Search(self.get_job_search_type())
             search.add_filter("code", job_code)
             job = search.get_sobject()
 
@@ -244,50 +244,50 @@ class JobTask(SchedulerTask):
                 job.commit()
                 continue
 
-            my.keep_jobs.append(job)
+            self.keep_jobs.append(job)
 
-        my.jobs = my.keep_jobs
+        self.jobs = self.keep_jobs
 
 
 
-    def check_new_job(my, queue_type=None):
+    def check_new_job(self, queue_type=None):
 
-        num_jobs = len(my.jobs)
-        if num_jobs >= my.max_jobs:
-            print("Already at max jobs [%s]" % my.max_jobs)
+        num_jobs = len(self.jobs)
+        if num_jobs >= self.max_jobs:
+            print("Already at max jobs [%s]" % self.max_jobs)
             return
       
-        my.job = my.get_next_job(queue_type)
-        if not my.job:
+        self.job = self.get_next_job(queue_type)
+        if not self.job:
             return
 
 		
         # set the process key
-        process_key = my.get_process_key()
-        my.job.set_value("host", process_key)
-        my.job.commit()
+        process_key = self.get_process_key()
+        self.job.set_value("host", process_key)
+        self.job.commit()
 
-        my.jobs.append(my.job)
+        self.jobs.append(self.job)
 
         # get some info from the job
-        command = my.job.get_value("command")
-        job_code = my.job.get_value("code")
+        command = self.job.get_value("command")
+        job_code = self.job.get_value("code")
 
         try: 
-            kwargs = my.job.get_json_value("data")
+            kwargs = self.job.get_json_value("data")
         except:
             try:
                 # DEPRECATED
-                kwargs = my.job.get_json_value("serialized")
+                kwargs = self.job.get_json_value("serialized")
             except:
                 kwargs = {}
         if not kwargs:
             kwargs = {}
 
-        login = my.job.get_value("login")
-        script_path = my.job.get_value("script_path", no_exception=True)
+        login = self.job.get_value("login")
+        script_path = self.job.get_value("script_path", no_exception=True)
 
-        project_code = my.job.get_value("project_code")
+        project_code = self.job.get_value("project_code")
 
         if script_path:
             command = 'tactic.command.PythonCmd'
@@ -306,7 +306,7 @@ class JobTask(SchedulerTask):
 
 
         # add the job to the kwargs
-        kwargs['job'] = my.job
+        kwargs['job'] = self.job
 
         #print("command: ", command)
         #print("kwargs: ", kwargs)
@@ -323,12 +323,12 @@ class JobTask(SchedulerTask):
         Project.set_project(project_code)
 
 
-        queue = my.job.get_value("queue", no_exception=True)
+        queue = self.job.get_value("queue", no_exception=True)
         queue_type = 'repeat'
 
         stop_on_error = False
 
-        print("Running job: ", my.job.get_value("code") )
+        print("Running job: ", self.job.get_value("code") )
 
         if queue_type == 'inline':
 
@@ -339,15 +339,15 @@ class JobTask(SchedulerTask):
                 Command.execute_cmd(cmd)
 
                 # set job to complete
-                my.job.set_value("state", "complete")
+                self.job.set_value("state", "complete")
             except Exception as e:
-                my.job.set_value("state", "error")
+                self.job.set_value("state", "error")
 
-            my.job.commit()
-            my.jobs.remove(my.job)
-            my.job = None
+            self.job.commit()
+            self.jobs.remove(self.job)
+            self.job = None
 
-            my.jobs_completed += 1
+            self.jobs_completed += 1
 
 
         elif queue_type == 'repeat':
@@ -368,14 +368,14 @@ class JobTask(SchedulerTask):
                     #cmd.execute()
 
                     # set job to complete
-                    my.job.set_value("state", "complete")
+                    self.job.set_value("state", "complete")
                     break
                 except TacticException as e:
 
                     # This is an error on this server, so just exit
                     # and don't bother retrying
                     print("Error: ", e)
-                    my.job.set_value("state", "error")
+                    self.job.set_value("state", "error")
                     break
 
 
@@ -389,30 +389,30 @@ class JobTask(SchedulerTask):
 
                     if attempts >= max_attempts:
                         print("ERROR: reached max attempts")
-                        my.job.set_value("state", "error")
+                        self.job.set_value("state", "error")
                         break
 
                     print("Retrying [%s]...." % attempts)
 
-            my.job.commit()
-            my.jobs.remove(my.job)
-            my.job = None
+            self.job.commit()
+            self.jobs.remove(self.job)
+            self.job = None
 
-            my.jobs_completed += 1
+            self.jobs_completed += 1
 
 
         else:
             class ForkedTask(SchedulerTask):
-                def __init__(my, **kwargs):
-                    super(ForkedTask, my).__init__(**kwargs)
-                def execute(my):
+                def __init__(self, **kwargs):
+                    super(ForkedTask, self).__init__(**kwargs)
+                def execute(self):
                     # check to see the status of this job
                     """
-                    job = my.kwargs.get('job')
+                    job = self.kwargs.get('job')
                     job_code = job.get_code()
                     search = Search("sthpw/queue")
                     search.add_filter("code", job_code)
-                    my.kwargs['job'] = search.get_sobject()
+                    self.kwargs['job'] = search.get_sobject()
 
                     if not job:
                         print("Cancelling ...")
@@ -449,14 +449,14 @@ class JobTask(SchedulerTask):
                     #Command.execute_cmd(cmd)
 
             # register this as a forked task
-            task = ForkedTask(name=job_code, job=my.job)
+            task = ForkedTask(name=job_code, job=self.job)
             scheduler = Scheduler.get()
             scheduler.start_thread()
 
             # FIXME: the queue should not be inline
             if queue == 'interval':
 
-                interval = my.job.get_value("interval")
+                interval = self.job.get_value("interval")
                 if not interval:
                     interval = 60
 
@@ -497,7 +497,7 @@ def run_batch(kwargs):
 __all__.append("QueueTest")
 
 class QueueTest(Command):
-    def execute(my):
+    def execute(self):
         # this command has only a one in 10 chance of succeeding
         import random
         value = random.randint(0, 10)

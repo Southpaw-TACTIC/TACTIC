@@ -28,8 +28,8 @@ __all__ = ['ChatWdg', 'ChatSessionWdg', 'ChatCmd', 'SubscriptionWdg', 'Subscript
 
 class MessageTableElementWdg(BaseTableElementWdg):
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         msg = FormatMessageWdg()
         msg.set_sobject(sobject)
         return msg
@@ -130,18 +130,18 @@ class FormatMessageWdg(BaseRefreshWdg):
 
     get_preview_wdg = classmethod(get_preview_wdg)
 
-    def get_display(my):
+    def get_display(self):
         
-        # my.sobjects is preferred, otherwise use
+        # self.sobjects is preferred, otherwise use
         # search_key.
-        search_key = my.kwargs.get('search_key')
+        search_key = self.kwargs.get('search_key')
         message = None
         
 
-        if not my.sobjects and search_key:
+        if not self.sobjects and search_key:
             message = Search.get_by_search_key(search_key)
-        elif my.sobjects:
-            message = my.sobjects[0]
+        elif self.sobjects:
+            message = self.sobjects[0]
         
         if not message:
             return DivWdg()
@@ -156,20 +156,20 @@ class FormatMessageWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell()
 
-        subscription = my.kwargs.get('subscription')
-        show_preview = my.kwargs.get('show_preview')
+        subscription = self.kwargs.get('subscription')
+        show_preview = self.kwargs.get('show_preview')
         if show_preview in ['',None]:
             show_preview = True
         show_preview_category_list = ['sobject','chat']
 
         if (category in show_preview_category_list and show_preview not in ['False','false',False]) or show_preview in ["True" ,"true",True]:  
-            td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
+            td.add( self.get_preview_wdg(subscription, category=category, message_code=message_code ))
     
         message_value = message.get_value("message")
         message_login = message.get_value("login")
 
         #TODO: implement short_format even for closing html tags properly while truncating 
-        short_format = my.kwargs.get('short_format') in  ['true', True]
+        short_format = self.kwargs.get('short_format') in  ['true', True]
         if message_value.startswith('{') and message_value.endswith('}'):
 
             #message_value = message_value.replace(r"\\", "\\");
@@ -223,7 +223,7 @@ class FormatMessageWdg(BaseRefreshWdg):
                 progress.add_attr('max', '100')
                 progress.add_styles('''width: 280px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75) inset''')
                 
-                progress_size = my.kwargs.get("progress_size")
+                progress_size = self.kwargs.get("progress_size")
                 if progress_size == "large":
                     progress.add_styles("height: 16px; margin-top: 9px;")
                 else:
@@ -264,10 +264,10 @@ class FormatMessageWdg(BaseRefreshWdg):
 
 class ChatWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top;
-        my.set_as_panel(top)
+        top = self.top;
+        self.set_as_panel(top)
         top.add_class("spt_chat_top")
 
 
@@ -338,11 +338,11 @@ class ChatWdg(BaseRefreshWdg):
 
 
 
-        #keys = my.kwargs.get("keys")
+        #keys = self.kwargs.get("keys")
         #if not keys:
         #    return
 
-        inner.add( my.get_add_chat_wdg() )
+        inner.add( self.get_add_chat_wdg() )
 
 
         inner.add("<br/>")
@@ -373,13 +373,13 @@ class ChatWdg(BaseRefreshWdg):
 
         inner.add("<br clear='all'/>")
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
 
-    def get_add_chat_wdg(my):
+    def get_add_chat_wdg(self):
 
         div = DivWdg()
         div.add_border()
@@ -427,10 +427,10 @@ class ChatWdg(BaseRefreshWdg):
 
 class ChatCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         login = Environment.get_user_name()
-        users = my.kwargs.get("users")
+        users = self.kwargs.get("users")
 
         everyone = [login]
         everyone.extend(users)
@@ -479,9 +479,9 @@ class ChatCmd(Command):
 
 class ChatSessionWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
+    def get_display(self):
+        top = self.top
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
@@ -493,14 +493,14 @@ class ChatSessionWdg(BaseRefreshWdg):
         inner.add_style("min-width: 400px")
 
 
-        key = my.kwargs.get("key")
+        key = self.kwargs.get("key")
         interval = True
         
-        top.add( my.get_chat_wdg(key, interval) )
+        top.add( self.get_chat_wdg(key, interval) )
         return top
 
 
-    def get_chat_wdg(my, key, interval=False):
+    def get_chat_wdg(self, key, interval=False):
 
         div = DivWdg()
         div.add_class("spt_chat_session_top")
@@ -789,7 +789,7 @@ class ChatSessionWdg(BaseRefreshWdg):
 
 class SubscriptionWdg(BaseRefreshWdg):
 
-    def get_subscriptions(my, category, mode="new"):
+    def get_subscriptions(self, category, mode="new"):
 
         search = Search("sthpw/subscription")
         search.add_user_filter()
@@ -825,7 +825,7 @@ class SubscriptionWdg(BaseRefreshWdg):
         return subscriptions
 
 
-    def set_refresh(my, inner, interval, panel_cls='spt_subscription_top', mode='timeout'):
+    def set_refresh(self, inner, interval, panel_cls='spt_subscription_top', mode='timeout'):
         ''' @param:
 			mode - timeout or interval
 		'''
@@ -885,13 +885,13 @@ class SubscriptionWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
         
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_subscription_top")
 
-        interval = my.kwargs.get("interval")
+        interval = self.kwargs.get("interval")
         if not interval:
             interval = 30 * 1000
         else:
@@ -900,7 +900,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        my.set_refresh(inner,interval)
+        self.set_refresh(inner,interval)
 
         inner.add_style("min-width: %spx"%SubscriptionBarWdg.WIDTH)
         inner.add_style("min-height: 300px")
@@ -914,7 +914,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
         has_entries = False
         for category in categories:
-            category_wdg = my.get_category_wdg(category, mode)
+            category_wdg = self.get_category_wdg(category, mode)
             if category_wdg:
                 inner.add(category_wdg)
                 has_entries = True
@@ -931,7 +931,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             no_entries.add_color("background", "background3")
             no_entries.add("No messages")
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
@@ -939,9 +939,9 @@ class SubscriptionWdg(BaseRefreshWdg):
 
   
 
-    def get_category_wdg(my, category, mode="new"):
+    def get_category_wdg(self, category, mode="new"):
 
-        subscriptions = my.get_subscriptions(category, mode)
+        subscriptions = self.get_subscriptions(category, mode)
         if not subscriptions:
             return
 
@@ -1017,7 +1017,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             size = 60
 
             
-            show_preview = my.kwargs.get('show_preview')
+            show_preview = self.kwargs.get('show_preview')
             if show_preview in ['',None]:
                 show_preview = True
 
@@ -1068,7 +1068,7 @@ class SubscriptionWdg(BaseRefreshWdg):
                 timestamp_str = ""
 
             
-            show_timestamp = my.kwargs.get('show_timestamp')
+            show_timestamp = self.kwargs.get('show_timestamp')
             if show_timestamp in ['',None]:
                 show_timestamp = True
 
@@ -1080,7 +1080,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
             td = table.add_cell()
             
-            show_message_history = my.kwargs.get('show_message_history')
+            show_message_history = self.kwargs.get('show_message_history')
             if show_message_history in ['',None]:
                 show_message_history = True
             if show_message_history in ["True","true",True]:
@@ -1107,7 +1107,7 @@ class SubscriptionWdg(BaseRefreshWdg):
                 '''
             } )
             
-            show_unsubscribe = my.kwargs.get('show_unsubscribe')
+            show_unsubscribe = self.kwargs.get('show_unsubscribe')
             if show_unsubscribe in ['',None]: 
                 show_unsubscribe = False
             if show_unsubscribe in ["True","true",True]:
@@ -1162,11 +1162,11 @@ class SubscriptionBarWdg(SubscriptionWdg):
     # this is referenced in SubcriptionWdg as well
     WIDTH = 500
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_subscription_bar_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         top.add_style("width: 40px")
         top.add_style("height: 20px")
@@ -1176,7 +1176,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
 
 
-        interval = my.kwargs.get("interval")
+        interval = self.kwargs.get("interval")
         if not interval:
             interval = 10 * 1000
         else:
@@ -1185,13 +1185,13 @@ class SubscriptionBarWdg(SubscriptionWdg):
         inner = DivWdg()
         top.add(inner)
 
-        my.set_refresh(inner, interval, panel_cls='spt_subscription_bar_top', mode='interval')
+        self.set_refresh(inner, interval, panel_cls='spt_subscription_bar_top', mode='interval')
 
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         if not mode:
             mode = "tab"
 
-        dialog_open = my.kwargs.get("dialog_open")
+        dialog_open = self.kwargs.get("dialog_open")
         if dialog_open in [True, 'true']:
             dialog_open = True
         else:
@@ -1199,9 +1199,9 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
         subscription_kwargs ={}
         subscription_kwargs_list = ['icon','show_preview','show_message_history','show_unsubscribe','show_timestamp','interval']
-        for key in my.kwargs:
+        for key in self.kwargs:
             if key in subscription_kwargs_list:
-                subscription_kwargs[key]= my.kwargs.get(key)
+                subscription_kwargs[key]= self.kwargs.get(key)
 
         mode = "dialog"
         if mode == "dialog":
@@ -1212,7 +1212,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
             dialog.set_as_activator(inner)
             subscription_wdg = SubscriptionWdg(**subscription_kwargs)
             dialog.add(subscription_wdg)
-            subscription_wdg.add_style("width: %spx"%(my.WIDTH+50))
+            subscription_wdg.add_style("width: %spx"%(self.WIDTH+50))
             subscription_wdg.add_color("background", "background")
             subscription_wdg.add_style("max-height: 500px")
             subscription_wdg.add_style("min-height: 300px")
@@ -1261,7 +1261,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
 
         category = None
-        subscriptions = my.get_subscriptions(category)
+        subscriptions = self.get_subscriptions(category)
 
 
         #if not subscriptions:
@@ -1281,7 +1281,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
         else:
             msg = ''
         try:
-            icon_display = my.kwargs.get('icon')
+            icon_display = self.kwargs.get('icon')
         except:
             icon_display = "STAR"
         if icon_display is None:
@@ -1296,7 +1296,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
         #msg_div.add_styles('border-radius: 50%; width: 18px; height: 18px; background: white')
         inner.add(msg_div)
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
@@ -1307,7 +1307,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
 class MessageWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         div.add_class("spt_message_top")
@@ -1337,7 +1337,7 @@ class MessageWdg(BaseRefreshWdg):
 
         div.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         div.add_behavior( {

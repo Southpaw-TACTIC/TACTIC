@@ -30,12 +30,12 @@ class ClientWdg(BaseRefreshWdg):
     project
     '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_section_wdg(my, title, description, image, behavior):
+    def get_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -103,7 +103,7 @@ class ClientWdg(BaseRefreshWdg):
         return section_wdg
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -333,7 +333,7 @@ class ClientWdg(BaseRefreshWdg):
         spt.tab.add_new("approvals", "Approvals", class_name, kwargs);
         '''
         }
-        config_wdg = my.get_section_wdg(title, description, image, behavior)
+        config_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(config_wdg)
 
 
@@ -355,8 +355,8 @@ class ClientWdg(BaseRefreshWdg):
         file_path="%s/../config/dashboard-conf.xml" % (dir_name)
         config = WidgetConfig.get(file_path=file_path, view="definition")
 
-        #element_name = "my_dashboard"
-        element_name = "my_dashboard"
+        #element_name = "self_dashboard"
+        element_name = "self_dashboard"
         attrs = config.get_element_attributes(element_name)
         dashboard_data = {}
         kwargs = config.get_display_options(element_name)
@@ -375,10 +375,10 @@ class ClientWdg(BaseRefreshWdg):
         var class_name = 'tactic.ui.startup.dashboards_wdg.DashboardsWdg';
         var kwargs = {};
         spt.tab.set_main_body_tab();
-        spt.tab.add_new("my_dashboard", "My Dashboard", bvr.dashboard.class_name, bvr.dashboard.kwargs);
+        spt.tab.add_new("self_dashboard", "My Dashboard", bvr.dashboard.class_name, bvr.dashboard.kwargs);
         '''
         }
-        pipeline_wdg = my.get_section_wdg(title, description, image, behavior)
+        pipeline_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(pipeline_wdg)
 
 
@@ -403,7 +403,7 @@ class ClientWdg(BaseRefreshWdg):
         '''
         }
 
-        side_bar_wdg = my.get_section_wdg(title, description, image, behavior)
+        side_bar_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(side_bar_wdg)
 
 
@@ -431,7 +431,7 @@ class ClientWdg(BaseRefreshWdg):
         spt.help.load_alias("main")
         '''
         }
-        doc_wdg = my.get_section_wdg(title, description, image, behavior)
+        doc_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(doc_wdg)
         """
 
@@ -452,7 +452,7 @@ class ClientWdg(BaseRefreshWdg):
 
 
 
-    def get_totals_wdg(my):
+    def get_totals_wdg(self):
         div = DivWdg()
         
 

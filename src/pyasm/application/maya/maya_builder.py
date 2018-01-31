@@ -26,35 +26,35 @@ from maya_anim_file import MayaAnimFile
 class MayaBuilder(SessionBuilder):
     '''builds a maya file'''
 
-    def import_file(my, node_name, path, instantiation='import', use_namespace=True):
-        if node_name and my.app.node_exists(node_name):
+    def import_file(self, node_name, path, instantiation='import', use_namespace=True):
+        if node_name and self.app.node_exists(node_name):
             print "WARNING: Node '%s' already exists" % node_name
 
         naming = MayaNodeNaming(node_name)
         
         # if there is no instance name, then just import without namespaces
         if not use_namespace:
-            old_nodes = my.app.get_top_nodes()
+            old_nodes = self.app.get_top_nodes()
 
             if instantiation == 'reference':
                 # reference needs the node_name as a namespace
                 # but it can't be the same as a node already in the session
-                created_node = my.app.import_reference(path, node_name)
+                created_node = self.app.import_reference(path, node_name)
             else:
                 # import works with the default namespace
-                created_node = my.app.import_file(path)
+                created_node = self.app.import_file(path)
 
            
-            new_nodes = my.app.get_top_nodes()
+            new_nodes = self.app.get_top_nodes()
             created_nodes = [val for val in new_nodes if val not in old_nodes]
             if not created_nodes:
                 created_nodes = []
 
             # select all the created nodes, so that it can be added to a
             # set if necessary
-            my.app.select_none()
+            self.app.select_none()
             for created_node in created_nodes:
-                my.app.select_add(created_node)
+                self.app.select_add(created_node)
         else:
             instance = naming.get_instance()
             asset_code = naming.get_asset_code()
@@ -62,47 +62,47 @@ class MayaBuilder(SessionBuilder):
             # the namespace is the instance name
             namespace = instance
 
-            my.app.add_namespace(namespace)
-            my.app.set_namespace(namespace)
+            self.app.add_namespace(namespace)
+            self.app.set_namespace(namespace)
 
-            contents = my.app.get_namespace_contents()
+            contents = self.app.get_namespace_contents()
 
             # remove namespace if empty
-            my.app.set_namespace()
+            self.app.set_namespace()
             if contents == None:
-                my.app.remove_namespace(namespace)
+                self.app.remove_namespace(namespace)
 
             # get all of the namespaces
-            old = my.app.get_all_namespaces()
-            old_nodes = my.app.get_top_nodes()
-            sets = my.app.get_sets()
+            old = self.app.get_all_namespaces()
+            old_nodes = self.app.get_top_nodes()
+            sets = self.app.get_sets()
             if sets:
                 old_nodes.extend(sets)
 
             # import file into namespace
             if instantiation == 'reference':
-                my.app.import_reference(path,namespace)
+                self.app.import_reference(path,namespace)
             else:
-                my.app.import_file(path,namespace)
+                self.app.import_file(path,namespace)
 
                 # set the user environment
-                sandbox_dir = my.get_sandbox_dir()
+                sandbox_dir = self.get_sandbox_dir()
                 basename = os.path.basename(path)
                 # DON'T set the project or rename the file
-                #my.app.set_user_environment(sandbox_dir, basename)
+                #self.app.set_user_environment(sandbox_dir, basename)
 
 
 
 
             # get the two differences to find out which namespace was created
-            new = my.app.get_all_namespaces()
+            new = self.app.get_all_namespaces()
             diff = [val for val in new if val not in old]
             if not diff:
                 raise Exception("No namespaces created")
 
 
-            new_nodes = my.app.get_top_nodes()
-            sets = my.app.get_sets()
+            new_nodes = self.app.get_top_nodes()
+            sets = self.app.get_sets()
             if sets:
                 new_nodes.extend(sets)
             created_nodes = [val for val in new_nodes if val not in old_nodes]
@@ -116,15 +116,15 @@ class MayaBuilder(SessionBuilder):
 
             # select newly created attr
             if created_node:
-                my.app.select(created_node)
+                self.app.select(created_node)
 
         return created_node
 
 
 
-    def import_anim(my, node_name, path, created_node=""):
+    def import_anim(self, node_name, path, created_node=""):
 
-        node_naming = my.app.get_node_naming(node_name)
+        node_naming = self.app.get_node_naming(node_name)
         instance = node_naming.get_instance()
 
         select = node_name
@@ -135,25 +135,25 @@ class MayaBuilder(SessionBuilder):
 
         # check to see if this node_name has a corresponding interface
         interface = "%s_interface" % select
-        if my.app.node_exists( interface ):
+        if self.app.node_exists( interface ):
             select = interface
 
         # select the node
-        my.app.select(select)
+        self.app.select(select)
 
         # parse the animation
         anim = MayaAnimFile(path)
         anim.parse()
 
         # put the animation data into a temp file
-        tmp = "%s/temp.anim" % my.get_tmpdir()
+        tmp = "%s/temp.anim" % self.get_tmpdir()
         file2 = open(tmp, "w")
         file2.write( anim.get_anim(instance) )
         file2.close()
 
         # import the file just created
-        my.app.import_anim(tmp)
-        my.app.import_static(anim.get_static(instance), node_name)
+        self.app.import_anim(tmp)
+        self.app.import_static(anim.get_static(instance), node_name)
 
        
 

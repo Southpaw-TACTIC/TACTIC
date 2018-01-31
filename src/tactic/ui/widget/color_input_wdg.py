@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 class ColorInputWdgOLD(BaseInputWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         raise Exception("tactic.widget.ColorInputWdg is deprecated")
 
@@ -39,10 +39,10 @@ class ColorInputWdgOLD(BaseInputWdg):
         color_div.add('''
         <img id="%s" src="/context/spt_js/mooRainbow/rainbow.png" alt="[r]" width="16" height="16" />
         ''' % rainbow_id)
-        #<input id="myInput" name="myInput" type="text" size="13" />
+        #<input id="selfInput" name="selfInput" type="text" size="13" />
 
-        text = TextWdg(my.get_name())
-        text.set_id("myInput")
+        text = TextWdg(self.get_name())
+        text.set_id("selfInput")
         behavior = {
             'type': 'keyboard',
             'kbd_handler_name': 'DgTableMultiLineTextEdit'

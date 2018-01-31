@@ -26,27 +26,27 @@ class RelatedElementWdg(BaseTableElementWdg):
 
 
 
-    def preprocess(my):
-        my.data = my.get_data()
+    def preprocess(self):
+        self.data = self.get_data()
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         sobject_id = sobject.get_id()
-        result = my.data.get(sobject_id)
+        result = self.data.get(sobject_id)
 
         top = DivWdg()
         if not result:
             return top
 
 
-        expression = my.get_option("expression")
+        expression = self.get_option("expression")
         if expression:
             value = Search.eval(expression, result)
         else:
-            column = my.get_option("column")
+            column = self.get_option("column")
             if not column:
-                column = my.get_name()
+                column = self.get_name()
             try:
                 value = result.get_value(column)
             except:
@@ -57,11 +57,11 @@ class RelatedElementWdg(BaseTableElementWdg):
         return top
 
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
 
-    def get_data(my):
+    def get_data(self):
         """
         <element name='work_location' title='Originating Site'>
           <display class='tactic.ui.table.ExpressionElementWdg'>
@@ -75,12 +75,12 @@ class RelatedElementWdg(BaseTableElementWdg):
 
         data = {}
 
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         if not sobjects:
             return data
 
         #template = "MMS/subtask.MMS/job.MMS/request.MMS/security_classification"
-        template = my.get_option("template")
+        template = self.get_option("template")
         keys = template.split(".")
 
         # get the sobjects (main search)
@@ -140,7 +140,7 @@ class RelatedInputWdg(BaseInputWdg):
     'path': 'path'
     }
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_style("width: 200px")
         top.add_style("height: 200px")
@@ -148,7 +148,7 @@ class RelatedInputWdg(BaseInputWdg):
         top.add_color("padding", "10px")
         top.add_border()
 
-        template = my.get_option("template")
+        template = self.get_option("template")
         template = "prod/sequence"
 
         select = SelectWdg("foo")

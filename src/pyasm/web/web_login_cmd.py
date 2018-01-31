@@ -20,20 +20,20 @@ from pyasm.search import Search, SearchType
 
 class WebLoginCmd(Command):
 
-    def check(my):
+    def check(self):
         return True
 
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def reenable_user(my, login_sobject, delay):
+    def reenable_user(self, login_sobject, delay):
         from tactic.command import SchedulerTask, Scheduler
         class EnableUserTask(SchedulerTask):
-            def execute(my):
+            def execute(self):
                 Batch()
                 reset_attempts = 0
-                login_sobject = my.kwargs.get('sobject')
+                login_sobject = self.kwargs.get('sobject')
                 login_sobject.set_value("license_type", "user")
                 login_sobject.set_value("login_attempt", reset_attempts)
                 login_sobject.commit(triggers=False)
@@ -44,12 +44,12 @@ class WebLoginCmd(Command):
         scheduler.start_thread()
 
 
-    def is_logged_in(my):
+    def is_logged_in(self):
         security = WebContainer.get_security()
         return security.is_logged_in()
 
               
-    def execute(my):
+    def execute(self):
 
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
@@ -59,29 +59,29 @@ class WebLoginCmd(Command):
         # in the TACTIC config file,
         # then force the login string argument to be lowercase.
         # This tag is false by default.
-        my.login = web.get_form_value("login")
+        self.login = web.get_form_value("login")
         if Config.get_value("security","force_lowercase_login") == "true":
-            my.login = my.login.lower()
+            self.login = self.login.lower()
 
         password = web.get_form_value("password")
-        my.password = password
+        self.password = password
 
-        my.domain = web.get_form_value("domain")
+        self.domain = web.get_form_value("domain")
 
 
 
 
         
         
-        if my.login == "" and my.password == "":
+        if self.login == "" and self.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Username and password are empty") 
             return False
-        if my.login == "":
+        if self.login == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Username is empty") 
             return False
-        if my.password == "":
+        if self.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Password is empty") 
             return False
@@ -89,14 +89,14 @@ class WebLoginCmd(Command):
         security = WebContainer.get_security()
 
         # handle windows domains
-        #if my.domain:
-        #    my.login = "%s\\%s" % (my.domain, my.login)
+        #if self.domain:
+        #    self.login = "%s\\%s" % (self.domain, self.login)
 
 
         verify_password = web.get_form_value("verify_password")
 
         if verify_password:
-            if verify_password != my.password:
+            if verify_password != self.password:
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                     "Passwords do not match.") 
                 return False
@@ -105,15 +105,15 @@ class WebLoginCmd(Command):
         login_sobject = None
         if SearchType.column_exists("sthpw/login", "upn"):
             search = Search("sthpw/login")
-            search.add_filter('upn',my.login)
+            search.add_filter('upn',self.login)
             login_sobject = search.get_sobject()
         if not login_sobject:
             search2 = Search("sthpw/login")              
-            search2.add_filter('login',my.login)
+            search2.add_filter('login',self.login)
             login_sobject = search2.get_sobject()
         if not login_sobject:
             search2 = Search("sthpw/login")              
-            search2.add_filter('email',my.login)
+            search2.add_filter('email',self.login)
             login_sobject = search2.get_sobject()
 
 
@@ -127,9 +127,9 @@ class WebLoginCmd(Command):
             if login_sobject:
                 login = login_sobject.get_value("login")
             else:
-                login = my.login
+                login = self.login
 
-            security.login_user(login, my.password, domain=my.domain)
+            security.login_user(login, self.password, domain=self.domain)
         except SecurityException, e:
             msg = str(e)
             if not msg:
@@ -172,7 +172,7 @@ class WebLoginCmd(Command):
                         #make delay default to 30 min
                         delay = 30*60
 
-                    my.reenable_user(login_sobject, delay)
+                    self.reenable_user(login_sobject, delay)
 
                 if login_sobject: 
                     login_sobject.commit(triggers=False)

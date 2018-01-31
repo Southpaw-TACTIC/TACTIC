@@ -26,36 +26,36 @@ from pyasm.command import Command
 
 class Package(Command):
 
-    def __init__(my, search_key, context, package):
-        my.search_key = search_key
-        my.context = context
-        my.package = package
+    def __init__(self, search_key, context, package):
+        self.search_key = search_key
+        self.context = context
+        self.package = package
 
-        my.package_xml = Xml()
-        my.package_xml.read_string(package)
+        self.package_xml = Xml()
+        self.package_xml.read_string(package)
 
-        super(Package, my).__init__()
+        super(Package, self).__init__()
 
         
 
-    def execute(my):
+    def execute(self):
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get(protocol='local')
 
         # create a new snapshot
-        snapshot = server.create_snapshot(my.search_key, my.context)
+        snapshot = server.create_snapshot(self.search_key, self.context)
 
         # get all of the file_types
 
-        file_nodes = my.package_xml.get_nodes("package/file_type")
+        file_nodes = self.package_xml.get_nodes("package/file_type")
 
         count = 0
 
         for file_node in file_nodes:
-            name = my.package_xml.get_attribute(file_node, "name")
+            name = self.package_xml.get_attribute(file_node, "name")
 
-            values = my.package_xml.get_node_values_of_children(file_node)
+            values = self.package_xml.get_node_values_of_children(file_node)
             expression = values.get("expression")
             dir_naming = values.get("dir_naming")
             file_naming = values.get("file_naming")
@@ -80,7 +80,7 @@ class Package(Command):
 
 
 class TestPackageCmd(Command):
-    def execute(my):
+    def execute(self):
         # simple packaging.  Take the latest chr001 and
         package = '''
 <package>

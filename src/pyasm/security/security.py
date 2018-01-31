@@ -42,20 +42,20 @@ class Login(SObject):
 
     SEARCH_TYPE = "sthpw/login"
 
-    def get_defaults(my):
+    def get_defaults(self):
         '''specifies the defaults for this sobject'''
 
-        defaults = super(Login, my).get_defaults()
+        defaults = super(Login, self).get_defaults()
         # add the password "tactic" to any user that does not have one
         # specified
         defaults['password']= "39195b0707436a7ecb92565bf3411ab1"
-        defaults['code'] = my.get_value('login')
-        defaults['upn'] = my.get_value('login')
+        defaults['code'] = self.get_value('login')
+        defaults['upn'] = self.get_value('login')
 
         return defaults
 
 
-    def update_trigger(my):
+    def update_trigger(self):
         # the login groups are cached, so when an update has been made,
         # this cache has to be refreshed
         security = Environment.get_security()
@@ -63,67 +63,67 @@ class Login(SObject):
 
 
 
-    def get_primary_key(my):
+    def get_primary_key(self):
         return "login"
     
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         return "login"
    
-    def get_icon_context(my, context=None):
+    def get_icon_context(self, context=None):
         return "icon"
     
-    def get_description(my):
-        return my.get_full_name()
+    def get_description(self):
+        return self.get_full_name()
 
-    def get_login(my):
-        return my.get_value("login")
+    def get_login(self):
+        return self.get_value("login")
    
-    def get_full_name(my):
-        return "%s %s" % (my.get_value("first_name"), my.get_value("last_name"))
+    def get_full_name(self):
+        return "%s %s" % (self.get_value("first_name"), self.get_value("last_name"))
 
-    def get_full_email(my):
-        email = my.get_value("email")
+    def get_full_email(self):
+        email = self.get_value("email")
         if email:
-            return "%s %s <%s>" % (my.get_value("first_name"), \
-                my.get_value("last_name"), my.get_value("email") )
+            return "%s %s <%s>" % (self.get_value("first_name"), \
+                self.get_value("last_name"), self.get_value("email") )
         else:
             return ""
 
-    def has_user_license(my):
+    def has_user_license(self):
         '''determines if this user has a user level license'''
-        license_type = my.get_value('license_type', no_exception=True)
+        license_type = self.get_value('license_type', no_exception=True)
         return license_type in ['', 'user']
 
 
 
-    def add_to_group(my, group_name):
+    def add_to_group(self, group_name):
         '''Adds a user to the specified group'''
         if type(group_name) in types.StringTypes:
-            my.__validate_group(group_name)
+            self.__validate_group(group_name)
         else:
             group_name = group_name.get_value("login_group")
 
         # use the sobject as well
-        LoginInGroup.create_by_name( my.get_value("login"), group_name )
+        LoginInGroup.create_by_name( self.get_value("login"), group_name )
 
-    def remove_from_group(my, group_name):
+    def remove_from_group(self, group_name):
         '''removes the user from a specfied group'''
         
         if type(group_name) in types.StringTypes:
-            my.__validate_group(group_name)
+            self.__validate_group(group_name)
         else:
             group_name = group_name.get_value("login_group")
 
         # use the sobject as well
         login_in_group = LoginInGroup.get_by_names( \
-                my.get_value("login"), group_name)
+                self.get_value("login"), group_name)
         if login_in_group != None:
             login_in_group.delete()
 
 
-    def remove_all_groups(my, except_list=[]):
+    def remove_all_groups(self, except_list=[]):
         '''Remove the user from a specfied group. Return a list of skipped login_in_group'''
-        connectors = LoginInGroup.get_by_login_name(my.get_value("login")) 
+        connectors = LoginInGroup.get_by_login_name(self.get_value("login")) 
         remaining = []
         for login_in_group in connectors:
             if login_in_group.get_value("login_group") in except_list:
@@ -135,23 +135,23 @@ class Login(SObject):
 
 
 
-    def __validate_group(my, group_name):
+    def __validate_group(self, group_name):
         group = LoginGroup.get_by_group_name(group_name)
         if not group:
             raise LoginInGroupException('This group [%s] does not exist' % group_name)
 
 
-    def get_sub_group_names(my):
+    def get_sub_group_names(self):
         '''Returns all of the names as a list of strings
         of the sub_groups a group contains'''
         
-        connectors = LoginInGroup.get_by_login_name(my.get_login() ) 
+        connectors = LoginInGroup.get_by_login_name(self.get_login() ) 
         group_names = [ x.get_value("login_group") for x in connectors ]
         return group_names
 
 
-    def get_sub_groups(my):
-        sub_group_names = my.get_sub_group_names()
+    def get_sub_groups(self):
+        sub_group_names = self.get_sub_group_names()
         if not sub_group_names or sub_group_names == ['']:
             return []
         
@@ -180,7 +180,7 @@ class Login(SObject):
             
             if group_access_level > access_level:
                 access_level = group_access_level
-        groups.append(my.get_security_level_group(access_level, project_codes))
+        groups.append(self.get_security_level_group(access_level, project_codes))
 
         return groups
 
@@ -303,10 +303,10 @@ class Login(SObject):
 
 
 
-    def set_password(my, password):
+    def set_password(self, password):
         encrypted = hashlib.md5(password).hexdigest()
-        my.set_value("password", encrypted)
-        my.commit()
+        self.set_value("password", encrypted)
+        self.commit()
 
 
 
@@ -379,48 +379,48 @@ class LoginGroup(Login):
 
     ACCESS_DICT = {'high': HI, 'medium': MED, 'low': LOW, 'min': MIN, 'none': NONE}
     
-    def get_defaults(my):
+    def get_defaults(self):
         defaults = {}
-        if my.get_value("name"):
-            defaults['login_group'] = my.get_value("name")
+        if self.get_value("name"):
+            defaults['login_group'] = self.get_value("name")
             defaults['code'] = defaults['login_group']
         else:
-            defaults['code'] = my.get_value("login_group")
+            defaults['code'] = self.get_value("login_group")
         # LoginGroupTrigger handles the update event
         return defaults
 
-    def is_admin(my):
-        group = my.get_value("login_group")
+    def is_admin(self):
+        group = self.get_value("login_group")
         return group == "admin"
 
 
-    def get_primary_key(my):
+    def get_primary_key(self):
         return "login_group"
     
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         return "login_group"
     
-    def get_description(my):
-        return my.get_value('description')
+    def get_description(self):
+        return self.get_value('description')
 
-    def get_login_group(my):
-        return my.get_value("login_group")
+    def get_login_group(self):
+        return self.get_value("login_group")
 
-    def get_sub_group_names(my):
-        sub_groups_str = my.get_value("sub_groups")
+    def get_sub_group_names(self):
+        sub_groups_str = self.get_value("sub_groups")
         return sub_groups_str.split("|")
 
-    def get_access_rules(my):
-        return my.get_value("access_rules")
+    def get_access_rules(self):
+        return self.get_value("access_rules")
 
-    def get_xml_root(my, name):
+    def get_xml_root(self, name):
         if name == "access_rules":
             return "rules"
 
     
 
-    def get_logins(my):
-        connectors = LoginInGroup.get_by_group_name(my.get_login_group())
+    def get_logins(self):
+        connectors = LoginInGroup.get_by_group_name(self.get_login_group())
         if not connectors:
             return []
 
@@ -562,11 +562,11 @@ class LoginGroup(Login):
 
 
 
-    def get_access_level(my):
-        level = my.get_value('access_level')
+    def get_access_level(self):
+        level = self.get_value('access_level')
         if not level:
             level = Login.get_default_security_level()
-        level = my.ACCESS_DICT.get(level)
+        level = self.ACCESS_DICT.get(level)
         return level
 
 
@@ -697,19 +697,19 @@ class Site(object):
 
 
     # HACK: Some functions to spoof an sobject
-    def get_project_code(my):
+    def get_project_code(self):
         return "admin"
 
-    def get_base_search_type(my):
+    def get_base_search_type(self):
         return "sthpw/virtual"
 
-    def get_search_type(my):
+    def get_search_type(self):
         return "sthpw/virtual"
 
-    def get(my, name, no_exception=True):
-        return my.get_value(name)
+    def get(self, name, no_exception=True):
+        return self.get_value(name)
 
-    def get_value(my, name, no_exception=True):
+    def get_value(self, name, no_exception=True):
         # This is just to spoof the Site object into being an sobject for
         # the purposes of using expressions to configure the "asset_dir"
         # for sites.  Ideally, this class should be derived from sobject,
@@ -719,11 +719,11 @@ class Site(object):
             return site
 
 
-    def get_request_path_info(my):
+    def get_request_path_info(self):
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
         path = web.get_request_path()
-        return my.break_up_request_path(path)
+        return self.break_up_request_path(path)
 
 
 
@@ -732,32 +732,32 @@ class Site(object):
     #
 
 
-    def get_max_users(my, site):
+    def get_max_users(self, site):
         return
 
-    def get_authenticate_class(my):
+    def get_authenticate_class(self):
         return
 
-    def get_site_root(my):
+    def get_site_root(self):
         return ""
 
-    def break_up_request_path(my, path):
+    def break_up_request_path(self, path):
         return {}
 
-    def get_site_redirect(my):
+    def get_site_redirect(self):
         return
 
-    def register_sites(my, startup, config):
+    def register_sites(self, startup, config):
         return
     
-    def handle_ticket(my, ticket):
+    def handle_ticket(self, ticket):
         return
 
 
-    def get_guest_hashes(my):
+    def get_guest_hashes(self):
         return []
 
-    def get_guest_wdg(my, hash):
+    def get_guest_wdg(self, hash):
         return None
 
 
@@ -1015,9 +1015,9 @@ class Ticket(SObject):
     on the browser as a cookie and allows the user to login with a password.
     The ticket has an expiry date set in the Tactic config file'''
 
-    def get_key(my):
+    def get_key(self):
         '''get the alphanumeric unique code for the session'''
-        return my.get_value("ticket")
+        return self.get_value("ticket")
 
 
     def get_by_key(key):
@@ -1156,68 +1156,68 @@ class Ticket(SObject):
 
 # DEPRECATED
 class NoDatabaseSecurity(Base):
-    def __init__(my):
-        #my._login = SearchType.create("sthpw/login")
-        my._access_manager = AccessManager()
-        my.is_logged_in_flag = False
+    def __init__(self):
+        #self._login = SearchType.create("sthpw/login")
+        self._access_manager = AccessManager()
+        self.is_logged_in_flag = False
         pass
 
-    def is_logged_in(my):
-        return my.is_logged_in_flag
-    def get_license(my):
+    def is_logged_in(self):
+        return self.is_logged_in_flag
+    def get_license(self):
         return License()
-    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
+    def login_with_ticket(self, key, add_access_rules=True, allow_guest=False):
         None
-    def login_user(my, login_name, password, expiry=None, domain=None):
-        my.is_logged_in_flag = True
-    def get_login(my):
+    def login_user(self, login_name, password, expiry=None, domain=None):
+        self.is_logged_in_flag = True
+    def get_login(self):
         return None
-    def get_user_name(my):
+    def get_user_name(self):
         return None
-    def get_group_names(my):
+    def get_group_names(self):
         return ['admin']
-    def add_access_rules(my):
+    def add_access_rules(self):
         pass
-    def get_ticket(my):
+    def get_ticket(self):
         return None
-    def check_access(my, group, key, access, value=None, is_match=False, default="edit"):
+    def check_access(self, group, key, access, value=None, is_match=False, default="edit"):
         return True
-    def get_access(my, group, key, default=None):
+    def get_access(self, group, key, default=None):
         return "edit"
-    def alter_search(my, search):
+    def alter_search(self, search):
         pass
-    def get_access_manager(my):
-        return my._access_manager
+    def get_access_manager(self):
+        return self._access_manager
 
 
 
 class Security(Base):
     '''main class dealing with user identification'''
 
-    def __init__(my, verify_license=False):
-        my._login_var = None
-        my._is_logged_in = 0
-        my._groups = []
-        my._group_names = []
-        my._ticket = None
-        my._admin_login = None
+    def __init__(self, verify_license=False):
+        self._login_var = None
+        self._is_logged_in = 0
+        self._groups = []
+        self._group_names = []
+        self._ticket = None
+        self._admin_login = None
 
-        my.add_access_rules_flag = True
+        self.add_access_rules_flag = True
 
         # define an access manager object
-        my._access_manager = AccessManager()
+        self._access_manager = AccessManager()
 
-        my.license = License.get(verify=verify_license)
+        self.license = License.get(verify=verify_license)
 
-        my.login_cache = None
+        self.login_cache = None
 
 
-    def _get_my_login(my):
-        return my._login_var
-    def _set_my_login(my, login):
-        my._login_var = login
-        if my._login_var and my._login_var.get_value("login") == 'admin':
-            my._access_manager.set_admin(True)
+    def _get_my_login(self):
+        return self._login_var
+    def _set_my_login(self, login):
+        self._login_var = login
+        if self._login_var and self._login_var.get_value("login") == 'admin':
+            self._access_manager.set_admin(True)
     _login = property(_get_my_login, _set_my_login)
 
 
@@ -1227,114 +1227,114 @@ class Security(Base):
         return get_security_version()
     get_version = classmethod(get_version)
 
-    def is_logged_in(my):
-        return my._is_logged_in
+    def is_logged_in(self):
+        return self._is_logged_in
 
-    def is_admin(my):
-        return my._access_manager.is_admin()
+    def is_admin(self):
+        return self._access_manager.is_admin()
 
-    def set_admin(my, flag):
+    def set_admin(self, flag):
         
-        if flag == my._access_manager.is_admin_flag:
+        if flag == self._access_manager.is_admin_flag:
             return
-        return my._access_manager.set_admin(flag)
+        return self._access_manager.set_admin(flag)
 
-    def get_license(my):
-        return my.license
+    def get_license(self):
+        return self.license
 
-    def reread_license(my):
-        my.license = License.get()
-        return my.license
+    def reread_license(self):
+        self.license = License.get()
+        return self.license
 
-    def get_groups(my):
-        return my._groups
+    def get_groups(self):
+        return self._groups
 
-    def get_group_names(my):
-        group_names = my._group_names
+    def get_group_names(self):
+        group_names = self._group_names
         group_names.sort()
         return group_names
 
-    def is_in_group(my, group_name):
-        if group_name == "admin" and my.get_user_name() == "admin":
+    def is_in_group(self, group_name):
+        if group_name == "admin" and self.get_user_name() == "admin":
             return True
 
-        return group_name in my._group_names
+        return group_name in self._group_names
 
 
-    def get_login(my):
-        return my._login
+    def get_login(self):
+        return self._login
 
-    def get_user_name(my):
-        if not my._login:
+    def get_user_name(self):
+        if not self._login:
             return None
-        return my._login.get_login()
+        return self._login.get_login()
 
-    def get_ticket(my):
-        return my._ticket
+    def get_ticket(self):
+        return self._ticket
 
-    def get_ticket_key(my):
-        if my._ticket:
-            return my._ticket.get_key()
+    def get_ticket_key(self):
+        if self._ticket:
+            return self._ticket.get_key()
         else:
             return ""
 
-    def clear_ticket(my):
+    def clear_ticket(self):
         my_ticket = ""
 
 
-    def get_access_manager(my):
-        return my._access_manager
+    def get_access_manager(self):
+        return self._access_manager
 
 
-    def reset_access_manager(my):
-        my._access_manager = AccessManager()
-        my.add_access_rules()
+    def reset_access_manager(self):
+        self._access_manager = AccessManager()
+        self.add_access_rules()
 
-    def sign_out(my):
-        my._is_logged_in = 0
-        my._login = None
-        my._groups = []
-        my._group_names = []
-        my._ticket = None
+    def sign_out(self):
+        self._is_logged_in = 0
+        self._login = None
+        self._groups = []
+        self._group_names = []
+        self._ticket = None
 
 
-    def get_start_link(my):
-        for group in my._groups:
+    def get_start_link(self):
+        for group in self._groups:
             start_link = group.get_value("start_link")
             if start_link:
                 return start_link
 
 
-    def _do_login(my):
+    def _do_login(self):
         '''function to actually log in the user'''
         # get from cache 
         #from pyasm.biz import LoginCache
-        #my.login_cache = LoginCache.get("logins")
+        #self.login_cache = LoginCache.get("logins")
 
         # find all of the groups for this login
-        my._groups = None
-        if my._groups == None:
-            my._groups = []
-            my._group_names = []
-            my._find_all_login_groups()
+        self._groups = None
+        if self._groups == None:
+            self._groups = []
+            self._group_names = []
+            self._find_all_login_groups()
 
            
             # set the results to the cache
-            #my.login_cache.set_attr("%s:groups" % login, my._groups)
-            #my.login_cache.set_attr("%s:group_names" % login, my._group_names)
+            #self.login_cache.set_attr("%s:groups" % login, self._groups)
+            #self.login_cache.set_attr("%s:group_names" % login, self._group_names)
 
 
         # Setup the access manager and access rules
         # Admin and admin group do not get access rules
-        is_admin = my.setup_access_manager()
-        if not is_admin and my.add_access_rules_flag:
-            my.add_access_rules()
+        is_admin = self.setup_access_manager()
+        if not is_admin and self.add_access_rules_flag:
+            self.add_access_rules()
 
         # record that the login is logged in
-        my._is_logged_in = 1
+        self._is_logged_in = 1
 
 
-    def login_as_batch(my, login_name=None):
+    def login_as_batch(self, login_name=None):
         '''function that logs in through a batch command'''
 
         # default to admin.  Generally batch is run as admin.
@@ -1342,20 +1342,20 @@ class Security(Base):
             login_name = "admin"
 
         # login must exist in the database
-        my._login = Login.get_by_login(login_name, use_upn=True)
-        if not my._login:
+        self._login = Login.get_by_login(login_name, use_upn=True)
+        if not self._login:
             raise SecurityException("Security failed: Unrecognized user: '%s'" % login_name)
 
         # create a new ticket for the user
-        my._ticket = my._generate_ticket(login_name)
+        self._ticket = self._generate_ticket(login_name)
 
-        my.add_access_rules_flag = True
+        self.add_access_rules_flag = True
        
-        my._do_login()
+        self._do_login()
 
 
 
-    def login_as_guest(my):
+    def login_as_guest(self):
         '''function that logs in as guest'''
 
         login_name = "guest"
@@ -1364,17 +1364,17 @@ class Security(Base):
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
         search.set_show_retired(True)
-        my._login = search.get_sobject()
-        if not my._login:
+        self._login = search.get_sobject()
+        if not self._login:
             # login must exist in the database
-            my._login = SearchType.create("sthpw/login")
-            my._login.set_value("code", login_name)
-            my._login.set_value("login", login_name)
-            my._login.set_value("upn", login_name)
-            my._login.set_value("first_name", "Guest")
-            my._login.set_value("last_name", "User")
-            my._login.set_value("display_name", "Guest")
-            my._login.commit()
+            self._login = SearchType.create("sthpw/login")
+            self._login.set_value("code", login_name)
+            self._login.set_value("login", login_name)
+            self._login.set_value("upn", login_name)
+            self._login.set_value("first_name", "Guest")
+            self._login.set_value("last_name", "User")
+            self._login.set_value("display_name", "Guest")
+            self._login.commit()
 
         # create a login group
         search = Search("sthpw/login_group")
@@ -1393,18 +1393,18 @@ class Security(Base):
 
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        #my._find_all_login_groups()
+        #self._find_all_login_groups()
 
         # create a new ticket for the user
-        my._ticket = my._generate_ticket(login_name)
+        self._ticket = self._generate_ticket(login_name)
 
-        my._do_login()
+        self._do_login()
 
       
 
 
 
-    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
+    def login_with_ticket(self, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
         
@@ -1416,7 +1416,7 @@ class Security(Base):
         #site = Site.get().get_by_ticket(key)
         #Site.get().set_site(site)
 
-        my.add_access_rules_flag = add_access_rules
+        self.add_access_rules_flag = add_access_rules
 
         #from pyasm.biz import CacheContainer
         #cache = CacheContainer.get("sthpw/ticket")
@@ -1440,25 +1440,25 @@ class Security(Base):
         
         cache = CacheContainer.get("sthpw/login")
         if cache:
-            my._login = cache.get_sobject_by_key("login", login_word)
+            self._login = cache.get_sobject_by_key("login", login_word)
 
         # if it doesn't exist, try the old method
-        if not my._login:
-            my._login = Login.get_by_login( login_word, use_upn=True )
+        if not self._login:
+            self._login = Login.get_by_login( login_word, use_upn=True )
 
-        if my._login is None:
+        if self._login is None:
             return None
 
         # store the ticket
-        my._ticket = ticket
+        self._ticket = ticket
 
-        if my._login.get("login") == "guest" and not allow_guest:
+        if self._login.get("login") == "guest" and not allow_guest:
             return None
 
-        my._do_login()
+        self._do_login()
 
-        if my._login.get("login") == "guest":
-            access_manager = my.get_access_manager()
+        if self._login.get("login") == "guest":
+            access_manager = self.get_access_manager()
             xml = Xml()
             xml.read_string('''
             <rules>
@@ -1467,17 +1467,17 @@ class Security(Base):
             ''')
             access_manager.add_xml_rules(xml)
 
-        return my._login
+        return self._login
 
 
 
-    def login_with_session(my, sid, add_access_rules):
+    def login_with_session(self, sid, add_access_rules):
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
 
         # TEST: this is a test authentication with Drupal
-        my.add_access_rules_flag = add_access_rules
+        self.add_access_rules_flag = add_access_rules
 
         from pyasm.security import Sudo
         sudo = Sudo()
@@ -1511,46 +1511,46 @@ class Security(Base):
 
         # if the user doesn't exist, then autocreate one
         
-        my._login = Search.get_by_code("sthpw/login", user_name)
-        if not my._login:
-            my._login = SearchType.create("sthpw/login")
+        self._login = Search.get_by_code("sthpw/login", user_name)
+        if not self._login:
+            self._login = SearchType.create("sthpw/login")
 
-            my._login.set_value("code", user_name)
-            my._login.set_value("login", user_name)
-            my._login.set_value("first_name", user_name)
-            my._login.set_value("password", drupal_user.get('pass'))
-            my._login.set_value("email", drupal_user.get('mail'))
-            my._login.commit()
+            self._login.set_value("code", user_name)
+            self._login.set_value("login", user_name)
+            self._login.set_value("first_name", user_name)
+            self._login.set_value("password", drupal_user.get('pass'))
+            self._login.set_value("email", drupal_user.get('mail'))
+            self._login.commit()
 
         # do we need a tactic ticket as well ...?
-        #my._ticket = my._generate_ticket(user_name, expiry=None)
+        #self._ticket = self._generate_ticket(user_name, expiry=None)
 
         search = Search("sthpw/ticket")
         search.add_filter("ticket", sid)
-        my._ticket = search.get_sobject()
-        if not my._ticket:
-            my._ticket = SearchType.create("sthpw/ticket")
-            my._ticket.set_value("login", user_name)
-            my._ticket.set_value("ticket", sid)
-            my._ticket.commit()
+        self._ticket = search.get_sobject()
+        if not self._ticket:
+            self._ticket = SearchType.create("sthpw/ticket")
+            self._ticket.set_value("login", user_name)
+            self._ticket.set_value("ticket", sid)
+            self._ticket.commit()
 
-        my._do_login()
-
-
+        self._do_login()
 
 
 
 
 
-    def login_user_without_password(my, login_name, expiry=None):
+
+
+    def login_user_without_password(self, login_name, expiry=None):
         '''login a user without a password.  This should be used sparingly'''
 
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
-        my._login = search.get_sobject()
+        self._login = search.get_sobject()
 
         # user still has to exist
-        if not my._login:
+        if not self._login:
             raise SecurityException("Login [%s] does not exist" % login_name)
        
         # Search for unexpired ticket 
@@ -1560,15 +1560,15 @@ class Security(Base):
         search.add_where('("expiry" > %s or "expiry" is NULL)' % now)        
         ticket = search.get_sobject()
         if ticket:
-            my._ticket = ticket
+            self._ticket = ticket
         else: 
-            my._ticket = my._generate_ticket(login_name, expiry)
+            self._ticket = self._generate_ticket(login_name, expiry)
         
-        my._do_login()
+        self._do_login()
 
 
 
-    def login_user(my, login_name, password, expiry=None, domain=None):
+    def login_user(self, login_name, password, expiry=None, domain=None):
         '''login user with a name and password combination
        
         The login has the following modes:
@@ -1642,76 +1642,76 @@ class Security(Base):
         # database.
         if mode == 'autocreate':
             # get the login from the authentication class
-            my._login = Login.get_by_login(login_name, use_upn=True)
-            if not my._login:
-                my._login = SearchType.create("sthpw/login")
+            self._login = Login.get_by_login(login_name, use_upn=True)
+            if not self._login:
+                self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
-                    my._login.set_value('upn', login_name)
-                my._login.set_value('login', login_name)
-                authenticate.add_user_info( my._login, password)
+                    self._login.set_value('upn', login_name)
+                self._login.set_value('login', login_name)
+                authenticate.add_user_info( self._login, password)
  
-                my._login.commit(triggers=False)
+                self._login.commit(triggers=False)
 
         # when mode is cache, it does autocreate and update user_info every time
         # this is called
         elif mode == 'cache':
             # get the login from the authentication class
-            my._login = Login.get_by_login(login_name, use_upn=True)
-            if not my._login:
-                my._login = SearchType.create("sthpw/login")
+            self._login = Login.get_by_login(login_name, use_upn=True)
+            if not self._login:
+                self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
-                    my._login.set_value('upn', login_name)
-                my._login.set_value('login', login_name)
+                    self._login.set_value('upn', login_name)
+                self._login.set_value('login', login_name)
 
             try:
-                authenticate.add_user_info( my._login, password)
+                authenticate.add_user_info( self._login, password)
             except Exception as e:
                 raise SecurityException("Error updating user info: %s" % e.__str__())
 
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
-            if my._login.has_user_license():
-                num_left = my.license.get_num_licenses_left()
+            if self._login.has_user_license():
+                num_left = self.license.get_num_licenses_left()
                 if num_left <= 0:
                     raise SecurityException("Number of active users exceeds licenses")
 
-            my._login.commit()
+            self._login.commit()
 
         else:
             # get the login from database and don't bother updating
-            my._login = authenticate.get_login()
-            if not my._login:
-                my._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
 
 
         # if it doesn't exist, then the login fails
-        if not my._login:
+        if not self._login:
             raise SecurityException("Login/Password combination incorrect")
 
 
         # if the user is disabled, then they cannot log in
-        license_type = my._login.get_value("license_type", no_exception=True)
+        license_type = self._login.get_value("license_type", no_exception=True)
         if license_type == "disabled":
-            raise SecurityException("User [%s] is disabled" % my._login.get_value('login'))
+            raise SecurityException("User [%s] is disabled" % self._login.get_value('login'))
 
         # check if the user has a floating license
         elif license_type == 'float': 
             try:
-                my.license.verify_floating(login_name)
+                self.license.verify_floating(login_name)
             except LicenseException as e:
                 raise SecurityException(str(e))
 
 
         # create a new ticket for the user
-        my._ticket = my._generate_ticket(login_name, expiry, category="gui")
+        self._ticket = self._generate_ticket(login_name, expiry, category="gui")
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
 
-        my._do_login()
+        self._do_login()
 
 
         # allow for some postprocessing
-        authenticate.postprocess(my._login, my._ticket)
+        authenticate.postprocess(self._login, self._ticket)
         
 
 
@@ -1719,7 +1719,7 @@ class Security(Base):
 
 
     # DEPRECATED as 2.5
-    def login_user_version_1(my, login_name, password, expiry=None):
+    def login_user_version_1(self, login_name, password, expiry=None):
         '''login user with a name and password combination
        
         The login has the following modes:
@@ -1747,27 +1747,27 @@ class Security(Base):
             auth_class = "pyasm.security.TacticAuthenticate"
 
         # get once again (why??)
-        my._login = Login.get_by_login(login_name, use_upn=True)
+        self._login = Login.get_by_login(login_name, use_upn=True)
 
-        if not my._login:
+        if not self._login:
             if autocreate:
                 # if autocreate is on, create a "virtual" user
-                my._login = SearchType.create("sthpw/login")
-                my._login.set_value("login", login_name)
+                self._login = SearchType.create("sthpw/login")
+                self._login.set_value("login", login_name)
 
             else:
                 raise SecurityException("Login/Password combination incorrect")
 
 
         authenticate = Common.create_from_class_path(auth_class)
-        is_authenticated = authenticate.authenticate(my._login, password)
+        is_authenticated = authenticate.authenticate(self._login, password)
         if is_authenticated != True:
             raise SecurityException("Login/Password combination incorrect")
 
 
         # if the user is disabled, then they cannot log in
-        if my._login.get_value("license_type", no_exception=True) == "disabled":
-            raise SecurityException("User [%s] is disabled" % my._login.get_value('login'))
+        if self._login.get_value("license_type", no_exception=True) == "disabled":
+            raise SecurityException("User [%s] is disabled" % self._login.get_value('login'))
 
 
         # if no exception has occured the user is authenticated.
@@ -1776,35 +1776,35 @@ class Security(Base):
             # put this in a transaction
             from pyasm.command import Command
             class CreateUser(Command):
-                def execute(my):
+                def execute(self):
                     # FIXME: should probably centralize password encryption
                     #encrypted = md5.new(password).hexdigest()
                     encrypted = hashlib.md5(password).hexdigest()
-                    my._login.set_value("password", encrypted)
+                    self._login.set_value("password", encrypted)
 
                     # provide the opportunity for authenticate to set values
                     # on creation
-                    authenticate.add_user_info(my._login)
+                    authenticate.add_user_info(self._login)
 
-                    my._login.commit()
+                    self._login.commit()
             cmd = CreateUser()
-            cmd._login = my._login
+            cmd._login = self._login
             Command.execute_cmd(cmd)
 
         else:
             # allow the authentication class to add specific user info
-            authenticate.add_user_info(my._login)
+            authenticate.add_user_info(self._login)
 
         # create a new ticket for the user
-        my._ticket = my._generate_ticket(login_name, expiry)
+        self._ticket = self._generate_ticket(login_name, expiry)
 
-        my._do_login()
-
-
+        self._do_login()
 
 
 
-    def _generate_ticket(my, login_name, expiry=None, category=None):
+
+
+    def _generate_ticket(self, login_name, expiry=None, category=None):
         # create a new ticket for the user
         ticket_key = Common.generate_random_key()
 
@@ -1824,95 +1824,95 @@ class Security(Base):
 
 
 
-    def compare_access(my, user_access, required_access):
-        return my._access_manager.compare_access(user_access, required_access)
+    def compare_access(self, user_access, required_access):
+        return self._access_manager.compare_access(user_access, required_access)
 
 
-    def check_access(my, group, key, access, value=None, is_match=False, default="edit"):
+    def check_access(self, group, key, access, value=None, is_match=False, default="edit"):
         '''convenience function to check the security level to the access
         manager'''
-        return my._access_manager.check_access(group, key, access, value, is_match, default=default)
+        return self._access_manager.check_access(group, key, access, value, is_match, default=default)
 
-    def get_access(my, group, key, default=None):
-        return my._access_manager.get_access(group, key, default=None)
-
-
+    def get_access(self, group, key, default=None):
+        return self._access_manager.get_access(group, key, default=None)
 
 
 
-    def alter_search(my, search):
+
+
+    def alter_search(self, search):
         '''convenience function to alter a search for security reasons'''
         # set that the security filter has been added
         search.set_security_filter()
-        return my._access_manager.alter_search(search)
+        return self._access_manager.alter_search(search)
 
 
 
 
 
 
-    def is_login_in_group(my, group):
+    def is_login_in_group(self, group):
         '''returns whether the user is in the give group'''
-        if group in my._group_names:
+        if group in self._group_names:
             return True
         else:
             return False
 
 
-    def _find_all_login_groups(my, group=None):
+    def _find_all_login_groups(self, group=None):
 
         if not group:
-            groups = my._login.get_sub_groups()
+            groups = self._login.get_sub_groups()
             for group in groups:
 
                 group_name = group.get_login_group()
-                if group_name in my._group_names:
+                if group_name in self._group_names:
                     continue
 
-                my._groups.append(group)
-                my._group_names.append(group.get_login_group())
+                self._groups.append(group)
+                self._group_names.append(group.get_login_group())
 
-                my._find_all_login_groups(group)
+                self._find_all_login_groups(group)
 
         else:
             # break any circular loops
             group_name = group.get_login_group()
-            if group_name in my._group_names:
+            if group_name in self._group_names:
                 return
 
-            my._groups.append(group)
-            my._group_names.append(group.get_login_group())
+            self._groups.append(group)
+            self._group_names.append(group.get_login_group())
 
             # go through the subgroups
             sub_groups = group.get_sub_groups()
             for sub_group in sub_groups:
-                my._find_all_login_groups(sub_group)
+                self._find_all_login_groups(sub_group)
 
 
-        # make sure my._groups is an array
-        if my._groups == None:
-            my._groups = []
+        # make sure self._groups is an array
+        if self._groups == None:
+            self._groups = []
 
-        #for x  in my._groups:
+        #for x  in self._groups:
         #    print(x.get_login_group())
         
 
-    def add_access_rules(my):
+    def add_access_rules(self):
         '''Add access rules for each group to the access manager.'''
-        for group in my._groups:
-            my._access_manager.add_xml_rules(group)
+        for group in self._groups:
+            self._access_manager.add_xml_rules(group)
         
 
-    def setup_access_manager(my):
+    def setup_access_manager(self):
         '''Setup access manager for admin access.'''
-        if my._login and my._login.get_value("login") == 'admin':
-            my._access_manager.set_admin(True)
+        if self._login and self._login.get_value("login") == 'admin':
+            self._access_manager.set_admin(True)
             return True
 
-        for group in my._groups:
+        for group in self._groups:
             login_group = group.get_value("login_group")
             if login_group == "admin":
-                my._access_manager.set_admin(True)
+                self._access_manager.set_admin(True)
                 return True
 
         return False
@@ -1937,37 +1937,37 @@ except:
 
 
 class LicenseKey(object):
-    def __init__(my, public_key):
+    def __init__(self, public_key):
         # unwrap the public key (for backwards compatibility
-        unwrapped_key = my.unwrap("Key", public_key)
+        unwrapped_key = self.unwrap("Key", public_key)
         try:
             # get the size and key object
-            haspass, my.size, keyobj = pickle.loads(unwrapped_key)
-            my.algorithm, my.keyobj = pickle.loads(keyobj)
+            haspass, self.size, keyobj = pickle.loads(unwrapped_key)
+            self.algorithm, self.keyobj = pickle.loads(keyobj)
         except Exception as e:
             raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
 
 
 
-    def verify_string(my, raw, signature):
+    def verify_string(self, raw, signature):
         # unwrap the signature
-        unwrapped_signature = my.unwrap("Signature", signature)
+        unwrapped_signature = self.unwrap("Signature", signature)
    
         # deconstruct the signature
         algorithm, raw_signature = pickle.loads(unwrapped_signature)
-        assert my.algorithm == algorithm
+        assert self.algorithm == algorithm
 
         # MD5 the raw text
         m = MD5.new()
         m.update(raw)
         d = m.digest()
 
-        if my.keyobj.verify(d, raw_signature):
+        if self.keyobj.verify(d, raw_signature):
             return True
         else:
             return False
 
-    def unwrap(my, type, msg):
+    def unwrap(self, type, msg):
         msg = msg.replace("<StartPycrypto%s>" % type, "")
         msg = msg.replace("<EndPycrypto%s>" % type, "")
         binary = base64.decodestring(msg)
@@ -1984,51 +1984,51 @@ class License(object):
     license_path = "%s/tactic-license.xml" % Environment.get_license_dir()
     NO_LICENSE = 'no_license'
 
-    def __init__(my, path=None, verify=True):
-        my.message = ""
-        my.status = "NOT FOUND"
-        my.licensed = False
-        my.xml = None
+    def __init__(self, path=None, verify=True):
+        self.message = ""
+        self.status = "NOT FOUND"
+        self.licensed = False
+        self.xml = None
 
         if path:
-            my.license_path = path
+            self.license_path = path
 
-        my.verify_flag = verify
+        self.verify_flag = verify
 
         try:
-            my.parse_license()
+            self.parse_license()
         except LicenseException as e:
-            my.message = e.__str__()
-            print("WARNING: ", my.message)
-            my.licensed = False
+            self.message = e.__str__()
+            print("WARNING: ", self.message)
+            self.licensed = False
 
-            # this is the minimal acceptable data for my.xml, dont't set to None
+            # this is the minimal acceptable data for self.xml, dont't set to None
             # this should be the place to redefine it if applicable
-            if not my.xml:
-                my.xml = Xml('<%s/>'%my.NO_LICENSE)
+            if not self.xml:
+                self.xml = Xml('<%s/>'%self.NO_LICENSE)
         else:
-            my.licensed = True
+            self.licensed = True
             
 
-    def parse_license(my, check=False):
+    def parse_license(self, check=False):
         '''check = True is only used for creation verification'''
-        if not os.path.exists(my.license_path):
-            raise LicenseException("Cannot find license file [%s]" % my.license_path )
+        if not os.path.exists(self.license_path):
+            raise LicenseException("Cannot find license file [%s]" % self.license_path )
 
-        my.xml = Xml()
+        self.xml = Xml()
 
         try:
-            my.xml.read_file(my.license_path, cache=False)
+            self.xml.read_file(self.license_path, cache=False)
         except XmlException as e:
-            my.xml.read_string("<license/>")
-            raise LicenseException("Error parsing license file: malformed xml license file [%s] e: %s" % (my.license_path, e))
+            self.xml.read_string("<license/>")
+            raise LicenseException("Error parsing license file: malformed xml license file [%s] e: %s" % (self.license_path, e))
 
         # verify signature
-        signature = str(my.xml.get_value("license/signature"))
+        signature = str(self.xml.get_value("license/signature"))
         signature = signature.strip()
-        data_node = my.xml.get_node("license/data")
-        data = my.xml.to_string(data_node).strip()
-        public_key = str(my.xml.get_value("license/public_key"))
+        data_node = self.xml.get_node("license/data")
+        data = self.xml.to_string(data_node).strip()
+        public_key = str(self.xml.get_value("license/public_key"))
 
         # the data requires a very specific spacing.  4Suite puts out a
         # different dump and lxml and unfortunately, the license key is
@@ -2040,65 +2040,65 @@ class License(object):
 
     
         # verify the signature
-        if my.verify_flag:
+        if self.verify_flag:
             key = LicenseKey(public_key)
             if not key.verify_string(data, signature):
                 # will be redefined in constructor
-                my.xml = None
+                self.xml = None
                 if check ==True:
-                    raise TacticException("Data and signature in license file do not match in [%s]" % my.license_path)
+                    raise TacticException("Data and signature in license file do not match in [%s]" % self.license_path)
                 else:
-                    raise LicenseException("Data and signature in license file do not match in [%s]" % my.license_path)
-            my.verify_license()
-            #my.verify()
+                    raise LicenseException("Data and signature in license file do not match in [%s]" % self.license_path)
+            self.verify_license()
+            #self.verify()
 
 
 
-    def is_licensed(my):
-        return my.licensed
+    def is_licensed(self):
+        return self.licensed
 
 
-    def is_licensed_for(my, product, version=None):
-        my.licensed = False
-        my.message = "No valid license for %s found." % product
+    def is_licensed_for(self, product, version=None):
+        self.licensed = False
+        self.message = "No valid license for %s found." % product
 
-        products = my.xml.get_value("license/data/products")
+        products = self.xml.get_value("license/data/products")
         if not products:
             return
 
 
         products = products.split(",")
         if product in products:
-            my.message = ""
-            my.licensed = True
+            self.message = ""
+            self.licensed = True
 
-        return my.licensed
-
-
+        return self.licensed
 
 
-    def get_message(my):
-        return my.message
 
 
-    def verify(my):
+    def get_message(self):
+        return self.message
+
+
+    def verify(self):
         try:
-            my.verify_license()
-            my.licensed = True
+            self.verify_license()
+            self.licensed = True
             return True
         except LicenseException as e:
-            my.message = e.__str__()
-            my.licensed = False
-            my.LICENSE = None
+            self.message = e.__str__()
+            self.licensed = False
+            self.LICENSE = None
             return False
 
 
-    def verify_floating(my, login_name=None):
+    def verify_floating(self, login_name=None):
         # check if the user has a floating license
-        floating_max = my.get_max_floating_users()
+        floating_max = self.get_max_floating_users()
         if not floating_max:
             raise LicenseException("No floating licenses are available")
-        floating_current_users = my.get_current_floating_users()
+        floating_current_users = self.get_current_floating_users()
         floating_current = len(floating_current_users)
 
         #print("foating_max: ", floating_max)
@@ -2114,17 +2114,17 @@ class License(object):
             raise LicenseException("Too many users. Please try again later")
 
 
-    def get_data(my, key):
-        value = my.xml.get_value("license/data/%s" % key)
+    def get_data(self, key):
+        value = self.xml.get_value("license/data/%s" % key)
         return value           
 
 
-    def get_max_users(my):
+    def get_max_users(self):
         site = Site.get_site()
         site_obj = Site.get()
         value = site_obj.get_max_users(site)
         if not value:
-            value = my.xml.get_value("license/data/max_users")
+            value = self.xml.get_value("license/data/max_users")
         try:
             value = int(value)
         except ValueError:
@@ -2132,8 +2132,8 @@ class License(object):
         return value
 
 
-    def get_max_floating_users(my):
-        value = my.xml.get_value("license/data/max_floating_users")
+    def get_max_floating_users(self):
+        value = self.xml.get_value("license/data/max_floating_users")
         try:
             value = int(value)
         except ValueError:
@@ -2142,22 +2142,22 @@ class License(object):
 
 
 
-    def get_num_licenses_left(my):
-        max_users = my.get_max_users()
-        current_users = my.get_current_users()
+    def get_num_licenses_left(self):
+        max_users = self.get_max_users()
+        current_users = self.get_current_users()
         left = max_users - current_users
         return left
 
 
-        floating_current_users = my.get_current_floating_users()
+        floating_current_users = self.get_current_floating_users()
         floating_current = len(floating_current_users)
 
 
-    def get_expiry_date(my):
-        value = my.xml.get_value("license/data/expiry_date")
+    def get_expiry_date(self):
+        value = self.xml.get_value("license/data/expiry_date")
         return value
 
-    def get_current_users(my):
+    def get_current_users(self):
         sql = DbContainer.get("sthpw")
         select = Select()
         select.set_database("sthpw")
@@ -2186,7 +2186,7 @@ class License(object):
         return num_users
 
 
-    def get_current_floating_users(my):
+    def get_current_floating_users(self):
         '''Get the current floating licenses used
 
         The definition of a used floating license is a user who has an
@@ -2226,47 +2226,47 @@ class License(object):
 
 
 
-    def verify_license(my):
+    def verify_license(self):
         '''Reads the license file.'''
 
         # go through the checks
-        if not my.xml:
-            raise LicenseException(my.message)
-            #raise LicenseException("Parsing of licensing file [%s] failed. Renew it in the Projects tab." % my.license_path )
+        if not self.xml:
+            raise LicenseException(self.message)
+            #raise LicenseException("Parsing of licensing file [%s] failed. Renew it in the Projects tab." % self.license_path )
 
 
-        node = my.xml.get_node("license")
+        node = self.xml.get_node("license")
         if node is None:
-            no_lic_node = my.xml.get_node(my.NO_LICENSE)
+            no_lic_node = self.xml.get_node(self.NO_LICENSE)
             if no_lic_node is not None:
-                raise LicenseException(my.message)
+                raise LicenseException(self.message)
             else:
-                raise LicenseException("Parsing of license file [%s] failed." % my.license_path )
+                raise LicenseException("Parsing of license file [%s] failed." % self.license_path )
 
-        version = my.xml.get_value("license/version")
+        version = self.xml.get_value("license/version")
         # for now, there is only one version of the license
         if 1:
             # check for mac address, if it exists in license
-            license_mac = my.xml.get_value("license/data/mac_address")
+            license_mac = self.xml.get_value("license/data/mac_address")
             license_mac = license_mac.strip()
             if license_mac:
-                mac = my.get_mac_address()
+                mac = self.get_mac_address()
                 if mac != license_mac:
                     raise LicenseException("License mac address do not match")
 
             # check for expiry date, if it exists
-            license_expiry = my.xml.get_value("license/data/expiry_date")
+            license_expiry = self.xml.get_value("license/data/expiry_date")
             license_expiry = license_expiry.strip()
             if license_expiry:
                 current = Date().get_db_time()
                 if current> license_expiry:
-                    raise LicenseException("License expired on [%s] in [%s]" % (license_expiry, my.license_path))
+                    raise LicenseException("License expired on [%s] in [%s]" % (license_expiry, self.license_path))
 
 
 
 
             # check for tactic version
-            license_version = my.xml.get_value("license/data/tactic_version")
+            license_version = self.xml.get_value("license/data/tactic_version")
             release_version = Environment.get_release_version()
             if not license_version:
                 # This is no longer an issue.  License should be time based, not
@@ -2299,11 +2299,11 @@ class License(object):
 
 
             # check for max users
-            license_users = my.get_max_users()
+            license_users = self.get_max_users()
             if license_users:
                 license_users = int(license_users)
                 try:
-                    current = my.get_current_users()
+                    current = self.get_current_users()
                 except DatabaseException:
                     # set it to zero.  If there is a database error, then
                     # it doesn't really matter because nobody can use the
@@ -2312,12 +2312,12 @@ class License(object):
                    
                 #print("current: ", current, license_users, current > license_users)
                 if current > license_users:
-                    raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (my.license_path, license_users, current))
+                    raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (self.license_path, license_users, current))
         #print("License verified ... ")
 
 
 
-    def get_mac_address(my):
+    def get_mac_address(self):
         '''copied from Newsgroup somewhere'''
         if sys.platform == 'win32':
             for line in os.popen("ipconfig /all"):

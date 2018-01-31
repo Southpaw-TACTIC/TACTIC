@@ -21,8 +21,8 @@ import os, shutil
 import sys
 
 class FirstRunInit(object):
-    def execute(my):
-        my.copy_start()
+    def execute(self):
+        self.copy_start()
 
         # check to see if there is a server code
         server_code = Config.get_value("install", "server")
@@ -33,7 +33,7 @@ class FirstRunInit(object):
         #    Config.save_config()
 
 
-    def copy_start(my):
+    def copy_start(self):
 
         data_dir = Environment.get_data_dir(manual=True)
 

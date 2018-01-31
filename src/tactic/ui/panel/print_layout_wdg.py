@@ -35,7 +35,7 @@ from base_table_layout_wdg import BaseTableLayoutWdg
 
 class TablePrintLayoutTitleWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             "search_type": "Search type of items listed for printing",
             "page_title": "HTML title for the page to be printed",
@@ -44,21 +44,21 @@ class TablePrintLayoutTitleWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
+    def init(self):
 
-        my.search_type = my.kwargs.get('search_type')
-        my.page_title = my.kwargs.get('page_title')
-        my.use_short_search_type_label = (my.kwargs.get('use_short_search_type_label') in ['true','True','TRUE',True])
+        self.search_type = self.kwargs.get('search_type')
+        self.page_title = self.kwargs.get('page_title')
+        self.use_short_search_type_label = (self.kwargs.get('use_short_search_type_label') in ['true','True','TRUE',True])
 
-        my.html_template_dir = "%s/src/context/html_templates" % Environment.get_install_dir()
+        self.html_template_dir = "%s/src/context/html_templates" % Environment.get_install_dir()
 
 
-    def get_display(my): 
+    def get_display(self): 
 
-        page_title = my.page_title
+        page_title = self.page_title
         if not page_title:
-            st_label = my.search_type
-            if my.use_short_search_type_label:
+            st_label = self.search_type
+            if self.use_short_search_type_label:
                 bits = st_label.split('/')
                 st_label = bits[ len(bits) - 1 ].capitalize()
             page_title = "Print %s listing" % st_label
@@ -72,18 +72,18 @@ class TablePrintLayoutTitleWdg(BaseRefreshWdg):
 
 class TablePrintLayoutWdg(BaseTableLayoutWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         # kwargs['specified_search_key_list'] = None
-        super(TablePrintLayoutWdg, my).__init__(**kwargs)
+        super(TablePrintLayoutWdg, self).__init__(**kwargs)
 
-        my.page_title = my.kwargs.get('page_title')
-        my.use_short_search_type_label = (my.kwargs.get('use_short_search_type_label') in ['true','True','TRUE',True])
+        self.page_title = self.kwargs.get('page_title')
+        self.use_short_search_type_label = (self.kwargs.get('use_short_search_type_label') in ['true','True','TRUE',True])
 
 
-    def get_display(my):
+    def get_display(self):
         
         # get view attributes
-        my.view_attributes = my.config.get_view_attributes()
+        self.view_attributes = self.config.get_view_attributes()
 
         # Handle security ... get overall sobject security access ...
         #
@@ -94,32 +94,32 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
         security = Environment.get_security()
 
         # check edit permission
-        default_access = my.view_attributes.get('access')
+        default_access = self.view_attributes.get('access')
 
         if not default_access:
             default_access = 'view'
         key = {
-            'search_type': my.search_type
+            'search_type': self.search_type
         }
-        my.view_permission = security.check_access("sobject", key, "view", default=default_access)
+        self.view_permission = security.check_access("sobject", key, "view", default=default_access)
 
 
         # if a search key has been explicitly set, use that
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
-            my.sobjects = [sobject]
+            self.sobjects = [sobject]
 
-        elif my.kwargs.get("selected_search_keys"):
+        elif self.kwargs.get("selected_search_keys"):
             # if this is provided then build the list of sobjects to show in table from the list
             # of search keys provided in this kwarg parameter value ...
-            sel_skey_list = my.kwargs.get("selected_search_keys")
+            sel_skey_list = self.kwargs.get("selected_search_keys")
             for skey in sel_skey_list:
                 sobj = Search.get_by_search_key( skey )
-                my.sobjects.append( sobj )
+                self.sobjects.append( sobj )
 
-        elif my.kwargs.get("do_search") == "true":
-            my.handle_search()
+        elif self.kwargs.get("do_search") == "true":
+            self.handle_search()
 
         # Create top level Div to return ...
         top_wdg = DivWdg()
@@ -138,10 +138,10 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
         top_wdg.add( print_instructions_html )
 
         # Add a Title for the printed listing ...
-        page_title = my.page_title
+        page_title = self.page_title
         if not page_title:
-            st_label = my.search_type
-            if my.use_short_search_type_label:
+            st_label = self.search_type
+            if self.use_short_search_type_label:
                 bits = st_label.split('/')
                 st_label = bits[ len(bits) - 1 ].capitalize()
             page_title = "%s listing" % st_label
@@ -155,13 +155,13 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
         # grouping
         group_span = SpanWdg()
         group_span.add_class("spt_table_search")
-        group_span.add(my.get_group_wdg() )
+        group_span.add(self.get_group_wdg() )
         top_wdg.add(group_span)
 
         # allow generators to add widgets as needed
         new_widgets = []
-        for i, widget in enumerate(my.widgets ):
-            attrs = my.config.get_element_attributes(widget.get_name())
+        for i, widget in enumerate(self.widgets ):
+            attrs = self.config.get_element_attributes(widget.get_name())
             gen_expr = attrs.get("generator")
             gen_list = attrs.get("generator_list")
             generator = widget.get_name()
@@ -184,7 +184,7 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
                     new_widget = copy.copy(widget)
                     new_widget.set_name(result)
                     new_widget.set_title( None )
-                    new_widget.set_sobjects( my.sobjects )
+                    new_widget.set_sobjects( self.sobjects )
                     new_widgets.append(new_widget)
                     new_widget.set_generator(generator)
                 # FIXME: this should not be displayed???
@@ -193,17 +193,17 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
 
             else:
                 new_widgets.append(widget)
-        my.widgets = new_widgets
+        self.widgets = new_widgets
         
 
         # set the state
-        for i, widget in enumerate( my.widgets ):
-            widget.set_state(my.state)
+        for i, widget in enumerate( self.widgets ):
+            widget.set_state(self.state)
 
         table_width_set = False
-        for i, widget in enumerate( my.widgets ):
+        for i, widget in enumerate( self.widgets ):
             # set the type
-            widget_type = my.config.get_type( widget.get_name() )
+            widget_type = self.config.get_type( widget.get_name() )
             widget.type = widget_type
 
             if not table_width_set and widget.width:
@@ -215,41 +215,41 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
         # override the table created in the __init__ ... as we need to setup different CSS classes
         # for print layout and display ...
         #
-        my.table = Table()
-        my.table.add_styles( "width: 100%s;" % "%" )
+        self.table = Table()
+        self.table.add_styles( "width: 100%s;" % "%" )
 
-        top_wdg.add( my.table )
+        top_wdg.add( self.table )
 
 
         # get all the attributes
-        for widget in my.widgets:
+        for widget in self.widgets:
             name = widget.get_name()
             if name and name != "None":
-                attrs = my.config.get_element_attributes(name)
-                my.attributes.append(attrs)
+                attrs = self.config.get_element_attributes(name)
+                self.attributes.append(attrs)
 
             else:
-                my.attributes.append({})
+                self.attributes.append({})
 
 
         # check the security for the elements in a config
-        element_names = my.config.get_element_names()
-        for i, widget in enumerate(my.widgets):
+        element_names = self.config.get_element_names()
+        for i, widget in enumerate(self.widgets):
             element_name = widget.get_name()
-            default_access = my.attributes[i].get('access')
+            default_access = self.attributes[i].get('access')
             if not default_access:
                 default_access = 'view'
             key = {
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'key': str(element_name)
             }
             if not security.check_access('element',key,"view",default=default_access):
-                my.widgets.remove(widget)
+                self.widgets.remove(widget)
 
         # set the sobjects to all the widgets then preprocess
-        for widget in my.widgets:
-            widget.set_sobjects(my.sobjects)
-            widget.set_parent_wdg(my)
+        for widget in self.widgets:
+            widget.set_sobjects(self.sobjects)
+            widget.set_parent_wdg(self)
             # preprocess the elements
             widget.preprocess()
 
@@ -261,7 +261,7 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
         valid_widget_idx_list = []
 
         # only output widgets that are specified in the view and that are "printable" ...
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
             if not widget.is_in_column():
                 continue
             full_class_name = Common.get_full_class_name( widget )
@@ -274,18 +274,18 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
 
         '''
         # add all of the headers
-        num_wdg = len(my.widgets)
-        for i, widget in enumerate(my.widgets):
+        num_wdg = len(self.widgets)
+        for i, widget in enumerate(self.widgets):
             if not widget.is_in_column():
                 continue
-            th = my.add_header_wdg( my.table, widget, i, num_wdg )
+            th = self.add_header_wdg( self.table, widget, i, num_wdg )
         '''
 
         # get the color maps
-        color_config = WidgetConfigView.get_by_search_type(my.search_type, "color")
+        color_config = WidgetConfigView.get_by_search_type(self.search_type, "color")
         color_xml = color_config.configs[0].xml
         color_maps = {}
-        for widget in my.widgets:
+        for widget in self.widgets:
             name = widget.get_name()
             xpath = "config/color/element[@name='%s']/colors" % name
             color_node = color_xml.get_node(xpath)
@@ -328,13 +328,13 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
 
 
         # do the header row ...
-        my.table.add_row()
-        for j, widget in enumerate(my.widgets):
+        self.table.add_row()
+        for j, widget in enumerate(self.widgets):
 
             if j not in valid_widget_idx_list:
                 continue
 
-            th = my.table.add_header()
+            th = self.table.add_header()
             th.add( widget.get_title() )
 
 
@@ -348,37 +348,37 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
         #   newly inserted rows
         # row #2: contains all of the templates for editability of the cells
         #
-        for row, sobject in enumerate(my.sobjects):
+        for row, sobject in enumerate(self.sobjects):
 
             if sobject.is_insert():
                 continue
 
             # TODO: handle grouping?
 
-            tbody = my.table.add_tbody()
+            tbody = self.table.add_tbody()
             search_key = SearchKey.get_by_sobject(sobject)
 
-            row_id = "%s|%s" % (my.table_id, search_key)
+            row_id = "%s|%s" % (self.table_id, search_key)
             tbody.set_id(row_id)
 
-            my.row_ids[search_key] = row_id
+            self.row_ids[search_key] = row_id
 
             # add the main row
-            tr = my.table.add_row()
+            tr = self.table.add_row()
             tr.add_class("spt_table_tr")
 
-            tr.add_style('min-height: %spx' % my.min_cell_height)
-            tr.add_style('height: %spx' % my.min_cell_height)
+            tr.add_style('min-height: %spx' % self.min_cell_height)
+            tr.add_style('height: %spx' % self.min_cell_height)
             tr.add_style('vertical-align: top')
 
-            for j, widget in enumerate(my.widgets):
+            for j, widget in enumerate(self.widgets):
 
                 widget.set_current_index(row)
 
                 if j not in valid_widget_idx_list:
                     continue
 
-                td = my.table.add_cell()
+                td = self.table.add_cell()
 
                 name = widget.get_name()
                 td.add_attr("spt_element_name", name)
@@ -388,7 +388,7 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
                 div.add_style('padding', '3px')
                 div.add_style("width: 100%")
                 div.add_style("height: 100%")
-                if my.widgets[j-1].get_name() == widget.get_name():
+                if self.widgets[j-1].get_name() == widget.get_name():
                     widget.column_index = 1
                 else:
                     widget.column_index = 0
@@ -411,7 +411,7 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
                     print('WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, e.message)
 
             # close the surrounding tbody
-            my.table.close_tbody()
+            self.table.close_tbody()
 
         return top_wdg
 

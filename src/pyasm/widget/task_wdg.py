@@ -56,67 +56,67 @@ def get_search_type():
 
 class TaskSObjectEditCmd(DatabaseAction):
 
-    def execute(my):
-        value = my.get_value()
+    def execute(self):
+        value = self.get_value()
         if value == "":
             return
 
         search_type, search_id = value.split("|")
 
-        my.sobject.set_value("search_type", search_type)
-        my.sobject.set_value("search_id", search_id)
+        self.sobject.set_value("search_type", search_type)
+        self.sobject.set_value("search_id", search_id)
 
 
 class TaskAssetCreateSelectWdg(CreateSelectWdg):
     ''' Create a list of asset for multi task creations'''  
     
-    def init_setup(my):
+    def init_setup(self):
        
-        hidden = HiddenWdg(my.DELETE_MODE)
-        my.add_ajax_input(hidden)
-        hidden = HiddenWdg(my.NEW_ITEM)
-        my.add_ajax_input(hidden)
-        hidden = HiddenWdg(my.NEW_ITEM_LABEL)
-        my.add_ajax_input(hidden)
+        hidden = HiddenWdg(self.DELETE_MODE)
+        self.add_ajax_input(hidden)
+        hidden = HiddenWdg(self.NEW_ITEM)
+        self.add_ajax_input(hidden)
+        hidden = HiddenWdg(self.NEW_ITEM_LABEL)
+        self.add_ajax_input(hidden)
         hidden = HiddenWdg("code_col")
-        my.add_ajax_input(hidden)
-        if not my.is_from_ajax():
-            hidden.set_value(my.get_option('code_col'))
-        my.add(hidden)
+        self.add_ajax_input(hidden)
+        if not self.is_from_ajax():
+            hidden.set_value(self.get_option('code_col'))
+        self.add(hidden)
 
         hidden = HiddenWdg('ref_search_type')
-        my.add_ajax_input(hidden)
-        if not my.is_from_ajax():
-            hidden.set_value(my.web.get_form_value('ref_search_type'))
-        my.add(hidden)
+        self.add_ajax_input(hidden)
+        if not self.is_from_ajax():
+            hidden.set_value(self.web.get_form_value('ref_search_type'))
+        self.add(hidden)
         hidden = HiddenWdg('search_id')
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
        
-        if my.is_from_ajax():
-            col_name = my.web.get_form_value('col_name')
+        if self.is_from_ajax():
+            col_name = self.web.get_form_value('col_name')
         else:
-            col_name = my.get_name()
-        my.col_name = HiddenWdg('col_name', col_name)
-        my.add_ajax_input(my.col_name)
+            col_name = self.get_name()
+        self.col_name = HiddenWdg('col_name', col_name)
+        self.add_ajax_input(self.col_name)
 
-        my.select_items = HiddenWdg('%s|%s' %(col_name, my.SELECT_ITEMS))
-        my.add_ajax_input(my.select_items)
+        self.select_items = HiddenWdg('%s|%s' %(col_name, self.SELECT_ITEMS))
+        self.add_ajax_input(self.select_items)
 
-    def get_delimiter(my):
+    def get_delimiter(self):
         return '||'    
 
-    def get_search_key(my):
-        search_key = '%s|%s' % (my.web.get_form_value('ref_search_type'), \
-            my.web.get_form_value('search_id'))
+    def get_search_key(self):
+        search_key = '%s|%s' % (self.web.get_form_value('ref_search_type'), \
+            self.web.get_form_value('search_id'))
         return search_key
 
-    def get_item_list(my, items):
-        my.select = SelectWdg(my.SELECT_NAME)
-        my.select.set_attr("size", '%s' %(len(items)+1))
+    def get_item_list(self, items):
+        self.select = SelectWdg(self.SELECT_NAME)
+        self.select.set_attr("size", '%s' %(len(items)+1))
         if items == ['']:
-            return my.select
-        my.select.set_option('values', items)
-        code_col = my.web.get_form_value('code_col')
+            return self.select
+        self.select.set_option('values', items)
+        code_col = self.web.get_form_value('code_col')
         labels = []
         # assume they are all the same search type
         search_ids = [item.split("|", 1)[1] for item in items]
@@ -135,27 +135,27 @@ class TaskAssetCreateSelectWdg(CreateSelectWdg):
                 else:
                     labels.append('%s - %s' %(code, name))
         
-        my.select.set_option('labels', labels)
-        return my.select
+        self.select.set_option('labels', labels)
+        return self.select
 
-    def get_type_select(my, item_type):
+    def get_type_select(self, item_type):
         return FloatDivWdg('&nbsp;', width=100)
 
-    def draw_widgets(my, widget, delete_widget, item_span):
+    def draw_widgets(self, widget, delete_widget, item_span):
         '''actually drawing the widgets'''
         widget.add(item_span)
         widget.add(HtmlElement.br(2))
-        widget.add(SpanWdg(my.select, css='med'))
+        widget.add(SpanWdg(self.select, css='med'))
         widget.add(delete_widget)
         widget.add(HtmlElement.br(2))
         
 
-    def get_sequence_wdg(my):
+    def get_sequence_wdg(self):
         text_span = SpanWdg('New item ')
-        current = my.get_my_sobject()
+        current = self.get_my_sobject()
         search_type = get_search_type()
-        select = SelectWdg(my.NEW_ITEM)
-        select.set_option('web_state', my.get_option('web_state') )
+        select = SelectWdg(self.NEW_ITEM)
+        select.set_option('web_state', self.get_option('web_state') )
         
         # get all of the options for this search type
         search = Search(search_type)
@@ -168,7 +168,7 @@ class TaskAssetCreateSelectWdg(CreateSelectWdg):
 
         labels = []
            
-        code_col = my.web.get_form_value('code_col')
+        code_col = self.web.get_form_value('code_col')
         
         for x in sobjects:
             name = x.get_name()
@@ -183,7 +183,7 @@ class TaskAssetCreateSelectWdg(CreateSelectWdg):
         select.set_option("values", values)
         select.set_option("labels", labels)
         # transfer the options
-        for key, value in my.options.items():
+        for key, value in self.options.items():
             select.set_option(key, value)
         
         # extra code not needed here. setting web_state to true in the config
@@ -194,18 +194,18 @@ class TaskAssetCreateSelectWdg(CreateSelectWdg):
             search_key = "%s|%s" % (current.get_value("search_type"), current.get_value("search_id") )
             select.set_value(search_key)
 
-        button = my.get_sequence_button()
+        button = self.get_sequence_button()
         text_span.add(select)
         text_span.add(button)
         return text_span
 
-    def get_sequence_button(my):
+    def get_sequence_button(self):
         # add button
         widget = Widget()
         from pyasm.prod.web import ProdIconButtonWdg
         add = ProdIconButtonWdg('Add')
-        script = ["append_item('%s','%s')" % (my.SELECT_NAME, my.NEW_ITEM )]
-        script.append( my.get_refresh_script() )
+        script = ["append_item('%s','%s')" % (self.SELECT_NAME, self.NEW_ITEM )]
+        script.append( self.get_refresh_script() )
         add.add_event('onclick', ';'.join(script))
         widget.add(add)
 
@@ -215,9 +215,9 @@ class TaskAssetCreateSelectWdg(CreateSelectWdg):
 
 class TaskSObjectSelectWdg(BaseInputWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        current = my.get_current_sobject()
+        current = self.get_current_sobject()
         parent_search_type = current.get_value('search_type')
         if not parent_search_type:
             return "No parent type"
@@ -237,11 +237,11 @@ class TaskSObjectSelectWdg(BaseInputWdg):
             parent_search_key = "%s|%s" % (current.get_value("search_type"), current.get_value("search_id") )
         #parent_search_key = web.get_form_value("edit|parent")
 
-        my.categorize(widget, search_type, search)
+        self.categorize(widget, search_type, search)
          
-        select = SelectWdg(my.get_input_name())
+        select = SelectWdg(self.get_input_name())
         widget.add(select)
-        select.set_option('web_state', my.get_option('web_state') )
+        select.set_option('web_state', self.get_option('web_state') )
 
         search.add_order_by("code")
         sobjects = [] 
@@ -262,7 +262,7 @@ class TaskSObjectSelectWdg(BaseInputWdg):
         values = [x.get_search_key() for x in sobjects]
 
         labels = []
-        code_col = my.get_option('code_col')
+        code_col = self.get_option('code_col')
         
         for x in sobjects:
             name = x.get_name()
@@ -277,7 +277,7 @@ class TaskSObjectSelectWdg(BaseInputWdg):
         select.set_option("values", values)
         select.set_option("labels", labels)
         # transfer the options
-        for key, value in my.options.items():
+        for key, value in self.options.items():
             select.set_option(key, value)
         
         # extra code not needed here. setting web_state to true in the config
@@ -289,11 +289,11 @@ class TaskSObjectSelectWdg(BaseInputWdg):
         return widget
 
 
-    def categorize(my, widget, search_type, search):
+    def categorize(self, widget, search_type, search):
         '''categorize parents based on search_type'''
         # FIXME: this should not be here.  This is a general class for all
         # search types, not just prod/asset
-        if my.get_option('read_only') != 'true':
+        if self.get_option('read_only') != 'true':
             if search_type == "prod/asset":
                 lib_select = FilterSelectWdg('parent_lib')
                 lib_select.persistence = False
@@ -339,9 +339,9 @@ class TaskSObjectSelectWdg(BaseInputWdg):
 #
 class TaskProcessSelectWdg(SelectWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        current = my.get_current_sobject()
+        current = self.get_current_sobject()
         search_type = get_search_type()
 
         parent_key = WebContainer.get_web().get_form_value("edit|asset")
@@ -357,9 +357,9 @@ class TaskProcessSelectWdg(SelectWdg):
             pipeline = Pipeline.get_by_name("flash_shot")
 
         processes = pipeline.get_process_names()
-        my.set_option("values", "|".join(processes) )
+        self.set_option("values", "|".join(processes) )
 
-        return super(TaskProcessSelectWdg,my).get_display()
+        return super(TaskProcessSelectWdg,self).get_display()
 
 
 
@@ -368,29 +368,29 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
     '''lists all the tasks with the timeline as a table element'''
     PROCESS_FILTER_NAME = "process_filter"
 
-    def init(my):
-        my.sobject = None
-        my.process_completion_dict = {}
-        #super(SObjectTaskTableElement, my).__init__()
-        my.data = {}
-        my.calendar_bar = CalendarBarWdg()
-        my.calendar_bar.set_option('width','100')
-        my.is_refresh = False
-        if my.kwargs.get('is_refresh')=='true':
-            my.is_refresh = True
-            my.init_cgi()
+    def init(self):
+        self.sobject = None
+        self.process_completion_dict = {}
+        #super(SObjectTaskTableElement, self).__init__()
+        self.data = {}
+        self.calendar_bar = CalendarBarWdg()
+        self.calendar_bar.set_option('width','100')
+        self.is_refresh = False
+        if self.kwargs.get('is_refresh')=='true':
+            self.is_refresh = True
+            self.init_cgi()
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def is_searchable(my):
+    def is_searchable(self):
         return True
 
-    def get_searchable_search_type(my):
+    def get_searchable_search_type(self):
         '''get the searchable search type for local search'''
         return 'sthpw/task'
 
-    def alter_task_search(my, search, prefix='children', prefix_namespace='' ):
+    def alter_task_search(self, search, prefix='children', prefix_namespace='' ):
         from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
         filter_data = FilterData.get()
         parent_search_type = get_search_type()
@@ -416,7 +416,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
         if prefix_namespace:
             prefix = '%s_%s' %(prefix_namespace, prefix)
         values_list = BaseFilterWdg.get_search_data_list(prefix, \
-                search_type=my.get_searchable_search_type())
+                search_type=self.get_searchable_search_type())
         if values_list:
             
             search.add_op('begin')
@@ -427,21 +427,21 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
         
         return search
 
-    def preprocess(my):
-        if my.sobjects:
+    def preprocess(self):
+        if self.sobjects:
             try:
                 search = Search(Task) 
-                search_ids = [x.get_id() for x in my.sobjects]
+                search_ids = [x.get_id() for x in self.sobjects]
                 search.add_filters("search_id", search_ids)
-                search_type = my.sobjects[0].get_search_type()
+                search_type = self.sobjects[0].get_search_type()
                 search.add_filter("search_type", search_type)
                 
                 # go thru children of main search
-                search = my.alter_task_search(search, prefix='children')
+                search = self.alter_task_search(search, prefix='children')
                 # go thru Local Search
-                search = my.alter_task_search(search, prefix='main_body', prefix_namespace=my.__class__.__name__)
+                search = self.alter_task_search(search, prefix='main_body', prefix_namespace=self.__class__.__name__)
 
-                sobj = my.sobjects[0]
+                sobj = self.sobjects[0]
                 pipeline = Pipeline.get_by_sobject(sobj) 
                 if pipeline:
                     process_names = pipeline.get_process_names(True)
@@ -457,10 +457,10 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
                     search_id = task.get_value("search_id")
                     search_key = "%s|%s" % (search_type, search_id)
 
-                    sobject_tasks = my.data.get(search_key)
+                    sobject_tasks = self.data.get(search_key)
                     if not sobject_tasks:
                         sobject_tasks = []
-                        my.data[search_key] = sobject_tasks
+                        self.data[search_key] = sobject_tasks
                     sobject_tasks.append(task)
             except:
                 from tactic.ui.app import SearchWdg
@@ -468,7 +468,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
                 SearchWdg.clear_search_data(parent_search_type)
                 raise
 
-    def get_prefs(my):
+    def get_prefs(self):
         from pyasm.prod.web import UserFilterWdg
         if UserFilterWdg.has_restriction():
             return ''
@@ -482,72 +482,72 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
 
         
 
-    def get_title(my):
+    def get_title(self):
         # create the calendar
         widget = Widget()
     
-        my.calendar_bar.set_user_defined_bound(False) 
+        self.calendar_bar.set_user_defined_bound(False) 
 
-        widget.add(my.calendar_bar.get_calendar())
-        widget.add( super(SObjectTaskTableElement,my).get_title() )
+        widget.add(self.calendar_bar.get_calendar())
+        widget.add( super(SObjectTaskTableElement,self).get_title() )
 
         assign_cont = UserAssignContainerWdg() 
         widget.add(assign_cont)
 
-        widget.add(my.calendar_bar.get_show_cal_script())
+        widget.add(self.calendar_bar.get_show_cal_script())
         return widget
 
-    def init_cgi(my):
-        #if not my.is_ajax(check_name=True):
+    def init_cgi(self):
+        #if not self.is_ajax(check_name=True):
         #    return
-        my.data = {}
+        self.data = {}
         # get the sobject
-        keys = my.web.get_form_keys()
+        keys = self.web.get_form_keys()
         search_key = ''
         for key in keys:
             if key.startswith('skey_SObjectTaskTableElement_'):
-                search_key = my.web.get_form_value(key)
+                search_key = self.web.get_form_value(key)
         if search_key:
-            my.sobject = Search.get_by_search_key(search_key)
-            my.sobjects = [my.sobject]
+            self.sobject = Search.get_by_search_key(search_key)
+            self.sobjects = [self.sobject]
     
         # adding the CalendarBarWdg
-        my.calendar_bar = CalendarBarWdg()
-        my.calendar_bar.set_option('width','100')
-        my.calendar_bar.set_option('bid_edit', my.get_option('bid_edit'))
-        my.calendar_bar.set_user_defined_bound(False)
+        self.calendar_bar = CalendarBarWdg()
+        self.calendar_bar.set_option('width','100')
+        self.calendar_bar.set_option('bid_edit', self.get_option('bid_edit'))
+        self.calendar_bar.set_user_defined_bound(False)
 
         # run preprocess
-        my.preprocess()
-        my.add(my.calendar_bar.get_calendar())
+        self.preprocess()
+        self.add(self.calendar_bar.get_calendar())
 
-    def init_setup(my, widget):
-        my.reset_ajax()
+    def init_setup(self, widget):
+        self.reset_ajax()
         
         hidden = HiddenWdg('skey_SObjectTaskTableElement_%s' \
-            %my.sobject.get_id(), my.sobject.get_search_key())
+            %self.sobject.get_id(), self.sobject.get_search_key())
         widget.add(hidden)
         
         # add the search_key input
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
        
         # add the filter inputs
         hidden = HiddenWdg('task_status')
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
         hidden = HiddenWdg('show_assigned_only')
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
         hidden = MultiSelectWdg('user_filter')
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
         hidden = HiddenWdg('show_all_tasks')
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
         hidden = HiddenWdg('show_sub_tasks')
-        my.add_ajax_input(hidden)
+        self.add_ajax_input(hidden)
         # put the display option in here
         #hidden = HiddenWdg('doption_SObjectTaskTableElement')
-        #my.add_ajax_input(hidden)
+        #self.add_ajax_input(hidden)
 
   
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         
@@ -558,33 +558,33 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
         #login = Environment.get_security().get_login()
         #user = login.get_value("login")
 
-        if my.is_refresh:
+        if self.is_refresh:
             widget = Widget()
-            my.init_cgi()
+            self.init_cgi()
         else:
-            my.sobject = my.get_current_sobject()
-            widget = DivWdg(id="task_elem_%s"% my.sobject.get_id())
+            self.sobject = self.get_current_sobject()
+            widget = DivWdg(id="task_elem_%s"% self.sobject.get_id())
             widget.add_class('spt_task_panel')
             try:
-                my.set_as_panel(widget)
+                self.set_as_panel(widget)
             except:
                 pass
        
         #TODO: remove this
-        my.init_setup(widget)
-        #my.set_ajax_top(widget)
+        self.init_setup(widget)
+        #self.set_ajax_top(widget)
         
         table = Table(css="minimal")
         table.add_style("width: 100%")
 
         # get all of the tasks related to this sobject
-        search_type = my.sobject.get_search_type()
-        search_id = my.sobject.get_id()
-        if my.data:
-            tasks = my.data.get("%s|%s" % (search_type,search_id) )
+        search_type = self.sobject.get_search_type()
+        search_id = self.sobject.get_id()
+        if self.data:
+            tasks = self.data.get("%s|%s" % (search_type,search_id) )
         else:
-            tasks = Task.get_by_sobject(my.sobject)
-            my.data[my.sobject.get_search_key()] = tasks
+            tasks = Task.get_by_sobject(self.sobject)
+            self.data[self.sobject.get_search_key()] = tasks
         if not tasks:
             tasks = []
 
@@ -608,7 +608,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
         if not show_sub_tasks:
             process_list = [x for x in process_list if "/" not in x]
         """
-        pipeline = Pipeline.get_by_sobject(my.sobject)
+        pipeline = Pipeline.get_by_sobject(self.sobject)
 
         # retrieve the pipeline   
         if not pipeline:
@@ -618,13 +618,13 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
 
         # store completion per process first in a dict
         # reset it first
-        my.process_completion_dict = {}
+        self.process_completion_dict = {}
         for task in tasks:
             task_process = task.get_value("process")
             status_attr = task.get_attr('status')
             percent = status_attr.get_percent_completion()
             
-            my.store_completion(task_process, percent)
+            self.store_completion(task_process, percent)
 
         security = WebContainer.get_security()
         me = Environment.get_user_name()
@@ -669,7 +669,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             table.add_row()
 
             
-            #link = "%s/Maya/?text_filter=%s&load_asset_process=%s" % (web.get_site_context_url().to_string(), my.sobject.get_code(), task_process)
+            #link = "%s/Maya/?text_filter=%s&load_asset_process=%s" % (web.get_site_context_url().to_string(), self.sobject.get_code(), task_process)
             #icon = IconButtonWdg("Open Loader", IconWdg.LOAD, False)
             #table.add_cell( HtmlElement.href(icon, link, target='maya') )
 
@@ -685,7 +685,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             status_wdg.set_sobject(task)
             status_wdg.set_name("status")
             # refresh myself on execution of SimpleStatusCmd
-            #post_scripts = my.get_refresh_script(show_progress=False)
+            #post_scripts = self.get_refresh_script(show_progress=False)
             post_scripts = '''var panel = bvr.src_el.getParent('.spt_task_panel');
                               var search_top = spt.get_cousin(bvr.src_el, '.spt_view_panel','.spt_search');
                               var search_val = spt.dg_table.get_search_values(search_top);
@@ -707,16 +707,16 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             info_span.add("&nbsp;[%s]" % user_info)
 
 
-            if UserAssignWdg.has_access() and my.get_option('supe')=='true':
-                my._add_user_assign_wdg(task, info_span, widget) 
+            if UserAssignWdg.has_access() and self.get_option('supe')=='true':
+                self._add_user_assign_wdg(task, info_span, widget) 
 
             td.add( info_span )
 
             #--------------
 
-            my.calendar_bar.set_sobject(task)
+            self.calendar_bar.set_sobject(task)
             # set always recalculate since each task is set individually
-            my.calendar_bar.set_always_recal(True)
+            self.calendar_bar.set_always_recal(True)
 
             #---------------
 
@@ -727,7 +727,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
                 td.add(HtmlElement.br())
             td.add(status_wdg)
 
-            if my.last_process_finished(pipeline, task_process): 
+            if self.last_process_finished(pipeline, task_process): 
                 dot = IconWdg(icon=IconWdg.DOT_GREEN)
                 dot.add_tip("All dependent processs complete")
                 dot.add_style('float','left')
@@ -743,7 +743,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             
             
             date_display = None
-            if my.get_option('simple_date') == 'true':
+            if self.get_option('simple_date') == 'true':
                 start_wdg = DateWdg()
                 start_wdg.set_option("pattern", "%b %d")
                 start_wdg.set_name('bid_start_date')
@@ -755,13 +755,13 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
                 date_display = '%s - %s' %(start_wdg.get_buffer_display(), \
                     end_wdg.get_buffer_display())
             else:
-                my.calendar_bar.set_sobject(task)
+                self.calendar_bar.set_sobject(task)
                 # set always recalculate since each task is set individuallly
-                my.calendar_bar.set_always_recal(True)
+                self.calendar_bar.set_always_recal(True)
 
-                my.calendar_bar.set_option("width", "40")
-                my.calendar_bar.set_option("bid_edit", my.get_option('bid_edit'))
-                date_display = my.calendar_bar.get_buffer_display()
+                self.calendar_bar.set_option("width", "40")
+                self.calendar_bar.set_option("bid_edit", self.get_option('bid_edit'))
+                date_display = self.calendar_bar.get_buffer_display()
             
             #td = table.add_cell(date_display, css='smaller')
             td.add(FloatDivWdg(date_display, float='right', css='smaller')) 
@@ -779,10 +779,10 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             dep_status_wdg = ParallelStatusWdg()
             dep_status_wdg.set_process_names(dependent_processes)
             dep_status_wdg.set_label_format("abbr")
-            dep_status_wdg.set_sobject(my.sobject)
+            dep_status_wdg.set_sobject(self.sobject)
             
             #dep_status_wdg.preprocess()
-            dep_status_wdg.set_data(my.data)
+            dep_status_wdg.set_data(self.data)
             dep_status_div.add(dep_status_wdg)
             td.add(dep_status_div)
             #td.add_style("border-style: solid")
@@ -795,7 +795,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
        
         return widget
 
-    def _add_user_assign_wdg(my, task, info_span, widget):
+    def _add_user_assign_wdg(self, task, info_span, widget):
         ''' add a user assignment icon '''
         icon = IconWdg('assign', icon=IconWdg.ASSIGN)
         icon.add_class('hand') 
@@ -804,7 +804,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
 
         # UserAssignWdg will take care of filtering duplicated refresh scripts
         # eventually it is added into this widget below via assign.get_post_data()
-        assign.set_post_ajax_script(my.get_refresh_script(show_progress=False)) 
+        assign.set_post_ajax_script(self.get_refresh_script(show_progress=False)) 
 
         script = []
         script.append("Common.follow_click(event, '%s', 12, -15)" \
@@ -817,28 +817,28 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
         info_span.add(icon)
         widget.add(assign.get_post_data())
 
-    def _has_assign_wdg_access(my):
+    def _has_assign_wdg_access(self):
         ''' check if the user can see this user assignment wdg '''
         security = Environment.get_security()
         group_names = security.get_group_names()
         access_manager = security.get_access_manager()
 
-        if my.get_option('supe') == 'true':
+        if self.get_option('supe') == 'true':
             for group in group_names:
                 if security.check_access("UserAssignWdg", group, "view"):
                     return True
 
         return False
     
-    def store_completion(my, process, percent):
+    def store_completion(self, process, percent):
         ''' store the completion percentage per process in a dict'''
-        status_list = my.process_completion_dict.get(process)
+        status_list = self.process_completion_dict.get(process)
         if not status_list:
             status_list = []
-            my.process_completion_dict[process] = status_list
+            self.process_completion_dict[process] = status_list
         status_list.append(percent)
 
-    def last_process_finished(my, pipeline, task_process, is_subpipeline=False):
+    def last_process_finished(self, pipeline, task_process, is_subpipeline=False):
         ''' find if the last process is finished '''
         if not pipeline:
             return True
@@ -850,7 +850,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
         if task_process.find("/") != -1:
             pipeline_code, process = task_process.split("/", 1)
             pipeline = Pipeline.get_by_code(pipeline_code)
-            return my.last_process_finished(pipeline, process, is_subpipeline=True)
+            return self.last_process_finished(pipeline, process, is_subpipeline=True)
         # the first process of the pipe should be green-lit
         if not last_processes:
             return True
@@ -863,7 +863,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             full_process = process
             if is_subpipeline:
                 full_process = '%s/%s' %(pipeline.get_code(), process)
-            complete_list = my.process_completion_dict.get(full_process)
+            complete_list = self.process_completion_dict.get(full_process)
             
 
             # skip processes that have no tasks
@@ -878,7 +878,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
                     full_process = process
                     if is_subpipeline:
                         full_process = '%s/%s' %(pipeline.get_code(), process)
-                    complete_list = my.process_completion_dict.get(full_process)
+                    complete_list = self.process_completion_dict.get(full_process)
 
             # previous processes have no tasks assigned, in other words, they are finished    
             if not complete_list:
@@ -894,11 +894,11 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
 
 class TaskWarningTableElement(BaseTableElementWdg):
 
-    def get_title(my):
+    def get_title(self):
         return "&nbsp;"
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         bid_start_time = str(sobject.get_value("bid_start_date"))
         bid_end_time = str(sobject.get_value("bid_end_date"))
@@ -930,21 +930,21 @@ class TaskWarningTableElement(BaseTableElementWdg):
 
 class TaskExtraInfoWdg(ExtraInfoWdg):
 
-    def __init__(my, task=None):
-        my.task = task 
-        my.height = 150
-        super(TaskExtraInfoWdg,my).__init__()
+    def __init__(self, task=None):
+        self.task = task 
+        self.height = 150
+        super(TaskExtraInfoWdg,self).__init__()
 
-    def init(my):
-        assert my.task
-        super(TaskExtraInfoWdg, my).init()
+    def init(self):
+        assert self.task
+        super(TaskExtraInfoWdg, self).init()
         # create the visible element
         icon = IconWdg('Time Card', icon=IconWdg.TIME)
-        my.add(icon)
-        my.add(HtmlElement.b(my.task.get_process()))
+        self.add(icon)
+        self.add(HtmlElement.b(self.task.get_process()))
        
-        my.time_card = TimecardWdg()
-        my.time_card.set_task(my.task)
+        self.time_card = TimecardWdg()
+        self.time_card.set_task(self.task)
 
         from pyasm.security import Login
 
@@ -954,48 +954,48 @@ class TaskExtraInfoWdg(ExtraInfoWdg):
         
 
         # customize the extra info widget
-        my.set_class('timecard_main')
-        my.set_content(content)
-        my.set_mouseout_flag(False)
+        self.set_class('timecard_main')
+        self.set_content(content)
+        self.set_mouseout_flag(False)
         
-        my.login = Login.get_by_login(my.task.get_assigned())
+        self.login = Login.get_by_login(self.task.get_assigned())
         title = FloatDivWdg()
         login_name = 'unassigned'
-        my.is_other = False
-        if my.login:
-            login_name = my.login.get_full_name()
-            if my.login.get_login() == Environment.get_login().get_login():
+        self.is_other = False
+        if self.login:
+            login_name = self.login.get_full_name()
+            if self.login.get_login() == Environment.get_login().get_login():
                 icon = IconWdg(icon=IconWdg.REFRESH)
                 icon.add_class('hand')
-                icon.add_event('onclick', my.time_card.get_refresh_script())
+                icon.add_event('onclick', self.time_card.get_refresh_script())
                 title.add(icon)
             else:
-                my.is_other = True
+                self.is_other = True
             
         title.add("Time card - %s" % login_name)
         
         content.add(title)
-        content.add(CloseWdg(my.get_off_script())) 
+        content.add(CloseWdg(self.get_off_script())) 
         content.add(HtmlElement.br(2))
-        content.add(my.time_card, 'time')
+        content.add(self.time_card, 'time')
         
-        if not my.login:
+        if not self.login:
             div = DivWdg(HtmlElement.b('Time card cannot be entered for unassigned task.'))
             content.set_widget(div, 'time')
-            my.height = 60
-        elif my.is_other:
+            self.height = 60
+        elif self.is_other:
             div = DivWdg(HtmlElement.b('Time card cannot be entered for other users [%s].'\
                 %login_name))
             content.set_widget(div, 'time')
-            my.height = 60
+            self.height = 60
             
 
 
-    def get_mousedown_script(my):
+    def get_mousedown_script(self):
         
-        script = [super(TaskExtraInfoWdg,my).get_mousedown_script(height=my.height)]
-        if my.login and not my.is_other:
-            script.append(my.time_card.get_refresh_script())
+        script = [super(TaskExtraInfoWdg,self).get_mousedown_script(height=self.height)]
+        if self.login and not self.is_other:
+            script.append(self.time_card.get_refresh_script())
             
         return ';'.join(script)
 
@@ -1005,14 +1005,14 @@ class TaskExtraInfoWdg(ExtraInfoWdg):
 
 class TaskParentSpacingTableElement(SimpleTableElementWdg):
 
-    def preprocess(my):
+    def preprocess(self):
         pass
 
-    def handle_td(my, td):
-        sobject = my.get_current_sobject()
+    def handle_td(self, td):
+        sobject = self.get_current_sobject()
         parent = None
         if sobject.is_insert():
-            parent_key = my.state.get('parent_key')
+            parent_key = self.state.get('parent_key')
             if parent_key:
                 parent = SearchKey.get_by_search_key(parent_key)
         else:
@@ -1029,7 +1029,7 @@ class TaskParentSpacingTableElement(SimpleTableElementWdg):
                     raise
             process = sobject.get_value('process')
 
-            current_value = sobject.get_value(my.get_name())
+            current_value = sobject.get_value(self.get_name())
             if current_value:
                 value = '%s||%s'%(process, current_value)
 
@@ -1039,8 +1039,8 @@ class TaskParentSpacingTableElement(SimpleTableElementWdg):
         if parent:
             td.set_attr("spt_pipeline_code", parent.get_value("pipeline_code", no_exception=True))
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         context = sobject.get_value("context")
         div = DivWdg()
@@ -1059,7 +1059,7 @@ class TaskParentSpacingTableElement(SimpleTableElementWdg):
 """
 class TaskMoveCbk(Callback):
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -1068,10 +1068,10 @@ class TaskMoveCbk(Callback):
         task = Task.get_by_id(1013)
 
         if direction == "up":
-            my.move_task_up(task)
+            self.move_task_up(task)
 
 
-    def move_task_up(my, task):
+    def move_task_up(self, task):
 
         # get all of the tasks of this sobject
         sobject = task.get_parent()
@@ -1084,10 +1084,10 @@ class TaskMoveCbk(Callback):
 
 class TaskParentInputWdg(SelectWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
-        task = my.get_current_sobject()
+        task = self.get_current_sobject()
         id = task.get_id()
 
         if task.is_insert():
@@ -1122,17 +1122,17 @@ class TaskParentInputWdg(SelectWdg):
             label = "%s - %s" % (process, description)
             labels.append(label)
 
-        my.set_option("empty", "true")
-        my.set_option("labels", labels)
-        my.set_option("values", ids)
+        self.set_option("empty", "true")
+        self.set_option("labels", labels)
+        self.set_option("values", ids)
         
 
-        return super(TaskParentInputWdg,my).get_display()
+        return super(TaskParentInputWdg,self).get_display()
 
 
 class ClipboardCopyTaskCmd(DatabaseAction):
 
-    def get_display(my):
+    def get_display(self):
 
         clipboard_items = Clipboard.get_all()
         column = "depend_id"
@@ -1156,15 +1156,15 @@ class UserAssignContainerWdg(DivWdg):
 
     CONTAINER_ID = "user_assign_cont_wdg_id"
 
-    def __init__(my):
-        super(UserAssignContainerWdg, my).__init__(id=\
-                my.CONTAINER_ID, css= "popup_wdg")
+    def __init__(self):
+        super(UserAssignContainerWdg, self).__init__(id=\
+                self.CONTAINER_ID, css= "popup_wdg")
 
     
-    def get_display(my):
-        my.add_style('display: none')
-        my.add_style('width: 180px')
-        my.add_style('padding: 6px 6px 6px 6px')
+    def get_display(self):
+        self.add_style('display: none')
+        self.add_style('width: 180px')
+        self.add_style('padding: 6px 6px 6px 6px')
 
         content_div = DivWdg(id = UserAssignWdg.USER_ASSIGN_WDG_ID)
         content_div.add_style('display: none')
@@ -1174,10 +1174,10 @@ class UserAssignContainerWdg(DivWdg):
         close.set_style('float: right; padding-top: 1px')
         close.add_event('onclick', UserAssignContainerWdg.get_off_script())
         
-        my.add(close)
-        my.add(content_div)
+        self.add(close)
+        self.add(content_div)
 
-        super(UserAssignContainerWdg, my).get_display()
+        super(UserAssignContainerWdg, self).get_display()
 
     def get_off_script():
         return "Effects.fade_out('%s')" % UserAssignContainerWdg.CONTAINER_ID
@@ -1190,78 +1190,78 @@ class UserAssignWdg(AjaxWdg):
     ASSIGNMENT_ID = "assignment_id"
     TARGET_TASK_ID ='UserAssignWdg_target_search_key'
 
-    def init(my):
+    def init(self):
         ''' initializes a few variables ''' 
-        my.task = None
-        my.main_div = None
-        my.post_script = None
-        my.post_script_dict = {}
+        self.task = None
+        self.main_div = None
+        self.post_script = None
+        self.post_script_dict = {}
 
-    def init_cgi(my):
+    def init_cgi(self):
         ''' get the sobject '''
-        keys = my.web.get_form_keys()
+        keys = self.web.get_form_keys()
         search_key = ''
 
         for key in keys:
             # only one is expected
             if key.startswith('skey_UserAssignWdg_'):
-                search_key = my.web.get_form_value(key)
+                search_key = self.web.get_form_value(key)
                 break
             
         if search_key:
             sobject = Search.get_by_search_key(search_key)
-            my.task = sobject
-            my.init_setup()
+            self.task = sobject
+            self.init_setup()
 
-    def init_setup(my):
+    def init_setup(self):
         '''set the ajax top and register some inputs'''
-        div_id = my.USER_ASSIGN_WDG_ID
-        my.main_div = DivWdg(id=div_id)
+        div_id = self.USER_ASSIGN_WDG_ID
+        self.main_div = DivWdg(id=div_id)
         
-        my.set_ajax_top(my.main_div)
+        self.set_ajax_top(self.main_div)
         
         # register the inputs first
-        hidden = HiddenWdg('skey_UserAssignWdg_%s' %my.task.get_id())
-        my.add_ajax_input(hidden)
+        hidden = HiddenWdg('skey_UserAssignWdg_%s' %self.task.get_id())
+        self.add_ajax_input(hidden)
 
-        hidden = HiddenWdg('post_script_UserAssignCommand_%s' %my.task.get_value('search_id'))
-        my.add_ajax_input(hidden)
+        hidden = HiddenWdg('post_script_UserAssignCommand_%s' %self.task.get_value('search_id'))
+        self.add_ajax_input(hidden)
 
-        hidden = HiddenWdg(my.TARGET_TASK_ID)
-        my.add_ajax_input(hidden)
+        hidden = HiddenWdg(self.TARGET_TASK_ID)
+        self.add_ajax_input(hidden)
         
 
-    def set_task(my, task):
-        my.task = task
-        my.init_setup()
+    def set_task(self, task):
+        self.task = task
+        self.init_setup()
 
-    def set_post_ajax_script(my, script):
-        my.post_script = script
+    def set_post_ajax_script(self, script):
+        self.post_script = script
 
-    def get_display(my):
+    def get_display(self):
         # add the popup
-        div = my.main_div
+        div = self.main_div
        
-        cmd = my.get_cmd()
+        cmd = self.get_cmd()
 
-        my.attached_sobj = my.task.get_parent()
+        self.attached_sobj = self.task.get_parent()
 
         # assign post ajax script since this widget is dynamically generated
-        hidden = HiddenWdg('post_script_UserAssignCommand_%s' % my.attached_sobj.get_id())
-        my.post_script = [hidden.get_value()]
+        hidden = HiddenWdg('post_script_UserAssignCommand_%s' % self.attached_sobj.get_id())
+        self.post_script = [hidden.get_value()]
 
         # add SiteMenu refresh
 
         event_container = WebContainer.get_event_container()
         caller = event_container.get_event_caller(SiteMenuWdg.EVENT_ID)
-        my.post_script.append(caller)
+        self.post_script.append(caller)
 
         progress = cmd.generate_div()
-        progress.set_post_ajax_script(';'.join(my.post_script))
+        progress.set_post_ajax_script(';'.join(self.post_script))
         
         from pyasm.prod.web import UserSelectWdg
 
-        filter = UserSelectWdg(my.ASSIGNMENT_ID, label = 'assign to: ')
+        filter = UserSelectWdg(self.ASSIGNMENT_ID, label = 'assign to: ')
         #filter.persistence = False
 
         script = [cmd.get_on_script(show_progress=False)]
@@ -1270,51 +1270,51 @@ class UserAssignWdg(AjaxWdg):
         filter.set_event('onchange', ';'.join(script))
         filter.add_empty_option('-- unassigned --', '')
 
-        status = my.task.get_value('assigned')
+        status = self.task.get_value('assigned')
         filter.set_value(status)
         div.add(filter)
         div.add(progress)
 
-        div.add(HiddenWdg(my.TARGET_TASK_ID, my.task.get_search_key()))
-        my.add(div)
+        div.add(HiddenWdg(self.TARGET_TASK_ID, self.task.get_search_key()))
+        self.add(div)
 
-        return super(UserAssignWdg, my).get_display()
+        return super(UserAssignWdg, self).get_display()
 
-    def get_cmd(my):
+    def get_cmd(self):
 
         cmd = AjaxCmd('UserAssignCmd')
         cmd.register_cmd('pyasm.widget.UserAssignCommand')
-        cmd.add_element_name(my.ASSIGNMENT_ID)
-        cmd.add_element_name(my.TARGET_TASK_ID)
+        cmd.add_element_name(self.ASSIGNMENT_ID)
+        cmd.add_element_name(self.TARGET_TASK_ID)
     
         return cmd
 
-    def get_post_data(my):
+    def get_post_data(self):
         ''' get the post data for this AjaxWdg'''
         widget = Widget()
-        hidden = HiddenWdg('skey_UserAssignWdg_%s' %my.task.get_id(), my.task.get_search_key())
+        hidden = HiddenWdg('skey_UserAssignWdg_%s' %self.task.get_id(), self.task.get_search_key())
         widget.add(hidden)
         
-        key = 'post_script_UserAssignCommand_%s' % my.task.get_value('search_id')            
+        key = 'post_script_UserAssignCommand_%s' % self.task.get_value('search_id')            
         # avoid duplication
         dict_key = 'UserAssignCommand_ps:%s' %Environment.get_user_name()
         if not Container.get_dict(dict_key, key):
-            hidden = HiddenWdg(key, my.post_script)
+            hidden = HiddenWdg(key, self.post_script)
             widget.add(hidden)
-            Container.put_dict(dict_key, key, my.post_script)
+            Container.put_dict(dict_key, key, self.post_script)
         
         return widget
 
 
 class UserAssignCommand(Command):
    
-    def get_title(my):
+    def get_title(self):
         return "User Assignment"
 
-    def check(my):
+    def check(self):
         return True
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         user_name = web.get_form_value(UserAssignWdg.ASSIGNMENT_ID)
        
@@ -1327,6 +1327,6 @@ class UserAssignCommand(Command):
             task.commit()
 
         sobject_code = task.get_parent().get_code()
-        my.sobjects = [task]
-        my.add_description("Assign [%s] to task in process [%s] for [%s]" \
+        self.sobjects = [task]
+        self.add_description("Assign [%s] to task in process [%s] for [%s]" \
             %(user_name, task.get_process(), sobject_code))

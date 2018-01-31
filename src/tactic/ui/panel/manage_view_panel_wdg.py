@@ -33,7 +33,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
     '''Panel to manage views ... this is mean to be a generic interface for
     manipulating the side bar views'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type of the view',
         'view': 'view to be edited'
@@ -41,29 +41,29 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
    
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = "SideBarWdg"
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = "SideBarWdg"
 
-        my.view = my.kwargs.get('view')
-        if not my.view:
-            my.view = "project_view"
+        self.view = self.kwargs.get('view')
+        if not self.view:
+            self.view = "project_view"
 
-        my.base_view = my.view  # should be either 'project_view' or 'my_view'
+        self.base_view = self.view  # should be either 'project_view' or 'my_view'
 
-        # for Manage my views
-        my.login = None
+        # for Manage self views
+        self.login = None
         # Do not take the view as is, a user can only change his own view
-        if my.view.startswith('my_view'):
-            my.view = 'my_view_%s' %Environment.get_user_name()
-            my.login = Environment.get_user_name()
-            my.is_personal = 'true'
+        if self.view.startswith('my_view'):
+            self.view = 'my_view_%s' %Environment.get_user_name()
+            self.login = Environment.get_user_name()
+            self.is_personal = 'true'
         else:
-            my.is_personal = 'false'
+            self.is_personal = 'false'
 
 
-    def get_tool_bar(my):
+    def get_tool_bar(self):
 
         widget = DivWdg()
 
@@ -107,7 +107,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         trash_button.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
 
         bvr = { "type": "click_up",\
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (my.view, my.is_personal)} 
+                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (self.view, self.is_personal)} 
 
 
         # save button
@@ -127,9 +127,9 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         link_button.add_behavior( {
         'type': 'click_up',
         'kwargs': {
-            'view': my.view,
+            'view': self.view,
             'element_name': '',
-            'is_personal': my.is_personal,
+            'is_personal': self.is_personal,
         },
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_view_manager_top");
@@ -143,7 +143,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         button_row.add(folder_button)
         folder_button.add_behavior( {
             'type': 'click_up',
-            'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_folder'},'%s',%s);" % (my.view,my.is_personal)
+            'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_folder'},'%s',%s);" % (self.view,self.is_personal)
             } )
 
 
@@ -153,7 +153,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         button_row.add(action_button)
 
         from tactic.ui.container import SmartMenu
-        smenu_set = SmartMenu.add_smart_menu_set( action_button.get_button_wdg(), { 'BUTTON_MENU': my.get_action_menu_xxx() } )
+        smenu_set = SmartMenu.add_smart_menu_set( action_button.get_button_wdg(), { 'BUTTON_MENU': self.get_action_menu_xxx() } )
         SmartMenu.assign_as_local_activator( action_button.get_button_wdg(), "BUTTON_MENU", True )
 
 
@@ -165,15 +165,15 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         return widget
 
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
         div.add_color("background", "background")
         div.add_color("color", "color")
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
         div.add_class( "SPT_VIEW_MANAGER_TOP" )
         div.add_class( "spt_view_manager_top" )
-        div.set_attr( "spt_base_view", my.base_view )
+        div.set_attr( "spt_base_view", self.base_view )
 
         # check for potential multiple definitions for SideBarWdg
         search = Search("config/widget_config")
@@ -202,7 +202,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         menu_div = DivWdg()
         menu_div.set_id("menu_item_template")
         menu_div.add_style("display: none")
-        menu_div.add( my.get_section_wdg("_template", editable=False) )
+        menu_div.add( self.get_section_wdg("_template", editable=False) )
         div.add(menu_div)
 
 
@@ -219,7 +219,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         #td.add_attr("colspan", "3")
 
         
-        tool_bar = my.get_tool_bar()
+        tool_bar = self.get_tool_bar()
         td.add(tool_bar)
         tool_bar.add_color("background", "background3")
         tool_bar.add_style("padding: 5px 5px 3px 5px")
@@ -284,7 +284,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
         project_view = DivWdg()
         project_view.set_id("menu_item_list")
-        project_view.add( my.get_section_wdg(my.view))
+        project_view.add( self.get_section_wdg(self.view))
         td.add(project_view)
 
 
@@ -307,9 +307,9 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         td.add_class("spt_view_manager_detail")
         td.add_style("display", "table-cell")
         td.add_attr("spt_class_name", "tactic.ui.panel.ManageSideBarDetailWdg")
-        td.add_attr("spt_search_type", my.search_type)
-        td.add_attr("spt_personal", my.is_personal)
-        td.add_attr("spt_login", my.login)
+        td.add_attr("spt_search_type", self.search_type)
+        td.add_attr("spt_personal", self.is_personal)
+        td.add_attr("spt_login", self.login)
 
         td.add_style("vertical-align: top")
         td.add_style("width: 300px")
@@ -330,27 +330,27 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
 
         # add the predefined list
-        predefined = my.get_predefined_wdg()
+        predefined = self.get_predefined_wdg()
         div.add(predefined)
         
 
         return div
 
 
-    def get_predefined_wdg(my):
+    def get_predefined_wdg(self):
         project = Project.get()
         project_type = project.get_type()
 
         from tactic.ui.container import PopupWdg
         popup = PopupWdg(id="predefined_side_bar", allow_page_activity=True, width="320px")
         popup.add_title("Predefined Side Bar Elements")
-        popup.add( my.get_section_wdg(view=project_type, default=True))
+        popup.add( self.get_section_wdg(view=project_type, default=True))
 
         return popup
 
 
 
-    def get_menu_item(my, element_name, display_handler):
+    def get_menu_item(self, element_name, display_handler):
 
         content = DivWdg()
         content.add_attr("spt_element_name", element_name)
@@ -383,10 +383,10 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_action_menu_xxx(my):
+    def get_action_menu_xxx(self):
 
 
-        if my.is_personal=='true':
+        if self.is_personal=='true':
             is_personal = 'true'
         else:
             is_personal = 'false'
@@ -408,14 +408,14 @@ class ManageViewPanelWdg(BaseRefreshWdg):
             menu_item = MenuItem(type='action', label='New Link')
             menu.add(menu_item)
             #menu_item.add_behavior( {
-            #    'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_link'},'%s',%s);" % (my.view,is_personal)
+            #    'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_link'},'%s',%s);" % (self.view,is_personal)
             #} )
 
             menu_item.add_behavior( {
             'kwargs': {
-                'view': my.view,
+                'view': self.view,
                 'element_name': '',
-                'is_personal': my.is_personal,
+                'is_personal': self.is_personal,
             },
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
@@ -431,13 +431,13 @@ class ManageViewPanelWdg(BaseRefreshWdg):
             menu_item = MenuItem(type='action', label='New Folder')
             menu.add(menu_item)
             menu_item.add_behavior( {
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_folder'},'%s',%s);" % (my.view,is_personal)
+                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_folder'},'%s',%s);" % (self.view,is_personal)
             } )
 
             menu_item = MenuItem(type='action', label='New Separator')
             menu.add(menu_item)
             menu_item.add_behavior( {
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_separator'},'%s',%s);" % (my.view,is_personal)
+                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_separator'},'%s',%s);" % (self.view,is_personal)
             } )
 
 
@@ -450,13 +450,13 @@ class ManageViewPanelWdg(BaseRefreshWdg):
             menu_item = MenuItem(type='action', label='Show Predefined')
             menu.add(menu_item)
             menu_item.add_behavior( {
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'predefined'},'%s',%s);" % (my.view,is_personal)
+                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'predefined'},'%s',%s);" % (self.view,is_personal)
             } )
 
         menu_item = MenuItem(type='action', label='Save Side Bar')
         menu.add(menu_item)
         menu_item.add_behavior( {
-            'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (my.view,is_personal)
+            'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (self.view,is_personal)
         } )
 
         return menu
@@ -464,7 +464,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_section_wdg(my, view, editable=True, default=False):
+    def get_section_wdg(self, view, editable=True, default=False):
 
         from panel_wdg import SideBarBookmarkMenuWdg
 
@@ -481,7 +481,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
             'width': '200',
             'prefix': 'manage_side_bar',
             'mode': edit_mode,
-            'personal': my.is_personal,
+            'personal': self.is_personal,
             'default': str(default)
         }
         if view in ["definition", "custom_definition"]:
@@ -507,17 +507,17 @@ from panel_wdg import SideBarBookmarkMenuWdg
 class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
    
 
-    def get_detail_class_name(my):
+    def get_detail_class_name(self):
         return "tactic.ui.panel.ManageSideBarDetailWdg"
 
 
     #
     # behavior functions
     #
-    def add_separator_behavior(my, separator_wdg, element_name, config, options):
+    def add_separator_behavior(self, separator_wdg, element_name, config, options):
         # FIXME: this edit_allowed variable seems redundant
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
             # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -530,15 +530,15 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
 
-    def add_folder_behavior(my, folder_wdg, element_name, config, options):
+    def add_folder_behavior(self, folder_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a folder'''
 
         # determines whether the folder opens on click
-        recurse = my.kwargs.get("recurse")!= "false"
+        recurse = self.kwargs.get("recurse")!= "false"
 
         # edit behavior
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
             # IS EDITABLE ...
 
             # add the drag/drop behavior
@@ -556,7 +556,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 '''
             else:
                 behavior['cbjs_action_onnomotion'] = 'spt.side_bar.display_element_info_cbk(evt,bvr);'
-            behavior['class_name'] = my.get_detail_class_name()
+            behavior['class_name'] = self.get_detail_class_name()
            
             folder_wdg.add_behavior(behavior)
             folder_wdg.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
@@ -573,12 +573,12 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
 
-    def add_title_behavior(my, title_wdg, element_name, config, options):
+    def add_title_behavior(self, title_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a title'''
 
         # make it draggable
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
                 # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -586,7 +586,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 "drop_code": 'manageSideBar',
                 "cb_set_prefix": 'spt.side_bar.pp',
                 'cbjs_action_onnomotion':  'spt.side_bar.display_element_info_cbk(evt,bvr);',
-                'class_name':   my.get_detail_class_name()
+                'class_name':   self.get_detail_class_name()
             }
            
                 
@@ -596,7 +596,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         
  
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
 
         # check security
@@ -607,7 +607,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         # make it draggable
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
                 # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -615,7 +615,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 "drop_code": 'manageSideBar',
                 "cb_set_prefix": 'spt.side_bar.pp',
                 'cbjs_action_onnomotion':  'spt.side_bar.display_element_info_cbk(evt,bvr);',
-                'class_name':   my.get_detail_class_name()
+                'class_name':   self.get_detail_class_name()
             }
            
                 
@@ -627,7 +627,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
 
-    def add_link_context_menu(my, widget):
+    def add_link_context_menu(self, widget):
         menu = Menu(width=180)
         menu.set_allow_icons(False)
 
@@ -668,7 +668,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 class ManageSideBarDetailWdg(BaseRefreshWdg):
     '''Display the advanced xml value or simple name and title of each element'''
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'element_name': 'name of the element to get information from',
         'path': 'path of the side bar link',
@@ -682,98 +682,98 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         }
 
 
-    def get_config(my, search_type, view, default=False):
-        config = ManageSideBarBookmarkMenuWdg.get_config(search_type, view, default, personal=my.personal)
+    def get_config(self, search_type, view, default=False):
+        config = ManageSideBarBookmarkMenuWdg.get_config(search_type, view, default, personal=self.personal)
         return config
 
-    def init(my):
-        my.user_error = None
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = "SideBarWdg"
+    def init(self):
+        self.user_error = None
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = "SideBarWdg"
         
-        my.element_name = my.kwargs.get('element_name')
-        if not my.element_name:
+        self.element_name = self.kwargs.get('element_name')
+        if not self.element_name:
             web = WebContainer.get_web()
-            my.element_name = web.get_form_value("config_element_name")
+            self.element_name = web.get_form_value("config_element_name")
         
 
-        my.config_mode = my.kwargs.get('config_mode')
-        my.default = my.kwargs.get('default')
-        my.login = my.kwargs.get('login')
-        my.personal = my.kwargs.get('personal')=='true'
-        # it's important that my.login is explicit
-        if my.login == 'None' or not my.login:
-            my.login = None
+        self.config_mode = self.kwargs.get('config_mode')
+        self.default = self.kwargs.get('default')
+        self.login = self.kwargs.get('login')
+        self.personal = self.kwargs.get('personal')=='true'
+        # it's important that self.login is explicit
+        if self.login == 'None' or not self.login:
+            self.login = None
 
-        my.view = my.kwargs.get('view')
-        assert my.view
+        self.view = self.kwargs.get('view')
+        assert self.view
 
 
         try:
             # save the display definition
-            cbk = ManageSideBarDetailCbk(search_type=my.search_type,element_name=my.element_name, view=my.view, login=my.login)
+            cbk = ManageSideBarDetailCbk(search_type=self.search_type,element_name=self.element_name, view=self.view, login=self.login)
             Command.execute_cmd(cbk)
         except UserException as e:
-            my.user_error = e.__str__()
+            self.user_error = e.__str__()
         except XmlException as e:
-            my.user_error = e.__str__()
+            self.user_error = e.__str__()
             
 
         # save the security settings
-        cbk = ManageSideBarSecurityCbk(search_type=my.search_type,element_name=my.element_name)
+        cbk = ManageSideBarSecurityCbk(search_type=self.search_type,element_name=self.element_name)
         Command.execute_cmd(cbk)
 
-        my.config_string = ""
-        my.title_string = ""
-        my.icon_string = ""
-        my.name_string = ""
-        my.widget_string = ""
-        my.state_string = ""
-        my.visible_string = ""
+        self.config_string = ""
+        self.title_string = ""
+        self.icon_string = ""
+        self.name_string = ""
+        self.widget_string = ""
+        self.state_string = ""
+        self.visible_string = ""
 
-        if my.element_name:
-            my.config = my.get_config(my.search_type, my.view )
-            node = my.config.get_element_node(my.element_name)
+        if self.element_name:
+            self.config = self.get_config(self.search_type, self.view )
+            node = self.config.get_element_node(self.element_name)
             if node is not None:
 
-                config_xml = my.config.get_xml()
-                my.config_string = config_xml.to_string(node)
-            attributes = my.config.get_element_attributes(my.element_name)
-            my.title_string = attributes.get("title")
-            my.icon_string = attributes.get("icon")
-            if my.icon_string:
-                my.icon_string = my.icon_string.upper()
-            my.name_string = attributes.get("name")
-            my.state_string = attributes.get("state")
-            my.visible_string = attributes.get("is_visible")
+                config_xml = self.config.get_xml()
+                self.config_string = config_xml.to_string(node)
+            attributes = self.config.get_element_attributes(self.element_name)
+            self.title_string = attributes.get("title")
+            self.icon_string = attributes.get("icon")
+            if self.icon_string:
+                self.icon_string = self.icon_string.upper()
+            self.name_string = attributes.get("name")
+            self.state_string = attributes.get("state")
+            self.visible_string = attributes.get("is_visible")
 
-            my.widget_string = my.config.get_display_handler(my.element_name)
+            self.widget_string = self.config.get_display_handler(self.element_name)
         else:
-            my.config = None
+            self.config = None
 
 
-    def get_display(my):
+    def get_display(self):
 
         # determine if this is a new entry
-        if not my.element_name:
-            my.is_new = True
+        if not self.element_name:
+            self.is_new = True
         else:
-            my.is_new = False
+            self.is_new = False
 
 
         # add the detail widget
         from tactic.ui.container import RoundedCornerDivWdg
         detail_wdg = DivWdg()
         detail_wdg.add_style("width: 600px")
-        if my.user_error:
+        if self.user_error:
             detail_wdg.add_behavior({'type':'load',
                 'cbjs_action': 'alert(bvr.user_error)',
-                'user_error': my.user_error})
+                'user_error': self.user_error})
 
-        my.set_as_panel(detail_wdg)
+        self.set_as_panel(detail_wdg)
 
-        if my.kwargs.get("mode") == "empty":
+        if self.kwargs.get("mode") == "empty":
             overlay = DivWdg()
             detail_wdg.add(overlay)
 
@@ -790,7 +790,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         detail_wdg.add_class('spt_element_top')
 
         title_div = DivWdg()
-        if my.is_new:
+        if self.is_new:
             icon = IconWdg("New Element", IconWdg.NEW)
             title_div.add(icon)
             title_div.add("Create New Side Bar Link")
@@ -827,8 +827,8 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         values = ['simple', 'advanced']
         select.set_option("values", values)
         
-        #if my.config_mode:
-        #    select.set_value(my.config_mode)
+        #if self.config_mode:
+        #    select.set_value(self.config_mode)
         select.set_persistence()
         scripts = []
         scripts.append('''
@@ -847,24 +847,24 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         select.add_class('spt_config_mode')
         mode = select.get_value()
 
-        #if my.icon_string:
-        #    select.set_value(my.icon_string)
+        #if self.icon_string:
+        #    select.set_value(self.icon_string)
         #select.add_empty_option("-- Select --")
         detail_wdg.add(select)
 
         detail_wdg.add(HtmlElement.br(2))
 
-        simple_wdg = my.get_simple_definition_wdg()
+        simple_wdg = self.get_simple_definition_wdg()
         simple_wdg.add_class("spt_config_simple")
         detail_wdg.add( simple_wdg )
 
-        advanced_wdg = my.get_advanced_definition_wdg()
+        advanced_wdg = self.get_advanced_definition_wdg()
         advanced_wdg.add_class("spt_config_advanced")
         detail_wdg.add( advanced_wdg )
 
         detail_wdg.add(HtmlElement.br(1))
 
-        display_wdg = my.get_display_definition_wdg()
+        display_wdg = self.get_display_definition_wdg()
         detail_wdg.add( display_wdg )
 
 
@@ -880,8 +880,8 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         detail_wdg.add(HtmlElement.br(1))
 
 
-        if not my.personal:
-            security_wdg = my.get_security_wdg()
+        if not self.personal:
+            security_wdg = self.get_security_wdg()
             detail_wdg.add(security_wdg)
 
 
@@ -900,14 +900,14 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
         detail_wdg.add(button_div)
 
-        detail_wdg.add(HiddenWdg('view', my.view))
+        detail_wdg.add(HiddenWdg('view', self.view))
         detail_wdg.add("<br clear='all'/>")
 
         return detail_wdg
 
 
 
-    def get_display_definition_wdg(my):
+    def get_display_definition_wdg(self):
 	'''Attempt to display this Xml is UI form. but since these classes like
         LinkWdg and SideBarSectionWdg are not real classes, disable drawing of this for now'''
         def_wdg = DivWdg()
@@ -923,17 +923,17 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         title.add_style("margin-top: -23px")
         def_wdg.add(title)
 
-        if my.is_new:
+        if self.is_new:
             widget_key = None
             display_options = {}
             display_class = "LinkWdg"
-        elif not my.config:
+        elif not self.config:
             def_wdg.add("<br/>-- No options --<br/>")
             return def_wdg
         else:
             widget_key = None
-            display_options = my.config.get_display_options(my.element_name)
-            display_class = my.config.get_display_handler(my.element_name)
+            display_options = self.config.get_display_options(self.element_name)
+            display_class = self.config.get_display_handler(self.element_name)
 
         def_wdg.add("<br/>")
 
@@ -989,7 +989,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_simple_definition_wdg(my):
+    def get_simple_definition_wdg(self):
 
         detail_wdg = DivWdg()
         detail_wdg.add_class( "SPT_SIMPLE_DEFINITION_WDG" ) # DEPRECATED
@@ -1015,11 +1015,11 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         input = TextInputWdg(name="config_title")
         input.set_id("config_title")
         input.add_style("width: auto")
-        if my.title_string:
-            input.set_value(my.title_string)
+        if self.title_string:
+            input.set_value(self.title_string)
         detail_wdg.add(input)
 
-        if my.is_new:
+        if self.is_new:
             input.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
@@ -1043,20 +1043,20 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         name_label = SpanWdg()
         name_label.add("Name: ")
         detail_wdg.add(name_label)
-        if my.is_new:
+        if self.is_new:
             input = TextWdg("config_element_name")
             input.add_class("spt_simple_definition_name")
-            input.set_value(my.name_string)
+            input.set_value(self.name_string)
             detail_wdg.add(input)
         else:
             input = HiddenWdg("config_element_name")
-            input.set_value(my.name_string)
+            input.set_value(self.name_string)
             detail_wdg.add(input)
 
             input = SpanWdg()
             input.add_style('padding-top: 6px')
             input.set_id("config_element_name")
-            input.add(HtmlElement.b(my.name_string))
+            input.add(HtmlElement.b(self.name_string))
             detail_wdg.add(input)
 
         detail_wdg.add(HtmlElement.br(2))
@@ -1081,14 +1081,14 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         icon_img = HtmlElement.img()
         icon_img.add_class( "SPT_ICON_IMG" )
 
-        if my.icon_string:
-            icon_path = IconWdg.get_icon_path(my.icon_string)
+        if self.icon_string:
+            icon_path = IconWdg.get_icon_path(self.icon_string)
             if icon_path:
                 icon_img.set_attr("src", icon_path)
             else:
                 icon_img.set_attr("src", IconWdg.get_icon_path("TRANSPARENT"))
 
-            icon_entry_text.set_value( my.icon_string )
+            icon_entry_text.set_value( self.icon_string )
         else:
             icon_entry_text.set_value( "" )
             icon_img.set_attr("src", IconWdg.get_icon_path("TRANSPARENT"))
@@ -1129,15 +1129,15 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
         detail_wdg.add("Is Visible? ")
         checkbox = CheckboxWdg("config_visible")
-        if my.visible_string != 'false':
+        if self.visible_string != 'false':
             checkbox.set_checked()
         detail_wdg.add(checkbox)
         detail_wdg.add("<br/>"*2)
 
 
 
-        if my.config:
-            display_class = my.config.get_display_handler(my.element_name)
+        if self.config:
+            display_class = self.config.get_display_handler(self.element_name)
         else:
             display_class = ""
 
@@ -1150,15 +1150,15 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             state_wdg.add(title)
             select = SelectWdg("config_state")
             detail_wdg.add(select)
-            if my.state_string:
-                select.set_value(my.state_string)
+            if self.state_string:
+                select.set_value(self.state_string)
             select.set_option("labels", "closed|open")
             select.set_option("values", "|open")
 
         return detail_wdg
 
 
-    def get_advanced_definition_wdg(my):
+    def get_advanced_definition_wdg(self):
 
         detail_wdg = DivWdg()
 
@@ -1177,7 +1177,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         input = TextAreaWdg("config_xml")
         input.set_id("config_xml")
         input.set_option("rows", "10")
-        input.set_value(my.config_string)
+        input.set_value(self.config_string)
         advanced.add(input)
         input.add_style("width: 100%")
 
@@ -1190,7 +1190,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_security_wdg(my):
+    def get_security_wdg(self):
         project_code = Project.get_project_code()
 
         content = DivWdg()
@@ -1254,13 +1254,13 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             if security_version == 1:
                 default_access = "allow"
                 # project specific key
-                key = {'project': project_code, 'element': my.name_string}
+                key = {'project': project_code, 'element': self.name_string}
 
                 allowed = access_manager.check_access("side_bar", key , "view", default=default_access)
             else:
                 default_access = "deny"
                 # project specific key
-                key = {'project': project_code, 'element': my.name_string}
+                key = {'project': project_code, 'element': self.name_string}
                 allowed = access_manager.check_access("link", key , "view", default=default_access)
 
             if allowed:
@@ -1323,72 +1323,72 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
 class ManageSideBarDetailCbk(Command):
 
-    def get_args_key(my):
+    def get_args_key(self):
         return {
         'search_type': 'search_type of the element',
         'element_name': 'name of the element to get information from',
         'login': 'login for config filtering. <user> for personal view'
         }
 
-    def get_title(my):
+    def get_title(self):
         return "Side Bar Manager"
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
         if web.get_form_value("update") != "true":
             return
 
-        my.element_name = my.kwargs.get("element_name")
+        self.element_name = self.kwargs.get("element_name")
 
         # Hard code definition view
-        my.login = my.kwargs.get("login")
-        if my.login == 'None' or not my.login:
-            my.login = None
+        self.login = self.kwargs.get("login")
+        if self.login == 'None' or not self.login:
+            self.login = None
 
         # handle the definition
-        my.handle_definition_config()
+        self.handle_definition_config()
 
         # handle the view
-        my.handle_view_config()
+        self.handle_view_config()
 
-        my.description = 'Altered definition of [%s]' % my.element_name
+        self.description = 'Altered definition of [%s]' % self.element_name
 
 
-    def handle_view_config(my):
+    def handle_view_config(self):
         web = WebContainer.get_web()
         search_type = "SideBarWdg"
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
         assert(view)
         #if not view:
         #    view = 'project_view'
 
-        my.element_name = my.kwargs.get("element_name")
+        self.element_name = self.kwargs.get("element_name")
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         element_attrs = {}
         from pyasm.search import WidgetDbConfig
-        WidgetDbConfig.append(search_type, view, my.element_name, element_attrs={}, login=my.login)
+        WidgetDbConfig.append(search_type, view, self.element_name, element_attrs={}, login=self.login)
 
 
-    def handle_definition_config(my):
+    def handle_definition_config(self):
         web = WebContainer.get_web()
         view = "definition"
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         config_search_type = "config/widget_config"
         search = Search(config_search_type)
         search.add_filter("search_type", search_type)
         search.add_filter("view", view)
-        search.add_filter("login", my.login)
+        search.add_filter("login", self.login)
         config = search.get_sobject()
         if not config:
             config = SearchType.create(config_search_type)
             config.set_value("search_type", search_type )
             config.set_value("view", view )
-            if my.login:
-                 config.set_value("login", my.login )
+            if self.login:
+                 config.set_value("login", self.login )
             xml = config.get_xml_value("config", "config")
             root = xml.get_root_node()
             # reinitialize
@@ -1415,15 +1415,15 @@ class ManageSideBarDetailCbk(Command):
             # TAKEN FROM API: should be centralized or something
             from tactic.ui.panel import SideBarBookmarkMenuWdg
             config_view = SideBarBookmarkMenuWdg.get_config(search_type, view)
-            if not my.element_name:
+            if not self.element_name:
                 raise UserException('Element name is empty. You need to click on an element on the left first')
-            element_node = config_view.get_element_node(my.element_name)
+            element_node = config_view.get_element_node(self.element_name)
 
             config_xml = config_view.get_xml()
             if element_node == None:
                 # create a new node
                 element_node = config_xml.create_element("element")
-                Xml.set_attribute(element_node, "name", my.element_name)
+                Xml.set_attribute(element_node, "name", self.element_name)
 
             Xml.set_attribute(element_node, "title", config_title)
             Xml.set_attribute(element_node, "icon", config_icon)
@@ -1491,22 +1491,22 @@ class ManageSideBarDetailCbk(Command):
             xml = Xml()
             xml.read_string(config_string)
             new_root_node = xml.get_root_node()
-            xpath = "element[@name='%s']" % (my.element_name)
+            xpath = "element[@name='%s']" % (self.element_name)
             node = xml.get_node(xpath)
             if node is None:
-                raise UserException('There is a mismatch in the element name of the XML you have entered. You are changing the element [%s] but it is not found in the XML.' %my.element_name)
+                raise UserException('There is a mismatch in the element name of the XML you have entered. You are changing the element [%s] but it is not found in the XML.' %self.element_name)
         except XmlException as e:
             raise XmlException("Improper syntax in XML: %s"%e.__str__())
         
 
-        config.append_xml_element(my.element_name, config_string)
+        config.append_xml_element(self.element_name, config_string)
         config.commit_config()
 
 
 
 
 
-    def get_options(my):
+    def get_options(self):
         # use this as a utility
         from tactic.ui.manager import SimpleElementDefinitionCbk
         cbk = SimpleElementDefinitionCbk()
@@ -1529,23 +1529,23 @@ class ManageSideBarDetailCbk(Command):
 
 class ManageSideBarSecurityCbk(Command):
 
-    def get_args_key(my):
+    def get_args_key(self):
         return {
         'search_type': 'search_type of the element',
         'element_name': 'name of the element to get information from',
         }
 
-    def get_title(my):
+    def get_title(self):
         return "Side Bar Security Callback"
     
-    def execute(my):
+    def execute(self):
 
 
         web = WebContainer.get_web()
         if web.get_form_value("update") != "true":
             return
 
-        my.element_name = my.kwargs.get("element_name")
+        self.element_name = self.kwargs.get("element_name")
         project_code = Project.get_project_code()
 
         security_groups = web.get_form_values("security")
@@ -1563,7 +1563,7 @@ class ManageSideBarSecurityCbk(Command):
 
 
         if version == 1:
-            key = {'project': project_code, 'element': my.element_name}
+            key = {'project': project_code, 'element': self.element_name}
 
             rule_group = "side_bar"
             for login_group in login_groups:
@@ -1602,7 +1602,7 @@ class ManageSideBarSecurityCbk(Command):
 
             rule_group = "link"
 
-            key = {'project': project_code, 'element': my.element_name}
+            key = {'project': project_code, 'element': self.element_name}
 
             for login_group in login_groups:
                 code = login_group.get_value("login_group")

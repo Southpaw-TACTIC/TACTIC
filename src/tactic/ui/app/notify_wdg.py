@@ -22,9 +22,9 @@ from tactic.ui.common import BaseRefreshWdg
 
 class NotifyWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.set_id("spt_notify_top")
 
         inner = DivWdg()
@@ -142,9 +142,9 @@ spt.notify.show_message = function(message, duration, kwargs) {
 class NotifyPollWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         top.add_behavior( {
         'type': 'load',
@@ -173,7 +173,7 @@ class NotifyPollWdg(BaseRefreshWdg):
         return top
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
         '''
@@ -187,7 +187,7 @@ class NotifyPollCmd(BaseRefreshWdg):
     #is_undoable = classmethod(is_undoable)
 
 
-    def get_display(my):
+    def get_display(self):
 
         print "NotifyPollCmd"
 
@@ -224,7 +224,7 @@ class NotifyPollCmd(BaseRefreshWdg):
         div.add_class("handle")
 
 
-        #my.info = {
+        #self.info = {
         #    'msg': div.get_buffer_display()
         #}
 

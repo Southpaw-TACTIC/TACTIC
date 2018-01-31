@@ -46,30 +46,30 @@ class WizardWdg(BaseRefreshWdg):
     }
 
 
-    def __init__(my, **kwargs):
-        super(WizardWdg, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        super(WizardWdg, self).__init__(**kwargs)
 
-        my.submit_button = None
+        self.submit_button = None
 
-    def add_submit_button(my, button):
-        my.submit_button = button
+    def add_submit_button(self, button):
+        self.submit_button = button
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_wizard_top")
 
-        my.height = my.kwargs.get("height")
-        width = my.kwargs.get("width")
+        self.height = self.kwargs.get("height")
+        width = self.kwargs.get("width")
         if not width:
             width = ""
-        my.width = width
+        self.width = width
 
         inner = DivWdg()
         top.add(inner)
         inner.add_style("width: %s" % width)
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
             title = "none"
         
@@ -83,16 +83,16 @@ class WizardWdg(BaseRefreshWdg):
         inner.add("<br/>")
 
 
-        my.titles = my.kwargs.get("titles")
-        if isinstance(my.titles, basestring):
-            my.titles = my.titles.split("|")
-        if not my.titles:
-            my.titles = []
+        self.titles = self.kwargs.get("titles")
+        if isinstance(self.titles, basestring):
+            self.titles = self.titles.split("|")
+        if not self.titles:
+            self.titles = []
 
 
 
 
-        views = my.kwargs.get("views")
+        views = self.kwargs.get("views")
         if views:
             from tactic.ui.panel import CustomLayoutWdg
             if isinstance(views, basestring):
@@ -100,19 +100,19 @@ class WizardWdg(BaseRefreshWdg):
 
             for i, view in enumerate(views):
 
-                if i < len(my.titles):
-                    title = my.titles[i]
+                if i < len(self.titles):
+                    title = self.titles[i]
                 else:
                     title = widget.get_name()
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 
                 widget = CustomLayoutWdg(view=view)
-                my.add(widget, title)
+                self.add(widget, title)
 
 
 
-        header_wdg = my.get_header_wdg()
+        header_wdg = self.get_header_wdg()
         inner.add(header_wdg)
         #header_wdg.add_color("background", "background", -5)
         header_wdg.add_class("spt_popup_header")
@@ -126,7 +126,7 @@ class WizardWdg(BaseRefreshWdg):
         inner.add(pages_div)
         pages_div.add_style("overflow-y: auto")
 
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
             page_div = DivWdg()
             page_div.add_class("spt_wizard_page")
             pages_div.add(page_div)
@@ -134,8 +134,8 @@ class WizardWdg(BaseRefreshWdg):
             page_div.add_style("padding: 10px")
 
             page_div.add_style("min-height: 300px")
-            if my.height:
-                page_div.add_style("height: %s" % my.height)
+            if self.height:
+                page_div.add_style("height: %s" % self.height)
 
             page_div.add_style("overflow-y: auto")
 
@@ -148,22 +148,22 @@ class WizardWdg(BaseRefreshWdg):
 
 
         pages_div.add("<hr/>")
-        bottom_wdg = my.get_bottom_wdg()
+        bottom_wdg = self.get_bottom_wdg()
         bottom_wdg.add_class("spt_popup_footer")
         inner.add(bottom_wdg)
 
         return top
 
-    def add(my, widget, name):
+    def add(self, widget, name):
         widget.set_name(name)
-        super(WizardWdg, my).add(widget, name)
+        super(WizardWdg, self).add(widget, name)
 
 
 
-    def get_header_wdg(my):
+    def get_header_wdg(self):
         div = DivWdg()
         div.add_style("text-align: center")
-        div.add_style("width: %s" % my.width)
+        div.add_style("width: %s" % self.width)
 
         div.add("<hr/>")
 
@@ -175,9 +175,9 @@ class WizardWdg(BaseRefreshWdg):
         left = 50
         width = 50
 
-        dots_div.add_style("width", (left+width)*len(my.widgets)+left)
+        dots_div.add_style("width", (left+width)*len(self.widgets)+left)
 
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
             on_dot = DivWdg()
             on_dot.add_style("width: 20px")
             on_dot.add_style("height: 18px")
@@ -232,8 +232,8 @@ class WizardWdg(BaseRefreshWdg):
             name_div = DivWdg()
             dot_div.add(name_div)
 
-            if i < len(my.titles):
-                title = my.titles[i]
+            if i < len(self.titles):
+                title = self.titles[i]
             else:
                 title = widget.get_name()
                 title = title.replace(".", " ")
@@ -296,7 +296,7 @@ class WizardWdg(BaseRefreshWdg):
 
 
         """
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
             name_div = DivWdg()
             div.add(name_div)
             name_div.add_class("spt_wizard_link")
@@ -313,7 +313,7 @@ class WizardWdg(BaseRefreshWdg):
         div.add("<br clear='all'/>")
         return div
 
-    def get_bottom_wdg(my):
+    def get_bottom_wdg(self):
         from tactic.ui.widget import ActionButtonWdg
         div = DivWdg()
         div.add_style("margin-top: 10px")
@@ -386,13 +386,13 @@ class WizardWdg(BaseRefreshWdg):
 
 
 
-        if my.submit_button:
-            submit = my.submit_button
+        if self.submit_button:
+            submit = self.submit_button
         else:
-            submit_title = my.kwargs.get("submit_title")
-            command = my.kwargs.get("command")
-            script = my.kwargs.get("script")
-            jsscript = my.kwargs.get("jsscript")
+            submit_title = self.kwargs.get("submit_title")
+            command = self.kwargs.get("command")
+            script = self.kwargs.get("script")
+            jsscript = self.kwargs.get("jsscript")
 
             if not submit_title:
                 submit_title = "Submit"
@@ -512,7 +512,7 @@ class WizardWdg(BaseRefreshWdg):
 
 class TestWizardWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_color("color", "color")
         top.add_color("background", "background")
@@ -523,7 +523,7 @@ class TestWizardWdg(BaseRefreshWdg):
         top.add(wizard)
 
         page = DivWdg()
-        first = my.get_first_page()
+        first = self.get_first_page()
         first.add_style("width: 500px")
         first.add_style("height: 300px")
         page.add(first)
@@ -531,7 +531,7 @@ class TestWizardWdg(BaseRefreshWdg):
 
 
         page = DivWdg()
-        second = my.get_second_page()
+        second = self.get_second_page()
         second.add_style("width: 500px")
         second.add_style("height: 300px")
         page.add(second)
@@ -557,7 +557,7 @@ class TestWizardWdg(BaseRefreshWdg):
 
         return top
 
-    def get_first_page(my):
+    def get_first_page(self):
         div = DivWdg()
         div.add("First Page")
         div.add("<br/>")
@@ -573,7 +573,7 @@ class TestWizardWdg(BaseRefreshWdg):
 
         return div
 
-    def get_second_page(my):
+    def get_second_page(self):
         div = DivWdg()
         div.add("Second Page")
         div.add("<br/>")
@@ -593,7 +593,7 @@ class TestWizardWdg(BaseRefreshWdg):
 __all__.append("ProjectWizardWdg")
 class ProjectWizardWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_color("color", "color")
         top.add_color("background", "background")
@@ -604,7 +604,7 @@ class ProjectWizardWdg(BaseRefreshWdg):
         top.add(wizard)
 
         page = DivWdg()
-        first = my.get_first_page()
+        first = self.get_first_page()
         first.add_style("width: 500px")
         first.add_style("height: 300px")
         page.add(first)
@@ -612,7 +612,7 @@ class ProjectWizardWdg(BaseRefreshWdg):
 
 
         page = DivWdg()
-        first = my.get_second_page()
+        first = self.get_second_page()
         first.add_style("width: 500px")
         first.add_style("height: 300px")
         page.add(first)
@@ -630,7 +630,7 @@ class ProjectWizardWdg(BaseRefreshWdg):
         return top
 
 
-    def get_first_page(my):
+    def get_first_page(self):
         div = DivWdg()
 
         div.add("<br/>")
@@ -655,7 +655,7 @@ class ProjectWizardWdg(BaseRefreshWdg):
 
 
 
-    def get_second_page(my):
+    def get_second_page(self):
         div = DivWdg()
 
         div.add("Import Template")

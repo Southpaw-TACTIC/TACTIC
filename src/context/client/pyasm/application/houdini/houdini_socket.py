@@ -24,40 +24,40 @@ class HoudiniSocket:
     SERVER = 'localhost'
     PORT = 10389
 
-    def __init__(my):
+    def __init__(self):
         #define the socket to Houdini
-        my.HOU = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.HOU = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def connect(my, port=None):
+    def connect(self, port=None):
         "Open a connection with Houdini"
         if not socket:
-            my.HOU.connect((my.SERVER, my.PORT))
+            self.HOU.connect((self.SERVER, self.PORT))
         else:
-            my.HOU.connect((my.SERVER, int(port) ))
+            self.HOU.connect((self.SERVER, int(port) ))
         return()
 
-    def send_data(my, command):
+    def send_data(self, command):
         "Pass a command to Houdini"
-        my.HOU.send(command + '\n')
+        self.HOU.send(command + '\n')
         return()
 
-    def get_data(my):
+    def get_data(self):
         "Keep grabbing data from Houdini until you hit the delimiter"
         delimiter = '\x00'
         buffer = ""
         while delimiter not in buffer:
-            buffer = buffer + my.HOU.recv(8192)
+            buffer = buffer + self.HOU.recv(8192)
         return(buffer[:-2]) #trim the delimiter
 
-    def close(my):
+    def close(self):
         "Close the connection with Houdini"
-        my.HOU.close()
+        self.HOU.close()
         return()
 
 
-    def hscript(my, cmd):
-        my.send_data(cmd)
-        buffer = my.get_data()
+    def hscript(self, cmd):
+        self.send_data(cmd)
+        buffer = self.get_data()
         return buffer
 
 

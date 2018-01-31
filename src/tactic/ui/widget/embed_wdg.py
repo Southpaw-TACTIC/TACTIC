@@ -23,27 +23,27 @@ import urllib
 
 class EmbedWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             }
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def add_class(my, name):
-        my.top.add_class(name)
+    def add_class(self, name):
+        self.top.add_class(name)
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        layout = my.kwargs.get("layout") or "landscape"
+        layout = self.kwargs.get("layout") or "landscape"
 
-        search_key = my.kwargs.get("search_key")
-        file = my.kwargs.get("file")
+        search_key = self.kwargs.get("search_key")
+        file = self.kwargs.get("file")
 
         if search_key:
             sobject = Search.get_by_search_key(search_key)
@@ -55,7 +55,7 @@ class EmbedWdg(BaseRefreshWdg):
         elif file:
             src = file.get_web_path()
         else:
-            src = my.kwargs.get("src")
+            src = self.kwargs.get("src")
 
         opacity = 1.0
         if not src:
@@ -63,9 +63,9 @@ class EmbedWdg(BaseRefreshWdg):
             opacity = 0.6
 
 
-        height = my.kwargs.get("height")
-        width = my.kwargs.get("width")
-        index = my.kwargs.get("index")
+        height = self.kwargs.get("height")
+        width = self.kwargs.get("width")
+        index = self.kwargs.get("index")
 
         if not height:
             height = "100%"
@@ -97,14 +97,14 @@ class EmbedWdg(BaseRefreshWdg):
         ext = parts[1]
         ext = ext.lower()
 
-        click = my.kwargs.get("click")
+        click = self.kwargs.get("click")
         if click in [False, 'false']:
             click = False
         else:
             click = True
 
-        thumb_path = my.kwargs.get("thumb_path")
-        preload = my.kwargs.get("preload")
+        thumb_path = self.kwargs.get("thumb_path")
+        preload = self.kwargs.get("preload")
         if not preload:
             preload = "none"
 
@@ -125,7 +125,7 @@ class EmbedWdg(BaseRefreshWdg):
 
             if src.find("#") != -1:
 
-                file_range = my.kwargs.get("file_range")
+                file_range = self.kwargs.get("file_range")
                 for i in range(1, 16):
                     expand = src.replace("####", "%0.4d" % i)
                     item = HtmlElement.img(expand)
@@ -178,7 +178,7 @@ class EmbedWdg(BaseRefreshWdg):
 
             #if not thumb_path:
             #    thumb_path = "/context/icons/logo/tactic_sml.png"
-            controls = my.kwargs.get("controls")
+            controls = self.kwargs.get("controls")
 
             video_id = None
             sources = [src]

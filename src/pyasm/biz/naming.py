@@ -33,10 +33,10 @@ class Naming(SObject):
     # not enforce what people think are correct file names for whatever
     # purpose they happen to need it for.
 
-    def validate(my):
+    def validate(self):
 
-        sandbox_dir_naming = my.get_value('sandbox_dir_naming', no_exception=True)
-        dir_naming = my.get_value('dir_naming', no_exception=True)
+        sandbox_dir_naming = self.get_value('sandbox_dir_naming', no_exception=True)
+        dir_naming = self.get_value('dir_naming', no_exception=True)
 
         if sandbox_dir_naming and sandbox_dir_naming.endswith('/'):
             raise TacticException('sandbox_dir_naming should not end with /')
@@ -44,7 +44,7 @@ class Naming(SObject):
         if dir_naming and dir_naming.endswith('/'):
             raise TacticException('dir_naming should not end with /')
             
-        #file_name = my.get_value('file_naming')
+        #file_name = self.get_value('file_naming')
         #p = re.compile('.*\.({ext}|\w+)$')
         #if not p.match(file_name):
         #    raise TacticException('file_naming has to end with .{ext} or .xxx')
@@ -275,7 +275,7 @@ class NamingUtil(object):
     #
     # try a new naming language which makes use of simple expression language
     #
-    def naming_to_file(my, template, sobject, snapshot, file=None, ext=None, file_type=None):
+    def naming_to_file(self, template, sobject, snapshot, file=None, ext=None, file_type=None):
         '''
         # chr001_model_v004_00001.ext
         '''
@@ -528,11 +528,11 @@ class NamingUtil(object):
         return result
 
              
-    def _get_timestamp(my, sobject):
+    def _get_timestamp(self, sobject):
         '''get the portion yyyy-mm-dd'''
         return sobject.get_value('timestamp')[0:10]
 
-    def naming_to_dir(my, template, sobject, snapshot, file=None, file_type=None):
+    def naming_to_dir(self, template, sobject, snapshot, file=None, file_type=None):
         '''
         # shot/SEQ001/shot_001
         '''
@@ -599,7 +599,7 @@ class NamingUtil(object):
                     index = int(index.rstrip("]"))
                 if object == "sobject":
                     if attr == "timestamp":
-                        value = my._get_timestamp(sobject)
+                        value = self._get_timestamp(sobject)
                     else:
                         value = sobject.get_value(attr)
                 elif object == "snapshot":
@@ -607,7 +607,7 @@ class NamingUtil(object):
                         value = ""
                     else:
                         if attr == "timestamp":
-                            value = my._get_timestamp(snapshot)
+                            value = self._get_timestamp(snapshot)
                         else:
                             value = snapshot.get_value(attr)
                         if attr in ['version', 'revision']:
@@ -624,7 +624,7 @@ class NamingUtil(object):
                         value = "NO_PARENT"
                     else:
                         if attr == 'timestamp':
-                            value = my._get_timestamp(parent)
+                            value = self._get_timestamp(parent)
                         else:
                             value = parent.get_value(attr)
                 elif object == "project":
@@ -734,7 +734,7 @@ class NamingUtil(object):
                         value = 'main'
                 else:
                     if attr == "timestamp":
-                        value = my._get_timestamp(sobject)
+                        value = self._get_timestamp(sobject)
                     else:
                         value = sobject.get_value(attr)
 
@@ -766,7 +766,7 @@ class NamingUtil(object):
 
 
  
-    def build_naming(my, sample_name):
+    def build_naming(self, sample_name):
         separators = ['/','\\','.', '_', '-']
 
         # build a naming convention ui

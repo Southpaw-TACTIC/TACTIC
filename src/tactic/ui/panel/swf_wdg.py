@@ -31,7 +31,7 @@ class SwfWdg(BaseRefreshWdg):
     '''Panel which displays a complete view, including filters, search
     and results'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         "search_key": "The search_key of the SObject",
         "path": "path to the input file",
@@ -42,15 +42,15 @@ class SwfWdg(BaseRefreshWdg):
 
         }
 
-    def get_display(my):
+    def get_display(self):
 
-        search_key = my.kwargs.get("search_key")
-        title = my.kwargs.get("title")
-        swf_url = my.kwargs.get("swf_url")
-        flash_vars = my.kwargs.get("flash_vars")
-	title = my.kwargs.get("title")
-        height = my.kwargs.get("height")
-        width = my.kwargs.get("width")
+        search_key = self.kwargs.get("search_key")
+        title = self.kwargs.get("title")
+        swf_url = self.kwargs.get("swf_url")
+        flash_vars = self.kwargs.get("flash_vars")
+	title = self.kwargs.get("title")
+        height = self.kwargs.get("height")
+        width = self.kwargs.get("width")
         
 	#Get the value for the swf id
 	swf_file = swf_url.split("/")[-1]

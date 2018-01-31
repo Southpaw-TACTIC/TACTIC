@@ -20,46 +20,46 @@ from flash_environment import *
 class FlashClientTest(unittest.TestCase):
     '''Client test for flash'''
 
-    def setUp(my):
+    def setUp(self):
         pass
 
 
-    def test_all(my):
-        my.env = FlashEnvironment.get()
+    def test_all(self):
+        self.env = FlashEnvironment.get()
 
-        my.app = Flash()
-        my.env.set_app(my.app)
+        self.app = Flash()
+        self.env.set_app(self.app)
 
         tmp_dir = "C:/sthpw"
-        my.env.set_tmpdir(tmp_dir)
+        self.env.set_tmpdir(tmp_dir)
 
         server_url = "http://saba"
-        my.env.set_server_url(server_url)
+        self.env.set_server_url(server_url)
 
         # run the tests
 
-        my._test_run()
-        my._test_jsfl()
+        self._test_run()
+        self._test_jsfl()
 
 
-    def _test_run(my):
+    def _test_run(self):
 
-        my.app.run_flash()
+        self.app.run_flash()
 
 
-    def _test_jsfl(my):
+    def _test_jsfl(self):
 
         # download the jsfl file
 
-        my.app.download_jsfl("common.jsfl")
-        my.app.download_jsfl("load2.jsfl")
-        my.app.download_jsfl("render.jsfl")
+        self.app.download_jsfl("common.jsfl")
+        self.app.download_jsfl("load2.jsfl")
+        self.app.download_jsfl("render.jsfl")
 
         sandbox_path = "C:/sthpw/sandbox"
 
         # download the file
         url = "http://saba/assets/flash/shot/TF01A/TF01A-004/TF01A-004_0099988FLA.fla"
-        to_path = my.app.download(url)
+        to_path = self.app.download(url)
 
 
         jsfl_list = []
@@ -67,22 +67,22 @@ class FlashClientTest(unittest.TestCase):
 
         # load the appropriate jsfl files
         load_jsfl = "C:/sthpw/JSFL/load2.jsfl"
-        jsfl = my.app.get_jsfl(load_jsfl, "include", "common.jsfl", "C:/sthpw/JSFL")
+        jsfl = self.app.get_jsfl(load_jsfl, "include", "common.jsfl", "C:/sthpw/JSFL")
         jsfl_list.append(jsfl)
 
         # initialize the session
         load_mode="simple"
         prefix_mode = ""
-        jsfl = my.app.get_jsfl(load_jsfl, "init_session", load_mode, prefix_mode, sandbox_path)
+        jsfl = self.app.get_jsfl(load_jsfl, "init_session", load_mode, prefix_mode, sandbox_path)
         jsfl_list.append(jsfl)
 
         # load file
-        jsfl = my.app.get_jsfl(load_jsfl, "load_asset", to_path)
+        jsfl = self.app.get_jsfl(load_jsfl, "load_asset", to_path)
         jsfl_list.append(jsfl)
 
         # execute all of the jsfl commands
         jsfl_final = "\n".join(jsfl_list)
-        my.app.run_jsfl(jsfl_final)
+        self.app.run_jsfl(jsfl_final)
 
 
         # render
@@ -91,7 +91,7 @@ class FlashClientTest(unittest.TestCase):
         render_dir = "C:/sthpw/render"
         log_path = "C:/sthpw/render/action_log.txt"
 
-        jsfl = my.app.get_jsfl(jsfl_path, "render_layer", file_format, render_dir, log_path)
+        jsfl = self.app.get_jsfl(jsfl_path, "render_layer", file_format, render_dir, log_path)
         print jsfl
         
 

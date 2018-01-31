@@ -22,7 +22,7 @@ from pyasm.widget import BaseInputWdg, SelectWdg, TextWdg, IconButtonWdg, IconWd
 
 class SearchTypeInputWdg(SelectWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         #project = Project.get()
         schema = Schema.get()
@@ -42,26 +42,26 @@ class SearchTypeInputWdg(SelectWdg):
             labels.append(label)
 
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if not sobject:
             value = ""
         else:
-            value = sobject.get_value(my.get_name() )
+            value = sobject.get_value(self.get_name() )
 
-        my.set_option("values", values)
-        my.set_option("labels", labels)
-        my.add_empty_option("-- Select --")
+        self.set_option("values", values)
+        self.set_option("labels", labels)
+        self.add_empty_option("-- Select --")
         if value:
-            my.set_value(value)
+            self.set_value(value)
 
-        return super(SearchTypeInputWdg, my).get_display()
+        return super(SearchTypeInputWdg, self).get_display()
 
 
 
 
 class SearchTypeWithPipelineInputWdg(SelectWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         #project = Project.get()
         schema = Schema.get()
@@ -90,19 +90,19 @@ class SearchTypeWithPipelineInputWdg(SelectWdg):
 
         values = filtered
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if not sobject:
             value = ""
         else:
-            value = sobject.get_value(my.get_name() )
+            value = sobject.get_value(self.get_name() )
 
-        my.set_option("values", values)
-        my.set_option("labels", labels)
-        my.add_empty_option("-- Select --")
+        self.set_option("values", values)
+        self.set_option("labels", labels)
+        self.add_empty_option("-- Select --")
         if value:
-            my.set_value(value)
+            self.set_value(value)
 
-        return super(SearchTypeWithPipelineInputWdg, my).get_display()
+        return super(SearchTypeWithPipelineInputWdg, self).get_display()
 
 
 

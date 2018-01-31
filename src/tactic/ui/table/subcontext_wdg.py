@@ -25,20 +25,20 @@ class ProcessElementWdg(SimpleTableElementWdg):
     ARGS_KEYS = {}
 
     """
-    def alter_order_by(my, search, direction=''):
+    def alter_order_by(self, search, direction=''):
         '''handle order by'''
         search.add_order_by("status", direction)
     """
     
-    def handle_td(my, td):
-        sobj = my.get_current_sobject()
+    def handle_td(self, td):
+        sobj = self.get_current_sobject()
         parent = None
         
         value = sobj.get_value('process')
         td.add_attr('spt_input_value', value)
 
         if sobj.is_insert():
-            state = my.get_state()
+            state = self.get_state()
             parent_key = state.get('parent_key')
             if parent_key:
                 parent = SearchKey.get_by_search_key(parent_key)
@@ -147,8 +147,8 @@ class SubContextElementWdg(BaseTableElementWdg):
         return True
     is_editable = classmethod(is_editable)
 
-    def _get_subcontext(my):
-        sobject = my.get_current_sobject()
+    def _get_subcontext(self):
+        sobject = self.get_current_sobject()
         context = sobject.get_value("context")
         if not context:
             return ""
@@ -160,14 +160,14 @@ class SubContextElementWdg(BaseTableElementWdg):
 
         return subcontext
     
-    def handle_td(my, td):
-        subcontext =  my._get_subcontext()
+    def handle_td(self, td):
+        subcontext =  self._get_subcontext()
 
         if subcontext:
             td.add_attr('spt_input_value', subcontext)
 
-    def get_display(my):
-        return my._get_subcontext()
+    def get_display(self):
+        return self._get_subcontext()
             
 
 

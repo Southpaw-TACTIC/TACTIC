@@ -26,16 +26,16 @@ import os, shutil, sys
 
 class NamingMigratorCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         # modes are either naming based or file object based
         #mode = "naming"
         #mode = "file"
         assert mode in ['naming', 'file']
 
-        search_type = my.kwargs.get("search_type")
-        search_keys = my.kwargs.get("search_keys")
+        search_type = self.kwargs.get("search_type")
+        search_keys = self.kwargs.get("search_keys")
         assert search_type or search_keys
 
         if search_type:

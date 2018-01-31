@@ -62,22 +62,22 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
     } 
 
 
-    def get_display(my):
-        #my.chunk_size = 10000
+    def get_display(self):
+        #self.chunk_size = 10000
 
-        if my.kwargs.get("do_search") != "false":
-            my.handle_search()
+        if self.kwargs.get("do_search") != "false":
+            self.handle_search()
 
-        my.mode = my.kwargs.get("mode")
-        if my.mode != 'raw':
-            my.mode = 'widget'
+        self.mode = self.kwargs.get("mode")
+        if self.mode != 'raw':
+            self.mode = 'widget'
 
 
         # extraneous variables inherited from TableLayoutWdg
-        my.edit_permission = False
+        self.edit_permission = False
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_class("spt_sobject_top")
 
 
@@ -89,70 +89,70 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
         inner.add_class("spt_layout")
         inner.add_attr("spt_version", "2")
         
-        table = my.table
+        table = self.table
         table.add_class("spt_table_table")
         # set the sobjects to all the widgets then preprocess
-        if my.mode == 'widget':
-            for widget in my.widgets:
+        if self.mode == 'widget':
+            for widget in self.widgets:
                 widget.handle_layout_behaviors(table)
-                widget.set_sobjects(my.sobjects)
-                widget.set_parent_wdg(my)
+                widget.set_sobjects(self.sobjects)
+                widget.set_parent_wdg(self)
                 # preprocess the elements
                 widget.preprocess()
         else:
-            for i, widget in enumerate(my.widgets):
+            for i, widget in enumerate(self.widgets):
                 #widget.handle_layout_behaviors(table)
-                widget.set_sobjects(my.sobjects)
-                #widget.set_parent_wdg(my)
+                widget.set_sobjects(self.sobjects)
+                #widget.set_parent_wdg(self)
                 # preprocess the elements
                 widget.preprocess()
 
 
-        my.process_groups()
-        my.order_sobjects(my.sobjects, my.group_columns)
-        my.remap_sobjects()
+        self.process_groups()
+        self.order_sobjects(self.sobjects, self.group_columns)
+        self.remap_sobjects()
 
 
-        my.attributes = []
-        for i, widget in enumerate(my.widgets):
+        self.attributes = []
+        for i, widget in enumerate(self.widgets):
             element_name = widget.get_name()
 
             if element_name and element_name != "None":
-                attrs = my.config.get_element_attributes(element_name)
+                attrs = self.config.get_element_attributes(element_name)
             else:
                 attrs = {}
             
-            my.attributes.append(attrs)
+            self.attributes.append(attrs)
  
 
 
-        is_refresh = my.kwargs.get("is_refresh")
-        if my.kwargs.get("show_shelf") not in ['false', False]:
-            action = my.get_action_wdg()
+        is_refresh = self.kwargs.get("is_refresh")
+        if self.kwargs.get("show_shelf") not in ['false', False]:
+            action = self.get_action_wdg()
             inner.add(action)
 
         index = 0
 
-        table.add_attr("spt_view", my.kwargs.get("view") )
-        table.set_attr("spt_search_type", my.kwargs.get('search_type'))
+        table.add_attr("spt_view", self.kwargs.get("view") )
+        table.set_attr("spt_search_type", self.kwargs.get('search_type'))
        
-        table.set_id(my.table_id)
+        table.set_id(self.table_id)
         
         table.add_style("width: 100%")
         inner.add(table)
         table.add_color("color", "color")
 
         # initialize the spt.table js
-        #my.handle_table_behaviors(table)
+        #self.handle_table_behaviors(table)
 
-        my.handle_headers(table)
+        self.handle_headers(table)
 
         border_color = table.get_color("table_border", default="border")
-        for row, sobject in enumerate(my.sobjects):
+        for row, sobject in enumerate(self.sobjects):
 
             # put in a group row
-            if my.is_grouped:
-                my.handle_groups(table, row, sobject)
+            if self.is_grouped:
+                self.handle_groups(table, row, sobject)
 
             tr = table.add_row()
             if row % 2:
@@ -165,7 +165,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
 
 
-            for i, widget in enumerate(my.widgets):
+            for i, widget in enumerate(self.widgets):
 
                 value_div = DivWdg()
                 value_div.add_style("padding: 3px")
@@ -173,7 +173,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
                 td.add_style("vertical-align: top")
                 td.add_style("border: solid 1px %s" % border_color)
 
-                if my.mode == 'widget':
+                if self.mode == 'widget':
                     widget.set_current_index(row)
                     value_div.add(widget.get_buffer_display())
                 else:
@@ -183,36 +183,36 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
 
         top.add_class("spt_table_top");
-        class_name = Common.get_full_class_name(my)
+        class_name = Common.get_full_class_name(self)
         top.add_attr("spt_class_name", class_name)
 
         table.add_class("spt_table_content");
-        inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
-        inner.add_attr("spt_view", my.kwargs.get('view'))
+        inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
+        inner.add_attr("spt_view", self.kwargs.get('view'))
 
         # extra ?? Doesn't really work to keep the mode
-        inner.add_attr("spt_mode", my.mode)
-        top.add_attr("spt_mode", my.mode)
+        inner.add_attr("spt_mode", self.mode)
+        top.add_attr("spt_mode", self.mode)
 
         inner.add("<br clear='all'/>")
 
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
 
-    def handle_headers(my, table):
+    def handle_headers(self, table):
 
         # this comes from refresh
-        widths = my.kwargs.get("column_widths")
+        widths = self.kwargs.get("column_widths")
 
 
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
             widget_name = widget.get_name()
             th = table.add_header()
             th.add_style("text-align: left")
@@ -223,7 +223,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             th.add_color("background", "background", -5)
             th.add_border()
 
-            if my.mode == 'widget':
+            if self.mode == 'widget':
                 value = widget.get_title()
             else:
                 element = widget_name
@@ -237,7 +237,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
                 width = widths[i]
 
             else: # get width from definition 
-                width = my.attributes[i].get("width")
+                width = self.attributes[i].get("width")
                 if width:
                      th.add_style("width", width)
                      width_set = True
@@ -251,7 +251,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
 
 
-    def handle_group(my, table, i, sobject, group_name, group_value):
+    def handle_group(self, table, i, sobject, group_name, group_value):
 
         tr, td = table.add_row_cell()
         tr.add_color("background", "background3", 5)

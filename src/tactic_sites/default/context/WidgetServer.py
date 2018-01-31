@@ -21,7 +21,7 @@ exec( get_site_import(__file__) )
 class WidgetServer(AppServer):
     '''wrapper class to load in Widgets dynamically'''
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         return BaseSthpwWdg()
 
 

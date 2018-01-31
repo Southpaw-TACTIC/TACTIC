@@ -35,8 +35,8 @@ class ExplorerElementWdg(BaseTableElementWdg):
 
   
 
-    def get_decrement(my):
-        decrement = my.get_option('decrement')
+    def get_decrement(self):
+        decrement = self.get_option('decrement')
         if not decrement:
             decrement = 0
         else:
@@ -44,36 +44,36 @@ class ExplorerElementWdg(BaseTableElementWdg):
 
         return decrement
 
-    def get_base_dir( my, sobject):
-        decrement = my.get_decrement()
+    def get_base_dir( self, sobject):
+        decrement = self.get_decrement()
         base_dir = Project.get_sandbox_base_dir(sobject, decrement=decrement)
         return base_dir
 
-    def get_lib_dir(my, sobject):
+    def get_lib_dir(self, sobject):
         snapshot = None
         base_dir = Project.get_project_lib_dir(sobject, snapshot)
         
         return base_dir
 
 
-    def get_client_repo_dir(my, sobject):
+    def get_client_repo_dir(self, sobject):
         snapshot = None
         base_dir = Project.get_project_client_lib_dir(sobject, snapshot)
         #TODO: u could decrement the client repo dir here, if really needed
         return base_dir
 
 
-    def get_title(my):
+    def get_title(self):
         widget = Widget()
-        title = super(ExplorerElementWdg, my).get_title()
+        title = super(ExplorerElementWdg, self).get_title()
         widget.add( title )
         return widget
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
-        mode = my.get_option('mode')
+        mode = self.get_option('mode')
         if not mode:
             mode = 'sandbox'
 
@@ -86,10 +86,10 @@ class ExplorerElementWdg(BaseTableElementWdg):
         else:
             try:
                 if mode == 'sandbox':
-                    sobject_dir = my.get_base_dir(sobject)
+                    sobject_dir = self.get_base_dir(sobject)
                 elif mode in ['client_repo', 'repository']:
-                    sobject_dir = my.get_client_repo_dir(sobject)
-                    sobject_lib_dir = my.get_lib_dir(sobject)
+                    sobject_dir = self.get_client_repo_dir(sobject)
+                    sobject_lib_dir = self.get_lib_dir(sobject)
                 sobject_dir = sobject_dir.strip()
                 sobject_dir = Common.process_unicode_string(sobject_dir)
             except TacticException as e:

@@ -23,7 +23,7 @@ from queue import Queue
 
 class QueueWdg(Widget):
 
-    def init(my):
+    def init(self):
 
         search = Search("sthpw/queue")
         search.add_order_by("priority desc")
@@ -96,7 +96,7 @@ class QueueWdg(Widget):
         table.set_sobjects(sobjects)
         widget.add(table)
 
-        my.add(widget)
+        self.add(widget)
 
 
 

@@ -39,7 +39,7 @@ from dateutil.relativedelta import relativedelta
 
 class ExpressionTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
 
         Batch()
 
@@ -51,53 +51,53 @@ class ExpressionTest(unittest.TestCase):
         Project.set_project("unittest")
 
 
-        my.parser = ExpressionParser()
+        self.parser = ExpressionParser()
 
-        my.transaction = Transaction.get(create=True)
+        self.transaction = Transaction.get(create=True)
         try:
-            user = my.parser.eval("@SOBJECT(sthpw/login['login','ben'])")
+            user = self.parser.eval("@SOBJECT(sthpw/login['login','ben'])")
             if not user:
                 from tactic_client_lib import TacticServerStub
                 server = TacticServerStub.get()
                 server.insert_update('sthpw/login?code=ben', {'login':'ben', 'code':'ben','first_name':'Ben'})
               
-            my.city = SearchType.create("unittest/city")
-            my.city.set_value("code", "los_angeles")
-            my.city.set_value("name", "LA")
-            my.city.set_value("country_code", "USA")
-            my.city.commit()
+            self.city = SearchType.create("unittest/city")
+            self.city.set_value("code", "los_angeles")
+            self.city.set_value("name", "LA")
+            self.city.set_value("country_code", "USA")
+            self.city.commit()
 
-            my.city2 = SearchType.create("unittest/city")
-            my.city2.set_value("code", "new_york")
-            my.city2.set_value("country_code", "USA")
-            my.city2.commit()
+            self.city2 = SearchType.create("unittest/city")
+            self.city2.set_value("code", "new_york")
+            self.city2.set_value("country_code", "USA")
+            self.city2.commit()
 
-            my.country = SearchType.create("unittest/country")
-            my.country.set_value("code", "USA")
-            my.country.commit()
+            self.country = SearchType.create("unittest/country")
+            self.country.set_value("code", "USA")
+            self.country.commit()
 
-            Task.create(my.country, "p1", "Task 1", context='p1')
-            Task.create(my.country, "p2", "Task 2", context='p2')
+            Task.create(self.country, "p1", "Task 1", context='p1')
+            Task.create(self.country, "p2", "Task 2", context='p2')
 
             desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
-            my.country_task = Task.create(my.country, "p3", "Task 3", context='p3')
-            my.country_task.set_value('priority', '4')
-            my.country_task.set_value('description', desc)
+            self.country_task = Task.create(self.country, "p3", "Task 3", context='p3')
+            self.country_task.set_value('priority', '4')
+            self.country_task.set_value('description', desc)
 
-            my.country_task.commit()
+            self.country_task.commit()
 
             # city task
-            my.city_task = Task.create(my.city, "los_angeles", "City Task 1", context='City')  
-            my.city_task.set_value('priority', '5')
-            my.city_task.commit()
+            self.city_task = Task.create(self.city, "los_angeles", "City Task 1", context='City')  
+            self.city_task.set_value('priority', '5')
+            self.city_task.commit()
 
-            my.city_task2 = Task.create(my.city, "los_angeles2", "City Task 2", context='City')   
+            self.city_task2 = Task.create(self.city, "los_angeles2", "City Task 2", context='City')   
             # done for test_args
-            my.city_task.set_value('status','LA')
-            my.city_task.set_value('assigned','admin')
-            my.city_task.commit()
+            self.city_task.set_value('status','LA')
+            self.city_task.set_value('assigned','admin')
+            self.city_task.commit()
             
-            my.persons = []
+            self.persons = []
             for i in range(0, 8):
 
                 age = random.randint(20, 70)
@@ -118,247 +118,247 @@ class ExpressionTest(unittest.TestCase):
 
                 person.commit()
                 
-                my.persons.append(person)
+                self.persons.append(person)
 
-            my._test_instance()
-            my._test_utf8()
-            my._test_palette()
-            my._test_related_sobject()
-            my._test_input_search()
+            self._test_instance()
+            self._test_utf8()
+            self._test_palette()
+            self._test_related_sobject()
+            self._test_input_search()
 
-            my._test_return_types()
-            my._test_file()
-            my._test_string()
-            my._test_literal()
-            my._test_loop()
+            self._test_return_types()
+            self._test_file()
+            self._test_string()
+            self._test_literal()
+            self._test_loop()
 
-            my._test_var()
-            my._test_new_parser()
-            my._test_simple()
-            my._test_single()
-            my._test_args()
+            self._test_var()
+            self._test_new_parser()
+            self._test_simple()
+            self._test_single()
+            self._test_args()
 
-            my._test_composite()
-            my._test_dates()
-            my._test_filter()
-            my._test_paragraph()
-            my._test_op()
-            my._test_syntax_error()
-            my._test_regex()
-            my._test_conditional()
-            my._test_update()
-            my._test_custom_layout()
-            my._test_color()
-            my._test_connection()
-            my._test_cache()
-            my._test_cross_proj_count()
+            self._test_composite()
+            self._test_dates()
+            self._test_filter()
+            self._test_paragraph()
+            self._test_op()
+            self._test_syntax_error()
+            self._test_regex()
+            self._test_conditional()
+            self._test_update()
+            self._test_custom_layout()
+            self._test_color()
+            self._test_connection()
+            self._test_cache()
+            self._test_cross_proj_count()
 
         finally:
-            my.transaction.rollback()
+            self.transaction.rollback()
 
             test_env.delete()
             sample3d_env.delete()
 
-    def _test_cross_proj_count(my):
+    def _test_cross_proj_count(self):
 
         Project.set_project("sample3d")
         expression = "@COUNT(prod/shot?project=sample3d)"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         count = 30
-        my.assertEquals(count, result)
+        self.assertEquals(count, result)
         expression = "@COUNT(prod/sequence?project=sample3d.prod/shot)"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         count = 30
-        my.assertEquals(count, result)
+        self.assertEquals(count, result)
 
         expression = "@COUNT(prod/sequence?project=sample3d.prod/shot?project=sample3d)"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         count = 30
-        my.assertEquals(count, result)
+        self.assertEquals(count, result)
 
         expression = "@COUNT(prod/sequence?project=sample3d)"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         count = 1
-        my.assertEquals(count, result)
+        self.assertEquals(count, result)
         
         Project.set_project("unittest")
 
-    def _test_utf8(my):
+    def _test_utf8(self):
         desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
         expr3 = "@GET(.description)"
-        actual_desc = my.parser.eval(expr3, sobjects=my.country_task, single=True)
+        actual_desc = self.parser.eval(expr3, sobjects=self.country_task, single=True)
         
-        my.assertEquals(True, isinstance(actual_desc, unicode))
+        self.assertEquals(True, isinstance(actual_desc, unicode))
         # the returned unicode needs to be encoded as str
         actual_desc = actual_desc.encode('utf-8')
-        my.assertEquals(desc, actual_desc)
+        self.assertEquals(desc, actual_desc)
 
 
         
         
-    def _test_simple(my):
+    def _test_simple(self):
 
         # do some precalculateion
         sum = 0
         person1_age = 0
-        for idx, person in enumerate(my.persons):
+        for idx, person in enumerate(self.persons):
             value = person.get_value('age')
             if idx == 1:
                 person1_age = value
             if value:
                 sum += value
-        avg = float(sum) / len(my.persons)
-        count = len(my.persons)
+        avg = float(sum) / len(self.persons)
+        count = len(self.persons)
 
-        person = my.persons[0]
+        person = self.persons[0]
         age = person.get_value("age")
         name_first = person.get_value("name_first")
 
         # test shorthand
         expression = "@GET(.age)"
-        result = my.parser.eval(expression, person, single=True)
-        my.assertEquals(age, result)
+        result = self.parser.eval(expression, person, single=True)
+        self.assertEquals(age, result)
 
         # test shorthand with quotes
         expression = "@GET('.age')"
-        result = my.parser.eval(expression, person)
-        my.assertEquals([age], result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals([age], result)
 
 
         expression = "@GET(.name_first)"
-        result = my.parser.eval(expression, person)
-        my.assertEquals([name_first], result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals([name_first], result)
 
         # TODO: this should return a list
         expression = "@GET(.name_first)"
-        result = my.parser.eval(expression, my.persons)
-        #my.assertEquals(name_first, result)
-        my.assertEquals("person0", result[0])
-        my.assertEquals("person1", result[1])
+        result = self.parser.eval(expression, self.persons)
+        #self.assertEquals(name_first, result)
+        self.assertEquals("person0", result[0])
+        self.assertEquals("person1", result[1])
 
 
         # test boolean column
         expression = "@GET(sthpw/snapshot['is_latest','true'].code)"
-        result = my.parser.eval(expression, single=True)
+        result = self.parser.eval(expression, single=True)
 
         expression = "@GET(sthpw/snapshot['code','%s'].is_latest)==True" %result
         
-        result = my.parser.eval(expression)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression)
+        self.assertEquals(True, result)
 
     
 
         # evaluate the total age ... NOTE: {} means stringify, @SOBJECT is assumed
         expression = "{@COUNT(unittest/person)} people"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals("%s people" % count, result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals("%s people" % count, result)
 
         # use the redundant @SOBJECT 
         expression = "{@COUNT(@SOBJECT(unittest/person))} people"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals("%s people" % count, result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals("%s people" % count, result)
         
         # use the redundant @SOBJECT 
         expression = "{@COUNT(@SOBJECT(unittest/person['name_first','person1']['age','>','1']))} person"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals("1 person" , result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals("1 person" , result)
 
         # use the @UNIQUE which requires @SOBJECT
         expression = "@COUNT(@UNIQUE(@SOBJECT(unittest/person)))"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals( count, result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals( count, result)
 
 
 
         # test sum
         expression = "{@SUM(unittest/person.age)} years"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals("%s years" % sum, result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals("%s years" % sum, result)
 
 
         # test sum with 1 item only
         expression = "{@SUM(unittest/person['name_first','person1'].age)} years"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals("%s years" % person1_age, result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals("%s years" % person1_age, result)
 
         # test sum with 1 item only using @GET
         expression = "{@SUM(@GET(unittest/person['name_first','person1'].age) + @GET(unittest/person['name_first','person1'].id))} years"
-        result = my.parser.eval(expression, my.city)
-        my.assertEquals("%s years" % (person1_age + my.persons[1].get_id()), result)
+        result = self.parser.eval(expression, self.city)
+        self.assertEquals("%s years" % (person1_age + self.persons[1].get_id()), result)
 
         # test average, with some formating
         format = "%2d"
         expression = "{@AVG(unittest/person.age),%s} years" % format
-        result = my.parser.eval(expression, my.city)
+        result = self.parser.eval(expression, self.city)
         expected = "%s years" % format % avg
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # test using TACTIC formatting
         format = "-$1,234.00"
         expression = "{1234,format='%s'}" % format
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = "$1,234.00"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
 
         # test explicit function
         expression = "@FORMAT(1234, '-$1,234.00')"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = ["$1,234.00"]
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         expression = "@FORMAT(0.355, '-12.95%')"
-        result = my.parser.eval(expression, single=True)
+        result = self.parser.eval(expression, single=True)
         expected = "35.50%"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         expression = "@FORMAT(@GET(.birth_date), '31/12/1999')"
-        result = my.parser.eval(expression, my.persons[0])
+        result = self.parser.eval(expression, self.persons[0])
         expected = ["25/12/2000"]
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         # default 24fps
         expression = "@FORMAT('5000', 'MM:SS:FF')"
-        result = my.parser.eval(expression, single=True)
+        result = self.parser.eval(expression, single=True)
         expected = "03:28:08"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         expression = "@FORMAT('5000', 'MM:SS:FF', '25')"
-        result = my.parser.eval(expression, single=True)
+        result = self.parser.eval(expression, single=True)
         expected = "03:20:00"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # TODO!!!
         # test with complex formatting
         #format = "%2d"
         #expression = "years old: ({@AVG(unittest/person.age),%s}) !!" % format
-        #result = my.parser.eval(expression, sobject=my.city)
+        #result = self.parser.eval(expression, sobject=self.city)
         #expected = "years old: (%s) !!" % format % avg
-        #my.assertEquals(expected, result)
+        #self.assertEquals(expected, result)
 
         """
         Project.set_project('sample3d')        
-        my.submission = SearchType.create("prod/submission")
-        my.submission.set_value('artist','admin')
-        my.submission.commit()
+        self.submission = SearchType.create("prod/submission")
+        self.submission.set_value('artist','admin')
+        self.submission.commit()
 
-        my.bin = SearchType.create("prod/bin")
-        my.bin.set_value('code', 'Test Bin')
-        my.bin.commit()
+        self.bin = SearchType.create("prod/bin")
+        self.bin.set_value('code', 'Test Bin')
+        self.bin.commit()
 
-        my.submission_in_bin = SearchType.create("prod/submission_in_bin")
-        my.submission_in_bin.set_value('bin_id', my.bin.get_id())
-        my.submission_in_bin.set_value('submission_id', my.submission.get_id())
-        my.submission_in_bin.commit()
+        self.submission_in_bin = SearchType.create("prod/submission_in_bin")
+        self.submission_in_bin.set_value('bin_id', self.bin.get_id())
+        self.submission_in_bin.set_value('submission_id', self.submission.get_id())
+        self.submission_in_bin.commit()
 
         expression = '{@GET(prod/submission_in_bin.prod/bin.code)}'
         #expression = '{@GET(prod/submission.artist)}'
-        result = my.parser.eval(expression, sobjects= my.submission)
+        result = self.parser.eval(expression, sobjects= self.submission)
         expected = 'Test Bin'
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
         """
 
 
@@ -374,415 +374,415 @@ class ExpressionTest(unittest.TestCase):
         # operate on a list of objects.  Now because the expression is at
         # a base level
         expression = "{@COUNT(unittest/person)} people"
-        result = my.parser.eval(expression, my.persons)
-        my.assertEquals("%s people" % count, result)
+        result = self.parser.eval(expression, self.persons)
+        self.assertEquals("%s people" % count, result)
 
 
         # test average, with some formating
         format = "%4f"
         expression = "{@AVG(unittest/person.age),%s} years" % format
-        result = my.parser.eval(expression, my.persons)
+        result = self.parser.eval(expression, self.persons)
         expected = "%s years" % format % avg
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # @AVG of 1 sobject should be the same as @GET
         expression = "@AVG(unittest/person['name_first','person2'].age)"
-        result = my.parser.eval(expression)
-        expected = my.parser.eval("@GET(unittest/person['name_first','person2'].age)", single=True)
-        my.assertEquals(expected, result)
+        result = self.parser.eval(expression)
+        expected = self.parser.eval("@GET(unittest/person['name_first','person2'].age)", single=True)
+        self.assertEquals(expected, result)
 
         expression = "@AVG(unittest/person['name_first','EQ','pers'].age)"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = avg
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         # there are only 2 tasks , 1 with priority 5
         expression = "@AVG(unittest/city.sthpw/task.priority)"
-        result = my.parser.eval(expression, my.persons[0])
+        result = self.parser.eval(expression, self.persons[0])
         expected = 2.5
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # Avg of city and country task priority
         expression = "@AVG(.priority)"
-        result = my.parser.eval(expression, [my.city_task, my.country_task])
+        result = self.parser.eval(expression, [self.city_task, self.country_task])
         expected = 4.5
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         # FIXME: these do not work
         # try a compound
         #expression = "@SUM( @GET(unittest/person.age) )"
-        #result = my.parser.eval(expression, my.persons)
-        #my.assertEquals(sum, result)
+        #result = self.parser.eval(expression, self.persons)
+        #self.assertEquals(sum, result)
 
         # try a compound
         #expression = "@AVG( @GET(unittest/person.age) )"
-        #result = my.parser.eval(expression, my.persons)
-        #my.assertEquals(avg, result)
+        #result = self.parser.eval(expression, self.persons)
+        #self.assertEquals(avg, result)
 
 
 
 
 
-    def _test_args(my):
+    def _test_args(self):
         expression = "@SEARCH(unittest/person.sthpw/task)"
-        search = my.parser.eval(expression)
-        my.assertEquals(isinstance(search, Search), True)
+        search = self.parser.eval(expression)
+        self.assertEquals(isinstance(search, Search), True)
 
         expected = '''SELECT "sthpw"."public"."task".* FROM "sthpw"."public"."task" WHERE "task"."search_type" = 'unittest/person?project=unittest' AND "task"."search_code" in ('''
 
-        my.assertEquals(search.get_statement().startswith(expected), True)
+        self.assertEquals(search.get_statement().startswith(expected), True)
         expression = "@SEARCH(unittest/person.unittest/person)"
-        search = my.parser.eval(expression)
-        my.assertEquals(isinstance(search, Search), True)
+        search = self.parser.eval(expression)
+        self.assertEquals(isinstance(search, Search), True)
         expected = 'SELECT "unittest"."public"."person".* FROM "unittest"."public"."person"'
-        my.assertEquals(search.get_statement(), expected)
+        self.assertEquals(search.get_statement(), expected)
 
         expression = "@SEARCH(sthpw/login['login', @GET(sthpw/login['login','ben'].login)])"
-        result = my.parser.eval(expression, single=True)
+        result = self.parser.eval(expression, single=True)
 
-        my.assertEquals(True, isinstance(result,Search))
+        self.assertEquals(True, isinstance(result,Search))
         sobject = result.get_sobject()
-        my.assertEquals('ben', sobject.get_value('login'))
+        self.assertEquals('ben', sobject.get_value('login'))
 
         expression = "@SEARCH(login.sthpw/task['assigned', @GET(sthpw/login['login','admin'].login)])"
-        result = my.parser.eval(expression, single=True)
-        my.assertEquals(True, isinstance(result,Search))
+        result = self.parser.eval(expression, single=True)
+        self.assertEquals(True, isinstance(result,Search))
         sobject = result.get_sobject()
-        my.assertEquals('admin', sobject.get_value('assigned'))
+        self.assertEquals('admin', sobject.get_value('assigned'))
 
         expression = "@SEARCH(login.sthpw/task['assigned', @GET(sthpw/login['login','admin'].login)].sthpw/login)"
-        result = my.parser.eval(expression, single=True)
-        my.assertEquals(True, isinstance(result,Search))
+        result = self.parser.eval(expression, single=True)
+        self.assertEquals(True, isinstance(result,Search))
         sobject = result.get_sobject()
-        my.assertEquals('admin', sobject.get_value('login'))
+        self.assertEquals('admin', sobject.get_value('login'))
 
         #find a task assigned to me
         expression = "@SEARCH(login.sthpw/task['project_code','unittest'])"
-        result = my.parser.eval(expression, single=True)
-        my.assertEquals(True, isinstance(result,Search))
+        result = self.parser.eval(expression, single=True)
+        self.assertEquals(True, isinstance(result,Search))
         sobjects = result.get_sobjects()
         project_codes = SObject.get_values(sobjects,'project_code')
 
         for project_code in project_codes:
-            my.assertEquals('unittest', project_code)
+            self.assertEquals('unittest', project_code)
 
         expression = "@SOBJECT(sthpw/login['login', @GET(sthpw/login['login','ben'].login)])"
-        result = my.parser.eval(expression, single=True)
-        my.assertEquals('ben', result.get_value('login'))
+        result = self.parser.eval(expression, single=True)
+        self.assertEquals('ben', result.get_value('login'))
 
         expression = "@SOBJECT(unittest/person['name_first', @GET(unittest/person['metadata', $PROJECT].name_first)])"
-        result = my.parser.eval(expression)
-        my.assertEquals(3, len(result))
+        result = self.parser.eval(expression)
+        self.assertEquals(3, len(result))
 
         # test get_plain_related_types() method used by FastTableLayoutWdg and TableLayoutWdg
         expression ="@SOBJECT(unittest/person['client_name', @GET(sthpw/login['login',$LOGIN].client_name)])"
-        related = my.parser.get_plain_related_types(expression)
-        my.assertEquals(['unittest/person'], related)
+        related = self.parser.get_plain_related_types(expression)
+        self.assertEquals(['unittest/person'], related)
 
         expression ="@SOBJECT(unittest/country.unittest/city.unittest/person['client_name', @GET(sthpw/login['login',$LOGIN].client_name)])"
-        related = my.parser.get_plain_related_types(expression)
-        my.assertEquals(['unittest/country','unittest/city','unittest/person'], related)
+        related = self.parser.get_plain_related_types(expression)
+        self.assertEquals(['unittest/country','unittest/city','unittest/person'], related)
 
         expression ="@UNIQUE(@SOBJECT(unittest/country.unittest/city.unittest/person['client_name', @GET(sthpw/login['login',$LOGIN].client_name)]))"
-        related = my.parser.get_plain_related_types(expression)
-        my.assertEquals(['unittest/country','unittest/city','unittest/person'], related)
+        related = self.parser.get_plain_related_types(expression)
+        self.assertEquals(['unittest/country','unittest/city','unittest/person'], related)
 
         expression ="@UNIQUE(@SOBJECT(unittest/city.unittest/person))"
-        related = my.parser.get_plain_related_types(expression)
-        my.assertEquals(['unittest/city','unittest/person'], related)
+        related = self.parser.get_plain_related_types(expression)
+        self.assertEquals(['unittest/city','unittest/person'], related)
 
         expression ="@SOBJECT(unittest/city.unittest/person['name','ben'])"
-        related = my.parser.get_plain_related_types(expression)
-        my.assertEquals(['unittest/city','unittest/person'], related)
+        related = self.parser.get_plain_related_types(expression)
+        self.assertEquals(['unittest/city','unittest/person'], related)
 
         expression ="@SOBJECT(unittest/city.unittest/person['name is NULL'])"
 
         try:
-            related = my.parser.eval(expression)
+            related = self.parser.eval(expression)
         except SearchException, e:
-            my.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
+            self.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
             
 
         expression ='''@SOBJECT(unittest/city.unittest/person["name ='ben'"])'''
         try:
-            related = my.parser.eval(expression)
+            related = self.parser.eval(expression)
         except SearchException, e:
-            my.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
+            self.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
     
 
         # test for missing ] bracket Syntax Error
         try:
             expression = "@SOBJECT(sthpw/login['login', @GET(sthpw/login['login','ben'.login)])"
         except SyntaxError, e:
-            my.assertEquals(True, 'Incorrect syntax: square brackets for the filter' in e.__str__())
+            self.assertEquals(True, 'Incorrect syntax: square brackets for the filter' in e.__str__())
 
         # test for outermost missing ] bracket Syntax Error
         try:
             expression = "@SOBJECT(sthpw/login['login', @GET(sthpw/login['login','ben'].login))"
         except SyntaxError, e:
-            my.assertEquals(True, 'Incorrect syntax found' in e.__str__())
+            self.assertEquals(True, 'Incorrect syntax found' in e.__str__())
 
 
         expression = "@GET(sthpw/task['process', @GET(.process)].process)"
-        result = my.parser.eval(expression, sobjects=my.city_task)
-        my.assertEquals(['los_angeles'], result)
+        result = self.parser.eval(expression, sobjects=self.city_task)
+        self.assertEquals(['los_angeles'], result)
         expression = "@GET(sthpw/task['process', @GET(.process)].context)"
-        result = my.parser.eval(expression, sobjects=my.city_task)
-        my.assertEquals(['City'], result)
+        result = self.parser.eval(expression, sobjects=self.city_task)
+        self.assertEquals(['City'], result)
 
         # try comparing white spaces
         expression = "@GET(.description) == 'City Task 1'"
-        result = my.parser.eval(expression, sobjects=my.city_task)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression, sobjects=self.city_task)
+        self.assertEquals(True, result)
 
        
 
         # try using @GET in the column name 
-        my.city_task.set_value('description','process')
+        self.city_task.set_value('description','process')
         expression = "@GET(sthpw/task[@GET(.description), @GET(.process)].process)"
-        result = my.parser.eval(expression, sobjects=my.city_task)
-        my.assertEquals(['los_angeles'], result)
+        result = self.parser.eval(expression, sobjects=self.city_task)
+        self.assertEquals(['los_angeles'], result)
 
-        my.city_task.set_value('description','priority')
+        self.city_task.set_value('description','priority')
         expression = "@GET(sthpw/task[@GET(.description), '5'].priority)"
-        result = my.parser.eval(expression, sobjects=my.city_task2)
+        result = self.parser.eval(expression, sobjects=self.city_task2)
 
         # 3.7 returns 0 for None integer
-        my.assertEquals([0], result)
+        self.assertEquals([0], result)
 
-        my.city_task.set_value('description','priority')
+        self.city_task.set_value('description','priority')
         expression = "@GET(sthpw/task[@GET(.description), '5'].priority)"
-        result = my.parser.eval(expression, sobjects=my.city_task)
-        my.assertEquals([5], result)
+        result = self.parser.eval(expression, sobjects=self.city_task)
+        self.assertEquals([5], result)
 
 
 
         # los_angeles is the code for task process
         expression = "@SOBJECT(sthpw/task['process', @GET(.code)])"
-        result = my.parser.eval(expression, sobjects=my.city)
-        my.assertEquals(my.city_task.get_id(), result[0].get_id())
+        result = self.parser.eval(expression, sobjects=self.city)
+        self.assertEquals(self.city_task.get_id(), result[0].get_id())
 
         # los_angeles is the code for task process
         expression = "@SOBJECT(sthpw/task['process', @GET(.code)]['description','City Task 1'])"
-        result = my.parser.eval(expression, sobjects=my.city)
-        my.assertEquals(my.city_task.get_id(), result[0].get_id())
+        result = self.parser.eval(expression, sobjects=self.city)
+        self.assertEquals(self.city_task.get_id(), result[0].get_id())
 
         # los_angeles is the code for task process, description is CIty Task 1, so return nothing
         expression = "@SOBJECT(sthpw/task['process', @GET(.code)]['description','City Task 0'])"
-        result = my.parser.eval(expression, sobjects=[my.city])
-        my.assertEquals([], result)
+        result = self.parser.eval(expression, sobjects=[self.city])
+        self.assertEquals([], result)
 
         # los_angeles is the code for task process, should return  [] with a . in the description
         expression = "@SOBJECT(sthpw/task['process', @GET(.code)]['description','City Task.1'])"
-        result = my.parser.eval(expression, sobjects=[my.city])
-        my.assertEquals([], result)
+        result = self.parser.eval(expression, sobjects=[self.city])
+        self.assertEquals([], result)
 
         # los_angeles is the code for task process, and LA is the task status
         expression = "@SOBJECT(unittest/city['code', @GET(.process)]['name', @GET(.status)])"
-        result = my.parser.eval(expression, sobjects=my.city_task)
-        my.assertEquals('los_angeles', result[0].get_value('code'))
+        result = self.parser.eval(expression, sobjects=self.city_task)
+        self.assertEquals('los_angeles', result[0].get_value('code'))
 
 
-    def _test_composite(my):
+    def _test_composite(self):
         expression = "@JOIN(@GET(unittest/person['name_first', 'EQ','person'].name_first), '#')"
-        result = my.parser.eval(expression)
-        my.assertEquals('person0#person1#person2#person3#person4#person5#person6#person7', result)
+        result = self.parser.eval(expression)
+        self.assertEquals('person0#person1#person2#person3#person4#person5#person6#person7', result)
 
 
         expression = "@JOIN(@INTERSECT(@GET(unittest/person['name_first', 'EQ','person'].name_first), @GET(unittest/person['age', 'is not','NULL'].name_first)) , '..')"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         persons = result.split('..')
-        my.assertEquals(True, 'person4' not in result)
+        self.assertEquals(True, 'person4' not in result)
         person_list = ['person1','person2','person3','person5','person6','person7','person0']
-        my.assertEquals(set(person_list).difference(persons), set([]))
+        self.assertEquals(set(person_list).difference(persons), set([]))
 
 
         expression = "@JOIN(@INTERSECT(@GET(unittest/person['name_first', 'EQ','person'].name_first), @GET(unittest/person['age', 'is not','NULL'].name_first), @GET(unittest/person['name_first','person3'].name_first)) , '..')"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         # intersect to only 1 result back
-        my.assertEquals(result, 'person3')
+        self.assertEquals(result, 'person3')
 
 
         # try having multiple {}
         expression = "{@COUNT(@SOBJECT(unittest/person['age', 'is','NULL']))} out of {@COUNT(@SOBJECT(unittest/person['name_first', 'EQ','person']))} peeps"
-        result = my.parser.eval(expression)
-        my.assertEquals(result, '1 out of 8 peeps')
+        result = self.parser.eval(expression)
+        self.assertEquals(result, '1 out of 8 peeps')
 
 
-    def _test_related_sobject(my):
+    def _test_related_sobject(self):
         expression = "@GET(sthpw/task.process)"
         # list = True
-        result = my.parser.eval(expression, [my.country])
+        result = self.parser.eval(expression, [self.country])
         result = sorted(result)
-        my.assertEquals(result, ['p1','p2','p3'])
+        self.assertEquals(result, ['p1','p2','p3'])
         
         # task for city2 is None
         expression = "@GET(sthpw/task.id)"
-        result = my.parser.eval(expression, [my.city2])
-        my.assertEquals(result, [])
+        result = self.parser.eval(expression, [self.city2])
+        self.assertEquals(result, [])
 
         # task for city2 is None
         expression = "@SOBJECT(sthpw/task)"
-        result = my.parser.eval(expression, [my.city2])
-        my.assertEquals(result, [])
+        result = self.parser.eval(expression, [self.city2])
+        self.assertEquals(result, [])
 
         # task for city2 is None even in dictionary return
         expression = "@SOBJECT(sthpw/task)"
-        result = my.parser.eval(expression, [my.city2], dictionary=True)
-        my.assertEquals(result, {my.city2.get_search_key(): []})
+        result = self.parser.eval(expression, [self.city2], dictionary=True)
+        self.assertEquals(result, {self.city2.get_search_key(): []})
 
         expression = "@COUNT(sthpw/task)"
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 3)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 3)
 
         expression = "@GET(sthpw/task.id)"
         # this is done for next test
-        result = my.parser.eval(expression, [my.country])
+        result = self.parser.eval(expression, [self.country])
 
         # just use the first id to test number mode works. Limited to integer though
         expression = "@COUNT(sthpw/task['id', %s])" %result[0]
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 1)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 1)
 
         # just a bogus count to test the syntax
-        my.country.set_value('process', 'p1')
+        self.country.set_value('process', 'p1')
         expression = "@COUNT(sthpw/task['process', @GET(.process)]['id','999'])"
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 0)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 0)
 
         # just setting a process value to the task temporarily for this variable substituition test
-        my.country.set_value('process', 'p1')
+        self.country.set_value('process', 'p1')
         expression = "@COUNT(sthpw/task['process', @GET(.process)])"
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 1)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 1)
 
-        # los_angeles and los_angeles2 task for my.city
+        # los_angeles and los_angeles2 task for self.city
         expression = "@COUNT(sthpw/task['process', 'EQ', @GET(.code)]['context','City'])"
-        result = my.parser.eval(expression, [my.city])
-        my.assertEquals(result, 2)
+        result = self.parser.eval(expression, [self.city])
+        self.assertEquals(result, 2)
 
         # just a bogus count to test the syntax
         expression = "@COUNT(sthpw/task['code', @GET(unittest/city['code','los_angeles'].code) ])"
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 0)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 0)
         
         # do a real city task count without input sobject , which is 1
         expression = "@COUNT(sthpw/task['process', @GET(unittest/city['code','los_angeles'].code) ])"
-        result = my.parser.eval(expression)
-        my.assertEquals(result, 1)
+        result = self.parser.eval(expression)
+        self.assertEquals(result, 1)
 
         # do a real city task count with input sobject , which is 2
         expression = "@COUNT(sthpw/task['process', 'EQ', @GET(.code) ])"
-        result = my.parser.eval(expression, [my.city])
-        my.assertEquals(result, 2)
+        result = self.parser.eval(expression, [self.city])
+        self.assertEquals(result, 2)
 
         # do a real city task count with input sobject , which is 2
         expression = "@COUNT(sthpw/task['process', 'EQ', @GET(.code) ])"
-        result = my.parser.eval(expression, [my.city])
-        my.assertEquals(result, 2)
+        result = self.parser.eval(expression, [self.city])
+        self.assertEquals(result, 2)
 
         # do a real city task count with input sobject , which is 2
         expression = "@COUNT(sthpw/task['process', 'EQ', @GET(.code) ]) >= 1"
-        result = my.parser.eval(expression, [my.city])
-        my.assertEquals(result, True)
+        result = self.parser.eval(expression, [self.city])
+        self.assertEquals(result, True)
 
         # do a person count with input sobject , which is 8
         expression = "@COUNT(unittest/person['city_code', @GET(.code)])"
-        result = my.parser.eval(expression, [my.city])
-        my.assertEquals(result, 8)
+        result = self.parser.eval(expression, [self.city])
+        self.assertEquals(result, 8)
 
         # do a person count with full search type input sobject , which is also 8
         expression = "@COUNT(unittest/person?project=unittest['city_code', @GET(.code)])"
-        result = my.parser.eval(expression, [my.city])
-        my.assertEquals(result, 8)
+        result = self.parser.eval(expression, [self.city])
+        self.assertEquals(result, 8)
 
         # do a real city task count with input sobject , which is 2, indirectly thru couuntry
         expression = "@COUNT(unittest/city.sthpw/task['process', 'EQ', @GET(unittest/city['code','los_angeles'].code) ])"
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 2)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 2)
 
         # do a real city task count with input sobject , which is 1, indirectly thru couuntry, @GET returns a list here without
         # filtering down to los_angeles. 
         expression = "@COUNT(unittest/city.sthpw/task['process', @GET(unittest/city.code) ])"
-        result = my.parser.eval(expression, [my.country])
-        my.assertEquals(result, 1)
+        result = self.parser.eval(expression, [self.country])
+        self.assertEquals(result, 1)
 
-        city_task_id = my.city_task.get_id()
+        city_task_id = self.city_task.get_id()
         expression = "@GET(unittest/city['code','los_angeles'].sthpw/task['context','City']['priority','5'].id)"
-        result = my.parser.eval(expression, [my.country], single=True)
-        my.assertEquals(result, city_task_id)
+        result = self.parser.eval(expression, [self.country], single=True)
+        self.assertEquals(result, city_task_id)
     
 
         # test simple case statement
         expression = '''@CASE( @GET(sthpw/task.status) == 'Assignment', 'red')'''
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals("red", result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals("red", result)
 
         expression = '''@UPDATE( @SOBJECT(sthpw/task), 'status', 'In Progress' )'''
-        my.parser.eval(expression, my.country)
+        self.parser.eval(expression, self.country)
         expression = '''@GET(sthpw/task.status)'''
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals(result[0], "In Progress")
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals(result[0], "In Progress")
 
         expression = '''@CASE(
           @( @GET(sthpw/task.status) == 'Assignment' ), 'red',
           @( @GET(sthpw/task.status) == 'In Progress' ), 'blue',
           @( @GET(sthpw/task.status) == 'Review' ), 'blue'
         )'''
-        result = my.parser.eval(expression, my.country)
+        result = self.parser.eval(expression, self.country)
         #print 'result: ', result
 
         
 
 
-        my.country.set_value("version", -1)
+        self.country.set_value("version", -1)
 
        
 
         expression = "@GET(.version) == -1"
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals(True, result)
 
         expression = "@GET(.version) == '1'"
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals(False, result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals(False, result)
 
       
         expression = "-1 == @GET(.version)"
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals(True, result)
 
         # in can only be used in string comparision, list test is not supported yet
         expression = "US in @GET(.code)"
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals(True, result)
 
-        country_id = my.country.get_id()
+        country_id = self.country.get_id()
         expression = "@GET(.version) - @GET(.id)"
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals(-1 - country_id, result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals(-1 - country_id, result)
 
         
         # FIXME: this does not parse right ...
         #expression = "'-1' == -1"
-        #result = my.parser.eval(expression, my.country)
-        #my.assertEquals(False, result)
+        #result = self.parser.eval(expression, self.country)
+        #self.assertEquals(False, result)
 
 
-        my.country.set_value("version", -1)
+        self.country.set_value("version", -1)
         expression = '''@CASE( 
           @GET(.version) == -1, 'LATEST',
           @GET(.version) == 0, 'CURRENT',
           @GET(.version) > 0, 'v'+@STRING(@GET(.version))
         )'''
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals('LATEST', result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals('LATEST', result)
 
-        my.country.set_value("version", 0)
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals('CURRENT', result)
+        self.country.set_value("version", 0)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals('CURRENT', result)
 
         """
         expression = '''{@CASE( 
@@ -790,20 +790,20 @@ class ExpressionTest(unittest.TestCase):
           @GET(.version) == 0, 'CURRENT',
           @GET(.version) > 0, 'v'+@STRING(@GET(.version))
         )}'''
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals('LATEST', result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals('LATEST', result)
         """
        
-        my.country.set_value("version", -1)
+        self.country.set_value("version", -1)
         expression = '''{@CASE( 
           @GET(.version) == -1, 'LATEST',
           @GET(.version) == 0, 'CURRENT',
           @GET(.version) > 0, 'v'+@STRING(@GET(.version))
         )}'''
-        result = my.parser.eval(expression, my.country)
-        my.assertEquals('LATEST', result)
+        result = self.parser.eval(expression, self.country)
+        self.assertEquals('LATEST', result)
 
-        my.country.set_value('name','ny')
+        self.country.set_value('name','ny')
         color_expression =  '''{@CASE(
                                     @GET(.name) == 'extended', '#469eeb', 
                                     @GET(.name) == 'expired', '#de4545', 
@@ -811,28 +811,28 @@ class ExpressionTest(unittest.TestCase):
                                     @GET(.name) == 'ny', '#3fb', 
                                     @GET(.name) == 'bumped', '#33F33F')}'''
         
-        result = my.parser.eval(color_expression, my.country)
-        my.assertEquals('#3fb', result)
+        result = self.parser.eval(color_expression, self.country)
+        self.assertEquals('#3fb', result)
 
         # FIXME: this does not work yet.  @STRING does not evaluate
         # expressions as an argument.
-        #my.country.set_value("version", 3)
-        #result = my.parser.eval(expression, my.country)
-        #my.assertEquals('v003', result)
+        #self.country.set_value("version", 3)
+        #result = self.parser.eval(expression, self.country)
+        #self.assertEquals('v003', result)
 
 
 
         # test for parent sobject
-        tasks = my.parser.eval("@SOBJECT(sthpw/task)", [my.country])
+        tasks = self.parser.eval("@SOBJECT(sthpw/task)", [self.country])
         expression = "@GET(parent.code)"
         for task in tasks:
-            code = my.parser.eval(expression, task, single=True)
-            my.assertEquals("USA", code)
+            code = self.parser.eval(expression, task, single=True)
+            self.assertEquals("USA", code)
 
 
         expression = "@GET(parent.code)"
-        code = my.parser.eval(expression, my.city, single=True)
-        my.assertEquals("USA", code)
+        code = self.parser.eval(expression, self.city, single=True)
+        self.assertEquals("USA", code)
 
 
 
@@ -840,25 +840,25 @@ class ExpressionTest(unittest.TestCase):
         # test some sample 3d submission relation
         '''
         Project.set_project('sample3d')
-        my.submission = SearchType.create("prod/submission")
+        self.submission = SearchType.create("prod/submission")
         # add a parent for this submission maybe
-        my.submission.set_value('artist','admin')
-        my.submission.commit()
+        self.submission.set_value('artist','admin')
+        self.submission.commit()
 
-        my.bin = SearchType.create("prod/bin")
-        my.bin.set_value('code', 'Test Bin')
-        my.bin.commit()
+        self.bin = SearchType.create("prod/bin")
+        self.bin.set_value('code', 'Test Bin')
+        self.bin.commit()
 
-        my.submission_in_bin = SearchType.create("prod/submission_in_bin")
-        my.submission_in_bin.set_value('bin_id', my.bin.get_id())
-        my.submission_in_bin.set_value('submission_id', my.submission.get_id())
-        my.submission_in_bin.commit()
+        self.submission_in_bin = SearchType.create("prod/submission_in_bin")
+        self.submission_in_bin.set_value('bin_id', self.bin.get_id())
+        self.submission_in_bin.set_value('submission_id', self.submission.get_id())
+        self.submission_in_bin.commit()
 
         expression = '{$PROJECT}/Submit/{@GET(prod/submission_in_bin.prod/bin.code)}'
         
-        result = my.parser.eval(expression, sobjects = [my.submission])
+        result = self.parser.eval(expression, sobjects = [self.submission])
         expected = 'sample3d/Submit/Test Bin'
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         Project.set_project('unittest')
@@ -866,20 +866,20 @@ class ExpressionTest(unittest.TestCase):
 
 
 
-    def _test_input_search(my):
+    def _test_input_search(self):
 
         # should find all of them
         search = Search("unittest/person")
         expr = "@SOBJECT(unittest/person)"
         result = Search.eval(expr, search=search)
-        my.assertEquals(8, len(result))
+        self.assertEquals(8, len(result))
 
 
         search = Search("unittest/person")
         search.add_limit(5)
         expr = "@SOBJECT(unittest/person)"
         result = Search.eval(expr, search=search)
-        my.assertEquals(5, len(result))
+        self.assertEquals(5, len(result))
 
 
 
@@ -891,7 +891,7 @@ class ExpressionTest(unittest.TestCase):
         search.add_filter("age", 30, op="<")
         result2 = search.get_sobjects()
 
-        my.assertEquals(len(result), len(result2))
+        self.assertEquals(len(result), len(result2))
 
 
         # This is not supported yet
@@ -901,49 +901,49 @@ class ExpressionTest(unittest.TestCase):
             results = Search.eval(expr, search=search)
         except:
             pass
-        #my.assertEquals("unitest/city", results[0].get_base_search_type())
+        #self.assertEquals("unitest/city", results[0].get_base_search_type())
 
 
 
 
 
 
-    def _test_single(my):
+    def _test_single(self):
         
         expression = "@GET(unittest/person['name_first','person2'].age)"
-        result = my.parser.eval(expression)
-        expected = my.parser.eval("@GET(unittest/person['name_first','person2'].age)", single=True)
+        result = self.parser.eval(expression)
+        expected = self.parser.eval("@GET(unittest/person['name_first','person2'].age)", single=True)
         age = expected 
 
-        my.assertEquals(expected, result[0])
+        self.assertEquals(expected, result[0])
 
 
-        sk = my.parser.eval("@GET(unittest/person['name_first','person2'].__search_key__)", single=True)
+        sk = self.parser.eval("@GET(unittest/person['name_first','person2'].__search_key__)", single=True)
         person = SearchKey.get_by_search_key(sk)
         person.set_value('age', 0)
         person.commit()
         ExpressionParser.clear_cache()
         expression = "@GET(unittest/person['name_first','person2'].age)"
         expression2 = "@GET(unittest/person['name_first','person2'].__search_key__)"
-        result2 = my.parser.eval(expression2)
-        result = my.parser.eval(expression)
-        expected = my.parser.eval("@GET(unittest/person['name_first','person2'].age)", single=True)
-        my.assertEquals(expected, result[0])
-        my.assertEquals(expected, 0)
+        result2 = self.parser.eval(expression2)
+        result = self.parser.eval(expression)
+        expected = self.parser.eval("@GET(unittest/person['name_first','person2'].age)", single=True)
+        self.assertEquals(expected, result[0])
+        self.assertEquals(expected, 0)
 
         # set it back 
         person.set_value('age', age)
         person.commit()
 
-        expected = my.parser.eval("@GET(unittest/person['name_first','person200'].age)", single=True)
-        my.assertEquals(expected, None)
+        expected = self.parser.eval("@GET(unittest/person['name_first','person200'].age)", single=True)
+        self.assertEquals(expected, None)
 
-        sobj = my.parser.eval("@SOBJECT(unittest/person['name_first','person200'])", single=True)
-        my.assertEquals(None, sobj)
+        sobj = self.parser.eval("@SOBJECT(unittest/person['name_first','person200'])", single=True)
+        self.assertEquals(None, sobj)
 
-        sobj = my.parser.eval("@SOBJECT(unittest/person['name_first','person2'])", single=True)
+        sobj = self.parser.eval("@SOBJECT(unittest/person['name_first','person2'])", single=True)
         from pyasm.search import SObject
-        my.assertEquals(True, isinstance(sobj, SObject))
+        self.assertEquals(True, isinstance(sobj, SObject))
 
        
 
@@ -952,63 +952,63 @@ class ExpressionTest(unittest.TestCase):
 
 
 
-    def _test_string(my):
+    def _test_string(self):
         expression = """@STRING(cow|horse|dog)"""
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = "cow|horse|dog"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         expression = """@STRING( '(cow|horse|dog)' )"""
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = "(cow|horse|dog)"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         expression = """@STRING( (cow|horse|dog) )"""
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = "(cow|horse|dog)"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         expression = """'(cow|horse|dog)'"""
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = "(cow|horse|dog)"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         '''
         expression = """5"""
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = "5"
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
         '''
 
 
 
-    def _test_op(my):
+    def _test_op(self):
 
 
         sum = 0
-        for person in my.persons:
+        for person in self.persons:
             value = person.get_value('age')
             if value:
                 sum += value
-        avg = float(sum) / len(my.persons)
-        count = len(my.persons)
+        avg = float(sum) / len(self.persons)
+        count = len(self.persons)
 
         # some rows have expression on the row
-        person = my.persons[0]
+        person = self.persons[0]
         age = person.get_value("age")
 
         # simple expression
         expression = "@GET(unittest/person.age)"
-        result = my.parser.eval(expression, person)
-        my.assertEquals([age], result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals([age], result)
 
 
         # add white space expression
         expression = " @GET( unittest/person.age )"
-        result = my.parser.eval(expression, person)
-        my.assertEquals([age], result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals([age], result)
 
         
         
@@ -1018,87 +1018,87 @@ class ExpressionTest(unittest.TestCase):
         # this kind of evaluation auto convert a list like @GET(.age) into a single item
         expression = "@GET(.age) == %s"%result[0]
         result = Search.eval(expression, person)
-        my.assertEquals(True, result)
+        self.assertEquals(True, result)
 
         expression = "@GET(.picture)"
         result = Search.eval(expression, person)
         expression = "@GET(.picture) == ''"
         result = Search.eval(expression, person)
-        my.assertEquals(True, result)
+        self.assertEquals(True, result)
 
         expression = "@GET(.name_first) != ''"
         result = Search.eval(expression, person)
-        my.assertEquals(True, result)
+        self.assertEquals(True, result)
 
         
         # simple expressions
 
         # add
         expression = "@GET(unittest/person.age) + @GET(unittest/person.age)"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(2*age, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(2*age, result)
 
         # subtract
         expression = "@GET(unittest/person.age) - @GET(unittest/person.age)"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(0, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(0, result)
 
 
         # multiply
         expression = "@GET(unittest/person.age) * 12"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(age*12, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(age*12, result)
 
 
         # divide
         expression = "@GET(unittest/person.age) / 12"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(float(age)/12, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(float(age)/12, result)
 
         # divide by zero
         expression = "0 / 0"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = None
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         expression = "10 / @GET(unittest/person.age)"
-        result = my.parser.eval(expression, my.persons[4])
-        my.assertEquals(None, result)
+        result = self.parser.eval(expression, self.persons[4])
+        self.assertEquals(None, result)
 
         # divide by zero
         expression = "(10/0) + 1"
-        result = my.parser.eval(expression)
+        result = self.parser.eval(expression)
         expected = None
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
 
         # simple math
         expression = "12 * 12"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(144, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(144, result)
 
         # simple math
         expression = "18 / 3 + 1"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(7, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(7, result)
 
 
         # variations with spaces
         expression = " 12*  @GET(unittest/person.age)* 12"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(age*12*12, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(age*12*12, result)
 
 
         # variations with spaces
         expression = "  @GET(unittest/person.age) * 12"
-        result = my.parser.eval(expression, person)
-        my.assertEquals(age*12, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(age*12, result)
 
         # variations with spaces
         expression = "@GET(  unittest/person.age)* 12  "
-        result = my.parser.eval(expression, person)
-        my.assertEquals(age*12, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(age*12, result)
 
 
         # Test comparisons
@@ -1106,219 +1106,219 @@ class ExpressionTest(unittest.TestCase):
 
         # count the total number of people
         expression = "@COUNT(unittest/person) == 8"
-        result = my.parser.eval(expression)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression)
+        self.assertEquals(True, result)
 
         # count the number of people with person2
         expression = "@COUNT(unittest/person['name_first','person2']) == 1"
-        result = my.parser.eval(expression)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression)
+        self.assertEquals(True, result)
 
         # test average
         expression = "@AVG(unittest/person.age) > 0"
-        result = my.parser.eval(expression)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression)
+        self.assertEquals(True, result)
 
         # count the number of people
         expression = "@GET(.age) == %s" % age
-        result = my.parser.eval(expression, person)
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(True, result)
 
 
         # count the number of people
         expression = "(@GET(.age) == %s and @GET(.age) == 0" % age
-        result = my.parser.eval(expression, person)
-        my.assertEquals(False, result)
+        result = self.parser.eval(expression, person)
+        self.assertEquals(False, result)
 
 
 
 
         # test more complex comparisons
         expression = "@GET(unittest/person.name_first) == 'person1' or @GET(unittest/person.name_first) == 'person4'"
-        result = my.parser.eval(expression, [my.persons[1],my.persons[4],my.persons[6]])
-        my.assertEquals([True,True,False], result)
+        result = self.parser.eval(expression, [self.persons[1],self.persons[4],self.persons[6]])
+        self.assertEquals([True,True,False], result)
 
         expression = """@GET(unittest/person.name_first) in '["person1","person4"]'"""
-        result = my.parser.eval(expression, [my.persons[1],my.persons[4],my.persons[6]])
-        my.assertEquals([True,True,False], result)
+        result = self.parser.eval(expression, [self.persons[1],self.persons[4],self.persons[6]])
+        self.assertEquals([True,True,False], result)
 
-        result = my.parser.eval("@GET(.name_first)==person6", sobjects=[my.persons[6]])
-        my.assertEquals(True, result)
+        result = self.parser.eval("@GET(.name_first)==person6", sobjects=[self.persons[6]])
+        self.assertEquals(True, result)
 
 
         # test max and min
-        result = my.parser.eval("@GET(unittest/person.age)")
+        result = self.parser.eval("@GET(unittest/person.age)")
         #print "result: ", result
         
-        result = my.parser.eval("@MAX(unittest/person.age)")
+        result = self.parser.eval("@MAX(unittest/person.age)")
         #print "result: ", result
 
-        result = my.parser.eval("@MIN(unittest/person.age)")
+        result = self.parser.eval("@MIN(unittest/person.age)")
         #print "result: ", result
 
-        result = my.parser.eval("abc")
-        result = my.parser.eval("@GET(login.last_name)")
+        result = self.parser.eval("abc")
+        result = self.parser.eval("@GET(login.last_name)")
         
         # test the concept of containing using "in"
         expression = "'pers' in @GET(unittest/person.name_first)"
-        result = my.parser.eval(expression, [my.persons[1]])
-        my.assertEquals(True, result)
+        result = self.parser.eval(expression, [self.persons[1]])
+        self.assertEquals(True, result)
 
 
 
 
 
 
-    def _test_syntax_error(my):
-        person = my.persons[0]
+    def _test_syntax_error(self):
+        person = self.persons[0]
         age = person.get_value("age")
 
         # syntax errors
         try:
             expression = "@GET(  unittest/person.age)* 12 12 "
-            result = my.parser.eval(expression, person)
+            result = self.parser.eval(expression, person)
         except SyntaxError, e:
             #print str(e)
             pass
         else:
-            my.fail("Expression [%s] did not produce a syntax error" % expression)
+            self.fail("Expression [%s] did not produce a syntax error" % expression)
 
 
 
-    def _test_filter(my):
-        city = my.city
-        person = my.persons[2]
+    def _test_filter(self):
+        city = self.city
+        person = self.persons[2]
         age = person.get_value("age")
 
-        person2 = my.persons[3]
+        person2 = self.persons[3]
         age2 = person2.get_value("age")
 
 
         # try a simple filter
         expr = "@GET(unittest/person['name_first','person2'].age)"
-        result = my.parser.eval(expr, city)
-        my.assertEquals(age, result[0])
+        result = self.parser.eval(expr, city)
+        self.assertEquals(age, result[0])
 
 
         # try a simple filter with bad characters (should not error out
         expr = "@GET(unittest/person['name_first','@!,$#%]['].age)"
-        result = my.parser.eval(expr, city)
+        result = self.parser.eval(expr, city)
 
         # try other quotes
         expr = "@GET(unittest/person['name_first',\"person2\"].age)"
-        result = my.parser.eval(expr, city)
-        my.assertEquals([age], result)
+        result = self.parser.eval(expr, city)
+        self.assertEquals([age], result)
 
 
 
         # try a compound filter with or
         expr = "@GET(unittest/person['name_first','person2']['name_first','person3']['or'].age)"
-        result = my.parser.eval(expr, city)
+        result = self.parser.eval(expr, city)
         result = result[0]
-        my.assertTrue((result == age or result == age2))
+        self.assertTrue((result == age or result == age2))
 
 
 
         # much more complex with two filters and doubling back
         expr = "@GET(unittest/person['name_first','person2'].unittest/city['code','los_angeles'].code)"
-        result = my.parser.eval(expr, city, single=True)
-        my.assertEquals("los_angeles", result)
+        result = self.parser.eval(expr, city, single=True)
+        self.assertEquals("los_angeles", result)
 
         # much more complex formatted with two filters and doubling back
         #expr = '''@GET(
         #    unittest/person['name_first','person2'].unittest/city['code','los_angeles'].code
         #          )'''
-        #result = my.parser.eval(expr, city)
-        #my.assertEquals("los_angeles", result)
+        #result = self.parser.eval(expr, city)
+        #self.assertEquals("los_angeles", result)
 
 
         # test a filter with period in it.  No result should come back
         expr = "@SOBJECT(unittest/person['name_first','per.son2'])"
-        result = my.parser.eval(expr, city)
-        my.assertEquals([], result)
+        result = self.parser.eval(expr, city)
+        self.assertEquals([], result)
 
         # test a filter with period in it.  No result should come back
         expr = "@COUNT(unittest/person['name_first','per.son2'])"
-        result = my.parser.eval(expr, city)
-        my.assertEquals(0, result)
+        result = self.parser.eval(expr, city)
+        self.assertEquals(0, result)
 
         # test a filter with period in it.  No result should come back
         expr = "@SUM(unittest/person['name_first','per.son2'].unittest/city)"
-        result = my.parser.eval(expr, city)
-        my.assertEquals(0, result)
+        result = self.parser.eval(expr, city)
+        self.assertEquals(0, result)
 
 
 
         # test a filter with period in it.  No result should come back
         expr = "@GET(unittest/person['name_first','per.son2'].age)"
-        result = my.parser.eval(expr, city)
-        my.assertEquals([], result)
+        result = self.parser.eval(expr, city)
+        self.assertEquals([], result)
 
 
 
 
         # test order by
         expr = "@GET(unittest/person['@ORDER_BY','age'].age)"
-        result = my.parser.eval(expr)
+        result = self.parser.eval(expr)
         last = 0
         for i, value in enumerate(result):
             # FIXME: shouldn't need this
             if value == 0:
                 continue
-            my.assertEquals(True, last <= value)
+            self.assertEquals(True, last <= value)
             last = value
 
         # test order by
         expr = "@GET(unittest/person['@LIMIT','2'].age)"
-        result = my.parser.eval(expr)
-        my.assertEquals(True, len(result)== 2)
+        result = self.parser.eval(expr)
+        self.assertEquals(True, len(result)== 2)
 
 
         # test order by
         expr = "@GET(unittest/person['@LIMIT',3].age)"
-        result = my.parser.eval(expr)
-        my.assertEquals(True, len(result)== 3)
+        result = self.parser.eval(expr)
+        self.assertEquals(True, len(result)== 3)
 
         expr = "@GET(unittest/person['@OFFSET',3].age)"
-        result = my.parser.eval(expr)
-        #my.assertEquals(True, len(result)== 3)
+        result = self.parser.eval(expr)
+        #self.assertEquals(True, len(result)== 3)
 
 
 
         expr = "@GET(unittest/person['timestamp','is before', '$TOMORROW'].id)"
-        result = my.parser.eval(expr)
-        my.assertEquals(True, len(result)== 8)
+        result = self.parser.eval(expr)
+        self.assertEquals(True, len(result)== 8)
 
         expr = "@GET(unittest/person['timestamp','is after', '$YESTERDAY'].id)"
-        result = my.parser.eval(expr)
-        my.assertEquals(True, len(result)== 8)
+        result = self.parser.eval(expr)
+        self.assertEquals(True, len(result)== 8)
 
 
 
 
 
 
-    def _test_regex(my):
-        person = my.persons[2]
-        person2 = my.persons[3]
-        city = my.city
+    def _test_regex(self):
+        person = self.persons[2]
+        person2 = self.persons[3]
+        city = self.city
         age = person.get_value("age")
 
         # get last three letters
         expr = "{@GET(unittest/person.name_first),|(\w{3})$|}"
-        result = my.parser.eval(expr, person)
-        my.assertEquals("on2", result)
+        result = self.parser.eval(expr, person)
+        self.assertEquals("on2", result)
 
 
         # get first three letters
         expr = "{@GET(unittest/person.name_first),|^(\w{3})|}"
-        result = my.parser.eval(expr, person)
-        my.assertEquals("per", result)
+        result = self.parser.eval(expr, person)
+        self.assertEquals("per", result)
 
         # get first three letters
         expr = "{@GET(unittest/person.name_first),|^p(\w{3})|}"
-        result = my.parser.eval(expr, person)
-        my.assertEquals("ers", result)
+        result = self.parser.eval(expr, person)
+        self.assertEquals("ers", result)
 
         vars = {
             'VALUE': 'foo foo',
@@ -1330,7 +1330,7 @@ class ExpressionTest(unittest.TestCase):
 
         # ensure non-ascii characters work with eval and vars
         sobj_code = Search.eval("$SOBJECT_CODE", vars=vars) 
-        my.assertEquals(sobj_code.endswith('SOME CHINESE CHAR'), True)
+        self.assertEquals(sobj_code.endswith('SOME CHINESE CHAR'), True)
 
         
 
@@ -1338,40 +1338,40 @@ class ExpressionTest(unittest.TestCase):
         vars = {'VALUE': 'foo Test'}
         expr = "$VALUE =~ '^foo'"
         result = Search.eval(expr, vars=vars)
-        my.assertEquals(True, result)
+        self.assertEquals(True, result)
 
         expr = "$VALUE !~ '^foo'"
         result = Search.eval(expr, vars=vars)
-        my.assertEquals(False, result)
+        self.assertEquals(False, result)
 
         expr = "@GET(unittest/person.name_first) == 'person2'"
         result = Search.eval(expr, person, vars=vars)
-        my.assertEquals(True, result)
+        self.assertEquals(True, result)
 
 
         expr = "@GET(unittest/person.name_first) == $VALUE"
         result = Search.eval(expr, person, vars=vars)
-        my.assertEquals(False, result)
+        self.assertEquals(False, result)
 
         expr = "@GET(unittest/person.name_first) =~ '^person'"
         result = Search.eval(expr, person, vars=vars)
-        my.assertEquals([True], result)
+        self.assertEquals([True], result)
 
         expr = "@GET(unittest/person.name_first) =~ '^person'"
         result = Search.eval(expr, [person], vars=vars)
-        my.assertEquals([True], result)
+        self.assertEquals([True], result)
 
 
         # try ends with
         expr = "@GET(unittest/person.name_first) =~ 'son2$'"
         result = Search.eval(expr, person, vars=vars)
-        my.assertEquals([True], result)
+        self.assertEquals([True], result)
 
 
         # try not matches and ends with
         expr = "@GET(unittest/person.name_first) !~ 'son2$'"
         result = Search.eval(expr, person, vars=vars)
-        my.assertEquals([False], result)
+        self.assertEquals([False], result)
 
 
 
@@ -1380,91 +1380,91 @@ class ExpressionTest(unittest.TestCase):
         vars = {'VALUE': '^person'}
         expr = "@GET(unittest/person.name_first) =~ $VALUE"
         result = Search.eval(expr, [person,person2], vars=vars)
-        my.assertEquals([True,True], result)
+        self.assertEquals([True,True], result)
 
 	# FIXME: comment out \n test for now
         """
         vars = {'VALUE': 'person\n bs'}
         expr = "@CASE($VALUE =~ '^per', 'Green')"
         result = Search.eval(expr,[person,person2], vars=vars)
-        my.assertEquals('Green', result)
+        self.assertEquals('Green', result)
         """
 
         vars = {'VALUE': 'foo'}
         expr = "'cow' + $VALUE + 'cow'"
         result = Search.eval(expr, vars=vars)
-        my.assertEquals("cowfoocow", result)
+        self.assertEquals("cowfoocow", result)
 
         expr = "'cowfoocow' = 'cow' + $VALUE + 'cow'"
         result = Search.eval(expr, vars=vars)
-        my.assertEquals(True, result)
+        self.assertEquals(True, result)
 
         # FIXME: not supported yet
         #expr = "'cowfoocow' =~ 'cow' + $VALUE + 'xx'"
         #result = Search.eval(expr, vars=vars)
-        #my.assertEquals(False, result)
+        #self.assertEquals(False, result)
 
 
 
 
 
-    def _test_var(my):
+    def _test_var(self):
 
         login = Environment.get_login()
         login_name = login.get_value("login")
         first_name = login.get_value("first_name")
 
-        person = my.persons[0]
+        person = self.persons[0]
 
 
         # replace $LOGIN variable
-        result = my.parser.eval("$LOGIN" )
-        my.assertEquals("admin", result)
+        result = self.parser.eval("$LOGIN" )
+        self.assertEquals("admin", result)
 
         # replace {$LOGIN} with 
-        result = my.parser.eval("{$LOGIN}" )
-        my.assertEquals("admin", result)
+        result = self.parser.eval("{$LOGIN}" )
+        self.assertEquals("admin", result)
 
         # replace $LOGIN variable
-        result = my.parser.eval("'User:' + $LOGIN" )
-        my.assertEquals("User:admin", result)
+        result = self.parser.eval("'User:' + $LOGIN" )
+        self.assertEquals("User:admin", result)
 
         # a more complex example
         # FIXME: does $LOGIN really need quotes?
-        result = my.parser.eval("LOGIN: {$LOGIN} {@GET(sthpw/login['login',$LOGIN].first_name)}", vars={} )
-        my.assertEquals("LOGIN: %s %s" % (login_name, first_name), result)
+        result = self.parser.eval("LOGIN: {$LOGIN} {@GET(sthpw/login['login',$LOGIN].first_name)}", vars={} )
+        self.assertEquals("LOGIN: %s %s" % (login_name, first_name), result)
 
         # test the current project
-        result = my.parser.eval("$PROJECT")
-        my.assertEquals("unittest", result)
+        result = self.parser.eval("$PROJECT")
+        self.assertEquals("unittest", result)
 
 
         # shorthand
-        login = my.parser.eval("@GET(login.login)", single=True)
-        my.assertEquals("admin", login)
+        login = self.parser.eval("@GET(login.login)", single=True)
+        self.assertEquals("admin", login)
 
         # FIXME: does not work with Unicode
-        #login = my.parser.eval("{login.first_name + ':' + hello}")
-        #my.assertEquals("%s:hello" % first_name, login)
+        #login = self.parser.eval("{login.first_name + ':' + hello}")
+        #self.assertEquals("%s:hello" % first_name, login)
 
         # get the login
-        login = my.parser.eval("{ login.login }")
-        my.assertEquals("admin", login)
+        login = self.parser.eval("{ login.login }")
+        self.assertEquals("admin", login)
 
         # get the login
-        login = my.parser.eval("(login.login == 'admin')")
-        my.assertEquals(True, login)
+        login = self.parser.eval("(login.login == 'admin')")
+        self.assertEquals(True, login)
 
         # get the login
-        #login = my.parser.eval("(login.login + x*3)")
-        #my.assertEquals(True, login)
+        #login = self.parser.eval("(login.login + x*3)")
+        #self.assertEquals(True, login)
 
 
         # get the first 3 characters of the login
-        login = my.parser.eval("{login.login,|(\w{3})|}")
-        my.assertEquals("adm", login)
+        login = self.parser.eval("{login.login,|(\w{3})|}")
+        self.assertEquals("adm", login)
 
-        #naming = my.parser.eval("v{version,%0.3d}")
+        #naming = self.parser.eval("v{version,%0.3d}")
         #print naming
 
         # test env
@@ -1473,113 +1473,113 @@ class ExpressionTest(unittest.TestCase):
             'sobject': person,
             'foofoo': login
         }
-        results = my.parser.eval("@GET(sobject.age)", env_sobjects=env)
-        my.assertEquals(person.get_value("age"), results[0])
+        results = self.parser.eval("@GET(sobject.age)", env_sobjects=env)
+        self.assertEquals(person.get_value("age"), results[0])
 
-        results = my.parser.eval("@GET(foofoo.login)", env_sobjects=env)
-        my.assertEquals(login.get_value("login"), results[0])
+        results = self.parser.eval("@GET(foofoo.login)", env_sobjects=env)
+        self.assertEquals(login.get_value("login"), results[0])
 
 
 
         # test now
-        result = my.parser.eval("@GET(date.now)", single=True)
+        result = self.parser.eval("@GET(date.now)", single=True)
         now = datetime.now()
-        my.assertEquals(now.year, result.year)
-        my.assertEquals(now.month, result.month)
-        my.assertEquals(now.day, result.day)
-        my.assertEquals(now.hour, result.hour)
-        my.assertEquals(now.minute, result.minute)
-        my.assertEquals(now.second, result.second)
+        self.assertEquals(now.year, result.year)
+        self.assertEquals(now.month, result.month)
+        self.assertEquals(now.day, result.day)
+        self.assertEquals(now.hour, result.hour)
+        self.assertEquals(now.minute, result.minute)
+        self.assertEquals(now.second, result.second)
 
         # test today
-        result = my.parser.eval("@GET(date.today)", single=True)
+        result = self.parser.eval("@GET(date.today)", single=True)
        
         now = datetime.today()
-        my.assertEquals(now.year, result.year)
-        my.assertEquals(now.month, result.month)
-        my.assertEquals(now.day, result.day)
-        my.assertEquals(now.hour, result.hour)
-        my.assertEquals(now.minute, result.minute)
+        self.assertEquals(now.year, result.year)
+        self.assertEquals(now.month, result.month)
+        self.assertEquals(now.day, result.day)
+        self.assertEquals(now.hour, result.hour)
+        self.assertEquals(now.minute, result.minute)
         # FIXME: this test is problematic since if the server is busy, it
         # may be one or two seconds off
         try:
-            my.assertEquals(now.second, result.second)
+            self.assertEquals(now.second, result.second)
         except AssertionError:
             # let's give it a 2 second tolerance if it happens
-            my.assertEquals(now.second - result.second < 2, True)
+            self.assertEquals(now.second - result.second < 2, True)
 
 
-        result = my.parser.eval("@GET(date.now)", person, single=True)
+        result = self.parser.eval("@GET(date.now)", person, single=True)
 
-        result = my.parser.eval("@STRING($NOW) > '2010-01-01'")
-        my.assertEquals(True, result)
+        result = self.parser.eval("@STRING($NOW) > '2010-01-01'")
+        self.assertEquals(True, result)
 
-        result = my.parser.eval("$TODAY > '2010-01-01'")
-        my.assertEquals(True, result)
+        result = self.parser.eval("$TODAY > '2010-01-01'")
+        self.assertEquals(True, result)
       
-        result = my.parser.eval("@CASE(@FORMAT({$TODAY}, 'DATE')  > '2010-01-01', 'green')")
-        my.assertEquals('green', result)
+        result = self.parser.eval("@CASE(@FORMAT({$TODAY}, 'DATE')  > '2010-01-01', 'green')")
+        self.assertEquals('green', result)
 
         today = datetime.today()
         import time
-        result = my.parser.eval("$NEXT_DAY")
+        result = self.parser.eval("$NEXT_DAY")
         d  = today + relativedelta(days=1)
         
         expected_str = '%s-%s-%s 00:00:00' %(d.year,d.month,d.day)
         date = Date(db_date= expected_str)
-        my.assertEquals(date.get_db_time(), result)
+        self.assertEquals(date.get_db_time(), result)
 
-        result = my.parser.eval("$PREV_DAY")
+        result = self.parser.eval("$PREV_DAY")
         d  = today + relativedelta(days=-1)
         expected_str = '%s-%s-%s 00:00:00' %(d.year,d.month,d.day)
         date = Date(db_date= expected_str)
-        my.assertEquals(date.get_db_time(), result)
+        self.assertEquals(date.get_db_time(), result)
 
         
 
         # FIXME: this doesnt work yet
-        #result = my.parser.eval("'www $TODAY' > 'www'")
-        #my.assertEquals(True, result)
+        #result = self.parser.eval("'www $TODAY' > 'www'")
+        #self.assertEquals(True, result)
 
 
         # FIXME: this returns a string ... should be a datetime object
-        result = my.parser.eval("$NEXT_MONDAY")
+        result = self.parser.eval("$NEXT_MONDAY")
        
         expected = today + relativedelta(weekday=calendar.MONDAY)
         expected = datetime(expected.year, expected.month, expected.day)
-        my.assertEquals(str(expected), result)
+        self.assertEquals(str(expected), result)
 
-        result = my.parser.eval("$PREV_MONDAY")
+        result = self.parser.eval("$PREV_MONDAY")
         today = datetime.today()
         expected = today + relativedelta(weeks=-1,weekday=calendar.MONDAY)
         expected = datetime(expected.year, expected.month, expected.day)
-        my.assertEquals(str(expected), result)
+        self.assertEquals(str(expected), result)
 
 
 	'''
-        result = my.parser.eval("$PREV_MONTH")
+        result = self.parser.eval("$PREV_MONTH")
         expected = today + relativedelta(months=-1)
         print "prev month ", result, str(expected)
-        my.assertEquals(str(expected), result)
+        self.assertEquals(str(expected), result)
 	'''
         # FIXME: this doesn't work yet!!  Need to stop using dates as
         # strings!!!
-        #result = my.parser.eval("@GET(date.today) > '2010-01-01'")
-        #my.assertEquals(expected, result)
+        #result = self.parser.eval("@GET(date.today) > '2010-01-01'")
+        #self.assertEquals(expected, result)
 
-        #result = my.parser.eval("$NEXT_MONDAY - @RELTIME(weekday=MO)")
+        #result = self.parser.eval("$NEXT_MONDAY - @RELTIME(weekday=MO)")
 
 
-        result = my.parser.eval("@COUNT(sthpw/snapshot['timestamp','<',$PREV_MONDAY])")
-        my.assertEquals(True, result > 0)
+        result = self.parser.eval("@COUNT(sthpw/snapshot['timestamp','<',$PREV_MONDAY])")
+        self.assertEquals(True, result > 0)
 
 
 
 
         
-    def _test_paragraph(my):
+    def _test_paragraph(self):
         # test some full text paragraph
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
@@ -1588,9 +1588,9 @@ class ExpressionTest(unittest.TestCase):
 
         # try a short sentence
         expr = '''My name is {@GET(.name_first)}!'''
-        result = my.parser.eval(expr, person)
+        result = self.parser.eval(expr, person)
         expected = '''My name is %s!''' % name_first
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # try a long expression with many replacements
@@ -1598,46 +1598,46 @@ class ExpressionTest(unittest.TestCase):
         My name is "{@GET(.name_first)}" and I am {@GET(.age)}.
         I live in {@GET(unittest/city.code)} and I am here to stay
         '''
-        result = my.parser.eval(expr, person)
+        result = self.parser.eval(expr, person)
         expected = '''This is a test of a long string.
         My name is "%s" and I am %s.
         I live in los_angeles and I am here to stay
         ''' % (name_first, age)
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
 
         # try a sentence with no expressions, forcing string mode
         expr = '''My name is nobody'''
-        result = my.parser.eval(expr, person, mode='string')
+        result = self.parser.eval(expr, person, mode='string')
         expected = '''My name is nobody'''
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         # try a sentence with no expressions, forcing expression
         expr = '''12 * 12'''
-        result = my.parser.eval(expr, person, mode='expression')
-        my.assertEquals(144, result)
+        result = self.parser.eval(expr, person, mode='expression')
+        self.assertEquals(144, result)
 
 
         # try a sentence forcing string mode
         expr = '''12 * 12'''
-        result = my.parser.eval(expr, person, mode='string')
-        my.assertEquals(expr, result)
+        result = self.parser.eval(expr, person, mode='string')
+        self.assertEquals(expr, result)
 
 
 
         # try with empty brackets
         expr = '''My name is {}nobody'''
-        result = my.parser.eval(expr, person)
+        result = self.parser.eval(expr, person)
         expected = '''My name is nobody'''
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
 
 
-    def _test_dates(my):
-        person = my.persons[2]
-        city = my.city
+    def _test_dates(self):
+        person = self.persons[2]
+        city = self.city
         age = person.get_value("age")
 
         parser = ExpressionParser()
@@ -1650,36 +1650,36 @@ class ExpressionTest(unittest.TestCase):
         expression = "{@GET(unittest/person.timestamp), %Y}"
         result = parser.eval(expression, person)
         year = timestamp.strftime("%Y")
-        my.assertEquals(year, result)
+        self.assertEquals(year, result)
         
         expression = "{$PROJECT, |^(\w{4})|  }/{@GET(unittest/person.timestamp),%Y}"
         result = parser.eval(expression, person, mode='string')
         year = timestamp.strftime("%Y")
-        my.assertEquals('unit/%s'%year, result)
+        self.assertEquals('unit/%s'%year, result)
 
         # first 3 and last 2
         expression = "{$PROJECT, |^(\w{3}).*(\w{2})$|  }/{@GET(unittest/person.timestamp),%Y}"
         result = parser.eval(expression, person, mode='string')
         year = timestamp.strftime("%Y")
-        my.assertEquals('unist/%s'%year, result)
+        self.assertEquals('unist/%s'%year, result)
 
         # first 4 and last 2 with a trailing space
         expression = "{$PROJECT, |^(\w{4}).*(.{2})$|} /{@GET(unittest/person.timestamp),%Y}"
         result = parser.eval(expression, person, mode='string')
         year = timestamp.strftime("%Y")
-        my.assertEquals('unitst /%s'%year, result)
+        self.assertEquals('unitst /%s'%year, result)
 
         # test using | in the expression
         expression = "{$PROJECT, |(u|a|b|c)+|  }/{@GET(unittest/person.timestamp),%Y}"
         result = parser.eval(expression, person, mode='string')
         year = timestamp.strftime("%Y")
-        my.assertEquals('u/%s'%year, result)
+        self.assertEquals('u/%s'%year, result)
 
         # test using | in the expression with multiple groups
         expression = "{$PROJECT, |(u|a|b|c)+(a|n|b|c)+.*(t|3|b|c)+|  }/{@GET(unittest/person.timestamp),%Y}"
         result = parser.eval(expression, person, mode='string')
         year = timestamp.strftime("%Y")
-        my.assertEquals('unt/%s'%year, result)
+        self.assertEquals('unt/%s'%year, result)
 
         # test formatting dates with @GET
 
@@ -1687,7 +1687,7 @@ class ExpressionTest(unittest.TestCase):
 
         result = parser.eval(expression, person, mode='string')
         label = timestamp.strftime("%b-%m")
-        my.assertEquals('%s/person2'%label, result)
+        self.assertEquals('%s/person2'%label, result)
         #print "date: ", result
 
 
@@ -1705,45 +1705,45 @@ class ExpressionTest(unittest.TestCase):
 
     
      
-    def _test_return_types(my):
+    def _test_return_types(self):
 
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
-        person2 = my.persons[1]
+        person2 = self.persons[1]
         name_first2 = person2.get_value("name_first")
         age2 = person2.get_value("age")
 
         # NEW: single sobject with @GET should return an array now
         expr = "@GET(.name_first)"
-        result = my.parser.eval(expr, person)
-        my.assertEquals([name_first], result)
+        result = self.parser.eval(expr, person)
+        self.assertEquals([name_first], result)
 
         # many sobjects with @GET should an array
         expr = "@GET(.name_first)"
-        result = my.parser.eval(expr, my.persons[0:2])
-        my.assertEquals([name_first,name_first2], result)
+        result = self.parser.eval(expr, self.persons[0:2])
+        self.assertEquals([name_first,name_first2], result)
 
         # empty with @GET should return empty array
         expr = "@GET(.name_first)"
-        result = my.parser.eval(expr, [])
-        my.assertEquals([], result)
+        result = self.parser.eval(expr, [])
+        self.assertEquals([], result)
 
         # None with @GET should return empty array
         expr = "@GET(.name_first)"
-        result = my.parser.eval(expr, None)
-        my.assertEquals([], result)
+        result = self.parser.eval(expr, None)
+        self.assertEquals([], result)
 
         # Full search with @GET should return list
         expr = "@GET(unittest/person.name_first)"
-        result = my.parser.eval(expr, None)
-        my.assertEquals(types.ListType, type(result))
+        result = self.parser.eval(expr, None)
+        self.assertEquals(types.ListType, type(result))
 
         # Full search with single result @GET should return list
         expr = "@GET(unittest/person['name_first','person0'].name_first)"
-        result = my.parser.eval(expr, None)
-        my.assertEquals(types.ListType, type(result))
+        result = self.parser.eval(expr, None)
+        self.assertEquals(types.ListType, type(result))
 
 
 
@@ -1753,38 +1753,38 @@ class ExpressionTest(unittest.TestCase):
 
         # single sobject with @SUM should return a value
         expr = "@SUM(.age)"
-        result = my.parser.eval(expr, person)
-        my.assertEquals(age, result)
+        result = self.parser.eval(expr, person)
+        self.assertEquals(age, result)
 
         # many sobjects with @SUM should return a value
         expr = "@SUM(.age)"
-        result = my.parser.eval(expr, my.persons[0:2])
-        my.assertEquals(age+age2, result)
+        result = self.parser.eval(expr, self.persons[0:2])
+        self.assertEquals(age+age2, result)
 
         # None with @SUM should return 0
         expr = "@SUM(.age)"
-        result = my.parser.eval(expr, None)
-        my.assertEquals(0, result)
+        result = self.parser.eval(expr, None)
+        self.assertEquals(0, result)
 
         # Empty array with @SUM should return 0
         expr = "@SUM(.age)"
-        result = my.parser.eval(expr, [])
-        my.assertEquals(0, result)
+        result = self.parser.eval(expr, [])
+        self.assertEquals(0, result)
 
         # Full search with @SUM should result in a value
         expr = "@SUM(unittest/person.age)"
-        result = my.parser.eval(expr)
-        my.assertEquals(types.IntType, type(result))
+        result = self.parser.eval(expr)
+        self.assertEquals(types.IntType, type(result))
 
         # Single search with @SUM should result in a value
         expr = "@SUM(unittest/person['name_first','person0'].age)"
-        result = my.parser.eval(expr)
-        my.assertEquals(types.IntType, type(result))
+        result = self.parser.eval(expr)
+        self.assertEquals(types.IntType, type(result))
 
         # Empty search with @SUM should result in 0
         expr = "@SUM(unittest/person['name_first','XXXX'].age)"
-        result = my.parser.eval(expr)
-        my.assertEquals(0, result)
+        result = self.parser.eval(expr)
+        self.assertEquals(0, result)
 
 
 
@@ -1793,29 +1793,29 @@ class ExpressionTest(unittest.TestCase):
         # FIXME: syntax error?
         # Empty should return original sobject (for completion)
         #expr = "@SOBJECT()"
-        #result = my.parser.eval(expr, person)
+        #result = self.parser.eval(expr, person)
         #print result
-        #my.assertEquals(0, result)
+        #self.assertEquals(0, result)
 
 
         # Full search should return a list
         expr = "@SOBJECT(unittest/person)"
-        result = my.parser.eval(expr)
-        my.assertEquals(types.ListType, type(result))
+        result = self.parser.eval(expr)
+        self.assertEquals(types.ListType, type(result))
 
         # Empty search should return an empty list
         expr = "@SOBJECT(unittest/person['name_first','!!XXXX'])"
-        result = my.parser.eval(expr)
-        my.assertEquals([], result)
+        result = self.parser.eval(expr)
+        self.assertEquals([], result)
 
         expr = "@SOBJECT(unittest/person['name_first','in','person0|person2'])"
-        result = my.parser.eval(expr)
-        my.assertEquals(2, len(result))
+        result = self.parser.eval(expr)
+        self.assertEquals(2, len(result))
 
         ''' 
         expr = "@SOBJECT(unittest/person['name_first','not in','person0|person2'])"
-        result = my.parser.eval(expr)
-        my.assertEquals(6, len(result))
+        result = self.parser.eval(expr)
+        self.assertEquals(6, len(result))
 
         '''
 
@@ -1824,13 +1824,13 @@ class ExpressionTest(unittest.TestCase):
 
     # Next Gen Expression parser
 
-    def _test_new_parser(my):
+    def _test_new_parser(self):
         # test some full text paragraph
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
-        person1 = my.persons[1]
+        person1 = self.persons[1]
         age1 = person1.get_value("age")
 
         from expression import ExpressionParser
@@ -1843,7 +1843,7 @@ class ExpressionTest(unittest.TestCase):
             #print str(e)
             pass
         else:
-            my.fail("Expression [%s] did not produce a syntax error" % expression)
+            self.fail("Expression [%s] did not produce a syntax error" % expression)
 
         try:
             expression = "@ GET(unittest/person.age)"
@@ -1853,19 +1853,19 @@ class ExpressionTest(unittest.TestCase):
             #print str(e)
             pass
         else:
-            my.fail("Expression [%s] did not produce a syntax error" % expression)
+            self.fail("Expression [%s] did not produce a syntax error" % expression)
 
         expression = "@SEARCH(unittest/person)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, single=True)
-        my.assertEquals(result.get_sobject().get_id(), person.get_id())
+        self.assertEquals(result.get_sobject().get_id(), person.get_id())
 
         # a correct statement
         expression = "@SOBJECT(unittest/person)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, single=True)
         name_first = result.get_value("name_first")
-        my.assertEquals("person0", name_first)
+        self.assertEquals("person0", name_first)
 
 
         # a few more syntax tests
@@ -1875,14 +1875,14 @@ class ExpressionTest(unittest.TestCase):
         parser = ExpressionParser()
         result = parser.eval(expression, person)
         name_first = result[0].get_value("name_first")
-        my.assertEquals("person0", name_first)
+        self.assertEquals("person0", name_first)
 
         # extra space at the space at the end
         expression = "@SOBJECT(unittest/person  )"
         parser = ExpressionParser()
         result = parser.eval(expression, person)
         name_first = result[0].get_value("name_first")
-        my.assertEquals("person0", name_first)
+        self.assertEquals("person0", name_first)
 
 
         # too many arguments
@@ -1894,7 +1894,7 @@ class ExpressionTest(unittest.TestCase):
             #print str(e)
             pass
         else:
-            my.fail("Expression [%s] did not produce a syntax error" % expression)
+            self.fail("Expression [%s] did not produce a syntax error" % expression)
 
 
         # bad space somewhere
@@ -1914,35 +1914,35 @@ class ExpressionTest(unittest.TestCase):
         parser = ExpressionParser()
         result = parser.eval(expression, person)
         # it takes the .name attribute if available
-        my.assertEquals("LA city", result)
+        self.assertEquals("LA city", result)
 
 
 
         # larger string
-        expression = "Hello, my name is {@GET(.name_first)}.  I live in {@GET(unittest/city.code)}.  I am going to be {@GET(.age)} this year."
+        expression = "Hello, self name is {@GET(.name_first)}.  I live in {@GET(unittest/city.code)}.  I am going to be {@GET(.age)} this year."
         parser = ExpressionParser()
         result = parser.eval(expression, person)
-        expected = 'Hello, my name is person0.  I live in los_angeles.  I am going to be %s this year.' % age
-        my.assertEquals(expected, result)
+        expected = 'Hello, self name is person0.  I live in los_angeles.  I am going to be %s this year.' % age
+        self.assertEquals(expected, result)
 
 
         # test average
         expression = "@AVG(unittest/person.age)"
-        avg = parser.eval(expression, my.city)
+        avg = parser.eval(expression, self.city)
 
         format = "%2d"
-        result = parser.eval(expression, my.city)
+        result = parser.eval(expression, self.city)
         expression = "It's been { @AVG(unittest/person.age), %s } years" % format
-        result = parser.eval(expression, my.city)
+        result = parser.eval(expression, self.city)
         expected = "It's been %s years" % format % avg
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # test regex
-        result = parser.eval(expression, my.city)
+        result = parser.eval(expression, self.city)
         expression = "{@GET(unittest/person.name_first),|(\w{3})|} years"
-        result = parser.eval(expression, my.city)
-        my.assertEqual("per years", result)
+        result = parser.eval(expression, self.city)
+        self.assertEqual("per years", result)
 
 
 
@@ -1954,26 +1954,26 @@ class ExpressionTest(unittest.TestCase):
         parser = ExpressionParser()
         result = parser.eval(expression, person)
         city_code = result[0].get_value("code")
-        my.assertEquals("los_angeles", city_code)
+        self.assertEquals("los_angeles", city_code)
 
         # get the age
         expression = "@GET(unittest/person.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, person)
-        my.assertEquals(age, result[0])
+        self.assertEquals(age, result[0])
 
         # simple format
         expression = "@GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, person)
-        my.assertEquals([age], result)
+        self.assertEquals([age], result)
 
 
         # get sobjects with no starting sobject
         expression = "@COUNT(unittest/person)"
         parser = ExpressionParser()
         result = parser.eval(expression)
-        my.assertEquals(len(my.persons) , result)
+        self.assertEquals(len(self.persons) , result)
 
 
 
@@ -1981,19 +1981,19 @@ class ExpressionTest(unittest.TestCase):
         expression = "@SUM(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals(age + age1, result)
+        self.assertEquals(age + age1, result)
 
         # aggregate functions
         expression = "@COUNT(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals(2, result)
+        self.assertEquals(2, result)
 
         # aggregate functions
         expression = "@AVG(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals(float(age + age1)/2, result)
+        self.assertEquals(float(age + age1)/2, result)
 
 
 
@@ -2002,10 +2002,10 @@ class ExpressionTest(unittest.TestCase):
         expression = "@SOBJECT(unittest/city.unittest/country)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals("USA", result[0].get_value("code"))
+        self.assertEquals("USA", result[0].get_value("code"))
         # fast mode skips duplicated data
-        my.assertEquals(1, len(result))
-        #my.assertEquals("USA", result[1].get_value("code"))
+        self.assertEquals(1, len(result))
+        #self.assertEquals("USA", result[1].get_value("code"))
 
 
 
@@ -2015,30 +2015,30 @@ class ExpressionTest(unittest.TestCase):
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=False)
         
-        my.assertEquals([age], result)
+        self.assertEquals([age], result)
         expression = "@SOBJECT(unittest/city)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=False)
-        my.assertEquals('los_angeles', result[0].get('code'))
+        self.assertEquals('los_angeles', result[0].get('code'))
         
         
         expression = "@SOBJECT(unittest/city)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=True)
         result = result.get(person.get_search_key())
-        my.assertEquals('los_angeles', result[0].get('code'))
+        self.assertEquals('los_angeles', result[0].get('code'))
 
         expression = "@SOBJECT(unittest/city.unittest/country)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=True)
         result = result.get(person.get_search_key())
-        my.assertEquals('USA', result[0].get('code'))
+        self.assertEquals('USA', result[0].get('code'))
         
         expression = "@GET( .age)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=True)
         result = result.get(person.get_search_key())
-        my.assertEquals([age], result)
+        self.assertEquals([age], result)
 
         another_person = Person.create('dave', 'v','italy','another person')
         
@@ -2046,14 +2046,14 @@ class ExpressionTest(unittest.TestCase):
         expression = "@GET(.age) + @GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, another_person, dictionary=False)
-        my.assertEquals(0, result)
-        my.assertEquals(True, isinstance(result, int))
+        self.assertEquals(0, result)
+        self.assertEquals(True, isinstance(result, int))
 
         expression = "@GET(.age) * @GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, another_person, dictionary=False)
-        my.assertEquals(0, result)
-        my.assertEquals(True, isinstance(result, int))
+        self.assertEquals(0, result)
+        self.assertEquals(True, isinstance(result, int))
 
         # remove it so other calculations would only deal with 8 persons
         another_person.delete()
@@ -2063,52 +2063,52 @@ class ExpressionTest(unittest.TestCase):
         expression = "@GET(.age) + @GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, person)
-        my.assertEquals(age + age, result)
+        self.assertEquals(age + age, result)
 
         # some addition with 2 sobjects
         expression = "@GET(.age) + @GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([age + age, age1 + age1], result)
+        self.assertEquals([age + age, age1 + age1], result)
 
 
         # some more complex math with 2 sobjects
         expression = "@GET(.age) + (@GET(.age) * @GET(.age))"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([age+(age*age), age1+(age1*age1)], result)
+        self.assertEquals([age+(age*age), age1+(age1*age1)], result)
 
         # some more order of operations
         expression = "(@GET(.age) + @GET(.age)) * @GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([(age+age)*age, (age1+age1)*age1], result)
+        self.assertEquals([(age+age)*age, (age1+age1)*age1], result)
 
 
         # put in some addition
         expression = "23.4 + @GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([23.4 + age, 23.4 + age1], result)
+        self.assertEquals([23.4 + age, 23.4 + age1], result)
 
 
         # put in some addition with no spacing
         expression = "23.4+@GET(.age)"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([23.4 + age, 23.4 + age1], result)
+        self.assertEquals([23.4 + age, 23.4 + age1], result)
 
         # put in some addition with no spacing
         expression = "@GET(.age) + 2.2"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([2.2 + age, 2.2 + age1], result)
+        self.assertEquals([2.2 + age, 2.2 + age1], result)
 
         # order of operations
         expression = "3.0 + @GET(.age) * 2.0"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([3.0 + age * 2.0, 3.0 + age1 * 2.0], result)
+        self.assertEquals([3.0 + age * 2.0, 3.0 + age1 * 2.0], result)
 
 
         # try a bad element
@@ -2120,7 +2120,7 @@ class ExpressionTest(unittest.TestCase):
             #print str(e)
             pass
         #else:
-        #    my.fail("Expression [%s] did not produce a syntax error" % expression)
+        #    self.fail("Expression [%s] did not produce a syntax error" % expression)
 
         # try more garbage
         try:
@@ -2131,39 +2131,39 @@ class ExpressionTest(unittest.TestCase):
             #print str(e)
             pass
         else:
-            my.fail("Expression [%s] did not produce a syntax error" % expression)
+            self.fail("Expression [%s] did not produce a syntax error" % expression)
         
         # test @GETALL vs @GET
         expression = "@GET(sthpw/task.unittest/country.code)"
         parser = ExpressionParser()
-        result = parser.eval(expression, my.country)
-        my.assertEquals(['USA'], result)
+        result = parser.eval(expression, self.country)
+        self.assertEquals(['USA'], result)
 
         expression = "@GETALL(sthpw/task.unittest/country.code)"
         parser = ExpressionParser()
-        result = parser.eval(expression, my.country)
+        result = parser.eval(expression, self.country)
         # there should be 3 tasks pointing to 3 USA
-        my.assertEquals(['USA','USA','USA'], result)
+        self.assertEquals(['USA','USA','USA'], result)
 
         # test comparisons
         expression = "@GET(.age) * 2.0 > 0.0"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([True, True], result)
+        self.assertEquals([True, True], result)
 
 
         # test comparisons
         expression = "@GET(.age) * 2.0 >= 0.0"
         parser = ExpressionParser()
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([True, True], result)
+        self.assertEquals([True, True], result)
 
 
         # order of operations
         expression = "@FLOOR(2.2)"
         parser = ExpressionParser()
         result = parser.eval(expression, person)
-        my.assertEquals(2.0, result)
+        self.assertEquals(2.0, result)
 
 
 
@@ -2172,10 +2172,10 @@ class ExpressionTest(unittest.TestCase):
         parser = ExpressionParser()
 
         result = parser.eval(expression, person)
-        my.assertEquals(3.0 + age * 2.0 + 1.0, result)
+        self.assertEquals(3.0 + age * 2.0 + 1.0, result)
 
         result = parser.eval(expression, [person, person1])
-        my.assertEquals([3.0 + age * 2.0 + 1.0, 3.0 + age1 * 2.0 + 1.0], result)
+        self.assertEquals([3.0 + age * 2.0 + 1.0, 3.0 + age1 * 2.0 + 1.0], result)
 
 
         # another test
@@ -2184,34 +2184,34 @@ class ExpressionTest(unittest.TestCase):
         f_age = float(age)
         f_age1 = float(age1)
         expected = ( (f_age + f_age)/10 ) + ( (f_age1 + f_age1)/10 ) 
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
 
         # test union
         expression = "@UNION(@GET(.age), @GET(.name_first))"
         result = parser.eval(expression, [person])
         expected = set([f_age, name_first])
-        my.assertEquals(expected, set(result))
+        self.assertEquals(expected, set(result))
 
         # test intersect
         expression = "@INTERSECT(@GET(.age), @GET(.city_code))"
         result = parser.eval(expression, [person])
         expected = set([])
-        my.assertEquals(expected, set(result))
+        self.assertEquals(expected, set(result))
 
         
 
         expression = "@INTERSECT(@SOBJECT(unittest/person), @SOBJECT(unittest/person['nationality','Smith0']))"
         result = parser.eval(expression)
         result_sk = [SearchKey.get_by_sobject(x) for x in result]
-        expected = set([SearchKey.get_by_sobject(x) for x in [my.persons[0]]])
-        my.assertEquals(expected, set(result_sk))
-        my.assertEquals(1, len(result))
+        expected = set([SearchKey.get_by_sobject(x) for x in [self.persons[0]]])
+        self.assertEquals(expected, set(result_sk))
+        self.assertEquals(1, len(result))
 
 
-    def _test_literal(my):
+    def _test_literal(self):
         # test some full text paragraph
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
@@ -2220,18 +2220,18 @@ class ExpressionTest(unittest.TestCase):
         # test eval of an expression within an expression
         expression = '''@EVAL( @GET(.age) )'''
         result = parser.eval(expression, person, single=True)
-        my.assertEquals(age, result)
+        self.assertEquals(age, result)
 
 
         # test shorthand of eval of an expression within an expression
         expression = '''@( @GET(.age) )'''
         result = parser.eval(expression, person)
-        my.assertEquals([age], result)
+        self.assertEquals([age], result)
 
         # deal with a literal
         expression = '''@( '@GET(.age)' )'''
         result = parser.eval(expression, person)
-        my.assertEquals([age], result)
+        self.assertEquals([age], result)
 
 
         # deal with a literal
@@ -2241,7 +2241,7 @@ class ExpressionTest(unittest.TestCase):
         except SyntaxError:
             pass
         else:
-            my.fail("Expression [%s] should have had a SyntaxError" % expression)
+            self.fail("Expression [%s] should have had a SyntaxError" % expression)
 
 
         # deal with a literal
@@ -2252,7 +2252,7 @@ class ExpressionTest(unittest.TestCase):
         except SyntaxError:
             pass
         else:
-            my.fail("Expression [%s] should have had a SyntaxError" % expression)
+            self.fail("Expression [%s] should have had a SyntaxError" % expression)
         """
 
 
@@ -2260,25 +2260,25 @@ class ExpressionTest(unittest.TestCase):
         # deal with a stringify in a literal
         expression = '''@( '{@GET(.age)}' )'''
         result = parser.eval(expression, person)
-        my.assertEquals(str(age), result)
+        self.assertEquals(str(age), result)
 
         # deal with a more complex literal
         expression = '''@( '{@GET(.age)},{@GET(.age)}' )'''
         result = parser.eval(expression, person)
-        my.assertEquals("%s,%s" % (age,age), result)
+        self.assertEquals("%s,%s" % (age,age), result)
 
 
 
 
-    def _test_conditional(my):
+    def _test_conditional(self):
         # test some full text paragraph
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         person.set_value('nationality', 'Cdn Cdn')
 
         age = person.get_value("age")
 
-        person1 = my.persons[1]
+        person1 = self.persons[1]
         age1 = person1.get_value("age")
 
         person.set_value('nationality', 'Cdn Cdn')
@@ -2293,15 +2293,15 @@ class ExpressionTest(unittest.TestCase):
         except SyntaxError:
             pass
         else:
-            my.fail("Expression [%s] should have a syntax error")
+            self.fail("Expression [%s] should have a syntax error")
 
         expression = '''@IF( @GET(.age) > 0, @GET(.age), '')'''
         result = parser.eval(expression, person)
-        my.assertEquals([age], result)
+        self.assertEquals([age], result)
         
         expression = '''@IF( @GET(.age) > 1000, @GET(.age), '')'''
         result = parser.eval(expression, person)
-        my.assertEquals('', result)
+        self.assertEquals('', result)
 
         # try a more complex return
         expression = '''
@@ -2312,21 +2312,21 @@ class ExpressionTest(unittest.TestCase):
         )
         '''
         result = parser.eval(expression, person)
-        my.assertEquals('(%s)' % age, result)
+        self.assertEquals('(%s)' % age, result)
 
         # try with 2 arguments
         expression = '''@IF(
             @GET(.age) > 1000, '({@GET(.age)})'
         )'''
         result = parser.eval(expression, person)
-        my.assertEquals(None, result)
+        self.assertEquals(None, result)
 
         # test string comparison
         expression = '''@IF(
             @GET(.name_first) == '%s', 'wow', 'blah'
         )''' % name_first
         result = parser.eval(expression, person)
-        my.assertEquals('wow', result)
+        self.assertEquals('wow', result)
 
 
         # try it empty comparison
@@ -2334,7 +2334,7 @@ class ExpressionTest(unittest.TestCase):
             @GET(.name_first) == "", 'wow', 'blah'
         )'''
         result = parser.eval(expression, person)
-        my.assertEquals('blah', result)
+        self.assertEquals('blah', result)
 
 
         # try it actual empty value
@@ -2342,7 +2342,7 @@ class ExpressionTest(unittest.TestCase):
             @GET(.name_first) != '', 'wow', 'blah'
         )}'''
         result = parser.eval(expression, person)
-        my.assertEquals('wow', result)
+        self.assertEquals('wow', result)
 
 
         # do the opposite ""
@@ -2350,7 +2350,7 @@ class ExpressionTest(unittest.TestCase):
             "" != @GET(.name_first), 'wow', 'blah'
         )}'''
         result = parser.eval(expression, person)
-        my.assertEquals('wow', result)
+        self.assertEquals('wow', result)
 
 
         # try it actual empty value
@@ -2358,7 +2358,7 @@ class ExpressionTest(unittest.TestCase):
             @GET(.name_first) != '', 'wow', 'blah'
         )'''
         result = parser.eval(expression, person)
-        my.assertEquals('wow', result)
+        self.assertEquals('wow', result)
 
 
         # try it with NULL value
@@ -2366,14 +2366,14 @@ class ExpressionTest(unittest.TestCase):
             @GET(.name_first) != null, 'wow', 'blah'
         )'''
         result = parser.eval(expression, person)
-        my.assertEquals('wow', result)
+        self.assertEquals('wow', result)
 
         # try a complete empty value
         expression = '''@IF(
             @GET(.name_first) != '', '', 'blah'
         )'''
         result = parser.eval(expression, person)
-        my.assertEquals('', result)
+        self.assertEquals('', result)
 
         expression = '''@COUNT(sthpw/task)'''
         task_count = parser.eval(expression)
@@ -2381,12 +2381,12 @@ class ExpressionTest(unittest.TestCase):
         expression = '''{@IF(@COUNT(sthpw/task)==%s, @COUNT(sthpw/task),'NONE')}'''%task_count
         result = parser.eval(expression)
         
-        my.assertEquals(str(task_count), result)
-        my.assertEquals(task_count, int(result))
+        self.assertEquals(str(task_count), result)
+        self.assertEquals(task_count, int(result))
 
         expression = '''{@IF(@COUNT(sthpw/task)==0, @COUNT(sthpw/task),'NONE')}'''
         result = parser.eval(expression)
-        my.assertEquals('NONE', result)
+        self.assertEquals('NONE', result)
 
         # try the case statement
         expression = '''@CASE(
@@ -2403,7 +2403,7 @@ class ExpressionTest(unittest.TestCase):
         elif age == 10:
             expect = 'yellow'
         #print expect, result
-        my.assertEquals(expect, result)
+        self.assertEquals(expect, result)
 
         # try the case statement
         expression = '''@CASE(
@@ -2428,13 +2428,13 @@ class ExpressionTest(unittest.TestCase):
         #    "VALUE": 'New Shot'
         #}
         #result = parser.eval(expression, person, vars=vars)
-        #my.assertEquals('#4F7340', result)
+        #self.assertEquals('#4F7340', result)
 
         # try a regular expression
         expression = ''''123COW' ~ '^123' '''
         result = parser.eval(expression, single=True)
         expect = True
-        my.assertEquals(expect, result)
+        self.assertEquals(expect, result)
 
 
         # try some True/False comparisons
@@ -2444,11 +2444,11 @@ class ExpressionTest(unittest.TestCase):
             'VALUE': ''
         }
         result = parser.eval(expression, vars=vars)
-        my.assertEquals(expect, result)
+        self.assertEquals(expect, result)
 	#
         vars = {'VALUE': 'foo Test'}
-	my.assertEquals(Search.eval("$VALUE == 'foo Test'", vars=vars), True)
-        my.assertEquals(Search.eval("'foo Test' == $VALUE", vars=vars) , True)
+	self.assertEquals(Search.eval("$VALUE == 'foo Test'", vars=vars), True)
+        self.assertEquals(Search.eval("'foo Test' == $VALUE", vars=vars) , True)
 
         # FIXME: This does not evaluate very well.  Not sure how to handle
         # this case
@@ -2459,7 +2459,7 @@ class ExpressionTest(unittest.TestCase):
             'VALUE': ''
         }
         result = parser.eval(expression, vars=vars)
-        my.assertEquals(expect, result)
+        self.assertEquals(expect, result)
         '''
 
 
@@ -2467,13 +2467,13 @@ class ExpressionTest(unittest.TestCase):
 
 
 
-    def _test_loop(my):
+    def _test_loop(self):
         # test some full text paragraph
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
-        person1 = my.persons[1]
+        person1 = self.persons[1]
         age1 = person1.get_value("age")
 
 
@@ -2483,8 +2483,8 @@ class ExpressionTest(unittest.TestCase):
                     @GET(unittest/person.name_first), '<li>%s</li>'
                   )'''
         result = parser.eval(expr)
-        expected = ["<ul>%s</ul>" % x.get_value("name_first") for x in my.persons]
-        #my.assertEquals(expected, result)
+        expected = ["<ul>%s</ul>" % x.get_value("name_first") for x in self.persons]
+        #self.assertEquals(expected, result)
 
 
         # FIXME: ordering problem
@@ -2493,11 +2493,11 @@ class ExpressionTest(unittest.TestCase):
         #            @GET(unittest/person.name_first), ':'
         #          )'''
         #result = parser.eval(expr)
-        #expected = [x.get_value("name_first") for x in my.persons]
+        #expected = [x.get_value("name_first") for x in self.persons]
         #expected.sort()
         #expected.reverse()
         #expected = ":".join( expected )
-        #my.assertEquals(expected, result)
+        #self.assertEquals(expected, result)
 
 
 
@@ -2512,13 +2512,13 @@ class ExpressionTest(unittest.TestCase):
         
 
 
-    def _test_update(my):
+    def _test_update(self):
         # test some updates
-        person = my.persons[0]
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
-        person1 = my.persons[1]
+        person1 = self.persons[1]
         age1 = person1.get_value("age")
 
         parser = ExpressionParser()
@@ -2526,7 +2526,7 @@ class ExpressionTest(unittest.TestCase):
 
         expr = '''@UPDATE( @SOBJECT(), 'name_last', 'New Last Name' )'''
         result = parser.eval(expr, person, single=True)
-        my.assertEquals("New Last Name", result.get_value('name_last') )
+        self.assertEquals("New Last Name", result.get_value('name_last') )
 
 
         # update all of the tasks
@@ -2538,22 +2538,22 @@ class ExpressionTest(unittest.TestCase):
 
         expr = '''@UPDATE( @SOBJECT(sthpw/task), 'status', 'Approved' )'''
         result = parser.eval(expr, person)
-        my.assertEquals("Approved", result[0].get_value("status"))
+        self.assertEquals("Approved", result[0].get_value("status"))
 
         # before update, the original cow task is still "Waiting"
-        my.assertEquals("Waiting", task.get_value("status"))
+        self.assertEquals("Waiting", task.get_value("status"))
         task.update()
 
-        my.assertEquals("Approved", task.get_value("status"))
+        self.assertEquals("Approved", task.get_value("status"))
 
         expression = '''@IF(@GET(sthpw/task.status) == 'Approved', @UPDATE( @SOBJECT(sthpw/task), 'status', 'Review' ))'''
-        my.parser.eval(expression, person)
+        self.parser.eval(expression, person)
         expression = '''@GET(sthpw/task.status)'''
-        result = my.parser.eval(expression, person)
-        my.assertEquals(result, ["Review"])
+        result = self.parser.eval(expression, person)
+        self.assertEquals(result, ["Review"])
 
         
-    def _test_palette(my):
+    def _test_palette(self):
 
         from pyasm.web import Palette
 
@@ -2566,7 +2566,7 @@ class ExpressionTest(unittest.TestCase):
             result = parser.eval(expr, single=True)
             expected = palette.color(key)
 
-        my.assertEquals(expected, result)
+        self.assertEquals(expected, result)
 
         return
 
@@ -2574,12 +2574,12 @@ class ExpressionTest(unittest.TestCase):
 
 
 
-    def _test_file(my):
-        person = my.persons[0]
+    def _test_file(self):
+        person = self.persons[0]
         name_first = person.get_value("name_first")
         age = person.get_value("age")
 
-        person1 = my.persons[1]
+        person1 = self.persons[1]
         age1 = person1.get_value("age")
 
         return
@@ -2623,7 +2623,7 @@ class ExpressionTest(unittest.TestCase):
             print path
             print file.get_value("checkin_dir")
 
-    def _test_custom_layout(my):
+    def _test_custom_layout(self):
         html= '''
 <td style='text-align:left'><b>[expr]@GET(.name_first)[/expr]</b></td>
 <td style='text-align:right'><b>[abs_expr]@COUNT(sthpw/project['code','unittest'])[/abs_expr]</b></td>
@@ -2633,9 +2633,9 @@ class ExpressionTest(unittest.TestCase):
         p = re.compile('\[expr\](.*?)\[\/expr\]')
         parser = ExpressionParser()
         matches = p.finditer(html)
-        my.search_key = 'unittest/person?project=unittest&id=2'
-        #sobject = SearchKey.get_by_search_key(my.search_key)
-        sobjects = [my.persons[0]]
+        self.search_key = 'unittest/person?project=unittest&id=2'
+        #sobject = SearchKey.get_by_search_key(self.search_key)
+        sobjects = [self.persons[0]]
         for m in matches:
             full_expr = m.group()
             expr = m.groups()[0]
@@ -2654,14 +2654,14 @@ class ExpressionTest(unittest.TestCase):
             result = Common.process_unicode_string(result)
             html = html.replace(full_expr, result )
         try: 
-            my.assertEquals( html, 
+            self.assertEquals( html, 
         '''
 <td style='text-align:left'><b>person0</b></td>
 <td style='text-align:right'><b>1</b></td>
 <td style='text-align:right'><b>$380.50</b></td>
 <td style='text-align:right'><b>-$100.80</b></td>''')
         except: # depends on the locale of the computer
-            my.assertEquals( html, 
+            self.assertEquals( html, 
         '''
 <td style='text-align:left'><b>person0</b></td>
 <td style='text-align:right'><b>1</b></td>
@@ -2669,92 +2669,92 @@ class ExpressionTest(unittest.TestCase):
 <td style='text-align:right'><b>($100.80)</b></td>''')
             
 
-    def _test_color(my):
+    def _test_color(self):
         parser = ExpressionParser()
 
         expr = '''@COLOR( 'color', '10' )'''
         result = parser.eval(expr, single=True)
-        my.assertEquals(result, '#191919')
+        self.assertEquals(result, '#191919')
 
         expr = '''@COLOR( 'unknown_color' )'''
         result = parser.eval(expr, single=True)
         # default to color (black)
-        my.assertEquals(result, '#000')
+        self.assertEquals(result, '#000')
     
-    def _test_connection(my):
+    def _test_connection(self):
         from tactic_client_lib import TacticServerStub
         from pyasm.biz import SObjectConnection
         server = TacticServerStub.get()
-        server.connect_sobjects(my.country.get_search_key(), my.city_task.get_search_key(), context='task')
-        sobj = SObjectConnection.get_connected_sobject(my.country, context='task')
+        server.connect_sobjects(self.country.get_search_key(), self.city_task.get_search_key(), context='task')
+        sobj = SObjectConnection.get_connected_sobject(self.country, context='task')
 
        
         # verify the connection exists
-        my.assertEquals(sobj.get_id(), my.city_task.get_id())
-        my.assertEquals(sobj.get_search_type(), my.city_task.get_search_type())
+        self.assertEquals(sobj.get_id(), self.city_task.get_id())
+        self.assertEquals(sobj.get_search_type(), self.city_task.get_search_type())
 
         parser = ExpressionParser()
         expr = '@GET(connect.id)'
-        result = parser.eval(expr, sobjects=[my.country], single=True)
-        my.assertEquals(result, my.city_task.get_id())
+        result = parser.eval(expr, sobjects=[self.country], single=True)
+        self.assertEquals(result, self.city_task.get_id())
 
         # without any input sobject or env_sobjects, it should return None
         parser = ExpressionParser()
         expr = '@GET(connect.id)'
         result = parser.eval(expr, single=True)
-        my.assertEquals(result, None)
+        self.assertEquals(result, None)
 
 
         expr = '@GET(sobject.connect.id)'
-        result = parser.eval(expr, env_sobjects={ 'sobject': my.country}, single=True)
-        my.assertEquals(result, my.city_task.get_id())
+        result = parser.eval(expr, env_sobjects={ 'sobject': self.country}, single=True)
+        self.assertEquals(result, self.city_task.get_id())
 
         expr = '@GET(sobject.connect.parent.code)'
-        result = parser.eval(expr, env_sobjects={ 'sobject': my.country}, single=True)
+        result = parser.eval(expr, env_sobjects={ 'sobject': self.country}, single=True)
         
-        my.assertEquals(result, my.city.get_code())
+        self.assertEquals(result, self.city.get_code())
 
         # ensure env_sobjects can be used multiple times
         expr = '@GET(sobject.connect.sobject.code)'
-        result = parser.eval(expr, env_sobjects={ 'sobject': my.country}, single=True)
+        result = parser.eval(expr, env_sobjects={ 'sobject': self.country}, single=True)
        
-        my.assertEquals(result, my.country.get_code())
+        self.assertEquals(result, self.country.get_code())
 
 
 
-        server.connect_sobjects(my.country.get_search_key(), my.city_task2.get_search_key(), context='main_task')
-        sobj = SObjectConnection.get_connected_sobject(my.country, context='main_task')
-        my.assertEquals(sobj.get_id(), my.city_task2.get_id())
+        server.connect_sobjects(self.country.get_search_key(), self.city_task2.get_search_key(), context='main_task')
+        sobj = SObjectConnection.get_connected_sobject(self.country, context='main_task')
+        self.assertEquals(sobj.get_id(), self.city_task2.get_id())
         expr = "@GET(connect['@CONTEXT','main_task'].id)"
-        result = parser.eval(expr, sobjects=[my.country], single=True)
-        my.assertEquals(result, my.city_task2.get_id())
+        result = parser.eval(expr, sobjects=[self.country], single=True)
+        self.assertEquals(result, self.city_task2.get_id())
 
         expr = "@GET(connect['@CONTEXT','main_task']['@CONTEXT','EQ','main'].id)"
-        result = parser.eval(expr, sobjects=[my.country], single=True)
-        my.assertEquals(result, my.city_task2.get_id())
+        result = parser.eval(expr, sobjects=[self.country], single=True)
+        self.assertEquals(result, self.city_task2.get_id())
 
 
-    def _test_instance(my):
+    def _test_instance(self):
         expr = "@SOBJECT(unittest/city.unittest/person)"
-        people = Search.eval(expr, [my.country])
+        people = Search.eval(expr, [self.country])
         num = len(people)
 
         # test instance relationship
         expr = "@SEARCH(unittest/person)"
-        search = Search.eval(expr, [my.country])
+        search = Search.eval(expr, [self.country])
         people = search.get_sobjects()
-        my.assertEquals(num, len(people))
+        self.assertEquals(num, len(people))
         
 
         expr = "@SOBJECT(unittest/person)"
-        people = Search.eval(expr, [my.country])
-        my.assertEquals(num, len(people))
+        people = Search.eval(expr, [self.country])
+        self.assertEquals(num, len(people))
         
  
 
         expr = "@SOBJECT(unittest/country)"
-        country = Search.eval(expr, my.persons[0], single=True)
-        my.assertEquals( country.get_code(), my.country.get_code())
+        country = Search.eval(expr, self.persons[0], single=True)
+        self.assertEquals( country.get_code(), self.country.get_code())
        
 
         Project.set_project('sample3d')
@@ -2768,11 +2768,11 @@ class ExpressionTest(unittest.TestCase):
 
 
 
-    def _test_cache(my):
+    def _test_cache(self):
         expr = '@COUNT(unittest/person)'
         parser = ExpressionParser()
         result = parser.eval(expr, single=True)
-        my.assertEquals(result, 8)
+        self.assertEquals(result, 8)
         person = Person.create( "new_person" , "Mr",
                         "Z" , "Fake Unittest Person Z")
         person.set_value("age", "300")
@@ -2784,7 +2784,7 @@ class ExpressionTest(unittest.TestCase):
         parser = ExpressionParser()
         result = parser.eval(expr)
         print "RES ", result
-        my.assertEquals(len(result), 9)
+        self.assertEquals(len(result), 9)
         """
 
 if __name__ == '__main__':

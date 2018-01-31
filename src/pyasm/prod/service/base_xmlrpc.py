@@ -48,35 +48,35 @@ class BaseXMLRPC(XmlrpcServer):
             ]
 
 
-    def init(my, ticket):
+    def init(self, ticket):
         XmlRpcInit(ticket)
 
         # initialize the web environment object and register it
-        adapter = my.get_adapter()
+        adapter = self.get_adapter()
         
         WebContainer.set_web(adapter)
        
-        my.set_templates()
+        self.set_templates()
         
 
-    def set_project(my, project_code):
-        my.project_code = project_code
+    def set_project(self, project_code):
+        self.project_code = project_code
         return True
     set_project.exposed = True
 
-    def set_templates(my):
+    def set_templates(self):
         pass
 
 
-    def exposedMethods(my):
-        return my.METHODS
+    def exposedMethods(self):
+        return self.METHODS
 
 
-    def get_loader_xml(my, ticket, project_code, snapshot_code, context="", options=""):
+    def get_loader_xml(self, ticket, project_code, snapshot_code, context="", options=""):
         '''uses the loader to generate an execute xml that can be
         used to load the assets'''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             snapshot = Snapshot.get_by_code(snapshot_code)
@@ -101,10 +101,10 @@ class BaseXMLRPC(XmlrpcServer):
         return xml
     get_loader_xml.exposed = True
     
-    def get_update_xml(my, ticket, project_code, snapshot_code, asset_code, instance, context='', options=''):
+    def get_update_xml(self, ticket, project_code, snapshot_code, asset_code, instance, context='', options=''):
         '''an update xml to update node info'''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
             
             snapshot = Snapshot.get_by_code(snapshot_code)
@@ -128,11 +128,11 @@ class BaseXMLRPC(XmlrpcServer):
     get_update_xml.exposed = True
    
 
-    def get_shot_loader_xml(my, ticket, project_code, snapshot_code, shot_code, instance_name, context="", options=""):
+    def get_shot_loader_xml(self, ticket, project_code, snapshot_code, shot_code, instance_name, context="", options=""):
         '''uses the loader to generate an execute xml that can be
         used to load the assets'''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             snapshot = Snapshot.get_by_code(snapshot_code)
@@ -179,10 +179,10 @@ class BaseXMLRPC(XmlrpcServer):
     get_shot_loader_xml.exposed = True
 
 
-    def update_session(my, ticket, project_code, user, pid, data):
+    def update_session(self, ticket, project_code, user, pid, data):
 
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code) 
             # get the session sobject
             sobject = None
@@ -212,10 +212,10 @@ class BaseXMLRPC(XmlrpcServer):
     update_session.exposed = True
 
 
-    def create_assets(my, ticket, project_code, set_code, names):
+    def create_assets(self, ticket, project_code, set_code, names):
 
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             cmd = CreateSetAssetsCmd()
@@ -231,12 +231,12 @@ class BaseXMLRPC(XmlrpcServer):
     create_assets.exposed = True
 
        
-    def create_set(my, ticket, project_code, set_name, cat_name, selected):
+    def create_set(self, ticket, project_code, set_name, cat_name, selected):
         '''an xml to create a new set node'''
         xml = ''
         asset_code = ''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
             cmd = MayaSetCreateCmd()
             cmd.set_set_name(set_name)
@@ -262,10 +262,10 @@ class BaseXMLRPC(XmlrpcServer):
     create_set.exposed = True
 
 
-    def checkin_set(my, ticket, project_code, asset_code, context):
+    def checkin_set(self, ticket, project_code, asset_code, context):
         snapshot_code = ''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             new_set = Asset.get_by_code(asset_code)
@@ -282,11 +282,11 @@ class BaseXMLRPC(XmlrpcServer):
     checkin_set.exposed = True
 
 
-    def checkin_shot_set(my, ticket, project_code, shot_code, process, context, \
+    def checkin_shot_set(self, ticket, project_code, shot_code, process, context, \
              checkin_as, currency, unknown_ref, desc):
         snapshot_code = ''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             shot = Shot.get_by_code(shot_code)
@@ -318,7 +318,7 @@ class BaseXMLRPC(XmlrpcServer):
 
 
     """
-    def get_snapshot_file(my, search_key, context):
+    def get_snapshot_file(self, search_key, context):
         '''gets the last checked in snapshot for this sobject and context
         and retrieves the files already checked in'''
     get_snapshot_file.exposed = True
@@ -327,10 +327,10 @@ class BaseXMLRPC(XmlrpcServer):
 
 
 
-    def get_instances_by_shot_xml(my, ticket, project_code, shot_code, with_template=True, with_audio=True):
+    def get_instances_by_shot_xml(self, ticket, project_code, shot_code, with_template=True, with_audio=True):
         ''' retrieve flash asset instances in a shot'''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
             
             shot = Shot.get_by_code(shot_code)
@@ -370,12 +370,12 @@ class BaseXMLRPC(XmlrpcServer):
                 if shot_audio:
                     context = "publish"
                     inst_mode = "import_media"
-                    my._append_xml( shot_audio, context, inst_mode, uber_xml )
+                    self._append_xml( shot_audio, context, inst_mode, uber_xml )
 
             for asset in assets:
                 context = "publish"
                 inst_mode = "import"
-                my._append_xml( asset, context, inst_mode, uber_xml )
+                self._append_xml( asset, context, inst_mode, uber_xml )
 
             
             loader_context = ProdLoaderContext()
@@ -402,7 +402,7 @@ class BaseXMLRPC(XmlrpcServer):
     get_instances_by_shot_xml.exposed = True
 
 
-    def _append_xml(my, asset, context, inst_mode, uber_xml ):
+    def _append_xml(self, asset, context, inst_mode, uber_xml ):
         '''append xml to the uber_xml'''
         snapshot = Snapshot.get_latest_by_sobject(asset, context)
         loader_context = ProdLoaderContext()
@@ -419,11 +419,11 @@ class BaseXMLRPC(XmlrpcServer):
             uber_xml.append( "    %s" % xml.to_string(node, pretty=False))
 
 
-    def checkin_textures(my, ticket, project_code, asset_code, paths, file_ranges, node_names, attrs, use_handoff_dir=False, md5s=[]):
+    def checkin_textures(self, ticket, project_code, asset_code, paths, file_ranges, node_names, attrs, use_handoff_dir=False, md5s=[]):
         '''creates a number of textures under a single asset'''
         new_paths = []
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             parent = Asset.get_by_code(asset_code)
@@ -450,11 +450,11 @@ class BaseXMLRPC(XmlrpcServer):
 
 
 
-    def checkin_flash_shot(my, ticket, project_code,shot_code, context, comment):
+    def checkin_flash_shot(self, ticket, project_code,shot_code, context, comment):
             
         snapshot_code = ''
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
             from pyasm.flash import FlashShotSObjectPublishCmd
             shot = Shot.get_by_code(shot_code)
@@ -469,10 +469,10 @@ class BaseXMLRPC(XmlrpcServer):
 
     checkin_flash_shot.exposed = True
 
-    def get_queue(my, ticket):
+    def get_queue(self, ticket):
         execute_xml = "<execute/>"
         try:
-            my.init(ticket)
+            self.init(ticket)
 
             from pyasm.prod.queue import Queue
             job = Queue.get_next_job()
@@ -496,7 +496,7 @@ class BaseXMLRPC(XmlrpcServer):
 
 
  
-    def get_upload_dir(my, ticket):
+    def get_upload_dir(self, ticket):
         '''simple function that returns a temporary path that files can be
         copied to'''
         tmp_dir = Environment.get_tmp_dir()
@@ -509,9 +509,9 @@ class BaseXMLRPC(XmlrpcServer):
 
 
 
-    def checkin_frames(my, ticket, project_code, queue_id):
+    def checkin_frames(self, ticket, project_code, queue_id):
         try:
-            my.init(ticket)
+            self.init(ticket)
             Project.set_project(project_code)
 
             cmd = CheckinFramesXMLRPC()
@@ -530,33 +530,33 @@ class BaseXMLRPC(XmlrpcServer):
        
 class CreateSetAssetsCmd(Command):
     '''This command checkins everything included in a set as a new asset'''
-    def __init__(my):
-        my.asset_codes = []
+    def __init__(self):
+        self.asset_codes = []
 
 
-    def set_set_code(my, set_code):
-        my.set_code = set_code
+    def set_set_code(self, set_code):
+        self.set_code = set_code
 
-    def set_names(my, names):
-        my.names = names
-        my.description = "Created assets '%s'" % names
-
-
-    def get_asset_codes(my):
-        return my.asset_codes
+    def set_names(self, names):
+        self.names = names
+        self.description = "Created assets '%s'" % names
 
 
-    def execute(my):
+    def get_asset_codes(self):
+        return self.asset_codes
 
-        set = Asset.get_by_code(my.set_code)
+
+    def execute(self):
+
+        set = Asset.get_by_code(self.set_code)
         asset_library = set.get_value("name")
 
         # create the assets and check each in
-        for name in my.names:
+        for name in self.names:
             description = name
             asset = Asset.create_with_autocode(name, asset_library, name)
             asset_code = asset.get_code()
-            my.asset_codes.append(asset_code)
+            self.asset_codes.append(asset_code)
 
             # move the file created to a new name with the proper asset_code
             tmp_dir = Environment.get_tmp_dir()
@@ -572,13 +572,13 @@ class CreateSetAssetsCmd(Command):
 
 class CheckinFramesXMLRPC(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Checkin Frames"
 
 
-    def set_args(my, ticket, queue_id):
+    def set_args(self, ticket, queue_id):
 
-        my.ticket = ticket
+        self.ticket = ticket
 
 
         # get the necessary data
@@ -587,48 +587,48 @@ class CheckinFramesXMLRPC(Command):
         data = queue.get_xml_value("serialized")
         search_key = data.get_value("data/search_key")
 
-        my.sobject = Search.get_by_search_key(search_key)
-        if not my.sobject:
+        self.sobject = Search.get_by_search_key(search_key)
+        if not self.sobject:
             raise Exception("SObject with search_key: %s does not exist" % search_key)
 
         snapshot_code = data.get_value("data/snapshot_code")
-        my.snapshot = Snapshot.get_by_code(snapshot_code)
+        self.snapshot = Snapshot.get_by_code(snapshot_code)
 
-        my.file_range = data.get_value("data/file_range")
-        my.session = "<session/>"
+        self.file_range = data.get_value("data/file_range")
+        self.session = "<session/>"
 
-        my.pattern = data.get_value("data/pattern")
-
-
+        self.pattern = data.get_value("data/pattern")
 
 
-    def execute(my):
-        assert my.snapshot
+
+
+    def execute(self):
+        assert self.snapshot
 
         # assumes the files are already copied to the upload directory by
         # some other means (copying, for example)
         tmp_dir = Environment.get_tmp_dir()
-        upload_dir = "%s/upload/%s" % (tmp_dir, my.ticket)
+        upload_dir = "%s/upload/%s" % (tmp_dir, self.ticket)
 
-        file_name = my.pattern
+        file_name = self.pattern
 
         file_paths = ["%s/%s" % (upload_dir, file_name)]
         file_types = ["main"]
 
         # need to get session information
-        if not my.session:
-            my.session = "<session/>"
+        if not self.session:
+            self.session = "<session/>"
 
         # just add the next version
         version = -1
 
-        render = Render.create(my.sobject, my.snapshot, my.session, my.file_range, version)
-        file_range = FrameRange.get(my.file_range)
+        render = Render.create(self.sobject, self.snapshot, self.session, self.file_range, version)
+        file_range = FrameRange.get(self.file_range)
         checkin = FileGroupCheckin(render, file_paths, file_types, file_range)
-        checkin.add_input_snapshot(my.snapshot)
+        checkin.add_input_snapshot(self.snapshot)
         checkin.execute()
 
-        my.description = "Checked in frames %s" % file_range.get_key()
+        self.description = "Checked in frames %s" % file_range.get_key()
 
 
 

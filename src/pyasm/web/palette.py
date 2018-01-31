@@ -187,91 +187,91 @@ class Palette(object):
 
 
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.colors = my.kwargs.get("colors")
-        palette = my.kwargs.get("palette")
+        self.colors = self.kwargs.get("colors")
+        palette = self.kwargs.get("palette")
         if palette:
-            my.set_palette(palette)
+            self.set_palette(palette)
         else:
             # look at the project
             from pyasm.biz import Project
             project = Project.get(no_exception=True)
             if project:
                 value = project.get_value("palette")
-                my.set_palette(value)
+                self.set_palette(value)
 
 
         # otherwise look at the user
-        if not my.colors:
+        if not self.colors:
             from pyasm.biz import PrefSetting
             value = PrefSetting.get_value_by_key("palette")
-            my.set_palette(value)
+            self.set_palette(value)
 
 
         # look in the config
-        if not my.colors:
+        if not self.colors:
             value = Config.get_value("look", "palette")
-            my.set_palette(value)
+            self.set_palette(value)
 
 
-        if not my.colors:
-            my.colors = my.COLORS
+        if not self.colors:
+            self.colors = self.COLORS
 
         # make sure all of the colors are defined
-        for name, value in my.DEFAULT.items():
+        for name, value in self.DEFAULT.items():
             # make a special provision for theme!
             if name == 'theme':
                 continue
 
-            if not my.colors.get(name):
-                my.colors[name] = value
+            if not self.colors.get(name):
+                self.colors[name] = value
 
 
-    def set_palette(my, palette):
+    def set_palette(self, palette):
         value = palette
         if not value:
             return
 
         try:
-            my.colors = eval(value)
+            self.colors = eval(value)
 
             # make sure all of the colors are defined
-            for name, value in my.DEFAULT.items():
+            for name, value in self.DEFAULT.items():
                 # make a special provision for theme!
                 if name == 'theme':
                     continue
 
-                if not my.colors.get(name):
-                    my.colors[name] = value
+                if not self.colors.get(name):
+                    self.colors[name] = value
 
         except:
             try:
                 value = value.upper()
                 value = value.replace(" ", "_")
-                my.colors = eval("my.%s" % value)
+                self.colors = eval("self.%s" % value)
             except:
                 print "WARNING: palette [%s] does not exist.  Using default" % value
 
                
 
-    def get_theme(my):
-        theme = my.colors.get("theme")
+    def get_theme(self):
+        theme = self.colors.get("theme")
         if not theme:
             theme = "default"
         return theme
 
 
-    def get_keys(my):
-        return my.colors.keys()
+    def get_keys(self):
+        return self.colors.keys()
 
 
-    def get_colors(my):
-        return my.colors
+    def get_colors(self):
+        return self.colors
 
 
-    def color(my, category, modifier=0, default=None):
+    def color(self, category, modifier=0, default=None):
 
         if not category:
             category = 'background'
@@ -282,10 +282,10 @@ class Palette(object):
             color = category
             category = "color"
         else:
-            color = my.colors.get(category)
+            color = self.colors.get(category)
 
         if not color:
-            color = my.colors.get(default)
+            color = self.colors.get(default)
         if not color:
             color = category
 
@@ -293,11 +293,11 @@ class Palette(object):
         if category == 'background2' and not color:
             category = 'background'
             modifier += 10
-            color = my.colors.get(category)
+            color = self.colors.get(category)
         if category == 'color2' and not color:
             category = 'color'
             modifier += 10
-            color = my.colors.get(category)
+            color = self.colors.get(category)
 
         return Common.modify_color(color, modifier)
 
@@ -372,7 +372,7 @@ class Palette(object):
     """
 
 
-    def gradient(my, palette_key, modifier=0, range=-20, reverse=False, default=None):
+    def gradient(self, palette_key, modifier=0, range=-20, reverse=False, default=None):
 
         if modifier == None:
             modifier = 0
@@ -383,15 +383,15 @@ class Palette(object):
         web = WebContainer.get_web()
         palette = Palette.get()
         if web.is_IE():
-            color = my.color(palette_key, (modifier+range)/2, default=default)
+            color = self.color(palette_key, (modifier+range)/2, default=default)
             return color
         else: 
             if not reverse:
-                color1 = my.color(palette_key, modifier, default=default)
-                color2 = my.color(palette_key, modifier+range, default=default)
+                color1 = self.color(palette_key, modifier, default=default)
+                color2 = self.color(palette_key, modifier+range, default=default)
             else:
-                color2 = my.color(palette_key, modifier, default=default)
-                color1 = my.color(palette_key, modifier+range, default=default)
+                color2 = self.color(palette_key, modifier, default=default)
+                color1 = self.color(palette_key, modifier+range, default=default)
 
 
             if web.get_browser() == 'Mozilla':

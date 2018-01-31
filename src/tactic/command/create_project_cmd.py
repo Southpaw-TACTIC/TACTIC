@@ -26,9 +26,9 @@ from pyasm.biz import Project, IconCreator
 
 __all__.append("CopyFileToAssetTempCmd")
 class CopyFileToAssetTempCmd(Command):
-    def execute(my):
-        filename = my.kwargs.get("filename")
-        ticket = my.kwargs.get("ticket")
+    def execute(self):
+        filename = self.kwargs.get("filename")
+        ticket = self.kwargs.get("ticket")
         upload_dir = Environment.get_upload_dir(ticket=ticket)
         # can't rely on that
         #ticket = Environment.get_ticket()
@@ -46,12 +46,12 @@ class CopyFileToAssetTempCmd(Command):
         
         if icon_path:
             shutil.copy(icon_path, to_path)
-            my.info = {
+            self.info = {
                 "web_path": "/assets/temp/%s/%s" % (ticket, filename),
                 "lib_path": to_path
             }
         else:
-            my.info = {}
+            self.info = {}
 
         
 class CreateProjectCmd(Command):
@@ -63,10 +63,10 @@ class CreateProjectCmd(Command):
 
 
 
-    def get_title(my):
+    def get_title(self):
         return "Create Project"
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'project_code': 'code of the new project',
         'project_title': 'title of the new project',
@@ -74,8 +74,8 @@ class CreateProjectCmd(Command):
         #'copy_pipelines': 'flag to copy template site pipelines to project'
         }
 
-    def check(my):
-        project_code = my.kwargs.get('project_code')
+    def check(self):
+        project_code = self.kwargs.get('project_code')
         regexs = '^\d|\W'
         m = re.search(r'%s' % regexs, project_code) 
         if m:
@@ -95,19 +95,19 @@ class CreateProjectCmd(Command):
 
         return True
 
-    def execute(my):
+    def execute(self):
 
-        project_code = my.kwargs.get('project_code')
-        project_title = my.kwargs.get('project_title')
-        project_type = my.kwargs.get('project_type')
-        project_description = my.kwargs.get("description")
+        project_code = self.kwargs.get('project_code')
+        project_title = self.kwargs.get('project_title')
+        project_type = self.kwargs.get('project_type')
+        project_description = self.kwargs.get("description")
         if not project_type:
             project_type = "simple"
 
-        is_template = my.kwargs.get('is_template')
-        project_theme = my.kwargs.get('project_theme')
+        is_template = self.kwargs.get('is_template')
+        project_theme = self.kwargs.get('project_theme')
 
-        use_default_side_bar = my.kwargs.get('use_default_side_bar')
+        use_default_side_bar = self.kwargs.get('use_default_side_bar')
         if use_default_side_bar in [False, 'false']:
             use_default_side_bar = False
         else:
@@ -170,7 +170,7 @@ class CreateProjectCmd(Command):
  
 
         # if there is an image, check it in
-        upload_path = my.kwargs.get("project_image_path")
+        upload_path = self.kwargs.get("project_image_path")
         if upload_path:
             if not os.path.exists(upload_path):
                 raise TacticException("Cannot find upload image for project [%s]" % upload_path)
@@ -232,7 +232,7 @@ class CreateProjectCmd(Command):
         # import the appropriate schema with config first
         database.import_schema(db_resource, base_type)
 
-        my.create_schema(project_code)
+        self.create_schema(project_code)
 
         # before we upgrade, we have to commit the transaction
         # This is because upgrade actually run as separate processes
@@ -241,7 +241,7 @@ class CreateProjectCmd(Command):
         DbContainer.commit_thread_sql()
 
 
-        my.upgrade()
+        self.upgrade()
 
         # import the appropriate data
         database.import_default_data(db_resource, base_type)
@@ -249,21 +249,21 @@ class CreateProjectCmd(Command):
 
         # import default links
         if use_default_side_bar:
-            my.import_default_side_bar()
+            self.import_default_side_bar()
 
 
         # create specified stypes
-        my.create_search_types()
+        self.create_search_types()
 
 
         # create theme
         if project_theme:
-            my.create_theme(project_theme)
+            self.create_theme(project_theme)
 
 
 
         # set as main project
-        is_main_project = my.kwargs.get("is_main_project")
+        is_main_project = self.kwargs.get("is_main_project")
         if is_main_project in [True,'true','on']:
             Config.set_value("install", "default_project", project_code)
             Config.save_config()
@@ -273,13 +273,13 @@ class CreateProjectCmd(Command):
         DbContainer.get('sthpw')
 
 
-        my.info['result'] = "Finished creating project [%s]."%project_code
+        self.info['result'] = "Finished creating project [%s]."%project_code
 
         print "Done."
 
 
 
-    def create_schema(my, project_code):
+    def create_schema(self, project_code):
         # This may not be necessary
         return
 
@@ -292,14 +292,14 @@ class CreateProjectCmd(Command):
 
 
 
-    def import_default_side_bar(my):
+    def import_default_side_bar(self):
         code = Search.eval("@GET(config/widget_config['code','WIDGET_CONFIG000000'].code)", single=True)
         if code:
             print "Default side bar already exists!"
             return
 
         
-        project_code = my.kwargs.get('project_code')
+        project_code = self.kwargs.get('project_code')
         # It looks like project=XXX on SearchType.create does not work
         Project.set_project(project_code)
         config = SearchType.create("config/widget_config?project=%s" % project_code)
@@ -321,8 +321,8 @@ class CreateProjectCmd(Command):
 
 
 
-    def upgrade(my):
-        project_code = my.kwargs.get('project_code')
+    def upgrade(self):
+        project_code = self.kwargs.get('project_code')
         # run the upgrade script (this has to be done in a separate
         # process due to possible sql errors in a transaction
         install_dir = Environment.get_install_dir()
@@ -340,12 +340,12 @@ class CreateProjectCmd(Command):
 
 
 
-    def create_search_types(my):
+    def create_search_types(self):
         from tactic.ui.app import SearchTypeCreatorCmd
 
-        project_code = my.kwargs.get('project_code')
+        project_code = self.kwargs.get('project_code')
 
-        search_types = my.kwargs.get('project_stype')
+        search_types = self.kwargs.get('project_stype')
         if not search_types:
             return
 
@@ -385,7 +385,7 @@ class CreateProjectCmd(Command):
             creator.execute()
 
 
-    def create_theme(my, theme):
+    def create_theme(self, theme):
 
         # get a built-in plugin
         plugin_base_dir = Environment.get_plugin_dir()
@@ -473,16 +473,16 @@ class CreateProjectCmd(Command):
 
 class CopyProjectFromTemplateCmd(Command):
 
-    def execute(my):
-        project_code = my.kwargs.get("project_code")
-        template_code = my.kwargs.get("template_code")
-        project_title = my.kwargs.get("project_title")
+    def execute(self):
+        project_code = self.kwargs.get("project_code")
+        template_code = self.kwargs.get("template_code")
+        project_title = self.kwargs.get("project_title")
 
         # check to see if the template actually exists
 
 
         from tactic.command import ProjectTemplateInstallerCmd
-        cmd = ProjectTemplateInstallerCmd(**my.kwargs)
+        cmd = ProjectTemplateInstallerCmd(**self.kwargs)
         cmd.execute()
 
 
@@ -494,7 +494,7 @@ class CopyProjectFromTemplateCmd(Command):
 class CopyProjectCmd(Command):
     '''Command to copy configuration entries to project specific databases'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'project_code': 'code of the new project',
         'project_title': 'title of the new project',
@@ -502,8 +502,8 @@ class CopyProjectCmd(Command):
         'copy_project': 'project to copy from'
         }
 
-    def check(my):
-        project_code = my.kwargs.get('project_code')
+    def check(self):
+        project_code = self.kwargs.get('project_code')
         regexs = '^\d|\W'
         m = re.search(r'%s' % regexs, project_code) 
         if m:
@@ -520,18 +520,18 @@ class CopyProjectCmd(Command):
         return True
 
 
-    def execute(my):
+    def execute(self):
 
-        project_code = my.kwargs.get("project_code")
-        project_title = my.kwargs.get("project_title")
-        src_project_code = my.kwargs.get("src_project")
+        project_code = self.kwargs.get("project_code")
+        project_title = self.kwargs.get("project_title")
+        src_project_code = self.kwargs.get("src_project")
         assert(project_code)
         assert(src_project_code)
 
         src_project = Project.get_by_code(src_project_code)
         assert(src_project)
 
-        project_type = my.kwargs.get("project_type")
+        project_type = self.kwargs.get("project_type")
         if not project_type:
             project_type = src_project.get_value("type")
 

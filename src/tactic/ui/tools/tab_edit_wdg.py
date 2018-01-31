@@ -21,10 +21,10 @@ from tactic.ui.container import ResizableTableWdg
 class TabEditWdg(BaseRefreshWdg):
 
 
-    def get_config(my):
+    def get_config(self):
 
-        my.view = my.kwargs.get("view")
-        my.view = 'tab_config_whatever'
+        self.view = self.kwargs.get("view")
+        self.view = 'tab_config_whatever'
 
         search = Search("config/widget_config")
         search.add_filter("category", "TabWdg")
@@ -37,20 +37,20 @@ class TabEditWdg(BaseRefreshWdg):
               <tab>
               </tab>
             </config>'''
-        config = WidgetConfig.get(view=my.view, xml=config_xml)
+        config = WidgetConfig.get(view=self.view, xml=config_xml)
 
         return config
 
 
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
+    def get_display(self):
+        top = self.top
+        self.set_as_panel(top)
         top.add_color("background", "background")
         top.add_border()
         top.add_class("spt_tab_edit_top")
 
-        my.config = my.get_config()
+        self.config = self.get_config()
 
 
         table = ResizableTableWdg()
@@ -60,7 +60,7 @@ class TabEditWdg(BaseRefreshWdg):
         table.add_row()
 
         left = table.add_cell()
-        left.add(my.get_elements_wdg() )
+        left.add(self.get_elements_wdg() )
         left.add_style("width: 200px")
         left.add_border()
         left.add_color("background", "background3")
@@ -88,7 +88,7 @@ class TabEditWdg(BaseRefreshWdg):
 
 
 
-    def get_elements_wdg(my):
+    def get_elements_wdg(self):
 
         div = DivWdg()
         div.add_style("min-width: 200px")
@@ -101,7 +101,7 @@ class TabEditWdg(BaseRefreshWdg):
         title_wdg.add_gradient("background", "background", -10)
 
         #element_names = ['Checkin', 'Checkout']
-        element_names = my.config.get_element_names()
+        element_names = self.config.get_element_names()
 
         elements_wdg = DivWdg()
         div.add(elements_wdg)
@@ -150,36 +150,36 @@ class TabEditWdg(BaseRefreshWdg):
 
 class TabElementDefinitionWdg(BaseRefreshWdg):
 
-    def get_config(my):
+    def get_config(self):
 
-        my.view = my.kwargs.get("view")
+        self.view = self.kwargs.get("view")
 
         search = Search("config/widget_config")
         search.add_filter("category", "TabWdg")
         config_sobj = search.get_sobject()
         config_xml = config_sobj.get_value("config")
-        config = WidgetConfig.get(view=my.view, xml=config_xml)
+        config = WidgetConfig.get(view=self.view, xml=config_xml)
 
         return config
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        my.config = my.get_config()
+        self.config = self.get_config()
 
-        element_name = my.kwargs.get("element_name")
+        element_name = self.kwargs.get("element_name")
 
         if not element_name:
             widget_key = ''
             display_class = ''
             display_options = {}
         else:
-            widget_key = my.config.get_widget_key(element_name)
-            display_class = my.config.get_display_handler(element_name)
-            display_options = my.config.get_display_options(element_name)
+            widget_key = self.config.get_widget_key(element_name)
+            display_class = self.config.get_display_handler(element_name)
+            display_options = self.config.get_display_options(element_name)
 
 
         from tactic.ui.manager import WidgetClassSelectorWdg

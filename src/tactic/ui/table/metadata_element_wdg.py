@@ -31,25 +31,25 @@ class MetadataElementWdg(ButtonElementWdg):
     }
 
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def get_required_columns(my):
+    def get_required_columns(self):
         return []
 
-    def get_display(my):
+    def get_display(self):
 
-        my.set_option('icon', "CONTENTS")
+        self.set_option('icon', "CONTENTS")
 
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_type = sobject.get_search_type()
 
-        context = my.get_option("context")
+        context = self.get_option("context")
         if not context:
             context = "publish"
 
-        process = my.get_option("process")
+        process = self.get_option("process")
         if not process:
             process = "publish"
 
@@ -78,7 +78,7 @@ class MetadataElementWdg(ButtonElementWdg):
 
 
         top = DivWdg()
-        icon = IconButtonWdg( "Show Metadata", eval( "IconWdg.%s" % my.get_option('icon') ) )
+        icon = IconButtonWdg( "Show Metadata", eval( "IconWdg.%s" % self.get_option('icon') ) )
         top.add(icon)
         top.add_style("text-align: center")
 
@@ -87,9 +87,9 @@ class MetadataElementWdg(ButtonElementWdg):
         basename = os.path.basename(lib_path)
         dirname = os.path.dirname(lib_path)
 
-        my.behavior['basename'] = basename
-        my.behavior['dirname'] = dirname
-        my.behavior['search_type'] = search_type
+        self.behavior['basename'] = basename
+        self.behavior['dirname'] = dirname
+        self.behavior['search_type'] = search_type
 
 
         cbjs_action = '''
@@ -105,12 +105,12 @@ class MetadataElementWdg(ButtonElementWdg):
         //spt.tab.add_new("Detail", "Detail", class_name, kwargs);
         spt.panel.load_popup("Detail", class_name, kwargs);
 
-        ''' % (my.behavior)
+        ''' % (self.behavior)
 
-        my.behavior['type'] = 'click_up'
-        my.behavior['cbjs_action'] = cbjs_action
+        self.behavior['type'] = 'click_up'
+        self.behavior['cbjs_action'] = cbjs_action
 
-        icon.add_behavior(my.behavior)
+        icon.add_behavior(self.behavior)
 
         return top
 

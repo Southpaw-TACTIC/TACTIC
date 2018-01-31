@@ -29,10 +29,10 @@ class ProcessInputWdg(BaseInputWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
 
-        show_context = my.get_option('context') == 'true'
+        show_context = self.get_option('context') == 'true'
 
         top = DivWdg()
         # put in a js callback to determine the to use.
@@ -41,13 +41,13 @@ class ProcessInputWdg(BaseInputWdg):
 
         context_list = []
 
-        my.pipeline_codes = []
-        my.pipelines = []
-        my.in_edit_wdg = False
+        self.pipeline_codes = []
+        self.pipelines = []
+        self.in_edit_wdg = False
 
-        parent_key = my.get_option("parent_key")
+        parent_key = self.get_option("parent_key")
         if not parent_key:
-            state = my.get_state()
+            state = self.get_state()
             parent_key = state.get("parent_key")
 
 
@@ -68,24 +68,24 @@ class ProcessInputWdg(BaseInputWdg):
         # Need to import this dynamically
         from tactic.ui.panel import EditWdg
         # This is only executed for the popup edit widget
-        if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
-            my.in_edit_wdg = True
-            sobject = my.get_current_sobject()
+        if hasattr(self, 'parent_wdg') and isinstance(self.get_parent_wdg(), EditWdg):
+            self.in_edit_wdg = True
+            sobject = self.get_current_sobject()
             parent = sobject.get_parent()
             if not parent:
-                parent_key = my.get_option('parent_key')
+                parent_key = self.get_option('parent_key')
                 if parent_key:
                     parent = SearchKey.get_by_search_key(parent_key)
 
             if parent:
                 if not parent.has_value('pipeline_code'):
 
-                    name = my.get_input_name()
+                    name = self.get_input_name()
                     text = TextWdg(name)
                     top.add(text)
 
-                    sobject = my.get_current_sobject()
-                    name = my.get_name()
+                    sobject = self.get_current_sobject()
+                    name = self.get_name()
                     value = sobject.get_value(name)
                     text.set_value(value)
 
@@ -94,33 +94,33 @@ class ProcessInputWdg(BaseInputWdg):
                 
                 pipe_code = parent.get_value('pipeline_code')
                 if pipe_code:
-                    my.pipeline_codes  = [pipe_code]
-                    my.pipelines = [Pipeline.get_by_code(pipe_code)]
+                    self.pipeline_codes  = [pipe_code]
+                    self.pipelines = [Pipeline.get_by_code(pipe_code)]
         else:
 
             # just get all of the pipelines
             # Cannot use expression here, because entries are added to the
             # result ... this causes further queries to return with the
             # added entries
-            #my.pipelines = Search.eval("@SOBJECT(sthpw/pipeline)")
+            #self.pipelines = Search.eval("@SOBJECT(sthpw/pipeline)")
             search = Search("sthpw/pipeline")
-            my.pipelines = search.get_sobjects()
+            self.pipelines = search.get_sobjects()
 
-            my.pipeline_codes = [x.get_code() for x in my.pipelines]
+            self.pipeline_codes = [x.get_code() for x in self.pipelines]
 
             # add the default
-            my.pipeline_codes.append("")
-            my.pipelines.append(None)
+            self.pipeline_codes.append("")
+            self.pipelines.append(None)
 
 
-        for i, pipeline_code in enumerate(my.pipeline_codes):
-            pipeline = my.pipelines[i]
+        for i, pipeline_code in enumerate(self.pipeline_codes):
+            pipeline = self.pipelines[i]
             div = DivWdg()
             top.add(div)
             div.add_class("spt_input_option")
             div.add_attr("spt_input_key", pipeline_code)
 
-            name = my.get_input_name()
+            name = self.get_input_name()
 
             # If the pipeline code is empty, make it free form (for now)
             if not pipeline_code:
@@ -131,11 +131,11 @@ class ProcessInputWdg(BaseInputWdg):
 
             
             select = SelectWdg(name)
-            select.add_empty_option("-- Select a %s --" % my.get_name() )
+            select.add_empty_option("-- Select a %s --" % self.get_name() )
 
             # TODO: make spt.dg_table.select_wdg_clicked keyboard action free so it won't interfere with
             # normal usage of the select
-            if not my.in_edit_wdg:
+            if not self.in_edit_wdg:
                 select.add_behavior( { 'type': 'click',
                    'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'
                 } )
@@ -175,10 +175,10 @@ class ProcessInputWdg(BaseInputWdg):
             div.add(select)
 
             # there is only 1 select for EditWdg
-            if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
-                sobject = my.get_current_sobject()
+            if hasattr(self, 'parent_wdg') and isinstance(self.get_parent_wdg(), EditWdg):
+                sobject = self.get_current_sobject()
                 # this could be either process or context
-                name = my.get_name()
+                name = self.get_name()
                 value = sobject.get_value(name)
                 # special case to append a context with subcontext so it will stay selected in EditWdg
                 if name == 'context' and value.find('/') != -1:
@@ -196,42 +196,42 @@ class ProcessInputWdg(BaseInputWdg):
 class SubContextInputWdg(TextWdg):
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         context = ''
         if sobject:
             context = sobject.get_value("context")
       
         from tactic.ui.panel import EditWdg
-        if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
+        if hasattr(self, 'parent_wdg') and isinstance(self.get_parent_wdg(), EditWdg):
             # FIXME: this is added for EditWdg where the KeyboardHandler captures the key and won't let user type
             behavior = {
                     'type': 'keyboard',
                     'kbd_handler_name': 'DgTableMultiLineTextEdit'
                 }
-            my.add_behavior(behavior)
+            self.add_behavior(behavior)
         if not context or context.find("/") == -1:
-            return  super(SubContextInputWdg, my).get_display()
+            return  super(SubContextInputWdg, self).get_display()
 
 
         base, subcontext = context.split("/", 1)
-        my.set_value(subcontext)
+        self.set_value(subcontext)
                
-        return super(SubContextInputWdg, my).get_display()
+        return super(SubContextInputWdg, self).get_display()
 
 
 class SubContextAction(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
         # do nothing
         pass
 
-    def postprocess(my):
+    def postprocess(self):
 
-        sobject = my.sobject
+        sobject = self.sobject
     
 
-        subcontext = my.get_value()
+        subcontext = self.get_value()
         context = sobject.get_value("context")
         
         # if it is a simple context and no subcontext provided, return
@@ -256,8 +256,8 @@ class SubContextAction(DatabaseAction):
             # the case of removing the subcontext
             context = context
         
-        my.sobject.set_value("context", context)
-        my.sobject.commit()
+        self.sobject.set_value("context", context)
+        self.sobject.commit()
 
 
 
