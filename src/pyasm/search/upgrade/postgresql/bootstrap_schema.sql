@@ -56,7 +56,7 @@ CREATE TABLE "project" (
     "last_version_update" character varying(256),
     "palette" character varying(256),
     "category" character varying(256),
-    "is_template" char(1),
+    "is_template" boolean,
     "db_resource" text,
     CONSTRAINT "project_code_idx" UNIQUE ("code")
 );
