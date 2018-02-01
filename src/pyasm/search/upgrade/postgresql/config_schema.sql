@@ -46,9 +46,9 @@ CREATE TABLE "naming" (
     "snapshot_type" character varying(256),
     "context" character varying(256),
     "code" character varying(256),
-    "latest_versionless" char(1),
-    "current_versionless" char(1),
-    "manual_version" char(1),
+    "latest_versionless" boolean,
+    "current_versionless" boolean,
+    "manual_version" boolean,
     "ingest_rule_code" character varying(256),
     "condition" text,
     "class_name" text, 
@@ -157,7 +157,7 @@ CREATE TABLE "spt_pipeline" (
     "description" text,
     "s_status" character varying(32),
     "color" character varying(256),
-    "autocreate_tasks" char(1),
+    "autocreate_tasks" boolean,
     CONSTRAINT "spt_pipeline_code_idx" UNIQUE ("code")
 );
 
