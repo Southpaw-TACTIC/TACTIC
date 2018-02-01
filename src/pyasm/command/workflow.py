@@ -363,7 +363,7 @@ class BaseProcessTrigger(Trigger):
 
     def set_all_tasks(self, sobject, process, status):
 
-        full_process_name = my.get_full_process_name(process)
+        full_process_name = self.get_full_process_name(process)
         tasks = Task.get_by_sobject(sobject, process=full_process_name)
 
         # prevent TaskStatusChangeTrigger from setting a custom task status back to complete
