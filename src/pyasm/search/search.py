@@ -1802,6 +1802,20 @@ class Search(Base):
             # and the column data is dynamic
             columns = ['_id']
             result_is_dict = True
+
+
+
+        elif vendor in ["Salesforce"] or search_type.startswith("salesforce/"):
+
+            impl = db_resource.get_database_impl()
+            self.sobjects = impl.execute_query(sql, self.select)
+
+            # remember that the search has been done
+            self.is_search_done = True
+
+            return self.sobjects
+
+
         else:
             # get the select statement and do the query
             if not statement:
@@ -1990,6 +2004,9 @@ class Search(Base):
             vendor = db_resource.get_vendor()
             if vendor == "MongoDb":
                 count = self.select.execute_count()
+
+            elif vendor == "Salesforce":
+                count = 100
             else:
                 statement = self.select.get_count()
                 count = sql.get_value(statement)
@@ -3904,11 +3921,16 @@ class SObject(object):
 
 
         vendor = db_resource.get_vendor()
-        if vendor == "MongoDb":
+        if vendor in ["MongoDb"]:
             update.execute(sql)
             #statement = update.get_statement()
             #print("statement: ", statement)
             statement = "MongoDB!!!"
+
+
+        elif vendor == 'Salesforce':
+            impl = db_resource.get_database_impl()
+            impl.execute_update(self, sql, update)
 
         else:
             # perform the update
@@ -5709,8 +5731,10 @@ class SearchType(SObject):
 
     def get_sql_by_search_type(cls, search_type):
         from pyasm.biz import Project
-        project = Project.get_by_search_type(search_type)
-        db_resource = project.get_project_db_resource()
+        #project = Project.get_by_search_type(search_type)
+        #db_resource = project.get_project_db_resource()
+        db_resource = Project.get_db_resource_by_search_type(search_type)
+
         sql = DbContainer.get(db_resource)
         return sql
     get_sql_by_search_type = classmethod(get_sql_by_search_type)
@@ -5718,10 +5742,8 @@ class SearchType(SObject):
 
     def get_columns(cls, search_type, show_hidden=True):
         # get the columns 
-        from pyasm.biz import Project
-        project = Project.get_by_search_type(search_type)
-        db_resource = project.get_project_db_resource()
-        sql = DbContainer.get(db_resource)
+
+        sql = cls.get_sql_by_search_type(search_type)
 
         # get the table
         search_type_obj = SearchType.get(search_type)
@@ -7125,7 +7147,6 @@ class SearchKey(object):
 
             search.set_show_retired(True)
             sobject = SObject.get_by_search(search, search_key)            
-            #sobject = search.get_sobject()
             return sobject
         else:
             # use the old way
