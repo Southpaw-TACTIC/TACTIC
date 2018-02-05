@@ -38,13 +38,13 @@ def get_app_server():
     from WebKit.Page import Page
     class AppServer(Page, BaseAppServer):
 
-        def get_adapter(my):
-            adapter = WebWare(my)
+        def get_adapter(self):
+            adapter = WebWare(self)
             return adapter
 
 
-        def writeHTML(my):
-            my.writeln( my.get_display() )
+        def writeHTML(self):
+            self.writeln( self.get_display() )
 
     return AppServer
 
@@ -56,8 +56,8 @@ def get_xmlrpc_server():
     from WebKit.XMLRPCServlet import XMLRPCServlet
 
     class XmlrpcServer(XMLRPCServlet):
-        def get_adapter(my):
-            adapter = WebWareXmlrpcAdapter(my.transaction())
+        def get_adapter(self):
+            adapter = WebWareXmlrpcAdapter(self.transaction())
             return adapter
 
     return XmlrpcServer
@@ -68,16 +68,16 @@ def get_xmlrpc_server():
 class WebWare(WebEnvironment):
     """Encapsulates webware environment. Implements the web interface"""
 
-    def __init__(my,page):
-        super(WebWare,my).__init__()
-        my.request = page.request()
-        my.response = page.response()
+    def __init__(self,page):
+        super(WebWare,self).__init__()
+        self.request = page.request()
+        self.response = page.response()
 
 
-    def get_context_name(my):
+    def get_context_name(self):
         '''this includes all of the subdirectories as well as the main
         context'''
-        dir = my.request.urlPathDir()
+        dir = self.request.urlPathDir()
 
         # strip of the / at the front and the back
         dir = dir.rstrip("/")
@@ -88,35 +88,35 @@ class WebWare(WebEnvironment):
 
 
     # form submission methods
-    #def reset_form(my):
-    #    return my.request.fields() = {}
+    #def reset_form(self):
+    #    return self.request.fields() = {}
 
-    def get_form_keys(my):
-        return my.request.fields().keys()
+    def get_form_keys(self):
+        return self.request.fields().keys()
 
-    def has_form_key(my, key):
-        return my.request.fields().has_key(key)
+    def has_form_key(self, key):
+        return self.request.fields().has_key(key)
 
-    def set_form_value(my, name, value):
+    def set_form_value(self, name, value):
         '''Set the form value to appear like it was submitted'''
-        my.request.setField(name, value)
+        self.request.setField(name, value)
 
 
-    def get_form_values(my, name, raw=False):
+    def get_form_values(self, name, raw=False):
         """returns a string list of the values of a form element.
         If raw is True, then a nonexistant value returns None"""
         
-        if my.request.hasValue(name):
-            values = my.request.value(name)
+        if self.request.hasValue(name):
+            values = self.request.value(name)
             if isinstance(values, basestring):
                 values = values.decode('utf-8')
-                values = my._process_unicode(values)
+                values = self._process_unicode(values)
                 return [values]
             elif isinstance(values, list):
                 new_values = []
                 for value in values:
                     if isinstance(value, basestring):
-                        value = my._process_unicode(value.decode('utf-8'))
+                        value = self._process_unicode(value.decode('utf-8'))
                     new_values.append(value)
                 return new_values
             else: # this can be a FieldStorage instance
@@ -128,10 +128,10 @@ class WebWare(WebEnvironment):
                 return []
 
 
-    def get_form_value(my, name, raw=False):
+    def get_form_value(self, name, raw=False):
         """returns the string value of the form element.
         If raw is True, then a nonexistant value returns None"""
-        values = my.get_form_values(name,raw)
+        values = self.get_form_values(name,raw)
         if values == None:
             return None
 
@@ -142,7 +142,7 @@ class WebWare(WebEnvironment):
         else:
             return ""
 
-    def _process_unicode(my, value):
+    def _process_unicode(self, value):
         try:
             value = value.encode("ascii")
         except:
@@ -160,27 +160,27 @@ class WebWare(WebEnvironment):
     # cookie methods
 
 
-    def set_cookie(my, name, value):
+    def set_cookie(self, name, value):
         """set a cookie"""
-        my.response.setCookie(name, value, expires="NEVER")
+        self.response.setCookie(name, value, expires="NEVER")
 
 
-    def get_cookie(my, name):
+    def get_cookie(self, name):
         """get a cookie"""
-        if my.request.hasCookie(name):
-            return my.request.cookie(name)
+        if self.request.hasCookie(name):
+            return self.request.cookie(name)
         else:
             return ""
 
 
     # environment methods
 
-    def get_env_keys(my):
-        env = my.request.environ()
+    def get_env_keys(self):
+        env = self.request.environ()
         return env.keys()
 
-    def get_env(my, env_var):
-        env = my.request.environ()
+    def get_env(self, env_var):
+        env = self.request.environ()
         return env.get(env_var)
 
 
@@ -189,11 +189,11 @@ class WebWare(WebEnvironment):
 
 class WebWareXmlrpcAdapter(WebWare):
 
-    def __init__(my, transaction):
+    def __init__(self, transaction):
         # NOTE: the call to WebWare's super is intentional
-        super(WebWare,my).__init__()
-        my.request = transaction.request()
-        my.response = transaction.response()
+        super(WebWare,self).__init__()
+        self.request = transaction.request()
+        self.response = transaction.response()
 
 
 

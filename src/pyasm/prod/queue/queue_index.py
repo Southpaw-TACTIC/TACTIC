@@ -19,7 +19,7 @@ import cherrypy
 
 class QueueIndex:
     @cherrypy.expose()
-    def index(my):
+    def index(self):
         Batch()
         # clear the buffer
         #WebContainer.clear_buffer()

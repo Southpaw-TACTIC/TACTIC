@@ -28,26 +28,26 @@ def convert_mysql_upgrade(namespace):
 
 class MySQLConverter(BaseSQLConverter):
 
-    def __init__(my):
-        my.vendor = 'MySQL'
-        my.namespace = None
+    def __init__(self):
+        self.vendor = 'MySQL'
+        self.namespace = None
 
 
-    def get_prepend_lines(my):
-        if my.namespace:
+    def get_prepend_lines(self):
+        if self.namespace:
             return []
         else:
             return ["SET sql_mode='ANSI_QUOTES';\n"];
 
 
 
-    def handle_line(my, line):
-        # FIXME: this could be genealized with my.vendor
+    def handle_line(self, line):
+        # FIXME: this could be genealized with self.vendor
         if line.startswith("class "):
-            line = "class %s%sUpgrade(BaseUpgrade):\n" % (my.vendor, my.namespace.capitalize())
+            line = "class %s%sUpgrade(BaseUpgrade):\n" % (self.vendor, self.namespace.capitalize())
 
         elif line.startswith("__all__ "):
-            line = "__all__ = ['%s%sUpgrade']\n" % (my.vendor, my.namespace.capitalize())
+            line = "__all__ = ['%s%sUpgrade']\n" % (self.vendor, self.namespace.capitalize())
 
         line = line.replace("now()", "CURRENT_TIMESTAMP")
         line = line.replace(" without time zone", "")

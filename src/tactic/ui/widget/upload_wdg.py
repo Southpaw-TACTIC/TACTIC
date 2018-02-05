@@ -25,11 +25,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 class SimpleUploadWdg(BaseInputWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         name = kwargs.get("key")
-        my.kwargs = kwargs
+        self.kwargs = kwargs
 
-        super(SimpleUploadWdg,my).__init__(name)
+        super(SimpleUploadWdg,self).__init__(name)
         
     ARGS_KEYS = {
 
@@ -48,26 +48,26 @@ class SimpleUploadWdg(BaseInputWdg):
         }
         }
  
-    def get_info_wdg(my):
+    def get_info_wdg(self):
         widget = Widget()
-        context_input = HiddenWdg("%s|context" % my.get_input_name(), my.context)
+        context_input = HiddenWdg("%s|context" % self.get_input_name(), self.context)
         context_input.add_class('spt_upload_context')
 
         widget.add(context_input)
 
 
         # override the column
-        column = my.get_option("column")
+        column = self.get_option("column")
         if column != "":
-            column_input = HiddenWdg("%s|column" % my.get_input_name(), column)
+            column_input = HiddenWdg("%s|column" % self.get_input_name(), column)
             widget.add(column_input)
 
         return widget
 
-    def add_style(my, style):
-        my.browse.add_style(style)
+    def add_style(self, style):
+        self.browse.add_style(style)
 
-    def init(my):
+    def init(self):
 
         from tactic.ui.input import UploadButtonWdg 
         on_complete = '''
@@ -87,14 +87,14 @@ class SimpleUploadWdg(BaseInputWdg):
             ticket_hidden.value = ticket;
         }
         '''
-        my.browse = UploadButtonWdg(title="Browse", on_complete=on_complete)
+        self.browse = UploadButtonWdg(title="Browse", on_complete=on_complete)
 
-    def add_behavior(my, bvr):
+    def add_behavior(self, bvr):
         '''add extra bvr to the Browse button post upload'''
-        my.browse.add_behavior(bvr)
+        self.browse.add_behavior(bvr)
 
-    def add_action(my):
-        action = my.kwargs.get('client_action')
+    def add_action(self):
+        action = self.kwargs.get('client_action')
         cbjs_action = ''
         # these are client side action applicable for editing, not insert
         if action =='icon_checkin':
@@ -132,9 +132,9 @@ class SimpleUploadWdg(BaseInputWdg):
         //var stats_msg = instance.file_list.length + " file/s queued";
         //upload_stats.innerHTML = stats_msg;
         spt.named_events.fire_event('update|' + search_key, {});
-        '''%my.context
+        '''%self.context
         
-            my.add_behavior({'type':'click_up',
+            self.add_behavior({'type':'click_up',
                         'cbjs_action': cbjs_action})
 
         elif action == 'submission':
@@ -145,7 +145,7 @@ class SimpleUploadWdg(BaseInputWdg):
                 'cbjs_action': "spt.Upload.submit_complete(bvr)",
                 'start_transaction': True
             }
-            my.add_behavior(bvr)
+            self.add_behavior(bvr)
 
 
     
@@ -153,38 +153,38 @@ class SimpleUploadWdg(BaseInputWdg):
 
 
         
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_color("color", "color")
         #top.add_color("background", "background")
         top.add_class("spt_simple_upload_top")
         
-        top.add(my.browse)
+        top.add(self.browse)
        
 
-        hidden = HiddenWdg( "%s|path" %  my.get_input_name() )
+        hidden = HiddenWdg( "%s|path" %  self.get_input_name() )
         hidden.add_class("spt_upload_hidden")
         top.add(hidden)
 
 
         # this can be used for some other transaction that picks up this file to checkin
-        hidden = HiddenWdg( "%s|ticket" %  my.get_input_name() )
+        hidden = HiddenWdg( "%s|ticket" %  self.get_input_name() )
         hidden.add_class("spt_upload_ticket")
         top.add(hidden)
 
         # if not specified, get the sobject's icon context 
-        my.context = my.kwargs.get("context")
-        if not my.context:
-            current = my.get_current_sobject()
+        self.context = self.kwargs.get("context")
+        if not self.context:
+            current = self.get_current_sobject()
             if current:
-                my.context = current.get_icon_context()
+                self.context = current.get_icon_context()
             else:
                 from pyasm.biz import Snapshot
-                my.context = Snapshot.get_default_context()
+                self.context = Snapshot.get_default_context()
 
-        top.add_attr("spt_context", my.context)
+        top.add_attr("spt_context", self.context)
 
-        top.add( my.get_info_wdg() )
+        top.add( self.get_info_wdg() )
 
 
         files_div = DivWdg()
@@ -193,7 +193,7 @@ class SimpleUploadWdg(BaseInputWdg):
         files_div.add_style("font-size: 11px")
         files_div.add_style("margin-top: 10px")
 
-        my.add_action()
+        self.add_action()
 
         return top
 
@@ -204,10 +204,10 @@ class SimpleUploadWdg(BaseInputWdg):
 class UploadWdg(SimpleUploadWdg):
 
     
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         # by default the Upload button is hidden in EditWdg
-        super(UploadWdg, my).__init__(**kwargs)
-        my.show_upload = False
+        super(UploadWdg, self).__init__(**kwargs)
+        self.show_upload = False
 
     ARGS_KEYS = {
 
@@ -226,28 +226,28 @@ class UploadWdg(SimpleUploadWdg):
         }
     }
 
-    def get_display_old(my):
+    def get_display_old(self):
         '''This is NOT used, just used as a reference for the old method'''
         icon_id = 'upload_div'
         div = DivWdg()
 
-        if my.get_option('upload_type') == 'arbitrary':
+        if self.get_option('upload_type') == 'arbitrary':
             counter = HiddenWdg('upload_counter','0')
             div.add(counter)
             icon = IconButtonWdg('add upload', icon=IconWdg.ADD)
             icon.set_id(icon_id)
             icon.add_event('onclick', "Common.add_upload_input('%s','%s','upload_counter')" \
-                %(icon_id, my.get_input_name()))
+                %(icon_id, self.get_input_name()))
             div.add(icon)
         
         table = Table()
         table.set_class("minimal")
         table.add_style("font-size: 0.8em")
 
-        names = my.get_option('names')
-        required = my.get_option('required')
+        names = self.get_option('names')
+        required = self.get_option('required')
         if not names:
-            my.add_upload(table, my.name)
+            self.add_upload(table, self.name)
         else:
             names = names.split('|')
             if required:
@@ -263,11 +263,11 @@ class UploadWdg(SimpleUploadWdg):
                      is_required = required[idx] == 'true'
                  else:
                      is_required = False
-                 my.add_upload(table, name, is_required)
+                 self.add_upload(table, name, is_required)
 
         table.add_row()
         
-    def get_info_wdg(my):
+    def get_info_wdg(self):
 
         widget = Widget()
 
@@ -275,12 +275,12 @@ class UploadWdg(SimpleUploadWdg):
         table.set_class("minimal")
         table.add_style("font-size: 0.8em")
 
-        context_option = my.kwargs.get('context')
-        context_expr_option = my.kwargs.get('context_expr')
+        context_option = self.kwargs.get('context')
+        context_expr_option = self.kwargs.get('context_expr')
         
-        pipeline_option = my.kwargs.get('pipeline') in ['true', True, 'True']
-        setting_option = my.kwargs.get('setting')
-        context_name = "%s|context" % my.get_input_name()
+        pipeline_option = self.kwargs.get('pipeline') in ['true', True, 'True']
+        setting_option = self.kwargs.get('setting')
+        context_name = "%s|context" % self.get_input_name()
         text = None 
         span1 = SpanWdg("Context", id='context_mode')
         span2 = SpanWdg("Context<br/>/Subcontext", id='subcontext_mode')
@@ -292,7 +292,7 @@ class UploadWdg(SimpleUploadWdg):
             swap = SwapDisplayWdg()
             table.add_data(SpanWdg(swap, css='small'))
             swap.set_display_widgets(StringWdg('[+]'), StringWdg('[-]'))
-            subcontext_name = "%s|subcontext" % my.get_input_name()
+            subcontext_name = "%s|subcontext" % self.get_input_name()
             subcontext = SpanWdg('/ ', css='small')
             subcontext.add(TextWdg(subcontext_name))
             subcontext.add_style('display','none')
@@ -302,8 +302,8 @@ class UploadWdg(SimpleUploadWdg):
                 "swap_display('context_mode','subcontext_mode')"%(subcontext_name, subcontext_name)
             swap.add_action_script(on_script, off_script)
             text = SelectWdg(context_name)
-            if my.sobjects:
-                text.set_sobject(my.sobjects[0])
+            if self.sobjects:
+                text.set_sobject(self.sobjects[0])
             if context_expr_option:
                 text.set_option('values_expr', context_expr_option)
             elif context_option:
@@ -318,7 +318,7 @@ class UploadWdg(SimpleUploadWdg):
             
         elif pipeline_option:
             from pyasm.biz import Pipeline
-            sobject = my.sobjects[0]
+            sobject = self.sobjects[0]
             pipeline = Pipeline.get_by_sobject(sobject)
             context_names = []
             process_names = pipeline.get_process_names(recurse=True)
@@ -334,12 +334,12 @@ class UploadWdg(SimpleUploadWdg):
             hint = HintWdg('If not specified, the default is [publish]')
             table.add_data(hint)
       
-        revision_cb = CheckboxWdg('%s|is_revision' %my.get_input_name(),\
+        revision_cb = CheckboxWdg('%s|is_revision' %self.get_input_name(),\
             label='is revision', css='med')
         table.add_data(revision_cb)
         table.add_row()
         table.add_cell("Comment")
-        textarea = TextAreaWdg("%s|description"% my.get_input_name())
+        textarea = TextAreaWdg("%s|description"% self.get_input_name())
         table.add_cell(textarea)
         widget.add(table)
 
@@ -351,7 +351,7 @@ class UploadWdg(SimpleUploadWdg):
 
 class UploadProgressWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
         #div.add_style("div: solid 1px black")
         div.add_style("margin: 5px")
@@ -390,13 +390,13 @@ __all__.extend(["AppletUploader", "HtmlUploader"])
 
 
 class AppletUploader(BaseRefreshWdg):
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
         return top
 
 
-    def get_browse_button(my):
+    def get_browse_button(self):
         button = ActionButtonWdg(title="Browse")
         button_div.add(button)
         button.add_style("float: left")
@@ -428,7 +428,7 @@ class AppletUploader(BaseRefreshWdg):
         return button
 
 
-    def get_upload_button(my):
+    def get_upload_button(self):
         button = ActionButtonWdg(title="Upload")
         button_div.add(button)
         button.add_behavior( {
@@ -449,16 +449,16 @@ class AppletUploader(BaseRefreshWdg):
 
 class HtmlUploader(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = 300
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = 100
 
-        top = my.top
+        top = self.top
         top.add_class("spt_uploader_top")
 
         inner = DivWdg()
@@ -467,7 +467,7 @@ class HtmlUploader(BaseRefreshWdg):
         inner.add_style("padding: 3px")
         inner.add_behavior( {
         'type': 'load',
-        'cbjs_action': my.get_onload_js()
+        'cbjs_action': self.get_onload_js()
         } )
 
         drop_wdg = DivWdg()
@@ -496,7 +496,7 @@ class HtmlUploader(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return '''
 
 spt.uploader = {};
@@ -608,13 +608,13 @@ spt.uploader.upload_file = function(file) {
 # DEPRECATED
 """
 class GlobalUploadWdg(BaseRefreshWdg):
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'key': 'the key to the this upload widget'
         }
         
-    def get_display(my):
-        key = my.kwargs.get("key")
+    def get_display(self):
+        key = self.kwargs.get("key")
 
 
         div = DivWdg()

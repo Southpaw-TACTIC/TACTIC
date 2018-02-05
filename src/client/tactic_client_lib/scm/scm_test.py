@@ -19,45 +19,45 @@ from subversion import *
 
 class ScmTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
 
         user = 'remko'
         password = getpass.getpass("Password: ")
 
-        my.scm = Subversion(user=user, password=password)
-        my.scm.set_root("file:///home/apache/test_svn_repo")
+        self.scm = Subversion(user=user, password=password)
+        self.scm.set_root("file:///home/apache/test_svn_repo")
 
 
-        my._test_empty_checkout()
-        my._test_checkout_single_file()
-        my._test_delivery()
+        self._test_empty_checkout()
+        self._test_checkout_single_file()
+        self._test_delivery()
 
 
 
 
-    def _test_empty_checkout(my):
+    def _test_empty_checkout(self):
         #repo_path = "sound/sound.wav"
         repo_path = "sound.wav"
         sync_dir = "test_empty"
 
         branch = "1.1"
-        my.scm.set_branch(branch)
-        my.scm.set_sync_dir(sync_dir)
+        self.scm.set_branch(branch)
+        self.scm.set_sync_dir(sync_dir)
 
         repo_dir = os.path.dirname(repo_path)
-        my.scm.checkout(repo_dir, sync_dir, depth="empty")
+        self.scm.checkout(repo_dir, sync_dir, depth="empty")
 
-        my.assertEquals( False, os.path.exists(repo_path) )
+        self.assertEquals( False, os.path.exists(repo_path) )
         shutil.rmtree(sync_dir)
 
 
 
-    def _test_checkout_single_file(my):
+    def _test_checkout_single_file(self):
 
         # set the sync dir
         sync_dir = "test_checkout_single"
-        my.scm.set_sync_dir(sync_dir)
-        my.scm.set_branch("1.1")
+        self.scm.set_sync_dir(sync_dir)
+        self.scm.set_branch("1.1")
 
         #repo_path = "sound/sound.wav"
         repo_path = "sound.wav"
@@ -65,21 +65,21 @@ class ScmTest(unittest.TestCase):
         repo_dir = os.path.dirname(repo_path)
 
         # test checkout of a single file (trick)
-        my.scm.checkout_file(repo_path)
+        self.scm.checkout_file(repo_path)
 
-        my.assertEquals( True, os.path.exists(sync_path) )
+        self.assertEquals( True, os.path.exists(sync_path) )
         shutil.rmtree(sync_dir)
 
 
 
 
 
-    def _test_checkout(my):
+    def _test_checkout(self):
 
         # set the sync dir
         sync_dir = "test_checkout"
-        my.scm.set_sync_dir(sync_dir)
-        my.scm.set_branch("1.1")
+        self.scm.set_sync_dir(sync_dir)
+        self.scm.set_branch("1.1")
 
         #repo_path = "sound/sound.wav"
         repo_path = "sound.wav"
@@ -87,10 +87,10 @@ class ScmTest(unittest.TestCase):
         repo_dir = os.path.dirname(repo_path)
 
         # test checkout of a single file (trick)
-        my.scm.checkout(repo_dir, sync_dir, depth="empty")
-        my.scm.export(repo_path, sync_path)
+        self.scm.checkout(repo_dir, sync_dir, depth="empty")
+        self.scm.export(repo_path, sync_path)
 
-        my.assertEquals( True, os.path.exists(sync_path) )
+        self.assertEquals( True, os.path.exists(sync_path) )
 
         shutil.rmtree(sync_dir)
 
@@ -99,7 +99,7 @@ class ScmTest(unittest.TestCase):
 
 
 
-    def _test_delivery(my):
+    def _test_delivery(self):
         '''deliver a file to the repository'''
         branch = "1.1"
         #repo_path = "docs/documents2.txt"
@@ -114,10 +114,10 @@ class ScmTest(unittest.TestCase):
 
 
 
-        my.scm.set_branch(branch)
+        self.scm.set_branch(branch)
 
-        my.scm.set_sync_dir(sync_dir)
-        my.scm.deliver_file(src_path, repo_path)
+        self.scm.set_sync_dir(sync_dir)
+        self.scm.deliver_file(src_path, repo_path)
 
 
         shutil.rmtree(sync_dir)

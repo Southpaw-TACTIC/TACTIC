@@ -25,16 +25,16 @@ from pyasm.application.maya import *
 
 class CompCheckin(FileCheckin):
 
-    def __init__(my, sobject, file_paths, file_types, context="publish", column=None, snapshot_type=None, is_current=True):
-        BaseCheckin.__init__(my, sobject)
+    def __init__(self, sobject, file_paths, file_types, context="publish", column=None, snapshot_type=None, is_current=True):
+        BaseCheckin.__init__(self, sobject)
         context = context
         snapshot_type = "composite"
 
-        super(CompCheckin,my).__init__(sobject, file_paths, file_types, context, snapshot_type=snapshot_type, is_current=is_current)
+        super(CompCheckin,self).__init__(sobject, file_paths, file_types, context, snapshot_type=snapshot_type, is_current=is_current)
 
 
 
-    def preprocess_files(my, paths):
+    def preprocess_files(self, paths):
         '''Process the maya file so that all of the files exist.
         This makes the files self-consistent and usable without the
         asset management system'''
@@ -42,21 +42,21 @@ class CompCheckin(FileCheckin):
             
 
 
-    def add_dependencies(my, snapshot_xml):
+    def add_dependencies(self, snapshot_xml):
         '''look into shake session/file and create the files'''
 
-        if not my.file_paths:
+        if not self.file_paths:
             return
 
-        path = my.file_paths[0]
+        path = self.file_paths[0]
         if path.endswith(".shk"):
             parser = MayaParser(path)
             shake_filter = ShakeFileFilter()
             parser.add_filter(shake_filter)
             parser.parse()
 
-            my.file_outs = shake_filter.get_file_outs()
-            my.file_ins = shake_filter.get_file_ins()
+            self.file_outs = shake_filter.get_file_outs()
+            self.file_ins = shake_filter.get_file_ins()
 
         elif path.endswith(".comp"):
             parser = MayaParser(path)
@@ -65,8 +65,8 @@ class CompCheckin(FileCheckin):
             parser.add_filter(fusion_filter)
             parser.parse()
 
-            my.file_outs = fusion_filter.get_file_outs()
-            my.file_ins = fusion_filter.get_file_ins()
+            self.file_outs = fusion_filter.get_file_outs()
+            self.file_ins = fusion_filter.get_file_ins()
 
         elif path.endswith(".nk"):
             parser = MayaParser(path)
@@ -75,8 +75,8 @@ class CompCheckin(FileCheckin):
             parser.add_filter(nuke_filter)
             parser.parse()
 
-            my.file_outs = nuke_filter.get_file_outs()
-            my.file_ins = nuke_filter.get_file_ins()
+            self.file_outs = nuke_filter.get_file_outs()
+            self.file_ins = nuke_filter.get_file_ins()
 
         else:
             return
@@ -85,14 +85,14 @@ class CompCheckin(FileCheckin):
         xml = Xml()
         xml.read_string(snapshot_xml)
         builder = SnapshotBuilder(xml)
-        for file_path in my.file_ins:
+        for file_path in self.file_ins:
             #print file_path
             builder.add_ref_by_file_path(file_path, type="input_ref")
 
 
         # commit it to the snapshot
-        my.snapshot.set_value("snapshot", builder.to_string())       
-        my.snapshot.commit()
+        self.snapshot.set_value("snapshot", builder.to_string())       
+        self.snapshot.commit()
 
 
         
@@ -103,18 +103,18 @@ class CompCheckin(FileCheckin):
 
 class ShakeFileFilter(MayaParserFilter):
 
-    def __init__(my):
-        my.file_ins = []
-        my.file_outs = []
-        super(ShakeFileFilter,my).__init__()
+    def __init__(self):
+        self.file_ins = []
+        self.file_outs = []
+        super(ShakeFileFilter,self).__init__()
 
-    def get_file_ins(my):
-        return my.file_ins
+    def get_file_ins(self):
+        return self.file_ins
 
-    def get_file_outs(my):
-        return my.file_outs
+    def get_file_outs(self):
+        return self.file_outs
 
-    def process(my, line):
+    def process(self, line):
         # replace any paths with the new paths of the checked in textures
         if line.find('= FileOut(') != -1:
             
@@ -125,7 +125,7 @@ class ShakeFileFilter(MayaParserFilter):
                 node = groups[0]
                 file_out = groups[1]
                 file_out = file_out.replace("\\", "/")
-                my.file_outs.append(file_out)
+                self.file_outs.append(file_out)
         elif line.find('= FileIn(') != -1:
             p = re.compile("\w+ = FileIn\((\w+), \"(.*?)\",")
             m = p.search(line)
@@ -134,7 +134,7 @@ class ShakeFileFilter(MayaParserFilter):
                 node = groups[0]
                 file_in = groups[1]
                 file_in = file_in.replace("\\", "/")
-                my.file_ins.append(file_in)
+                self.file_ins.append(file_in)
 
 
         return line
@@ -144,18 +144,18 @@ class ShakeFileFilter(MayaParserFilter):
 
 class FusionFileFilter(MayaParserFilter):
 
-    def __init__(my):
-        my.file_ins = []
-        my.file_outs = []
-        super(FusionFileFilter,my).__init__()
+    def __init__(self):
+        self.file_ins = []
+        self.file_outs = []
+        super(FusionFileFilter,self).__init__()
 
-    def get_file_ins(my):
-        return my.file_ins
+    def get_file_ins(self):
+        return self.file_ins
 
-    def get_file_outs(my):
-        return my.file_outs
+    def get_file_outs(self):
+        return self.file_outs
 
-    def process(my, line):
+    def process(self, line):
 
         # replace any paths with the new paths of the checked in textures
         if line.startswith("Filename ="):
@@ -164,23 +164,23 @@ class FusionFileFilter(MayaParserFilter):
             if m:
                 groups = m.groups()
                 file_path = groups[0]
-                my.file_ins.append(file_path)
+                self.file_ins.append(file_path)
  
 
 class NukeFileFilter(MayaParserFilter):
 
-    def __init__(my):
-        my.file_ins = []
-        my.file_outs = []
-        super(NukeFileFilter,my).__init__()
+    def __init__(self):
+        self.file_ins = []
+        self.file_outs = []
+        super(NukeFileFilter,self).__init__()
 
-    def get_file_ins(my):
-        return my.file_ins
+    def get_file_ins(self):
+        return self.file_ins
 
-    def get_file_outs(my):
-        return my.file_outs
+    def get_file_outs(self):
+        return self.file_outs
 
-    def process(my, line):
+    def process(self, line):
 
         # replace any paths with the new paths of the checked in textures
         if line.startswith("file"):
@@ -189,7 +189,7 @@ class NukeFileFilter(MayaParserFilter):
             if m:
                 groups = m.groups()
                 file_path = groups[0]
-                my.file_ins.append(file_path)
+                self.file_ins.append(file_path)
 
 
 

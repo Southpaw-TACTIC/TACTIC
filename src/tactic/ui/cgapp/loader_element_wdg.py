@@ -35,13 +35,13 @@ class LoaderElementWdg(BaseTableElementWdg):
     # this PREFIX corresponds to the one set in LoadOptionsWdg
     #PREFIX = "asset"
   
-    def init_kwargs(my):
-        my.search_type = my.kwargs.get('search_type')
-        my.shot_search_type = my.kwargs.get('shot_search_type')
-        my.mode = my.kwargs.get("mode")
+    def init_kwargs(self):
+        self.search_type = self.kwargs.get('search_type')
+        self.shot_search_type = self.kwargs.get('shot_search_type')
+        self.mode = self.kwargs.get("mode")
 
-        if not my.mode:
-            my.mode = "output"
+        if not self.mode:
+            self.mode = "output"
 
     def get_load_script(cls, search_type):
         #load_script = "execute_client_callback('ClientLoadCbk')"
@@ -51,23 +51,23 @@ class LoaderElementWdg(BaseTableElementWdg):
     get_load_script = classmethod(get_load_script)
 
 
-    def get_process_data(my):
+    def get_process_data(self):
         '''get the list of processes that can be checked in with this widget'''
-        labels, values = Pipeline.get_process_select_data(my.search_type, \
+        labels, values = Pipeline.get_process_select_data(self.search_type, \
             extra_process=['publish'], project_code=Project.get_project_code())
         
         return labels, values
 
    
-    def get_title(my):
-        mode = my.get_option("mode")
+    def get_title(self):
+        mode = self.get_option("mode")
         title = SpanWdg()
        
         #loader = LoaderButtonWdg()
-        #loader.set_load_script( my.get_load_script() )
+        #loader.set_load_script( self.get_load_script() )
         #return loader
-        search_type = my.get_search_type()
-        cb_name = '%s_%s' %(search_type, my.CB_NAME)
+        search_type = self.get_search_type()
+        cb_name = '%s_%s' %(search_type, self.CB_NAME)
         master_cb = CheckboxWdg('master_control')
         master_cb.add_behavior({'type': 'click_up',
             'propagate_evt': True,
@@ -84,15 +84,15 @@ class LoaderElementWdg(BaseTableElementWdg):
             title.add("Deliver")
         return title
     
-    def preprocess(my):
+    def preprocess(self):
         # get the session, by default asset_mode = False, but we set it to True
-        my.session = SessionContents.get(asset_mode=True)
+        self.session = SessionContents.get(asset_mode=True)
     
         # add some action buttons
-        #mode = my.get_option("mode")
+        #mode = self.get_option("mode")
         
 
-    def get_process(my):
+    def get_process(self):
         '''Get from the ProcessFilterWdg in SObjectLoadWdg,
             otherwise get from FilterData'''
 
@@ -100,7 +100,7 @@ class LoaderElementWdg(BaseTableElementWdg):
 
         # Ususally there is no pipeline defined for prod/shot_instance
         # so get from prod/shot
-        search_type = my.search_type
+        search_type = self.search_type
         if search_type =='prod/shot_instance':
             search_type = 'prod/shot'
 
@@ -122,9 +122,9 @@ class LoaderElementWdg(BaseTableElementWdg):
         return process
 
 
-    def get_snapshot(my, mode):
+    def get_snapshot(self, mode):
         ''' get the snapshot depending on the mode i.e. input, output'''
-        dict = my.get_current_aux_data()
+        dict = self.get_current_aux_data()
         output_snapshots = input_snapshots = None
         # the check for key is needed since snapshot can be None
         if dict and dict.has_key('%s_snapshots' %mode):
@@ -133,18 +133,18 @@ class LoaderElementWdg(BaseTableElementWdg):
             else:
                 input_snapshots = dict.get('%s_snapshots' %mode)
         else:
-            sobject = my.get_current_sobject()
-            process = my.get_process()
+            sobject = self.get_current_sobject()
+            process = self.get_process()
             loader = ProdLoaderContext()
-            if my.shot_search_type:
-                loader.set_shot_search_type(my.shot_search_type)
+            if self.shot_search_type:
+                loader.set_shot_search_type(self.shot_search_type)
             
             output_snapshots = loader.get_output_snapshots(sobject, process)
             input_snapshots = loader.get_input_snapshots(sobject, process)
             # this is for sharing with AssetLoaderWdg
             # should only be called once per sobject
-            idx = my.get_current_index()
-            my.insert_aux_data(idx, {'output_snapshots': output_snapshots, \
+            idx = self.get_current_index()
+            self.insert_aux_data(idx, {'output_snapshots': output_snapshots, \
                 'input_snapshots': input_snapshots})
 
         if mode == 'output':
@@ -154,7 +154,7 @@ class LoaderElementWdg(BaseTableElementWdg):
 
 
 
-    def get_namespace(my, sobject, snapshot):
+    def get_namespace(self, sobject, snapshot):
         ''' this is actually the namespace in Maya and node name in Houdini'''
         if not sobject:
             return ""
@@ -166,9 +166,9 @@ class LoaderElementWdg(BaseTableElementWdg):
         return instance   
 
 
-    def get_asset_code(my):
+    def get_asset_code(self):
         asset_code = ''
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.has_value("asset_code"):
             asset_code = sobject.get_value("asset_code")
         else:
@@ -176,7 +176,7 @@ class LoaderElementWdg(BaseTableElementWdg):
 
         return asset_code
     
-    def get_node_name(my, snapshot, asset_code, namespace):
+    def get_node_name(self, snapshot, asset_code, namespace):
         ''' if possible get the node name from snapshot which is more accurate'''
         node_name = snapshot.get_node_name()
         if not node_name:
@@ -198,15 +198,15 @@ class LoaderElementWdg(BaseTableElementWdg):
         return node_name
 
 
-    def get_session_asset_mode(my):
+    def get_session_asset_mode(self):
         '''For assets, this is true.  For instances, this is false'''
         return True
 
 
 
-    def get_display(my):
-        my.init_kwargs()
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        self.init_kwargs()
+        sobject = self.get_current_sobject()
 
         table = Table(css='minimal')
         table.add_color("color", "color")
@@ -214,11 +214,11 @@ class LoaderElementWdg(BaseTableElementWdg):
 
        
         
-        snapshots = my.get_snapshot(my.mode)
+        snapshots = self.get_snapshot(self.mode)
         for snapshot in snapshots:
             table.add_row()
 
-            value = my.get_input_value(sobject, snapshot)
+            value = self.get_input_value(sobject, snapshot)
 
             current_version = snapshot.get_value("version")
             current_context = snapshot.get_value("context")
@@ -235,13 +235,13 @@ class LoaderElementWdg(BaseTableElementWdg):
                 table.add_cell("(---)")
                 return table
 
-            checkbox = CheckboxWdg('%s_%s' %(my.search_type, my.CB_NAME))
+            checkbox = CheckboxWdg('%s_%s' %(self.search_type, self.CB_NAME))
             
             # this is added back in for now to work with 3.7 Fast table
             checkbox.add_behavior({'type': 'click_up',
             'propagate_evt': True})
 
-            checkbox.add_class('spt_latest_%s' %my.mode)
+            checkbox.add_class('spt_latest_%s' %self.mode)
             checkbox.set_option("value", value )
             table.add_cell( checkbox )
 
@@ -258,27 +258,27 @@ class LoaderElementWdg(BaseTableElementWdg):
             image.add_style("width: 15px")
             table.add_cell(image)
 
-            namespace = my.get_namespace(sobject, snapshot) 
-            asset_code = my.get_asset_code()
+            namespace = self.get_namespace(sobject, snapshot) 
+            asset_code = self.get_asset_code()
           
             # force asset mode = True   
-            my.session.set_asset_mode(asset_mode=my.get_session_asset_mode())
-            node_name = my.get_node_name(snapshot, asset_code, namespace)
+            self.session.set_asset_mode(asset_mode=self.get_session_asset_mode())
+            node_name = self.get_node_name(snapshot, asset_code, namespace)
             # get session info
             session_context = session_version = session_revision = None
-            if my.session:
+            if self.session:
                 
-                session_context = my.session.get_context(node_name, asset_code, current_snapshot_type)
-                session_version = my.session.get_version(node_name, asset_code, current_snapshot_type)
-                session_revision = my.session.get_revision(node_name, asset_code,current_snapshot_type)
+                session_context = self.session.get_context(node_name, asset_code, current_snapshot_type)
+                session_version = self.session.get_version(node_name, asset_code, current_snapshot_type)
+                session_revision = self.session.get_revision(node_name, asset_code,current_snapshot_type)
 
 
                 # Maya Specific: try with namespace in front of it for referencing
                 referenced_name = '%s:%s' %(namespace, node_name)
                 if not session_context or not session_version:
-                    session_context = my.session.get_context(referenced_name, asset_code, current_snapshot_type)
-                    session_version = my.session.get_version(referenced_name, asset_code, current_snapshot_type)
-                    session_revision = my.session.get_revision(referenced_name, asset_code, current_snapshot_type)
+                    session_context = self.session.get_context(referenced_name, asset_code, current_snapshot_type)
+                    session_version = self.session.get_version(referenced_name, asset_code, current_snapshot_type)
+                    session_revision = self.session.get_revision(referenced_name, asset_code, current_snapshot_type)
 
             from version_wdg import CurrentVersionContextWdg, SubRefWdg
 
@@ -307,7 +307,7 @@ class LoaderElementWdg(BaseTableElementWdg):
             has_subreferences = True
             xml = snapshot.get_xml_value("snapshot")
             refs = xml.get_nodes("snapshot/file/ref")
-            if my.mode == "output" and refs:
+            if self.mode == "output" and refs:
                 table.add_row()
                 td = table.add_cell()
                 swap = SwapDisplayWdg.get_triangle_wdg()
@@ -316,7 +316,7 @@ class LoaderElementWdg(BaseTableElementWdg):
                 #td.add_style("text-align: right")
 
                 sub_ref_wdg = SubRefWdg()
-                sub_ref_wdg.set_info(snapshot, my.session, namespace)
+                sub_ref_wdg.set_info(snapshot, self.session, namespace)
                 swap.add_action_script( sub_ref_wdg.get_on_script(), "toggle_display('%s')" % sub_ref_wdg.get_top_id() )
 
                 status = sub_ref_wdg.get_overall_status()
@@ -337,8 +337,8 @@ class LoaderElementWdg(BaseTableElementWdg):
         return table
 
 
-    def get_bottom_wdg(my):
-        if my.get_option('mode') =='input':
+    def get_bottom_wdg(self):
+        if self.get_option('mode') =='input':
             return 
         web = WebContainer.get_web()
         if web.get_selected_app() not in ['XSI','Maya']:
@@ -346,7 +346,7 @@ class LoaderElementWdg(BaseTableElementWdg):
         div = DivWdg(css='spt_outdated_ref')
        
 
-        refs = my.session.get_data().get_nodes("session/node/ref")
+        refs = self.session.get_data().get_nodes("session/node/ref")
         snap_codes = []
         snap_contexts = []
         sobjects = []
@@ -396,14 +396,14 @@ class LoaderElementWdg(BaseTableElementWdg):
         # draw the nodes to be udpated
         for idx, current_snap in enumerate(current_snapshots):
             
-            cb = CheckboxWdg(my.REF_CB_NAME)
+            cb = CheckboxWdg(self.REF_CB_NAME)
             cb.add_class('spt_ref')
             cb.add_style('display: none')
             sobj = sobjects[idx]
             node_name = node_names[idx]
             session_version = session_versions[idx]
             snapshot = current_snap
-            cb_value = my.get_input_value(sobj, snapshot)
+            cb_value = self.get_input_value(sobj, snapshot)
             items = cb_value.split('|')
             items[-1] = node_name
             cb_value = '|'.join(items)
@@ -419,25 +419,25 @@ class LoaderElementWdg(BaseTableElementWdg):
 
         if current_snapshots:
             # add the button
-            prefix = my.search_type
-            #input_name = '%s_%s' %(my.search_type, my.CB_NAME)
+            prefix = self.search_type
+            #input_name = '%s_%s' %(self.search_type, self.CB_NAME)
             update_button = ProdIconButtonWdg("Update all references")
             update_button.add_behavior({'type': "click_up",\
             'cbjs_action': '''var cousins = bvr.src_el.getParent('.spt_outdated_ref').getElements('.spt_ref');
                              cousins.each( function(x) {x.checked=true;}); py_replace_reference(bvr, '%s','%s')'''
-                    % (prefix, my.REF_CB_NAME)})
+                    % (prefix, self.REF_CB_NAME)})
             div.add( SpanWdg(update_button, css='small'))
        
         div.add(HtmlElement.br(2))
         return div
 
 
-    def get_input_value(my, sobject, snapshot):
+    def get_input_value(self, sobject, snapshot):
         #This is for generic custom loading
 
         #from pyasm.search import SearchKey
         #value = SearchKey.build_by_sobject(snapshot)
-        namespace = my.get_namespace(sobject,snapshot)
+        namespace = self.get_namespace(sobject,snapshot)
         snap_node_name = snapshot.get_node_name()
 
         # in case there is space , fill it with

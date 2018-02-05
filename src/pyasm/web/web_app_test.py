@@ -18,7 +18,7 @@ from web_app import *
 
 class WebAppTest(unittest.TestCase):
 
-    def test_config_webapp(my):
+    def test_config_webapp(self):
 
         webapp = ConfigWebApp()
 

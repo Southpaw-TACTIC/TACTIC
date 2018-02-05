@@ -31,12 +31,12 @@ class ToolsWdg(BaseRefreshWdg):
     project
     '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_section_wdg(my, title, description, image, behavior):
+    def get_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -108,7 +108,7 @@ class ToolsWdg(BaseRefreshWdg):
         return section_wdg
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -304,7 +304,7 @@ class ToolsWdg(BaseRefreshWdg):
         spt.tab.add_new("themes", "Themes", class_name, kwargs);
         '''
         }
-        dashboard_wdg = my.get_section_wdg(title, description, image, behavior)
+        dashboard_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(dashboard_wdg)
 
 
@@ -346,7 +346,7 @@ class ToolsWdg(BaseRefreshWdg):
         spt.tab.add_new("dashboards", "Dashboards", class_name, kwargs);
         '''
         }
-        dashboard_wdg = my.get_section_wdg(title, description, image, behavior)
+        dashboard_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(dashboard_wdg)
 
 
@@ -372,7 +372,7 @@ class ToolsWdg(BaseRefreshWdg):
         '''
         }
 
-        side_bar_wdg = my.get_section_wdg(title, description, image, behavior)
+        side_bar_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(side_bar_wdg)
 
 
@@ -399,7 +399,7 @@ class ToolsWdg(BaseRefreshWdg):
         spt.tab.add_new("lists", "Lists", class_name, kwargs);
         '''
         }
-        config_wdg = my.get_section_wdg(title, description, image, behavior)
+        config_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(config_wdg)
 
 
@@ -418,7 +418,7 @@ class ToolsWdg(BaseRefreshWdg):
 
 
 
-    def get_totals_wdg(my):
+    def get_totals_wdg(self):
         div = DivWdg()
         
 

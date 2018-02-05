@@ -33,7 +33,7 @@ class AssetCheckinCbk(Command):
     '''While other Cbk in this file are search type specific, this one is general to any kind of sTypes'''
     BUTTON_NAME = "Publish"
 
-    def get_title(my):
+    def get_title(self):
         return "Asset Checkin"
 
 
@@ -89,37 +89,37 @@ class AssetCheckinCbk(Command):
 
 
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(MayaAssetCheckinWdg.PUBLISH_BUTTON) == "":
             return False
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = 'prod/asset'
-        my.texture_search_type = my.kwargs.get('texture_search_type')
-        if not my.texture_search_type:
-            my.texture_search_type = 'prod/texture'
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = 'prod/asset'
+        self.texture_search_type = self.kwargs.get('texture_search_type')
+        if not self.texture_search_type:
+            self.texture_search_type = 'prod/texture'
 
         # get the process to check this asset in (NEW)
-        my.process = web.get_form_value("%s_process" %my.search_type)
+        self.process = web.get_form_value("%s_process" %self.search_type)
         # get the context to check this asset in
-        my.context = web.get_form_value("%s_context" %my.search_type)
-        if not my.context:
+        self.context = web.get_form_value("%s_context" %self.search_type)
+        if not self.context:
             raise UserException('Please select a context in the drop-down.')
             return False
         
-        sub_context = web.get_form_value("%s_sub_context"%my.search_type)
+        sub_context = web.get_form_value("%s_sub_context"%self.search_type)
 
         if sub_context:
-            my.context = "%s/%s" % (my.context, sub_context)
+            self.context = "%s/%s" % (self.context, sub_context)
 
 
         return True
 
 
-    def execute(my):
+    def execute(self):
 
-        #my.snapshot_dict = {}
+        #self.snapshot_dict = {}
         # get all of the selected instances
         web = WebContainer.get_web()
         instances = web.get_form_values("asset_instances")
@@ -145,33 +145,33 @@ class AssetCheckinCbk(Command):
         # go through the asset instances and set instances and check them in
         for instance in instances:
             if instance:
-                my._checkin(instance, my.context, is_current=is_current, \
+                self._checkin(instance, self.context, is_current=is_current, \
                     is_revision=is_revision, snapshot_type=snapshot_type, \
-                    texture_search_type=my.texture_search_type)
+                    texture_search_type=self.texture_search_type)
         for set_instance in set_instances:
             if set_instance:
-                my._checkin(set_instance, my.context, asset_type='set', \
+                self._checkin(set_instance, self.context, asset_type='set', \
                     is_current=is_current, is_revision=is_revision, \
                     snapshot_type=snapshot_type)
 
         web.set_form_value('publish_search_type','prod/asset')
         #TabWdg.set_redirect('Log')
       
-        my.info['context'] = my.context
-        my.info['revision'] = str(is_revision)
-        my.info['checkin_status'] = checkin_status
+        self.info['context'] = self.context
+        self.info['revision'] = str(is_revision)
+        self.info['checkin_status'] = checkin_status
 
-        output = {'context': my.context}
-        output['search_key'] = SearchKey.build_by_sobject(my.sobject)
+        output = {'context': self.context}
+        output['search_key'] = SearchKey.build_by_sobject(self.sobject)
         output['checkin_status'] = checkin_status
 
-        Trigger.call(my, 'app_checkin', output)
+        Trigger.call(self, 'app_checkin', output)
 
-    def postprocess(my):
+    def postprocess(self):
         pass
 
 
-    def _checkin(my, instance, context, asset_type='asset', is_current=True, \
+    def _checkin(self, instance, context, asset_type='asset', is_current=True, \
             is_revision=True, snapshot_type="asset", texture_search_type=None):
         '''retrieve the asset sobject and run the checkin command'''
         
@@ -182,23 +182,23 @@ class AssetCheckinCbk(Command):
 
         # get the sobject from asset_code
         
-        my.sobject = Search.get_by_code(my.search_type, asset_code)
-        if my.sobject == None:
+        self.sobject = Search.get_by_code(self.search_type, asset_code)
+        if self.sobject == None:
             raise CommandException("SObject '%s' does not exist'" % asset_code)
         # now checkin the asset
         checkin = None
 
         # we assume asset_type = 'asset' by default
         if asset_type == 'asset':
-            checkin = MayaAssetCheckin(my.sobject)
+            checkin = MayaAssetCheckin(self.sobject)
             checkin.set_instance(instance_name)
             checkin.set_option('texture_search_type', texture_search_type)
         elif asset_type =='set':
-            checkin = MayaGroupCheckin(my.sobject)
+            checkin = MayaGroupCheckin(self.sobject)
         else:
             raise CommandException('Unknown asset type[%s] found' %asset_type)
         checkin.set_description(description)
-        checkin.set_process(my.process)
+        checkin.set_process(self.process)
         checkin.set_context(context)
         checkin.set_current(is_current)
         checkin.set_revision(is_revision)
@@ -215,37 +215,37 @@ class AssetCheckinCbk(Command):
         version = snapshot.get_version()
         if description == "":
             description = "<No description>"
-        my.add_description("Checked in %s '%s', context: %s, v%0.3d, %s" % \
+        self.add_description("Checked in %s '%s', context: %s, v%0.3d, %s" % \
             (asset_type.capitalize(), instance_name, context, version, description))
        
-        my.sobjects = [my.sobject]
+        self.sobjects = [self.sobject]
         
-        #my.snapshot_dict[instance] = checkin.snapshot
+        #self.snapshot_dict[instance] = checkin.snapshot
 
 
 
 class SetCheckinCbk(Command):
 
         
-    def get_title(my):
+    def get_title(self):
         return "Set Checkin"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(MayaSetWdg.PUBLISH_BUTTON) == "":
             return False
 
         # get the context to check this asset in
-        my.context = web.get_form_value("%s_context" \
+        self.context = web.get_form_value("%s_context" \
             %MayaSetWdg.PUBLISH_TYPE )
-        if not my.context:
+        if not self.context:
             return False
 
         return True
         
-    def execute(my):
+    def execute(self):
 
-        #my.snapshot_dict = {}
+        #self.snapshot_dict = {}
         
         web = WebContainer.get_web()
 
@@ -268,20 +268,20 @@ class SetCheckinCbk(Command):
         # now checkin the asset
         checkin = MayaGroupCheckin(current_section)
         checkin.set_description(description)
-        checkin.set_context(my.context)
+        checkin.set_context(self.context)
         checkin.execute()
 
-        my.add_description("Set '%s': %s" % (current_section_code,description))
-        #my.snapshot_dict[current_section_name] = checkin.snapshot
+        self.add_description("Set '%s': %s" % (current_section_code,description))
+        #self.snapshot_dict[current_section_name] = checkin.snapshot
 
         web.set_form_value('publish_search_type','prod/asset')
         #TabWdg.set_redirect('Log')
     
-    def postprocess(my):
+    def postprocess(self):
         pass
         '''
         context = "publish"
-        for instance, snap in my.snapshot_dict.items():
+        for instance, snap in self.snapshot_dict.items():
             instance_name, asset_code = instance.split("|")
             BaseAppServer.add_onload_script("update_snapshot('%s','%s','%s','%s')"\
                 % (snap.get_code(), asset_code, instance_name, context))
@@ -291,28 +291,28 @@ class SetCheckinCbk(Command):
 class AnimCheckinCbk(Command):
 
     BUTTON_NAME = "Publish"
-    def get_title(my):
+    def get_title(self):
         return "Anim Checkin"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(MayaAnimCheckinWdg.PUBLISH_BUTTON) == "":
             #raise CommandExitException()
             return
 
         # get the process to check this asset in (NEW)
-        my.process = web.get_form_value("prod/shot_instance_process")
+        self.process = web.get_form_value("prod/shot_instance_process")
 
         # get the context to check this asset in
-        my.context = web.get_form_value("prod/shot_instance_context")
-        if not my.context:
+        self.context = web.get_form_value("prod/shot_instance_context")
+        if not self.context:
             #raise UserException('Please select a context in the drop-down.')
             return False
        
         sub_context = web.get_form_value("prod/shot_instance_sub_context")
 
         if sub_context:
-            my.context = "%s/%s" % (my.context, sub_context)
+            self.context = "%s/%s" % (self.context, sub_context)
            
        
 
@@ -328,8 +328,8 @@ class AnimCheckinCbk(Command):
 
     handle_input = classmethod(handle_input)
 
-    def execute(my):
-        #my.snapshot_dict = {}
+    def execute(self):
+        #self.snapshot_dict = {}
 
         web = WebContainer.get_web()
 
@@ -381,28 +381,28 @@ class AnimCheckinCbk(Command):
 
             checkin.set_instance(instance_name)
             checkin.set_description(description)
-            checkin.set_process(my.process)
-            checkin.set_context(my.context)
+            checkin.set_process(self.process)
+            checkin.set_context(self.context)
             use_handoff_dir = web.get_form_value("use_handoff_dir")
             if use_handoff_dir in ['true','on']:
                 checkin.set_use_handoff(True)
 
             checkin.execute()
 
-            #my.snapshot_dict[node_value] = checkin.snapshot
+            #self.snapshot_dict[node_value] = checkin.snapshot
             
-        my.add_description("Instance '%s': %s" % (instance_name, description))
+        self.add_description("Instance '%s': %s" % (instance_name, description))
 
         web.set_form_value('publish_search_type','prod/shot_instance')
         #TabWdg.set_redirect('Log')
 
-    def postprocess(my):
+    def postprocess(self):
         pass
         '''
-        for node_value, snap in my.snapshot_dict.items():
+        for node_value, snap in self.snapshot_dict.items():
             namespace, asset_code, instance_name = node_value.split("|")
             BaseAppServer.add_onload_script("update_snapshot('%s','%s','%s','%s')"\
-                % (snap.get_code(), asset_code, namespace, my.context))
+                % (snap.get_code(), asset_code, namespace, self.context))
         '''
 
 from pyasm.checkin import FileCheckin
@@ -412,38 +412,38 @@ import re, shutil
 class ShotCheckinCbk(Command):
 
     BUTTON_NAME = "Publish"
-    def get_title(my):
+    def get_title(self):
         return "Shot Checkin"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(MayaShotCheckinWdg.PUBLISH_BUTTON) == "":
             return False
 
-        my.search_type = my.kwargs.get('search_type')
-        if my._check_context():
+        self.search_type = self.kwargs.get('search_type')
+        if self._check_context():
             return True
         else:
             return False
        
-    def _check_context(my):
+    def _check_context(self):
         # get the context to check this asset in
         web = WebContainer.get_web()
 
         
         # get the process to check this asset in (NEW)
 
-        my.process = web.get_form_value("%s_process" %my.search_type)
+        self.process = web.get_form_value("%s_process" %self.search_type)
 
-        my.context = web.get_form_value("%s_context" %my.search_type)
-        if not my.context:
+        self.context = web.get_form_value("%s_context" %self.search_type)
+        if not self.context:
             raise UserException('Please select a context in the drop-down.')
             return False
 
-        sub_context = web.get_form_value("%s_sub_context"%my.search_type)
+        sub_context = web.get_form_value("%s_sub_context"%self.search_type)
 
         if sub_context:
-            my.context = "%s/%s" % (my.context, sub_context)
+            self.context = "%s/%s" % (self.context, sub_context)
             
         return True
 
@@ -458,13 +458,13 @@ class ShotCheckinCbk(Command):
                 )
     handle_input = classmethod(handle_input)
 
-    def execute(my):
+    def execute(self):
  
-        #my.snapshot_dict = {}
+        #self.snapshot_dict = {}
         web = WebContainer.get_web()
         
         shot_code = web.get_form_value("shot_code")
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search.add_filter('code', shot_code)
         shot = search.get_sobject()
         #shot = Shot.get_by_code(shot_code)
@@ -483,10 +483,10 @@ class ShotCheckinCbk(Command):
         checkin_status = web.get_form_value("checkin_status")
         checkin = ShotCheckin(shot)
         checkin.set_option("unknown_ref", web.get_form_value("unknown_ref"))
-        checkin.set_process(my.process)
+        checkin.set_process(self.process)
 
         description = web.get_form_value("%s_description" % shot.get_code() )
-        checkin.set_context(my.context)
+        checkin.set_context(self.context)
         checkin.set_description(description)
 
         checkin.set_current(is_current)
@@ -501,25 +501,25 @@ class ShotCheckinCbk(Command):
         snapshot = checkin.snapshot
         version = snapshot.get_version()
 
-        my.sobjects = [shot]
+        self.sobjects = [shot]
 
-        #my.snapshot_dict['%s' %shot.get_code()] = snapshot
-        my.add_description("%s checkin '%s': v%0.3d, %s" % (my.context, shot.get_code(), version, description))
+        #self.snapshot_dict['%s' %shot.get_code()] = snapshot
+        self.add_description("%s checkin '%s': v%0.3d, %s" % (self.context, shot.get_code(), version, description))
 
         web.set_form_value('publish_search_type','prod/shot')
         TabWdg.set_redirect('Log')
 
-        my.info['context'] = my.context
-        my.info['revision'] = str(is_revision)
-        my.info['checkin_status'] = checkin_status
+        self.info['context'] = self.context
+        self.info['revision'] = str(is_revision)
+        self.info['checkin_status'] = checkin_status
 
-        output = {'context': my.context}
+        output = {'context': self.context}
         output['search_key'] = SearchKey.build_by_sobject(shot)
         output['checkin_status'] = checkin_status
 
-        Trigger.call(my, 'app_checkin', output)
+        Trigger.call(self, 'app_checkin', output)
 
-    def postprocess(my):
+    def postprocess(self):
         pass
 
 
@@ -529,15 +529,15 @@ class ShotSetCheckinCbk(ShotCheckinCbk):
     '''All this does is check redirect the page to the log.  Checkin occurs
     through XMLRPC'''
 
-    def get_title(my):
+    def get_title(self):
         return "Shot Set Checkin"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(MayaShotCheckinWdg.PUBLISH_SET_BUTTON) == "":
             return False
          
-        if not my._check_context():
+        if not self._check_context():
             return False
 
         # if there is publish error, exit
@@ -556,25 +556,25 @@ class ShotSetCheckinCbk(ShotCheckinCbk):
                 )
     handle_input = classmethod(handle_input)
 
-    def execute(my):
-        #my.snapshot_dict = {}
+    def execute(self):
+        #self.snapshot_dict = {}
         web = WebContainer.get_web()
         
         shot_code = web.get_form_value("shot_code")
-        my.shot = Shot.get_by_code(shot_code)
+        self.shot = Shot.get_by_code(shot_code)
 
         # remember the sobject
-        my.sobjects = [my.shot]
+        self.sobjects = [self.shot]
 
         web.set_form_value('publish_search_type','prod/shot')
         #TabWdg.set_redirect('Log')
 
         
 
-    def get_description(my):
-        return "Shot Checkin: %s" % (my.shot.get_code())
+    def get_description(self):
+        return "Shot Checkin: %s" % (self.shot.get_code())
 
-    def postprocess(my):
+    def postprocess(self):
         pass
 
                         

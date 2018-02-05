@@ -26,7 +26,7 @@ from tactic.ui.widget import ActionButtonWdg
 class SystemInfoWdg(BaseRefreshWdg):
 
     
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_color("background", "background")
@@ -36,7 +36,7 @@ class SystemInfoWdg(BaseRefreshWdg):
         os_name = os.name
 
         top.set_unique_id()
-        top.add_smart_style("spt_info_title", "background", my.top.get_color("background3"))
+        top.add_smart_style("spt_info_title", "background", self.top.get_color("background3"))
         top.add_smart_style("spt_info_title", "padding", "3px")
         top.add_smart_style("spt_info_title", "font-weight", "bold")
 
@@ -124,7 +124,7 @@ class SystemInfoWdg(BaseRefreshWdg):
 
 
         top.add('<br/>')
-        my.handle_load_balancing(top)
+        self.handle_load_balancing(top)
 
  
         # performance test
@@ -223,7 +223,7 @@ class SystemInfoWdg(BaseRefreshWdg):
     
     
         top.add('<br/>')
-        my.handle_directories(top)
+        self.handle_directories(top)
 
 
         #table.add_row()
@@ -236,9 +236,9 @@ class SystemInfoWdg(BaseRefreshWdg):
         top.add(LinkLoadTestWdg())
 
         top.add('<br/>')
-        my.handle_python_script_test(top)
+        self.handle_python_script_test(top)
         top.add('<br/>')
-        my.handle_sidebar_clear(top)
+        self.handle_sidebar_clear(top)
 
 
 
@@ -246,7 +246,7 @@ class SystemInfoWdg(BaseRefreshWdg):
 
 
 
-    def handle_directories(my, top):
+    def handle_directories(self, top):
         # deal with asset directories
         top.add(DivWdg('Asset Folders', css='spt_info_title'))
         mailserver = Config.get_value("services", "mailserver")
@@ -338,7 +338,7 @@ class SystemInfoWdg(BaseRefreshWdg):
      
 
 
-    def handle_python_script_test(my, top):
+    def handle_python_script_test(self, top):
         top.add(DivWdg('Python Script Test', css='spt_info_title'))
         table = Table(css='script')
         table.add_color("color", "color")
@@ -372,7 +372,7 @@ class SystemInfoWdg(BaseRefreshWdg):
   
     
     
-    def handle_load_balancing(my, top):
+    def handle_load_balancing(self, top):
         # deal with asset directories
         top.add(DivWdg('Load Balancing', css='spt_info_title'))
         table = Table()
@@ -432,7 +432,7 @@ class SystemInfoWdg(BaseRefreshWdg):
         '''
         } )
 
-    def handle_sidebar_clear(my, top):
+    def handle_sidebar_clear(self, top):
         top.add(DivWdg('Clear Side Bar Cache ', css='spt_info_title'))
         table = Table()
         table.add_color("color", "color")
@@ -459,7 +459,7 @@ class SystemInfoWdg(BaseRefreshWdg):
 
 class ClearSideBarCache(Command):
 
-    def execute(my):
+    def execute(self):
         tmp_dir = Environment.get_tmp_dir()
         # remove the sidebar cache
         sidebar_cache_dir = "%s/cache/side_bar" % tmp_dir
@@ -470,7 +470,7 @@ class ClearSideBarCache(Command):
 class LinkLoadTestWdg(BaseRefreshWdg):
     '''Load Pages in popup as part of a testing process'''
 
-    def get_display(my):
+    def get_display(self):
 
         config_search_type = "config/widget_config"
          
@@ -555,9 +555,9 @@ class LinkLoadTestWdg(BaseRefreshWdg):
 
 class PerformanceWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         top.add("<br/>")
         top.add_style("margin-left: 10px")

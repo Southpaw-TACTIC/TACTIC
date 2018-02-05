@@ -30,14 +30,14 @@ class FingerMenuWdg(BaseRefreshWdg):
     menu_item.add_behavior({'type': 'click', 'cbjs_action': 'spt.alert(123)'})
     menu.add(menu_item)
     '''
-    def __init__(my, **kwargs):
-        super(FingerMenuWdg, my).__init__(**kwargs)
-        my.items = []
+    def __init__(self, **kwargs):
+        super(FingerMenuWdg, self).__init__(**kwargs)
+        self.items = []
         # this css class identifies a container for the MenuWdg in which one can store hidden input and other info
-        my.menu_top_class = kwargs.get('top_class')
-        assert my.menu_top_class
+        self.menu_top_class = kwargs.get('top_class')
+        assert self.menu_top_class
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'id': 'The id of the top widget',
         'width': 'The width of the popup',
@@ -48,10 +48,10 @@ class FingerMenuWdg(BaseRefreshWdg):
         'force': 'left|right'
         }
 
-    def add(my, menu_item):
-        my.items.append(menu_item)
+    def add(self, menu_item):
+        self.items.append(menu_item)
 
-    def _add_spacer_row(my, menu_table, height, label_width):
+    def _add_spacer_row(self, menu_table, height, label_width):
         tbody = menu_table.add_tbody()
         tbody.add_style("display","table-row-group")
         tr = menu_table.add_row()
@@ -63,14 +63,14 @@ class FingerMenuWdg(BaseRefreshWdg):
         td.add_style("height", ("%spx" % height))
 
      
-    def init(my):
-        my.mode = my.kwargs.get('mode')
-        if not my.mode:
-            my.mode = 'vertical'
+    def init(self):
+        self.mode = self.kwargs.get('mode')
+        if not self.mode:
+            self.mode = 'vertical'
 
    
 
-    def set_activator_over(my, item, activator_match_class, activator_parent_class='', js_action='', top_class='', offset={'x':0, 'y':0}):
+    def set_activator_over(self, item, activator_match_class, activator_parent_class='', js_action='', top_class='', offset={'x':0, 'y':0}):
         '''usually called in handle_layout_behaviours() for best relay expectation 
         
             @item: the layout widget (i.e. TableLayoutWdg) to add this behavior to
@@ -177,12 +177,12 @@ class FingerMenuWdg(BaseRefreshWdg):
                 'bvr_match_class': activator_match_class,
                 'activator_parent_class': activator_parent_class,
                 'top_class': top_class,
-                'menu_top_class': my.menu_top_class,
+                'menu_top_class': self.menu_top_class,
                 'cbjs_action': main_action,
                 'offset': offset
                 })
         
-    def set_activator_out(my, item, activator_match_class, top_class='', js_action=''):
+    def set_activator_out(self, item, activator_match_class, top_class='', js_action=''):
         ''' usually called in handle_layout_behaviours() for best relay performance 
         
             @item: the layout widget (i.e. TableLayoutWdg) to add this behavior to
@@ -227,14 +227,14 @@ class FingerMenuWdg(BaseRefreshWdg):
         item.add_relay_behavior({
                 'type': 'mouseleave',
                 'bvr_match_class': activator_match_class,
-                'menu_top_class': my.menu_top_class,
+                'menu_top_class': self.menu_top_class,
                 'top_class': top_class,
                 'cbjs_action': main_action
             } )
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         #content.add_event("oncontextmenu", "spt.side_bar.manage_context_menu_action_cbk(); return false")
         context_menu = DivWdg()
@@ -264,23 +264,23 @@ class FingerMenuWdg(BaseRefreshWdg):
         context_menu.add_style("z-index: 200")
 
         # set up what happens when the mouse leaves the actual menu
-        my._set_menu_out(context_menu)
+        self._set_menu_out(context_menu)
 
 
-        width = my.kwargs.get('width')
-        height = my.kwargs.get('height')
+        width = self.kwargs.get('width')
+        height = self.kwargs.get('height')
         if not height:
             height = 20
         if not width:
             width = 35
-        font_size = my.kwargs.get('font_size')
+        font_size = self.kwargs.get('font_size')
         if not font_size:
             font_size = 'smaller'
 
 
-        force = my.kwargs.get("force")
+        force = self.kwargs.get("force")
 
-        if my.mode == 'horizontal':
+        if self.mode == 'horizontal':
             div = DivWdg(css='spt_finger_menu')
             if force:
                 div.add_attr("spt_finger_force", force)
@@ -299,7 +299,7 @@ class FingerMenuWdg(BaseRefreshWdg):
             div.set_box_shadow(value="0px 0px 2px 1px")
             #div.add_style("z-index: 1000")
 
-            total_width = width * len(my.items) + 15
+            total_width = width * len(self.items) + 15
             div.add_style('width', total_width)
             div.add_styles('height: %spx; padding: 2px;' %height)
             context_menu.add(div)
@@ -311,7 +311,7 @@ class FingerMenuWdg(BaseRefreshWdg):
             bg_color = div.get_color('background', -10)
             color = div.get_color('color')
             
-            for item in my.items:
+            for item in self.items:
                 mouse_enter_bvr = {'type':'mouseenter', 'cbjs_action': '''
                     bvr.src_el.setStyles({'background': '%s', 'color': 'white'})''' %sb_title_bg}
                 mouse_leave_bvr = {'type':'mouseleave', 'cbjs_action': '''
@@ -340,8 +340,8 @@ class FingerMenuWdg(BaseRefreshWdg):
             menu_table = Table()
             menu_table.add_styles( "text-align: left; text-indent: 4px; border-collapse: collapse; cell-padding: 8px; border-radius: 32px;" )
             context_menu.add(menu_table)
-            my._add_spacer_row(menu_table, 3, width)
-            for widget in my.widgets:
+            self._add_spacer_row(menu_table, 3, width)
+            for widget in self.widgets:
                 tbody = menu_table.add_tbody()
                 tbody.add_style("display","table-row-group")
 
@@ -364,11 +364,11 @@ class FingerMenuWdg(BaseRefreshWdg):
 
                
 
-            my._add_spacer_row(menu_table, 3, width)
+            self._add_spacer_row(menu_table, 3, width)
 
         return context_menu
 
-    def _set_menu_out(my, item):
+    def _set_menu_out(self, item):
         ''' set up what happens when the mouse leaves the actual menu. It stays on for 4 secs'''
         item.add_behavior({
                'type': 'mouseleave',
@@ -408,23 +408,23 @@ class MenuWdg(FingerMenuWdg):
 
 class GearMenuWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.btn_dd = DivWdg()
-        my.menus = []
+    def init(self):
+        self.btn_dd = DivWdg()
+        self.menus = []
 
-    def add_style(my, name, value=None):
-        my.btn_dd.add_style(name, value)
-
-
-    def add(my, menu):
-        my.menus.append(menu.get_data())
+    def add_style(self, name, value=None):
+        self.btn_dd.add_style(name, value)
 
 
-    def get_display(my):
+    def add(self, menu):
+        self.menus.append(menu.get_data())
+
+
+    def get_display(self):
 
 
         # create the gear menu
-        btn_dd = my.btn_dd
+        btn_dd = self.btn_dd
 
         """
         btn_dd.add_styles("width: 36px; height: 18px; padding: none; padding-top: 1px;")
@@ -454,7 +454,7 @@ class GearMenuWdg(BaseRefreshWdg):
 
 
 
-        smenu_set = SmartMenu.add_smart_menu_set( btn_dd, { 'DG_TABLE_GEAR_MENU': my.menus } )
+        smenu_set = SmartMenu.add_smart_menu_set( btn_dd, { 'DG_TABLE_GEAR_MENU': self.menus } )
         SmartMenu.assign_as_local_activator( btn_dd, "DG_TABLE_GEAR_MENU", True )
         return btn_dd
 
@@ -464,75 +464,75 @@ class GearMenuWdg(BaseRefreshWdg):
 
 
 class Menu(object):
-    def __init__(my, menu_tag_suffix='MAIN', width=110, allow_icons=False):
-        my.opt_spec_list = []
-        my.data = { 'menu_tag_suffix': menu_tag_suffix, 'width': width, 'opt_spec_list': my.opt_spec_list}
+    def __init__(self, menu_tag_suffix='MAIN', width=110, allow_icons=False):
+        self.opt_spec_list = []
+        self.data = { 'menu_tag_suffix': menu_tag_suffix, 'width': width, 'opt_spec_list': self.opt_spec_list}
 
-    def add(my, menu_item):
+    def add(self, menu_item):
         options = menu_item.get_options()
-        my.opt_spec_list.append(options)
+        self.opt_spec_list.append(options)
 
-    def set_menu_tag_suffix(my, suffix):
-        my.data['menu_tag_suffix'] = suffix
+    def set_menu_tag_suffix(self, suffix):
+        self.data['menu_tag_suffix'] = suffix
 
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
 
     def add_option(name, value):
-        my.data[name] = value
+        self.data[name] = value
 
-    def set_allow_icons(my, flag=True):
-        my.data['allow_icons'] = flag
+    def set_allow_icons(self, flag=True):
+        self.data['allow_icons'] = flag
 
-    def set_setup_cbfn(my, func):
-        my.data['setup_cbfn'] = func
+    def set_setup_cbfn(self, func):
+        self.data['setup_cbfn'] = func
 
 
 
 
 class MenuItem(object):
-    def __init__(my, type, label="Label", icon=None):
+    def __init__(self, type, label="Label", icon=None):
 
         assert type in ['title', 'action', 'submenu', 'separator']
 
         if type == 'separator':
-            my.options = { "type": type }
+            self.options = { "type": type }
         else:
             if icon:
 
-                my.options = { "type": type, "label": label, "icon": icon }
+                self.options = { "type": type, "label": label, "icon": icon }
             else:
-                my.options = { "type": type, "label": label }
+                self.options = { "type": type, "label": label }
 
-    def get_options(my):
-        return my.options
+    def get_options(self):
+        return self.options
 
-    def get_option(my, key):
-        return my.options.get(key)
+    def get_option(self, key):
+        return self.options.get(key)
 
-    def set_option(my, key, value):
-        my.options[key] = value
+    def set_option(self, key, value):
+        self.options[key] = value
 
 
-    def set_type(my, type):
-        my.options['type'] = type
+    def set_type(self, type):
+        self.options['type'] = type
         
-    def set_label(my, label):
-        my.options['label'] = label
+    def set_label(self, label):
+        self.options['label'] = label
         
-    def set_icon(my, icon):
-        my.options['icon'] = icon
+    def set_icon(self, icon):
+        self.options['icon'] = icon
         
-    def set_behavior(my, behavior):
-        my.options['bvr_cb'] = behavior
+    def set_behavior(self, behavior):
+        self.options['bvr_cb'] = behavior
 
-    def add_behavior(my, behavior):
-        my.options['bvr_cb'] = behavior
+    def add_behavior(self, behavior):
+        self.options['bvr_cb'] = behavior
  
 
-    def set_submenu_tag_suffix(my, suffix):
-        my.options['submenu_tag_suffix'] = suffix
+    def set_submenu_tag_suffix(self, suffix):
+        self.options['submenu_tag_suffix'] = suffix
 
 
 

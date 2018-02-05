@@ -26,15 +26,15 @@ from pipeline_wdg import *
 
 
 class SnapshotDirListWdg(DirListWdg):
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
         top.add_style("padding: 10px")
         top.add_style("width: 500px")
         top.add_style("height: 300px")
 
-        dir_list = SnapshotDirListWdg2(**my.kwargs)
+        dir_list = SnapshotDirListWdg2(**self.kwargs)
         top.add(dir_list)
 
         return top
@@ -44,7 +44,7 @@ class SnapshotDirListWdg(DirListWdg):
 
 
 class SnapshotDirListWdg2(DirListWdg):
-    def add_file_behaviors(my, item_div, dirname, basename):
+    def add_file_behaviors(self, item_div, dirname, basename):
         """
         item_div.add_behavior( {
         'type': 'click_up',
@@ -82,10 +82,10 @@ class SnapshotDirListWdg2(DirListWdg):
 
 
 
-    def get_file_icon(my, dir, item):
+    def get_file_icon(self, dir, item):
         return IconWdg.DETAILS
 
-    def get_dir_icon(my, dir, item):
+    def get_dir_icon(self, dir, item):
         return IconWdg.LOAD
 
 
@@ -95,12 +95,12 @@ class SnapshotDirListWdg2(DirListWdg):
 
 class DependencyWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
         search = Search("sthpw/snapshot")
         search.add_order_by("timestamp desc")
@@ -118,7 +118,7 @@ class DependencyWdg(BaseRefreshWdg):
         table.add_row()
 
         td = table.add_cell()
-        canvas = my.get_canvas()
+        canvas = self.get_canvas()
         td.add(canvas)
 
         table.add_row()
@@ -167,23 +167,23 @@ class DependencyWdg(BaseRefreshWdg):
 
 
 
-    def get_canvas(my):
-        my.dialog_id = 1234
-        my.height = my.kwargs.get("height")
-        if not my.height:
-            my.height = 300
-        my.width = my.kwargs.get("width")
-        return DependencyToolCanvasWdg(height=my.height, width=my.width, dialog_id=my.dialog_id, nob_mode="dynamic", line_mode='line', has_prefix=True)
+    def get_canvas(self):
+        self.dialog_id = 1234
+        self.height = self.kwargs.get("height")
+        if not self.height:
+            self.height = 300
+        self.width = self.kwargs.get("width")
+        return DependencyToolCanvasWdg(height=self.height, width=self.width, dialog_id=self.dialog_id, nob_mode="dynamic", line_mode='line', has_prefix=True)
 
 
 
 
 class DependencyToolCanvasWdg(PipelineToolCanvasWdg):
 
-    def get_node_behaviors(my):
+    def get_node_behaviors(self):
         return []
 
-    def get_canvas_behaviors(my):
+    def get_canvas_behaviors(self):
         return []
 
 

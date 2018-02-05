@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 class FormatDefinitionEditWdg(BaseRefreshWdg):
     '''Used in ElementDefinitionWdg to draw the options for simple display'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'prefix': 'prefix of the options',
         'name': 'name given to the widget',
@@ -33,21 +33,21 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
         'display_options': 'options provided by the config',
         }
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_element_top")
 
-        prefix = my.kwargs.get('prefix')
+        prefix = self.kwargs.get('prefix')
         # this should be name to be consistent with the BaseInputWdg interface
-        widget_name = my.kwargs.get('name')
+        widget_name = self.kwargs.get('name')
         if not widget_name:
             widget_name = 'data_type'
 
-        display_options = my.kwargs.get('display_options')
+        display_options = self.kwargs.get('display_options')
         if not display_options:
             display_options = {}
 
-        option = my.kwargs.get('option')
+        option = self.kwargs.get('option')
         if not option:
             option = {}
 

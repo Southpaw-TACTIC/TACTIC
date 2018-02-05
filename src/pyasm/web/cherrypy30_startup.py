@@ -29,11 +29,11 @@ from cherrypy_startup import CherryPyStartup as CherryPyStartup20
 class Root:
     '''Dummy Root page'''
 
-    def test(my):
+    def test(self):
         return "OK"
     test.exposed = True
 
-    def index(my):
+    def index(self):
         return '''<META http-equiv="refresh" content="0;URL=/tactic">'''
     index.exposed = True
 
@@ -41,7 +41,7 @@ class Root:
 
 class TacticIndex:
     '''Dummy Index file'''
-    def index(my):
+    def index(self):
         # check if this project exists
         response = cherrypy.response
         request = cherrypy.request
@@ -64,9 +64,9 @@ class TacticIndex:
 class CherryPyStartup(CherryPyStartup20):
 
 
-    def execute(my):
+    def execute(self):
         #import pprint
-        #pprint.pprint( my.config )
+        #pprint.pprint( self.config )
 
         #try:
         #    import setproctitle
@@ -75,10 +75,10 @@ class CherryPyStartup(CherryPyStartup20):
         #    pass
 
 
-        cherrypy.config.update( my.config )
+        cherrypy.config.update( self.config )
 
-        cherrypy.config.update({'error_page.404': my.error_page})
-        cherrypy.config.update({'error_page.403': my.error_page})
+        cherrypy.config.update({'error_page.404': self.error_page})
+        cherrypy.config.update({'error_page.403': self.error_page})
 
         cherrypy.engine.start()
         cherrypy.engine.block()
@@ -86,7 +86,7 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-    def error_page(my, status, message, traceback, version):
+    def error_page(self, status, message, traceback, version):
 
         # check if this project exists
         response = cherrypy.response
@@ -127,11 +127,11 @@ class CherryPyStartup(CherryPyStartup20):
                 eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
         except (AttributeError, SyntaxError), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
             has_project = False
             has_site = True
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             has_project = False
         else:
             has_project = True
@@ -156,8 +156,8 @@ class CherryPyStartup(CherryPyStartup20):
                     WebContainer.set_web(adapter)
 
                     widget = UploadServerWdg().get_display()
-                except Exception, e:
-                    print "ERROR: ", e
+                except Exception as e:
+                    print("ERROR: ", e)
                     widget = e
 
             else:
@@ -169,11 +169,11 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-        print "WARNING:"
-        print "    status: ", status
-        print "    message: ", message
-        print "    site: ", site
-        print "    project_code: ", project_code
+        print("WARNING:")
+        print("    status: ", status)
+        print("    message: ", message)
+        print("    site: ", site)
+        print("    project_code: ", project_code)
 
 
 
@@ -184,8 +184,8 @@ class CherryPyStartup(CherryPyStartup20):
         if has_site:
             try:
                 project = Project.get_by_code(project_code)
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 raise
 
 
@@ -214,7 +214,7 @@ class CherryPyStartup(CherryPyStartup20):
                     widget = HashPanelWdg.get_widget_from_hash(hash)
                     if widget:
                         html = widget.get_buffer_display()
-                except Exception, e:
+                except Exception as e:
                     return "ERROR: %s" % str(e)
 
                 if html:
@@ -271,18 +271,18 @@ class CherryPyStartup(CherryPyStartup20):
             top.add(widget)
 
             return top.get_buffer_display()
-        except Exception, e:
-            print "ERROR: ", e
+        except Exception as e:
+            print("ERROR: ", e)
             return "ERROR: ", e
 
 
 
 
 
-    def setup_sites(my):
+    def setup_sites(self):
 
-        context_path = "%s/src/context" % my.install_dir
-        doc_dir = "%s/doc" % my.install_dir
+        context_path = "%s/src/context" % self.install_dir
+        doc_dir = "%s/doc" % self.install_dir
         plugin_dir = Environment.get_plugin_dir()
         builtin_plugin_dir = Environment.get_builtin_plugin_dir()
         dist_dir = Environment.get_dist_dir()
@@ -401,24 +401,24 @@ class CherryPyStartup(CherryPyStartup20):
 
         for project in projects:
             project_code = project.get_code()
-            my.register_project(project_code, config)
-        my.register_project("default", config)
+            self.register_project(project_code, config)
+        self.register_project("default", config)
 
 
         from pyasm.security import Site
         site_obj = Site.get()
-        site_obj.register_sites(my, config)
+        site_obj.register_sites(self, config)
  
 
-        #my.register_project("vfx", config, site="vfx_demo")
-        #my.register_project("default", config, site="vfx_demo")
+        #self.register_project("vfx", config, site="vfx_demo")
+        #self.register_project("default", config, site="vfx_demo")
         return config
 
 
 
 
 
-    def register_project(my, project, config, site=None):
+    def register_project(self, project, config, site=None):
 
         # if there happend to be . in the project name, convert to _
         project = project.replace(".", "_")
@@ -427,9 +427,9 @@ class CherryPyStartup(CherryPyStartup20):
             return
 
         if site:
-            print "Registering project ... %s (%s)" % (project, site)
+            print("Registering project ... %s (%s)" % (project, site))
         else:
-            print "Registering project ... %s" % project
+            print("Registering project ... %s" % project)
 
 
         try:
@@ -452,12 +452,12 @@ class CherryPyStartup(CherryPyStartup20):
 
 
         except ImportError:
-            #print "... WARNING: SitePage not found"
+            #print("... WARNING: SitePage not found")
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
         except SyntaxError, e:
-            print e.__str__()
-            print "WARNING: skipping project [%s]" % project
+            print(e.__str__())
+            print("WARNING: skipping project [%s]" % project)
 
 
 
@@ -511,8 +511,8 @@ class CherryPyStartup(CherryPyStartup20):
                     exec("cherrypy.root.tactic.%s.%s = %s()" % (project,context,context) )
 
             except ImportError, e:
-                print str(e)
-                print "... failed to import '%s.%s.%s'" % (base, project, context)
+                print(str(e))
+                print("... failed to import '%s.%s.%s'" % (base, project, context))
                 raise
                 #return
 

@@ -22,21 +22,21 @@ from pyasm.prod.web import TextureFilterWdg
 
 class TextureTabWdg(BaseTabWdg):
 
-    def init(my):
-        my.setup_tab("texture_pipeline_tab", css=TabWdg.SMALL)
+    def init(self):
+        self.setup_tab("texture_pipeline_tab", css=TabWdg.SMALL)
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         
-        tab.add(my.get_texture_list_wdg, _("Texture List") )
-        #tab.add(my.get_texture_list_wdg, _("Matte Painting") )
-        tab.add(my.get_summary_wdg, _("Summary") )
-        tab.add(my.get_task_manager_wdg, _("Tasks") )
-        tab.add(my.get_texture_wdg, _("Artist (Textures)") )
-        tab.add(my.get_source_wdg, _("Texture Sources") )
+        tab.add(self.get_texture_list_wdg, _("Texture List") )
+        #tab.add(self.get_texture_list_wdg, _("Matte Painting") )
+        tab.add(self.get_summary_wdg, _("Summary") )
+        tab.add(self.get_task_manager_wdg, _("Tasks") )
+        tab.add(self.get_texture_wdg, _("Artist (Textures)") )
+        tab.add(self.get_source_wdg, _("Texture Sources") )
 
 
-    def get_texture_list_wdg(my):
+    def get_texture_list_wdg(self):
 
         widget = Widget()
         nav = DivWdg(css='filter_box')
@@ -53,7 +53,7 @@ class TextureTabWdg(BaseTabWdg):
 
 
 
-    def get_summary_wdg(my):
+    def get_summary_wdg(self):
 
         widget = Widget()
         widget.add(HelpItemWdg('Summary tab', '/doc/site/prod/summary_tab.html'))
@@ -72,7 +72,7 @@ class TextureTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_task_manager_wdg(my):
+    def get_task_manager_wdg(self):
         widget = Widget()
         widget.add(HelpItemWdg('Tasks tab', '/doc/site/prod/task_tab.html'))
         manager = TaskManagerWdg()
@@ -83,7 +83,7 @@ class TextureTabWdg(BaseTabWdg):
 
 
 
-    def get_texture_wdg(my):
+    def get_texture_wdg(self):
 
         widget = Widget()
 
@@ -97,7 +97,7 @@ class TextureTabWdg(BaseTabWdg):
 
 
 
-    def get_source_wdg(my):
+    def get_source_wdg(self):
 
         search = Search(TextureSource.SEARCH_TYPE)
 

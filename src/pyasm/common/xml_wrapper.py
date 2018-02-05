@@ -52,36 +52,36 @@ class Xml(Base):
 
 
 
-    def __init__(my, string=None, file_path=None, strip_cdata=False):
-        my.doc = None
-        my.uri = "XmlWrapper"
-        my.strip_cdata = strip_cdata
+    def __init__(self, string=None, file_path=None, strip_cdata=False):
+        self.doc = None
+        self.uri = "XmlWrapper"
+        self.strip_cdata = strip_cdata
         if string:
-            my.read_string(string)
+            self.read_string(string)
         elif file_path:
-            my.read_file(file_path)
+            self.read_file(file_path)
 
-        my.cache_xpath = {}
+        self.cache_xpath = {}
 
-    def read_file(my, file_path, cache=True):
-        #my.reader = PyExpat.Reader()
-        #my.doc = my.reader.fromUri(file_path)
+    def read_file(self, file_path, cache=True):
+        #self.reader = PyExpat.Reader()
+        #self.doc = self.reader.fromUri(file_path)
         # the xml library does not like windows style separators
         try:
             file_path = file_path.replace("\\", "/")
 
             if not cache:
-                my.doc = NonvalidatingReader.parseUri("file://%s" % file_path, my.uri)
+                self.doc = NonvalidatingReader.parseUri("file://%s" % file_path, self.uri)
             else:
                 cur_mtime = os.path.getmtime(file_path)
-                cache_mtime = my.XML_FILE_MTIME.get(file_path)
+                cache_mtime = self.XML_FILE_MTIME.get(file_path)
 
                 if cur_mtime == cache_mtime:
-                    my.doc = my.XML_FILE_CACHE.get(file_path)
+                    self.doc = self.XML_FILE_CACHE.get(file_path)
                 else:
 
-                    my.doc = NonvalidatingReader.parseUri("file://%s" % file_path, my.uri)
-                    my.cache_xml(file_path, my.doc, cur_mtime)
+                    self.doc = NonvalidatingReader.parseUri("file://%s" % file_path, self.uri)
+                    self.cache_xml(file_path, self.doc, cur_mtime)
 
 
 
@@ -102,7 +102,7 @@ class Xml(Base):
 
     xmls = set()
     count = 0
-    def read_string(my, xml_string, print_error=True):
+    def read_string(self, xml_string, print_error=True):
         """
         # skip snapshots
         if xml_string not in Xml.xmls:
@@ -125,14 +125,14 @@ class Xml(Base):
             #xml_string = str(xml_string)
             xml_string = xml_string.encode('utf-8')
 
-        #my.reader = PyExpat.Reader()
+        #self.reader = PyExpat.Reader()
         #print xml_string
-        #my.doc = my.reader.fromString(xml_string)
+        #self.doc = self.reader.fromString(xml_string)
         try:
             # convert to utf-8
             if type(xml_string) != types.StringType:
                 xml_string = xml_string.encode("utf-8")
-            my.doc = NonvalidatingReader.parseString(xml_string, my.uri)
+            self.doc = NonvalidatingReader.parseString(xml_string, self.uri)
         except Exception, e:
             if print_error:
                 print "Error in xml: ", xml_string
@@ -140,35 +140,35 @@ class Xml(Base):
             raise XmlException(e)
 
 
-    def create_doc(my, root_name="snapshot"):
+    def create_doc(self, root_name="snapshot"):
         #from xml.dom.minidom import getDOMImplementation
         #impl = getDOMImplementation()
-        #my.doc = impl.createDocument(None, root_name, None)
+        #self.doc = impl.createDocument(None, root_name, None)
 
-        my.doc = implementation.createRootNode(None)
+        self.doc = implementation.createRootNode(None)
         if root_name != None:
-            root = my.doc.createElementNS(None,root_name)
-            my.doc.appendChild(root)
-        return my.doc
+            root = self.doc.createElementNS(None,root_name)
+            self.doc.appendChild(root)
+        return self.doc
 
 
-    def get_doc(my):
+    def get_doc(self):
         '''returns the document object'''
-        return my.doc
+        return self.doc
 
-    def get_root_node(my):
-        return my.doc.firstChild
+    def get_root_node(self):
+        return self.doc.firstChild
 
-    def import_node(my, element, deep=True):
-        return my.doc.importNode(element, deep)
+    def import_node(self, element, deep=True):
+        return self.doc.importNode(element, deep)
 
-    def create_element(my, name):
+    def create_element(self, name):
         '''create a new element with this document'''
-        #return my.doc.createElementNS('xml', name)
-        return my.doc.createElementNS(None, name)
+        #return self.doc.createElementNS('xml', name)
+        return self.doc.createElementNS(None, name)
 
 
-    def create_text_element(my, name, text, node=None):
+    def create_text_element(self, name, text, node=None):
         '''create an element with a text node embedded
 
         DO NOT USE "node" ARGUMENT
@@ -178,9 +178,9 @@ class Xml(Base):
         new method has to replace this one to fix it because too much may
         depend on it.
         '''
-        text_node = my.doc.createTextNode(text)
+        text_node = self.doc.createTextNode(text)
         if not node:
-            node = my.create_element(name)
+            node = self.create_element(name)
             node.appendChild(text_node)
         else:
             first = node.firstChild
@@ -190,21 +190,21 @@ class Xml(Base):
                 node.appendChild(text_node)
         return node
  
-    def create_data_element(my, name, text):
+    def create_data_element(self, name, text):
         '''create an element with a text node embedded'''
-        text_node = my.doc.createCDATASection(text)
-        elem = my.create_element(name)
+        text_node = self.doc.createCDATASection(text)
+        elem = self.create_element(name)
         elem.appendChild(text_node)
         return elem
 
-    def create_comment(my, text):
+    def create_comment(self, text):
         '''create an element with a text node embedded'''
-        text_node = my.doc.createComment(text)
+        text_node = self.doc.createComment(text)
         return text_node
    
 
-    def clear_xpath_cache(my):
-        my.cache_xpath = {}
+    def clear_xpath_cache(self):
+        self.cache_xpath = {}
         Container.put("XML:xpath_cache", {})
 
     def get_parent(cls, node):
@@ -244,18 +244,18 @@ class Xml(Base):
     replace_child = classmethod(replace_child)
         
 
-    def _evaluate(my, xpath):
+    def _evaluate(self, xpath):
         cache = Container.get("XML:xpath_cache")
         if cache == None:
             cache = {}
             Container.put("XML:xpath_cache", cache)
 
-        #key = "%s|%s" % (str(my.doc), xpath)
+        #key = "%s|%s" % (str(self.doc), xpath)
         num = random.randint(0, 500000)
-        key = "%s_%s|%s" % (str(my.doc), num, xpath)
+        key = "%s_%s|%s" % (str(self.doc), num, xpath)
         result = cache.get(key)
         if result == None:
-            result = Evaluate(xpath, my.doc)
+            result = Evaluate(xpath, self.doc)
             cache[key] = result
             #print xpath
         else:
@@ -265,44 +265,44 @@ class Xml(Base):
         return result
 
         '''
-        result = my.cache_xpath.get(xpath)
+        result = self.cache_xpath.get(xpath)
         if result:
             return result
         if result == []:
             return result
         #print xpath
-        result = Evaluate(xpath, my.doc)
-        my.cache_xpath[xpath] = result
+        result = Evaluate(xpath, self.doc)
+        self.cache_xpath[xpath] = result
         return result
         '''
 
 
-    def get_nodes(my, xpath):
+    def get_nodes(self, xpath):
         '''get all of the nodes within the given xpath string'''
         try:
-            nodes = my._evaluate(xpath)
+            nodes = self._evaluate(xpath)
         except Exception, e:
             raise XmlException('XPath Error: %s'%e.__str__())
         return nodes
     
-    def get_nodes_attr(my, xpath, attr):
-        nodes = my.get_nodes(xpath)
+    def get_nodes_attr(self, xpath, attr):
+        nodes = self.get_nodes(xpath)
         value_list = []
         for node in nodes:
             value_list.append(Xml.get_attribute(node, attr))
         return value_list
 
-    def get_node(my, xpath):
+    def get_node(self, xpath):
         '''convenience function to get a single node'''
-        nodes = my.get_nodes(xpath)
+        nodes = self.get_nodes(xpath)
         if len(nodes) == 0:
             return None
         else:
             return nodes[0]
 
-    def get_values(my, xpath):
+    def get_values(self, xpath):
         values = []
-        for node in my._evaluate(xpath):
+        for node in self._evaluate(xpath):
             value = node.nodeValue
             if value == None:
                 if node.firstChild == None:
@@ -315,21 +315,21 @@ class Xml(Base):
         return values
 
 
-    def get_value(my, xpath):
-        values = my.get_values(xpath)
+    def get_value(self, xpath):
+        values = self.get_values(xpath)
         if len(values) == 0:
             return ""
         else:
             return values[0]
 
-    def get_xml(my):
+    def get_xml(self):
         '''returns a stringified version of the document'''
         xml = StringIO()
-        PrettyPrint(my.doc,xml)
+        PrettyPrint(self.doc,xml)
         return xml.getvalue()
 
 
-    def to_string(my, node=None, pretty=True, tree=None, method=None):
+    def to_string(self, node=None, pretty=True, tree=None, method=None):
         '''returns a stringified version of the document'''
         xml = StringIO()
 
@@ -339,7 +339,7 @@ class Xml(Base):
             func = Print
 
         if node == None:
-            func(my.doc,xml)
+            func(self.doc,xml)
         else:
             func(node,xml)
 
@@ -349,12 +349,12 @@ class Xml(Base):
 
 
 
-    def fto_string(my, node=None, pretty=True):
+    def fto_string(self, node=None, pretty=True):
         '''TEST: using 4Suite's pretty print'''
         xml = StringIO()
 
         if node == None:
-            FtPrettyPrint(my.doc,xml)
+            FtPrettyPrint(self.doc,xml)
         else:
             FtPrettyPrint(node,xml)
 
@@ -363,9 +363,9 @@ class Xml(Base):
 
 
 
-    def dump(my):
+    def dump(self):
         '''print out the stringafied version'''
-        print my.get_xml()
+        print self.get_xml()
 
 
 
@@ -416,9 +416,9 @@ class Xml(Base):
     insert_after = staticmethod(insert_after)
 
 
-    def set_node_value(my, node, text):
+    def set_node_value(self, node, text):
         '''sets the value of a node.  This value is the first child'''
-        text_node = my.doc.createTextNode(text)
+        text_node = self.doc.createTextNode(text)
 
         first_child = node.firstChild
         if not first_child:

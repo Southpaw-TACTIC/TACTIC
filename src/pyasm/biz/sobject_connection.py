@@ -22,11 +22,11 @@ class SObjectConnection(SObject):
     SEARCH_TYPE = "sthpw/connection"
 
 
-    def get_sobject(my, direction="dst"):
+    def get_sobject(self, direction="dst"):
         assert direction in ['src', 'dst']
 
-        search_type = my.get_value("%s_search_type" % direction)
-        search_id = my.get_value("%s_search_id" % direction)
+        search_type = self.get_value("%s_search_type" % direction)
+        search_id = self.get_value("%s_search_id" % direction)
 
         sobject = Search.get_by_id(search_type, search_id)
         return sobject
@@ -91,7 +91,7 @@ class SObjectConnection(SObject):
 
 
 
-    def get_sobjects(my, connections, direction='dst', filters=None, return_search=False):
+    def get_sobjects(self, connections, direction='dst', filters=None, return_search=False):
 
         if not connections:
             return []
@@ -120,9 +120,9 @@ class SObjectConnection(SObject):
     get_sobjects = classmethod(get_sobjects)
 
 
-    def get_search(my, connections, direction='dst', filters=None):
+    def get_search(self, connections, direction='dst', filters=None):
  
-        search = my.get_sobjects(connections, direction=direction, filters=filters, return_search=True)
+        search = self.get_sobjects(connections, direction=direction, filters=filters, return_search=True)
         return search
 
     get_search = classmethod(get_search)

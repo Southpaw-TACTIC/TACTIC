@@ -21,29 +21,29 @@ from pyasm.web import DivWdg, Canvas
 class ProgressWdg(BaseRefreshWdg):
     '''A simple widget which displays the progress and an upload'''
 
-    def init(my):
-        my.progress_div = DivWdg()
-        my.progress_id = my.progress_div.set_unique_id()
+    def init(self):
+        self.progress_div = DivWdg()
+        self.progress_id = self.progress_div.set_unique_id()
 
 
-    def get_progress_id(my):
-        return my.progress_id
+    def get_progress_id(self):
+        return self.progress_id
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("spt_progress_top")
         top.add_style("height: 10px")
         top.add_style("width: 200px")
         top.add_style("overflow: hidden")
         top.add_border()
 
-        top.add(my.progress_div)
-        my.progress_div.add_style("width: 0%")
-        my.progress_div.add_gradient("background", "background2", 20)
-        my.progress_div.add_style("height: 100%")
-        my.progress_div.add("&nbsp;")
-        my.progress_div.add('<img height="10px" src="/context/icons/common/indicator_snake.gif" border="0"/>')
+        top.add(self.progress_div)
+        self.progress_div.add_style("width: 0%")
+        self.progress_div.add_gradient("background", "background2", 20)
+        self.progress_div.add_style("height: 100%")
+        self.progress_div.add("&nbsp;")
+        self.progress_div.add('<img height="10px" src="/context/icons/common/indicator_snake.gif" border="0"/>')
 
         return top
 
@@ -532,9 +532,9 @@ spt.progress.do_job_serial = function() {
 __all__.append( 'TestProgressWdg' )
 class TestProgressWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 10px")
         top.add_border()
         top.add_color("background", "background")
@@ -628,9 +628,9 @@ class TestProgressWdg(BaseRefreshWdg):
 __all__.append( 'TestProgressWdg2' );
 class TestProgressWdg2(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         from tactic.ui.widget import ActionButtonWdg
         button = ActionButtonWdg(title="Upload")
@@ -734,9 +734,9 @@ class TestProgressWdg2(BaseRefreshWdg):
 __all__.append( 'TestProgressWdg3' )
 class TestProgressWdg3(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         from tactic.ui.widget import ActionButtonWdg
         button = ActionButtonWdg(title="Upload")
@@ -841,15 +841,15 @@ class TestProgressWdg3(BaseRefreshWdg):
 
 class RadialProgressWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("margin: 5px")
 
-        percent = my.kwargs.get("percent")
+        percent = self.kwargs.get("percent")
 
-        count = my.kwargs.get("count")
-        total = my.kwargs.get("total")
+        count = self.kwargs.get("count")
+        total = self.kwargs.get("total")
 
         if percent == None and count != None and total != None:
             if total:
@@ -860,7 +860,7 @@ class RadialProgressWdg(BaseRefreshWdg):
         if percent == None:
             percent = 0;
 
-        color = my.kwargs.get("color")
+        color = self.kwargs.get("color")
         if not color:
             color = '#1b458b'
 

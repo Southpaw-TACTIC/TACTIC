@@ -23,7 +23,7 @@ import unittest
 class RelationshipTest(unittest.TestCase):
 
 
-    def setUp(my):
+    def setUp(self):
         # start batch environment
         Batch()
 
@@ -32,17 +32,17 @@ class RelationshipTest(unittest.TestCase):
 
 
 
-    def test_all(my):
-        my.transaction = Transaction.get(create=True)
+    def test_all(self):
+        self.transaction = Transaction.get(create=True)
         try:
-            my._test_parent_child()
-            my._test_related()
+            self._test_parent_child()
+            self._test_related()
         finally:
-            my.transaction.rollback()
+            self.transaction.rollback()
 
 
 
-    def _test_parent_child(my):
+    def _test_parent_child(self):
         search = Search("unittest/person")
         persons = search.get_sobjects()
         person = persons[0]
@@ -55,7 +55,7 @@ class RelationshipTest(unittest.TestCase):
 
         # test get parent
         parent = task.get_parent()
-        my.assertEquals( parent.get_code(), person.get_code() )
+        self.assertEquals( parent.get_code(), person.get_code() )
 
 
         # create another task
@@ -66,7 +66,7 @@ class RelationshipTest(unittest.TestCase):
 
         # get the children
         children = person.get_all_children("sthpw/task")
-        my.assertEquals( 2, len(children) )
+        self.assertEquals( 2, len(children) )
 
 
         # set the parent
@@ -76,16 +76,16 @@ class RelationshipTest(unittest.TestCase):
 
         # get the children
         children = person.get_all_children("sthpw/task")
-        my.assertEquals( 3, len(children) )
+        self.assertEquals( 3, len(children) )
 
 
         # parent search key
         parent_key = task.get_parent_search_key()
-        my.assertEquals(person.get_search_key(), parent_key)
+        self.assertEquals(person.get_search_key(), parent_key)
 
 
 
-    def _test_related(my):
+    def _test_related(self):
         search = Search("unittest/person")
         persons = search.get_sobjects()
         person = persons[1]
@@ -103,9 +103,9 @@ class RelationshipTest(unittest.TestCase):
             task.commit()
 
         tasks = person.get_related_sobjects("sthpw/task")
-        my.assertEquals( 4, len(tasks) )
+        self.assertEquals( 4, len(tasks) )
         notes = person.get_related_sobjects("sthpw/note")
-        my.assertEquals( 3, len(notes) )
+        self.assertEquals( 3, len(notes) )
     
     
 

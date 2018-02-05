@@ -27,52 +27,54 @@ from command import Command
 
 
 
+
 class SubprocessTrigger(Handler):
     '''Utility class that calls a trigger by external process'''
-    def __init__(my):
-        my.mode = "same process,new transaction"
-        my.info = {}
-        super(SubprocessTrigger,my).__init__()
+    def __init__(self):
+        self.mode = "same process,new transaction"
+        self.info = {}
+        super(SubprocessTrigger,self).__init__()
 
-    def set_data(my, data):
-        my.data = data
-        my.class_name = data.get("class_name")
+    def set_data(self, data):
+        self.data = data
+        self.class_name = data.get("class_name")
 
         # Since the trigger will run separate somewhere else, we do not
         # know if the the workflow should stop of not.  The trigger
         # can define a result in the data
         kwargs = data.get("kwargs")
         if kwargs and kwargs.get("result"):
-            my.info['result'] = kwargs.get("result")
-        else:
-            my.info['result'] = True
+            self.info['result'] = kwargs.get("result")
 
 
 
 
-    def get_info(my):
-        return my.info
+    def get_info(self):
+        return self.info
 
 
-    def get_class_name(my):
-        return my.class_name
+    def get_class_name(self):
+        return self.class_name
 
-    def set_mode(my, mode):
-        my.mode = mode
+    def set_mode(self, mode):
+        self.mode = mode
 
-    def execute(my):
+    def execute(self):
       
-        input_data = my.get_input_data()
-        data = my.data
+        input_data = self.get_input_data()
+        data = self.data
 
+
+        # add site info to the data object
         site = Site.get_site()
         if site and not data.get("site"):
             data['site'] = site
 
+        result = True
 
 
         # input data for the handler
-        if my.mode == 'separate process,blocking':
+        if self.mode == 'separate process,blocking':
             input_data_str = jsondumps(input_data)
             data_str = jsondumps(data)
 
@@ -86,7 +88,7 @@ class SubprocessTrigger(Handler):
 
 
 
-        elif my.mode == 'separate process,non-blocking':
+        elif self.mode == 'separate process,non-blocking':
             input_data_str = jsondumps(input_data)
             data_str = jsondumps(data)
 
@@ -97,8 +99,9 @@ class SubprocessTrigger(Handler):
 
             retcode = subprocess.Popen([py_exec, file, data_str, input_data_str])
 
+            result = "wait"
 
-        elif my.mode == 'separate process,queued':
+        elif self.mode == 'separate process,queued':
 
             kwargs = data.get("kwargs")
             priority = kwargs.get("priority") or 99999
@@ -114,8 +117,10 @@ class SubprocessTrigger(Handler):
             from tactic.command import Queue
             queue_item = Queue.add(class_name, kwargs, queue_type=queue_type, priority=priority, description=description)
 
+            result = "wait"
 
-        elif my.mode == 'same process,new transaction':
+
+        elif self.mode == 'same process,new transaction':
             # run it inline
             trigger = ScriptTrigger()
             trigger.set_data(data)
@@ -123,13 +128,18 @@ class SubprocessTrigger(Handler):
             trigger.execute()
 
 
+        # if it was not overridden by the trigger, the return default for the mode
+        if not self.info.has_key("result"):
+            self.info['result'] = result
+
+
  
 class QueueTrigger(Command):
     '''Simple command which is executed from a queue'''
-    def execute(my):
+    def execute(self):
 
-        input_data = my.kwargs.get("input_data")
-        data = my.kwargs.get("data")
+        input_data = self.kwargs.get("input_data")
+        data = self.kwargs.get("data")
 
         trigger = ScriptTrigger()
         trigger.set_input(input_data)
@@ -144,10 +154,20 @@ class ScriptTrigger(Handler):
     '''Utility class that calls a trigger by external process'''
     # NOTE: this is not really a trigger'''
 
-    def set_data(my, data):
-        my.data = data
+    def __init__(self):
+        self.mode = "same process,new transaction"
+        self.info = {}
+        super(ScriptTrigger,self).__init__()
 
-    def execute(my):
+
+    def get_info(self):
+        return self.info
+
+
+    def set_data(self, data):
+        self.data = data
+
+    def execute(self):
         #protocol = 'xmlrpc'
 
 
@@ -158,29 +178,80 @@ class ScriptTrigger(Handler):
             server = TacticServerStub(protocol=protocol,setup=False)
             TacticServerStub.set(server)
 
-            project = my.data.get("project")
-            ticket = my.data.get("ticket")
+            project = self.data.get("project")
+            ticket = self.data.get("ticket")
             assert project
             assert ticket
             server.set_server("localhost")
             server.set_project(project)
             server.set_ticket(ticket)
 
-        my.class_name = my.data.get('class_name')
-        assert my.class_name
-        my.kwargs = my.data.get('kwargs')
-        if not my.kwargs:
-            my.kwags = {}
+        self.class_name = self.data.get('class_name')
+        assert self.class_name
+        self.kwargs = self.data.get('kwargs')
+        if not self.kwargs:
+            self.kwags = {}
 
 
-        #trigger = eval("%s(**my.kwargs)" % my.class_name)
-        trigger = Common.create_from_class_path(my.class_name, kwargs=my.kwargs)
+        #trigger = eval("%s(**self.kwargs)" % self.class_name)
+        trigger = Common.create_from_class_path(self.class_name, kwargs=self.kwargs)
 
-        input_data = my.get_input_data()
+        input_data = self.get_input_data()
         trigger.set_input(input_data)
-        trigger.execute()
+
+        try:
+            trigger.execute()
+
+            info = trigger.get_info()
+            result = info.get("result")
+            if result is not None:
+
+                # map booleans to a message
+                if result in ['true', True]:
+                    result = 'complete'
+
+                elif result in ['false', False]:
+                    result = 'revise'
+
+                self.set_pipeline_status(result)
+            else:
+                self.set_pipeline_status("complete")
 
 
+        except Exception as e:
+            #self.set_pipeline_status("error", {"error": str(e)})
+
+
+            self.set_pipeline_status("revise", {"error": str(e)})
+
+            import sys,traceback
+
+            print("Error: ", e)
+            # print the stacktrace
+            tb = sys.exc_info()[2]
+            stacktrace = traceback.format_tb(tb)
+            stacktrace_str = "".join(stacktrace)
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
+            print("-"*50)
+
+ 
+
+
+
+    def set_pipeline_status(self, status, data={}):
+
+        input = self.get_input_data()
+        sobject = input.get("sobject")
+        search_key = sobject.get("__search_key__")
+
+        process = input.get("process")
+        if not process:
+            return
+
+        server = TacticServerStub.get()
+        server.call_pipeline_event(search_key, process, status, data )
 
 
 #
@@ -203,13 +274,19 @@ if __name__ == '__main__':
     assert project
     Batch(project_code=project, site=site)
 
+    from pyasm.command import Workflow
+    Workflow().init()
+ 
+
     input_data_str = args[1]
     input_data = jsonloads(input_data_str)
 
+    # TODO: should this be in a Command?
     trigger = ScriptTrigger()
     trigger.set_data(data)
     trigger.set_input(input_data)
     trigger.execute()
+
     sys.exit(0)
 
 

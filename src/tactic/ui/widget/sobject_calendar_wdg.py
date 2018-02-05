@@ -29,38 +29,38 @@ from datetime import datetime, timedelta
 
 class BaseCalendarDayWdg(BaseRefreshWdg):
 
-    def __init__(my, **kwargs):
-        super(BaseCalendarDayWdg, my).__init__(**kwargs)
-        my.sobjects_index = []
-        my.date = datetime.today()
-        my.current_week = 0
-        my.init_color_map()
+    def __init__(self, **kwargs):
+        super(BaseCalendarDayWdg, self).__init__(**kwargs)
+        self.sobjects_index = []
+        self.date = datetime.today()
+        self.current_week = 0
+        self.init_color_map()
 
     # FIXME: these are a bit wonky
-    def set_sobjects_index(my, indexes):
-        my.sobjects_index = indexes
+    def set_sobjects_index(self, indexes):
+        self.sobjects_index = indexes
 
 
-    def set_current_week(my, current_week):
-        my.current_week = current_week
+    def set_current_week(self, current_week):
+        self.current_week = current_week
 
 
-    def get_week_left_wdg(my, week):
+    def get_week_left_wdg(self, week):
         pass
 
-    def get_week_right_wdg(my, week):
+    def get_week_right_wdg(self, week):
         pass
 
-    def set_date(my, date):
-        my.date = date
+    def set_date(self, date):
+        self.date = date
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
         return div
 
-    def init_color_map(my):
+    def init_color_map(self):
         ''' initialize the color map for bg color and text color'''
-        search_type = my.kwargs.get('search_type')
+        search_type = self.kwargs.get('search_type')
         
         if not search_type:
             search_type = 'sthpw/task'
@@ -69,7 +69,7 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         from pyasm.widget import WidgetConfigView
         color_config = WidgetConfigView.get_by_search_type(search_type, "color")
         color_xml = color_config.configs[0].xml
-        my.color_map = {}
+        self.color_map = {}
         name = 'status'
         xpath = "config/color/element[@name='%s']/colors" % name
         text_xpath = "config/color/element[@name='%s']/text_colors" % name
@@ -111,20 +111,20 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
                 bg_color_map[match] = color
 
-        my.color_map[name] = bg_color_map, text_color_map
+        self.color_map[name] = bg_color_map, text_color_map
 
 
 
         
-    def get_color(my, sobject, index):
+    def get_color(self, sobject, index):
 
         #color_mode = "custom"
-        color_mode = my.kwargs.get("color_mode")
+        color_mode = self.kwargs.get("color_mode")
         if color_mode == "custom":
             column = "assigned"
 
-            color_column = my.kwargs.get("color_column")
-            color = my.kwargs.get("custom_colors")
+            color_column = self.kwargs.get("color_column")
+            color = self.kwargs.get("custom_colors")
 
             colors = {
                     'admin': '#ACC',
@@ -146,7 +146,7 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
 
         elif color_mode == "single":
-            color = my.kwargs.get("color")
+            color = self.kwargs.get("color")
             if color:
                 return color
 
@@ -168,7 +168,7 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         except:
             pass
 
-        bg_color, text_color = my.color_map.get('status')
+        bg_color, text_color = self.color_map.get('status')
         if bg_color:
             color_value = bg_color.get(sobject.get_value('status'))
             
@@ -200,41 +200,41 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
 class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
-    def init(my):
-        my.sobjects_drawn = {}
-        my.date = datetime.today()
-        my.sobject_display_expr = my.kwargs.get('sobject_display_expr')
-        if my.sobject_display_expr == "None":
-            my.sobject_display_expr = None
+    def init(self):
+        self.sobjects_drawn = {}
+        self.date = datetime.today()
+        self.sobject_display_expr = self.kwargs.get('sobject_display_expr')
+        if self.sobject_display_expr == "None":
+            self.sobject_display_expr = None
 
         key = "TaskCalendarDayWdg:display_values"
-        my.display_values = Container.get(key)
-        if my.display_values == None:
-            my.display_values = {}
-            Container.put(key, my.display_values)
+        self.display_values = Container.get(key)
+        if self.display_values == None:
+            self.display_values = {}
+            Container.put(key, self.display_values)
 
 
     # NOTE: these are a bit wonky
-    def set_sobjects_index(my, indexes):
-        my.sobjects_index = indexes
+    def set_sobjects_index(self, indexes):
+        self.sobjects_index = indexes
 
-    def set_date(my, date):
-        my.date = date
+    def set_date(self, date):
+        self.date = date
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_style("overflow-x: hidden")
         top.add_style("padding-left: 3px")
         top.add_style("padding-right: 3px")
 
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         if not mode:
             mode = 'normal'
         assert mode in ['normal', 'line', 'square']
 
         # check if it is the first day of the week and then try to cascade
         # the indexes up
-        wday = my.date.strftime("%w")
+        wday = self.date.strftime("%w")
         if wday == "0":
             first_day = True
         else:
@@ -242,8 +242,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
 
         num_today = 0
-        for index, sobject in enumerate(my.sobjects_index):
-            if sobject not in my.sobjects:
+        for index, sobject in enumerate(self.sobjects_index):
+            if sobject not in self.sobjects:
                 continue
             num_today += 1
 
@@ -258,7 +258,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
             #top.add_style("opacity: 0.5")
 
         else:
-            for index, sobject in enumerate(my.sobjects_index):
+            for index, sobject in enumerate(self.sobjects_index):
 
                 content_wdg = DivWdg()
                 top.add(content_wdg)
@@ -266,7 +266,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
                 content_wdg.add_style("padding: 1px 3px 1px 3px")
 
-                if sobject not in my.sobjects:
+                if sobject not in self.sobjects:
                     # account for the border
                     if mode == "line":
                         content_wdg.add_style("height: 1px")
@@ -283,7 +283,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                     elif mode == "square":
 
-                        size = my.kwargs.get("square_size")
+                        size = self.kwargs.get("square_size")
                         if not size:
                             size = "3px"
                         content_wdg.add_style("height: %s" % size)
@@ -297,18 +297,18 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         content_wdg.add_style("margin: 3px 0px 3px 0px")
                     content_wdg.add_style("overflow: hidden")
 
-                if not first_day and my.sobjects_drawn.get(sobject) == True:
+                if not first_day and self.sobjects_drawn.get(sobject) == True:
                     display_value = "&nbsp;"
-                    title_value = my.display_values.get(sobject.get_search_key())
+                    title_value = self.display_values.get(sobject.get_search_key())
                     if title_value:
                         content_wdg.add_attr("title", title_value)
 
 
                 else:
-                    if my.sobject_display_expr:
-                        display_value = Search.eval(my.sobject_display_expr, [sobject], single=True)
+                    if self.sobject_display_expr:
+                        display_value = Search.eval(self.sobject_display_expr, [sobject], single=True)
                     else:
-                        display_value = my.get_display_value(sobject)
+                        display_value = self.get_display_value(sobject)
 
                     if mode == "square":
                         display_value = ""
@@ -316,13 +316,13 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         display_value = sobject.get_code()
 
                     content_wdg.add_attr("title", display_value)
-                    my.display_values[sobject.get_search_key()] = display_value
+                    self.display_values[sobject.get_search_key()] = display_value
 
                     if len(display_value) > 17:
                         display_value = "%s..." % display_value[:20]
-                    my.sobjects_drawn[sobject] = True
+                    self.sobjects_drawn[sobject] = True
 
-                color = my.get_color(sobject, index)
+                color = self.get_color(sobject, index)
                 content_wdg.add_style("background: %s" % color)
 
                 content_wdg.add(display_value)
@@ -332,7 +332,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
 
 
-    def get_display_value(my, sobject):
+    def get_display_value(self, sobject):
 
         # how to display empty if none existant
         # this expression cuts off after 30 chars doesn't work with non ASCII char
@@ -391,15 +391,15 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
 
 
-    def get_week_left_wdg(my, week):
+    def get_week_left_wdg(self, week):
         pass
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         '''default to just filter by assigned'''
-        assigned = my.kwargs.get("assigned")
-        supervisor = my.kwargs.get("supervisor")
-        project_code = my.kwargs.get("project")
+        assigned = self.kwargs.get("assigned")
+        supervisor = self.kwargs.get("supervisor")
+        project_code = self.kwargs.get("project")
 
         if assigned:
             if assigned == '$LOGIN':
@@ -421,15 +421,15 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
 class WorkHourCalendarDayWdg(BaseCalendarDayWdg):
 
-    def init(my):
-        my.week_totals = {}
+    def init(self):
+        self.week_totals = {}
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
 
         total_straight = 0
-        for index, sobject in enumerate(my.sobjects):
+        for index, sobject in enumerate(self.sobjects):
             straight = sobject.get_value("straight_time")
             if straight:
                 total_straight += float(straight)
@@ -440,11 +440,11 @@ class WorkHourCalendarDayWdg(BaseCalendarDayWdg):
         if not total_straight:
             straight_div.add_style("opacity: 0.3")
         else:
-            week_total = my.week_totals.get(my.current_week)
+            week_total = self.week_totals.get(self.current_week)
             if week_total == None:
                 week_total = 0
             week_total += total_straight
-            my.week_totals[my.current_week] = week_total
+            self.week_totals[self.current_week] = week_total
 
 
         div.add_style("padding: 5px")
@@ -465,15 +465,15 @@ class WorkHourCalendarDayWdg(BaseCalendarDayWdg):
         return div
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        login = my.kwargs.get("login")
+        login = self.kwargs.get("login")
         if login:
             search.add_filter("login", login)
 
 
 
-    def get_week_left_wdg(my, week):
+    def get_week_left_wdg(self, week):
         top = DivWdg()
         top.add_style("margin-top: 28px")
 
@@ -488,17 +488,17 @@ class WorkHourCalendarDayWdg(BaseCalendarDayWdg):
         return top
 
 
-    def get_week_right_wdg(my, week):
+    def get_week_right_wdg(self, week):
         top = DivWdg()
         #top.add("total: %s" % week)
         return top
 
 class SupervisorCalendarDayWdg(TaskCalendarDayWdg):
 
-    def get_color(my, sobject, index):
+    def get_color(self, sobject, index):
 
         assigned = sobject.get_value("assigned")
-        color = my.get_color_by_login(assigned)
+        color = self.get_color_by_login(assigned)
 
         if not color:
             colors = ['#666','#777','#888']
@@ -506,7 +506,7 @@ class SupervisorCalendarDayWdg(TaskCalendarDayWdg):
         return color
 
 
-    def get_color_by_login(my, login):
+    def get_color_by_login(self, login):
         colors = {
             'garth': '#644',
             'cindy': '#464',
@@ -518,7 +518,7 @@ class SupervisorCalendarDayWdg(TaskCalendarDayWdg):
         return color
 
 
-    def get_week_left_wdg(my, week):
+    def get_week_left_wdg(self, week):
         top = DivWdg()
 
         for assigned in ['albert', 'joe', 'garth']:
@@ -528,7 +528,7 @@ class SupervisorCalendarDayWdg(TaskCalendarDayWdg):
             content_wdg.add_style("padding: 1px 3px 1px 3px")
             content_wdg.add(assigned)
 
-            color = my.get_color_by_login(assigned)
+            color = self.get_color_by_login(assigned)
             content_wdg.add_style("background: %s" % color)
             content_wdg.add_style("width: 120px")
 
@@ -537,7 +537,7 @@ class SupervisorCalendarDayWdg(TaskCalendarDayWdg):
         return top
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         search.add_order_by('assigned')
         search.add_user_filter(column='supervisor')
 
@@ -563,25 +563,25 @@ class SObjectCalendarWdg(CalendarWdg):
     }
 
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         if kwargs.get("show_border") == None:
             kwargs['show_border'] = 'false'
-        super(SObjectCalendarWdg, my).__init__(**kwargs)
+        super(SObjectCalendarWdg, self).__init__(**kwargs)
     
 
-    def handle_search(my):
+    def handle_search(self):
 
-        parent_key = my.kwargs.get("parent_key")
+        parent_key = self.kwargs.get("parent_key")
 
         # this is an absolute expression
-        my.search_expr = my.kwargs.get("search_expr")
-        my.search_type = my.kwargs.get("search_type")
-        if not my.search_type:
-            my.search_type = 'sthpw/task'
-        if my.search_expr:
-            result = Search.eval(my.search_expr)
+        self.search_expr = self.kwargs.get("search_expr")
+        self.search_type = self.kwargs.get("search_type")
+        if not self.search_type:
+            self.search_type = 'sthpw/task'
+        if self.search_expr:
+            result = Search.eval(self.search_expr)
             if isinstance(result, list):
-                search = Search(my.search_type)
+                search = Search(self.search_type)
                 codes = [x.get_code() for x in result]
                 search.add_filters("code", codes)
             else:
@@ -591,21 +591,21 @@ class SObjectCalendarWdg(CalendarWdg):
         else:
             
 
-            my.op_filters = my.kwargs.get("filters")
-            if my.op_filters:
-                if isinstance(my.op_filters, basestring):
-                    my.op_filters = eval(my.op_filters)
-            search = Search(my.search_type)
-            if my.op_filters:
-                search.add_op_filters(my.op_filters)
+            self.op_filters = self.kwargs.get("filters")
+            if self.op_filters:
+                if isinstance(self.op_filters, basestring):
+                    self.op_filters = eval(self.op_filters)
+            search = Search(self.search_type)
+            if self.op_filters:
+                search.add_op_filters(self.op_filters)
 
-        my.start_column = my.kwargs.get('start_date_col')
-        if not my.start_column:
-            my.start_column = 'bid_start_date'
+        self.start_column = self.kwargs.get('start_date_col')
+        if not self.start_column:
+            self.start_column = 'bid_start_date'
 
-        my.end_column = my.kwargs.get('end_date_col')
-        if not my.end_column:
-            my.end_column = 'bid_end_date'
+        self.end_column = self.kwargs.get('end_date_col')
+        if not self.end_column:
+            self.end_column = 'bid_end_date'
 
        
         if parent_key:
@@ -614,40 +614,40 @@ class SObjectCalendarWdg(CalendarWdg):
 
         search.add_op('begin')
 
-        if my.handler:
-            my.handler.alter_search(search)
+        if self.handler:
+            self.handler.alter_search(search)
 
         search.add_op('or')
 
 
 
 
-        my.start_date = datetime(my.year, my.month, 1)
-        next_month = my.month+1
-        next_year = my.year
+        self.start_date = datetime(self.year, self.month, 1)
+        next_month = self.month+1
+        next_year = self.year
         if next_month > 12:
             next_month = 1
             next_year += 1
 
-        my.end_date = datetime(next_year, next_month, 1)
-        my.end_date = my.end_date - timedelta(days=1)
+        self.end_date = datetime(next_year, next_month, 1)
+        self.end_date = self.end_date - timedelta(days=1)
 
         # outer begin
         search.add_op('begin')
 
         search.add_op('begin')
-        search.add_date_range_filter(my.start_column, my.start_date, my.end_date)
-        search.add_date_range_filter(my.end_column, my.start_date, my.end_date)
+        search.add_date_range_filter(self.start_column, self.start_date, self.end_date)
+        search.add_date_range_filter(self.end_column, self.start_date, self.end_date)
         search.add_op('or')
 
         search.add_op('begin')
-        search.add_filter(my.start_column, my.start_date, op='<=')
-        search.add_filter(my.end_column, my.end_date, op='>=')
+        search.add_filter(self.start_column, self.start_date, op='<=')
+        search.add_filter(self.end_column, self.end_date, op='>=')
         search.add_op('and')
 
         search.add_op('or')
 
-        extra_codes = my.kwargs.get("extra_codes")
+        extra_codes = self.kwargs.get("extra_codes")
         if extra_codes:
             search.add_op('and')
             extra_codes = extra_codes.split("|")
@@ -655,82 +655,82 @@ class SObjectCalendarWdg(CalendarWdg):
             search.add_op('or')
 
 
-        search.add_order_by(my.start_column)
+        search.add_order_by(self.start_column)
 
-        my.sobjects = search.get_sobjects()
+        self.sobjects = search.get_sobjects()
 
 
 
-    def init(my):
-        super(SObjectCalendarWdg,my).init()
+    def init(self):
+        super(SObjectCalendarWdg,self).init()
 
-        custom_view = my.kwargs.get('view')
-        my.custom_sobject_view = my.kwargs.get('sobject_view')
-        my.custom_detail_view = my.kwargs.get("detail_view")
-        if not my.custom_sobject_view and not my.custom_detail_view:
-            my.custom_sobject_view = 'table'
+        custom_view = self.kwargs.get('view')
+        self.custom_sobject_view = self.kwargs.get('sobject_view')
+        self.custom_detail_view = self.kwargs.get("detail_view")
+        if not self.custom_sobject_view and not self.custom_detail_view:
+            self.custom_sobject_view = 'table'
 
-        my.custom_layout = None
+        self.custom_layout = None
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
-            #custom_kwargs = my.kwargs.copy()
-            custom_kwargs = my.kwargs.get("kwargs")
+            #custom_kwargs = self.kwargs.copy()
+            custom_kwargs = self.kwargs.get("kwargs")
             if not custom_kwargs:
                 custom_kwargs = {}
             elif isinstance(custom_kwargs, basestring):
                 custom_kwargs = eval(custom_kwargs)
             custom_kwargs['view'] = custom_view
-            my.custom_layout = CustomLayoutWdg(**custom_kwargs)
+            self.custom_layout = CustomLayoutWdg(**custom_kwargs)
             class_name = "tactic.ui.widget.BaseCalendarDayWdg"
 
         else:
 
-            class_name = my.kwargs.get('handler')
+            class_name = self.kwargs.get('handler')
             if not class_name:
                 class_name = 'tactic.ui.widget.TaskCalendarDayWdg'
 
-            my.custom_layout = None
+            self.custom_layout = None
 
-        my.handler = Common.create_from_class_path(class_name, [], my.kwargs)
+        self.handler = Common.create_from_class_path(class_name, [], self.kwargs)
 
 
-        my.sobject_display_expr = my.kwargs.get('sobject_display_expr')
+        self.sobject_display_expr = self.kwargs.get('sobject_display_expr')
 
         # set the border style
-        my.kwargs['border_type'] = 'all'
+        self.kwargs['border_type'] = 'all'
 
 
 
-        my.handle_search()
+        self.handle_search()
 
-        my.width = my.kwargs.get("cell_width")
-        if not my.width:
-            my.width = '100%'
-        my.height = my.kwargs.get("cell_height")
-        if not my.height:
-            my.height = '80px'
+        self.width = self.kwargs.get("cell_width")
+        if not self.width:
+            self.width = '100%'
+        self.height = self.kwargs.get("cell_height")
+        if not self.height:
+            self.height = '80px'
 
         # preprocess the sobjects so that they are order by date
-        my.date_sobjects = {}
+        self.date_sobjects = {}
 
         # get all of the weeks in this month
-        my.sobjects_week_index = []
-        for i in my.weeks:
-            my.sobjects_week_index.append([])
+        self.sobjects_week_index = []
+        for i in self.weeks:
+            self.sobjects_week_index.append([])
 
-        for index, sobject in enumerate(my.sobjects):
+        for index, sobject in enumerate(self.sobjects):
 
-            start_date = sobject.get_value(my.start_column)
+            start_date = sobject.get_value(self.start_column)
             if not start_date:
                 continue
             start_date = parser.parse(start_date)
 
-            end_date = sobject.get_value(my.end_column)
+            end_date = sobject.get_value(self.end_column)
             if not end_date:
                 continue
             end_date = parser.parse(end_date)
 
-            for i, week in enumerate(my.weeks):
+            for i, week in enumerate(self.weeks):
                 first_day = week[0]
                 first_day = datetime(first_day.year, first_day.month, first_day.day)
                 last_day = week[6] + timedelta(days=1)
@@ -747,7 +747,7 @@ class SObjectCalendarWdg(CalendarWdg):
                     is_in_week = True
 
                 if is_in_week:
-                    my.sobjects_week_index[i].append(sobject)
+                    self.sobjects_week_index[i].append(sobject)
 
 
 
@@ -758,27 +758,27 @@ class SObjectCalendarWdg(CalendarWdg):
 
                 date_str = date.strftime("%Y-%m-%d")
 
-                sobj_list = my.date_sobjects.get(date_str)
+                sobj_list = self.date_sobjects.get(date_str)
                 if not sobj_list:
                     # create a new list for that day
                     sobj_list = []
-                    my.date_sobjects[date_str] = sobj_list 
+                    self.date_sobjects[date_str] = sobj_list 
 
                 sobj_list.append(sobject)
 
 
-        my.current_week = -1
+        self.current_week = -1
 
 
-    def get_day_header_wdg(my, day):
-        my.size = my.kwargs.get("size")
-        if not my.size:
-            my.size = 3
+    def get_day_header_wdg(self, day):
+        self.size = self.kwargs.get("size")
+        if not self.size:
+            self.size = 3
 
-        if my.size:
-            weekday = my.WEEKDAYS[day.weekday()][0:my.size]
+        if self.size:
+            weekday = self.WEEKDAYS[day.weekday()][0:self.size]
         else:
-            weekday = my.WEEKDAYS[day.weekday()]
+            weekday = self.WEEKDAYS[day.weekday()]
 
         div = DivWdg()
 
@@ -788,12 +788,12 @@ class SObjectCalendarWdg(CalendarWdg):
         div.add( weekday )
         return div
 
-    def get_legend_wdg(my):
+    def get_legend_wdg(self):
         return None
 
 
 
-    def get_header_wdg(my):
+    def get_header_wdg(self):
         outer = DivWdg()
 
         div = DivWdg()
@@ -812,14 +812,14 @@ class SObjectCalendarWdg(CalendarWdg):
         table.add_row()
 
         # add the month navigators
-        date_str = "%s, %s" % (my.MONTHS[my.month-1], my.year)
+        date_str = "%s, %s" % (self.MONTHS[self.month-1], self.year)
         month_wdg = DivWdg()
         month_wdg.add_style("width: 150px")
         month_wdg.add(date_str)
 
 
-        prev_month_wdg = my.get_prev_month_wdg()
-        next_month_wdg = my.get_next_month_wdg()
+        prev_month_wdg = self.get_prev_month_wdg()
+        next_month_wdg = self.get_next_month_wdg()
 
         table.add_cell(prev_month_wdg)
         td = table.add_cell(month_wdg)
@@ -832,46 +832,46 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
 
-    def get_week_left_wdg(my, week):
-        return my.handler.get_week_left_wdg(week)
+    def get_week_left_wdg(self, week):
+        return self.handler.get_week_left_wdg(week)
 
 
-    def get_week_right_wdg(my, week):
-        return my.handler.get_week_right_wdg(week)
+    def get_week_right_wdg(self, week):
+        return self.handler.get_week_right_wdg(week)
 
 
 
-    def get_day_wdg(my, month, day):
+    def get_day_wdg(self, month, day):
 
         # find the day of the week
         wday = day.strftime("%w")
         # if it's the first day ...
         if wday == "0":
-            my.current_week += 1
+            self.current_week += 1
 
-        sobjects_week_index = my.sobjects_week_index[my.current_week]
-        my.handler.set_sobjects_index( sobjects_week_index )
-        my.handler.set_current_week(my.current_week)
+        sobjects_week_index = self.sobjects_week_index[self.current_week]
+        self.handler.set_sobjects_index( sobjects_week_index )
+        self.handler.set_current_week(self.current_week)
 
-        sobjects = my.date_sobjects.get(str(day))
+        sobjects = self.date_sobjects.get(str(day))
         div = DivWdg()
        
         div.add_style("vertical-align: top")
         div.add_class("spt_calendar_day")
         div.add_class("hand")
-        if my.custom_layout:
-            my.custom_layout.kwargs['day_obj'] = day
-            my.custom_layout.kwargs['day'] = str(day)
+        if self.custom_layout:
+            self.custom_layout.kwargs['day_obj'] = day
+            self.custom_layout.kwargs['day'] = str(day)
             if sobjects:
                 # this causes mako processing error complaining about timestamp
                 # send in just the search_keys for the day for now
 
                 #sobject_dict_list = [ x.get_sobject_dict() for x in sobjects]
-                #my.custom_layout.kwargs['search_objects'] = sobject_dict_list 
+                #self.custom_layout.kwargs['search_objects'] = sobject_dict_list 
                 sobject_keys = [ x.get_search_key() for x in sobjects]
-                my.custom_layout.kwargs['search_keys'] = sobject_keys
-            wdg = my.custom_layout.get_buffer_display()
-            my.custom_layout.kwargs['search_keys'] = []
+                self.custom_layout.kwargs['search_keys'] = sobject_keys
+            wdg = self.custom_layout.get_buffer_display()
+            self.custom_layout.kwargs['search_keys'] = []
             div.add(wdg)
             return div
 
@@ -885,7 +885,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
         """
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         if mode in ["line","square"]:
             day_div.add_style("font-size: 0.6em")
             day_div.add_style("padding: 1px 0px 2px 2px")
@@ -894,9 +894,9 @@ class SObjectCalendarWdg(CalendarWdg):
             day_div.add_style("padding: 3px 0 3px 5px")
         """
 
-        if my.width:
-            div.add_style("width: %s" % my.width);
-        div.add_style("min-height: %s" % my.height);
+        if self.width:
+            div.add_style("width: %s" % self.width);
+        div.add_style("min-height: %s" % self.height);
         div.add_style("overflow: hidden");
         div.add_style("padding: 2px 0 2px 0")
 
@@ -904,17 +904,17 @@ class SObjectCalendarWdg(CalendarWdg):
         div.add_style("vertical-align: top")
 
         
-        st_title = SearchType.get(my.search_type).get_value('title')
+        st_title = SearchType.get(self.search_type).get_value('title')
         if sobjects:
             #ids = "".join( [ "['id','%s']" % x.get_id() for x in sobjects ])
             ids = [ str(x.get_id()) for x in sobjects ]
             ids_filter = "['id' ,'in', '%s']" %'|'.join(ids) 
-            expression = "@SOBJECT(%s%s)" % (my.search_type, ids_filter)
+            expression = "@SOBJECT(%s%s)" % (self.search_type, ids_filter)
             div.add_behavior( {
                 'type': "click",
-                'sobject_view' : my.custom_sobject_view,
-                'detail_view' : my.custom_detail_view,
-                'search_type': my.search_type,
+                'sobject_view' : self.custom_sobject_view,
+                'detail_view' : self.custom_detail_view,
+                'search_type': self.search_type,
                 'day': str(day),
                 'st_title': st_title,
                 'expression': expression,
@@ -948,25 +948,25 @@ class SObjectCalendarWdg(CalendarWdg):
 
             content.add_style("height: 100%")
             #content.add_style("width: 400px")
-            content.add_style("min-height: %s" % my.height);
+            content.add_style("min-height: %s" % self.height);
 
-            my.handler.set_sobjects(sobjects)
+            self.handler.set_sobjects(sobjects)
         else:
             content = DivWdg()
             content.add_style("vertical-align: top")
             content.add_style("height: 100%")
             #content.add_style("width: 400px")
-            content.add_style("min-height: %s" % my.height);
+            content.add_style("min-height: %s" % self.height);
 
-            my.handler.set_sobjects([])
+            self.handler.set_sobjects([])
 
         # force it to be 120px for now
-        if my.width:
-            content.add_style("width: %spx" % my.width)
+        if self.width:
+            content.add_style("width: %spx" % self.width)
 
-        my.handler.set_date(day)
+        self.handler.set_date(day)
 
-        content.add( my.handler.get_buffer_display() )
+        content.add( self.handler.get_buffer_display() )
 
         div.add(content)
 
@@ -1015,21 +1015,21 @@ class SObjectCalendarWdg(CalendarWdg):
 __all__.append("SObjectCalendarDayDetailWdg")
 class SObjectCalendarDayDetailWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         from tactic.ui.panel import ViewPanelWdg, CustomLayoutWdg
 
-        top = my.top
+        top = self.top
 
-        detail_view = my.kwargs.get("detail_view")
+        detail_view = self.kwargs.get("detail_view")
         if detail_view:
-            my.kwargs['view'] = detail_view
-            layout = CustomLayoutWdg(**my.kwargs)
+            self.kwargs['view'] = detail_view
+            layout = CustomLayoutWdg(**self.kwargs)
         else:
             top.add_style("margin: 20px")
 
-            day = my.kwargs.get("day")
-            title = my.kwargs.get("st_title")
+            day = self.kwargs.get("day")
+            title = self.kwargs.get("st_title")
             title = Common.pluralize(title)
 
             title_wdg = DivWdg()
@@ -1038,9 +1038,9 @@ class SObjectCalendarDayDetailWdg(BaseRefreshWdg):
             title_wdg.add("List of %s on this day." % title)
             title_wdg.add("<hr/>")
 
-            my.kwargs['show_shelf'] = False
+            self.kwargs['show_shelf'] = False
 
-            layout = ViewPanelWdg(**my.kwargs)
+            layout = ViewPanelWdg(**self.kwargs)
 
         top.add(layout)
 
@@ -1055,15 +1055,15 @@ class SObjectCalendarDayDetailWdg(BaseRefreshWdg):
 
 class TaskCalendarWdg(SObjectCalendarWdg):
 
-    def __init__(my, **kwargs):
-        super(TaskCalendarWdg, my).__init__(**kwargs)
-        my.kwargs['handler'] = 'tactic.ui.widget.TaskCalendarDayWdg'
+    def __init__(self, **kwargs):
+        super(TaskCalendarWdg, self).__init__(**kwargs)
+        self.kwargs['handler'] = 'tactic.ui.widget.TaskCalendarDayWdg'
 
         
 
-    def get_legend_wdg(my):
-        #my.search_type = my.kwargs.get("search_type")
-        #if not my.search_type == "sthpw/task":
+    def get_legend_wdg(self):
+        #self.search_type = self.kwargs.get("search_type")
+        #if not self.search_type == "sthpw/task":
         #    return None
 
         div = DivWdg()
@@ -1100,7 +1100,7 @@ class TaskCalendarWdg(SObjectCalendarWdg):
 
 
 
-    def get_color(my, sobject, index):
+    def get_color(self, sobject, index):
 
         div = DivWdg()
         pipeline_code = sobject.get_value("pipeline_code")
@@ -1132,21 +1132,21 @@ __all__.append("ActivityCalendarWdg")
 class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
-    def get_legend_wdg(my):
+    def get_legend_wdg(self):
         return None
 
-    def handle_search(my):
-        login = my.kwargs.get("login")
-        project_code = my.kwargs.get("project")
+    def handle_search(self):
+        login = self.kwargs.get("login")
+        project_code = self.kwargs.get("project")
 
-        my.start_date = datetime(my.year, my.month, 1)
-        next_month = my.month+1
-        next_year = my.year
+        self.start_date = datetime(self.year, self.month, 1)
+        next_month = self.month+1
+        next_year = self.year
         if next_month > 12:
             next_month = 1
             next_year += 1
 
-        my.end_date = datetime(next_year, next_month, 1)
+        self.end_date = datetime(next_year, next_month, 1)
 
 
         search = Search("sthpw/task")
@@ -1159,22 +1159,22 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
                 search.add_filter("project_code", project_code)
 
 
-        search.add_filter("bid_end_date", my.start_date, op=">")
-        search.add_filter("bid_end_date", my.end_date, op="<")
-        my.task_count = search.get_count()
-        my.tasks = search.get_sobjects()
-        my.tasks_count = {}
-        for task in my.tasks:
+        search.add_filter("bid_end_date", self.start_date, op=">")
+        search.add_filter("bid_end_date", self.end_date, op="<")
+        self.task_count = search.get_count()
+        self.tasks = search.get_sobjects()
+        self.tasks_count = {}
+        for task in self.tasks:
             date = task.get_value("bid_end_date")
             date = parser.parse(date)
             date = datetime(date.year, date.month, date.day)
 
-            count = my.tasks_count.get(str(date))
+            count = self.tasks_count.get(str(date))
             if not count:
                 count = 0
 
             count += 1
-            my.tasks_count[str(date)] = count
+            self.tasks_count[str(date)] = count
 
 
 
@@ -1189,21 +1189,21 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
 
-        search.add_filter("timestamp", my.start_date, op=">")
-        search.add_filter("timestamp", my.end_date, op="<")
-        my.snapshot_count = search.get_count()
-        my.snapshots = search.get_sobjects()
-        my.snapshots_count = {}
-        for snapshot in my.snapshots:
+        search.add_filter("timestamp", self.start_date, op=">")
+        search.add_filter("timestamp", self.end_date, op="<")
+        self.snapshot_count = search.get_count()
+        self.snapshots = search.get_sobjects()
+        self.snapshots_count = {}
+        for snapshot in self.snapshots:
             date = snapshot.get_value("timestamp")
             date = parser.parse(date)
             date = datetime(date.year, date.month, date.day)
 
-            count = my.snapshots_count.get(str(date))
+            count = self.snapshots_count.get(str(date))
             if not count:
                 count = 0
             count += 1
-            my.snapshots_count[str(date)] = count
+            self.snapshots_count[str(date)] = count
 
 
 
@@ -1216,9 +1216,9 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
                 search.add_project_filter()
             else:
                 search.add_filter("project_code", project_code)
-        search.add_filter("timestamp", my.start_date, op=">")
-        search.add_filter("timestamp", my.end_date, op="<")
-        my.task_count = search.get_count()
+        search.add_filter("timestamp", self.start_date, op=">")
+        search.add_filter("timestamp", self.end_date, op="<")
+        self.task_count = search.get_count()
 
 
 
@@ -1232,21 +1232,21 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             else:
                 search.add_filter("project_code", project_code)
 
-        search.add_filter("timestamp", my.start_date, op=">")
-        search.add_filter("timestamp", my.end_date, op="<")
-        my.note_count = search.get_count()
-        my.notes = search.get_sobjects()
-        my.notes_count = {}
-        for note in my.notes:
+        search.add_filter("timestamp", self.start_date, op=">")
+        search.add_filter("timestamp", self.end_date, op="<")
+        self.note_count = search.get_count()
+        self.notes = search.get_sobjects()
+        self.notes_count = {}
+        for note in self.notes:
             date = note.get_value("timestamp")
             date = parser.parse(date)
             date = datetime(date.year, date.month, date.day)
 
-            count = my.notes_count.get(str(date))
+            count = self.notes_count.get(str(date))
             if not count:
                 count = 0
             count += 1
-            my.notes_count[str(date)] = count
+            self.notes_count[str(date)] = count
 
 
 
@@ -1260,24 +1260,24 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             else:
                 search.add_filter("project_code", project_code)
 
-        search.add_filter("day", my.start_date, op=">=")
-        search.add_filter("day", my.end_date, op="<=")
-        my.work_hour_count = search.get_count()
-        my.work_hours = search.get_sobjects()
-        my.work_hours_count = {}
-        for work_hour in my.work_hours:
+        search.add_filter("day", self.start_date, op=">=")
+        search.add_filter("day", self.end_date, op="<=")
+        self.work_hour_count = search.get_count()
+        self.work_hours = search.get_sobjects()
+        self.work_hours_count = {}
+        for work_hour in self.work_hours:
             date = work_hour.get_value("day")
             date = parser.parse(date)
             date = datetime(date.year, date.month, date.day)
 
-            total = my.work_hours_count.get(str(date))
+            total = self.work_hours_count.get(str(date))
             if not total:
                 total = 0
 
             straight_time = work_hour.get_value("straight_time")
             if straight_time:
                 total += straight_time
-            my.work_hours_count[str(date)] = straight_time
+            self.work_hours_count[str(date)] = straight_time
 
 
 
@@ -1294,25 +1294,25 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             else:
                 search.add_filter("project_code", project_code)
 
-        search.add_filter("due_date", my.start_date, op=">=")
-        search.add_filter("due_date", my.end_date, op="<=")
-        my.milestone_count = search.get_count()
+        search.add_filter("due_date", self.start_date, op=">=")
+        search.add_filter("due_date", self.end_date, op="<=")
+        self.milestone_count = search.get_count()
         milestones = search.get_sobjects()
-        my.milestones_count = {} # NOTE: this one is plural!
+        self.milestones_count = {} # NOTE: this one is plural!
         for milestone in milestones:
             date = milestone.get_value("due_date")
             date = parser.parse(date)
             date = datetime(date.year, date.month, date.day)
 
-            count = my.milestones_count.get(str(date))
+            count = self.milestones_count.get(str(date))
             if not count:
                 count = 0
             count += 1
-            my.milestones_count[str(date)] = count
+            self.milestones_count[str(date)] = count
 
 
 
-    def get_day_wdg(my, month, day):
+    def get_day_wdg(self, month, day):
 
         div = DivWdg()
         div.add_style("width: 120px")
@@ -1339,13 +1339,13 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
         elif day.weekday() in [5, 6]:
             div.add_color("background", "background", -3)
-            if day.month != my.month:
+            if day.month != self.month:
                 div.add("<i style='opacity: 0.3'>[%s]</i>" % day.day)
             else:
                 div.add("[%s]" % day.day)
 
         # if the month is different than today
-        elif day.month != my.month:
+        elif day.month != self.month:
             #div.add_color("background", "background", [-5, -5, -5])
             div.add("<i style='opacity: 0.3'>[%s]</i>" % day.day)
 
@@ -1368,7 +1368,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
         line_div.add_style("padding: 3px")
         icon = IconWdg("Number of task due", IconWdg.CALENDAR)
         line_div.add(icon)
-        num_tasks = my.tasks_count.get(key)
+        num_tasks = self.tasks_count.get(key)
         if not num_tasks:
             num_tasks = 0
             line_div.add_style("opacity: 0.15")
@@ -1383,7 +1383,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
         line_div.add_style("padding: 3px")
         icon = IconWdg("Number of check-ins", IconWdg.PUBLISH)
         line_div.add(icon)
-        num_snapshots = my.snapshots_count.get(key)
+        num_snapshots = self.snapshots_count.get(key)
         if not num_snapshots:
             num_snapshots = 0
             line_div.add_style("opacity: 0.15")
@@ -1397,7 +1397,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
         line_div.add_style("padding: 3px")
         icon = IconWdg("Number of notes", IconWdg.NOTE)
         line_div.add(icon)
-        num_notes = my.notes_count.get(key)
+        num_notes = self.notes_count.get(key)
         if not num_notes:
             num_notes = 0
             line_div.add_style("opacity: 0.15")
@@ -1411,7 +1411,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
         line_div.add_style("padding: 3px")
         icon = IconWdg("Work Hours", IconWdg.CLOCK)
         line_div.add(icon)
-        work_hours = my.work_hours_count.get(key)
+        work_hours = self.work_hours_count.get(key)
         if not work_hours:
             work_hours = 0
             line_div.add_style("opacity: 0.15")
@@ -1436,7 +1436,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
 
-        num_milestone = my.milestones_count.get(key)
+        num_milestone = self.milestones_count.get(key)
         if num_milestone:
             icon = IconWdg("Milestones", IconWdg.GOOD)
             line_div.add(icon)
@@ -1515,9 +1515,9 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             } )
 
 
-        #div.add("%s tasks completed<br/>" % my.task_count)
-        #div.add("%s notes entered<br/>" % my.notes_count)
-        #div.add("%s work hours<br/>" % my.work_hours_count)
+        #div.add("%s tasks completed<br/>" % self.task_count)
+        #div.add("%s notes entered<br/>" % self.notes_count)
+        #div.add("%s work hours<br/>" % self.work_hours_count)
 
 
         return div

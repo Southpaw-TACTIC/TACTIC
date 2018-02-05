@@ -18,16 +18,16 @@ from pyasm.search import SearchType
 
 class AssetLibraryTypeWdg(SelectWdg):
 
-    def init(my):
-        my.set_name("type")
+    def init(self):
+        self.set_name("type")
         
-    def get_display(my):
+    def get_display(self):
 
         project = SearchType.get_project()
         
-        my.set_option("labels", "%s|general" % (project))
-        my.set_option("values", "%s|gen" % (project))
-        return super(AssetLibraryTypeWdg,my).get_display()
+        self.set_option("labels", "%s|general" % (project))
+        self.set_option("values", "%s|gen" % (project))
+        return super(AssetLibraryTypeWdg,self).get_display()
     
 
 

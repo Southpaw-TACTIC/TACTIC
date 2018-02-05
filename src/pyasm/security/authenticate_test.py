@@ -22,10 +22,10 @@ import unittest
 
 class AutocreateAuthenticate(Authenticate):
 
-    def add_user_info(my, user, password):
+    def add_user_info(self, user, password):
         user.set_value("email", "test@test.com")
 
-    def verify(my, login_name, password):
+    def verify(self, login_name, password):
         # allow everything
         return True
 
@@ -34,38 +34,38 @@ class AutocreateAuthenticate(Authenticate):
 
 class AuthenticateTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         Batch(project_code='unittest')
-        my.security = Environment.get_security()
+        self.security = Environment.get_security()
 
-        my._test_succeed()
-        my._test_fail()
+        self._test_succeed()
+        self._test_fail()
 
-        my._test_autocreate()
-        my._test_cache()
+        self._test_autocreate()
+        self._test_cache()
 
 
-    def _test_succeed(my):
+    def _test_succeed(self):
         # should succeed
-        my.security.login_user("admin", "tactic")
+        self.security.login_user("admin", "tactic")
 
-    def _test_fail(my):
+    def _test_fail(self):
         # should fail
         try:
-            my.security.login_user("foofoo", "tactic")
+            self.security.login_user("foofoo", "tactic")
         except Exception, e:
             if str(e).find("Login/Password") == -1:
-                my.fail()
+                self.fail()
 
 
-    def _test_autocreate(my):
+    def _test_autocreate(self):
         from pyasm.common import Config
 
         Config.set_value("security", "mode", "autocreate", no_exception=True)
         Config.set_value("security", "authenticate_class", "pyasm.security.authenticate_test.AutocreateAuthenticate", no_exception=True)
 
         mode = Config.get_value("security", "mode", use_cache=False)
-        my.assertEquals(mode, "autocreate")
+        self.assertEquals(mode, "autocreate")
 
 
 
@@ -73,23 +73,23 @@ class AuthenticateTest(unittest.TestCase):
         search = Search("sthpw/login")
         search.add_filter("login", "foofoo")
         login = search.get_sobject()
-        my.assertEquals(None, login)
+        self.assertEquals(None, login)
 
 
         from pyasm.search import Transaction
         transaction = Transaction.get(create=True)
         transaction.start()
 
-        my.security.login_user("foofoo", "wow")
+        self.security.login_user("foofoo", "wow")
 
         # verify that the user exists in the database
         search = Search("sthpw/login")
         search.add_filter("login", "foofoo")
         login = search.get_sobject()
-        my.assertNotEquals(None, login)
+        self.assertNotEquals(None, login)
 
         email = login.get_value("email")
-        my.assertEquals("test@test.com", email)
+        self.assertEquals("test@test.com", email)
 
         transaction.rollback()
 
@@ -97,11 +97,11 @@ class AuthenticateTest(unittest.TestCase):
         search = Search("sthpw/login")
         search.add_filter("login", "foofoo")
         login = search.get_sobject()
-        my.assertEquals(None, login)
+        self.assertEquals(None, login)
 
 
 
-    def _test_cache(my):
+    def _test_cache(self):
         from pyasm.common import Config
 
         Config.set_value("security", "mode", "cache", no_exception=True)
@@ -110,27 +110,27 @@ class AuthenticateTest(unittest.TestCase):
         mode = Config.get_value("security", "authenticate_class", use_cache=False)
 
         mode = Config.get_value("security", "mode", use_cache=False)
-        my.assertEquals(mode, "cache")
+        self.assertEquals(mode, "cache")
 
 
         # verify that the user exists in the database
         search = Search("sthpw/login")
         search.add_filter("login", "foofoo")
         login = search.get_sobject()
-        my.assertEquals(None, login)
+        self.assertEquals(None, login)
 
 
         from pyasm.search import Transaction
         transaction = Transaction.get(create=True)
         transaction.start()
 
-        my.security.login_user("foofoo", "wow")
+        self.security.login_user("foofoo", "wow")
 
         # verify that the user exists in the database
         search = Search("sthpw/login")
         search.add_filter("login", "foofoo")
         login = search.get_sobject()
-        my.assertNotEquals(None, login)
+        self.assertNotEquals(None, login)
 
 
 

@@ -11,7 +11,7 @@
 
 import os
 
-os.environ['PYCHECKER'] = '--self=my --stdlib --no-shadowbuiltin --blacklist=Ft,expat' 
+os.environ['PYCHECKER'] = '--self=self --stdlib --no-shadowbuiltin --blacklist=Ft,expat' 
 import pychecker.checker
 
 

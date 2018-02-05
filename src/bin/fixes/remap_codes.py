@@ -11,7 +11,7 @@ from pyasm.command import Command
 
 class RemapCodesCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         server = Config.get_value("install", "server")
 

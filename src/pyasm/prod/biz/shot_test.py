@@ -17,14 +17,14 @@ import unittest
 
 class ShotTest(unittest.TestCase):
 
-    def test_sequence(my):
+    def test_sequence(self):
         sequence = Sequence.get_by_code("001SHO")
 
         shot = sequence.get_shot_by_code("0001")
 
         description = shot.get_value("description")
 
-        my.assertEquals("Sequence Wide Shot", description )
+        self.assertEquals("Sequence Wide Shot", description )
 
 
 

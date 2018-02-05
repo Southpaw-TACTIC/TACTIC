@@ -24,17 +24,17 @@ from sync_filter import SyncFilter
 
 class SyncFilterTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         Batch()
         Project.set_project("unittest")
         
 
-    def test_all(my):
+    def test_all(self):
 
-        my._test_security()
+        self._test_security()
 
 
-    def _test_security(my):
+    def _test_security(self):
 
         transaction = '''<transaction>
           <sobject search_type="sthpw/task" parent_type='project/asset' search_code="TASK00001689" action="update">
@@ -63,7 +63,7 @@ class SyncFilterTest(unittest.TestCase):
         sync_filter.execute()
         transaction = sync_filter.get_transaction_xml()
         nodes = transaction.get_nodes("transaction/sobject")
-        my.assertEquals(len(nodes), 0)
+        self.assertEquals(len(nodes), 0)
 
         # allow by project
         rules = '''
@@ -76,7 +76,7 @@ class SyncFilterTest(unittest.TestCase):
         sync_filter.execute()
         transaction = sync_filter.get_transaction_xml()
         nodes = transaction.get_nodes("transaction/sobject")
-        my.assertEquals(len(nodes), 2)
+        self.assertEquals(len(nodes), 2)
 
 
         # deny 1 by search type
@@ -90,7 +90,7 @@ class SyncFilterTest(unittest.TestCase):
         sync_filter.execute()
         transaction = sync_filter.get_transaction_xml()
         nodes = transaction.get_nodes("transaction/sobject")
-        my.assertEquals(len(nodes), 1)
+        self.assertEquals(len(nodes), 1)
 
 
         # allow all
@@ -104,7 +104,7 @@ class SyncFilterTest(unittest.TestCase):
         sync_filter.execute()
         transaction = sync_filter.get_transaction_xml()
         nodes = transaction.get_nodes("transaction/sobject")
-        my.assertEquals(len(nodes), 3)
+        self.assertEquals(len(nodes), 3)
 
 
 

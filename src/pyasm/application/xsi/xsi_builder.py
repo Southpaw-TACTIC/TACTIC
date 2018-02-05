@@ -21,7 +21,7 @@ from pyasm.application.common import SessionBuilder
 class XSIBuilder(SessionBuilder):
     '''builds a xsi session file'''
 
-    def import_file(my, node_name, path, instantiation='import', use_namespace=True):
+    def import_file(self, node_name, path, instantiation='import', use_namespace=True):
 
         naming = XSINodeNaming(node_name)
 
@@ -29,30 +29,30 @@ class XSIBuilder(SessionBuilder):
         if not naming.has_instance():
             # import file into namespace
             if instantiation == 'reference':
-                created_node = my.app.import_reference(path)
+                created_node = self.app.import_reference(path)
             else:
-                created_node = my.app.import_file(path)
+                created_node = self.app.import_file(path)
 
         else:
             # import file into namespace
             if instantiation == 'reference':
-                created_node = my.app.import_reference(path,node_name)
+                created_node = self.app.import_reference(path,node_name)
             else:
-                created_node = my.app.import_file(path,node_name)
+                created_node = self.app.import_file(path,node_name)
 
         # FIXME: created node name is not always node_name
         # select newly created node
-        my.app.select(created_node)
+        self.app.select(created_node)
 
         return created_node
 
 
 
-    def import_anim(my, node_name, path, created_node=""):
-        my.app.import_anim(path, node_name)
+    def import_anim(self, node_name, path, created_node=""):
+        self.app.import_anim(path, node_name)
 
 
-    def set_attr(my, node_name, node):
+    def set_attr(self, node_name, node):
         '''set attribute for the current app'''
         attr = node.getAttribute("attr")
         value = node.getAttribute("value")
@@ -60,7 +60,7 @@ class XSIBuilder(SessionBuilder):
         
         file_range = node.getAttribute("file_range")
         extra_data = {"file_range": file_range}
-        my.app.set_attr(node_name,attr,value,attr_type, extra_data)
+        self.app.set_attr(node_name,attr,value,attr_type, extra_data)
 
 
 

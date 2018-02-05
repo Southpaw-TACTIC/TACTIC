@@ -33,43 +33,43 @@ class ViewManagerWdg(BaseRefreshWdg):
     '''Panel to manage views ... this is mean to be a generic interface for
     manipulating the side bar views'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type of the view',
         'view': 'view to be edited'
         }
 
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
-        my.search_type = web.get_form_value('search_type')
-        my.kwargs_search_type = my.kwargs.get('search_type')
+        self.search_type = web.get_form_value('search_type')
+        self.kwargs_search_type = self.kwargs.get('search_type')
 
-        my.view = web.get_form_value('view')
+        self.view = web.get_form_value('view')
 
-        if not my.search_type:
-            my.search_type = my.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = self.kwargs.get('search_type')
         else:
-            my.kwargs['search_type'] = my.search_type
+            self.kwargs['search_type'] = self.search_type
 
-        if my.search_type != my.kwargs_search_type:
-            my.view = ''
-        elif not my.view:
-            my.view = my.kwargs.get('view')
+        if self.search_type != self.kwargs_search_type:
+            self.view = ''
+        elif not self.view:
+            self.view = self.kwargs.get('view')
         else:
-            my.kwargs['view'] = my.view
+            self.kwargs['view'] = self.view
 
-        if not my.view:
-            my.view = 'table'
+        if not self.view:
+            self.view = 'table'
 
-        my.refresh = web.get_form_value('is_refresh')=='true'
+        self.refresh = web.get_form_value('is_refresh')=='true'
 
 
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
         div.add_class( "spt_view_manager_top" )
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
         inner = DivWdg()
         div.add(inner)
@@ -81,13 +81,13 @@ class ViewManagerWdg(BaseRefreshWdg):
 
         # try to get the search objct
         try:
-            search_type_sobj = SearchType.get(my.search_type)
+            search_type_sobj = SearchType.get(self.search_type)
         except SearchException:
-            if my.kwargs.get("show_create") in [True, 'true']:
+            if self.kwargs.get("show_create") in [True, 'true']:
                 inner.add("<b>Create New Search Type</b><br/><br/>")
-                inner.add("Search Type [%s] does not yet exist.<br/>Fill out the following form to register this Search Type.<br/>" % my.search_type)
+                inner.add("Search Type [%s] does not yet exist.<br/>Fill out the following form to register this Search Type.<br/>" % self.search_type)
                 from tactic.ui.app import SearchTypeCreatorWdg
-                creator = SearchTypeCreatorWdg(search_type=my.search_type)
+                creator = SearchTypeCreatorWdg(search_type=self.search_type)
                 inner.add(creator)
                 return div
 
@@ -97,15 +97,15 @@ class ViewManagerWdg(BaseRefreshWdg):
         #title_wdg.add("Config View Manager")
         #inner.add(title_wdg)
 
-        inner.add (my.get_filter_wdg() )
+        inner.add (self.get_filter_wdg() )
 
 
-        if not my.search_type or not my.view:
+        if not self.search_type or not self.view:
             return div
 
         inner.add(HtmlElement.br())
 
-        tool_bar = my.get_tool_bar()
+        tool_bar = self.get_tool_bar()
  
         inner.add(tool_bar)
 
@@ -116,7 +116,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         inner.add(menu_div)
         menu_div.add_class("spt_menu_item_template")
         menu_div.add_style("display: none")
-        menu_div.add( my.get_section_wdg("_template", editable=False) )
+        menu_div.add( self.get_section_wdg("_template", editable=False) )
 
 
         table = Table()
@@ -129,7 +129,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         view_list_wdg = DivWdg()
         view_list_wdg.add_style('min-width: 250px')
         view_list_wdg.add_class("spt_menu_item_list")
-        view_list_wdg.add( my.get_section_wdg(my.view ))
+        view_list_wdg.add( self.get_section_wdg(self.view ))
         td.add(view_list_wdg)
         td.add_style("vertical-align: top")
         #td.add_attr("rowspan", "2")
@@ -137,30 +137,30 @@ class ViewManagerWdg(BaseRefreshWdg):
         td.add("<br/>")
 
         # add the definition section
-        if my.view != 'definition':
+        if self.view != 'definition':
             def_list_wdg = DivWdg()
-            #def_list_wdg.add( my.get_section_wdg("default_definition" ))
-            def_list_wdg.add( my.get_section_wdg("definition" ))
+            #def_list_wdg.add( self.get_section_wdg("default_definition" ))
+            def_list_wdg.add( self.get_section_wdg("definition" ))
             td.add(def_list_wdg)
  
             td.add("<br/>")
 
             # HACK: we need to figure out how this default definition
             # fits in
-            if my.search_type.startswith('prod/') or my.search_type.startswith('sthpw/'):
+            if self.search_type.startswith('prod/') or self.search_type.startswith('sthpw/'):
                 def_list_wdg = DivWdg()
-                def_list_wdg.add( my.get_section_wdg("default_definition" ))
+                def_list_wdg.add( self.get_section_wdg("default_definition" ))
                 td.add(def_list_wdg)
                 td.add("<br/>")
 
         # add detail information
-        td = table.add_cell( my.get_detail_wdg() )
+        td = table.add_cell( self.get_detail_wdg() )
 
 
         # set the panel information
         td.add_class("spt_view_manager_detail")
         td.add_style("display", "table-cell")
-        td.add_attr("spt_search_type", my.search_type)
+        td.add_attr("spt_search_type", self.search_type)
 
         td.add_style("padding: 0 20px 20px 20px")
         td.add_style("vertical-align: top")
@@ -169,7 +169,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         return div
 
 
-    def get_filter_wdg(my):
+    def get_filter_wdg(self):
 
         div = DivWdg()
         div.add_style("padding: 10px")
@@ -234,10 +234,10 @@ class ViewManagerWdg(BaseRefreshWdg):
             #//spt.panel.refresh(manager_top, values);'''
         }
         select.add_behavior(behavior)
-        select.set_value(my.search_type)
+        select.set_value(self.search_type)
         div.add(select)
 
-        if not my.search_type:
+        if not self.search_type:
             content = DivWdg()
             content.add_style("width: 400px")
             content.add_style("height: 400px")
@@ -255,14 +255,14 @@ class ViewManagerWdg(BaseRefreshWdg):
         div.add('&nbsp;&nbsp;&nbsp;')
         div.add('<b>View: </b>')
         view_wdg = SelectWdg("view")
-        view_wdg.set_value(my.view)
+        view_wdg.set_value(self.view)
         view_wdg.add_empty_option("-- Select --")
         view_wdg.add_behavior(behavior)
         div.add(view_wdg)
 
 
         search = Search("config/widget_config")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         db_configs = search.get_sobjects()
 
 
@@ -273,17 +273,17 @@ class ViewManagerWdg(BaseRefreshWdg):
                 continue
             views.update([view])
 
-        #print("search_type: ", my.search_type)
-        #print("view: ", views, my.view)
+        #print("search_type: ", self.search_type)
+        #print("view: ", views, self.view)
 
-        if my.search_type and my.view:
-            config_view = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+        if self.search_type and self.view:
+            config_view = WidgetConfigView.get_by_search_type(self.search_type, self.view)
 
             configs = config_view.get_configs()
             for x in configs:
                 view = x.get_view()
                 file_path = x.get_file_path()
-                if view != my.view:
+                if view != self.view:
                     continue
                 if file_path and file_path.endswith("DEFAULT-conf.xml"):
                     continue
@@ -301,7 +301,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_tool_bar(my):
+    def get_tool_bar(self):
         widget = DivWdg()
         widget.add_style("width: 250px")
 
@@ -342,8 +342,8 @@ class ViewManagerWdg(BaseRefreshWdg):
       
         bvr = {
             "type": "click_up",
-            "search_type": my.search_type,
-            "view": my.view,
+            "search_type": self.search_type,
+            "view": self.view,
             'cbjs_action': '''
             if (confirm("Save ordering of this view [" + bvr.view + "] ?") ) {
 
@@ -369,7 +369,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         widget.add(save_div)
 
 
-        gear = my.get_gear_menu()
+        gear = self.get_gear_menu()
         gear.add_style("float: right")
 
 
@@ -381,12 +381,12 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_detail_wdg(my):
+    def get_detail_wdg(self):
         return "<<-- Click on a link for the detail to appear"
 
 
 
-    def get_menu_item(my, element_name, display_handler):
+    def get_menu_item(self, element_name, display_handler):
 
         content = DivWdg()
         content.add_attr("spt_element_name", element_name)
@@ -420,7 +420,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_gear_menu(my):
+    def get_gear_menu(self):
 
         top = DivWdg()
 
@@ -437,8 +437,8 @@ class ViewManagerWdg(BaseRefreshWdg):
         behavior = {
         'options': {
           'is_insert': 'true',
-          'search_type': my.search_type,
-          'view':        my.view
+          'search_type': self.search_type,
+          'view':        self.view
         },
         'cbjs_action': '''
 
@@ -464,8 +464,8 @@ class ViewManagerWdg(BaseRefreshWdg):
         # Show preview of the view
         menu_item = MenuItem(type='action', label='Show Preview')
         behavior = {
-        'search_type': my.search_type,
-        'view':        my.view,
+        'search_type': self.search_type,
+        'view':        self.view,
         'cbjs_action': '''
         var kwargs = {
           search_type: bvr.search_type,
@@ -482,8 +482,8 @@ class ViewManagerWdg(BaseRefreshWdg):
         # Show preview of the view
         menu_item = MenuItem(type='action', label='Show Full XML Config')
         behavior = {
-        'search_type': my.search_type,
-        'view':        my.view,
+        'search_type': self.search_type,
+        'view':        self.view,
         'cbjs_action': '''
         var kwargs = {
           search_type: 'config/widget_config',
@@ -527,7 +527,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         new_view_wdg.add(new_view_button)
         new_view_button.add_behavior( {
             'type': 'click_up',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_view_manager_top");
             var new_view_wdg = bvr.src_el.getParent(".spt_new_view");
@@ -581,8 +581,8 @@ class ViewManagerWdg(BaseRefreshWdg):
         # Create a new view
         menu_item = MenuItem(type='action', label='Create New View')
         behavior = {
-        'search_type': my.search_type,
-        'view':       my.view,
+        'search_type': self.search_type,
+        'view':       self.view,
         'cbjs_action': '''
         var activator = spt.smenu.get_activator(bvr);
         var top = activator.getParent(".spt_view_manager_top");
@@ -599,8 +599,8 @@ class ViewManagerWdg(BaseRefreshWdg):
         behavior = {
         'options': {
           'is_insert': 'true',
-          'search_type': my.search_type,
-          'view':       my.view
+          'search_type': self.search_type,
+          'view':       self.view
         },
         'cbjs_action': '''
         if (confirm("Are you sure you wih to clear this view?")) {
@@ -631,7 +631,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_section_wdg(my, view, editable=True, default=False):
+    def get_section_wdg(self, view, editable=True, default=False):
 
         title = ""
         if editable:
@@ -640,7 +640,7 @@ class ViewManagerWdg(BaseRefreshWdg):
             edit_mode = 'read'
         kwargs = {
             'title': title,
-            'config_search_type': my.search_type,
+            'config_search_type': self.search_type,
             'view': view,
             'width': '300',
             'mode': edit_mode,

@@ -411,56 +411,56 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
 class Schema(SObject):
     SEARCH_TYPE = "sthpw/schema"
 
-    def __init__(my, search_type, columns=None, result=None, dependencies=True, fast_data=None):
-        super(Schema,my).__init__(search_type, columns, result, fast_data=fast_data)
+    def __init__(self, search_type, columns=None, result=None, dependencies=True, fast_data=None):
+        super(Schema,self).__init__(search_type, columns, result, fast_data=fast_data)
 
-        my.sthpw_schema = None
-        my.parent_schema = None
+        self.sthpw_schema = None
+        self.parent_schema = None
 
-        my.init()
+        self.init()
 
         if dependencies:
-            my.add_dependencies()
+            self.add_dependencies()
 
 
-    def init(my):
-        my.xml = my.get_xml_value("schema")
+    def init(self):
+        self.xml = self.get_xml_value("schema")
 
 
 
-    def add_dependencies(my):
+    def add_dependencies(self):
         # schemas without a code cannot have a dependency
-        schema_code = my.get_value("code")
+        schema_code = self.get_value("code")
         if not schema_code:
             return
 
 
         # a schema has knowledge of its parent
-        my.parent_schema = my.get_parent_schema()
+        self.parent_schema = self.get_parent_schema()
 
         # sthpw schema that everybody inherits from
-        code = my.get_value("code")
+        code = self.get_value("code")
         if code and code != "admin":
-            my.sthpw_schema = Schema("sthpw/schema", dependencies=False)
-            my.sthpw_schema.set_xml(SCHEMA_XML['admin'])
+            self.sthpw_schema = Schema("sthpw/schema", dependencies=False)
+            self.sthpw_schema.set_xml(SCHEMA_XML['admin'])
 
 
-    def get_attrs_by_search_type(my, search_type):
-        node = my.xml.get_node("schema/search_type[@name='%s']" % search_type)
+    def get_attrs_by_search_type(self, search_type):
+        node = self.xml.get_node("schema/search_type[@name='%s']" % search_type)
         if node is not None:
             attrs = Xml.get_attributes(node)
         else:
             attrs = {}
 
-        if not attrs and my.parent_schema:
-            attrs = my.parent_schema.get_attrs_by_search_type(search_type)
-        if not attrs and my.sthpw_schema:
-            attrs = my.sthpw_schema.get_attrs_by_search_type(search_type)
+        if not attrs and self.parent_schema:
+            attrs = self.parent_schema.get_attrs_by_search_type(search_type)
+        if not attrs and self.sthpw_schema:
+            attrs = self.sthpw_schema.get_attrs_by_search_type(search_type)
 
         return attrs
 
-    def get_attr_by_search_type(my, search_type, attr):
-        node = my.xml.get_node("schema/search_type[@name='%s']" % search_type)
+    def get_attr_by_search_type(self, search_type, attr):
+        node = self.xml.get_node("schema/search_type[@name='%s']" % search_type)
         if node is None:
             return {}
         return Xml.get_attributes(node).get(attr)
@@ -469,9 +469,9 @@ class Schema(SObject):
 
 
 
-    def get_parent_schema(my):
+    def get_parent_schema(self):
 
-        parent_schema_code = my.xml.get_value("schema/@parent")
+        parent_schema_code = self.xml.get_value("schema/@parent")
         if parent_schema_code:
             if parent_schema_code == "__NONE__":
                 return None
@@ -481,7 +481,7 @@ class Schema(SObject):
         else:
 
             # Note: assume schema code == project_code
-            schema_code = my.get_value("code")
+            schema_code = self.get_value("code")
 
             from pyasm.biz import Project
             project = Project.get_by_code(schema_code)
@@ -500,45 +500,45 @@ class Schema(SObject):
 
 
 
-    def get_xml(my):
-        return my.xml
+    def get_xml(self):
+        return self.xml
 
-    def set_xml(my, xml):
-        my.set_value("schema", xml)
-        my.xml = my.get_xml_value("schema")
+    def set_xml(self, xml):
+        self.set_value("schema", xml)
+        self.xml = self.get_xml_value("schema")
 
 
 
-    def get_related_search_types(my, search_type, direction=None):
+    def get_related_search_types(self, search_type, direction=None):
         related_types = []
 
         if not direction or direction == "parent":
             xpath = "schema/connect[@from='%s']" %(search_type)
-            connects = my.xml.get_nodes(xpath)
+            connects = self.xml.get_nodes(xpath)
             for connect in connects:
                 related_type = Xml.get_attribute(connect,"to")
                 related_types.append(related_type)
 
         if not direction or direction == "children":
             xpath = "schema/connect[@to='%s']" %(search_type)
-            connects = my.xml.get_nodes(xpath)
+            connects = self.xml.get_nodes(xpath)
             for connect in connects:
                 related_type = Xml.get_attribute(connect,"from")
                 related_types.append(related_type)
 
 
-        if my.parent_schema:
-            search_types = my.parent_schema.get_related_search_types(search_type, direction=direction)
+        if self.parent_schema:
+            search_types = self.parent_schema.get_related_search_types(search_type, direction=direction)
             related_types.extend(search_types)
 
-        if my.sthpw_schema:
-            search_types = my.sthpw_schema.get_related_search_types(search_type, direction=direction)
+        if self.sthpw_schema:
+            search_types = self.sthpw_schema.get_related_search_types(search_type, direction=direction)
             related_types.extend(search_types)
 
         return related_types 
 
 
-    def get_relationship(my, search_type, search_type2):
+    def get_relationship(self, search_type, search_type2):
         '''
         #FIXME, this should be updated to do what get_relationship_attrs behave
         @return
@@ -560,17 +560,17 @@ class Schema(SObject):
         '''
 
         # use the same logic as get_relationship_attrs()
-        attrs = my.get_relationship_attrs(search_type, search_type2, path=None, cache=True)
+        attrs = self.get_relationship_attrs(search_type, search_type2, path=None, cache=True)
         relationship =  attrs.get('relationship')
 
         if relationship == 'search_type':
-            relationship = my.resolve_search_type_relationship(attrs, search_type, search_type2)
+            relationship = self.resolve_search_type_relationship(attrs, search_type, search_type2)
 
         return relationship
 
 
 
-    def resolve_search_type_relationship(my, attrs, search_type, search_type2):
+    def resolve_search_type_relationship(self, attrs, search_type, search_type2):
 
         # determine the direction of the relationship
         my_is_from = attrs['from'] == search_type
@@ -596,7 +596,7 @@ class Schema(SObject):
 
 
 
-    def resolve_relationship_attrs(my, attrs, search_type, search_type2):
+    def resolve_relationship_attrs(self, attrs, search_type, search_type2):
 
         if attrs.get("relationship") not in ("search_type","search_code","search_id"):
             return attrs
@@ -662,7 +662,7 @@ class Schema(SObject):
 
 
 
-    def get_relationship_attrs(my, search_type, search_type2, path=None, cache=True, type=None):
+    def get_relationship_attrs(self, search_type, search_type2, path=None, cache=True, type=None):
 
         if cache:
             key = "Schema:%s|%s|%s|%s" % (search_type, search_type2, path, type)
@@ -716,23 +716,23 @@ class Schema(SObject):
             if path:
                 for xpath  in xpaths:
                     # if a path is specified then use that
-                    connects = my.xml.get_nodes(xpath)
+                    connects = self.xml.get_nodes(xpath)
                     for conn in connects:
                         # at some odd times, the cached value is None
                         if conn is None:
                             continue
-                        conn_path = my.xml.get_attribute(conn, "path")
+                        conn_path = self.xml.get_attribute(conn, "path")
                         if conn_path == path:
                             connect = conn
                             raise ExitLoop
             else:
                 for xpath  in xpaths:
-                    connects = my.xml.get_nodes(xpath)
+                    connects = self.xml.get_nodes(xpath)
                     for conn in connects:
                         # at some odd times, the cached value is None
                         if conn is None:
                             continue
-                        conn_path = my.xml.get_attribute(conn, "path")
+                        conn_path = self.xml.get_attribute(conn, "path")
                         if conn_path:
                             continue
                         # this check is not really needed
@@ -743,7 +743,7 @@ class Schema(SObject):
             pass
 
         if connect is not None:
-            if my.xml.get_attribute(connect, "from") == search_type:
+            if self.xml.get_attribute(connect, "from") == search_type:
                 direction = 'forward'
             else:
                 direction = 'backward'
@@ -756,21 +756,21 @@ class Schema(SObject):
        
         # if no explicit relationship is defined, find it in the parents
         if connect == None:
-            if my.parent_schema:
-                attrs = my.parent_schema.get_relationship_attrs(search_type, search_type2, path=path, cache=False, type=type)
+            if self.parent_schema:
+                attrs = self.parent_schema.get_relationship_attrs(search_type, search_type2, path=path, cache=False, type=type)
                 
                 if not attrs:
-                    attrs = my.sthpw_schema.get_relationship_attrs(search_type, search_type2, path=path, cache=False, type=type)
+                    attrs = self.sthpw_schema.get_relationship_attrs(search_type, search_type2, path=path, cache=False, type=type)
                 processed = True
             else:
-                if my.sthpw_schema:
-                    attrs = my.sthpw_schema.get_relationship_attrs(search_type, search_type2, path=path, cache=False, type=type)
+                if self.sthpw_schema:
+                    attrs = self.sthpw_schema.get_relationship_attrs(search_type, search_type2, path=path, cache=False, type=type)
                     processed = True
                 else:
                     attrs = {}
 
         else:
-            attrs = my.xml.get_attributes(connect)
+            attrs = self.xml.get_attributes(connect)
         
         if processed:
             return attrs
@@ -828,7 +828,7 @@ class Schema(SObject):
 
 
         elif relationship in ['instance']:
-            #i_search_type = my.xml.get_attribute(conn, "instance")
+            #i_search_type = self.xml.get_attribute(conn, "instance")
             #i_search_type_obj = SearchType.get(i_search_type)
 
             a_search_type_obj = SearchType.get(a_search_type)
@@ -855,9 +855,9 @@ class Schema(SObject):
         return attrs
 
         
-    def get_foreign_keys(my, search_type, search_type2, path=None):
+    def get_foreign_keys(self, search_type, search_type2, path=None):
         '''get the foreign keys relating these two search types'''
-        attrs = my.get_relationship_attrs(search_type, search_type2, path)
+        attrs = self.get_relationship_attrs(search_type, search_type2, path)
 
         relationship = attrs.get('relationship')
         my_is_from = attrs['from'] == search_type
@@ -890,52 +890,52 @@ class Schema(SObject):
     #
     # convenience functions to manipulate the schema
     #
-    def add_search_type(my, search_type, parent_type=None, commit=True):
+    def add_search_type(self, search_type, parent_type=None, commit=True):
         '''adds a new search_type'''
-        schema_node = my.xml.get_node("schema")
+        schema_node = self.xml.get_node("schema")
 
         xpath = "schema/search_type[@name='%s']" %search_type
-        node = my.xml.get_node(xpath)
+        node = self.xml.get_node(xpath)
         if node is None:
-            new_node = my.xml.create_element("search_type")
-            my.xml.set_attribute(new_node, "name", search_type)
+            new_node = self.xml.create_element("search_type")
+            self.xml.set_attribute(new_node, "name", search_type)
             #schema_node.appendChild(new_node)
-            my.xml.append_child(schema_node, new_node)
-            my.xml.set_attribute(new_node, "xpos", "0")
-            my.xml.set_attribute(new_node, "ypos", "0")
+            self.xml.append_child(schema_node, new_node)
+            self.xml.set_attribute(new_node, "xpos", "0")
+            self.xml.set_attribute(new_node, "ypos", "0")
 
         if parent_type:
-            my.edit_connection(search_type, parent_type, mode='add')
+            self.edit_connection(search_type, parent_type, mode='add')
     
         # clear the cache
-        my.xml.clear_xpath_cache()
+        self.xml.clear_xpath_cache()
         if commit:
-            my.set_value("schema", my.xml.to_string() )
+            self.set_value("schema", self.xml.to_string() )
 
-    def edit_connection(my, from_search_type, to_search_type, mode='remove', commit=True):
+    def edit_connection(self, from_search_type, to_search_type, mode='remove', commit=True):
         '''edit the connection im a schema'''
         xpath = "schema/connect[@from='%s' and @to='%s']" %(from_search_type, to_search_type)
 
-        node = my.xml.get_node(xpath)
-        schema_node = my.xml.get_node("schema")
+        node = self.xml.get_node(xpath)
+        schema_node = self.xml.get_node("schema")
         if node is not None:
             if mode == 'remove':
                 #schema_node.removeChild(node)
-                my.xml.remove_child(schema_node, node)
+                self.xml.remove_child(schema_node, node)
         else:
             # add only if it does not exist
             if mode == 'add':
-                connect_node = my.xml.create_element("connect")
-                my.xml.set_attribute(connect_node, "from", from_search_type)
-                my.xml.set_attribute(connect_node, "to", to_search_type)
-                my.xml.set_attribute(connect_node, "relationship", 'code')
-                my.xml.set_attribute(connect_node, "type", 'hierarchy')
+                connect_node = self.xml.create_element("connect")
+                self.xml.set_attribute(connect_node, "from", from_search_type)
+                self.xml.set_attribute(connect_node, "to", to_search_type)
+                self.xml.set_attribute(connect_node, "relationship", 'code')
+                self.xml.set_attribute(connect_node, "type", 'hierarchy')
                 #schema_node.appendChild(connect_node)
-                my.xml.append_child(schema_node, connect_node)
+                self.xml.append_child(schema_node, connect_node)
 
                
         if commit:
-            my.set_value("schema", my.xml.to_string() )
+            self.set_value("schema", self.xml.to_string() )
 
 
     #
@@ -943,24 +943,24 @@ class Schema(SObject):
     #
 
 
-    def get_search_types(my, hierarchy=True):
+    def get_search_types(self, hierarchy=True):
         search_types = []
         if hierarchy:
-            if my.sthpw_schema:
-                sthpw_search_types = my.sthpw_schema.get_search_types()
+            if self.sthpw_schema:
+                sthpw_search_types = self.sthpw_schema.get_search_types()
                 search_types.extend(sthpw_search_types)
             
-            if my.parent_schema:
-                parent_search_types = my.parent_schema.get_search_types()
+            if self.parent_schema:
+                parent_search_types = self.parent_schema.get_search_types()
                 search_types.extend(parent_search_types)
 
-        search_types.extend( my.xml.get_values("schema/search_type/@name") )
+        search_types.extend( self.xml.get_values("schema/search_type/@name") )
 
         return search_types
 
 
-    def get_instance_type(my, search_type, related_search_type):
-        connect = my.xml.get_node("schema/connect[@to='%s' and @from='%s']" % \
+    def get_instance_type(self, search_type, related_search_type):
+        connect = self.xml.get_node("schema/connect[@to='%s' and @from='%s']" % \
             (search_type, related_search_type) ) 
         if connect == None:
             return ""
@@ -978,14 +978,14 @@ class Schema(SObject):
         return instance_type
 
 
-    def get_parent_type(my, search_type, relationship=None):
+    def get_parent_type(self, search_type, relationship=None):
         # NOTE: relationship arg is deprecated!!
 
         if search_type.find("?") != -1:
             search_type, tmp = search_type.split("?", 1)
 
         # make a provision for admin search_types passed in
-        if my.get_code() != "admin" and search_type.startswith("sthpw/"):
+        if self.get_code() != "admin" and search_type.startswith("sthpw/"):
             
             parent_type = Schema.get_admin_schema().get_parent_type(search_type, relationship)
             if parent_type:
@@ -993,7 +993,7 @@ class Schema(SObject):
 
         parent_type = ""
         # look at new style connections first
-        connects = my.xml.get_nodes("schema/connect[@from='%s']" % search_type ) 
+        connects = self.xml.get_nodes("schema/connect[@from='%s']" % search_type ) 
         for connect in connects:
             relationship_new = Xml.get_attribute(connect, "relationship")
             if relationship_new == "instance":
@@ -1022,7 +1022,7 @@ class Schema(SObject):
         """
         # DEPRECATED: resort to old style
         if not parent_type:
-            connects = my.xml.get_nodes("schema/connect[@to='%s']" % search_type ) 
+            connects = self.xml.get_nodes("schema/connect[@to='%s']" % search_type ) 
             # FIXME: you need to assign parent_type here
             for connect in connects:
                 type = Xml.get_attribute(connect, "type")
@@ -1033,33 +1033,33 @@ class Schema(SObject):
         """
 
 
-        if not parent_type and my.parent_schema:
-            parent_type = my.parent_schema.get_parent_type(search_type, relationship)
+        if not parent_type and self.parent_schema:
+            parent_type = self.parent_schema.get_parent_type(search_type, relationship)
 
 
         return parent_type
 
 
 
-    def get_child_types(my, search_type, relationship="hierarchy", hierarchy=True):
+    def get_child_types(self, search_type, relationship="hierarchy", hierarchy=True):
         if search_type.find("?") != -1:
             search_type, tmp = search_type.split("?", 1)
 
         child_types = []
         # first get the child types defined in the admin schema
-        if hierarchy and my.sthpw_schema:
-            sthpw_child_types = my.sthpw_schema.get_child_types(search_type, relationship)
+        if hierarchy and self.sthpw_schema:
+            sthpw_child_types = self.sthpw_schema.get_child_types(search_type, relationship)
             child_types.extend(sthpw_child_types)
 
 
         # get the child types in the project type schema
-        if hierarchy and my.parent_schema:
-            parent_child_types = my.parent_schema.get_child_types(search_type, relationship)
+        if hierarchy and self.parent_schema:
+            parent_child_types = self.parent_schema.get_child_types(search_type, relationship)
             child_types.extend(parent_child_types)
 
 
         # add new style
-        connects = my.xml.get_nodes("schema/connect[@to='%s'] | schema/connect[@to='*']" % search_type) 
+        connects = self.xml.get_nodes("schema/connect[@to='%s'] | schema/connect[@to='*']" % search_type) 
         for connect in connects:
             relationship = Xml.get_attribute(connect, "relationship")
             # skip old style
@@ -1077,9 +1077,9 @@ class Schema(SObject):
 
 
 
-    def get_types_from_instance(my, search_type):
-        from_type = my.xml.get_value("schema/connect[@instance_type='%s']/@from" % search_type)
-        to_type = my.xml.get_value("schema/connect[@instance_type='%s']/@to" % search_type)
+    def get_types_from_instance(self, search_type):
+        from_type = self.xml.get_value("schema/connect[@instance_type='%s']/@from" % search_type)
+        to_type = self.xml.get_value("schema/connect[@instance_type='%s']/@to" % search_type)
         return from_type, to_type
 
 
@@ -1087,7 +1087,7 @@ class Schema(SObject):
     # triggers
     #
 
-    def insert_trigger(my, sobject):
+    def insert_trigger(self, sobject):
 
         # on creation of an instance, create a child one
         search_type = sobject.get_base_search_type()
@@ -1099,7 +1099,7 @@ class Schema(SObject):
         if short_code:
             delimiter = "_"
 
-            parent_type = my.get_parent_type(search_type)
+            parent_type = self.get_parent_type(search_type)
             if parent_type:
                 parent = sobject.get_parent(parent_type)
                 if parent:
@@ -1117,7 +1117,7 @@ class Schema(SObject):
         #
         # update code based on whether this is an instance
         #
-        from_type, to_type = my.get_types_from_instance(search_type)
+        from_type, to_type = self.get_types_from_instance(search_type)
         if from_type and to_type:
 
             # update the code of the instance
@@ -1136,7 +1136,7 @@ class Schema(SObject):
 
 
 
-    def edit_trigger(my, sobject):
+    def edit_trigger(self, sobject):
         '''This gets called on every update of an sobject.  When any update is
         made, a checked through schema determines if any cascading effects
         are required'''
@@ -1151,7 +1151,7 @@ class Schema(SObject):
             if short_code and short_code != prev_short_code:
                 delimiter = "_"
 
-                parent_type = my.get_parent_type(search_type)
+                parent_type = self.get_parent_type(search_type)
                 if parent_type:
                     parent = sobject.get_parent(parent_type)
                     if parent:
@@ -1168,10 +1168,10 @@ class Schema(SObject):
                 
 
         # update the children
-        my.update_children_code(sobject)
+        self.update_children_code(sobject)
         
 
-    def update_children_code(my, sobject):
+    def update_children_code(self, sobject):
 
         # DEPRECATED: this has only be used once and has some very specific
         # logic that is probably much better implemented as some kind of
@@ -1184,7 +1184,7 @@ class Schema(SObject):
 
         schema = Schema.get()
         # handle children's code if db foreign constraint key has not been applied
-        child_search_types = my.get_child_types(search_type)
+        child_search_types = self.get_child_types(search_type)
         for child_search_type in child_search_types:
             prev_code = sobject.get_prev_value("code")
             if prev_code and code != prev_code:

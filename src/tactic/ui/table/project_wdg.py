@@ -22,20 +22,20 @@ from button_wdg import ButtonElementWdg
 
 class ProjectWdg(BaseTableElementWdg):
 
-    def get_title(my):
+    def get_title(self):
         return "Database"
 
-    def preprocess(my):
-        my.version = Environment.get_release_version()
+    def preprocess(self):
+        self.version = Environment.get_release_version()
 
-    def get_width(my):
+    def get_width(self):
         return 100
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
-        project = my.get_current_sobject()
+        project = self.get_current_sobject()
 
         table = Table()
         widget.add(table)
@@ -62,7 +62,7 @@ class ProjectWdg(BaseTableElementWdg):
         table.add_cell("Version: ")
         last_version_update = project.get_value("last_version_update")
         table.add_cell( last_version_update)
-        if last_version_update >= my.version:
+        if last_version_update >= self.version:
             table.add_cell( IconWdg("database", IconWdg.DOT_GREEN) )
         else:
             table.add_cell( IconWdg("database", IconWdg.DOT_RED) )
@@ -86,16 +86,16 @@ class ProjectWdg(BaseTableElementWdg):
 
 class ProjectTemplateUpdateWdg(ButtonElementWdg):
     '''Update the template project zip file in the system'''
-    def get_title(my):
+    def get_title(self):
         return "Update"
 
   
-    def preprocess(my):
+    def preprocess(self):
 
-        icon = my.kwargs.get('icon')
+        icon = self.kwargs.get('icon')
         icon_link = eval("IconWdg.%s" % icon.upper() )
-        my.kwargs['icon_tip'] = "Update Template"
-        my.kwargs['cbjs_action'] = '''
+        self.kwargs['icon_tip'] = "Update Template"
+        self.kwargs['cbjs_action'] = '''
          var row = bvr.src_el.getParent(".spt_table_row");
 
         try {
@@ -120,5 +120,5 @@ class ProjectTemplateUpdateWdg(ButtonElementWdg):
 
           
         '''
-        super(ProjectTemplateUpdateWdg, my).preprocess()
+        super(ProjectTemplateUpdateWdg, self).preprocess()
   

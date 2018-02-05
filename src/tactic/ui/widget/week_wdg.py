@@ -20,8 +20,8 @@ from tactic.ui.common import BaseRefreshWdg
 
 class WeekWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_style("padding: 20px")
         top.add_color("background", "background")
 

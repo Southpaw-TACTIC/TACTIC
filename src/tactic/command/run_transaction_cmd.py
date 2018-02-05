@@ -27,13 +27,13 @@ from dateutil import parser
 
 class TransactionQueueAppendCmd(Trigger):
 
-    def execute(my):
-        input = my.get_input()
+    def execute(self):
+        input = self.get_input()
 
 
         search_type = input.get('search_type')
         if search_type != 'sthpw/transaction_log':
-            print "ERROR: this trigger can only be executed for transaction_logs"
+            print("ERROR: this trigger can only be executed for transaction_logs")
             return
 
         
@@ -55,7 +55,7 @@ class TransactionQueueAppendCmd(Trigger):
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         servers = search.get_sobjects()
-        #print "servers: ", len(servers)
+        #print("servers: ", len(servers))
 
 
 
@@ -85,8 +85,8 @@ class TransactionQueueAppendCmd(Trigger):
         for server in servers:
 
             # check security
-            #if not my.check_security(server):
-            #    print "Transaction denied due to security restrictions"
+            #if not self.check_security(server):
+            #    print("Transaction denied due to security restrictions")
             #    continue
 
             server_code = server.get_code()
@@ -149,7 +149,7 @@ class TransactionQueueAppendCmd(Trigger):
             job.commit()
 
 
-    def check_security(my, server):
+    def check_security(self, server):
 
         # security for this server
         current_project_code = Project.get_project_code()
@@ -170,12 +170,12 @@ class TransactionQueueAppendCmd(Trigger):
 from queue import JobTask
 class TransactionQueueManager(JobTask):
 
-    def __init__(my, **kwargs):
-        super(TransactionQueueManager, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        super(TransactionQueueManager, self).__init__(**kwargs)
 
         trigger = TransactionQueueServersTrigger()
         trigger.execute()
-        my.servers = Container.get("TransactionQueueServers")
+        self.servers = Container.get("TransactionQueueServers")
 
         # add a static trigger
         event = "change|sthpw/sync_server"
@@ -188,58 +188,58 @@ class TransactionQueueManager(JobTask):
 
 
 
-    def set_check_interval(my, interval):
-        my.check_interval = interval
+    def set_check_interval(self, interval):
+        self.check_interval = interval
 
-    def get_process_key(my):
+    def get_process_key(self):
         import platform;
         host = platform.uname()[1]
         pid = os.getpid()
         return "%s:%s" % (host, pid)
 
 
-    def get_job_search_type(my):
+    def get_job_search_type(self):
         return "sthpw/sync_job"
 
 
-    def get_next_job(my, queue_type=None):
+    def get_next_job(self, queue_type=None):
         from queue import Queue
         import random
         import time
         interval = 0.05
         time.sleep(interval)
-        job_search_type = my.get_job_search_type()
+        job_search_type = self.get_job_search_type()
         servers_tried = []
 
         job = None
         while 1:
-            my.servers = Container.get("TransactionQueueServers")
-            if my.servers == None:
+            self.servers = Container.get("TransactionQueueServers")
+            if self.servers == None:
                 trigger = TransactionQueueServersTrigger()
                 trigger.execute()
-                my.servers = Container.get("TransactionQueueServers")
+                self.servers = Container.get("TransactionQueueServers")
 
 
             # use a random load balancer.  This algorithm is pretty
             # inefficient, but will only be an issue if there are lots
             # of servers
-            num_servers = len(my.servers)
+            num_servers = len(self.servers)
             if num_servers == 0:
                 break
 
 
-            server_index = random.randint(0, len(my.servers)-1)
+            server_index = random.randint(0, len(self.servers)-1)
             if server_index in servers_tried:
                 continue
 
-            server_code = my.servers[server_index].get_code()
-            #print "server_code: ", server_code
+            server_code = self.servers[server_index].get_code()
+            #print("server_code: ", server_code)
             job = Queue.get_next_job(job_search_type=job_search_type, server_code=server_code)
             if job:
                 break
 
             servers_tried.append(server_index)
-            if len(servers_tried) == len(my.servers):
+            if len(servers_tried) == len(self.servers):
                 break
         return job
 
@@ -263,12 +263,12 @@ class TransactionQueueManager(JobTask):
 
 
 class TransactionQueueServersTrigger(Trigger):
-    def execute(my):
-        #print "Searching for sync shares ...."
+    def execute(self):
+        #print("Searching for sync shares ....")
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         servers = search.get_sobjects()
-        #print "... found [%s] online remote share/s" % len(servers)
+        #print("... found [%s] online remote share/s" % len(servers))
 
         Container.put("TransactionQueueServers", servers)
 
@@ -282,20 +282,20 @@ class TransactionQueueServersTrigger(Trigger):
 class TransactionQueueCmd(Command):
     '''get the last transaction in a queue and run periodically'''
 
-    def execute(my):
+    def execute(self):
 
 
-        transaction_code = my.kwargs.get("transaction_code")
-        job = my.kwargs.get("job")
+        transaction_code = self.kwargs.get("transaction_code")
+        job = self.kwargs.get("job")
         job_code = ''
         if job:
             job_code = job.get_code()
 
-        print "Executing sync job [%s] ... "% job_code
+        print("Executing sync job [%s] ... "% job_code)
         if not transaction_code:
             raise TacticException("WARNING: No transaction_code provided")
 
-        server_code = my.kwargs.get("server")
+        server_code = self.kwargs.get("server")
         if not server_code:
             raise TacticException("WARNING: No server defined")
 
@@ -307,7 +307,7 @@ class TransactionQueueCmd(Command):
 
 
         # file mode is usually determined by the server
-        file_mode = my.kwargs.get("file_mode")
+        file_mode = self.kwargs.get("file_mode")
         if not file_mode:
             file_mode = server.get_value("file_mode", no_exception=True)
         if not file_mode:
@@ -316,7 +316,7 @@ class TransactionQueueCmd(Command):
 
 
         # sync mode is usually determined by the server
-        sync_mode = my.kwargs.get("sync_mode")
+        sync_mode = self.kwargs.get("sync_mode")
         if not sync_mode:
             sync_mode = server.get_value("sync_mode", no_exception=True)
         if not sync_mode or sync_mode == 'default':
@@ -324,7 +324,7 @@ class TransactionQueueCmd(Command):
             sync_mode = "xmlrpc"
 
 
-        project_code = my.kwargs.get("project_code")
+        project_code = self.kwargs.get("project_code")
         #project_code = 'admin'
         if not project_code:
             raise TacticException("WARNING: Project code is not supplied")
@@ -344,16 +344,16 @@ class TransactionQueueCmd(Command):
         search.add_filter("code", transaction_code)
         log = search.get_sobject()
         if not log:
-            print "WARNING: No transaction_log [%s] exists" % transaction_code
+            print("WARNING: No transaction_log [%s] exists" % transaction_code)
             return
 
 
         # provide an opportunity to filter out the transaction log
         # If a server is a complete copy, then no filter is necessary
-        message, transaction_xml = my.filter_transaction( log, server )
+        message, transaction_xml = self.filter_transaction( log, server )
         if not transaction_xml.get_nodes("transaction/*"):
-            print "No actions in transaction passed security ... skipping sync to [%s]" % server.get_code()
-            job = my.kwargs.get("job")
+            print("No actions in transaction passed security ... skipping sync to [%s]" % server.get_code())
+            job = self.kwargs.get("job")
             job.set_value("error_log", message)
             job.commit()
             return
@@ -369,7 +369,7 @@ class TransactionQueueCmd(Command):
         ztransaction_data = binascii.hexlify(compressed)
         ztransaction_data = "zlib:%s" % ztransaction_data
         length_after = len(ztransaction_data)
-        print "transaction log recompress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
+        print("transaction log recompress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
         # reset the transaction log sobject with the new xml.  This
         # should be harmless because it is never commited
         log.set_value("transaction", ztransaction_data)
@@ -394,7 +394,7 @@ class TransactionQueueCmd(Command):
 
             ticket = server.get_value("ticket")
 
-            my.handle_file_mode(base_dir, transaction_code, paths, log, transaction_xml, ticket)
+            self.handle_file_mode(base_dir, transaction_code, paths, log, transaction_xml, ticket)
             return
 
 
@@ -423,19 +423,19 @@ class TransactionQueueCmd(Command):
                 if file_mode == 'upload':
                     for path in paths:
                         if os.path.isdir(path):
-                            print "upload dir: ", path
+                            print("upload dir: ", path)
                             remote_server.upload_directory(path)
                         else:
-                            print "upload file: ", path
+                            print("upload file: ", path)
                             remote_server.upload_file(path)
 
 
-                #print "ping: ", remote_server.ping()
+                #print("ping: ", remote_server.ping())
                 remote_server.execute_transaction(log.get_data(), file_mode=file_mode)
-            except Exception, e:
-                print "Error sending remote command [%s]" % str(e)
+            except Exception as e:
+                print("Error sending remote command [%s]" % str(e))
 
-                job = my.kwargs.get("job")
+                job = self.kwargs.get("job")
                 job.set_value("error_log", str(e))
                 #job.set_value("state", "error")
                 job.commit()
@@ -445,20 +445,20 @@ class TransactionQueueCmd(Command):
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print "Error: ", str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print("Error: ", str(e))
+                print("-"*50)
 
                 raise
 
-        job = my.kwargs.get("job")
+        job = self.kwargs.get("job")
         job.set_value("error_log", "")
         job.commit()
 
 
 
-    def handle_file_mode(my, base_dir, transaction_code, paths, log, transaction_xml, ticket):
+    def handle_file_mode(self, base_dir, transaction_code, paths, log, transaction_xml, ticket):
         # drop the transaction into a folder
 
         timestamp = log.get_value("timestamp")
@@ -542,7 +542,7 @@ class TransactionQueueCmd(Command):
             #os.unlink("%s.zip" % tmp_dir)
 
 
-        job = my.kwargs.get("job")
+        job = self.kwargs.get("job")
         job.set_value("error_log", "")
         job.commit()
 
@@ -553,7 +553,7 @@ class TransactionQueueCmd(Command):
 
 
 
-    def filter_transaction(my, log, server):
+    def filter_transaction(self, log, server):
 
         transaction_xml = log.get_xml_value("transaction")
 
@@ -585,12 +585,12 @@ class RunTransactionCmd(Command):
         return False
     is_undoable = staticmethod(is_undoable)
 
-    def execute(my):
+    def execute(self):
 
         import types
 
-        transaction_xml = my.kwargs.get("transaction_xml")
-        file_mode = my.kwargs.get("file_mode")
+        transaction_xml = self.kwargs.get("transaction_xml")
+        file_mode = self.kwargs.get("file_mode")
         if not file_mode:
             file_mode = 'delayed'
 
@@ -624,7 +624,7 @@ class RunTransactionCmd(Command):
             if transaction_xml:
                 transaction.set_value("transaction", transaction_xml)
             else:
-                print "WARNING: transaction xml is empty"
+                print("WARNING: transaction xml is empty")
             transaction.set_value("login", "admin")
 
             # commit the new transaction.  This is the only case where
@@ -635,9 +635,9 @@ class RunTransactionCmd(Command):
             # 
             try:
                 transaction.commit()
-            except Exception, e:
-                print "Failed to commit transaction [%s]: It may already exist. Skipping." % transaction.get_code()
-                print str(e)
+            except Exception as e:
+                print("Failed to commit transaction [%s]: It may already exist. Skipping." % transaction.get_code())
+                print(str(e))
                 return
 
         transaction_code = transaction.get_value("code")
@@ -646,7 +646,7 @@ class RunTransactionCmd(Command):
         search = Search("sthpw/transaction_log")
         search.add_filter("code", transaction_code)
         if search.get_count():
-            print "WARNING: transaction [%s] already exists" % transaction_code
+            print("WARNING: transaction [%s] already exists" % transaction_code)
             return
 
 
@@ -671,7 +671,7 @@ class RunTransactionCmd(Command):
 
 
         # this will switch to use rel_path in transaction to get the files
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
 
         transaction_log = transaction
 
@@ -689,14 +689,14 @@ class RunTransactionCmd(Command):
 
 class TransactionFilesCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
-        mode = my.kwargs.get('mode')
+        mode = self.kwargs.get('mode')
         if not mode:
             mode = 'lib'
 
 
-        transaction_xml = my.kwargs.get("transaction_xml")
+        transaction_xml = self.kwargs.get("transaction_xml")
         assert(transaction_xml)
 
         from pyasm.common import Xml, Environment
@@ -740,9 +740,9 @@ __all__.append("TransactionImportCmd")
 class TransactionImportCmd(Command):
     '''Test class to create a plugin for transactions'''
 
-    def execute(my):
+    def execute(self):
         import os
-        path = my.kwargs.get("path")
+        path = self.kwargs.get("path")
         path = path.replace("\\", "/")
         basename = os.path.basename(path)
 
@@ -782,17 +782,17 @@ class TransactionImportCmd(Command):
 __all__.append("TransactionLogCompareCmd")
 class TransactionLogCompareCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         if not mode:
             mode = 'scan'
 
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if not search_key:
-            server_code = my.kwargs.get("server_code")
+            server_code = self.kwargs.get("server_code")
             server_sobj = Search.get_by_code("sthpw/sync_server", server_code)
         else:
             server_sobj = Search.get_by_search_key(search_key)
@@ -802,11 +802,11 @@ class TransactionLogCompareCmd(Command):
 
 
         server_code = server_sobj.get_code()
-        start_expr = my.kwargs.get("start_expr")
+        start_expr = self.kwargs.get("start_expr")
 
 
         # if search keys have been manually given
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
 
         from tactic.ui.sync import SyncUtils
         if search_keys:
@@ -816,14 +816,14 @@ class TransactionLogCompareCmd(Command):
         remote_server = sync_utils.get_remote_server()
 
         if mode == 'test':
-            my.info = {
+            self.info = {
                 'ret_val': remote_server.ping()
             }
             return
 
         if mode == 'scan':
             info = sync_utils.get_transaction_info()
-            print info
+            print(info)
 
         #if mode == 'sync':
         if mode == 'pull':
@@ -831,9 +831,9 @@ class TransactionLogCompareCmd(Command):
             info = sync_utils.get_transaction_info()
             missing_transactions = info.get("remote_transactions")
 
-            #my.download_transaction_files(missing_transactions)
+            #self.download_transaction_files(missing_transactions)
 
-            print "executing missing transactions locally: ", len(missing_transactions)
+            print("executing missing transactions locally: ", len(missing_transactions))
 
             # execute missing transactions on the local machine
             for transaction in missing_transactions:
@@ -856,7 +856,7 @@ class TransactionLogCompareCmd(Command):
             for transaction in missing_transactions:
 
                 # do them one at a time (slow)
-                print "running: ", transaction.get_code()
+                print("running: ", transaction.get_code())
 
                 # need to convert to a dictionary
                 transaction_dict = transaction.get_data()
@@ -868,7 +868,7 @@ class TransactionLogCompareCmd(Command):
 
 
 
-    def download_transaction_files(my, transactions):
+    def download_transaction_files(self, transactions):
         '''This uses a simple httpd download mechanism to get the files.
         '''
 
@@ -901,13 +901,13 @@ class TransactionLogCompareCmd(Command):
             for path in paths:
                 url = "%s/assets/%s" % (remote_host, path)
 
-                print "downloading: ", url
+                print("downloading: ", url)
                 remote_server.download(url, to_dir)
 
                 # FIXME: the problem with this is that it is not undoable
                 #dirname = os.path.dirname(path)
                 #to_dir = "%s/%s" % (base_dir, dirname)
-                #print "to_dir: ", to_dir
+                #print("to_dir: ", to_dir)
 
 
                 remote_server.download(url, to_dir)
@@ -926,12 +926,12 @@ from plugin import PluginCreator, PluginInstaller
 class TransactionPluginCreateCmd(Command):
     '''Test class to create a plugin for transactions'''
 
-    def execute(my):
-        project_code = my.kwargs.get("project_code")
-        transaction_code = my.kwargs.get("transaction_code")
-        login = my.kwargs.get("login")
+    def execute(self):
+        project_code = self.kwargs.get("project_code")
+        transaction_code = self.kwargs.get("transaction_code")
+        login = self.kwargs.get("login")
 
-        session = my.kwargs.get("session")
+        session = self.kwargs.get("session")
         start_time = session.get("start_time")
         end_time = session.get("end_time")
 
@@ -989,7 +989,7 @@ class TransactionPluginCreateCmd(Command):
                 if not os.path.exists(dirname):
                     os.makedirs(dirname)
 
-                print "adding: [%s]" % new_path
+                print("adding: [%s]" % new_path)
                 shutil.copy(path, new_path)
 
 
@@ -997,10 +997,10 @@ class TransactionPluginCreateCmd(Command):
 class TransactionPluginInstallCmd(Command):
     '''Test class to create a plugin for transactions'''
 
-    def execute(my):
+    def execute(self):
 
         import os
-        path = my.kwargs.get("path")
+        path = self.kwargs.get("path")
         path = path.replace("\\", "/")
         basename = os.path.basename(path)
 

@@ -21,29 +21,29 @@ from pyasm.biz import Project
 class OverviewTabWdg(BaseTabWdg):
 
 
-    def init(my):
+    def init(self):
 
         help = HelpItemWdg('Overview', 'The Overview area lets you view the progress of shots, asset, or the specific tasks assigned for them in differernt formats.', False)
-        my.add(help)
+        self.add(help)
 
-        my.setup_tab("overview_tab", css=TabWdg.SMALL)
+        self.setup_tab("overview_tab", css=TabWdg.SMALL)
 
-    def handle_tab(my, tab):
-        tab.add(my.get_sequence_wdg, _("Sequences") )
-        tab.add(my.get_milestone_wdg, _("Milestones") )
+    def handle_tab(self, tab):
+        tab.add(self.get_sequence_wdg, _("Sequences") )
+        tab.add(self.get_milestone_wdg, _("Milestones") )
         
-        tab.add(my.get_completion_wdg, _("Shots and Assets") )
-        tab.add(my.get_asset_task_manager_wdg, _("Tasks (Assets)") )
-        tab.add(my.get_shot_task_manager_wdg, _("Tasks (Shots)") )
+        tab.add(self.get_completion_wdg, _("Shots and Assets") )
+        tab.add(self.get_asset_task_manager_wdg, _("Tasks (Assets)") )
+        tab.add(self.get_shot_task_manager_wdg, _("Tasks (Shots)") )
         tab.add(LayoutSummaryWdg, _("Layout Summary") )
         tab.add(AssetSummaryWdg, _("Asset Summary") )
         tab.add(DependencySummaryWdg, _("Dependency Summary") )
 
-        tab.add(my.get_user_schedule_wdg, _("User Schedule") )
+        tab.add(self.get_user_schedule_wdg, _("User Schedule") )
 
 
 
-    def get_sequence_wdg(my):
+    def get_sequence_wdg(self):
         table = TableWdg("prod/sequence", "completion")
         table.set_class("table")
         search = Search("prod/sequence")
@@ -51,7 +51,7 @@ class OverviewTabWdg(BaseTabWdg):
         return table
 
 
-    def get_milestone_wdg(my):
+    def get_milestone_wdg(self):
         search = Search("sthpw/milestone")
 
         project = Project.get()
@@ -68,7 +68,7 @@ class OverviewTabWdg(BaseTabWdg):
 
 
 
-    def get_shot_wdg(my):
+    def get_shot_wdg(self):
         ''' this is not used now'''
         widget = Widget()
 
@@ -89,7 +89,7 @@ class OverviewTabWdg(BaseTabWdg):
 
 
 
-    def get_completion_wdg(my):
+    def get_completion_wdg(self):
 
         widget = Widget()
         
@@ -118,7 +118,7 @@ class OverviewTabWdg(BaseTabWdg):
 
 
 
-    def get_shot_task_manager_wdg(my):
+    def get_shot_task_manager_wdg(self):
         manager = TaskManagerWdg()
         manager.set_search_type("prod/shot")
         manager.set_show_all_task_approvals()
@@ -133,7 +133,7 @@ class OverviewTabWdg(BaseTabWdg):
         manager.set_sobject_filter( filter )
         return manager
 
-    def get_asset_task_manager_wdg(my):
+    def get_asset_task_manager_wdg(self):
         manager = TaskManagerWdg()
         manager.set_search_type("prod/asset")
         manager.set_show_all_task_approvals()
@@ -152,7 +152,7 @@ class OverviewTabWdg(BaseTabWdg):
 
 
 
-    def get_test_report_wdg(my):
+    def get_test_report_wdg(self):
         
         widget = Widget()
 
@@ -192,7 +192,7 @@ class OverviewTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_user_schedule_wdg(my):
+    def get_user_schedule_wdg(self):
         widget = Widget()
         div = FilterboxWdg()
         widget.add(div)

@@ -28,15 +28,15 @@ import re
 __all__.append("HelpButtonWdg")
 class HelpButtonWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.cbjs_action = my.kwargs.get("cbjs_action")
+    def init(self):
+        self.cbjs_action = self.kwargs.get("cbjs_action")
 
 
-    def add_style(my, key, value=None):
-        my.top.add_style(key, value=value)
+    def add_style(self, key, value=None):
+        self.top.add_style(key, value=value)
 
-    def add_behavior(my, cbjs_action):
-        my.cbjs_action = cbjs_action
+    def add_behavior(self, cbjs_action):
+        self.cbjs_action = cbjs_action
 
 
     def exists():
@@ -45,27 +45,27 @@ class HelpButtonWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         if not HelpWdg.exists():
             return top
 
-        alias = my.kwargs.get("alias")
-        description = my.kwargs.get("description")
+        alias = self.kwargs.get("alias")
+        description = self.kwargs.get("description")
         if not description:
             description = "Show Help"
 
-        if my.kwargs.get("use_icon"):
+        if self.kwargs.get("use_icon"):
             #help_button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
             help_button = IconButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
         else:
             help_button = ActionButtonWdg(title="?", tip=description, size='small')
         top.add(help_button)
 
-        if not my.cbjs_action:
-            my.cbjs_action = '''
+        if not self.cbjs_action:
+            self.cbjs_action = '''
             spt.help.set_top();
             spt.help.load_alias(bvr.alias);
             '''
@@ -73,7 +73,7 @@ class HelpButtonWdg(BaseRefreshWdg):
             help_button.add_behavior( {
                 'type': 'click_up',
                 'alias': alias,
-                'cbjs_action': my.cbjs_action
+                'cbjs_action': self.cbjs_action
             } )
 
 
@@ -83,17 +83,17 @@ class HelpButtonWdg(BaseRefreshWdg):
 
 class HelpDocFilterWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        alias = my.kwargs.get("alias")
+        alias = self.kwargs.get("alias")
 
-        my.rel_path = my.kwargs.get("rel_path")
-        if not my.rel_path:
+        self.rel_path = self.kwargs.get("rel_path")
+        if not self.rel_path:
             from tactic_client_lib import TacticServerStub
             server = TacticServerStub.get(protocol='local')
-            my.rel_path = server.get_doc_link(alias)
+            self.rel_path = server.get_doc_link(alias)
 
-        if not my.rel_path or my.rel_path == 'none_found':
+        if not self.rel_path or self.rel_path == 'none_found':
             #raise TacticException("Help alias [%s] does not exist" % alias)
             layout = DivWdg()
             layout.add(HelpCreateWdg(alias=alias))
@@ -101,17 +101,17 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             return layout 
 
         # special condition for plugins path
-        if my.rel_path.startswith("/plugins/"):
+        if self.rel_path.startswith("/plugins/"):
             plugin_dir = Environment.get_plugin_dir()
-            rel_path = my.rel_path.replace("/plugins/", "")
+            rel_path = self.rel_path.replace("/plugins/", "")
             path = "%s/%s" % (plugin_dir,rel_path)
-        elif my.rel_path.startswith("/builtin_plugins/"):
+        elif self.rel_path.startswith("/builtin_plugins/"):
             plugin_dir = Environment.get_builtin_plugin_dir()
-            rel_path = my.rel_path.replace("/builtin_plugins/", "")
+            rel_path = self.rel_path.replace("/builtin_plugins/", "")
             path = "%s/%s" % (plugin_dir,rel_path)
-        elif my.rel_path.startswith("/assets/"):
+        elif self.rel_path.startswith("/assets/"):
             asset_dir = Environment.get_asset_dir()
-            rel_path = my.rel_path.replace("/assets/", "")
+            rel_path = self.rel_path.replace("/assets/", "")
             path = "%s/%s" % (asset_dir,rel_path)
         else:
 
@@ -123,7 +123,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 install_dir = Environment.get_install_dir()
                 doc_dir = "%s/doc" % install_dir
 
-            path = "%s/%s" % (doc_dir, my.rel_path)
+            path = "%s/%s" % (doc_dir, self.rel_path)
 
         html = []
         try:
@@ -160,11 +160,11 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                         read = True
                 
                 if read:
-                    line = my.filter_line(line, count)
+                    line = self.filter_line(line, count)
                     html.append(line)
                     count += 1
             f.close()
-        except Exception, e:
+        except Exception as e:
             print("Error processing: ", e)
             html.append("Error processing document: %s<br/><br/>" % str(e))
         
@@ -175,7 +175,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
 
         # let custom layout parse this first
         from tactic.ui.panel import CustomLayoutWdg
-        rel_dir = os.path.dirname(my.rel_path)
+        rel_dir = os.path.dirname(self.rel_path)
 
         # TODO: this is only used to try to get images into plugin dogs
         # It breaks a lot of docs that have Mako examples
@@ -187,11 +187,11 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         
         xml = Xml(doc=tree)
 
-        elements = my.filter_xml(xml)
+        elements = self.filter_xml(xml)
 
 
         # generate the html
-        top = my.top
+        top = self.top
         top.add_class("spt_help_top")
         top.add_style("min-width: 300px")
         top.add_style("min-height: 100px")
@@ -271,20 +271,20 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             div.add(element)
 
         rel_path_div = DivWdg()
-        rel_path_div.add("<i>Source: %s</i>" % my.rel_path)
+        rel_path_div.add("<i>Source: %s</i>" % self.rel_path)
         inner.add(rel_path_div)
         rel_path_div.add_style("opacity: 0.3")
         rel_path_div.add_style("margin-top: 10")
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return top
 
 
 
-    def filter_line(my, line, count):
+    def filter_line(self, line, count):
         '''replace certain tags with a replacement for proper display''' 
         line = line.strip()
         if line.startswith("<meta"):
@@ -304,7 +304,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         return line
 
 
-    def add_shadow(my, styles, value, color):
+    def add_shadow(self, styles, value, color):
         browser = WebContainer.get_web().get_browser()
         if browser == 'Mozilla':
             styles.append("-moz-box-shadow: %s %s" % (value, color))
@@ -317,8 +317,8 @@ class HelpDocFilterWdg(BaseRefreshWdg):
 
 
 
-    def filter_xml(my, xml):
-        dirname = os.path.dirname(my.rel_path)
+    def filter_xml(self, xml):
+        dirname = os.path.dirname(self.rel_path)
 
 
         # filter images
@@ -366,7 +366,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 styles.append("margin-left: 50px")
                 styles.append("margin-bottom: 20px")
                 styles.append("margin-top: 10px")
-                my.add_shadow(styles, "0px 0px 5px", shadow)
+                self.add_shadow(styles, "0px 0px 5px", shadow)
 
             elif size[0] > 100:
                 x = int(float(size[0])/500*75)
@@ -374,10 +374,10 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 styles.append("margin-left: 50px")
                 styles.append("margin-bottom: 20px")
                 styles.append("margin-top: 10px")
-                my.add_shadow(styles, "0px 0px 5px", shadow)
+                self.add_shadow(styles, "0px 0px 5px", shadow)
 
             else:
-                my.add_shadow(styles, "0px 0px 5px", shadow)
+                self.add_shadow(styles, "0px 0px 5px", shadow)
 
             styles.append("border: solid 1px rgba(0,0,0,0.3)")
             style = ";".join(styles)
@@ -432,7 +432,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 continue
 
             # get a unique id for the node
-            unique_id = my.top.generate_unique_id(base='replace')
+            unique_id = self.top.generate_unique_id(base='replace')
             xml.set_attribute(node, "id", unique_id)
 
             div = SpanWdg()
@@ -500,18 +500,18 @@ class HelpDocFilterWdg(BaseRefreshWdg):
 
 class HelpWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         Container.put("HelpWdg::exists", True)
-        my.show_add_new = my.kwargs.get('show_add_new') not in  ['false', False]
+        self.show_add_new = self.kwargs.get('show_add_new') not in  ['false', False]
 
     def exists():
         return Container.get("HelpWdg::exists") == True
     exists = staticmethod(exists)
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         #help_div = DivWdg()
         help_div = top
@@ -519,7 +519,7 @@ class HelpWdg(BaseRefreshWdg):
         help_div.add_class("spt_help_top")
         help_div.set_id("spt_help_top")
 
-        show_title = my.kwargs.get("show_title")
+        show_title = self.kwargs.get("show_title")
         if show_title in [True, 'true']:
             show_title = True
         else:
@@ -577,7 +577,7 @@ class HelpWdg(BaseRefreshWdg):
 
 
         #button = SingleButtonWdg(title="Edit Help", icon=IconWdg.EDIT)
-        if my.show_add_new:
+        if self.show_add_new:
             button = IconButtonWdg(title="Add New Help", icon="BS_EDIT")
             shelf_div.add(button)
             button.add_style("float: left")
@@ -650,7 +650,7 @@ class HelpWdg(BaseRefreshWdg):
 
         help_div.add_behavior( {
         'type': 'load',
-        'cbjs_action': my.get_onload_js()
+        'cbjs_action': self.get_onload_js()
         })
 
 
@@ -754,7 +754,7 @@ class HelpWdg(BaseRefreshWdg):
         return top
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return '''
 
 
@@ -1061,8 +1061,8 @@ spt.help.set_view("main");
 
 class HelpCreateWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        alias = my.kwargs.get("alias")
+    def get_display(self):
+        alias = self.kwargs.get("alias")
 
         div = DivWdg()
         div.add_style("padding: 15px")
@@ -1109,11 +1109,11 @@ class HelpCreateWdg(BaseRefreshWdg):
 __all__.append("HelpContentWideWdg")
 class HelpContentWideWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_color("background", "background", -5)
 
-        help = HelpContentWdg(**my.kwargs)
+        help = HelpContentWdg(**self.kwargs)
         top.add(help)
 
         help_top = help.top
@@ -1126,23 +1126,23 @@ class HelpContentWideWdg(BaseRefreshWdg):
 
 class HelpContentWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_style("height: 100%")
         top.add_style("overflow-x: hidden")
         top.set_unique_id()
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if width:
             top.add_style("width: %s" % width)
 
 
 
         from tactic.ui.panel import CustomLayoutWdg
-        html = my.kwargs.get("html")
-        view = my.kwargs.get("view")
+        html = self.kwargs.get("html")
+        view = self.kwargs.get("view")
 
-        alias = my.kwargs.get("alias")
+        alias = self.kwargs.get("alias")
         if alias:
             aliases = alias.split("|")
             alias = aliases[0]
@@ -1176,11 +1176,11 @@ class HelpContentWdg(BaseRefreshWdg):
 
 
         if aliases:
-            related_wdg = my.get_related_wdg(aliases)
+            related_wdg = self.get_related_wdg(aliases)
             top.add( related_wdg )
 
 
-        rel_path = my.kwargs.get("rel_path")
+        rel_path = self.kwargs.get("rel_path")
         
         # attempt to get if from the widget config
         search = Search("config/widget_config")
@@ -1212,7 +1212,7 @@ class HelpContentWdg(BaseRefreshWdg):
         elif not view:
             layout = DivWdg()
             top.add(layout)
-            allow_create = my.kwargs.get("allow_create")
+            allow_create = self.kwargs.get("allow_create")
             if allow_create not in ['false', False]:
                 layout.add(HelpCreateWdg())
             else:
@@ -1229,7 +1229,7 @@ class HelpContentWdg(BaseRefreshWdg):
 
 
         elif view == 'default':
-            top.add(my.get_default_wdg())
+            top.add(self.get_default_wdg())
 
         else:
             author = "TACTIC"
@@ -1324,7 +1324,7 @@ class HelpContentWdg(BaseRefreshWdg):
 
 
 
-    def get_related_wdg(my, aliases):
+    def get_related_wdg(self, aliases):
         div = DivWdg()
         div.add("<b>Related links</b>: &nbsp;&nbsp")
         div.add_style("margin-top: 5px")
@@ -1440,13 +1440,13 @@ class HelpContentWdg(BaseRefreshWdg):
 
 class HelpEditWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_help_edit_top")
         top.add_color("background", "background")
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
 
         from tactic.ui.container import ResizableTableWdg
         table = ResizableTableWdg()
@@ -1500,7 +1500,7 @@ class HelpEditWdg(BaseRefreshWdg):
 
         title_wdg.add_cell(insert_button)
 
-        docs_wdg = my.get_doc_wdg()
+        docs_wdg = self.get_doc_wdg()
         left.add(docs_wdg)
         left.add_style("width: 150px")
         left.add_style("min-width: 150px")
@@ -1520,7 +1520,7 @@ class HelpEditWdg(BaseRefreshWdg):
         return top
 
 
-    def get_doc_wdg(my):
+    def get_doc_wdg(self):
         div = DivWdg()
 
         search = Search("config/widget_config")
@@ -1573,10 +1573,10 @@ class HelpEditWdg(BaseRefreshWdg):
 
 class HelpEditContentWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
         top.add_class("spt_help_edit_content")
 
 
@@ -1768,10 +1768,10 @@ config.toolbar_Full =
 
 
 class HelpEditCbk(Command):
-    def execute(my):
+    def execute(self):
 
-        view = my.kwargs.get("view")
-        content = my.kwargs.get("content")
+        view = self.kwargs.get("view")
+        content = self.kwargs.get("content")
 
         search = Search("config/widget_config")
         search.add_filter("category", "HelpWdg")

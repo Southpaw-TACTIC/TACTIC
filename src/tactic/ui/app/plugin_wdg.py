@@ -31,11 +31,11 @@ from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg
 class PluginWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         div.add_class("spt_plugin_top")
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
         div.add_color("background", "background")
 
@@ -60,11 +60,11 @@ class PluginWdg(BaseRefreshWdg):
         left.add_border()
 
         plugin_dir = Environment.get_plugin_dir()
-        plugin_wdg = my.get_plugins_wdg("Plugin", plugin_dir)
+        plugin_wdg = self.get_plugins_wdg("Plugin", plugin_dir)
         left.add(plugin_wdg)
 
         builtin_plugin_dir = Environment.get_builtin_plugin_dir()
-        plugin_wdg = my.get_plugins_wdg("Built-in Plugin", builtin_plugin_dir, is_editable=False)
+        plugin_wdg = self.get_plugins_wdg("Built-in Plugin", builtin_plugin_dir, is_editable=False)
         if plugin_wdg:
             left.add(plugin_wdg)
 
@@ -72,7 +72,7 @@ class PluginWdg(BaseRefreshWdg):
 
         #left.add("<br/>")
         #template_dir = Environment.get_template_dir()
-        #left.add(my.get_plugins_wdg("Template", template_dir) )
+        #left.add(self.get_plugins_wdg("Template", template_dir) )
 
         right = table.add_cell()
         right.add_style("vertical-align: top")
@@ -82,18 +82,18 @@ class PluginWdg(BaseRefreshWdg):
         right.add_style("padding: 5px")
         right.add_border()
 
-        plugin_dir = my.kwargs.get("plugin_dir")
+        plugin_dir = self.kwargs.get("plugin_dir")
         edit = PluginEditWdg(plugin_dir=plugin_dir)
         right.add(edit)
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return div
 
 
 
-    def get_plugins_wdg(my, title, plugin_dir, is_editable=True):
+    def get_plugins_wdg(self, title, plugin_dir, is_editable=True):
         div = DivWdg()
 
 
@@ -186,7 +186,7 @@ class PluginWdg(BaseRefreshWdg):
 
 
            # add in a context menu
-            menu = my.get_context_menu()
+            menu = self.get_context_menu()
             menus = [menu.get_data()]
             menus_in = {
                 'PLUGIN_CTX': menus,
@@ -225,7 +225,7 @@ class PluginWdg(BaseRefreshWdg):
         content_div.add_style("margin-left: 3px")
         content_div.add_style("margin-bottom: 10px")
 
-        plugin_dirnames = my.get_plugin_list(base_dir)
+        plugin_dirnames = self.get_plugin_list(base_dir)
 
 
         if not plugin_dirnames:
@@ -233,7 +233,7 @@ class PluginWdg(BaseRefreshWdg):
             content_div.add_style("padding: 5px 5px 5px 10px")
             content_div.add_style("font-style: italic")
 
-        show_active_only = my.kwargs.get("show_active_only") 
+        show_active_only = self.kwargs.get("show_active_only") 
         if show_active_only in [True, 'true']: 
             show_active_only = True 
         else: 
@@ -342,8 +342,8 @@ class PluginWdg(BaseRefreshWdg):
                 manifest = Xml()
                 try:
                     manifest.read_file(manifest_path)
-                except Exception, e:
-                    print "Error reading manifest: [%s]" % manifest_path, e
+                except Exception as e:
+                    print("Error reading manifest: [%s]" % manifest_path, e)
                     msg = "Error reading manifest [%s]: %s" % (manifest_path, str(e))
 
                     manifest_xml = """
@@ -488,7 +488,7 @@ class PluginWdg(BaseRefreshWdg):
 
 
 
-    def get_plugin_list(my, base_dir):
+    def get_plugin_list(self, base_dir):
 
         plugin_dirnames = []
 
@@ -522,7 +522,7 @@ class PluginWdg(BaseRefreshWdg):
 
 
 
-    def get_context_menu(my):
+    def get_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -573,12 +573,12 @@ class PluginWdg(BaseRefreshWdg):
 
 class PluginEditWdg(BaseRefreshWdg):
     
-    def get_display(my):
+    def get_display(self):
 
-        my.is_active_flag = None
+        self.is_active_flag = None
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_plugin_edit")
 
         top.add_style("min-width: 600px")
@@ -591,12 +591,12 @@ class PluginEditWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 10px 15px 10px 15px")
         title_wdg.add_gradient("background", "background", 0, -10)
 
-        my.mode = my.kwargs.get("mode")
-        if my.mode != 'insert':
+        self.mode = self.kwargs.get("mode")
+        if self.mode != 'insert':
 
-            my.plugin_dir = my.kwargs.get("plugin_dir")
-            if my.plugin_dir:
-                manifest_path ="%s/manifest.xml" % (my.plugin_dir)
+            self.plugin_dir = self.kwargs.get("plugin_dir")
+            if self.plugin_dir:
+                manifest_path ="%s/manifest.xml" % (self.plugin_dir)
 
             else:
                 msg = DivWdg()
@@ -622,23 +622,23 @@ class PluginEditWdg(BaseRefreshWdg):
 
             plugin = None
 
-            my.code = data.get("code") or ""
+            self.code = data.get("code") or ""
             description = data.get("description") or ""
-            my.version = data.get("version") or ""
+            self.version = data.get("version") or ""
             title = data.get("title") or ""
             manifest = manifest.to_string()
 
-            if not my.version:
+            if not self.version:
                 title_wdg.add('''Plugin "%s" <i style='opacity: 0.5'>(DEV)</i>''' % title)
             else:
-                title_wdg.add('Plugin "%s" <i>%s</i>' % (title, my.version))
+                title_wdg.add('Plugin "%s" <i>%s</i>' % (title, self.version))
 
         else:
-            my.plugin_dir = ""
+            self.plugin_dir = ""
 
-            my.code = ''
+            self.code = ''
             description = ''
-            my.version = ''
+            self.version = ''
             title = ''
             manifest = ''
 
@@ -648,7 +648,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
         from tactic.ui.container import TabWdg
 
-        selected = my.kwargs.get("selected")
+        selected = self.kwargs.get("selected")
         if not selected:
             selected = "info"
 
@@ -658,15 +658,15 @@ class PluginEditWdg(BaseRefreshWdg):
 
         info_div = DivWdg()
         tab.add(info_div)
-        if my.mode != "insert":
-            action_wdg = my.get_action_wdg()
+        if self.mode != "insert":
+            action_wdg = self.get_action_wdg()
             info_div.add(action_wdg)
         info_div.add_color("background", "background")
         info_div.set_name("info")
         info_div.add_style("height: 50px")
         info_div.add_style("margin: 0px 20px 10px 20px")
 
-        if my.mode == "insert":
+        if self.mode == "insert":
             info_div.add("<br/>"*2)
             info_div.add("Enter the following data and press 'Create' to create a new plugin")
             info_div.add("<br/>"*2)
@@ -686,7 +686,7 @@ class PluginEditWdg(BaseRefreshWdg):
         table.add_smart_style("spt_table_element", "vertical-align", "top")
 
 
-        #if my.mode == 'insert':
+        #if self.mode == 'insert':
         #    read_only = False
         #else:
         #    read_only = True
@@ -726,11 +726,11 @@ class PluginEditWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_class("spt_table_element")
         td.add(text)
-        text.set_value(my.code)
+        text.set_value(self.code)
 
 
         tr = table.add_row()
-        if my.mode == 'insert':
+        if self.mode == 'insert':
             tr.add_style("display: none")
         td = table.add_cell()
         td.add_class('spt_table_header')
@@ -742,10 +742,10 @@ class PluginEditWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_class("spt_table_element")
         td.add(text)
-        if not my.version:
+        if not self.version:
             text.set_value("DEV")
         else:
-            text.set_value(my.version)
+            text.set_value(self.version)
 
 
         table.add_row()
@@ -762,7 +762,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
 
-        if my.mode == 'insert':
+        if self.mode == 'insert':
             table.add_row()
             td = table.add_cell()
             td.add_class("spt_table_header")
@@ -782,10 +782,10 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
 
-        if my.mode == 'insert':
+        if self.mode == 'insert':
             table.add_row()
             td = table.add_cell()
-            insert_wdg = my.get_insert_wdg()
+            insert_wdg = self.get_insert_wdg()
             td.add(insert_wdg)
         else:
             # add the Publish button at the bottom
@@ -793,7 +793,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("float: right")
             button.add_behavior( {
             'type': 'click_up', 
-            'from_version': my.version,
+            'from_version': self.version,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
@@ -847,29 +847,29 @@ class PluginEditWdg(BaseRefreshWdg):
             table.add_row()
             td = table.add_cell(button)
     
-        dirname = my.kwargs.get('dirname')
+        dirname = self.kwargs.get('dirname')
         if not dirname:
             plugin_base_dir = Environment.get_plugin_dir()
             builtin_plugin_base_dir = Environment.get_builtin_plugin_dir()
-            if my.plugin_dir.startswith(plugin_base_dir):
-                dirname = my.plugin_dir.replace(plugin_base_dir + "/", "")
+            if self.plugin_dir.startswith(plugin_base_dir):
+                dirname = self.plugin_dir.replace(plugin_base_dir + "/", "")
             else:
-                dirname = my.plugin_dir.replace(builtin_plugin_base_dir + "/", "")
+                dirname = self.plugin_dir.replace(builtin_plugin_base_dir + "/", "")
             
 
-        my.dirname = dirname
+        self.dirname = dirname
 
         
            
         #
         # Doc
         #
-        if my.plugin_dir:
-            tab.add( my.get_doc_wdg() )
+        if self.plugin_dir:
+            tab.add( self.get_doc_wdg() )
 
 
-        if my.mode != 'insert':
-            tab.add( my.get_manifest_wdg(manifest) )
+        if self.mode != 'insert':
+            tab.add( self.get_manifest_wdg(manifest) )
 
         #
         # Files
@@ -880,7 +880,7 @@ class PluginEditWdg(BaseRefreshWdg):
         dir_div.add_style("padding: 5px 15px 15px 15px")
 
 
-        if my.mode != 'insert':
+        if self.mode != 'insert':
 
             title_wdg = DivWdg()
             dir_div.add(title_wdg)
@@ -1011,7 +1011,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
             dir_div.add_color("background", "background")
-            dir_list = PluginDirListWdg(base_dir=my.plugin_dir, location="server", plugin_dirname=dirname, ignore=['.svn'])
+            dir_list = PluginDirListWdg(base_dir=self.plugin_dir, location="server", plugin_dirname=dirname, ignore=['.svn'])
             dir_div.add(dir_list)
 
         else:
@@ -1029,13 +1029,13 @@ class PluginEditWdg(BaseRefreshWdg):
         return top
 
 
-    def get_manifest_wdg(my, manifest):
+    def get_manifest_wdg(self, manifest):
 
         #
         # Manifest
         #
 
-        dirname = my.dirname
+        dirname = self.dirname
 
 
         manifest_div = DivWdg()
@@ -1047,7 +1047,7 @@ class PluginEditWdg(BaseRefreshWdg):
         shelf_wdg.add_color("background", "background3")
 
 
-        if my.is_active():
+        if self.is_active():
 
             """
             clear_button = ActionButtonWdg(title="Clear .spt")
@@ -1163,7 +1163,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("float: left")
             button.add_behavior( {
             'type': 'click_up', 
-            'from_version': my.version,
+            'from_version': self.version,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
@@ -1220,7 +1220,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("margin: 10px auto")
             button.add_behavior( {
             'type': 'click_up', 
-            'plugin_code': my.code,
+            'plugin_code': self.code,
             'cbjs_action': '''
             spt.api.app_busy_show("Removing Plugin");
 
@@ -1273,16 +1273,16 @@ class PluginEditWdg(BaseRefreshWdg):
         return manifest_div
 
 
-    def get_doc_wdg(my):
+    def get_doc_wdg(self):
 
         # documentation for the plugin
-        doc_path = "%s/doc.html" % my.plugin_dir
-        #dirname = os.path.basename(my.plugin_dir)
+        doc_path = "%s/doc.html" % self.plugin_dir
+        #dirname = os.path.basename(self.plugin_dir)
 
-        if my.dirname.startswith("TACTIC"):
-            rel_path = "/builtin_plugins/%s/doc.html" % my.dirname
+        if self.dirname.startswith("TACTIC"):
+            rel_path = "/builtin_plugins/%s/doc.html" % self.dirname
         else:
-            rel_path = "/plugins/%s/doc.html" % my.dirname
+            rel_path = "/plugins/%s/doc.html" % self.dirname
         
         if os.path.exists(doc_path):
             doc_div = DivWdg()
@@ -1337,7 +1337,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button.add_behavior( {
                 'type': 'click_up',
-                'dirname': my.dirname,
+                'dirname': self.dirname,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.app.PluginDirListActionCbk';
                 var kwargs = {
@@ -1368,7 +1368,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
 
-    def get_insert_wdg(my):
+    def get_insert_wdg(self):
 
         shelf_div = DivWdg()
 
@@ -1444,18 +1444,18 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
 
-    def is_active(my):
+    def is_active(self):
 
-        if my.is_active_flag != None:
-            return my.is_active_flag
+        if self.is_active_flag != None:
+            return self.is_active_flag
 
         shelf_div = DivWdg()
 
         search = Search("config/plugin")
-        search.add_filter("code", my.code)
+        search.add_filter("code", self.code)
 
-        if my.version:
-            search.add_filter("version", my.version)
+        if self.version:
+            search.add_filter("version", self.version)
 
         active = search.get_sobject()
         if active:
@@ -1463,17 +1463,17 @@ class PluginEditWdg(BaseRefreshWdg):
         else:
             active = False
 
-        my.is_active_flag = active
+        self.is_active_flag = active
 
         return active
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
 
         shelf_div = DivWdg()
 
-        active = my.is_active()
+        active = self.is_active()
 
 
         shelf_div.add_color("background", "background", -10)
@@ -1485,8 +1485,8 @@ class PluginEditWdg(BaseRefreshWdg):
 
         if not active:
 
-            plugin_base_dir = os.path.dirname(my.plugin_dir)
-            code = os.path.basename(my.plugin_dir)
+            plugin_base_dir = os.path.dirname(self.plugin_dir)
+            code = os.path.basename(self.plugin_dir)
 
             shelf_div.add(HtmlElement.b("This plugin is not active in this project. Click on the button to activate."))
 
@@ -1496,7 +1496,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("margin: 20px 250px")
             button.add_behavior( {
             'type': 'click_up', 
-            'plugin_dir': my.plugin_dir,
+            'plugin_dir': self.plugin_dir,
             'cbjs_action': '''
             spt.api.app_busy_show("Activating Plugin");
 
@@ -1547,7 +1547,7 @@ class PluginEditWdg(BaseRefreshWdg):
             
             remove_button.add_behavior( {
             'type': 'click_up', 
-            'plugin_code': my.code,
+            'plugin_code': self.code,
             'cbjs_action': '''
             spt.api.app_busy_show("Removing Plugin");
 
@@ -1585,7 +1585,7 @@ class PluginEditWdg(BaseRefreshWdg):
             
             reload_button.add_behavior( {
             'type': 'click_up', 
-            'plugin_code': my.code,
+            'plugin_code': self.code,
             'cbjs_action': '''
             spt.api.app_busy_show("Reloading Plugin");
 
@@ -1628,7 +1628,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("float: left")
             button.add_behavior( {
             'type': 'click_up', 
-            'from_version': my.version,
+            'from_version': self.version,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
@@ -1680,25 +1680,25 @@ class PluginEditWdg(BaseRefreshWdg):
 
 __all__.append("PluginCreatorCmd")
 class PluginCreatorCmd(Command):
-    def execute(my):
+    def execute(self):
 
-        plugin_type = my.kwargs.get("plugin_type")
+        plugin_type = self.kwargs.get("plugin_type")
 
         if plugin_type == "column":
-            my.create_column_type()
+            self.create_column_type()
     
         elif plugin_type == "theme":
-            my.create_theme_type()
+            self.create_theme_type()
 
 
         from tactic.command import PluginCreator
-        cmd = PluginCreator(**my.kwargs)
+        cmd = PluginCreator(**self.kwargs)
         cmd.execute()
 
 
-    def create_widget_type(my):
+    def create_widget_type(self):
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
         view = code.replace("/", ".")
 
         config = SearchType.create("config/widget_config")
@@ -1718,7 +1718,7 @@ class PluginCreatorCmd(Command):
 
         config.commit()
 
-        my.kwargs['manifest'] = '''
+        self.kwargs['manifest'] = '''
         <manifest>
           <sobject search_type="config/widget_config" view="%s"/>
         </manifest>
@@ -1727,9 +1727,9 @@ class PluginCreatorCmd(Command):
 
 
 
-    def create_column_type(my):
+    def create_column_type(self):
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
         view = code.replace("/", ".")
 
         config = SearchType.create("config/widget_config")
@@ -1749,16 +1749,16 @@ class PluginCreatorCmd(Command):
 
         config.commit()
 
-        my.kwargs['manifest'] = '''
+        self.kwargs['manifest'] = '''
         <manifest>
           <sobject search_type="config/widget_config" view="%s"/>
         </manifest>
         ''' % view
 
 
-    def create_theme_type(my):
+    def create_theme_type(self):
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
         view = code.replace("/", ".")
 
         config = SearchType.create("config/widget_config")
@@ -1778,7 +1778,7 @@ class PluginCreatorCmd(Command):
 
         config.commit()
 
-        my.kwargs['manifest'] = '''
+        self.kwargs['manifest'] = '''
         <manifest>
           <sobject search_type="config/widget_config" view="sample_theme.index" path="config/config_widget_config.spt"/>
           <sobject search_type="config/url" url="/index" path="config/config_url.spt"/>
@@ -1793,22 +1793,22 @@ class PluginCreatorCmd(Command):
 class PluginDirListWdg(DirListWdg):
 
 
-    def handle_dir_div(my, item_div, dirname, basename):
+    def handle_dir_div(self, item_div, dirname, basename):
         value_div = DivWdg()
         item_div.add(value_div)
         value_div.add_class("spt_value")
         value_div.add(basename)
         SmartMenu.assign_as_local_activator( item_div, 'PLUGIN_ITEM_CTX' )
 
-        my.add_rename_wdg(item_div, dirname, basename)
+        self.add_rename_wdg(item_div, dirname, basename)
 
-    def handle_item_div(my, item_div, dirname, basename):
+    def handle_item_div(self, item_div, dirname, basename):
         path = "%s/%s" % (dirname, basename)
-        if my.info.get("file_type") == 'missing':
+        if self.info.get("file_type") == 'missing':
             icon_string = IconWdg.DELETE
             tip = 'Missing [%s]' %path
         else:
-            icon_string = my.get_file_icon(dirname, basename)
+            icon_string = self.get_file_icon(dirname, basename)
             tip = path
 
 
@@ -1830,14 +1830,14 @@ class PluginDirListWdg(DirListWdg):
         filename_div.add_style("overflow: hidden")
         filename_div.add_class("SPT_DTS")
 
-        my.add_rename_wdg(item_div, dirname, basename)
+        self.add_rename_wdg(item_div, dirname, basename)
 
 
         item_div.add("<br clear='all'/>")
 
 
 
-    def add_rename_wdg(my, item_div, dirname, basename):
+    def add_rename_wdg(self, item_div, dirname, basename):
         text = TextWdg("value")
         item_div.add(text)
         text.add_class("spt_rename")
@@ -1899,12 +1899,12 @@ class PluginDirListWdg(DirListWdg):
 
 
 
-    def add_top_behaviors(my, top):
+    def add_top_behaviors(self, top):
 
 
         top.add_behavior( {
             'type': 'load',
-            'plugin_dirname': my.kwargs.get("plugin_dirname"),
+            'plugin_dirname': self.kwargs.get("plugin_dirname"),
             'cbjs_action': '''
             spt.plugin = {}
             spt.plugin.dirname = bvr.plugin_dirname;
@@ -1989,7 +1989,7 @@ class PluginDirListWdg(DirListWdg):
 
 
         # add in a context menu
-        menu = my.get_context_menu()
+        menu = self.get_context_menu()
         menus = [menu.get_data()]
         menus_in = {
             'PLUGIN_ITEM_CTX': menus,
@@ -1997,7 +1997,7 @@ class PluginDirListWdg(DirListWdg):
         SmartMenu.attach_smart_context_menu( top, menus_in, False )
 
 
-    def get_context_menu(my):
+    def get_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -2041,7 +2041,7 @@ class PluginDirListWdg(DirListWdg):
 
 
 
-    def add_dir_behaviors(my, item_div, dir, item):
+    def add_dir_behaviors(self, item_div, dir, item):
 
         item_div.add_behavior( {
             'type': 'click_up',
@@ -2061,7 +2061,7 @@ class PluginDirListWdg(DirListWdg):
 
 
 
-    def add_file_behaviors(my, item_div, dirname, basename):
+    def add_file_behaviors(self, item_div, dirname, basename):
 
         plugin_base_dir = Environment.get_plugin_dir()
         builtin_plugin_base_dir = Environment.get_builtin_plugin_dir()
@@ -2125,8 +2125,8 @@ class PluginDirListEditFileWdg(BaseRefreshWdg):
     '''This widget shows the contents of a selected file in an editor
     and allows you to save'''
 
-    def get_plugin_base_dir(my):
-        dirname = my.kwargs.get("dirname")
+    def get_plugin_base_dir(self):
+        dirname = self.kwargs.get("dirname")
         if dirname.startswith("/TACTIC"):
             plugin_base_dir = Environment.get_builtin_plugin_dir()
         else:
@@ -2136,13 +2136,13 @@ class PluginDirListEditFileWdg(BaseRefreshWdg):
         return plugin_base_dir
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
 
-        dirname = my.kwargs.get("dirname")
-        basename = my.kwargs.get("basename")
+        dirname = self.kwargs.get("dirname")
+        basename = self.kwargs.get("basename")
 
         base, ext = os.path.splitext(basename)
         if ext in ['.txt', '.spt', '.xml', '.html', '.py']:
@@ -2182,7 +2182,7 @@ class PluginDirListEditFileWdg(BaseRefreshWdg):
 
             # This is protection against accessing any file in the file
             # system
-            plugin_base_dir = my.get_plugin_base_dir()
+            plugin_base_dir = self.get_plugin_base_dir()
             if (plugin_base_dir in dirname):
                 plugin_dir = dirname
             else:
@@ -2214,9 +2214,9 @@ class PluginDirListEditFileWdg(BaseRefreshWdg):
 
 class PluginInstallWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 30px")
         top.add_class("spt_plugin_install_top")
 
@@ -2378,21 +2378,21 @@ class PluginInstallWdg(BaseRefreshWdg):
 __all__.append("PluginVersionCreator")
 class PluginVersionCreator(Command):
     '''This is called when clicking on Publish'''
-    def execute(my):
+    def execute(self):
 
-        dist_dir = my.kwargs.get("dist_dir")
+        dist_dir = self.kwargs.get("dist_dir")
         if not dist_dir:
             dist_dir = Environment.get_dist_dir()
 
-        version = my.kwargs.get("version")
-        from_version = my.kwargs.get("from_version")
+        version = self.kwargs.get("version")
+        from_version = self.kwargs.get("from_version")
         if from_version in ['None', None]:
             from_version = ''
 
         assert version
        
         # code is the same as dirname usually
-        code = my.kwargs.get('code')
+        code = self.kwargs.get('code')
 
         search = Search("config/plugin")
         search.add_filter("code", code)
@@ -2508,10 +2508,10 @@ class PluginVersionCreator(Command):
 
 class PluginDirListActionCbk(Command):
 
-    def execute(my):
-        action = my.kwargs.get("action")
+    def execute(self):
+        action = self.kwargs.get("action")
 
-        dirname = my.kwargs.get("dirname")
+        dirname = self.kwargs.get("dirname")
         assert(dirname)
 
 
@@ -2530,7 +2530,7 @@ class PluginDirListActionCbk(Command):
 
 
         if action == 'new_file':
-            basename = my.kwargs.get("basename")
+            basename = self.kwargs.get("basename")
             default_name = False
             if not basename:
                 basename = "new_file"
@@ -2573,8 +2573,8 @@ class PluginDirListActionCbk(Command):
                 os.makedirs(file_path + str(i))
                 
         elif action == 'rename':
-            basename = my.kwargs.get("basename")
-            new_basename = my.kwargs.get("new_basename")
+            basename = self.kwargs.get("basename")
+            new_basename = self.kwargs.get("new_basename")
 
             if not basename.startswith(plugin_dir):
                 file_path = "%s/%s" % (plugin_dir, basename)
@@ -2600,7 +2600,7 @@ class PluginDirListActionCbk(Command):
 
         elif action == 'upload':
             upload_dir = Environment.get_upload_dir()
-            basename = my.kwargs.get("upload_file_name")
+            basename = self.kwargs.get("upload_file_name")
             # use the same call as in the FileUpload class
             basename = File.get_filesystem_name(basename)
             
@@ -2620,10 +2620,10 @@ class PluginDirListActionCbk(Command):
 
 
         elif action == 'save':
-            basename = my.kwargs.get("basename")
+            basename = self.kwargs.get("basename")
             file_path = "%s/%s" % (plugin_dir, basename)
 
-            content = my.kwargs.get("content")
+            content = self.kwargs.get("content")
 
             if not file_path.startswith(plugin_base_dir):
                 raise Exception("Cannot alter file outside of plugin")
@@ -2634,7 +2634,7 @@ class PluginDirListActionCbk(Command):
 
         elif action == 'delete':
 
-            basename = my.kwargs.get("basename")
+            basename = self.kwargs.get("basename")
             file_path = "%s/%s" % (plugin_dir, basename)
 
             if not file_path.startswith(plugin_base_dir):
@@ -2669,9 +2669,9 @@ class PluginDirListActionCbk(Command):
 
 class PluginRemoveCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        dirname = my.kwargs.get("dirname")
+        dirname = self.kwargs.get("dirname")
         if not dirname:
             return
 
@@ -2679,7 +2679,7 @@ class PluginRemoveCbk(Command):
 
         plugin_dir = "%s/%s" % (plugin_base_dir, dirname)
         if os.path.exists(plugin_dir):
-            print "Removing from installation: ", plugin_dir
+            print("Removing from installation: ", plugin_dir)
             shutil.rmtree(plugin_dir)
 
         zip_path = "%s.zip" % plugin_dir
@@ -2695,25 +2695,25 @@ class PluginRemoveCbk(Command):
 
 class PluginDownloadCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        url = my.kwargs.get("url")
+        url = self.kwargs.get("url")
 
         if not url or not url.endswith(".zip"):
             raise TacticException("URL [%s] is not a link to a plugin file")
 
 
-        md5 = my.kwargs.get("md5")
+        md5 = self.kwargs.get("md5")
 
-        my.plugin_dir = Environment.get_plugin_dir()
+        self.plugin_dir = Environment.get_plugin_dir()
 
         basename = os.path.basename(url)
-        plugin_path = "%s/%s" % (my.plugin_dir, basename)
+        plugin_path = "%s/%s" % (self.plugin_dir, basename)
         if os.path.exists(plugin_path):
             raise TacticException("This plugin [%s] is already installed. Please remove first" % basename)
 
 
-        path = Common.download(url, to_dir=my.plugin_dir, md5_checksum=md5)
+        path = Common.download(url, to_dir=self.plugin_dir, md5_checksum=md5)
 
         from tactic.command import PluginUploader
         installer = PluginUploader(

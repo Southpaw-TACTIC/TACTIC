@@ -30,26 +30,26 @@ class CommandDelegator(Widget):
     '''Introspects the web form and creates actions that have been
     requested by the web page. It can also contain command response info'''
 
-    def __init__(my):
-        my.registered_cmds = []
-        my.executed_cmds = []
-        super(CommandDelegator,my).__init__()
+    def __init__(self):
+        self.registered_cmds = []
+        self.executed_cmds = []
+        super(CommandDelegator,self).__init__()
 
 
-    def register_cmd(my, instance_cmd ):
-        if instance_cmd not in my.registered_cmds:
-            my.registered_cmds.append( instance_cmd )
+    def register_cmd(self, instance_cmd ):
+        if instance_cmd not in self.registered_cmds:
+            self.registered_cmds.append( instance_cmd )
 
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         html = Html()
 
         html.writeln("<!-- commands -->")
 
-        for cmd in my.registered_cmds:
+        for cmd in self.registered_cmds:
             hidden = HtmlElement("input")
             hidden.set_attr("type", "hidden")
 
@@ -66,9 +66,9 @@ class CommandDelegator(Widget):
 
         html.writeln("<!-- commands response ")
         hidden_response_list = []
-        for idx, cmd in enumerate(my.executed_cmds):
+        for idx, cmd in enumerate(self.executed_cmds):
             html.writeln('%s||%s'% (cmd.__class__.__name__, cmd.response) )
-            if idx < len(my.executed_cmds) - 1:
+            if idx < len(self.executed_cmds) - 1:
                 html.writeln('<br/>')
         # this <br/> is a delimiter, used in DynamicLoader.js
         html.writeln("             -->")
@@ -77,13 +77,13 @@ class CommandDelegator(Widget):
 
 
 
-    def get_executed_cmds(my):
-        return my.executed_cmds
+    def get_executed_cmds(self):
+        return self.executed_cmds
 
 
 
 
-    def execute(my):
+    def execute(self):
         
         # get all of the commands
         web = WebContainer.get_web()
@@ -112,7 +112,7 @@ class CommandDelegator(Widget):
                 pass
 
             # store the commands that we executed
-            my.executed_cmds.append(cmd)
+            self.executed_cmds.append(cmd)
 
 
 

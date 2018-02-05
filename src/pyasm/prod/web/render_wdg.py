@@ -41,17 +41,17 @@ class SObjectRenderCbk(DatabaseAction):
     '''initiates a render with properties'''
 
 
-    def get_title(my):
+    def get_title(self):
         return "Render Submission"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value("Render") == "" and web.get_form_value("do_edit").startswith("Submit/") == "":
             return False
         else:
             return True
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -66,15 +66,15 @@ class SObjectRenderCbk(DatabaseAction):
             search_keys = ["%s|%s" % (search_type, search_id)]
 
         if not search_keys:
-            if my.sobject:
-                search_keys = [my.sobject.get_search_key()]
+            if self.sobject:
+                search_keys = [self.sobject.get_search_key()]
             else:
                 search_keys = web.get_form_values("search_key")
 
         # get the policy
         policy = None
-        if my.sobject:
-            policy_code = my.sobject.get_value("policy_code")
+        if self.sobject:
+            policy_code = self.sobject.get_value("policy_code")
             if policy_code:
                 policy = RenderPolicy.get_by_code(policy_code)
 
@@ -129,7 +129,7 @@ class SObjectRenderCbk(DatabaseAction):
 
 
             # submission class
-            submit_class = my.get_option("submit")
+            submit_class = self.get_option("submit")
             if not submit_class:
                 submit_class = Config.get_value("services", "render_submit_class", no_exception=True)
             if not submit_class:
@@ -139,13 +139,13 @@ class SObjectRenderCbk(DatabaseAction):
             submit = Common.create_from_class_path(submit_class, [render_package])
             # if this is from the EditWdg for queues then use this queue
             # entry instead
-            if my.sobject.get_base_search_type() == "sthpw/queue":
-                submit.set_queue(my.sobject)
+            if self.sobject.get_base_search_type() == "sthpw/queue":
+                submit.set_queue(self.sobject)
             submit.execute()
 
 
 
-	my.description = "Submitted: %s" % ", ".join(search_keys)
+	self.description = "Submitted: %s" % ", ".join(search_keys)
 
 
 
@@ -155,13 +155,13 @@ class SObjectRenderCbk(DatabaseAction):
 
 class RenderTableElementWdg(FunctionalTableElement):
     '''presents a checkbox to select for each sobject and executes a render'''
-    def get_title(my):
+    def get_title(self):
         WebContainer.register_cmd("pyasm.prod.web.SObjectRenderCbk")
         render_button = IconSubmitWdg("Render", IconWdg.RENDER, False)
         return render_button
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         search_key = sobject.get_search_key()
 
         div = DivWdg()
@@ -175,7 +175,7 @@ class RenderTableElementWdg(FunctionalTableElement):
 
 class RenderSubmitInfoWdg(BaseInputWdg):
     '''presents information about the render'''
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         widget = Widget()

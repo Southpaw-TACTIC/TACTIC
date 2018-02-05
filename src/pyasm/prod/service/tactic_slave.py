@@ -36,9 +36,9 @@ class SlaveXmlRpcServer:
     load xmlrpc server enabling distribution of Tactic commands to other
     computers'''
 
-    def __init__(my):
-        my.ticket = None
-        my.is_busy = False
+    def __init__(self):
+        self.ticket = None
+        self.is_busy = False
 
 
     def _cpOnError(self):
@@ -61,7 +61,7 @@ class SlaveXmlRpcServer:
 
 
     @cherrypy.expose()
-    def do_login(my, ticket, tactic_install_path=None):
+    def do_login(self, ticket, tactic_install_path=None):
         os.environ["TACTIC_CONFIG_PATH"] = "/home/apache/tactic_sites/config/tactic_linux-conf.xml"
         # initialize the framework and login
         xmlrpc = XmlRpcInit(ticket)
@@ -72,7 +72,7 @@ class SlaveXmlRpcServer:
 
 
     @cherrypy.expose()
-    def do_command(my, pickled):
+    def do_command(self, pickled):
         import pickle
         # launch pickled command
         command = pickle.loads(pickled)

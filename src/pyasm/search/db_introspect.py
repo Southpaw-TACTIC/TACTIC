@@ -20,16 +20,16 @@ from pyasm.search import Search, SearchType, DbResource, DbContainer
 
 class DbIntrospect(object):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        my.db_resources = {}
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.db_resources = {}
 
 
-    def get_db_resource(my, name):
-        return my.db_resources.get(name)
+    def get_db_resource(self, name):
+        return self.db_resources.get(name)
 
 
-    def register(my, name, db_resource, tables=None):
+    def register(self, name, db_resource, tables=None):
 
         db_name = db_resource.get_database()
 
@@ -75,7 +75,7 @@ class DbIntrospect(object):
 
 
 
-        my.db_resources[name] = db_resource
+        self.db_resources[name] = db_resource
 
 
 
@@ -131,7 +131,7 @@ def execute(db_resource):
 
 
 
-    print "mysql: fifi"
+    print "selfsql: fifi"
     db_resource = DbResource.get_by_code('mysql','fifi')
     introspect = DbIntrospect()
     introspect.register("fifi", db_resource)
@@ -140,7 +140,7 @@ def execute(db_resource):
     print "length: ", len(sobjects)
 
 
-    print "mysql: fifi"
+    print "selfsql: fifi"
     search_type = "table/node0?project=db3_test"
     search = Search(search_type)
     sobjects = search.get_sobjects()

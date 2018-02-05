@@ -23,20 +23,20 @@ class SessionContents(SObject):
 
     SEARCH_TYPE = "prod/session_contents"
 
-    def __init__(my, search_type, columns=None, result=None, remote=False, fast_data=None):
-        super(SessionContents,my).__init__(search_type, columns, result, remote, fast_data)
-        my.data_xml = None
-        my.nodes = None
-        my.asset_mode = False
+    def __init__(self, search_type, columns=None, result=None, remote=False, fast_data=None):
+        super(SessionContents,self).__init__(search_type, columns, result, remote, fast_data)
+        self.data_xml = None
+        self.nodes = None
+        self.asset_mode = False
 
 
-    def set_asset_mode(my, asset_mode=True):
-        my.asset_mode = asset_mode
+    def set_asset_mode(self, asset_mode=True):
+        self.asset_mode = asset_mode
 
 
-    def is_tactic_node(my, node_name):
+    def is_tactic_node(self, node_name):
         if type(node_name) in types.StringTypes:
-            node = my.get_node(node_name)
+            node = self.get_node(node_name)
         else:
             node = node_name
 
@@ -47,21 +47,21 @@ class SessionContents(SObject):
             return True
 
 
-    def get_node_type(my, node_name):
-        node = my.get_node(node_name)
+    def get_node_type(self, node_name):
+        node = self.get_node(node_name)
         value = Xml.get_attribute(node, "type")
         return value
 
 
 
-    def get_version(my, node_name, asset_code=None, type='asset'):
+    def get_version(self, node_name, asset_code=None, type='asset'):
         node = None
        
-        if my.asset_mode:
-            #node = my.get_node_by_asset_code(asset_code, node_name)
-            node = my.get_node_by_asset_code(asset_code)
+        if self.asset_mode:
+            #node = self.get_node_by_asset_code(asset_code, node_name)
+            node = self.get_node_by_asset_code(asset_code)
         elif node_name:
-            node = my.get_node(node_name)
+            node = self.get_node(node_name)
         else:
             raise SObjectException('Both node_name and snapshot are None')
             
@@ -73,26 +73,26 @@ class SessionContents(SObject):
         return int(version)
 
 
-    def get_asset_version(my, node_name, asset_code=None):
-        return my.get_version(node_name, asset_code=None, type='asset')
+    def get_asset_version(self, node_name, asset_code=None):
+        return self.get_version(node_name, asset_code=None, type='asset')
 
-    def get_set_version(my, node_name, asset_code=None):
-        return my.get_version(node_name, asset_code=None, type='set')
+    def get_set_version(self, node_name, asset_code=None):
+        return self.get_version(node_name, asset_code=None, type='set')
 
-    def get_shot_version(my, node_name, asset_code=None):
-        return my.get_version(node_name, asset_code=None, type='shot')
+    def get_shot_version(self, node_name, asset_code=None):
+        return self.get_version(node_name, asset_code=None, type='shot')
 
-    def get_anim_version(my, node_name, asset_code=None):
-        return my.get_version(node_name, asset_code=None, type='anim')
+    def get_anim_version(self, node_name, asset_code=None):
+        return self.get_version(node_name, asset_code=None, type='anim')
     
-    def get_context(my, node_name, asset_code=None, type='asset'):
+    def get_context(self, node_name, asset_code=None, type='asset'):
 
         node = None
 
-        if my.asset_mode:
-            node = my.get_node_by_asset_code(asset_code)
+        if self.asset_mode:
+            node = self.get_node_by_asset_code(asset_code)
         elif node_name:
-            node = my.get_node(node_name)
+            node = self.get_node(node_name)
 
         else:
             raise SObjectException('Both node_name and asset_code are None')
@@ -103,27 +103,27 @@ class SessionContents(SObject):
         return Xml.get_attribute(node, "%s_snapshot_context" %type)
 
 
-    def get_asset_context(my, node_name, asset_code=None):
-        return my.get_context(node_name, asset_code=None, type='asset')
+    def get_asset_context(self, node_name, asset_code=None):
+        return self.get_context(node_name, asset_code=None, type='asset')
 
-    def get_set_context(my, node_name, asset_code=None):
-        return my.get_context(node_name, asset_code=None, type='set')
+    def get_set_context(self, node_name, asset_code=None):
+        return self.get_context(node_name, asset_code=None, type='set')
 
-    def get_shot_context(my, node_name, asset_code=None):
-        return my.get_context(node_name, asset_code=None, type='shot')
+    def get_shot_context(self, node_name, asset_code=None):
+        return self.get_context(node_name, asset_code=None, type='shot')
 
-    def get_anim_context(my, node_name, asset_code=None):
-        return my.get_context(node_name, asset_code=None, type='anim')
+    def get_anim_context(self, node_name, asset_code=None):
+        return self.get_context(node_name, asset_code=None, type='anim')
 
 
-    def get_revision(my, node_name, asset_code=None, type='asset'):
+    def get_revision(self, node_name, asset_code=None, type='asset'):
 
         node = None
 
-        if my.asset_mode:
-            node = my.get_node_by_asset_code(asset_code)
+        if self.asset_mode:
+            node = self.get_node_by_asset_code(asset_code)
         elif node_name:
-            node = my.get_node(node_name)
+            node = self.get_node(node_name)
 
         else:
             raise SObjectException('Both node_name and asset_code are None')
@@ -135,23 +135,23 @@ class SessionContents(SObject):
         return Xml.get_attribute(node, "%s_snapshot_revision" %type)
 
 
-    def get_asset_revision(my, node_name, asset_code=None):
-        return my.get_revision(node_name, asset_code=None, type='asset')
+    def get_asset_revision(self, node_name, asset_code=None):
+        return self.get_revision(node_name, asset_code=None, type='asset')
 
-    def get_set_revision(my, node_name, asset_code=None):
-        return my.get_revision(node_name, asset_code=None, type='set')
+    def get_set_revision(self, node_name, asset_code=None):
+        return self.get_revision(node_name, asset_code=None, type='set')
 
-    def get_shot_revision(my, node_name, asset_code=None):
-        return my.get_revision(node_name, asset_code=None, type='shot')
+    def get_shot_revision(self, node_name, asset_code=None):
+        return self.get_revision(node_name, asset_code=None, type='shot')
 
-    def get_anim_revision(my, node_name, asset_code=None):
-        return my.get_revision(node_name, asset_code=None, type='anim')
-
-
+    def get_anim_revision(self, node_name, asset_code=None):
+        return self.get_revision(node_name, asset_code=None, type='anim')
 
 
-    def is_reference(my, node_name):
-        node = my.get_node(node_name)
+
+
+    def is_reference(self, node_name):
+        node = self.get_node(node_name)
         if node == None:
             return 0
         is_reference = Xml.get_attribute(node, "reference")
@@ -161,8 +161,8 @@ class SessionContents(SObject):
             return True
 
 
-    def get_snapshot_code(my, node_name, snapshot_type="asset"):
-        node = my.get_node(node_name)
+    def get_snapshot_code(self, node_name, snapshot_type="asset"):
+        node = self.get_node(node_name)
         if node is None:
             return ""
 
@@ -170,33 +170,33 @@ class SessionContents(SObject):
         return snapshot_code
 
 
-    def get_snapshot(my, node_name, snapshot_type="asset"):
+    def get_snapshot(self, node_name, snapshot_type="asset"):
         ''' use this only if the info is not already in the
             session_contents table'''
-        snapshot_code = my.get_snapshot_code(node_name, snapshot_type)
+        snapshot_code = self.get_snapshot_code(node_name, snapshot_type)
         if snapshot_code == "":
             return None
         return Snapshot.get_by_code(snapshot_code)
 
 
-    def get_snapshot_codes(my, snapshot_type="asset"):
+    def get_snapshot_codes(self, snapshot_type="asset"):
         '''get all of the snapshots for this session'''
-        xml = my._get_data()
+        xml = self._get_data()
         xpath = "session/node/@asset_snapshot_code"
         snapshot_codes = xml.get_values(xpath)
         return snapshot_codes
 
 
 
-    def get_node(my, node_name):
-        xml = my._get_data()
-        node = my.nodes.get(node_name)
+    def get_node(self, node_name):
+        xml = self._get_data()
+        node = self.nodes.get(node_name)
         #node = xml.get_node("session/node[@name='%s']" % node_name)
         # Backwards compatibility: if not, try instance
         #if node is None:
         #    nodes = xml.get_nodes("session/node[@instance='%s']" % node_name)
         #    for node in nodes:
-        #        if my.is_tactic_node(node):
+        #        if self.is_tactic_node(node):
         #            return node
 
 
@@ -205,10 +205,10 @@ class SessionContents(SObject):
 
 
 
-    def get_node_by_asset_code(my, asset_code, node_name=None):
+    def get_node_by_asset_code(self, asset_code, node_name=None):
         '''a less stringent way of finding if an asset exists in a session 
             node_name name is not mandatory'''
-        xml = my._get_data()
+        xml = self._get_data()
         xpath = "session/node[@asset_code='%s' and @tactic_node='true']" % asset_code
         if node_name:
             xpath ="session/node[@asset_code='%s' and @name='%s' and @tactic_node='true']" \
@@ -217,10 +217,10 @@ class SessionContents(SObject):
         if node is not None:
             return node
 
-    def get_node_by_snapshot(my, snapshot):
+    def get_node_by_snapshot(self, snapshot):
         # this is used for finding if a node defined in asset_history is loaded
         # node_name name is not used
-        xml = my._get_data()
+        xml = self._get_data()
         
         type = snapshot.get_value('snapshot_type')
         if type == 'anim_export':
@@ -230,10 +230,10 @@ class SessionContents(SObject):
         if node is not None:
             return node
 
-    def get_namespace(my):
+    def get_namespace(self):
         # this is used for finding if a node defined in asset_history is loaded
         # node_name name is not used
-        xml = my._get_data()
+        xml = self._get_data()
         dict = {}
         current = xml.get_nodes_attr("session/namespace[@current='true']", 'name')
         if current:
@@ -243,8 +243,8 @@ class SessionContents(SObject):
             dict['child'] = names
         return dict
 
-    def get_node_name(my, snapshot_code, namespace):
-        xml = my._get_data()
+    def get_node_name(self, snapshot_code, namespace):
+        xml = self._get_data()
         snapshot = Snapshot.get_by_code(snapshot_code)
         type = snapshot.get_type()
         if type == 'anim_export':
@@ -256,8 +256,8 @@ class SessionContents(SObject):
         else:
             return ''
 
-    def get_node_names(my, is_tactic_node=None):
-        xml = my._get_data()
+    def get_node_names(self, is_tactic_node=None):
+        xml = self._get_data()
         if is_tactic_node == None:
             node_names = xml.get_values("session/node/@name")
         elif is_tactic_node == True:
@@ -266,8 +266,8 @@ class SessionContents(SObject):
             node_names = xml.get_nodes_attr("session/node[@tactic_node='false']", 'name')
         return node_names
 
-    def get_instance_names(my, is_tactic_node=None):
-        xml = my._get_data()
+    def get_instance_names(self, is_tactic_node=None):
+        xml = self._get_data()
         if is_tactic_node == None:
             instances = xml.get_values("session/node/@instance")
         elif is_tactic_node == True:
@@ -278,63 +278,63 @@ class SessionContents(SObject):
         return instances
 
     
-    def get_asset_codes(my):
-        xml = my._get_data()
+    def get_asset_codes(self):
+        xml = self._get_data()
         asset_codes = xml.get_values("session/node/@asset_code")
         return asset_codes
 
 
-    def get_file_name(my):
-        xml = my._get_data()
+    def get_file_name(self):
+        xml = self._get_data()
         file_name = xml.get_value("session/file/@name")
         return file_name
 
-    def get_project_dir(my):
-        xml = my._get_data()
+    def get_project_dir(self):
+        xml = self._get_data()
         project_dir = xml.get_value("session/project/@dir")
         return project_dir
 
 
-    def get_data(my):
-        my.data_xml = my._get_data()
-        return my.data_xml
+    def get_data(self):
+        self.data_xml = self._get_data()
+        return self.data_xml
 
 
 
 
-    def _get_data(my):
-        if not my.data_xml:
-            my.data_xml = my.get_xml_value("data")
+    def _get_data(self):
+        if not self.data_xml:
+            self.data_xml = self.get_xml_value("data")
 
             # store all of the nodes in a data structure
-            my.nodes = {}
-            children = my.data_xml.get_nodes("session/node")
+            self.nodes = {}
+            children = self.data_xml.get_nodes("session/node")
             for child in children:
                 
                 name = Xml.get_attribute(child, "name")
-                my.nodes[name] = child
+                self.nodes[name] = child
 
                 # only store tactic nodes for the instance
                 instance = Xml.get_attribute(child, "instance")
                 is_tactic_node = Xml.get_attribute(child, "tactic_node")
                 if is_tactic_node == "true":
-                    my.nodes[instance] = child
+                    self.nodes[instance] = child
 
             # record all of the subrefs as well
-            children = my.data_xml.get_nodes("session/node/ref")
+            children = self.data_xml.get_nodes("session/node/ref")
             for child in children:
                 name = Xml.get_attribute(child, "name")
-                my.nodes[name] = child
+                self.nodes[name] = child
 
                 # only store tactic nodes for the instance
                 instance = Xml.get_attribute(child, "instance")
                 is_tactic_node = Xml.get_attribute(child, "tactic_node")
                 if is_tactic_node == "true":
-                    my.nodes[instance] = child
+                    self.nodes[instance] = child
 
 
  
-        return my.data_xml
+        return self.data_xml
 
     #
     # static functions

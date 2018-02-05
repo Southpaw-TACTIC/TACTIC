@@ -52,16 +52,16 @@ class Container(object):
     '''general low level container object to store global information
     to the entire application'''
 
-    def __init__(my):
-        #print "INITIALIZING CONTAINER: ", thread.get_ident(), my
-        my.info = dict()
+    def __init__(self):
+        #print "INITIALIZING CONTAINER: ", thread.get_ident(), self
+        self.info = dict()
 
 
-    def get_data(my):
-        return my.info
+    def get_data(self):
+        return self.info
 
-    def clear_data(my):
-        my.info = {}
+    def clear_data(self):
+        self.info = {}
 
 
     def get_instance():

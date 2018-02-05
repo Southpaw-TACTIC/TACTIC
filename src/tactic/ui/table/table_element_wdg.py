@@ -27,43 +27,43 @@ class TypeTableElementWdg(SimpleTableElementWdg):
     '''The element widget that displays according to type'''
 
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
-    def get_required_columns(my):
-        return [my.name]
+    def get_required_columns(self):
+        return [self.name]
 
-    def get_type(my):
-        return my.type
+    def get_type(self):
+        return self.type
 
-    def handle_td(my, td):
-        type = my.get_option("type")
+    def handle_td(self, td):
+        type = self.get_option("type")
         if not type:
-            type = my.get_type()
+            type = self.get_type()
 
         if type in ['float', 'int']:
             td.add_style("text-align: right")
 
-        super(TypeTableElementWdg,my).handle_td(td)
+        super(TypeTableElementWdg,self).handle_td(td)
 
 
-    def get_text_value(my):
-        type = my.get_option("type")
+    def get_text_value(self):
+        type = self.get_option("type")
         if not type:
-            type = my.get_type()
+            type = self.get_type()
  
         if type in ['color', 'boolean','bigint', 'integer','float']:
-            return my.get_value()
+            return self.get_value()
         else:
-            return my.get_display()
+            return self.get_display()
 
-    def get_display(my):
-        value = my.get_value()
-        name = my.get_name()
+    def get_display(self):
+        value = self.get_value()
+        name = self.get_name()
 
-        type = my.get_option("type")
+        type = self.get_option("type")
         if not type:
-            type = my.get_type()
+            type = self.get_type()
 
         # FIXME: this needs to be handled outside of this class to centralize
         # the type of an element!!!
@@ -150,33 +150,33 @@ class TypeTableElementWdg(SimpleTableElementWdg):
 
 class GeneralPublishElementWdg(BaseTableElementWdg):
     ''' A general publish table element with the option of having a thumbnail '''
-    def get_arg_keys(my):
+    def get_arg_keys(self):
         return {'view': 'a custom view other than publish'}
 
-    def preprocess(my):
-        if my.get_option('preview') != 'false':
-            my.thumb = ThumbWdg()
-            my.thumb.set_sobjects(my.sobjects)
-            my.thumb.set_icon_size(60)
+    def preprocess(self):
+        if self.get_option('preview') != 'false':
+            self.thumb = ThumbWdg()
+            self.thumb.set_sobjects(self.sobjects)
+            self.thumb.set_icon_size(60)
             # passing options from this to ThumbWdg, shouldn't have conflicts
-            options = my.options
-            my.thumb.set_options(options)
+            options = self.options
+            self.thumb.set_options(options)
         # for its own preprocess and data caching
 
-    def get_display(my):
-        my.view = my.kwargs.get('view')
-        if not my.view:
-            my.view = 'publish'
+    def get_display(self):
+        self.view = self.kwargs.get('view')
+        if not self.view:
+            self.view = 'publish'
         widget = Widget()
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
 
-        if my.get_option('preview') != 'false': 
-            my.thumb.set_current_index(my.get_current_index())
-            widget.add(my.thumb)
+        if self.get_option('preview') != 'false': 
+            self.thumb.set_current_index(self.get_current_index())
+            widget.add(self.thumb)
 
-        publish_link = PublishLinkWdg(search_type,search_id, config_base=my.view) 
+        publish_link = PublishLinkWdg(search_type,search_id, config_base=self.view) 
         div = DivWdg(publish_link)
         div.set_style('clear: left; padding-top: 6px')
         widget.add(div)
@@ -205,22 +205,22 @@ class GeneralPublishElementWdg(BaseTableElementWdg):
 class TemplateElementWdg(SimpleTableElementWdg):
     '''The element widget that displays according to type'''
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        template = my.get_option("template")
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        template = self.get_option("template")
         if not template:
-            return super(SimpleTableElementWdg, my).__init__()
+            return super(SimpleTableElementWdg, self).__init__()
 
         display = NamingUtil.eval_template(template, sobject)
-        my.value = display
+        self.value = display
         return display
 
 
 __all__.append("ExpressionIsZeroElementWdg")
 class ExpressionIsZeroElementWdg(BaseTableElementWdg):
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        expression = my.get_option("expression")
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        expression = self.get_option("expression")
 
         parser = ExpressionParser()
         value = parser.eval(expression, sobject)
@@ -238,9 +238,9 @@ class ExpressionIsZeroElementWdg(BaseTableElementWdg):
 
 __all__.append("ExpressionIsCountZeroElementWdg")
 class ExpressionIsCountZeroElementWdg(BaseTableElementWdg):
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        expression = my.get_option("expression")
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        expression = self.get_option("expression")
 
         parser = ExpressionParser()
         value = parser.eval(expression, sobject)
@@ -263,68 +263,68 @@ class ExpressionIsCountZeroElementWdg(BaseTableElementWdg):
 __all__.append("IndirectMappedDisplayLabelWdg")
 class IndirectMappedDisplayLabelWdg(BaseTableElementWdg):
 
-    def _map_display_label(my):
+    def _map_display_label(self):
 
-        my.display_label = ''
+        self.display_label = ''
 
-        target_table = my.get_option("target_table")
-        target_column = my.get_option("target_column")
+        target_table = self.get_option("target_table")
+        target_column = self.get_option("target_column")
 
-        source_column = my.get_option("source_column")
-        display_column = my.get_option("display_column")
+        source_column = self.get_option("source_column")
+        display_column = self.get_option("display_column")
 
-        my.sobject = my.get_current_sobject()
-        my.mapping_value = my.sobject.get_data().get( source_column )
+        self.sobject = self.get_current_sobject()
+        self.mapping_value = self.sobject.get_data().get( source_column )
 
         # do search here
         search = Search( target_table )
-        search.add_filter( target_column, my.mapping_value)
+        search.add_filter( target_column, self.mapping_value)
         search.add_column( display_column )
 
         items = search.get_sobjects()
         if items:
-            my.display_label = items[0].get_data().get( display_column )
+            self.display_label = items[0].get_data().get( display_column )
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my._map_display_label()
+        self._map_display_label()
         div = DivWdg()
-        div.add( '%s' % my.display_label )
+        div.add( '%s' % self.display_label )
         return div
 
 
-    def handle_td(my, td):
-        td.add_attr( "spt_input_value", my.value )
+    def handle_td(self, td):
+        td.add_attr( "spt_input_value", self.value )
 
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
-    def is_sortable(my):
+    def is_sortable(self):
         return True
 
-    def is_groupable(my):
+    def is_groupable(self):
         return False
 
 
-    def get_text_value(my):
+    def get_text_value(self):
         '''for csv export'''
-        my._map_display_label()
-        return my.display_label
+        self._map_display_label()
+        return self.display_label
 
 
-    def set_td(my, td):
-        my.td = td
+    def set_td(self, td):
+        self.td = td
 
 
 
 class NotificationTriggerElementWdg(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
          
         search_key = ''
-        sobj = my.get_current_sobject()
+        sobj = self.get_current_sobject()
 
         top = DivWdg() 
         top.add_style("padding-top: 5px")
@@ -332,7 +332,7 @@ class NotificationTriggerElementWdg(BaseTableElementWdg):
         span = ActionButtonWdg(title="Email Test")
         #span = ProdIconButtonWdg('Email Test')
         top.add(span)
-        span.add_behavior(my.get_behavior(sobj))
+        span.add_behavior(self.get_behavior(sobj))
 
 
         return top
@@ -446,26 +446,26 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
     }
 
-    #def init(my):
-    #    return super(CheckinButtonElementWdg, my).init()
+    #def init(self):
+    #    return super(CheckinButtonElementWdg, self).init()
 
 
-    def preprocess(my):
+    def preprocess(self):
 
-        mode = my.get_option('mode')
+        mode = self.get_option('mode')
 
-        width = my.get_option('width')
-        size = my.get_option('icon_size')
+        width = self.get_option('width')
+        size = self.get_option('icon_size')
         if mode == 'add':
-            my.set_option('icon', "PUBLISH_MULTI")
+            self.set_option('icon', "PUBLISH_MULTI")
         else:
             if size == 'large':
-                my.set_option('icon', "PUBLISH_LG")
+                self.set_option('icon', "PUBLISH_LG")
             else:
-                my.set_option('icon', "PUBLISH")
+                self.set_option('icon', "PUBLISH")
 
-        transfer_mode = my.get_option('transfer_mode')
-        checkin_ui_options = my.get_option('checkin_ui_options')
+        transfer_mode = self.get_option('transfer_mode')
+        checkin_ui_options = self.get_option('checkin_ui_options')
         if not checkin_ui_options:
             checkin_ui_options = ''
 
@@ -475,10 +475,10 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         if not mode:
             mode = ''
 
-        checkin_script = my.get_option("checkin_script")
-        checkin_script_path = my.get_option("checkin_script_path")
-        checkin_panel_script_path = my.get_option("checkin_panel_script_path")
-        validate_script_path = my.get_option("validate_script_path")
+        checkin_script = self.get_option("checkin_script")
+        checkin_script_path = self.get_option("checkin_script_path")
+        checkin_panel_script_path = self.get_option("checkin_panel_script_path")
+        validate_script_path = self.get_option("validate_script_path")
         if not checkin_script:
             checkin_script = ''
         if not checkin_script_path:
@@ -488,23 +488,23 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         if not validate_script_path:
             validate_script_path = '' 
 
-        lock_process = my.get_option("lock_process")
+        lock_process = self.get_option("lock_process")
         if not lock_process:
             lock_process = ''
-        sandbox_dir = my.get_option("sandbox_dir")
+        sandbox_dir = self.get_option("sandbox_dir")
         if not sandbox_dir:
             sandbox_dir = ''
 
-        checkin_relative_dir = my.get_option("checkin_relative_dir")
+        checkin_relative_dir = self.get_option("checkin_relative_dir")
 
         if not checkin_relative_dir:
             checkin_relative_dir = ''
 
 
-        show_context = my.get_option("show_context")
-        show_sub_context = my.get_option("show_sub_context")
+        show_context = self.get_option("show_context")
+        show_sub_context = self.get_option("show_sub_context")
 
-        use_applet = my.get_option("use_applet")
+        use_applet = self.get_option("use_applet")
         if use_applet in ['true', True]:
             use_applet = True
         else:
@@ -527,8 +527,8 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         kwargs['show_sub_context'] = show_sub_context
         kwargs['use_applet'] = use_applet
 
-        my.behavior['kwargs'] = kwargs
-        my.behavior['cbjs_action'] = '''
+        self.behavior['kwargs'] = kwargs
+        self.behavior['cbjs_action'] = '''
         var kwargs = bvr.kwargs;
 
         spt.app_busy.show("Opening Check-In Widget...");
@@ -598,23 +598,23 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.context = ''
-        sobject = my.get_current_sobject()
+        self.context = ''
+        sobject = self.get_current_sobject()
 
         if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
-            my.process = sobject.get_value('process')
-            if not my.process:
-                my.process = ''
+            self.process = sobject.get_value('process')
+            if not self.process:
+                self.process = ''
 
-            my.context = sobject.get_value('context')
-            if re.search(r'/(\d+)$', my.context):
-                my.context = ""
+            self.context = sobject.get_value('context')
+            if re.search(r'/(\d+)$', self.context):
+                self.context = ""
 
 
 
-            sobject_mode = my.kwargs.get("sobject_mode")
+            sobject_mode = self.kwargs.get("sobject_mode")
             if not sobject_mode:
                 sobject_mode = "parent"
             #sobject_mode = "connect"
@@ -633,16 +633,16 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
             search_key = SearchKey.get_by_sobject(parent)
         else:
-            my.process = my.get_option('process')
-            if not my.process:
-                my.process = "publish"
+            self.process = self.get_option('process')
+            if not self.process:
+                self.process = "publish"
             search_key = SearchKey.get_by_sobject(sobject)
 
 
         # set the atrs
-        div = super(CheckinButtonElementWdg, my).get_display()
-        div.add_attr("spt_process", my.process)
-        div.add_attr("spt_context", my.context)
+        div = super(CheckinButtonElementWdg, self).get_display()
+        div.add_attr("spt_process", self.process)
+        div.add_attr("spt_context", self.context)
         div.add_attr("spt_search_key", search_key)
 
         return div
@@ -653,20 +653,20 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
 class CheckoutButtonElementWdg(ButtonElementWdg):
 
-    def get_display(my):
-        mode = my.get_option('mode')
-        size = my.get_option('icon_size')
+    def get_display(self):
+        mode = self.get_option('mode')
+        size = self.get_option('icon_size')
         if mode == 'add':
-            my.set_option('icon', "CHECK_OUT")
+            self.set_option('icon', "CHECK_OUT")
         else:
             if size == 'large':
-	        my.set_option('icon', "CHECK_OUT_LG")
+	        self.set_option('icon', "CHECK_OUT_LG")
 	    else:
-	        my.set_option('icon', "CHECK_OUT_SM")
+	        self.set_option('icon', "CHECK_OUT_SM")
 
 
         top = DivWdg()
-        icon = IconButtonWdg( "Checkout", eval( "IconWdg.%s" % my.get_option('icon') ) )
+        icon = IconButtonWdg( "Checkout", eval( "IconWdg.%s" % self.get_option('icon') ) )
         top.add(icon)
         top.add_style("width: 26px")
         top.add_style("margin-left: auto")
@@ -674,44 +674,44 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
 
 
 
-        my.process = my.get_option('process')
-        my.context = ''
-        transfer_mode = my.get_option('transfer_mode')
+        self.process = self.get_option('process')
+        self.context = ''
+        transfer_mode = self.get_option('transfer_mode')
         
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.get_id() == -1:
             sobject = None 
 
 
-        snapshot_code = my.get_option("snapshot_code")
-        sandbox_dir = my.get_option("sandbox_dir")
+        snapshot_code = self.get_option("snapshot_code")
+        sandbox_dir = self.get_option("sandbox_dir")
         if not sandbox_dir and sobject and isinstance(sobject, Snapshot):
             sandbox_dir = sobject.get_sandbox_dir(file_type='main')
    	    snapshot_code = sobject.get_code()
 	 
-        lock_process = my.get_option("lock_process")
-        sobject = my.get_current_sobject()
+        lock_process = self.get_option("lock_process")
+        sobject = self.get_current_sobject()
         search_key = SearchKey.get_by_sobject(sobject)
         
 
         if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
-            my.process = sobject.get_value('process')
-            my.context = sobject.get_value('context')
-            if not my.process:
-                my.process = ''
+            self.process = sobject.get_value('process')
+            self.context = sobject.get_value('context')
+            if not self.process:
+                self.process = ''
 
             parent = sobject.get_parent()
             if not parent:
                 return DivWdg()
             search_key = SearchKey.get_by_sobject(parent)
         else:
-            my.process = my.get_option('process')
+            self.process = self.get_option('process')
             search_key = SearchKey.get_by_sobject(sobject)
 
 
-        checkout_script_path = my.get_option("checkout_script_path")
-        checkout_panel_script_path = my.get_option("checkout_panel_script_path")
-        lock_process = my.get_option("lock_process")
+        checkout_script_path = self.get_option("checkout_script_path")
+        checkout_panel_script_path = self.get_option("checkout_panel_script_path")
+        lock_process = self.get_option("lock_process")
         if not checkout_script_path:
             checkout_script_path = ''
         if not checkout_panel_script_path:
@@ -720,19 +720,19 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
 
         # FIXME: this does not get passed through 'cuz get_display is overridden here
         # so passed in directly in the script below
-        my.behavior['checkout_panel_script_path'] = checkout_panel_script_path
-        my.behavior['checkout_script_path'] = checkout_script_path
-        my.behavior['process'] = my.process
-        my.behavior['context'] = my.context
+        self.behavior['checkout_panel_script_path'] = checkout_panel_script_path
+        self.behavior['checkout_script_path'] = checkout_script_path
+        self.behavior['process'] = self.process
+        self.behavior['context'] = self.context
 
-        my.behavior['lock_process'] = lock_process
-        my.behavior['search_key'] = search_key
-        my.behavior['snapshot_code'] = snapshot_code
-        my.behavior['sandbox_dir'] = sandbox_dir
+        self.behavior['lock_process'] = lock_process
+        self.behavior['search_key'] = search_key
+        self.behavior['snapshot_code'] = snapshot_code
+        self.behavior['sandbox_dir'] = sandbox_dir
 
-        my.behavior['transfer_mode'] = transfer_mode
+        self.behavior['transfer_mode'] = transfer_mode
 
-        #layout_wdg = my.get_layout_wdg()
+        #layout_wdg = self.get_layout_wdg()
         #state = layout_wdg.get_state()
 
         cbjs_action = '''
@@ -848,19 +848,19 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
             }
 
         }
-        ''' % (my.behavior)
+        ''' % (self.behavior)
 
-        my.behavior['type'] = 'click_up'
-        my.behavior['cbjs_action'] = cbjs_action
+        self.behavior['type'] = 'click_up'
+        self.behavior['cbjs_action'] = cbjs_action
 
-        icon.add_behavior(my.behavior)
+        icon.add_behavior(self.behavior)
 
         return top
 
 class RecipientElementWdg(BaseTableElementWdg):
 
-    def get_logins(my):
-        sobject = my.get_current_sobject()
+    def get_logins(self):
+        sobject = self.get_current_sobject()
         id = sobject.get_id()
 
         search = Search("sthpw/notification_login")
@@ -868,8 +868,8 @@ class RecipientElementWdg(BaseTableElementWdg):
         notification_logins = search.get_sobjects()
         return notification_logins
     
-    def get_display(my):
-        notification_logins = my.get_logins()
+    def get_display(self):
+        notification_logins = self.get_logins()
 
         table = Table()
         table.add_color("color", "color")
@@ -883,9 +883,9 @@ class RecipientElementWdg(BaseTableElementWdg):
 
         return table
 
-    def get_text_value(my):
+    def get_text_value(self):
         name_list = []
-        notification_logins = my.get_logins()
+        notification_logins = self.get_logins()
         for notification_login in notification_logins:
             type = notification_login.get_value("type")
             user = notification_login.get_value("login")

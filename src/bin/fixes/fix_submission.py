@@ -24,10 +24,10 @@ from pyasm.prod.biz import Submission
 
 
 class MoveSubmissionCmd(Command):
-    def get_title(my):
+    def get_title(self):
         return "Move Submission"
 
-    def execute(my):
+    def execute(self):
 
         search = Search(Submission)
         search.set_show_retired(True)

@@ -33,31 +33,31 @@ from tactic_client_lib import TacticServerStub
 class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
     '''Schema Widget'''
 
-    def get_group_type(my):
+    def get_group_type(self):
         return "schema"
 
-    def get_node_type(my):
+    def get_node_type(self):
         return "search_type"
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_schema_tool_top")
         top.add_class("spt_pipeline_editor_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_style("margin: -1")
 
         inner = DivWdg()
         top.add(inner)
 
 
-        my.properties_dialog = DialogWdg(display=False, offset={'x': 0,'y':0}, show_pointer=False)
-        #inner.add( my.properties_dialog )
-        my.properties_dialog_id = my.properties_dialog.get_id()
-        my.properties_dialog.add_title("Edit Properties")
+        self.properties_dialog = DialogWdg(display=False, offset={'x': 0,'y':0}, show_pointer=False)
+        #inner.add( self.properties_dialog )
+        self.properties_dialog_id = self.properties_dialog.get_id()
+        self.properties_dialog.add_title("Edit Properties")
 
         connector_wdg = DivWdg()
-        my.properties_dialog.add(connector_wdg)
+        self.properties_dialog.add(connector_wdg)
         connector_wdg.add_class("spt_schema_connector_info")
         connector_wdg.add_style("padding: 10px")
         connector_wdg.add("Please select a node or connector.")
@@ -70,8 +70,8 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         inner.add_color("background", "background")
         inner.add_border()
 
-        #dialog = my.get_create_dialog()
-        inner.add( my.get_shelf_wdg() )
+        #dialog = self.get_create_dialog()
+        inner.add( self.get_shelf_wdg() )
 
         #inner.add(dialog)
 
@@ -84,13 +84,13 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         canvas_wrapper = DivWdg()
         td = table.add_cell(canvas_wrapper)
         canvas_wrapper.add_class("spt_pipeline_wrapper")
-        canvas = my.get_canvas()
-        my.unique_id = canvas.get_unique_id()
+        canvas = self.get_canvas()
+        self.unique_id = canvas.get_unique_id()
         canvas_wrapper.add( canvas )
 
         table.add_row()
         td = table.add_cell()
-        td.add(my.get_tab_wdg() )
+        td.add(self.get_tab_wdg() )
 
         project = Project.get()
         current_project =project
@@ -128,7 +128,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
                     raise SearchException("No table")
 
                 exists[search_type] = True
-            except SearchException, e:
+            except SearchException as  e:
                 not_exists[search_type] = True
 
 
@@ -189,12 +189,12 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         # open connection dialog everytime a connection is made
 
-        event_name = "%s|connector_create" % my.unique_id
+        event_name = "%s|connector_create" % self.unique_id
 
         div.add_behavior( {
         'type': 'listen',
         'event_name': event_name,
-        'dialog_id': my.properties_dialog_id,
+        'dialog_id': self.properties_dialog_id,
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         var wrapper = top.getElement(".spt_pipeline_wrapper");
@@ -233,7 +233,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         project_type = project.get_value("type")
 
         # open connection dialog everytime a connection is made
-        event_name = "%s|node_create" % my.unique_id
+        event_name = "%s|node_create" % self.unique_id
 
         # Note this goes through every node, every time?
         div.add_behavior( {
@@ -319,7 +319,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
 
         # listen to the stype|select event
-        bgcolor = my.top.get_color("background")
+        bgcolor = self.top.get_color("background")
         event_name = 'stype|select'
         div.add_behavior( {
         'type': 'listen',
@@ -353,7 +353,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
 
 
-        if my.kwargs.get("is_refresh") == "true":
+        if self.kwargs.get("is_refresh") == "true":
             return inner
         else:
             return top
@@ -361,7 +361,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
 
-    def get_shelf_wdg(my):
+    def get_shelf_wdg(self):
  
         shelf_wdg = DivWdg()
         shelf_wdg.add_style("padding: 5px 5px 0px 5px")
@@ -384,12 +384,12 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
 
-        #my.properties_dialog = DialogWdg(display=False)
-        #my.properties_dialog.add_title("Properties")
+        #self.properties_dialog = DialogWdg(display=False)
+        #self.properties_dialog.add_title("Properties")
         props_div = DivWdg()
-        my.properties_dialog.add(props_div)
+        self.properties_dialog.add(props_div)
         properties_wdg = SchemaPropertyWdg()
-        my.properties_dialog.add(properties_wdg )
+        self.properties_dialog.add(properties_wdg )
 
 
         save_action = ''' 
@@ -429,7 +429,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         '''
 
         shelf_wdg.add_named_listener('schema|save', save_action)
-        button_div = my.get_buttons_wdg();
+        button_div = self.get_buttons_wdg();
         button_div.add_style("float: left")
         shelf_wdg.add(button_div)
 
@@ -444,13 +444,13 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         zoom_div.add_style("padding-left: 5px")
         zoom_div.add_style("padding-right: 15px")
 
-        button_div = my.get_zoom_buttons_wdg();
+        button_div = self.get_zoom_buttons_wdg();
         zoom_div.add(button_div)
         button_div.add_style("margin-left: 10px")
 
         shelf_wdg.add(spacing_divs[1])
 
-        button_div = my.get_action_buttons_wdg();
+        button_div = self.get_action_buttons_wdg();
         button_div.add_style("margin-left: 10px")
         button_div.add_style("float: left")
         shelf_wdg.add(button_div)
@@ -465,7 +465,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         return shelf_wdg
 
 
-    def get_buttons_wdg(my):
+    def get_buttons_wdg(self):
         from pyasm.widget import IconWdg
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 
@@ -598,11 +598,11 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
     """
-    def get_create_dialog(my):
+    def get_create_dialog(self):
 
         dialog = DialogWdg(display=False, offset={'x':-100,'y':0})
         dialog.add_title("Register a new sType")
-        my.dialog_id = dialog.get_id()
+        self.dialog_id = dialog.get_id()
 
         div = DivWdg()
         dialog.add( div )
@@ -612,7 +612,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
 
-    def get_tab_wdg(my):
+    def get_tab_wdg(self):
         project = Project.get()
         project_code = project.get_code()
         project_type = project.get_value("type")
@@ -646,16 +646,16 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         return tab
 
 
-    def get_canvas(my):
-        my.height = my.kwargs.get("height")
-        if not my.height:
-            my.height = 400
-        my.width = my.kwargs.get("width")
-        return SchemaToolCanvasWdg(height=my.height, width=my.width, nob_mode="dynamic", line_mode='line', has_prefix=True, filter_node_name=True)
+    def get_canvas(self):
+        self.height = self.kwargs.get("height")
+        if not self.height:
+            self.height = 400
+        self.width = self.kwargs.get("width")
+        return SchemaToolCanvasWdg(height=self.height, width=self.width, nob_mode="dynamic", line_mode='line', has_prefix=True, filter_node_name=True)
 
 
 
-    def get_action_buttons_wdg(my):
+    def get_action_buttons_wdg(self):
         from pyasm.widget import IconWdg
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 
@@ -743,12 +743,12 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         project_code = Project.get_project_code()
         button = ButtonNewWdg(title="Edit Properties", icon="BS_INFO_SIGN")
-        button.add_dialog(my.properties_dialog)
+        button.add_dialog(self.properties_dialog)
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
         'project_code': project_code,
-        'dialog_id': my.properties_dialog_id,
+        'dialog_id': self.properties_dialog_id,
         'offset': { 'x': 0, 'y': 0 },
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
@@ -810,7 +810,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 class SchemaConnectorWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         project_code = Project.get_project_code()
         project = Project.get()
@@ -822,11 +822,11 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         else:
             namespace = project_code
 
-        my.relationship = my.kwargs.get("relationship")
+        self.relationship = self.kwargs.get("relationship")
 
 
-        left_search_type = my.kwargs.get("from_search_type")
-        right_search_type = my.kwargs.get("to_search_type")
+        left_search_type = self.kwargs.get("from_search_type")
+        right_search_type = self.kwargs.get("to_search_type")
         if left_search_type.find("/") == -1:
             left_search_type = "%s/%s" % ( namespace, left_search_type)
         if right_search_type.find("/") == -1:
@@ -838,11 +838,11 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
       
          
-        my.left_search_type = left_search_type
-        my.right_search_type = right_search_type
+        self.left_search_type = left_search_type
+        self.right_search_type = right_search_type
 
-        left_selected = my.kwargs.get("from_col")
-        right_selected = my.kwargs.get("to_col")
+        left_selected = self.kwargs.get("from_col")
+        right_selected = self.kwargs.get("to_col")
 
         namespace, left_table = left_search_type.split("/")
         namespace, right_table = right_search_type.split("/")
@@ -855,7 +855,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         try:
             left_search_type_sobj = SearchType.get(left_search_type)
             left_columns = SearchType.get_columns(left_search_type)
-        except Exception, e:
+        except Exception as e:
             left_search_type_sobj = SearchType.create("sthpw/search_type")
             left_search_type_sobj.set_value("search_type", left_search_type)
             left_columns = []
@@ -863,7 +863,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         try:
             right_search_type_sobj = SearchType.get(right_search_type)
             right_columns = SearchType.get_columns(right_search_type)
-        except Exception, e:
+        except Exception as e:
             right_search_type_sobj = SearchType.create("sthpw/search_type")
             right_search_type_sobj.set_value("search_type", right_search_type)
             right_columns = []
@@ -873,7 +873,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
        
 
-        my.set_as_panel(div)
+        self.set_as_panel(div)
         div.add_class("spt_connect_top")
         div.add_color("background", "background")
         div.add_color("color", "color")
@@ -938,8 +938,8 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         inner.add(relationship_select)
         #relationship_select.set_option("values", "code")
         relationship_select.set_option("values", "code|many_to_many")
-        if my.relationship:
-            relationship_select.set_value(my.relationship)
+        if self.relationship:
+            relationship_select.set_value(self.relationship)
 
 
         relationship_select.add_behavior( {
@@ -963,20 +963,20 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
         inner.add("<br/><br/>")
 
-        code_wdg = my.get_code_options(left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns)
+        code_wdg = self.get_code_options(left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns)
         inner.add( code_wdg)
 
-        many_wdg = my.get_many_to_many_options(left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns)
+        many_wdg = self.get_many_to_many_options(left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns)
         inner.add( many_wdg)
 
-        if my.relationship == "many_to_many":
+        if self.relationship == "many_to_many":
             code_wdg.add_style("display: none")
         else:
             many_wdg.add_style("display: none")
 
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return div
@@ -986,7 +986,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
 
 
-    def get_code_options(my, left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns):
+    def get_code_options(self, left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns):
 
         div = DivWdg()
         div.add_class("spt_code");
@@ -1101,11 +1101,11 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
         hidden = HiddenWdg("left_search_type")
         div.add(hidden)
-        hidden.set_value(my.left_search_type)
+        hidden.set_value(self.left_search_type)
 
         hidden = HiddenWdg("right_search_type")
         div.add(hidden)
-        hidden.set_value(my.right_search_type)
+        hidden.set_value(self.right_search_type)
 
 
 
@@ -1115,8 +1115,8 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         switch = SingleButtonWdg(title="Switch", icon=IconWdg.UNDO)
         switch.add_behavior( {
             'type': 'click_up',
-            'left_search_type': my.left_search_type,
-            'right_search_type': my.right_search_type,
+            'left_search_type': self.left_search_type,
+            'right_search_type': self.right_search_type,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_connect_top");
 
@@ -1203,7 +1203,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
             selected = False
             if column == left_selected:
                 selected = True
-            column_div = my.get_column_wdg(column, selected)
+            column_div = self.get_column_wdg(column, selected)
             left.add(column_div)
 
         if not left_search_type_sobj:
@@ -1235,7 +1235,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
             selected = False
             if column == right_selected:
                 selected = True
-            column_div = my.get_column_wdg(column, selected)
+            column_div = self.get_column_wdg(column, selected)
             right.add(column_div)
 
         if not right_search_type_sobj:
@@ -1247,7 +1247,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         return div
 
 
-    def get_column_wdg(my, column, selected=False):
+    def get_column_wdg(self, column, selected=False):
         column_div = DivWdg()
         column_div.add_style("padding: 2px")
         column_div.add_class("spt_connect_column")
@@ -1301,7 +1301,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
 
 
-    def get_many_to_many_options(my, left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns):
+    def get_many_to_many_options(self, left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns):
 
         div = DivWdg()
         div.add_class("spt_many_to_many");
@@ -1487,13 +1487,13 @@ spt.relationship.create_many_to_many = function(instance) {
 
 class SchemaPropertyWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
         div.add_class("spt_schema_properties_top")
 
-        search_type = my.kwargs.get("search_type")
-        schema_code = my.kwargs.get("schema_code")
+        search_type = self.kwargs.get("search_type")
+        schema_code = self.kwargs.get("schema_code")
 
         schema = Schema.get_by_code(schema_code)
         if not schema:
@@ -1551,7 +1551,7 @@ class SchemaPropertyWdg(BaseRefreshWdg):
 
         table.add_behavior( {
         'type': 'load',
-        'cbjs_action': my.get_onload_js()
+        'cbjs_action': self.get_onload_js()
         } )
 
         
@@ -1597,7 +1597,7 @@ class SchemaPropertyWdg(BaseRefreshWdg):
 
         return div
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 spt.schema_properties = {};
@@ -1640,11 +1640,11 @@ spt.schema_properties.set_properties = function() {
 
 class SchemaConnectorCbk(Command):
 
-    def execute(my):
-        right_search_type = my.kwargs.get('right_search_type')
-        right = my.kwargs.get('right')
-        left_search_type = my.kwargs.get('left_search_type')
-        left = my.kwargs.get('left')
+    def execute(self):
+        right_search_type = self.kwargs.get('right_search_type')
+        right = self.kwargs.get('right')
+        left_search_type = self.kwargs.get('left_search_type')
+        left = self.kwargs.get('left')
         col_type = 'varchar(256)'
 
         server = TacticServerStub.get() 
@@ -1779,11 +1779,11 @@ class SchemaConnectorCbk(Command):
 
 class SchemaManyToManyCbk(Command):
 
-    def execute(my):
-        right_search_type = my.kwargs.get('right_search_type')
-        right = my.kwargs.get('right')
-        left_search_type = my.kwargs.get('left_search_type')
-        left = my.kwargs.get('left')
+    def execute(self):
+        right_search_type = self.kwargs.get('right_search_type')
+        right = self.kwargs.get('right')
+        left_search_type = self.kwargs.get('left_search_type')
+        left = self.kwargs.get('left')
 
         instance_type = "xxx/xxx"
 
@@ -1811,13 +1811,13 @@ class SchemaManyToManyCbk(Command):
 
 class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
 
-    def get_node_size(my):
+    def get_node_size(self):
         width = 100
         height = 50
         return width, height
 
 
-    def get_extra_node_content_wdg(my):
+    def get_extra_node_content_wdg(self):
         icon = IconWdg("Expand", IconWdg.CONTENTS)
         icon.add_style("position: absolute")
         icon.add_style("top: 2px")
@@ -1859,11 +1859,11 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
         return icon
 
 
-    def get_node_behaviors(my):
+    def get_node_behaviors(self):
         return []
 
-    def get_canvas_behaviors(my):
-        bgcolor = my.top.get_color("background")
+    def get_canvas_behaviors(self):
+        bgcolor = self.top.get_color("background")
         return [
         {
         'type': 'click_up',
@@ -1919,11 +1919,11 @@ class SchemaToolCanvasWdg(PipelineToolCanvasWdg):
         """
 
 
-    def get_node_context_menu(my):
+    def get_node_context_menu(self):
 
-        #dialog_id = my.kwargs.get('dialog_id')
+        #dialog_id = self.kwargs.get('dialog_id')
 
-        #menu = super(PipelineToolCanvasWdg, my).get_node_context_menu()
+        #menu = super(PipelineToolCanvasWdg, self).get_node_context_menu()
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -2315,10 +2315,10 @@ __all__.append('SchemaSaveCmd')
 from pyasm.command import Command
 class SchemaSaveCmd(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "SchemaSaveCmd"
 
-    def execute(my):
+    def execute(self):
         # save the schema
 
         # go through each connection and ensure that there are the following
@@ -2336,8 +2336,8 @@ class SchemaSaveCmd(Command):
         # foreign key
         # photos.store_code -> store.code
 
-        from_search_type = my.kwargs.get("from_search_type")
-        to_search_type = my.kwargs.get("to_search_type")
+        from_search_type = self.kwargs.get("from_search_type")
+        to_search_type = self.kwargs.get("to_search_type")
         if from_search_type.find("/") == -1:
             from_search_type = "%s/%s" % (namespace, from_search_type)
         if to_search_type.find("/") == -1:
@@ -2354,11 +2354,11 @@ class SchemaSaveCmd(Command):
         if not from_search_type_obj:
             creator = SearchTypeCreatorCmd(search_type_name=from_search_type, sobject_parent=to_search_type)
             creator.execute()
-            my.add_description('Saving Schema info with %s' %from_search_type)
+            self.add_description('Saving Schema info with %s' %from_search_type)
         if not to_search_type_obj:
             creator = SearchTypeCreatorCmd(search_type_name=to_search_type)
             creator.execute()
-            my.add_description('Saving Schema info with %s' %to_search_type)
+            self.add_description('Saving Schema info with %s' %to_search_type)
 
         return
 

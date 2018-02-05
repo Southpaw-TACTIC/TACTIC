@@ -19,57 +19,57 @@ from command import *
 
 class RetireCmd(Command):
 
-    def __init__(my, **kwargs):
-        super(RetireCmd, my).__init__(**kwargs)
-        my.search_type = my.kwargs.get('search_type')
-        my.search_id =  my.kwargs.get('search_id')
+    def __init__(self, **kwargs):
+        super(RetireCmd, self).__init__(**kwargs)
+        self.search_type = self.kwargs.get('search_type')
+        self.search_id =  self.kwargs.get('search_id')
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
-    def set_search_id(my, search_id):
-        my.search_id = search_id
+    def set_search_id(self, search_id):
+        self.search_id = search_id
 
-    def get_title(my):
+    def get_title(self):
         return "Retire"
 
-    def execute(my):
+    def execute(self):
         
-        sobject = Search.get_by_id(my.search_type, my.search_id)
+        sobject = Search.get_by_id(self.search_type, self.search_id)
         sobject.retire()
 
-        search_type_desc = SearchType.get(my.search_type).get_title()
-        my.add_description("Retired [%s] of type [%s] " % (sobject.get_code(), \
+        search_type_desc = SearchType.get(self.search_type).get_title()
+        self.add_description("Retired [%s] of type [%s] " % (sobject.get_code(), \
                 
             search_type_desc))
 
-    def check(my):
+    def check(self):
         
-        if not my.search_type or not my.search_id:
+        if not self.search_type or not self.search_id:
             # try the web
             from pyasm.web import WebContainer
             web = WebContainer.get_web()
-            my.search_type = web.get_form_value('search_type')
-            my.search_id = web.get_form_value('search_id')
-            if not my.search_type or not my.search_id:
+            self.search_type = web.get_form_value('search_type')
+            self.search_id = web.get_form_value('search_id')
+            if not self.search_type or not self.search_id:
                 raise CommandException("search type or search id is empty")
         return True
 
-    def check_security(my):
+    def check_security(self):
         '''give the command a callback that allows it to check security'''
         return True
 
 
 class ReactivateCmd(RetireCmd):
     '''Reactivate an sobject '''
-    def get_title(my):
+    def get_title(self):
         return "Reactivate"
 
-    def execute(my):
+    def execute(self):
         
-        sobject = Search.get_by_id(my.search_type, my.search_id)
+        sobject = Search.get_by_id(self.search_type, self.search_id)
         sobject.reactivate()
-        my.add_description("Reactivated '%s' '%s'" % (my.search_type, my.search_id))
+        self.add_description("Reactivated '%s' '%s'" % (self.search_type, self.search_id))
 
 
 
@@ -78,40 +78,40 @@ class ReactivateCmd(RetireCmd):
 class DeleteCmd(Command):
     '''Base class for all command'''
 
-    def __init__(my):
-        super(DeleteCmd,my).__init__()
-        my.search_type = ""
-        my.search_id = ""
+    def __init__(self):
+        super(DeleteCmd,self).__init__()
+        self.search_type = ""
+        self.search_id = ""
         
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
-    def set_search_id(my, search_id):
-        my.search_id = search_id
+    def set_search_id(self, search_id):
+        self.search_id = search_id
 
-    def check(my):
+    def check(self):
         return True
     
-    def execute(my):
-        if not my.search_type or not my.search_id:
+    def execute(self):
+        if not self.search_type or not self.search_id:
             # try the web
             from pyasm.web import WebContainer
             web = WebContainer.get_web()
-            my.search_type = web.get_form_value('search_type')
-            my.search_id = web.get_form_value('search_id')
-            if not my.search_type or not my.search_id:
+            self.search_type = web.get_form_value('search_type')
+            self.search_id = web.get_form_value('search_id')
+            if not self.search_type or not self.search_id:
                 raise CommandException("search type or search id is empty")
-        sobject = Search.get_by_id(my.search_type, my.search_id)
+        sobject = Search.get_by_id(self.search_type, self.search_id)
         sobject.delete()
 
-        search_type_desc = SearchType.get(my.search_type).get_title()
-        my.add_description("Deleted [%s] of type [%s] " % (sobject.get_code(), \
+        search_type_desc = SearchType.get(self.search_type).get_title()
+        self.add_description("Deleted [%s] of type [%s] " % (sobject.get_code(), \
             search_type_desc))
 
-    def get_title(my):
+    def get_title(self):
         return "Delete"
 
-    def check_security(my):
+    def check_security(self):
         '''give the command a callback that allows it to check security'''
         return True
 

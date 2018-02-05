@@ -28,12 +28,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         return True
     has_config = classmethod(has_config)
 
-    def set_as_activator(my):
+    def set_as_activator(self):
         pass
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_switcher_top")
         
         '''
@@ -45,7 +45,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
           <!-- config_xml -->
           <config>
             <!-- Menu item 1 -->
-            <element name="my_tasks_default" title="My Tasks" target=spt_my_tasks_table_top">
+            <element name="self_tasks_default" title="My Tasks" target=spt_my_tasks_table_top">
               <display class="tactic.ui.panel.ViewPanelWdg">
                 <search_type>sthpw/task</search_type>
                 <show_shelf>false</show_shelf>
@@ -64,15 +64,15 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         use_href - updates address bar hash (this is TODO)
         '''
         
-        menu = my.kwargs.get("menu")
-        config_xml = my.kwargs.get("config_xml")
-        target = my.kwargs.get("target")
+        menu = self.kwargs.get("menu")
+        config_xml = self.kwargs.get("config_xml")
+        target = self.kwargs.get("target")
 
         #default
-        default_layout = my.kwargs.get("default_layout")
+        default_layout = self.kwargs.get("default_layout")
 
         # find the save state value, if state is to be saved
-        save_state = my.kwargs.get("save_state")
+        save_state = self.kwargs.get("save_state")
 
         if save_state in [False, 'false']:
             save_state = None
@@ -86,19 +86,19 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         elif default_layout:
             state_value = default_layout
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title and state_value:
             title = state_value
         if not title:
             title = "Switch Layout"
 
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         if mode == "button":
-            color = my.kwargs.get("color") or "default"
+            color = self.kwargs.get("color") or "default"
             activator = DivWdg("<button class='btn btn-%s dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
         elif mode == "div":
-            color = my.kwargs.get("color") or ""
-            background = my.kwargs.get("background") or "transparent"
+            color = self.kwargs.get("color") or ""
+            background = self.kwargs.get("background") or "transparent"
             activator = DivWdg("<button class='btn dropdown-toggle' style='width: 160px; background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
 
         else:
@@ -215,11 +215,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             simple_sidebar = SimpleSideBarWdg(view=menu, search_type="SidebarWdg", target=target) 
             menu_wdg.add(simple_sidebar)
         else:
-            style = my.get_style()
+            style = self.get_style()
             top.add(style)
             
-            my.view = 'tab'
-            config = WidgetConfig.get(view=my.view, xml=config_xml)
+            self.view = 'tab'
+            config = WidgetConfig.get(view=self.view, xml=config_xml)
             element_names = config.get_element_names()
 
             if not element_names:
@@ -332,7 +332,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         return top
 
 
-    def get_style(my):
+    def get_style(self):
         '''Default style used when menu switcher is defined from config_xml'''
 
         style = HtmlElement.style('''

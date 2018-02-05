@@ -24,7 +24,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 class SObjectSerializer(object):
 
-    def dumps(my, sobjects):
+    def dumps(self, sobjects):
         sobject_list = []
 
         for sobject in sobjects:
@@ -35,7 +35,7 @@ class SObjectSerializer(object):
         return sobjects_str
 
 
-    def loads(my, search_type, sobjects_str):
+    def loads(self, search_type, sobjects_str):
         sobject_list = jsonloads(sobjects_str)
 
         sobjects = []
@@ -53,9 +53,9 @@ class SObjectSerializer(object):
 
 
 
-    def create_config_xml(my, search_type, sobjects, element_names=[]):
+    def create_config_xml(self, search_type, sobjects, element_names=[]):
 
-        sobject_str = my.dumps(sobjects)
+        sobject_str = self.dumps(sobjects)
 
         serialized = []
         serialized.append('''<config><custom><element name='custom'>''')
@@ -80,7 +80,7 @@ class SObjectSerializer(object):
 
 class SerializeCmd(Command):
 
-    def save_serialized(my, view, serialized):
+    def save_serialized(self, view, serialized):
 
         category = 'SerialzeWdg'
         search = Search("config/widget_config")
@@ -97,12 +97,12 @@ class SerializeCmd(Command):
         config_sobj.commit()
 
 
-    def execute(my):
+    def execute(self):
 
         # FIXME: This is specific to TableLayoutWdg
-        search_type = my.kwargs.get('search_type')
-        view = my.kwargs.get('view')
-        element_names = my.kwargs.get_element_names()
+        search_type = self.kwargs.get('search_type')
+        view = self.kwargs.get('view')
+        element_names = self.kwargs.get_element_names()
         if type(element_names) in types.StringTypes:
             element_names = element_names.split("|")
 
@@ -117,7 +117,7 @@ class SerializeCmd(Command):
 
 
 class SerializeWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
 
         category = 'SerializeWdg'
         view = '123COW'
@@ -143,7 +143,7 @@ class SerializeWdg(BaseRefreshWdg):
         print sobjects
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         print top.attrs
 
         from pyasm.widget import WidgetConfig

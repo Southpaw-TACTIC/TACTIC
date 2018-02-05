@@ -2167,6 +2167,7 @@ spt.dg_table.is_embedded = function(table){
         is_embedded = true;
        
     }
+    is_embedded = false;
     return is_embedded;
 }
 

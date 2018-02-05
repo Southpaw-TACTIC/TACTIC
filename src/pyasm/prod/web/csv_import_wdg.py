@@ -27,16 +27,16 @@ from tactic.ui.common import BaseRefreshWdg
 
 class CsvImportWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         widget = Widget()
-        widget.add( my.get_first_row_wdg() )
+        widget.add( self.get_first_row_wdg() )
         widget.add(ProgressWdg())
         return widget
 
 
 
 
-    def get_upload_wdg(my):
+    def get_upload_wdg(self):
         widget = Widget()
 
         # get the search type
@@ -85,9 +85,9 @@ class CsvImportWdg(BaseRefreshWdg):
         widget.add(search_type_select)
         
 
-        my.search_type = search_type_select.get_value()
-        if my.search_type:
-            sobj = SObjectFactory.create(my.search_type)
+        self.search_type = search_type_select.get_value()
+        if self.search_type:
+            sobj = SObjectFactory.create(self.search_type)
             required_columns = sobj.get_required_columns()
             
             widget.add(SpanWdg("Required Columns: ", css='med'))
@@ -112,41 +112,41 @@ class CsvImportWdg(BaseRefreshWdg):
 
             files = upload.get_files()
             if files:
-                my.file_path = files[0]
+                self.file_path = files[0]
             else:
-                my.file_path = web.get_form_value("file_path")
+                self.file_path = web.get_form_value("file_path")
 
 
-        if my.file_path:
-            hidden = HiddenWdg("file_path", my.file_path)
+        if self.file_path:
+            hidden = HiddenWdg("file_path", self.file_path)
             widget.add(hidden)
 
         return widget
 
 
 
-    def get_first_row_wdg(my):
+    def get_first_row_wdg(self):
 
         # read the csv file
-        my.file_path = ""
+        self.file_path = ""
 
         div = DivWdg()
 
-        div.add( my.get_upload_wdg() )
+        div.add( self.get_upload_wdg() )
 
-        if not my.search_type:
+        if not self.search_type:
             return div
 
-        if not my.file_path:
+        if not self.file_path:
             return div
 
 
-        if not my.file_path.endswith(".csv"):
-            div.add( "Uploaded file [%s] is not a csv file"% my.file_path)
+        if not self.file_path.endswith(".csv"):
+            div.add( "Uploaded file [%s] is not a csv file"% self.file_path)
             return div
 
-        if not os.path.exists(my.file_path):
-            raise Exception("Path '%s' does not exists" % my.file_path)
+        if not os.path.exists(self.file_path):
+            raise Exception("Path '%s' does not exists" % self.file_path)
 
         div.add(HtmlElement.br(2))
 
@@ -160,7 +160,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
         option_div.add("<p>3. Parsing Options:</p>")
 
-        my.search_type_obj = SearchType.get(my.search_type)
+        self.search_type_obj = SearchType.get(self.search_type)
 
 
         # first row and second row
@@ -182,12 +182,12 @@ class CsvImportWdg(BaseRefreshWdg):
         
        
         div.add(option_div)
-        my.has_title = title_row_checkbox.is_checked()
+        self.has_title = title_row_checkbox.is_checked()
         
         
         # parse the first fow
-        csv_parser = CsvParser(my.file_path)
-        if my.has_title:
+        csv_parser = CsvParser(self.file_path)
+        if self.has_title:
             csv_parser.set_has_title_row(True)
         else:
             csv_parser.set_has_title_row(False)
@@ -221,8 +221,8 @@ class CsvImportWdg(BaseRefreshWdg):
         table.add_header("TACTIC Column")
         table.add_header("Create New Column")
         
-        columns = my.search_type_obj.get_columns()
-        search_type = my.search_type_obj.get_base_search_type()
+        columns = self.search_type_obj.get_columns()
+        search_type = self.search_type_obj.get_base_search_type()
         sobj = SObjectFactory.create(search_type)
         required_columns = sobj.get_required_columns()
         
@@ -273,7 +273,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 text = TextWdg("new_column_%s" % j)
                 text.set_persist_on_submit()
 
-                if my.has_title:
+                if self.has_title:
                     text.set_value(csv_titles[j])
 
 
@@ -281,8 +281,8 @@ class CsvImportWdg(BaseRefreshWdg):
                 new_column_div.add( text )
 
 
-        my.num_columns = len(row)
-        hidden = HiddenWdg("num_columns", my.num_columns)
+        self.num_columns = len(row)
+        hidden = HiddenWdg("num_columns", self.num_columns)
 
 
         # need to somehow specify defaults for columns
@@ -293,19 +293,19 @@ class CsvImportWdg(BaseRefreshWdg):
         div.add("<br/><br/>")
 
 
-        div.add(my.get_preview_wdg())
+        div.add(self.get_preview_wdg())
 
 
         return div          
                     
 
-    def get_preview_wdg(my):
+    def get_preview_wdg(self):
 
         widget = Widget()
 
         web = WebContainer.get_web()
 
-        csv_parser = CsvParser(my.file_path)
+        csv_parser = CsvParser(self.file_path)
         csv_parser.parse()
         csv_titles = csv_parser.get_titles()
         csv_data = csv_parser.get_data()
@@ -313,8 +313,8 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
         ajax = AjaxCmd()
-        ajax.set_option("search_type", my.search_type)
-        ajax.set_option("file_path", my.file_path)
+        ajax.set_option("search_type", self.search_type)
+        ajax.set_option("file_path", self.file_path)
         ajax.add_element_name("has_title")
 
         event = WebContainer.get_event_container()
@@ -350,7 +350,7 @@ class CsvImportWdg(BaseRefreshWdg):
         preview_submit.add_style("float: right")
         widget.add(preview_submit)
 
-        sobject_title = my.search_type_obj.get_title()
+        sobject_title = self.search_type_obj.get_title()
         widget.add("<p>4. Import</p>")
         widget.add(HtmlElement.br())
         widget.add("<p>The following table will be imported into %s (Showing Max: 100)</p>" % sobject_title)

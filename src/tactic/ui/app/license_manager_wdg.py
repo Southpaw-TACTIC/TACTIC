@@ -28,20 +28,20 @@ from tactic.ui.input import UploadButtonWdg
 class LicenseManagerWdg(BaseRefreshWdg):
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         
         return {'allow_close': 'Allow user to close it when he is done in the Admin site'}
 
-    def init(my):
-        my.allow_close = 'false'
-        if my.kwargs.get('allow_close') == 'true':
-            my.allow_close = 'true'
+    def init(self):
+        self.allow_close = 'false'
+        if self.kwargs.get('allow_close') == 'true':
+            self.allow_close = 'true'
 
  
 
-    def get_display(my):
+    def get_display(self):
 
-        use_popup = my.kwargs.get("use_popup")
+        use_popup = self.kwargs.get("use_popup")
         if use_popup in [True, 'true']:
             use_popup = True
         else:
@@ -49,14 +49,14 @@ class LicenseManagerWdg(BaseRefreshWdg):
 
 
         div = DivWdg()
-        content = my.get_content()
+        content = self.get_content()
         content.add_style("width: 600px")
         content.add_style("margin-left: auto")
         content.add_style("margin-right: auto")
         
         from tactic.ui.container import PopupWdg
         if use_popup:
-            popup = PopupWdg(id="LicenseManagerWdg", width="500px", allow_page_activity="false", display='true', zstart=10000, allow_close=my.allow_close)
+            popup = PopupWdg(id="LicenseManagerWdg", width="500px", allow_page_activity="false", display='true', zstart=10000, allow_close=self.allow_close)
             popup.add("License Manager", "title")
 
             popup.add(content, "content")
@@ -82,7 +82,7 @@ class LicenseManagerWdg(BaseRefreshWdg):
         return div
 
 
-    def get_content(my):
+    def get_content(self):
 
         content = DivWdg()
         content.add_style("font-size: 1.2em")
@@ -94,12 +94,12 @@ class LicenseManagerWdg(BaseRefreshWdg):
         error_msg = license.get_message()
 
         if error_msg.startswith("Cannot find license file"):
-            my.first_error = True
+            self.first_error = True
         else:
-            my.first_error = False
+            self.first_error = False
 
-        if my.first_error:
-            message = my.get_welcome_wdg(error_msg)
+        if self.first_error:
+            message = self.get_welcome_wdg(error_msg)
             content.add(message)
             content.add_style("width: auto")
             content.add_gradient("background", "background", 0, -3)
@@ -130,12 +130,12 @@ class LicenseManagerWdg(BaseRefreshWdg):
             content.add_behavior(behavior)
  
 
-        content.add( my.get_license_info_wdg() )
+        content.add( self.get_license_info_wdg() )
 
 
         security = Environment.get_security()
         if security.is_admin():
-            if not my.first_error: 
+            if not self.first_error: 
                 content.add("<hr/>")
                 content.add("<br/>")
                 content.add("Please verify the license or upload a new one:")
@@ -157,11 +157,11 @@ class LicenseManagerWdg(BaseRefreshWdg):
         return content
 
 
-    def get_license_info_wdg(my):
+    def get_license_info_wdg(self):
         div = DivWdg()
 
         license = Environment.get_security().get_license()
-        if my.first_error:
+        if self.first_error:
             return div
         #if not license.is_licensed():
         #    return div
@@ -221,7 +221,7 @@ class LicenseManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_welcome_wdg(my, error_msg):
+    def get_welcome_wdg(self, error_msg):
         div = DivWdg()
         div.add_style("text-align: center")
         div.add_style("padding: 20px")
@@ -263,12 +263,12 @@ class LicenseManagerWdg(BaseRefreshWdg):
 
 
 class LicenseUploadWdg(BaseRefreshWdg):
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'key': 'the key to the this upload widget'
         }
         
-    def get_display(my):
+    def get_display(self):
         key = "LicenseManager"
 
         div = DivWdg()
@@ -328,22 +328,22 @@ class RenewLicenseCbk(Command):
     INPUT_NAME="Renew_License"
     BUTTON_NAME = "Renew License"
 
-    def get_title(my):
+    def get_title(self):
         return "Renew License"
 
 
-    def check(my):
+    def check(self):
         return True
 
-    def get_web(my):
+    def get_web(self):
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
         return web
 
-    def execute(my):
-        web = my.get_web()
+    def execute(self):
+        web = self.get_web()
         keys = web.get_form_keys()
-        file_name = my.kwargs.get("file_name")
+        file_name = self.kwargs.get("file_name")
 
         # process and get the uploaded files
         dir = Environment.get_upload_dir()
@@ -364,7 +364,7 @@ class RenewLicenseCbk(Command):
             FileUndo.remove(current_license)
         FileUndo.move(license_file, current_license)
 
-        my.add_description('Renewed license file')
+        self.add_description('Renewed license file')
         security = Environment.get_security()
         security.reread_license()
 

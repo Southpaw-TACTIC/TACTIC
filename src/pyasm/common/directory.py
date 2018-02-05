@@ -20,39 +20,39 @@ from config import Config
 class Directory(object):
     '''Implementation of a virtual directory'''
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        my.base_dir = my.kwargs.get("base_dir")
-        if my.base_dir:
-            my.base_dir = my.base_dir.replace("\\", "/")
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.base_dir = self.kwargs.get("base_dir")
+        if self.base_dir:
+            self.base_dir = self.base_dir.replace("\\", "/")
 
-        my.depth = my.kwargs.get("depth")
-        if isinstance(my.depth, basestring):
-            my.depth = int(my.depth)
-        if not my.depth:
-            my.depth = 0
+        self.depth = self.kwargs.get("depth")
+        if isinstance(self.depth, basestring):
+            self.depth = int(self.depth)
+        if not self.depth:
+            self.depth = 0
 
-        my.paths = my.kwargs.get("paths")
-        if my.paths == None:
-            my.paths = my.read_file_system()
+        self.paths = self.kwargs.get("paths")
+        if self.paths == None:
+            self.paths = self.read_file_system()
 
-        my.paths.sort()
+        self.paths.sort()
 
         # organize the paths into a dictionary structure
-        my.organize(my.paths)
+        self.organize(self.paths)
 
 
-    def get_all_paths(my):
-        return my.paths
+    def get_all_paths(self):
+        return self.paths
 
 
 
-    def find(my, path, use_full_path=True):
+    def find(self, path, use_full_path=True):
         path = path.rstrip("/")
         parts = path.split("/")
 
         paths = []
-        cur = my.data_graph
+        cur = self.data_graph
 
         for part in parts:
             if part == '':
@@ -65,13 +65,13 @@ class Directory(object):
             full_path = None
 
         parts = []
-        my._find(cur, full_path, paths)
+        self._find(cur, full_path, paths)
         return paths
 
 
 
 
-    def _find(my, cur, full_path, paths):
+    def _find(self, cur, full_path, paths):
         for key, value in cur.items():
             if full_path:
                 tmp_full_path = "%s/%s" % (full_path, key)
@@ -81,11 +81,11 @@ class Directory(object):
             if value.get("__type__") == 'file':
                 paths.append(tmp_full_path)
             else:
-                my._find(value, tmp_full_path, paths)
+                self._find(value, tmp_full_path, paths)
         
 
 
-    def read_file_system(my):
+    def read_file_system(self):
         max_count = 100000
         count = 0
         last_root = None
@@ -94,13 +94,13 @@ class Directory(object):
         #### FIXME: HARD CODED
         ignore_dirs = ['.svn', 'backup']
 
-        for root, xdirs, files in os.walk(unicode(my.base_dir)):
+        for root, xdirs, files in os.walk(unicode(self.base_dir)):
 
-            if my.depth != -1:
-                test = root.replace(my.base_dir, "")
+            if self.depth != -1:
+                test = root.replace(self.base_dir, "")
                 test = test.strip("/")
                 parts = test.split("/")
-                if len(parts) > my.depth + 1:
+                if len(parts) > self.depth + 1:
                     for xdir in xdirs:
                         xdirs.remove(xdir)
                     continue
@@ -127,7 +127,7 @@ class Directory(object):
                     break
 
             # special consideration for when depth is 0
-            if my.depth == 0:
+            if self.depth == 0:
                 break
 
             if count > max_count:
@@ -138,18 +138,18 @@ class Directory(object):
 
 
 
-    def organize(my, paths):
+    def organize(self, paths):
         #dir_list = [x for x in paths]
         #dir_list.reverse()
 
-        my.data_graph = {}
+        self.data_graph = {}
 
         count = 0
         for path in paths:
 
             parts = path.split("/")
             num = len(parts)
-            cur = my.data_graph
+            cur = self.data_graph
             for i, part in enumerate(parts):
                 # skip extra from split on first slash
                 if part == '':

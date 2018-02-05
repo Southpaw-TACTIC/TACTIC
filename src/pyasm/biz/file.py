@@ -54,7 +54,7 @@ if os.name == "nt":
             continue
         else:
             
-            print "ImageMagick found in %s" %exe
+            print("ImageMagick found in %s" %exe)
     if not convert_exe_list:
         # IM might not be in Program Files but may still be in PATH
         try:
@@ -119,17 +119,17 @@ class File(SObject):
 
 
 
-    def get_code(my):
-        return my.get_value("code")
+    def get_code(self):
+        return self.get_value("code")
 
-    def get_file_name(my):
-        return my.get_value("file_name")
+    def get_file_name(self):
+        return self.get_value("file_name")
 
-    def get_file_range(my):
-        return my.get_value("file_range")
+    def get_file_range(self):
+        return self.get_value("file_range")
 
-    def get_type(my):
-        return my.get_value("type")
+    def get_type(self):
+        return self.get_value("type")
 
 
     def get_media_type_by_path(cls, path):
@@ -145,53 +145,53 @@ class File(SObject):
     get_media_type_by_path = classmethod(get_media_type_by_path)
 
 
-    def get_sobject(my):
+    def get_sobject(self):
         '''get the sobject associated with this file'''
-        search = Search(my.get_value("search_type"))
-        search.add_id_filter(my.get_value("search_id"))
+        search = Search(self.get_value("search_type"))
+        search.add_id_filter(self.get_value("search_id"))
         sobject = search.get_sobject()
         return sobject
 
-    def get_full_file_name(my):
+    def get_full_file_name(self):
         '''Gets the full file name.  This is the same as get_file_name'''
-        return my.get_file_name()
+        return self.get_file_name()
 
 
-    def get_lib_dir(my,snapshot=None):
+    def get_lib_dir(self,snapshot=None):
         '''go through the stored snapshot_code to get the actual path'''
-        code = my.get_value("snapshot_code")
+        code = self.get_value("snapshot_code")
         from snapshot import Snapshot
         snapshot = Snapshot.get_by_code(code)
         return snapshot.get_lib_dir()
 
-    def get_env_dir(my,snapshot=None):
+    def get_env_dir(self,snapshot=None):
         '''go through the stored snapshot_code to get the actual path'''
-        code = my.get_value("snapshot_code")
+        code = self.get_value("snapshot_code")
         from snapshot import Snapshot
         snapshot = Snapshot.get_by_code(code)
         return snapshot.get_env_dir()
 
-    def get_web_dir(my,snapshot=None):
+    def get_web_dir(self,snapshot=None):
         '''go through the stored snapshot_code to get the actual path'''
-        code = my.get_value("snapshot_code")
+        code = self.get_value("snapshot_code")
         from snapshot import Snapshot
         snapshot = Snapshot.get_by_code(code)
         return snapshot.get_web_dir()
 
 
 
-    def get_lib_path(my):
-        filename = my.get_full_file_name()
-        return "%s/%s" % (my.get_lib_dir(), filename)
+    def get_lib_path(self):
+        filename = self.get_full_file_name()
+        return "%s/%s" % (self.get_lib_dir(), filename)
 
-    def get_env_path(my):
+    def get_env_path(self):
         '''path beginning with $TACTIC_ASSET_DIR'''
-        filename = my.get_full_file_name()
-        return "%s/%s" % (my.get_env_dir(), filename)
+        filename = self.get_full_file_name()
+        return "%s/%s" % (self.get_env_dir(), filename)
 
-    def get_web_path(my):
-        filename = my.get_full_file_name()
-        return "%s/%s" % (my.get_web_dir(), filename)
+    def get_web_path(self):
+        filename = self.get_full_file_name()
+        return "%s/%s" % (self.get_web_dir(), filename)
 
 
 
@@ -434,7 +434,7 @@ class File(SObject):
 
     def makedirs(dir, mode=None):
         '''wrapper to mkdirs in case it ever needs to be overridden'''
-        print "DEPRECATED: use System().makedirs()"
+        print("DEPRECATED: use System().makedirs()")
         return System().makedirs(dir,mode)
     makedirs = staticmethod(makedirs)
 
@@ -485,7 +485,7 @@ class File(SObject):
             output = value[0].strip()
             if not output:
                 err = value[1]
-                print err
+                print(err)
             
         return output
        
@@ -523,101 +523,101 @@ class IconCreator(object):
     '''Utility class that creates icons of an image or document in the
     same directory as the image'''
 
-    def __init__(my, file_path):
-        my.file_path = file_path
+    def __init__(self, file_path):
+        self.file_path = file_path
 
         # check if it exists
         if not os.path.exists( file_path ):
             raise FileException( \
-                "Error: file [%s] does not exist" % my.file_path )
+                "Error: file [%s] does not exist" % self.file_path )
 
-        my.tmp_dir = os.path.dirname(file_path)
+        self.tmp_dir = os.path.dirname(file_path)
 
-        my.icon_path = None
-        my.web_path = None
+        self.icon_path = None
+        self.web_path = None
 
-        my.texture_mode = False
-        my.icon_mode = False
+        self.texture_mode = False
+        self.icon_mode = False
 
 
 
-    def set_texture_mode(my):
+    def set_texture_mode(self):
         '''texture mode down res is 1/4 size'''
-        my.texture_mode = True
+        self.texture_mode = True
 
-    def set_icon_mode(my):
+    def set_icon_mode(self):
         '''icon mode down res is 1/4 size'''
-        my.icon_mode = True
+        self.icon_mode = True
     
-    def get_icon_path(my):
-        return my.icon_path
+    def get_icon_path(self):
+        return self.icon_path
 
-    def get_web_path(my):
-        return my.web_path
+    def get_web_path(self):
+        return self.web_path
 
 
     
-    def create_icons(my):
-        my.execute()
+    def create_icons(self):
+        self.execute()
 
-    def execute(my):
+    def execute(self):
 
         # check file name
-        file_name = os.path.basename(my.file_path)
+        file_name = os.path.basename(self.file_path)
 
         ext = File.get_extension(file_name)
         type = string.lower(ext)
 
 
         if type == "pdf":
-            my._process_pdf( file_name )
+            self._process_pdf( file_name )
         elif type != "psd" and type in File.NORMAL_EXT:
             # skip icon generation for normal or video files
             pass
         elif type in File.VIDEO_EXT:
             try:
-                my._process_video( file_name )
+                self._process_video( file_name )
             except IOError, e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
-                print "WARNING: ", e.__str__()
+                print("WARNING: ", e.__str__())
                 Environment.add_warning("Unknown file type", e.__str__())
         else:
             # assume it is an image
             try:
-                my._process_image( file_name )
+                self._process_image( file_name )
             except IOError, e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
-                print "WARNING: ", e.__str__()
+                print("WARNING: ", e.__str__())
                 Environment.add_warning("Unknown file type", e.__str__())
 
 
 
 
 
-    def _process_pdf(my, file_name):
+    def _process_pdf(self, file_name):
 
         base, ext = os.path.splitext(file_name)
        
         # naming convetion should take care of inserting a suffix like icon, web
         # but these paths need a unique name
         icon_file_name = base + "_icon.png"
-        tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
+        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
 
-        thumb_web_size = my.get_web_file_size()
+        thumb_web_size = self.get_web_file_size()
         
         web_file_name = base + "_web.png"
-        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
+        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
         if sys.platform == 'darwin':
             return
         else:
             if not Common.which(convert_exe):
                 return
             try:
-                my.file_path = my.file_path.encode('utf-8')
+                self.file_path = self.file_path.encode('utf-8')
                 import shlex, subprocess
-                subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
+                subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%self.file_path,\
                         "%s"%tmp_icon_path]) 
                 
                 # Shrink image based on web_file_size
@@ -629,24 +629,24 @@ class IconCreator(object):
                     pdf_height = thumb_web_size[1]
                 size = '%sx%s>' % (pdf_width, pdf_height)
 
-                subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %my.file_path, "%s"%tmp_web_path]) 
+                subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %self.file_path, "%s"%tmp_web_path]) 
 
-            except Exception, e:
-                print "Error extracting from pdf [%s]" % e
+            except Exception as e:
+                print("Error extracting from pdf [%s]" % e)
                 return
 
         # check that it actually got created
         if os.path.exists(tmp_icon_path):
-            my.icon_path = tmp_icon_path
+            self.icon_path = tmp_icon_path
         else:
-            print "Warning: [%s] did not get created from pdf" % tmp_icon_path
+            print("Warning: [%s] did not get created from pdf" % tmp_icon_path)
 
         if os.path.exists(tmp_web_path):
-            my.web_path = tmp_web_path
+            self.web_path = tmp_web_path
         else:
-            print "Warning: [%s] did not get created from pdf" % tmp_web_path
+            print("Warning: [%s] did not get created from pdf" % tmp_web_path)
 
-    def get_web_file_size(my):
+    def get_web_file_size(self):
         from pyasm.prod.biz import ProdSetting
         web_file_size = ProdSetting.get_value_by_key('web_file_size')
         thumb_size = (640, 480)
@@ -663,11 +663,11 @@ class IconCreator(object):
 
         return thumb_size 
  
-    def _process_video(my, file_name):
+    def _process_video(self, file_name):
         if not HAS_FFMPEG:
             return
 
-        thumb_web_size = my.get_web_file_size()
+        thumb_web_size = self.get_web_file_size()
         thumb_icon_size = (120, 100)
 
         exts = File.get_extensions(file_name)
@@ -676,10 +676,10 @@ class IconCreator(object):
         icon_file_name = "%s_icon.png" % base
         web_file_name = "%s_web.jpg" % base
 
-        tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
-        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
+        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
 
-        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 1 -s %sx%s -vframes 1 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
+        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 1 -s %sx%s -vframes 1 "%s"''' % (ffmpeg, self.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
         #os.system(cmd)
 
         import subprocess
@@ -692,7 +692,7 @@ class IconCreator(object):
             # when necessary. For now, it is necessary to query video size.)
             free_aspect_ratio = thumb_web_size[1] == -1 
             try:
-                command = ["ffprobe", "-print_format", "json", "-select_streams", "v:0", "-show_entries", "stream=height,width",  my.file_path]
+                command = ["ffprobe", "-print_format", "json", "-select_streams", "v:0", "-show_entries", "stream=height,width",  self.file_path]
                 p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = p.communicate()
                 data = jsonloads(out)
@@ -741,41 +741,41 @@ class IconCreator(object):
                     size_option = "-s"
                     size =  "%sx%s" % (thumb_web_size[0], thumb_web_size[1])
 
-            command = [ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1"]
+            command = [ffmpeg_exe, '-i', self.file_path, "-y", "-ss", "00:00:00","-t","1"]
             if size_option and size:
                 command.extend([size_option, size])
             command.extend(["-vframes","1","-f","image2", tmp_web_path])
             subprocess.call(command)
 
             if os.path.exists(tmp_web_path):
-                my.web_path = tmp_web_path
+                self.web_path = tmp_web_path
             else:
-                my.web_path = None
+                self.web_path = None
 
-        except Exception, e:
+        except Exception as e:
 
             Environment.add_warning("Could not process file", \
-                    "%s - %s" % (my.file_path, e.__str__()))
+                    "%s - %s" % (self.file_path, e.__str__()))
             pass
           
         try:
-            subprocess.call([ffmpeg_exe, '-i', my.file_path, "-y", "-ss", "00:00:00","-t","1",\
+            subprocess.call([ffmpeg_exe, '-i', self.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
             
             if os.path.exists(tmp_icon_path):
-                my.icon_path = tmp_icon_path
+                self.icon_path = tmp_icon_path
             else:
-                my.icon_path = None
+                self.icon_path = None
 
-        except Exception, e:
+        except Exception as e:
             Environment.add_warning("Could not process file", \
-                    "%s - %s" % (my.file_path, e.__str__()))
+                    "%s - %s" % (self.file_path, e.__str__()))
             pass
 
-        if (ext == ".gif" and not my.web_path):
-            my._process_image( file_name )
+        if (ext == ".gif" and not self.web_path):
+            self._process_image( file_name )
 
-    def _process_image(my, file_name):
+    def _process_image(self, file_name):
 
         base, ext = os.path.splitext(file_name)
 
@@ -796,77 +796,77 @@ class IconCreator(object):
             icon_file_name = "%s_icon.png" % base
             web_file_name = "%s_web.jpg" % base
 
-        tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
-        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
+        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
 
         # create the web image
         try:
-            if my.texture_mode:
-                my._resize_texture(my.file_path, tmp_web_path, 0.5)
-                my.web_path = tmp_web_path
+            if self.texture_mode:
+                self._resize_texture(self.file_path, tmp_web_path, 0.5)
+                self.web_path = tmp_web_path
 
                 # create the icon
                 thumb_size = (120,100)
                 try:
-                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
+                    self._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
                 except TacticException:
-                    my.icon_path = None
+                    self.icon_path = None
                 else:
-                    my.icon_path = tmp_icon_path
-            elif my.icon_mode: # just icon, no web
+                    self.icon_path = tmp_icon_path
+            elif self.icon_mode: # just icon, no web
                 # create the icon only
                 thumb_size = (120,100)
                 try:
-                    my._resize_image(my.file_path, tmp_icon_path, thumb_size)
+                    self._resize_image(self.file_path, tmp_icon_path, thumb_size)
                 except TacticException:
-                    my.icon_path = None
+                    self.icon_path = None
                 else:
-                    my.icon_path = tmp_icon_path
+                    self.icon_path = tmp_icon_path
 
 
             else:
                 
-                thumb_size = my.get_web_file_size()
+                thumb_size = self.get_web_file_size()
                 
                 try:
-                    my._resize_image(my.file_path, tmp_web_path, thumb_size)
+                    self._resize_image(self.file_path, tmp_web_path, thumb_size)
                 except TacticException:
-                    my.web_path = None
+                    self.web_path = None
                 else:
-                    my.web_path = tmp_web_path
+                    self.web_path = tmp_web_path
 
                 # create the icon
                 thumb_size = (120,100)
                 try:
-                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
+                    self._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
                 except TacticException:
-                    my.icon_path = None
+                    self.icon_path = None
                 else:
-                    my.icon_path = tmp_icon_path
+                    self.icon_path = tmp_icon_path
 
             # check icon file size, reset to none if it is empty
             # TODO: use finally in Python 2.5
-            if my.web_path:
-                web_path_size = os.stat(my.web_path)[stat.ST_SIZE]
+            if self.web_path:
+                web_path_size = os.stat(self.web_path)[stat.ST_SIZE]
                 if not web_path_size:
-                    my.web_path = None
-            if my.icon_path:
-                icon_path_size = os.stat(my.icon_path)[stat.ST_SIZE]
+                    self.web_path = None
+            if self.icon_path:
+                icon_path_size = os.stat(self.icon_path)[stat.ST_SIZE]
                 if not icon_path_size:
-                    my.icon_path = None
+                    self.icon_path = None
         except IOError, e:
             Environment.add_warning("Could not process file", \
-                "%s - %s" % (my.file_path, e.__str__()))
-            my.web_path = None
-            my.icon_path = None
+                "%s - %s" % (self.file_path, e.__str__()))
+            self.web_path = None
+            self.icon_path = None
         
             
 
-    def _extract_frame(my, large_path, small_path, thumb_size):
+    def _extract_frame(self, large_path, small_path, thumb_size):
         pass
 
 
-    def _resize_image(my, large_path, small_path, thumb_size):
+    def _resize_image(self, large_path, small_path, thumb_size):
       
         free_aspect_ratio = thumb_size[1] == -1
 
@@ -895,8 +895,8 @@ class IconCreator(object):
                     try:
                         im = Image.open(large_path)
                         x,y = im.size
-                    except Exception, e:
-                        print "WARNING: ", e
+                    except Exception as e:
+                        print("WARNING: ", e)
                         x = 0
                         y = 0
                     if x < y:
@@ -966,15 +966,15 @@ class IconCreator(object):
             else:
                 raise TacticException('No image manipulation tool installed')
             
-        except Exception, e:
-            print "Error: ", e
+        except Exception as e:
+            print("Error: ", e)
 
         # after these operations, confirm that the icon has been generated
         if not os.path.exists(small_path):
             raise TacticException('Icon generation failed')
 
 
-    def _resize_texture(my, large_path, small_path, scale):
+    def _resize_texture(self, large_path, small_path, scale):
 
         # create the thumbnail
         try:
@@ -1185,49 +1185,49 @@ class FileGroup(File):
 
 class FileRange(object):
 
-    def __init__(my, frame_start=1, frame_end=1, frame_by=1):
-        my.frame_start = frame_start
-        my.frame_end = frame_end
-        my.frame_by = frame_by
+    def __init__(self, frame_start=1, frame_end=1, frame_by=1):
+        self.frame_start = frame_start
+        self.frame_end = frame_end
+        self.frame_by = frame_by
         
         assert(isinstance(frame_start, (int)))
         assert(isinstance(frame_end, (int)))
         assert(isinstance(frame_by, (int)))
 
-    def get_frame_by(my):
-        return my.frame_by
+    def get_frame_by(self):
+        return self.frame_by
 
-    def get_frame_start(my):
-        return my.frame_start
+    def get_frame_start(self):
+        return self.frame_start
 
-    def get_frame_end(my):
-        return my.frame_end
+    def get_frame_end(self):
+        return self.frame_end
 
-    def set_frame_by(my, frame_by):
+    def set_frame_by(self, frame_by):
         assert(isinstance(frame_by, (int)))
-        my.frame_by = frame_by
+        self.frame_by = frame_by
 
   
-    def set_duration(my, duration):
-        my.frame_start = 1
-        my.frame_end = duration
+    def set_duration(self, duration):
+        self.frame_start = 1
+        self.frame_end = duration
 
-    def get_num_frames(my):
-        return (my.frame_end - my.frame_start + 1) / my.frame_by
+    def get_num_frames(self):
+        return (self.frame_end - self.frame_start + 1) / self.frame_by
 
-    def get_key(my):
-        return "%s-%s/%s" % (my.frame_start, my.frame_end, my.frame_by)
+    def get_key(self):
+        return "%s-%s/%s" % (self.frame_start, self.frame_end, self.frame_by)
 
-    def get_display(my):
-        if my.frame_by == 1:
-            return "%s-%s" % (my.frame_start, my.frame_end)
+    def get_display(self):
+        if self.frame_by == 1:
+            return "%s-%s" % (self.frame_start, self.frame_end)
         else:
-            return my.get_key()
+            return self.get_key()
         
 
 
-    def get_values(my):
-        return (my.frame_start, my.frame_end, my.frame_by)
+    def get_values(self):
+        return (self.frame_start, self.frame_end, self.frame_by)
 
 
     # static method
@@ -1270,7 +1270,7 @@ class FileRange(object):
         last_value = None
         padding = None
         for i, file in enumerate(files):
-            print file
+            print(file)
             #parts = re.split(r"[\/\-\.]", file)
             parts = re.split(r"(\d+)", file)
 
@@ -1386,7 +1386,7 @@ class FileRange(object):
 
                 # find the places where the parts are different
                 c = cls._compare(parts, template)
-                #print c, compares[j], c.count("0")
+                #print(c, compares[j], c.count("0"))
                 if not compares[j]:
                     compares[j] = c
 

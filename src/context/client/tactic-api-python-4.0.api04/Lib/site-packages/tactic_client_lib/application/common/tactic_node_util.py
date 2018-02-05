@@ -29,44 +29,44 @@ class TacticNodeUtil(object):
     '''This class encapsulates functionality needed interact with information
     to communicate with any application.'''
 
-    def __init__(my):
+    def __init__(self):
         import maya.standalone
         maya.standalone.initialize( name='python' )
         import maya.cmds, maya.mel
 
         from tactic_client_lib.application.maya import Maya
-        my.app = Maya()
+        self.app = Maya()
      
 
-    def is_tactic_node(my, node_name):
+    def is_tactic_node(self, node_name):
         '''Determines whether a particular node is a tactic node'''
         pass
 
    
 
-    def get_all_tactic_nodes(my):
+    def get_all_tactic_nodes(self):
         '''Gets all of the Tactic nodes in the session
         @return
         a list of all tactic node names
         '''
 
         tactic_nodes = []
-        nodes = my.app.get_nodes_by_name("tactic_*")
+        nodes = self.app.get_nodes_by_name("tactic_*")
 
         # go through each node an make sure that the attribute
         # exists
         for node in nodes:
-            if my.is_tactic_node(node):
+            if self.is_tactic_node(node):
                 tactic_nodes.append(node)
 
         return tactic_nodes
 
 
-    def is_tactic_node(my, node_name):
+    def is_tactic_node(self, node_name):
         '''determines whether the given node is a tactic node
         '''
         attribute = "tacticNodeData"
-        exists = my.mel("attributeExists %s %s" % (attribute, node_name))
+        exists = self.mel("attributeExists %s %s" % (attribute, node_name))
         if not exists:
             return False
         else:
@@ -80,7 +80,7 @@ class TacticNodeUtil(object):
     #
     # action functions
     #
-    def create_default_node(my, node_name, search_key=None, context=None):
+    def create_default_node(self, node_name, search_key=None, context=None):
         '''Creates a default template structure when loading a context
         that has no snapshots associated with it
         
@@ -95,12 +95,12 @@ class TacticNodeUtil(object):
 
         # create the node
         type = "transform"
-        node_name = my.app.add_node(node_name, type)
+        node_name = self.app.add_node(node_name, type)
 
         # create the tactic node
         tactic_type = "transform"
         tactic_node_name = "tactic_%s" % node_name
-        tactic_node_name = my.app.add_node(tactic_node_name, tactic_type)
+        tactic_node_name = self.app.add_node(tactic_node_name, tactic_type)
 
 
         # add the tacticNodeData attribute and record the search type
@@ -112,13 +112,13 @@ class TacticNodeUtil(object):
         node_data.commit()
 
         # attache the tactic node to the node
-        my.mel("parent %s %s" % (tactic_node_name, node_name) )
+        self.mel("parent %s %s" % (tactic_node_name, node_name) )
 
         return tactic_node_name
 
 
 
-    def add_snapshot_to_node(my, tactic_node_name, snapshot):
+    def add_snapshot_to_node(self, tactic_node_name, snapshot):
         snapshot_code = snapshot.get('code')
         search_type = snapshot.get('search_type')
         search_id = snapshot.get('search_id')
@@ -138,7 +138,7 @@ class TacticNodeUtil(object):
 
 
 
-    def get_search_key(my, tactic_node_name):
+    def get_search_key(self, tactic_node_name):
         '''gets the snapshot data on a particular tactic node
         <node>
           <ref context='model' version='3' search_type='prod/asset?project=bar' search_id='4'/>
@@ -149,7 +149,7 @@ class TacticNodeUtil(object):
         search_type = node_data.get_attr("ref", "search_key")
         return search_type
 
-    def get_context(my, tactic_node_name):
+    def get_context(self, tactic_node_name):
         '''gets the snapshot data on a particular tactic node
         <node>
           <ref context='model' version='3' search_type='prod/asset?project=bar' search_id='4'/>
@@ -168,7 +168,7 @@ class TacticNodeUtil(object):
 
 
 
-    def mel(my, cmd, verbose=None):
+    def mel(self, cmd, verbose=None):
         '''Excecute a mel command (TEMPORARY - use maya specific)'''
         return maya.mel.eval(cmd)
 
@@ -180,8 +180,8 @@ class TacticNodeUtil(object):
 class SnapshotXml(object):
     '''Series of utilities to parse the snapshot xml'''
     
-    def __init__(my, snapshot_xml):
-        my.snapshot_xml = snapshot_xml
+    def __init__(self, snapshot_xml):
+        self.snapshot_xml = snapshot_xml
 
 
 

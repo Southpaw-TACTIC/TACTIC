@@ -26,10 +26,10 @@ from panel_wdg import SideBarPanelWdg, SideBarBookmarkMenuWdg
 
 class SimpleSideBarWdg(SideBarPanelWdg):
 
-    def get_views(my):
+    def get_views(self):
         views = [] 
 
-        view = my.kwargs.get('view')
+        view = self.kwargs.get('view')
         if not view:
             view = "project_view"
             views.append(view)
@@ -37,31 +37,31 @@ class SimpleSideBarWdg(SideBarPanelWdg):
             extra_views = view.split("|")
             views.extend(extra_views)
 
-        #view = "my_view_%s" % Environment.get_user_name()
+        #view = "self_view_%s" % Environment.get_user_name()
 
         return views
 
 
-    def get_subdisplay(my, views):
+    def get_subdisplay(self, views):
         div = DivWdg()
-        div.set_attr('spt_class_name', Common.get_full_class_name(my))
+        div.set_attr('spt_class_name', Common.get_full_class_name(self))
 
-        div.add( my.get_bookmark_menu_wdg("", None, views) )
+        div.add( self.get_bookmark_menu_wdg("", None, views) )
         return div
 
 
-    def get_bookmark_menu_wdg(my, title, config, view):
+    def get_bookmark_menu_wdg(self, title, config, view):
 
-        use_href = my.kwargs.get("use_href")
-        target = my.kwargs.get("target")
-        link_mode = my.kwargs.get("link_mode")
+        use_href = self.kwargs.get("use_href")
+        target = self.kwargs.get("target")
+        link_mode = self.kwargs.get("link_mode")
 
         kwargs = {
             'title': title,
             'view': view,
             'config': config,
-            'auto_size': my.kwargs.get('auto_size'),
-            'class_name': my.kwargs.get('class_name'),
+            'auto_size': self.kwargs.get('auto_size'),
+            'class_name': self.kwargs.get('class_name'),
             'use_href': use_href,
             'target': target,
             'link_mode': link_mode
@@ -75,28 +75,28 @@ class SimpleSideBarWdg(SideBarPanelWdg):
 
 class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
-    def init(my):
+    def init(self):
 
-        my.config_search_type = my.kwargs.get("config_search_type")
-        if not my.config_search_type:
-            my.config_search_type = "SideBarWdg"
+        self.config_search_type = self.kwargs.get("config_search_type")
+        if not self.config_search_type:
+            self.config_search_type = "SideBarWdg"
 
-        my.default = my.kwargs.get('default') == 'True'
+        self.default = self.kwargs.get('default') == 'True'
 
-        my.view = my.kwargs.get("view")
-        if type(my.view) in types.StringTypes:
-            my.view = [my.view]
+        self.view = self.kwargs.get("view")
+        if type(self.view) in types.StringTypes:
+            self.view = [self.view]
 
         web = WebContainer.get_web()
-        my.palette = web.get_palette()
-        my.project = Project.get()
+        self.palette = web.get_palette()
+        self.project = Project.get()
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         content_div = top
 
-        class_name = my.kwargs.get("class_name")
+        class_name = self.kwargs.get("class_name")
         if not class_name:
             class_name = "web_menu_wdg"
         top.add_class(class_name)
@@ -107,11 +107,11 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
         # add in a context smart menu for all links
-        show_context_menu = my.kwargs.get("show_context_menu")
+        show_context_menu = self.kwargs.get("show_context_menu")
         if show_context_menu in ['true', True]:
-            my.add_link_context_menu(content_div)
+            self.add_link_context_menu(content_div)
 
-        for view_item in my.view:
+        for view_item in self.view:
             is_personal = False
             if view_item.startswith('my_view_'):
                 is_personal = True
@@ -119,10 +119,10 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
             info = { 'counter' : 10, 'view': view_item, 'level': 1 }
 
-            config = my.get_config(my.config_search_type, view_item, default=my.default, personal=is_personal)
+            config = self.get_config(self.config_search_type, view_item, default=self.default, personal=is_personal)
             if not config:
                 continue
-            ret_val = my.generate_section( config, ul, info, personal=is_personal)
+            ret_val = self.generate_section( config, ul, info, personal=is_personal)
 
             if ret_val == 'empty':
                 pass
@@ -131,17 +131,17 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         return top
 
 
-    def get_separator_wdg(my, element_name, config, options):
+    def get_separator_wdg(self, element_name, config, options):
         #return HtmlElement.br()
         return None
 
 
-    def get_title_wdg(my, element_name, config, options):
+    def get_title_wdg(self, element_name, config, options):
         li = HtmlElement.li()
         li.add_class("spt_side_bar_title")
         li.add_class("main_title")
 
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
         title_wdg = DivWdg()
         title_wdg.add_class("menu_header")
         li.add(title_wdg)
@@ -155,7 +155,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
 
-    def get_folder_wdg(my, element_name, config, options, base_path, current_path, info, personal, use_same_config):
+    def get_folder_wdg(self, element_name, config, options, base_path, current_path, info, personal, use_same_config):
 
         attributes = config.get_element_attributes(element_name)
         if attributes.get("is_visible") == "false":
@@ -167,7 +167,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         li.add_class("main_li unselectable")
 
 
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
         title_wdg = DivWdg()
         title_wdg.add_class("menu_header")
         li.add(title_wdg)
@@ -189,16 +189,16 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 sub_config = WidgetConfig.get(xml=xml)
                 sub_config.set_view(options_view_name)
             else:
-                sub_config = my.get_config( my.config_search_type, options_view_name, default=my.default, personal=personal)
+                sub_config = self.get_config( self.config_search_type, options_view_name, default=self.default, personal=personal)
 
             info['level'] += 1
-            my.generate_section( sub_config, ul, info, base_path=current_path, personal=personal, use_same_config=use_same_config )
+            self.generate_section( sub_config, ul, info, base_path=current_path, personal=personal, use_same_config=use_same_config )
             info['level'] -= 1
 
         return li
 
 
-    def get_link_wdg(my, element_name, config, options, info):
+    def get_link_wdg(self, element_name, config, options, info):
         attributes = config.get_element_attributes(element_name)
         if attributes.get("is_visible") == "false":
             return
@@ -227,9 +227,9 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add_class("sub_li")
 
 
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
 
-        show_icons = my.kwargs.get("show_icons")
+        show_icons = self.kwargs.get("show_icons")
         if show_icons in [True, 'true']:
             icon = attributes.get("icon")
             if not icon:
@@ -239,16 +239,16 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add(" ")
 
 
-        link_mode = my.kwargs.get("link_mode")
+        link_mode = self.kwargs.get("link_mode")
         if not link_mode:
-            use_href = my.kwargs.get("use_href")
+            use_href = self.kwargs.get("use_href")
             if use_href in ['true', True]:
                 link_mode = 'href'
             link_mode = 'tab'
 
 
 
-        target = my.kwargs.get("target")
+        target = self.kwargs.get("target")
         if not target:
             target = ".spt_content"
         else:
@@ -375,7 +375,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add_attr("spt_view", config.get_view() )
             li.add_class("spt_side_bar_element")
 
-            my.add_link_behavior(li, element_name, config, options)
+            self.add_link_behavior(li, element_name, config, options)
 
 
         return li
@@ -385,28 +385,28 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 class TabSideBarWdg(SideBarBookmarkMenuWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        my.config_search_type = my.kwargs.get("config_search_type")
-        if not my.config_search_type:
-            my.config_search_type = "SideBarWdg"
+        self.config_search_type = self.kwargs.get("config_search_type")
+        if not self.config_search_type:
+            self.config_search_type = "SideBarWdg"
 
 
-        view_item = my.kwargs.get("view")
+        view_item = self.kwargs.get("view")
         if not view_item:
             view_item = "definition"
-        my.default = my.kwargs.get('default') == 'True'
+        self.default = self.kwargs.get('default') == 'True'
 
 
 
-        use_default_style = my.kwargs.get("use_default_style")
+        use_default_style = self.kwargs.get("use_default_style")
 
         is_personal = False
  
         # get the config
-        config = my.get_config(my.config_search_type, view_item, default=my.default, personal=is_personal)
+        config = self.get_config(self.config_search_type, view_item, default=self.default, personal=is_personal)
         element_names = config.get_element_names()
 
         new_config_xml = []
@@ -422,7 +422,7 @@ class TabSideBarWdg(SideBarBookmarkMenuWdg):
         user = Environment.get_user_name()
 
 
-        my.project = Project.get()
+        self.project = Project.get()
 
         class_handler = WidgetClassHandler()
         for element_name in element_names:
@@ -430,9 +430,9 @@ class TabSideBarWdg(SideBarBookmarkMenuWdg):
 
             # handle security
             # TODO: put this in the base class
-            key = {'project': my.project.get_code(), 'element': element_name}
+            key = {'project': self.project.get_code(), 'element': element_name}
             key2 = {'element': element_name}
-            key3 = {'project': my.project.get_code(), 'element': '*'}
+            key3 = {'project': self.project.get_code(), 'element': '*'}
             key4 = {'element': '*'}
             keys = [key, key2, key3, key4]
             if element_name.startswith('%s.'%user):

@@ -21,42 +21,42 @@ from pyasm.widget import TableWdg, BaseTableElementWdg
 
 
 class MyTacticSummaryWdg(BaseTableElementWdg):
-    def __init__(my, project_code=None):
-        super(MyTacticSummaryWdg,my).__init__()
+    def __init__(self, project_code=None):
+        super(MyTacticSummaryWdg,self).__init__()
         if project_code:
-            my.project_code = project_code
+            self.project_code = project_code
         else:
-            my.project_code = Project.get_project_code()
+            self.project_code = Project.get_project_code()
 
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg()
         widget.add_style("font-size: 1.2em")
 
-        widget.add( MyTacticNotificationWdg(my.project_code) )
-        widget.add( MyTacticCheckinWdg(my.project_code) )
-        widget.add( MyTacticStatusWdg(my.project_code) )
-        widget.add( MyTacticTaskWdg(my.project_code) )
+        widget.add( MyTacticNotificationWdg(self.project_code) )
+        widget.add( MyTacticCheckinWdg(self.project_code) )
+        widget.add( MyTacticStatusWdg(self.project_code) )
+        widget.add( MyTacticTaskWdg(self.project_code) )
 
 
         return widget
 
 class MyTacticBaseWdg(Widget):
-    def __init__(my, project_code=None):
-        super(MyTacticBaseWdg,my).__init__()
+    def __init__(self, project_code=None):
+        super(MyTacticBaseWdg,self).__init__()
         if project_code:
-            my.project_code = project_code
+            self.project_code = project_code
         else:
-            my.project_code = Project.get_project_code()
+            self.project_code = Project.get_project_code()
 
-    def set_project(my, project_code):
-        my.project_code = project_code
+    def set_project(self, project_code):
+        self.project_code = project_code
 
 
 
 class MyTacticNotificationWdg(MyTacticBaseWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
 
@@ -67,7 +67,7 @@ class MyTacticNotificationWdg(MyTacticBaseWdg):
 
         for time in ('1 hour', 'today', '1 week'):
             search = Search("sthpw/notification_login")
-            search.add_filter("project_code", my.project_code)
+            search.add_filter("project_code", self.project_code)
             search.add_filter("login", user)
 
             search.add_interval_filter("timestamp", time)
@@ -82,7 +82,7 @@ class MyTacticNotificationWdg(MyTacticBaseWdg):
 
 class MyTacticCheckinWdg(MyTacticBaseWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
 
@@ -95,7 +95,7 @@ class MyTacticCheckinWdg(MyTacticBaseWdg):
             search.add_filter("login", user)
 
             # TODO: snapshot really should have a project code
-            search.add_regex_filter("search_type", 'project=%s'% my.project_code, op='EQ')
+            search.add_regex_filter("search_type", 'project=%s'% self.project_code, op='EQ')
 
             search.add_interval_filter("timestamp", time)
 
@@ -110,7 +110,7 @@ class MyTacticCheckinWdg(MyTacticBaseWdg):
 
 class MyTacticStatusWdg(MyTacticBaseWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
 
@@ -123,7 +123,7 @@ class MyTacticStatusWdg(MyTacticBaseWdg):
         for time in times:
             search = Search("sthpw/status_log")
             search.add_filter("login", user)
-            search.add_filter("project_code", my.project_code)
+            search.add_filter("project_code", self.project_code)
             search.add_where(Select.get_interval_where(time))
             count = search.get_count()
             counts.append(count)
@@ -140,7 +140,7 @@ class MyTacticStatusWdg(MyTacticBaseWdg):
 
 class MyTacticTaskWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
 

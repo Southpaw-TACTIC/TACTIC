@@ -22,18 +22,18 @@ import os
 
 class GlobalSearchTrigger(Trigger):
 
-    def get_title(my):
+    def get_title(self):
         return "Added entry to global search"
 
 
 
 
-    def execute(my):
+    def execute(self):
 
-        my.handle_keywords()
+        self.handle_keywords()
 
 
-        input = my.get_input()
+        input = self.get_input()
         search_key = input.get("search_key")
         search_code = input.get('search_code')
 
@@ -42,7 +42,7 @@ class GlobalSearchTrigger(Trigger):
 
 
         # Why not user caller???? 
-        caller = my.get_caller()
+        caller = self.get_caller()
 
         # see if this sobject is the list of sobjects that need to be in the
         # sobject list
@@ -104,10 +104,10 @@ class GlobalSearchTrigger(Trigger):
         # build up a data set for sobject list
         data = set()
 
-        data.update( my.cleanup(caller.get_value("code", no_exception=True) ))
-        data.update( my.cleanup(caller.get_value("name", no_exception=True) ))
-        data.update( my.cleanup(caller.get_value("description", no_exception=True) ))
-        data.update( my.cleanup(caller.get_value("keywords", no_exception=True) ))
+        data.update( self.cleanup(caller.get_value("code", no_exception=True) ))
+        data.update( self.cleanup(caller.get_value("name", no_exception=True) ))
+        data.update( self.cleanup(caller.get_value("description", no_exception=True) ))
+        data.update( self.cleanup(caller.get_value("keywords", no_exception=True) ))
 
         # commit the information
         keywords = " ".join(data)
@@ -120,10 +120,10 @@ class GlobalSearchTrigger(Trigger):
 
 
 
-    def handle_keywords(my):
+    def handle_keywords(self):
 
-        input = my.get_input()
-        caller = my.get_caller()
+        input = self.get_input()
+        caller = self.get_caller()
 
         sobj = caller
 
@@ -140,14 +140,14 @@ class GlobalSearchTrigger(Trigger):
         if input.get("is_delete") == True:
             # Collection relationships being removed
             mode = "delete"
-            my.update_collection_keywords(mode, base_search_type, input)
+            self.update_collection_keywords(mode, base_search_type, input)
             return
 
 
         # Collection relationships being created or added
         elif input.get("is_insert"):
             mode = "insert"
-            my.update_collection_keywords(mode, base_search_type, input)
+            self.update_collection_keywords(mode, base_search_type, input)
 
 
 
@@ -179,7 +179,7 @@ class GlobalSearchTrigger(Trigger):
                 keywords_data['path'] = path_keywords
                 sobj.set_json_value("keywords_data", keywords_data)
                 sobj.commit(triggers=False)
-                my.set_searchable_keywords(sobj)
+                self.set_searchable_keywords(sobj)
 
             else:
                 if "user_keywords" in update_data:
@@ -210,7 +210,7 @@ class GlobalSearchTrigger(Trigger):
                             
                         sobj.set_json_value("keywords_data", keywords_data)
                         sobj.commit(triggers=False)
-                        my.set_searchable_keywords(sobj)  
+                        self.set_searchable_keywords(sobj)  
 
                     # If collection is renamed
                     elif rename_collection:
@@ -227,28 +227,28 @@ class GlobalSearchTrigger(Trigger):
                             sobj.set_json_value("keywords_data", keywords_data)
                             sobj.commit(triggers=False)
 
-                            my.update_user_keywords(sobj, user, base_search_type)
+                            self.update_user_keywords(sobj, user, base_search_type)
 
                     # If user_keywords column is changed 
                     elif has_user_keywords:
                         
-                        my.update_user_keywords(sobj, user_keywords, base_search_type)
+                        self.update_user_keywords(sobj, user_keywords, base_search_type)
 
                 # If regular asset keywords being changed
                 else:
                     if has_user_keywords:
 
-                        my.update_user_keywords(sobj, user_keywords, base_search_type)
+                        self.update_user_keywords(sobj, user_keywords, base_search_type)
 
 
 
 
-    def cleanup(my, data):
-        #is_ascii = my.is_ascii(data)
+    def cleanup(self, data):
+        #is_ascii = self.is_ascii(data)
         return Common.extract_keywords(data)
 
      
-    def set_searchable_keywords(my, sobj):
+    def set_searchable_keywords(self, sobj):
         '''
         Used to set the keywords column. Reads from the keywords_data
         column.
@@ -316,7 +316,7 @@ class GlobalSearchTrigger(Trigger):
             sobj.commit(triggers=False)
 
 
-    def update_user_keywords(my, sobj, user_keywords, search_type):
+    def update_user_keywords(self, sobj, user_keywords, search_type):
         '''
         When there is change in the user_keywords column of a collection, 
         all of its child's "collection" data set in the keywords_data needs 
@@ -335,7 +335,7 @@ class GlobalSearchTrigger(Trigger):
             # Always append collection name to keywords_data['user']
             user_keywords = "%s %s" %(sobj.get("name"), user_keywords)
             user_keywords = user_keywords.lower()
-            child_codes = my.get_child_codes(sobj.get_code(), search_type)
+            child_codes = self.get_child_codes(sobj.get_code(), search_type)
             
             if child_codes:
                 for child_code in child_codes:
@@ -345,16 +345,16 @@ class GlobalSearchTrigger(Trigger):
 
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
                     child_nest_sobject.commit(triggers=False)
-                    my.set_searchable_keywords(child_nest_sobject)
+                    self.set_searchable_keywords(child_nest_sobject)
 
         keywords_data['user'] = user_keywords
 
         sobj.set_json_value("keywords_data", keywords_data)
         sobj.commit(triggers=False)
 
-        my.set_searchable_keywords(sobj)
+        self.set_searchable_keywords(sobj)
 
-    def get_child_codes(my, parent_collection_code, search_type):
+    def get_child_codes(self, parent_collection_code, search_type):
         '''
         All of the children's codes down the relationship tree of the collection 
         will be returned.
@@ -383,7 +383,7 @@ class GlobalSearchTrigger(Trigger):
         return search_codes
 
 
-    def update_collection_keywords(my, mode, base_search_type, input):
+    def update_collection_keywords(self, mode, base_search_type, input):
         '''
         When there is an entry being added or removed in the asset_in_asset table
         (ie. adding asset to collection, removing asset from collection, or deleting 
@@ -452,7 +452,7 @@ class GlobalSearchTrigger(Trigger):
 
             # Find all children that has [search_code] in their collection's keys
             # and update
-            child_codes = my.get_child_codes(search_code, asset_stype)
+            child_codes = self.get_child_codes(search_code, asset_stype)
 
             if child_codes:
                 child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
@@ -464,7 +464,7 @@ class GlobalSearchTrigger(Trigger):
 
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
                     child_nest_sobject.commit(triggers=False)
-                    my.set_searchable_keywords(child_nest_sobject)
+                    self.set_searchable_keywords(child_nest_sobject)
         
         elif mode == "delete":
 
@@ -477,7 +477,7 @@ class GlobalSearchTrigger(Trigger):
                 for key in parent_collection_keywords_dict.keys():
                     del collection_keywords_dict[key]
 
-                child_codes = my.get_child_codes(search_code, asset_stype)
+                child_codes = self.get_child_codes(search_code, asset_stype)
             
             if child_codes:
                 child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
@@ -490,7 +490,7 @@ class GlobalSearchTrigger(Trigger):
 
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)
                     child_nest_sobject.commit(triggers=False)
-                    my.set_searchable_keywords(child_nest_sobject)
+                    self.set_searchable_keywords(child_nest_sobject)
 
         child_keywords_data['collection'] = collection_keywords_dict
 
@@ -498,13 +498,13 @@ class GlobalSearchTrigger(Trigger):
         child_sobject.set_json_value("keywords_data", child_keywords_data)
         child_sobject.commit(triggers=False)
 
-        my.set_searchable_keywords(child_sobject)
+        self.set_searchable_keywords(child_sobject)
         
 
 
 class FolderTrigger(Trigger):
 
-    def execute(my):
+    def execute(self):
 
         # DISABLING: this used to be needed for Repo Browser layout, but
         # is no longer needed
@@ -512,10 +512,10 @@ class FolderTrigger(Trigger):
 
         from pyasm.biz import Snapshot, Naming
 
-        input = my.get_input()
+        input = self.get_input()
         search_key = input.get("search_key")
         search_type = input.get('search_type')
-        sobject = my.get_caller()
+        sobject = self.get_caller()
         assert search_type
 
         search_type_obj = SearchType.get(search_type)

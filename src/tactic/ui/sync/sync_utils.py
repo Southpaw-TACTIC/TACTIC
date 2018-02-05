@@ -23,35 +23,35 @@ import os, codecs
 
 class SyncUtils(object):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
         # NOTE: this search key is to find the server, not the transactions
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if not search_key:
-            server_code = my.kwargs.get("server_code")
-            my.server_sobj = Search.get_by_code("sthpw/sync_server", server_code)
+            server_code = self.kwargs.get("server_code")
+            self.server_sobj = Search.get_by_code("sthpw/sync_server", server_code)
         else:
-            my.server_sobj = Search.get_by_search_key(search_key)
+            self.server_sobj = Search.get_by_search_key(search_key)
 
 
-        my.start_expr = my.kwargs.get("start_expr")
+        self.start_expr = self.kwargs.get("start_expr")
        
 
-    def get_server_sobj(my):
-        return my.server_sobj
+    def get_server_sobj(self):
+        return self.server_sobj
 
-    def get_remote_host(my):
-        return my.server_sobj.get_value("host")
+    def get_remote_host(self):
+        return self.server_sobj.get_value("host")
 
 
-    def get_remote_server(my):
-        if not my.server_sobj:
+    def get_remote_server(self):
+        if not self.server_sobj:
             return
 
 
-        host = my.server_sobj.get_value("host")
-        ticket = my.server_sobj.get_value("ticket")
+        host = self.server_sobj.get_value("host")
+        ticket = self.server_sobj.get_value("ticket")
 
         # connect to the admin project? This likely does not matter
         project_code = 'admin'
@@ -68,7 +68,7 @@ class SyncUtils(object):
         return remote_server
 
 
-    def get_date(my, expr):
+    def get_date(self, expr):
 
         from dateutil import parser, relativedelta
         from datetime import datetime
@@ -97,14 +97,14 @@ class SyncUtils(object):
         return date
 
 
-    def get_transaction_info(my):
+    def get_transaction_info(self):
 
-        remote_server = my.get_remote_server()
+        remote_server = self.get_remote_server()
 
         
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
 
-        project_code = my.kwargs.get("project_code")
+        project_code = self.kwargs.get("project_code")
         if not project_code:
             project_code = Project.get_project_code()
 
@@ -126,9 +126,9 @@ class SyncUtils(object):
             ]
             remote_codes = remote_server.query("sthpw/transaction_log", filters=filters, columns=['code'], order_bys=['timestamp'])
 
-        elif my.start_expr:
+        elif self.start_expr:
 
-            start_date = my.get_date(my.start_expr)
+            start_date = self.get_date(self.start_expr)
 
             # FIXME: this only works with Postgres
             filters = [
@@ -195,7 +195,7 @@ class SyncUtils(object):
 
         local_paths = []
         for transaction in local_transactions:
-            paths = my.get_file_paths(transaction)
+            paths = self.get_file_paths(transaction)
             if not paths:
                 continue
             local_paths.extend(paths)
@@ -204,7 +204,7 @@ class SyncUtils(object):
 
         remote_paths = [] 
         for transaction in remote_transactions:
-            paths = my.get_file_paths(transaction)
+            paths = self.get_file_paths(transaction)
             if not paths:
                 continue
             remote_paths.extend(paths)
@@ -215,7 +215,7 @@ class SyncUtils(object):
 
 
 
-    def get_file_paths(my, transaction, mode='lib'):
+    def get_file_paths(self, transaction, mode='lib'):
 
         transaction_xml = transaction.get_xml_value("transaction")
         if not transaction_xml:
@@ -254,7 +254,7 @@ class SyncUtils(object):
 
 
     """
-    def sync_remote_transactions(my):
+    def sync_remote_transactions(self):
 
         print "executing missing transactions locally: ", len(missing_transactions)
         # execute missing transactions on the local machine

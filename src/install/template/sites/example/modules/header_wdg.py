@@ -17,11 +17,11 @@ from pyasm.widget import *
 
 class HeaderWdg(Widget):
 
-    def init(my):
+    def init(self):
         table = Table()
         table.add_style("width: 100%")
 
-        div = my.get_header_wdg()
+        div = self.get_header_wdg()
         table.add_cell(div)
 
         login = WebContainer.get_login()
@@ -37,11 +37,11 @@ class HeaderWdg(Widget):
 
         table.add_cell( info_wdg )
 
-        my.add(table)
+        self.add(table)
 
 
 
-    def get_header_wdg(my):
+    def get_header_wdg(self):
         web = WebContainer.get_web()
         context = web.get_context_url()
         div = DivWdg()

@@ -25,21 +25,21 @@ from file import FileRange
 class FileTest(unittest.TestCase):
 
 
-    def setUp(my):
+    def setUp(self):
 
         # start batch environment
         Batch()
 
 
-    def tearDown(my):
+    def tearDown(self):
         pass
 
 
-    def test_all(my):
-        my._test_sequence()
+    def test_all(self):
+        self._test_sequence()
 
 
-    def _test_sequence(my):
+    def _test_sequence(self):
 
         data = '''
         test001/IM-0001-0013.png

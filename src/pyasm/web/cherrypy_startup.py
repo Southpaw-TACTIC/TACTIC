@@ -65,12 +65,12 @@ def _cp_on_http_error(status, message):
     tb = sys.exc_info()[2]
     stacktrace = traceback.format_tb(tb)
     stacktrace_str = "".join(stacktrace)
-    print "-"*50
-    print stacktrace_str
-    print "-"*50
+    print("-"*50)
+    print(stacktrace_str)
+    print("-"*50)
 
 
-    print path, status, message
+    print(path, status, message)
     try:
         eval("cherrypy.root.tactic.%s" % project_code)
     # if project_code is empty , it raises SyntaxError
@@ -100,18 +100,18 @@ def _cp_on_http_error(status, message):
 
     # check to see if this project exists in the database?
     #project = Project.get_by_code(project_code)
-    #print project
+    #print(project)
     
     from pyasm.web import Widget, WebApp, AppServer
     from pyasm.widget import TopWdg, BottomWdg, Error404Wdg
     class xyz(AppServer):
 
-        def __init__(my, status, message):
-            my.hash = None
-            my.status = status
-            my.message = message
+        def __init__(self, status, message):
+            self.hash = None
+            self.status = status
+            self.message = message
 
-        def get_page_widget(my):
+        def get_page_widget(self):
             widget = Error404Wdg()
             widget.status = status
             widget.message = message
@@ -127,11 +127,11 @@ class Root:
 
     _cp_filters = [FlashWrapper()]
 
-    def test(my):
+    def test(self):
         return "OK"
     test.exposed = True
 
-    def index(my):
+    def index(self):
         return '''<META http-equiv="refresh" content="0;URL=/tactic">'''
 
 
@@ -143,7 +143,7 @@ class Root:
 
 class TacticIndex:
     '''Dummy Index file'''
-    def index(my):
+    def index(self):
         return "OK"
     index.exposed = True
 
@@ -154,7 +154,7 @@ class TacticIndex:
 
 class CherryPyStartup(object):
 
-    def __init__(my, port=''):
+    def __init__(self, port=''):
 
         # It is possible on startup that the database is not running.
         from pyasm.common import Environment
@@ -176,9 +176,9 @@ class CherryPyStartup(object):
                         start_port = 8081
                     if port and int(port) == start_port:
                          sql.do_update('DELETE from "ticket" where "code" is NULL')
-        except DatabaseException, e:
+        except DatabaseException as e:
             # TODO: need to work on this
-            print "ERROR: could not connect to [sthpw] database"
+            print("ERROR: could not connect to [sthpw] database")
             #os.environ["TACTIC_CONFIG_PATH"] = Config.get_default_config_path()
             #Sql.set_default_vendor("Sqlite")
 
@@ -197,19 +197,19 @@ class CherryPyStartup(object):
         from pyasm.security import Batch
         Batch()
 
-        my.site_dir = os.getenv("TACTIC_SITE_DIR")
-        my.install_dir = os.getenv("TACTIC_INSTALL_DIR")
+        self.site_dir = os.getenv("TACTIC_SITE_DIR")
+        self.install_dir = os.getenv("TACTIC_INSTALL_DIR")
 
         # set up a simple environment.  May need a more complex one later
-        my.env = Environment()
+        self.env = Environment()
 
 
-        my.setup_env()
-        my.config = my.setup_sites()
+        self.setup_env()
+        self.config = self.setup_sites()
 
-        my.init_only = False
+        self.init_only = False
 
-        cherrypy.startup = my
+        cherrypy.startup = self
 
 
         # this initializes the web.
@@ -235,12 +235,12 @@ class CherryPyStartup(object):
         # start up the queue system ...
         if Config.get_value("sync", "enabled") == "true":
             # start up the sync system ...
-            print "Starting Transaction Sync ..."
+            print("Starting Transaction Sync ...")
             from tactic.command import TransactionQueueManager
             TransactionQueueManager.start()
 
             # start up the sync system ...
-            print "Starting Watch Folder Service ..."
+            print("Starting Watch Folder Service ...")
             from tactic.command import WatchServerFolderTask
             WatchServerFolderTask.start()
         """
@@ -258,41 +258,41 @@ class CherryPyStartup(object):
         DbContainer.close_thread_sql()
 
         version = Environment.get_release_version()
-        print
-        print "Starting TACTIC v%s ..." % version
-        print
+        print("")
+        print("Starting TACTIC v%s ..." % version)
+        print("")
 
 
 
 
-    def set_config(my, path, attr, value):
-        settings = my.config.get(path)
+    def set_config(self, path, attr, value):
+        settings = self.config.get(path)
         if not settings:
             settings = {}
-            my.config[path] = settings
+            self.config[path] = settings
 
         settings[attr] = value
 
 
-    def set_windows_service(my):
+    def set_windows_service(self):
         # set init_only=True so that start() does not block
-        my.init_only = True
+        self.init_only = True
 
 
-    def get_config(my):
-        return my.config
+    def get_config(self):
+        return self.config
 
 
-    def stop(my):
+    def stop(self):
         cherrypy.server.stop()
 
 
-    def execute(my):
-        cherrypy.config.update( my.config )
-        cherrypy.server.start(my.init_only)
+    def execute(self):
+        cherrypy.config.update( self.config )
+        cherrypy.server.start(self.init_only)
 
 
-    def setup_env(my):
+    def setup_env(self):
         '''set up environment'''
 
         # register this as a cherrypy server
@@ -307,16 +307,16 @@ class CherryPyStartup(object):
             conf = "tactic_linux-conf.xml"
 
         # set up config path 
-        os.environ['TACTIC_CONFIG_PATH'] = "%s/config/%s" % (my.site_dir,conf)
+        os.environ['TACTIC_CONFIG_PATH'] = "%s/config/%s" % (self.site_dir,conf)
         """
 
 
 
 
-    def setup_sites(my):
+    def setup_sites(self):
 
-        context_path = "%s/src/context" % my.install_dir
-        doc_dir = "%s/doc" % my.install_dir
+        context_path = "%s/src/context" % self.install_dir
+        doc_dir = "%s/doc" % self.install_dir
 
         log_dir = "%s/log" % Environment.get_tmp_dir()
 
@@ -388,7 +388,7 @@ class CherryPyStartup(object):
                 sites.append(context_dir)
 
         for site in sites:
-            my.register_project(site, config)
+            self.register_project(site, config)
 
             # set up the images directory
             for subdir in ['images', 'doc']:
@@ -402,8 +402,8 @@ class CherryPyStartup(object):
 
 
 
-    def register_project(my, site, config):
-        print "Registering project ... %s" % site
+    def register_project(self, site, config):
+        print("Registering project ... %s" % site)
 
         # if there happend to be . in the site name, convert to _
         # NOTE: not sure what the implication of that is???
@@ -428,7 +428,7 @@ class CherryPyStartup(object):
             exec("cherrypy.root.projects.%s = SitePage()" % site)
 
         except ImportError:
-            #print "... WARNING: Index not found"
+            #print("... WARNING: Index not found")
             exec("cherrypy.root.tactic.%s = TacticIndex()" % site)
             exec("cherrypy.root.projects.%s = TacticIndex()" % site)
 
@@ -443,7 +443,7 @@ class CherryPyStartup(object):
             context_dir = "%s/sites/%s/context" % (context_dir, site)
 
         if not os.path.exists(context_dir):
-            #print "WARNING: context directory not found"
+            #print("WARNING: context directory not found")
             return
 
         contexts = []
@@ -467,7 +467,7 @@ class CherryPyStartup(object):
                 exec("cherrypy.root.tactic.%s.%s = %s()" % (site,context,context) )
 
             except ImportError, e:
-                print str(e)
+                print(str(e))
                 print "... failed to import '%s.%s.%s'" % (base, site, context)
                 raise
                 #return

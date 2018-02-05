@@ -66,20 +66,20 @@ class Search(Base):
     serach.add_filter("asset_library", "chr")
     sobjects = search.get_sobjects()
     '''
-    def __init__(my, search_type, project_code=None):
+    def __init__(self, search_type, project_code=None):
         # storage for result
-        my.is_search_done = False
-        my.sobjects = []
+        self.is_search_done = False
+        self.sobjects = []
 
 
         # retired asset flag - retired assets are never shown by default
-        my.show_retired_flag = False
+        self.show_retired_flag = False
 
-        my.filter_mode = 'and'
+        self.filter_mode = 'and'
 
         # flag that when set, returns empty
-        my.null_filter = False
-        my.security_filter = False
+        self.null_filter = False
+        self.security_filter = False
 
         protocol = 'local'
         if type(search_type) in types.StringTypes:
@@ -115,15 +115,15 @@ class Search(Base):
                         
 
                     if protocol == 'xmlrpc':
-                        my.select = RemoteSearch(search_type)
+                        self.select = RemoteSearch(search_type)
                         # build a dummy search_type object.  Should this be
                         # build from the real remote info?
-                        my.search_type_obj = SearchType.create("sthpw/search_object")
-                        my.search_type_obj.set_value("search_type", search_type)
+                        self.search_type_obj = SearchType.create("sthpw/search_object")
+                        self.search_type_obj.set_value("search_type", search_type)
                         return
 
-                except Exception, e:
-                    print "WARNING [%s]: Search constructor:" % search_type, str(e)
+                except Exception as e:
+                    print("WARNING [%s]: Search constructor:" % search_type, str(e))
                     raise
 
 
@@ -133,19 +133,19 @@ class Search(Base):
         if type(search_type) == types.TypeType:
             # get search defined in the class
             search_type = search_type.SEARCH_TYPE
-            my.search_type_obj = SearchType.get(search_type)
+            self.search_type_obj = SearchType.get(search_type)
 
         elif type(search_type) in types.StringTypes:
-            my.search_type_obj = SearchType.get(search_type)
+            self.search_type_obj = SearchType.get(search_type)
         else:
-            my.search_type_obj = search_type
-            search_type = my.search_type_obj.get_base_key()
+            self.search_type_obj = search_type
+            search_type = self.search_type_obj.get_base_key()
 
         from pyasm.biz import Project
         if project_code:
-            my.project_code = project_code
+            self.project_code = project_code
         else:
-            my.project_code = Project.extract_project_code(search_type)
+            self.project_code = Project.extract_project_code(search_type)
 
         base_search_type = SearchKey.extract_base_search_type(search_type)
        
@@ -168,224 +168,224 @@ class Search(Base):
                 keys = [key, key2, key3, key4]
                 default = "allow"
                 if not security.check_access("search_type", keys, "view", default=default):
-                    print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type)
-                    my.set_null_filter()
+                    print("WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type))
+                    self.set_null_filter()
 
             elif not search_type.startswith("sthpw/") and not search_type.startswith("config/"):
                 key = { "code": base_search_type }
-                key2 = { "code": base_search_type, "project": my.project_code }
+                key2 = { "code": base_search_type, "project": self.project_code }
                 key3 = { "code": "*" }
-                key4 = { "code": "*", "project": my.project_code }
+                key4 = { "code": "*", "project": self.project_code }
                 keys = [key, key2, key3, key4]
                 default = "deny"
                 if not security.check_access("search_type", keys, "view", default=default):
-                    print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type)
-                    my.set_null_filter()
+                    print("WARNING: User [%s] security failed for search type [%s]" % (Environment.get_login().get_code(), search_type))
+                    self.set_null_filter()
 
         else:
             # special conditions of task, note and work_hour
             if search_type in ['sthpw/task', 'sthpw/note','sthpw/work_hour']:
                 current_project_code = Project.get_project_code()
             else:
-                current_project_code = my.project_code
+                current_project_code = self.project_code
             key = {
                 'project' : current_project_code,
                 'search_type' : base_search_type
             }
             security = Environment.get_security()
             if not security.check_access("sobject", key, "view"):
-                my.set_null_filter()
+                self.set_null_filter()
 
 
 
  
        
         # provide the project_code kwarg here
-        my.full_search_type = Project.get_full_search_type(search_type, project_code=my.project_code)
+        self.full_search_type = Project.get_full_search_type(search_type, project_code=self.project_code)
 
-        my.db_resource = Project.get_db_resource_by_search_type(my.full_search_type)
+        self.db_resource = Project.get_db_resource_by_search_type(self.full_search_type)
 
-        #my.db_resource = None
-        if my.db_resource:
-            my.database = my.db_resource.get_database()
-            my.host = my.db_resource.get_host()
+        #self.db_resource = None
+        if self.db_resource:
+            self.database = self.db_resource.get_database()
+            self.host = self.db_resource.get_host()
         else:
-            my.database = Project.get_database_by_search_type(my.full_search_type)
-            my.host = Project.extract_host(my.full_search_type)
-            my.db_resource = DbResource(database=my.database, host=my.host)
+            self.database = Project.get_database_by_search_type(self.full_search_type)
+            self.host = Project.extract_host(self.full_search_type)
+            self.db_resource = DbResource(database=self.database, host=self.host)
 
         # verify this db exists
-        db_exists = my.db_resource.exists()
+        db_exists = self.db_resource.exists()
         if not db_exists:
-            raise SearchException('This database [%s] does not exist' %my.database)
-        my.database_impl = my.db_resource.get_database_impl()
+            raise SearchException('This database [%s] does not exist' %self.database)
+        self.database_impl = self.db_resource.get_database_impl()
 
 
-        my.select = Select()
-        my.select.set_database(my.db_resource)
-        my.select.set_id_col(my.get_id_col())
+        self.select = Select()
+        self.select.set_database(self.db_resource)
+        self.select.set_id_col(self.get_id_col())
 
-        assert DbResource.is_instance(my.db_resource)
+        assert DbResource.is_instance(self.db_resource)
 
 
-        table = my.search_type_obj.get_table()
-        exists = my.database_impl.table_exists(my.db_resource, table)   
+        table = self.search_type_obj.get_table()
+        exists = self.database_impl.table_exists(self.db_resource, table)   
 
         if not search_type == 'sthpw/virtual' and not exists:
-            raise SearchException('This table [%s] does not exist for database [%s]' %(table, my.database))
+            raise SearchException('This table [%s] does not exist for database [%s]' %(table, self.database))
 
         # add the table
-        my.select.add_table(table)
+        self.select.add_table(table)
 
         
         # remember the order bys
-        my.order_bys = []
+        self.order_bys = []
         # order_by is applied by default if available
-        my.order_by = True
+        self.order_by = True
 
 
 
-    def copy(my):
-        search = Search(my.full_search_type)
+    def copy(self):
+        search = Search(self.full_search_type)
 
         # copy the select
-        search.select = my.select.copy()
+        search.select = self.select.copy()
 
-        search.order_bys = my.order_bys[:]
-        search.order_by = my.order_by
+        search.order_bys = self.order_bys[:]
+        search.order_by = self.order_by
 
         return search
 
 
 
 
-    def set_search_done(my, flag=True):
-        my.is_search_done = flag
+    def set_search_done(self, flag=True):
+        self.is_search_done = flag
 
 
-    def get_database_impl(my):
-        return my.database_impl
+    def get_database_impl(self):
+        return self.database_impl
 
 
-    def get_sql(my):
-        return my.db_resource.get_sql()
+    def get_sql(self):
+        return self.db_resource.get_sql()
 
 
        
 
-    def get_project(my):
+    def get_project(self):
         from pyasm.biz import Project
-        return Project.get_by_code(my.project_code)
+        return Project.get_by_code(self.project_code)
 
-    def get_select(my):
+    def get_select(self):
         '''returns the select object'''
-        return my.select
+        return self.select
 
 
-    def get_project_code(my):
-        return my.project_code
+    def get_project_code(self):
+        return self.project_code
 
-    def get_database(my):
+    def get_database(self):
         '''get the database that represents this Search'''
-        return my.database
+        return self.database
 
-    def get_db_resource(my):
-        return my.db_resource
-
-
-    def set_filter_mode(my, mode):
-        my.select.set_filter_mode(mode)
+    def get_db_resource(self):
+        return self.db_resource
 
 
-    def get_search_type(my):
-        return my.full_search_type
+    def set_filter_mode(self, mode):
+        self.select.set_filter_mode(mode)
 
 
-    def get_table(my):
-        return my.search_type_obj.get_table()
+    def get_search_type(self):
+        return self.full_search_type
 
 
-    def get_full_search_type(my):
-        return my.full_search_type
-
-    def get_search_type_obj(my):
-        return my.search_type_obj
+    def get_table(self):
+        return self.search_type_obj.get_table()
 
 
-    def get_base_search_type(my):
-        return my.search_type_obj.get_base_key()
+    def get_full_search_type(self):
+        return self.full_search_type
+
+    def get_search_type_obj(self):
+        return self.search_type_obj
+
+
+    def get_base_search_type(self):
+        return self.search_type_obj.get_base_key()
 
 
 
-    def get_id_col(my):
+    def get_id_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = my.db_resource.get_database_impl()
-        search_type = my.full_search_type
-        return database_impl.get_id_col(my.db_resource, search_type)
-        #return my.search_type_obj.get_id_col()
+        database_impl = self.db_resource.get_database_impl()
+        search_type = self.full_search_type
+        return database_impl.get_id_col(self.db_resource, search_type)
+        #return self.search_type_obj.get_id_col()
 
 
-    def get_code_col(my):
+    def get_code_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = my.db_resource.get_database_impl()
-        search_type = my.full_search_type
-        return database_impl.get_code_col(my.db_resource, search_type)
+        database_impl = self.db_resource.get_database_impl()
+        search_type = self.full_search_type
+        return database_impl.get_code_col(self.db_resource, search_type)
 
 
 
-    def get_statement(my):
-        return my.select.get_statement()
+    def get_statement(self):
+        return self.select.get_statement()
 
-    def add_column(my, column, distinct=False, table=None, as_column=None):
-        my.select.add_column(column, distinct, table=table, as_column=as_column)
+    def add_column(self, column, distinct=False, table=None, as_column=None):
+        self.select.add_column(column, distinct, table=table, as_column=as_column)
 
 
-    def get_columns(my, table=None, show_hidden=False):
-        #database = my.get_database()
-        sql = DbContainer.get(my.db_resource)
+    def get_columns(self, table=None, show_hidden=False):
+        #database = self.get_database()
+        sql = DbContainer.get(self.db_resource)
 
         if not table:
-            table = my.search_type_obj.get_table()
+            table = self.search_type_obj.get_table()
         columns = sql.get_columns(table)
-        #columns = my.remove_temp_column(columns, sql) 
+        #columns = self.remove_temp_column(columns, sql) 
 
         return columns
 
 
-    def set_distinct_col(my, column):
-        my.select.set_distinct_col(column)
+    def set_distinct_col(self, column):
+        self.select.set_distinct_col(column)
 
 
-    def get_column_info(my):
-        table_name = my.search_type_obj.get_table()
-        info = my.database_impl.get_column_info(my.db_resource, table_name)
+    def get_column_info(self):
+        table_name = self.search_type_obj.get_table()
+        info = self.database_impl.get_column_info(self.db_resource, table_name)
         return info
 
-    def column_exists(my, column):
-        column_info = my.get_column_info()
+    def column_exists(self, column):
+        column_info = self.get_column_info()
         has_column = column_info.get(column) != None
         return has_column
 
 
     # DEPRECATED: this should not be used as it assumes an SQL database
-    def add_where(my, filter):
+    def add_where(self, filter):
         '''add an explicit where clause'''
-        my.select.add_where(filter)
+        self.select.add_where(filter)
 
-    # DEPRECATED: Still called in my.skip_retired()
-    def remove_where(my, filter):
+    # DEPRECATED: Still called in self.skip_retired()
+    def remove_where(self, filter):
         '''add an explicit where clause'''
-        my.select.remove_where(filter)
+        self.select.remove_where(filter)
 
 
-    def add_regex_filter(my, name, regex, op='EQI'):
+    def add_regex_filter(self, name, regex, op='EQI'):
         '''add a regular expression filter
             EQ = equal case-sensitive
             EQI = equal case-insensitive
             NEQ = not equal case-sensitive
             NEQI = not equal case-insensitive '''
-        #my.select.add_filter(name, Search.get_regex_filter(name, regex, op))
-        my.select.add_where(Search.get_regex_filter(name, regex, op, my.database_impl))
+        #self.select.add_filter(name, Search.get_regex_filter(name, regex, op))
+        self.select.add_where(Search.get_regex_filter(name, regex, op, self.database_impl))
       
 
     def get_regex_filter(name, regex, op='EQI', impl=None):
@@ -402,66 +402,38 @@ class Search(Base):
 
 
 
+    def set_null_filter(self):
+        self.null_filter = True
 
-    # FIXME: this does not take the type into account
-    # DEPRECATED
-    """
-    def get_filter(my, name, value, op='='):
-        if value == None:
-            return '"%s" is NULL' % name
-        else:
-            return '"%s" %s %s' % ( name, op, Sql.quote(value) )
-    """
-
-
-    def set_null_filter(my):
-        my.null_filter = True
-
-    def set_security_filter(my):
+    def set_security_filter(self):
         '''set it after Security has done alter_search()'''
-        my.security_filter = True
+        self.security_filter = True
 
 
 
-    def add_filter(my, name, value, op='=', quoted=None, table=''):
+    def add_filter(self, name, value, op='=', quoted=None, table=''):
         if name == None:
             raise SearchException("Cannot add null as a name in filter")
-        #filter = my.get_filter(name, value, op)
-        #my.select.add_where(filter)
+        #filter = self.get_filter(name, value, op)
+        #self.select.add_where(filter)
 
         if value == "__ALL__":
             return
 
-        my.select.add_filter(name, value, op=op, quoted=quoted, table=table)
+        self.select.add_filter(name, value, op=op, quoted=quoted, table=table)
 
 
-    def add_filters(my, name, values, table='', op='in'):
+    def add_filters(self, name, values, table='', op='in'):
         ''' add a where name in (val1, val2, ...) '''
-        """
-        if not op:
-            op = 'in'
-
-        if not table:
-            table = my.select.get_table()
-        filter = my.get_filters(name, values, table, op)
-        if filter == "NULL":
-            my.null_filter = True
-        #my.select.add_filter(name, filter)
-        my.select.add_where(filter)
-        """
-        #filter = my.get_filters(name, values, table, op)
-        #print "filter: ", filter
-        my.select.add_filters(name, values, op=op, table=table)
+        self.select.add_filters(name, values, op=op, table=table)
 
 
 
+    def add_null_filter(self, name):
+        self.add_filter(name, "NULL", quoted=False, op="is")
 
 
-    def add_null_filter(my, name):
-        my.add_filter(name, "NULL", quoted=False, op="is")
-
-
-    def add_search_filter(my, name, search, op='in', table=''):
+    def add_search_filter(self, name, search, op='in', table=''):
         '''combines results of one search filter with another search filter
         as a subselect
 
@@ -471,7 +443,7 @@ class Search(Base):
         '''
         select = search.get_select()
 
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
         related_type = search.get_search_type()
 
         search_type_obj = SearchType.get(search_type)
@@ -483,13 +455,13 @@ class Search(Base):
             column = select.columns[0]
             sobjects = search.get_sobjects()
             values = SObject.get_values(sobjects, column, unique=True)
-            my.add_filters(name, values)
+            self.add_filters(name, values)
         else:
-            my.select.add_select_filter(name, select, op, table=table)
+            self.select.add_select_filter(name, select, op, table=table)
 
-    def add_op(my, op, idx=None):
+    def add_op(self, op, idx=None):
         '''add operator like begin, and, or. with an idx number, it will be inserted instead of appended'''
-        my.select.add_op(op, idx=idx)
+        self.select.add_op(op, idx=idx)
 
     def is_expr(value):
         '''return True if it is an expression based on starting chars'''
@@ -501,7 +473,7 @@ class Search(Base):
     is_expr = staticmethod(is_expr)
 
 
-    def add_op_filters(my, filters):
+    def add_op_filters(self, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
 
@@ -520,7 +492,7 @@ class Search(Base):
                 else:
                     where = filter[0]
                 if where in ['begin','and','or']:
-                    my.add_where(where)
+                    self.add_where(where)
                 else:
                     raise SearchException('Single argument filter is no longer supported. Try to use 2 or 3 arguments.')
 
@@ -535,27 +507,27 @@ class Search(Base):
 
                 if name.startswith("@"):
                     if name == '@ORDER_BY':
-                        my.add_order_by(filter[1])
+                        self.add_order_by(filter[1])
                     elif name == '@LIMIT':
-                        my.set_limit(filter[1])
+                        self.set_limit(filter[1])
                     elif name == '@OFFSET':
-                        my.set_offset(filter[1])
+                        self.set_offset(filter[1])
                     elif name == '@UNIQUE':
-                        my.add_column(filter[1], distinct=True)
+                        self.add_column(filter[1], distinct=True)
 
 
                 elif isinstance(value, basestring):
                     # <name> = '<value>'
-                    if my.is_expr(value):
+                    if self.is_expr(value):
                         value = Search.eval(value, single=True)
-                    my.add_filter(name, value, table=table)
-                    #print 'name: [%s],[%s]' % (name, value)
+                    self.add_filter(name, value, table=table)
+                    #print('name: [%s],[%s]' % (name, value))
                 elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
                     # <name> = '<value>'
-                    my.add_filter(name, value, table=table)
+                    self.add_filter(name, value, table=table)
                 else:
                     # <name> in ('<value1>', '<value2>')
-                    my.add_filters(name, value, table=table)
+                    self.add_filters(name, value, table=table)
 
             elif len(filter) == 4:
                 name, op, start, end = filter
@@ -569,7 +541,7 @@ class Search(Base):
 
 
                 if op == "in between":
-                    my.add_date_range_filter(name, start, end, table=table)
+                    self.add_date_range_filter(name, start, end, table=table)
 
 
             elif len(filter) == 3:
@@ -579,7 +551,7 @@ class Search(Base):
                 op = op.replace("gte", ">=")
                 op = op.replace("lt", "<")
                 op = op.replace("gt", ">")
-                if my.is_expr(value):
+                if self.is_expr(value):
                     value = Search.eval(value, single=True)
 
 
@@ -596,17 +568,17 @@ class Search(Base):
 
 
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
-                #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
+                #self.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
                     values =  value.split('|')
                     #avoid empty value
                     values  = [x for x in values if x]
-                    my.add_filters(name, values, op=op, table=table)
+                    self.add_filters(name, values, op=op, table=table)
                 elif op in ['EQ','NEQ','EQI','NEQI']:
-                    my.add_regex_filter(name, value, op)
+                    self.add_regex_filter(name, value, op)
                 elif op in ['@@']:
                     value = value.replace('"', "'")
-                    my.add_text_search_filter(name, value, table=table)
+                    self.add_text_search_filter(name, value, table=table)
 
                 else:
                     if op == 'is after':
@@ -619,85 +591,85 @@ class Search(Base):
                     if value == 'NULL':
                         quoted = False
                     if op == 'is on':
-                        my.add_day_filter(name, value)
+                        self.add_day_filter(name, value)
                     else:
-                        my.add_filter( name, value, op=op, quoted=quoted, table=table)
+                        self.add_filter( name, value, op=op, quoted=quoted, table=table)
 
 
-    def add_day_filter(my, name, value):
+    def add_day_filter(self, name, value):
         ''' is on a particular day'''
         date = Date(db_date=value)
         value = date.get_db_date()
         date.add_days(1)
         end_value = date.get_db_date()
-        my.add_filter(name, value, op='>=')
-        my.add_filter(name, end_value, op='<')
+        self.add_filter(name, value, op='>=')
+        self.add_filter(name, end_value, op='<')
 
 
-    def add_interval_filter(my, name, value):
-        my.add_where( Select.get_interval_where(value,name) )
+    def add_interval_filter(self, name, value):
+        self.add_where( Select.get_interval_where(value,name) )
 
 
-    def add_sobject_filter(my, sobject, prefix="", op=None):
+    def add_sobject_filter(self, sobject, prefix="", op=None):
         '''convenience function to add a filter for the given sobject'''
-        my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
+        self.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
 
         if SearchType.column_exists(sobject.get_search_type(), "code") and \
-            SearchType.column_exists(my.get_search_type(), "%ssearch_code" % prefix):
+            SearchType.column_exists(self.get_search_type(), "%ssearch_code" % prefix):
             search_code = sobject.get_value("code")
             if not op:
                 op = '='
-            my.add_filter("%ssearch_code" % prefix, search_code, op=op )
+            self.add_filter("%ssearch_code" % prefix, search_code, op=op )
         else:
             if not op:
                 op = '='
-            my.add_filter("%ssearch_id" % prefix, sobject.get_id(), op=op )
+            self.add_filter("%ssearch_id" % prefix, sobject.get_id(), op=op )
 
 
 
-    def add_sobjects_filter(my, sobjects, prefix="", op='in'):
+    def add_sobjects_filter(self, sobjects, prefix="", op='in'):
         '''convenience function to add a filter for the given sobjects'''
 
         if not sobjects:
             return
 
         search_type = sobjects[0].get_search_type()
-        my.add_filter("%ssearch_type" % prefix, search_type )
+        self.add_filter("%ssearch_type" % prefix, search_type )
 
         # assume they are of the same type
         sobject = sobjects[0]
-        if my.column_exists("%ssearch_code" % prefix):
+        if self.column_exists("%ssearch_code" % prefix):
             search_codes = [x.get_value("code") for x in sobjects if x]
-            my.add_filters("%ssearch_code" % prefix, search_codes, op=op )
+            self.add_filters("%ssearch_code" % prefix, search_codes, op=op )
         else:
             search_ids = [str(x.get_id()) for x in sobjects if x]
-            my.add_filters("%ssearch_id" % prefix, search_ids, op=op )
+            self.add_filters("%ssearch_id" % prefix, search_ids, op=op )
 
 
 
-    def add_parent_filter(my, parent, relationship=None):
+    def add_parent_filter(self, parent, relationship=None):
         '''use the schema to determine the relationship and then add the
         appropriate filter'''
         if not parent:
-            my.add_id_filter(0)
+            self.add_id_filter(0)
             return
 
         if isinstance(parent, basestring):
             parent = Search.get_by_search_key(parent)
 
         #parent_search_type = parent.get_base_search_type()
-        #search_type = my.get_base_search_type()
+        #search_type = self.get_base_search_type()
         parent_search_type = parent.get_search_type()
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
 
         if parent_search_type == search_type:
-            print "WARNING: parent type and search type are the same for [%s]" % parent_search_type
-            my.add_id_filter(parent.get_id())
+            print("WARNING: parent type and search type are the same for [%s]" % parent_search_type)
+            self.add_id_filter(parent.get_id())
             return
 
         from pyasm.biz import Schema
 
-        schema = Schema.get(project_code=my.project_code)
+        schema = Schema.get(project_code=self.project_code)
 
         if not relationship:
             relationship = schema.get_relationship(parent_search_type, search_type)
@@ -707,18 +679,18 @@ class Search(Base):
 
         attrs = schema.get_relationship_attrs(parent_search_type, search_type, path=None)
         if relationship == "code":
-            my.add_relationship_filter(parent)
-            #my.add_filter(parent.get_foreign_key(), parent.get_code() )
+            self.add_relationship_filter(parent)
+            #self.add_filter(parent.get_foreign_key(), parent.get_code() )
         elif relationship == "id":
-            my.add_relationship_filter(parent)
-            #my.add_filter(parent.get_foreign_key(), parent.get_id() )
+            self.add_relationship_filter(parent)
+            #self.add_filter(parent.get_foreign_key(), parent.get_id() )
         elif relationship == "parent_code":
-            my.add_filter("parent_code", parent.get_code() )
+            self.add_filter("parent_code", parent.get_code() )
         elif relationship in ["search_type", "search_code", "search_id"]:
 
             if relationship == "search_type":
                 full_parent_search_type = parent.get_search_type()
-                full_search_type = my.get_search_type()
+                full_search_type = self.get_search_type()
                 relationship = schema.resolve_search_type_relationship(attrs, full_parent_search_type, full_search_type)
 
             prefix = attrs.get("prefix")
@@ -726,43 +698,43 @@ class Search(Base):
                 prefix = "%s_" % prefix
             else:
                 prefix = ""
-            my.add_filter("%ssearch_type" % prefix, parent.get_search_type() )
-            #my.add_filter("%ssearch_id" % prefix, parent.get_id() )
-            my.add_filter("%ssearch_code" % prefix, parent.get_code() )
+            self.add_filter("%ssearch_type" % prefix, parent.get_search_type() )
+            #self.add_filter("%ssearch_id" % prefix, parent.get_id() )
+            self.add_filter("%ssearch_code" % prefix, parent.get_code() )
 
 
 
 
 
-    def add_relationship_filter(my, sobject, path=None):
+    def add_relationship_filter(self, sobject, path=None):
         '''adds a filter to the current search that are related to the passed
         in sobject.  The schema takes care of figuring out how to relate
         the two search_types
         '''
-        base_search_type = my.get_base_search_type()
+        base_search_type = self.get_base_search_type()
         #related_type = sobject.get_base_search_type()
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
         related_type = sobject.get_search_type()
         
         if search_type == related_type:
-            print "WARNING: related type and search type are the same for [%s]" % search_type
-            my.add_id_filter(sobject.get_id())
+            print("WARNING: related type and search type are the same for [%s]" % search_type)
+            self.add_id_filter(sobject.get_id())
             return
 
         from pyasm.biz import Schema
 
-        if my.project_code == 'sthpw':
+        if self.project_code == 'sthpw':
             related_project_code = sobject.get_project_code()
             schema = Schema.get(project_code=related_project_code)
         else:
-            schema = Schema.get(project_code=my.project_code)
+            schema = Schema.get(project_code=self.project_code)
         
         attrs = schema.get_relationship_attrs(search_type, related_type, path)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
 
         if attrs.get("disabled") == True:
-            my.null_filter = True
+            self.null_filter = True
             return
 
 
@@ -779,15 +751,15 @@ class Search(Base):
             if my_is_from:
                 value = sobject.get_value(to_col)
                 if not value:
-                    my.null_filter = True
+                    self.null_filter = True
                     return
-                my.add_filter(from_col, value )
+                self.add_filter(from_col, value )
             else:
                 value = sobject.get_value(from_col)
                 if not value:
-                    my.null_filter = True
+                    self.null_filter = True
                     return
-                my.add_filter(to_col, value )
+                self.add_filter(to_col, value )
         elif relationship in ['search_id']:
 
             prefix = attrs.get("prefix")
@@ -796,10 +768,10 @@ class Search(Base):
             else:
                 prefix = ""
             if my_is_from:
-                my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
-                my.add_filter("%ssearch_id" % prefix, sobject.get_id() )
+                self.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
+                self.add_filter("%ssearch_id" % prefix, sobject.get_id() )
             else:
-                my.add_filter(my.get_id_col(), sobject.get_value("search_id"))
+                self.add_filter(self.get_id_col(), sobject.get_value("search_id"))
 
         elif relationship in ['search_code']:
             prefix = attrs.get("prefix")
@@ -809,10 +781,10 @@ class Search(Base):
                 prefix = ""
 
             if my_is_from:
-                my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
-                my.add_filter("%ssearch_code" % prefix, sobject.get_code() )
+                self.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
+                self.add_filter("%ssearch_code" % prefix, sobject.get_code() )
             else:
-                my.add_filter("code", sobject.get_value("search_code"))
+                self.add_filter("code", sobject.get_value("search_code"))
 
 
         elif relationship in ['instance']:
@@ -820,29 +792,29 @@ class Search(Base):
             instance_type = attrs.get("instance_type")
             assert(instance_type)
 
-            my.add_join(instance_type, search_type)
-            my.add_join(related_type, instance_type)
+            self.add_join(instance_type, search_type)
+            self.add_join(related_type, instance_type)
 
             search_type_obj = SearchType.get(search_type)
             related_type_obj = SearchType.get(related_type)
 
             table = search_type_obj.get_table()
             related_table = related_type_obj.get_table()
-            my.add_column("*", table=table)
-            my.add_column("code", table=related_table, as_column="_related_code")
+            self.add_column("*", table=table)
+            self.add_column("code", table=related_table, as_column="_related_code")
 
             if my_is_from:
                 value = sobject.get_value(to_col)
                 if not value:
-                    my.null_filter = True
+                    self.null_filter = True
                     return
-                my.add_filter(from_col, value, table=related_table )
+                self.add_filter(from_col, value, table=related_table )
             else:
                 value = sobject.get_value(from_col)
                 if not value:
-                    my.null_filter = True
+                    self.null_filter = True
                     return
-                my.add_filter(to_col, value, table=table )
+                self.add_filter(to_col, value, table=table )
 
  
         else:
@@ -851,7 +823,7 @@ class Search(Base):
 
 
 
-    def add_relationship_filters(my, sobjects, op='in', path=None, type=None):
+    def add_relationship_filters(self, sobjects, op='in', path=None, type=None):
         '''adds a filter to the current search that are related to the passed
         in sobjects.  The schema takes care of figuring out how to relate
         the two search_types
@@ -860,24 +832,24 @@ class Search(Base):
         because it required you to already have the full sobjects.
         '''
         if not sobjects:
-            my.null_filter = True
+            self.null_filter = True
             return
 
         sobject = sobjects[0]
 
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
         related_type = sobjects[0].get_base_search_type()
         
-        project_code = my.project_code
+        project_code = self.project_code
         # should go by this search_type's project_code
 
         # handle case where both search types are the same
         if search_type == related_type:
             has_code = SearchType.column_exists(search_type, "code")
             if has_code:
-                my.add_filters("code", [x.get_value("code") for x in sobjects], op=op)
+                self.add_filters("code", [x.get_value("code") for x in sobjects], op=op)
             else:
-                my.add_filters(sobject.get_id_col(), [x.get_id() for x in sobjects], op=op)
+                self.add_filters(sobject.get_id_col(), [x.get_id() for x in sobjects], op=op)
             return
 
 
@@ -893,7 +865,7 @@ class Search(Base):
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
 
         if attrs.get("disabled") == True:
-            my.null_filter = True
+            self.null_filter = True
             return
 
 
@@ -906,10 +878,10 @@ class Search(Base):
         if relationship in ['id', 'code']:
             if my_is_from:
                 col_values  = [x.get_value(to_col) for x in sobjects]
-                my.add_filters(from_col, col_values, op=op )
+                self.add_filters(from_col, col_values, op=op )
             else:
                 col_values  = [x.get_value(from_col) for x in sobjects]
-                my.add_filters(to_col, col_values, op=op )
+                self.add_filters(to_col, col_values, op=op )
         elif relationship in ['search_type','search_code','search_id']:
 
             prefix = attrs.get("prefix")
@@ -920,7 +892,7 @@ class Search(Base):
 
             if my_is_from:
                 if not to_col:
-                    attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), sobjects[0].get_search_type())
+                    attrs = schema.resolve_relationship_attrs(attrs, self.get_search_type(), sobjects[0].get_search_type())
                     to_col = attrs.get("to_col")
                     from_col = attrs.get("from_col")
 
@@ -939,11 +911,11 @@ class Search(Base):
                 if not multi_stypes:
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
-                    my.add_filter("%ssearch_type" % prefix, sobjects[0].get_search_type() )
+                    self.add_filter("%ssearch_type" % prefix, sobjects[0].get_search_type() )
                     if isinstance(col_values[0], int) or isinstance(col_values[0], long):
-                        my.add_filters(from_col, col_values, op=op )
+                        self.add_filters(from_col, col_values, op=op )
                     else:
-                        my.add_filters("%ssearch_code" % prefix, col_values, op=op)
+                        self.add_filters("%ssearch_code" % prefix, col_values, op=op)
                 else:
                     if op != 'in':
                         raise SearchException("For searches with multi_stypes, op = 'in' must be used.");
@@ -958,7 +930,7 @@ class Search(Base):
                         #search.add_filter(from_col, search_code)
                         #search.add_op("and")
                         filters.append("(search_type = '%s' and %s = '%s')" % (search_type, from_col, search_code))
-                    my.add_where("( %s )" % " or ".join(filters))
+                    self.add_where("( %s )" % " or ".join(filters))
 
 
 
@@ -966,7 +938,7 @@ class Search(Base):
                 # assume default search_type/search_id schema like task, snapshot
                 # filter out the sobjects that are not the same search type
                 # as the search
-                search_type = my.get_search_type()
+                search_type = self.get_search_type()
                 filtered_sobjects = []
                 for sobject in sobjects:
                     if sobject.get_value("%ssearch_type" % prefix) != search_type:
@@ -985,14 +957,14 @@ class Search(Base):
 
                 sobject_values = SObject.get_values(sobjects, column, unique=True)
                 sobject_values = [x for x in sobject_values if x]
-                my.add_filters(column2, sobject_values, op=op)
+                self.add_filters(column2, sobject_values, op=op)
 
         elif relationship in ['instance']:
             instance_type = attrs.get("instance_type")
             assert(instance_type)
 
-            my.add_join(instance_type, search_type)
-            my.add_join(related_type, instance_type)
+            self.add_join(instance_type, search_type)
+            self.add_join(related_type, instance_type)
 
 
             search_type_obj = SearchType.get(search_type)
@@ -1000,9 +972,9 @@ class Search(Base):
 
             table = search_type_obj.get_table()
             related_table = related_type_obj.get_table()
-            my.add_column("*", table=table)
+            self.add_column("*", table=table)
 
-            my.add_column("code", table=related_table, as_column="_related_code")
+            self.add_column("code", table=related_table, as_column="_related_code")
 
             #raise SearchException("Relationship [%s] not supported yet" % relationship)
 
@@ -1012,7 +984,7 @@ class Search(Base):
 
 
 
-    def add_relationship_search_filter(my, search, op='in', delay_null=False,use_multidb=None):
+    def add_relationship_search_filter(self, search, op='in', delay_null=False,use_multidb=None):
         '''optimized relationship filter so that you don't need the results
         of the sub search.  This is much faster because the search is done
         completely in the database without having to go through the whole
@@ -1036,33 +1008,33 @@ class Search(Base):
         '''
 
         if not search:
-            my.null_filter = True
+            self.null_filter = True
             return False
 
         assert op in ['in', 'not in']
 
-        search_type = my.get_base_search_type()
-        full_search_type = my.get_search_type()
+        search_type = self.get_base_search_type()
+        full_search_type = self.get_search_type()
         related_type = search.get_base_search_type()
         full_related_type = search.get_search_type()
 
-        search_type_obj = my.get_search_type_obj()
+        search_type_obj = self.get_search_type_obj()
         table = search_type_obj.get_table()
         
         search.order_by = False
 
         if search_type == related_type:
-            #print "WARNING: related type and search type are the same for [%s]" % search_type
+            #print("WARNING: related type and search type are the same for [%s]" % search_type)
             search.add_column("id")
-            my.add_search_filter("id", search, op, table=table )
+            self.add_search_filter("id", search, op, table=table )
             return True
 
         from pyasm.biz import Schema
-        if my.project_code == 'sthpw':
+        if self.project_code == 'sthpw':
             related_project_code = search.project_code
             schema = Schema.get(project_code=related_project_code)
         else:
-            schema = Schema.get(project_code=my.project_code)
+            schema = Schema.get(project_code=self.project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -1078,10 +1050,10 @@ class Search(Base):
 
             if my_is_from:
                 search.add_column(to_col)
-                my.add_search_filter(from_col, search, op, table=table )
+                self.add_search_filter(from_col, search, op, table=table )
             else:
                 search.add_column(from_col)
-                my.add_search_filter(to_col, search, op, table=table )
+                self.add_search_filter(to_col, search, op, table=table )
         elif relationship in ['search_type', 'search_code', 'search_id']:
             if relationship == 'search_type':
                 relationship = schema.resolve_search_type_relationship(attrs, search_type, related_type)
@@ -1094,29 +1066,29 @@ class Search(Base):
             if Config.get_value('database','join') == 'false':
                 can_join = False 
             if can_join:
-                my.add_op('begin')
+                self.add_op('begin')
                 if my_is_from:
-                    my.add_filter("search_type", search.get_search_type() )
+                    self.add_filter("search_type", search.get_search_type() )
 
                     if relationship == "search_code":
                         search.add_column("code", distinct=True)
-                        my.add_search_filter("search_code", search)
+                        self.add_search_filter("search_code", search)
                     else:
                         search.add_column("id", distinct=True)
-                        my.add_search_filter("search_id", search)
+                        self.add_search_filter("search_id", search)
 
                 else:
-                    search.add_filter("search_type", my.get_search_type())
+                    search.add_filter("search_type", self.get_search_type())
 
                     if relationship == 'search_code':
                         search.add_column("search_code", distinct=True)
-                        my.add_search_filter("code", search)
+                        self.add_search_filter("code", search)
                     else:
                         search.add_column("search_id", distinct=True)
-                        my.add_search_filter("id", search)
+                        self.add_search_filter("id", search)
 
 
-                my.add_op('and')
+                self.add_op('and')
                 return True
 
 
@@ -1132,15 +1104,15 @@ class Search(Base):
                 if delay_null and not s_values:
                     return False
                 
-                my.add_op('begin')
-                my.add_filter("search_type", search.get_search_type() )
+                self.add_op('begin')
+                self.add_filter("search_type", search.get_search_type() )
 
                 if relationship == 'search_code':
-                    my.add_filters("search_code", s_values )
+                    self.add_filters("search_code", s_values )
                 else:
-                    my.add_filters("search_id", s_values )
+                    self.add_filters("search_id", s_values )
 
-                my.add_op('and')
+                self.add_op('and')
 
             else:
                 if relationship == 'search_code':
@@ -1151,7 +1123,7 @@ class Search(Base):
                 search.add_filter("search_type", full_search_type)
 
                 # skip retired
-                sql = DbContainer.get(my.db_resource)
+                sql = DbContainer.get(self.db_resource)
                 columns = search.get_columns()
                 search.skip_retired(columns)
 
@@ -1166,18 +1138,18 @@ class Search(Base):
 
                 if not results:
                     if relationship == 'search_code':
-                        my.add_filter("code", "NULL", quoted=False)
+                        self.add_filter("code", "NULL", quoted=False)
                     else:
-                        my.add_filter("id", "NULL", quoted=False)
+                        self.add_filter("id", "NULL", quoted=False)
                 else:
                     # filter out invalid search_id = NULL
                     values = [x[0] for x in results if x[0]]
                     if delay_null and not values:
                         return False
                     if relationship == 'search_code':
-                        my.add_filters("code", values, op=op)
+                        self.add_filters("code", values, op=op)
                     else:
-                        my.add_filters("id", values, op=op)
+                        self.add_filters("id", values, op=op)
 
         else:
             raise SearchException("Relationship [%s] not supported" % relationship)
@@ -1185,7 +1157,7 @@ class Search(Base):
         return True
 
 
-    def add_user_filter(my, user=None, column=None, table=""):
+    def add_user_filter(self, user=None, column=None, table=""):
         '''convenience function to add a filter for the given sobject'''
         if user == None:
             user = Environment.get_user_name()
@@ -1193,19 +1165,19 @@ class Search(Base):
             column = "login"
 
         if not table:
-            table = my.select.get_table()
+            table = self.select.get_table()
 
-        my.add_filter(column, user, table=table)
+        self.add_filter(column, user, table=table)
 
 
 
-    def add_project_filter(my, project_code=None, show_unset=True):
+    def add_project_filter(self, project_code=None, show_unset=True):
         from pyasm.biz import Project
         filter = Project.get_project_filter(project_code, show_unset=show_unset)
-        my.add_where(filter)
+        self.add_where(filter)
 
 
-    def add_date_range_filter(my, name, start_date, end_date, table=''):
+    def add_date_range_filter(self, name, start_date, end_date, table=''):
         '''convenience function to add a filter between two dates.  This
         method will strip out the time and ensure that the range is
             start_date >= date <= end_date + 1 day
@@ -1219,28 +1191,28 @@ class Search(Base):
             end_date = parser.parse(end_date)
 
         if not start_date and not end_date:
-            my.set_null_filter()
+            self.set_null_filter()
 
         if start_date and end_date:
-            my.add_op('begin')
+            self.add_op('begin')
 
 
         if start_date:
             start_date = datetime.datetime(year=start_date.year,month=start_date.month,day=start_date.day)
-            my.add_filter(name, start_date, op=">=", table=table)
+            self.add_filter(name, start_date, op=">=", table=table)
 
         if end_date:
             end_date = datetime.datetime(year=end_date.year,month=end_date.month,day=end_date.day)
             end_date = end_date + datetime.timedelta(days=1)
 
-            my.add_filter(name, end_date, op="<", table=table)
+            self.add_filter(name, end_date, op="<", table=table)
 
         if start_date and end_date:
-            my.add_op('and')
+            self.add_op('and')
 
 
 
-    def add_dates_overlap_filter(my, start_col, end_col, start_date, end_date, table='', op='in'):
+    def add_dates_overlap_filter(self, start_col, end_col, start_date, end_date, table='', op='in'):
         '''convenience function to add a filter of two date columns that
         overlap two dates.
 
@@ -1257,17 +1229,17 @@ class Search(Base):
             end_date = parser.parse(end_date)
 
         if not start_date and not end_date:
-            my.set_null_filter()
+            self.set_null_filter()
 
         start_date = datetime.datetime(year=start_date.year,month=start_date.month,day=start_date.day)
         end_date = datetime.datetime(year=end_date.year,month=end_date.month,day=end_date.day)
         # NOTE: not sure if we want to add this extra day here?
         end_date = end_date + datetime.timedelta(days=1)
-        table = my.select.get_table()
+        table = self.select.get_table()
 
         select = Select()
-        select.set_database(my.db_resource)
-        my.select.set_id_col(my.get_id_col())
+        select.set_database(self.db_resource)
+        self.select.set_id_col(self.get_id_col())
         select.add_table(table)
         select.add_column("id")
 
@@ -1298,37 +1270,37 @@ class Search(Base):
 
         statement = select.get_statement()
 
-        my.add_where('''"%s"."id" %s (%s)'''% (table, op, statement) )
+        self.add_where('''"%s"."id" %s (%s)'''% (table, op, statement) )
 
 
 
 
-    def add_id_filter(my, value):
-        my.add_filter( my.get_id_col(), value , quoted=False)
-
-        # when adding an explicit id filter, you probably want it even
-        # if it is retired
-        my.set_show_retired_flag(True)
-
-
-    def add_code_filter(my, value):
-        my.add_filter( "code", value )
+    def add_id_filter(self, value):
+        self.add_filter( self.get_id_col(), value , quoted=False)
 
         # when adding an explicit id filter, you probably want it even
         # if it is retired
-        my.set_show_retired_flag(True)
+        self.set_show_retired_flag(True)
+
+
+    def add_code_filter(self, value):
+        self.add_filter( "code", value )
+
+        # when adding an explicit id filter, you probably want it even
+        # if it is retired
+        self.set_show_retired_flag(True)
 
 
 
-    def add_group_by(my, column):
-        my.select.add_group_by(column)
+    def add_group_by(self, column):
+        self.select.add_group_by(column)
 
-    def add_having(my, filter):
-        my.select.add_having(filter)
+    def add_having(self, filter):
+        self.select.add_having(filter)
 
 
 
-    def add_group_aggregate_filter(my, group_cols, column='id', aggregate='max'):
+    def add_group_aggregate_filter(self, group_cols, column='id', aggregate='max'):
         '''This does a co-related subselect which finds the result of an
         aggregate function over a list of grouped columns
        
@@ -1345,20 +1317,20 @@ class Search(Base):
         http://www.xaprb.com/blog/2006/12/07/how-to-select-the-firstleastmax-row-per-group-in-sql/
         
         '''
-        my.select.add_group_aggregate_filter(group_cols, column, aggregate)
+        self.select.add_group_aggregate_filter(group_cols, column, aggregate)
 
 
-    def add_distinct_filter(my, group_cols):
-        my.select.add_group_aggregate_filter(group_cols)
+    def add_distinct_filter(self, group_cols):
+        self.select.add_group_aggregate_filter(group_cols)
 
 
-    def add_keyword_filter(my, column, keywords, table=None, column_type=None, op=None, case_sensitive=False):
+    def add_keyword_filter(self, column, keywords, table=None, column_type=None, op=None, case_sensitive=False):
 
         if not table:
-            table = my.search_type_obj.get_table()
+            table = self.search_type_obj.get_table()
 
         if not column_type:
-            column_types = SearchType.get_column_types(my.full_search_type)
+            column_types = SearchType.get_column_types(self.full_search_type)
             column_type =  column_types.get(column)
        
         if isinstance(keywords, basestring):
@@ -1368,7 +1340,7 @@ class Search(Base):
         # defaults to and
         if not op:
             op = 'and'
-        my.select.add_op('begin')
+        self.select.add_op('begin')
         for keyword in keywords:
             if not keyword:
                 continue
@@ -1384,11 +1356,11 @@ class Search(Base):
             else:
                 # don't add lower() here to allow index to function
                 expr = '''"%s"."%s" like '%%%s%%' ''' % (table, column, keyword)
-            my.select.add_where(expr)
-        my.select.add_op(op)
+            self.select.add_where(expr)
+        self.select.add_op(op)
 
 
-    def add_startswith_keyword_filter(my, column, keywords, case_sensitive=False):
+    def add_startswith_keyword_filter(self, column, keywords, case_sensitive=False):
 
         if column.find(".") != -1:
             parts = column.split(".")
@@ -1400,21 +1372,21 @@ class Search(Base):
             # to get the last 10 best matched result in Look Ahead search. we could uncomment this in the future
             # if we have a cross database way of eliminating duplicates.
             '''   
-            prev_stype = my.get_base_search_type()
+            prev_stype = self.get_base_search_type()
             search_types = reversed(search_types)
             
             for next_stype in search_types:
-                my.add_join(next_stype, prev_stype)
+                self.add_join(next_stype, prev_stype)
                 prev_stype = next_stype
 
             # postgresql only way
-            my.set_distinct_col('"%s".id'%table)
+            self.set_distinct_col('"%s".id'%table)
             '''
-            table = my.search_type_obj.get_table()
-            column_types = SearchType.get_column_types(my.full_search_type)
+            table = self.search_type_obj.get_table()
+            column_types = SearchType.get_column_types(self.full_search_type)
         else: 
-            table = my.search_type_obj.get_table()
-            column_types = SearchType.get_column_types(my.full_search_type)
+            table = self.search_type_obj.get_table()
+            column_types = SearchType.get_column_types(self.full_search_type)
 
 
 
@@ -1443,22 +1415,22 @@ class Search(Base):
                     # NOTE: lower() on the column disables the use of index, resulting in much slower performance
                     expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
 
-            my.select.add_op("begin")
+            self.select.add_op("begin")
 
-            my.select.add_where(expr1)
-            my.select.add_where(expr2)
-            my.select.add_op("or")
-
-
-
-
-    def add_text_search_filter(my, column, keywords, table=None, op='&'):
-
-        my.select.add_text_search_filter(column, keywords, table=table, op=op)
+            self.select.add_where(expr1)
+            self.select.add_where(expr2)
+            self.select.add_op("or")
 
 
 
-    def add_text_search_filters(my, columns, keywords, table=None):
+
+    def add_text_search_filter(self, column, keywords, table=None, op='&'):
+
+        self.select.add_text_search_filter(column, keywords, table=table, op=op)
+
+
+
+    def add_text_search_filters(self, columns, keywords, table=None):
         '''function that searches keywords across multiple columns'''
 
         single_col = len(columns) == 1
@@ -1504,28 +1476,28 @@ class Search(Base):
                 op = '&'
 
 
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
         search_type_obj = SearchType.get(search_type)
 
         if not table:
             table = search_type_obj.get_table()
 
-        my.add_op("begin")
+        self.add_op("begin")
 
         for column in columns:
-            my.add_text_search_filter(column, keywords, table=table, op=op)
+            self.add_text_search_filter(column, keywords, table=table, op=op)
 
-        my.add_op(multi_col_op)
-
-
+        self.add_op(multi_col_op)
 
 
-    def add_join(my, to_search_type, from_search_type=None, path=None, join=None):
+
+
+    def add_join(self, to_search_type, from_search_type=None, path=None, join=None):
         to_search_type_obj = SearchType.get(to_search_type)
         to_search_type = to_search_type_obj.get_base_key()
 
         if not from_search_type:
-            from_search_type = my.get_base_search_type()
+            from_search_type = self.get_base_search_type()
         else:
             from_search_type_obj = SearchType.get(from_search_type)
             from_search_type = from_search_type_obj.get_base_key()
@@ -1539,7 +1511,7 @@ class Search(Base):
 
 
         from pyasm.biz import Schema
-        schema = Schema.get(project_code=my.project_code)
+        schema = Schema.get(project_code=self.project_code)
         attrs = schema.get_relationship_attrs(from_search_type, to_search_type, path=path)
         if not attrs:
             return
@@ -1565,7 +1537,7 @@ class Search(Base):
                 else:
                     from_col = "search_id"
                     to_col = "id"
-                my.add_filter("search_type", my.get_search_type(),table=from_table)
+                self.add_filter("search_type", self.get_search_type(),table=from_table)
             else:
                 if relationship == "search_code":
                     from_col = "code"
@@ -1573,7 +1545,7 @@ class Search(Base):
                 else:
                     from_col = "id"
                     to_col = "search_id"
-                my.add_filter("search_type", my.get_search_type(),table=to_table)
+                self.add_filter("search_type", self.get_search_type(),table=to_table)
 
         else:
             from_database = None
@@ -1590,13 +1562,13 @@ class Search(Base):
             join = "LEFT OUTER"
 
         if from_table:
-            my.select.add_join(from_table, to_table, from_col, to_col, join=join, database=from_database, database2=to_database)
+            self.select.add_join(from_table, to_table, from_col, to_col, join=join, database=from_database, database2=to_database)
         else:
-            my.select.add_join(to_table, join=join)
+            self.select.add_join(to_table, join=join)
 
 
 
-    def add_order_by(my, order_str, direction='', join="LEFT OUTER"):
+    def add_order_by(self, order_str, direction='', join="LEFT OUTER"):
 
         # check if it is valid
         if ',' in order_str:
@@ -1604,7 +1576,7 @@ class Search(Base):
             for order_by in order_bys:
                 # do not call return in the loop so that all items are looped through
                
-                my.add_order_by(order_by, direction)
+                self.add_order_by(order_by, direction)
             return
 
         order_str = order_str.strip()
@@ -1615,7 +1587,7 @@ class Search(Base):
         if len(strs) == 2:
             direction = strs[1]
         # prevent duplicate order bys ... first one wins
-        if column in my.order_bys:
+        if column in self.order_bys:
             return
 
         parts = column.split(".")
@@ -1627,7 +1599,7 @@ class Search(Base):
         if len(parts) >= 2:
             # Add joins to order by another search_type
 
-            prev_search_type = my.get_base_search_type()
+            prev_search_type = self.get_base_search_type()
             for search_type in parts[0:-1]:
 
                 if search_type.find("/") == -1:
@@ -1650,7 +1622,7 @@ class Search(Base):
                 can_join = DatabaseImpl.can_search_types_join( \
                         search_type, prev_search_type)
                 if can_join:
-                    my.add_join(search_type, prev_search_type, join=join)
+                    self.add_join(search_type, prev_search_type, join=join)
                 else:
                     return False
 
@@ -1658,111 +1630,111 @@ class Search(Base):
                 prev_search_type = search_type
 
 
-            my.order_bys.append(column)
+            self.order_bys.append(column)
 
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             column = parts[-1]
-            my.select.add_order_by(column, direction=direction, table=table)
+            self.select.add_order_by(column, direction=direction, table=table)
 
             return True
         else:
 
-            table = my.search_type_obj.get_table()
+            table = self.search_type_obj.get_table()
 
-            impl = my.get_database_impl()
-            if impl.is_column_sortable(my.get_db_resource(), table, column):
-                my.select.add_order_by(order_str, direction)
-                my.order_bys.append(column)
+            impl = self.get_database_impl()
+            if impl.is_column_sortable(self.get_db_resource(), table, column):
+                self.select.add_order_by(order_str, direction)
+                self.order_bys.append(column)
                 return True
             else:
                 return False
 
 
-    def add_enum_order_by(my, column, values, table=None):
-        my.select.add_enum_order_by(column, values, table)
+    def add_enum_order_by(self, column, values, table=None):
+        self.select.add_enum_order_by(column, values, table)
 
-    def get_order_bys(my):
-        return my.select.order_bys
+    def get_order_bys(self):
+        return self.select.order_bys
 
-    def add_limit(my, limit):
+    def add_limit(self, limit):
         '''deprecated: use set_limit()'''
-        my.select.set_limit(limit)
+        self.select.set_limit(limit)
 
-    def set_limit(my, limit):
-        my.select.set_limit(limit)
+    def set_limit(self, limit):
+        self.select.set_limit(limit)
 
-    def set_offset(my, offset):
-        my.select.set_offset(offset)
+    def set_offset(self, offset):
+        self.select.set_offset(offset)
 
 
     # DEPRECATED: use set_show_retired
-    def set_show_retired_flag(my, flag):
+    def set_show_retired_flag(self, flag):
         '''retired assets must be explicitly asked for'''
-        my.show_retired_flag = flag
+        self.show_retired_flag = flag
 
-    def set_show_retired(my, flag):
+    def set_show_retired(self, flag):
         '''retired assets must be explicitly asked for'''
-        my.show_retired_flag = flag
+        self.show_retired_flag = flag
 
 
 
-    def do_search(my, redo=False, statement=None):
+    def do_search(self, redo=False, statement=None):
 
-        if my.null_filter:
+        if self.null_filter:
             return []
 
         # if we are doing a remote search, then get the sobjects from the
         # remote search
-        if isinstance(my.select, RemoteSearch):
-            return my.select.get_sobjects()
+        if isinstance(self.select, RemoteSearch):
+            return self.select.get_sobjects()
 
-        if not redo and my.is_search_done:
-            return my.sobjects
+        if not redo and self.is_search_done:
+            return self.sobjects
 
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
         security = Environment.get_security()
 
 
         # filter
-        extra_filter = my.search_type_obj.get_value("extra_filter", no_exception=True)
+        extra_filter = self.search_type_obj.get_value("extra_filter", no_exception=True)
         if extra_filter:
-            my.add_where(extra_filter)
+            self.add_where(extra_filter)
 
      
         # DEPRECATED: not sure if this was ever used??
         #
         # allow the sobject to alter search
         # A little convoluted, but it works
-        class_path = my.search_type_obj.get_class()
+        class_path = self.search_type_obj.get_class()
         (module_name, class_name) = \
                 Common.breakup_class_path(class_path)
         try:
             try:
-                exec("%s.alter_search(my)" % class_name )
+                exec("%s.alter_search(self)" % class_name )
             except NameError:
                 exec("from %s import %s" % (module_name,class_name), gl, lc )
-                exec("%s.alter_search(my)" % class_name )
+                exec("%s.alter_search(self)" % class_name )
         except ImportError:
             raise SearchException("Class_path [%s] does not exist" % class_path)
 
         # allow security to alter the search if it hasn't been done in SearchLimitWdg
-        if not my.security_filter:
-            security.alter_search(my)
+        if not self.security_filter:
+            security.alter_search(self)
 
 
         # build an sql object
-        database = my.get_database() 
+        database = self.get_database() 
         # SQL Server: Skip the temp column put in by handle_pagination()
         
-        db_resource = my.db_resource
+        db_resource = self.db_resource
         sql = DbContainer.get(db_resource)
 
         # get the columns
-        table = my.get_table()
+        table = self.get_table()
         columns = sql.get_columns(table)
-        #columns = my.remove_temp_column(columns, sql) 
-        select_columns = my.select.get_columns()
+        #columns = self.remove_temp_column(columns, sql) 
+        select_columns = self.select.get_columns()
         if select_columns:
             if select_columns[0] == '*':
                 del(select_columns[0])
@@ -1771,46 +1743,43 @@ class Search(Base):
                 columns = select_columns
 
 
-        # DEPRECATED:
-        # add the configuration settings for this sobject
         '''
-        my.config = SObjectConfig.get_by_search_type(my.search_type_obj, database)
-        if my.config != None:
-            order_bys = my.config.get_order_by()
+        self.config = SObjectConfig.get_by_search_type(self.search_type_obj, database)
+        if self.config != None:
+            order_bys = self.config.get_order_by()
             order_bys = order_bys.split(',')
             for order_by in order_bys:
                 if order_by:
-                    my.add_order_by(order_by)
-                    print "order: ", search_type, order_by
+                    self.add_order_by(order_by)
         '''
         # Hard coded replacement.  This is done for performance reasons
-        if my.order_by:
+        if self.order_by:
 
             if search_type in ['sthpw/snapshot', 'sthpw/note','sthpw/sobject_log', 'sthpw/transaction_log', 'sthpw/status_log']:
-                my.add_order_by("timestamp", direction="desc")
+                self.add_order_by("timestamp", direction="desc")
             elif search_type == 'sthpw/task':
-                my.add_order_by("search_type")
-                if my.column_exists("search_code"):
-                    my.add_order_by("search_code")
+                self.add_order_by("search_type")
+                if self.column_exists("search_code"):
+                    self.add_order_by("search_code")
             elif search_type == 'sthpw/login':
-                my.add_order_by("login")
+                self.add_order_by("login")
             elif search_type == 'sthpw/login_group':
-                my.add_order_by("login_group")
+                self.add_order_by("login_group")
             elif search_type == 'config/process':
-                my.add_order_by("pipeline_code,sort_order")
+                self.add_order_by("pipeline_code,sort_order")
             elif search_type == 'sthpw/message_log':
-                my.add_order_by("timestamp", direction="desc")
+                self.add_order_by("timestamp", direction="desc")
             elif "code" in columns:
-                my.add_order_by("code")
+                self.add_order_by("code")
 
 
 
         # skip retired sobject
-        my.skip_retired(columns)
+        self.skip_retired(columns)
 
         # get columns that are datetime to be converted to strings in
         # SObject constructor
-        column_info = my.get_column_info()
+        column_info = self.get_column_info()
         datetime_cols = []
         boolean_cols = []
         skipped_cols = []
@@ -1825,9 +1794,9 @@ class Search(Base):
 
         vendor = db_resource.get_vendor()
         if vendor == "MongoDb":
-            #statement = my.select.get_statement()
-            #print 'statement: ', statement
-            results = sql.do_query(my.select)
+            #statement = self.select.get_statement()
+            #print('statement: ', statement)
+            results = sql.do_query(self.select)
             # TODO:
             # Not really used because results is already a dictionary
             # and the column data is dynamic
@@ -1836,7 +1805,7 @@ class Search(Base):
         else:
             # get the select statement and do the query
             if not statement:
-                statement = my.select.get_statement()
+                statement = self.select.get_statement()
 
             from pyasm.security import Site
             results = sql.do_query(statement)
@@ -1850,15 +1819,15 @@ class Search(Base):
         Container.increment('Search:sql_query') 
 
         # create a list of objects
-        my.sobjects = []
+        self.sobjects = []
 
         # precalculate some information
         from pyasm.biz import Project
-        #full_search_type = Project.get_full_search_type(search_type, project_code=my.project_code)
-        full_search_type = my.get_full_search_type()
+        #full_search_type = Project.get_full_search_type(search_type, project_code=self.project_code)
+        full_search_type = self.get_full_search_type()
         fast_data = {
             'full_search_type': full_search_type,
-            'search_type_obj': my.search_type_obj,
+            'search_type_obj': self.search_type_obj,
             'database': Project.extract_database(full_search_type),
             'db_resource': db_resource,
             'datetime_cols': datetime_cols,
@@ -1875,7 +1844,7 @@ class Search(Base):
             num_sobjects = 0
         num_sobjects = num_sobjects + len(results)
         if len(results) > 1000:
-            print "WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore'))
+            print("WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore')))
         Container.put("NUM_SOBJECTS", num_sobjects)
 
 
@@ -1902,16 +1871,16 @@ class Search(Base):
             fast_data['count'] = i
 
             sobject = SearchType.fast_create_from_class_path(class_name,
-                my.search_type_obj, columns, result, module_name=module_name,
+                self.search_type_obj, columns, result, module_name=module_name,
                 fast_data=fast_data)
             # add this sobject to the list of sobjects for the search
-            my.sobjects.append(sobject)
+            self.sobjects.append(sobject)
 
 
         # remember that the search has been done
-        my.is_search_done = True
+        self.is_search_done = True
 
-        return my.sobjects
+        return self.sobjects
 
 
 
@@ -1924,21 +1893,21 @@ class Search(Base):
 
 
 
-    def skip_retired(my, columns):
-        retired_col = my.search_type_obj.get_retire_col()
-        table = my.search_type_obj.get_table()
+    def skip_retired(self, columns):
+        retired_col = self.search_type_obj.get_retire_col()
+        table = self.search_type_obj.get_table()
 
         # remove retired filter
         filter_name = "(\"%s\".\"%s\" != 'retired' or \"%s\".\"%s\" is NULL)" %(table, retired_col, table, retired_col)
-        if not my.show_retired_flag and (retired_col in columns):
-            my.add_where(filter_name) 
+        if not self.show_retired_flag and (retired_col in columns):
+            self.add_where(filter_name) 
         else:
-            my.remove_where(filter_name)
+            self.remove_where(filter_name)
 
 
     # DEPRECATED: this is now in database_impl
     """
-    def remove_temp_column(my, columns, sql):
+    def remove_temp_column(self, columns, sql):
         # SQL Server temp columns are put in by ROW_NUMBER()
         # in database_impl.handle_pagination()
         impl = sql.get_database_impl()
@@ -1949,31 +1918,31 @@ class Search(Base):
         return columns
     """
 
-    def get_sobject_ids(my):
+    def get_sobject_ids(self):
         '''fast way of getting sobject ids without creating them during search'''
-        if 'id' not in my.select.columns:
-            my.add_column('id')
+        if 'id' not in self.select.columns:
+            self.add_column('id')
         
-        sql = DbContainer.get(my.db_resource)
-        columns = my.get_columns()
-        my.skip_retired(columns)
+        sql = DbContainer.get(self.db_resource)
+        columns = self.get_columns()
+        self.skip_retired(columns)
 
-        statement = my.get_statement()
+        statement = self.get_statement()
         results = sql.do_query(statement)
         ids = [x[0] for x in results]
         return ids
 
 
-    def get_sobject_codes(my):
+    def get_sobject_codes(self):
         '''fast way of getting sobject codeswithout creating them during search'''
-        if 'code' not in my.select.columns:
-            my.add_column('code')
+        if 'code' not in self.select.columns:
+            self.add_column('code')
         
-        sql = DbContainer.get(my.db_resource)
-        columns = my.get_columns()
-        my.skip_retired(columns)
+        sql = DbContainer.get(self.db_resource)
+        columns = self.get_columns()
+        self.skip_retired(columns)
 
-        statement = my.get_statement()
+        statement = self.get_statement()
         results = sql.do_query(statement)
         codes = [x[0] for x in results]
         return codes
@@ -1981,15 +1950,15 @@ class Search(Base):
 
 
 
-    def get_sobjects(my, redo=False, statement=None):
+    def get_sobjects(self, redo=False, statement=None):
         '''convenience function for interface consistency'''
-        return my.do_search(redo, statement)
+        return self.do_search(redo, statement)
 
 
-    def get_sobject(my, redo=False):
+    def get_sobject(self, redo=False):
         '''convenience function to get a single object'''
-        my.set_limit(1)
-        sobjects = my.do_search(redo)
+        self.set_limit(1)
+        sobjects = self.do_search(redo)
         if sobjects:
             return sobjects[0]
         else:
@@ -1997,32 +1966,32 @@ class Search(Base):
 
 
 
-    def get_count(my, no_exception=False):
+    def get_count(self, no_exception=False):
         '''Get the number of sobjects that this search will retrieve'''
 
-        if my.null_filter:
+        if self.null_filter:
             return 0
 
-        database = my.database
+        database = self.database
 
-        db_resource = my.db_resource
+        db_resource = self.db_resource
         sql = DbContainer.get(db_resource)
-        table = my.search_type_obj.get_table()
+        table = self.search_type_obj.get_table()
 
-        #columns = Search.get_cached_columns(database, my.search_type_obj)
+        #columns = Search.get_cached_columns(database, self.search_type_obj)
         columns = sql.get_columns(table)
 
-        my.skip_retired(columns)
+        self.skip_retired(columns)
         try:
             security = Environment.get_security()
-            if not my.security_filter:
-                security.alter_search(my)
+            if not self.security_filter:
+                security.alter_search(self)
 
             vendor = db_resource.get_vendor()
             if vendor == "MongoDb":
-                count = my.select.execute_count()
+                count = self.select.execute_count()
             else:
-                statement = my.select.get_count()
+                statement = self.select.get_count()
                 count = sql.get_value(statement)
 
         except SqlException:
@@ -2182,7 +2151,7 @@ class Search(Base):
         search_type = sobject.get_base_search_type()
         project_code = sobject.get_project_code()
         if related_type == search_type:
-            print "WARNING: source type is the same as related type [%s]" % search_type
+            print("WARNING: source type is the same as related type [%s]" % search_type)
             return {}
 
 
@@ -2331,35 +2300,35 @@ class RemoteSearch(Select):
     directly, but instead by Search itself.  This ensures that all
     Search operations will work regardless if the functionality is supported
     or not'''
-    def __init__(my, search_type):
+    def __init__(self, search_type):
 
-        super(RemoteSearch,my).__init__()
+        super(RemoteSearch,self).__init__()
 
         from pyasm.biz import Project
-        my.project_code = Project.extract_project_code(search_type)
-        #my.database = Project.extract_database(search_type)
-        #my.host = Project.extract_host(search_type)
-        #my.base_search_type = Project.extract_base_search_type(search_type)
-        #my.db_resource = DbResource(database=my.database, host=my.host)
+        self.project_code = Project.extract_project_code(search_type)
+        #self.database = Project.extract_database(search_type)
+        #self.host = Project.extract_host(search_type)
+        #self.base_search_type = Project.extract_base_search_type(search_type)
+        #self.db_resource = DbResource(database=self.database, host=self.host)
 
-        my.filters = []
+        self.filters = []
 
-        project = Project.get_by_code(my.project_code)
-        my.resource = project.get_resource()
-        my.server = my.resource.get_server()
-        my.remote_project = my.resource.get_project()
-        if my.remote_project:
-            my.search_type = search_type.replace("project=%s" % project.get_code(), "project=%s" % my.remote_project)
-
-
+        project = Project.get_by_code(self.project_code)
+        self.resource = project.get_resource()
+        self.server = self.resource.get_server()
+        self.remote_project = self.resource.get_project()
+        if self.remote_project:
+            self.search_type = search_type.replace("project=%s" % project.get_code(), "project=%s" % self.remote_project)
 
 
-    def add_filter(my, name, value, op='=', quoted=True):
+
+
+    def add_filter(self, name, value, op='=', quoted=True):
         if not op:
             op = '='
-        my.filters.append( [name, op, value] )
+        self.filters.append( [name, op, value] )
 
-    def get_sobjects(my):
+    def get_sobjects(self):
 
         results = []
         trys = 3
@@ -2369,18 +2338,18 @@ class RemoteSearch(Select):
 
         for i in range(1, trys):
             try:
-                results = my.server.query(my.search_type, filters=my.filters,
-                    limit=my.limit)
+                results = self.server.query(self.search_type, filters=self.filters,
+                    limit=self.limit)
 
-            except Exception, e:
+            except Exception as e:
                 if time.time() - start > 10:
-                    print "WARNING: try [%s] took longer than 10s: " % i, str(e)
+                    print("WARNING: try [%s] took longer than 10s: " % i, str(e))
                     raise
 
                 if i == trys:
                     raise
                 else:
-                    print "WARNING: try [%s]: " % i, str(e)
+                    print("WARNING: try [%s]: " % i, str(e))
                     continue
             else:
                 break
@@ -2391,22 +2360,22 @@ class RemoteSearch(Select):
             values = result.values()
 
             # all objects come back as SObject?
-            if my.search_type.startswith("sthpw/search_object"):
-                sobject = SearchType(my.search_type, columns, values)
+            if self.search_type.startswith("sthpw/search_object"):
+                sobject = SearchType(self.search_type, columns, values)
             else:
-                sobject = SObject(my.search_type, columns, values, remote=True)
+                sobject = SObject(self.search_type, columns, values, remote=True)
 
             sobjects.append(sobject)
         return sobjects
 
-    def get_sobject(my):
-        my.limit = 1
-        my.set_limit(my.limit)
-        my.sobjects = my.get_sobjects()
-        if not my.sobjects:
+    def get_sobject(self):
+        self.limit = 1
+        self.set_limit(self.limit)
+        self.sobjects = self.get_sobjects()
+        if not self.sobjects:
             return None
         else:
-            return my.sobjects[0]
+            return self.sobjects[0]
 
 
 
@@ -2420,71 +2389,71 @@ class SObject(object):
     COUNT = 0
 
 
-    def __init__(my, search_type, columns=None, result=None, remote=False, fast_data=None):
+    def __init__(self, search_type, columns=None, result=None, remote=False, fast_data=None):
 
         # cache the security object
-        #my.security = Environment.get_security()
-        my._security = None
+        #self.security = Environment.get_security()
+        self._security = None
 
         from pyasm.biz import Project
 
         if fast_data:
-            my.search_type_obj = fast_data['search_type_obj']
-            my.full_search_type = fast_data["full_search_type"]
-            my.database = fast_data["database"]
-            my.db_resource = fast_data["db_resource"]
+            self.search_type_obj = fast_data['search_type_obj']
+            self.full_search_type = fast_data["full_search_type"]
+            self.database = fast_data["database"]
+            self.db_resource = fast_data["db_resource"]
         else:
             if isinstance(search_type, SearchType):
-                my.search_type_obj = search_type
-                my.full_search_type = Project.get_full_search_type(search_type)
+                self.search_type_obj = search_type
+                self.full_search_type = Project.get_full_search_type(search_type)
             elif remote == True:
-                my.search_type_obj = SearchType.create("sthpw/search_object")
-                my.search_type_obj.set_value("search_type", search_type)
-                my.full_search_type = search_type
+                self.search_type_obj = SearchType.create("sthpw/search_object")
+                self.search_type_obj.set_value("search_type", search_type)
+                self.full_search_type = search_type
 
             elif search_type == "sthpw/search_object":
                 # special case for when this SObject is SearchType
-                my.search_type_obj = my
-                my.full_search_type = "sthpw/search_object"
+                self.search_type_obj = self
+                self.full_search_type = "sthpw/search_object"
 
             elif type(search_type) in types.StringTypes:
-                my.search_type_obj = SearchType.get(search_type)
-                my.full_search_type = Project.get_full_search_type(search_type)
+                self.search_type_obj = SearchType.get(search_type)
+                self.full_search_type = Project.get_full_search_type(search_type)
             else:
-                my.search_type_obj = search_type
-                my.full_search_type = Project.get_full_search_type(search_type)
+                self.search_type_obj = search_type
+                self.full_search_type = Project.get_full_search_type(search_type)
 
-            my.database = Project.extract_database(my.full_search_type)
-            my.db_resource = Project.get_db_resource_by_search_type(my.full_search_type)
+            self.database = Project.extract_database(self.full_search_type)
+            self.db_resource = Project.get_db_resource_by_search_type(self.full_search_type)
 
 
-        my._update_data = None
-        my._quoted_flag = None
-        my.has_updates = False
-        my._prev_data = None
-        my._prev_update_data = None
-        my.update_description = None
-        my._skip_invalid_column = False
-        #my.database_impl = None
+        self._update_data = None
+        self._quoted_flag = None
+        self.has_updates = False
+        self._prev_data = None
+        self._prev_update_data = None
+        self.update_description = None
+        self._skip_invalid_column = False
+        #self.database_impl = None
 
         # id override
-        my.new_id = -1
+        self.new_id = -1
 
         if not columns:
-            my.data = {}
-            my.data[my.get_id_col()] = -1
+            self.data = {}
+            self.data[self.get_id_col()] = -1
         else:
             if fast_data:
-                my.data = fast_data['data'][fast_data['count']]
+                self.data = fast_data['data'][fast_data['count']]
 
                 # MongoDb
-                #if my.data.has_key("_id") and not my.data.has_key("code"):
-                #    my.data["code"] = my.data["_id"]
+                #if self.data.has_key("_id") and not self.data.has_key("code"):
+                #    self.data["code"] = self.data["_id"]
 
                 # convert datetimes to strings
                 datetime_cols = fast_data.get("datetime_cols")
                 if datetime_cols:
-                    database_type = my.db_resource.get_database_type()
+                    database_type = self.db_resource.get_database_type()
                     # Sqlite stores the values in GMT when there is no timezone
                     # rather than the local timezone
                     if database_type == 'Sqlite':
@@ -2495,32 +2464,32 @@ class SObject(object):
                     for col in datetime_cols:
                         # fast_data may not be in the columns
                         # if add_column() has been called
-                        value = my.data.get(col)
+                        value = self.data.get(col)
                         if value:
                             # convert to UTC (NOTE: are we sure that this
                             # is always coming from the database?)
                             if not SObject.is_day_column(col):
                                 value = SPTDate.convert(value, is_gmt=is_gmt)
-                            my.data[col] = str(value)
+                            self.data[col] = str(value)
                     
 
                 boolean_cols = fast_data.get("boolean_cols")
                 if boolean_cols:
                     for col in boolean_cols:
                         # fast_data may not be in the columns if add_column() has been called
-                        value = my.data.get(col)
+                        value = self.data.get(col)
                         if value in ["false", "", 0, None]:
-                            my.data[col] = False
+                            self.data[col] = False
                         else:
-                            my.data[col] = True
+                            self.data[col] = True
                     
 
  
 
             else:
-                my.data = {}
-                data = my.data
-                #my.data = dict(zip(columns, result))
+                self.data = {}
+                data = self.data
+                #self.data = dict(zip(columns, result))
                 for column, value in zip(columns, result):
                     # convert all datetime objects to strings.  This simplifies
                     # export to various other source (such as XML)
@@ -2536,73 +2505,73 @@ class SObject(object):
         # appears that the ParallelStatusWdg makes use of attributes.  Not sure
         # where else, but they unnecesary overhead for the vast majority of
         # cases
-        my.attrs_handled = False
+        self.attrs_handled = False
 
         # force insert attr
-        my.force_insert = False
+        self.force_insert = False
 
         # to handle trigger errors call by sobjects
-        my._errors = None
+        self._errors = None
 
         # metadata cache
-        my.metadata = {}
+        self.metadata = {}
 
 
-    def _get_my_update_data(my):
-        if my._update_data == None:
-            my._update_data = {}
-        return my._update_data
-    def _set_my_update_data(my, update_data):
-        my._update_data = update_data
+    def _get_my_update_data(self):
+        if self._update_data == None:
+            self._update_data = {}
+        return self._update_data
+    def _set_my_update_data(self, update_data):
+        self._update_data = update_data
     update_data = property(_get_my_update_data, _set_my_update_data)
 
 
-    def _get_my_prev_data(my):
-        if my._prev_data == None:
-            my._prev_data = {}
-        return my._prev_data
-    def _set_my_prev_data(my, prev_data):
-        my._prev_data = prev_data
+    def _get_my_prev_data(self):
+        if self._prev_data == None:
+            self._prev_data = {}
+        return self._prev_data
+    def _set_my_prev_data(self, prev_data):
+        self._prev_data = prev_data
     prev_data = property(_get_my_prev_data, _set_my_prev_data)
 
 
 
-    def _get_my_prev_update_data(my):
-        if my._prev_update_data == None:
-            my._prev_update_data = {}
-        return my._prev_update_data
-    def _set_my_prev_update_data(my, prev_update_data):
-        my._prev_update_data = prev_update_data
+    def _get_my_prev_update_data(self):
+        if self._prev_update_data == None:
+            self._prev_update_data = {}
+        return self._prev_update_data
+    def _set_my_prev_update_data(self, prev_update_data):
+        self._prev_update_data = prev_update_data
     prev_update_data = property(_get_my_prev_update_data, _set_my_prev_update_data)
 
-    def _get_my_quoted_flag(my):
-        if my._quoted_flag == None:
-            my._quoted_flag = {}
-        return my._quoted_flag
-    def _set_my_quoted_flag(my, quoted_flag):
-        my._quoted_flag = quoted_flag
+    def _get_my_quoted_flag(self):
+        if self._quoted_flag == None:
+            self._quoted_flag = {}
+        return self._quoted_flag
+    def _set_my_quoted_flag(self, quoted_flag):
+        self._quoted_flag = quoted_flag
     quoted_flag = property(_get_my_quoted_flag, _set_my_quoted_flag)
 
 
-    def _get_my_errors(my):
-        if my._errors == None:
-            my._errors = []
-        return my._errors
-    def _set_my_errors(my, errors):
-        my._errors = errors
+    def _get_my_errors(self):
+        if self._errors == None:
+            self._errors = []
+        return self._errors
+    def _set_my_errors(self, errors):
+        self._errors = errors
     errors = property(_get_my_errors, _set_my_errors)
 
-    def _get_my_security(my):
-        if my._security == None:
-            my._security = {}
-        return my._security
-    def _set_my_security(my, security):
-        my._security = security
+    def _get_my_security(self):
+        if self._security == None:
+            self._security = {}
+        return self._security
+    def _set_my_security(self, security):
+        self._security = security
     security = property(_get_my_security, _set_my_security)
 
 
-    def set_force_insert(my, force=True):
-        my.force_insert = force
+    def set_force_insert(self, force=True):
+        self.force_insert = force
 
 
 
@@ -2618,49 +2587,49 @@ class SObject(object):
     add_static_triggers = classmethod(add_static_triggers)
 
 
-    def column_exists(my, column):
-        return SearchType.column_exists(my.full_search_type, column)
+    def column_exists(self, column):
+        return SearchType.column_exists(self.full_search_type, column)
 
 
-    def get_code_key(my):
+    def get_code_key(self):
         '''used in the transaction code'''
         from pyasm.biz import ProjectSetting
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
         prefix = ProjectSetting.get_value_by_key('code_prefix', search_type)
         if not prefix:
-            prefix = my.get_table()
+            prefix = self.get_table()
             prefix = prefix.upper()
         return prefix
 
 
 
-    def get_database_impl(my):
-        return my.db_resource.get_database_impl()
+    def get_database_impl(self):
+        return self.db_resource.get_database_impl()
 
 
-    def get_db_resource(my):
-        return my.db_resource
+    def get_db_resource(self):
+        return self.db_resource
 
-    def get_database_type(my):
-        return my.db_resource.get_database_type()
-
-
-
-
-    def get_sql(my):
-        return my.db_resource.get_sql()
+    def get_database_type(self):
+        return self.db_resource.get_database_type()
 
 
 
-    def get_project_code(my):
-        search_type = my.full_search_type
+
+    def get_sql(self):
+        return self.db_resource.get_sql()
+
+
+
+    def get_project_code(self):
+        search_type = self.full_search_type
         p = re.compile(".*\?project=(\w+)&?.*")
         m = p.search(search_type)
         if m:
             project_code = m.groups()[0]
         else:
             # here only for backwards compatibility
-            #project_code = my.search_type_obj.get_project()
+            #project_code = self.search_type_obj.get_project()
             from pyasm.biz import Project
             project_code = Project.get_global_project_code()
 
@@ -2670,75 +2639,75 @@ class SObject(object):
         return project_code
 
 
-    def get_columns(my):
-        columns = SearchType.get_columns(my.get_search_type())
+    def get_columns(self):
+        columns = SearchType.get_columns(self.get_search_type())
         return columns
 
 
 
-    def get_data(my, merged=True):
+    def get_data(self, merged=True):
         if merged:
-            data = my.data.copy()
-            data.update(my.update_data)
+            data = self.data.copy()
+            data.update(self.update_data)
             return data
 
-        return my.data
+        return self.data
 
-    def set_data(my, data):
+    def set_data(self, data):
         data = data.copy()
-        my.data = data
+        self.data = data
 
 
-    def set_update_data(my, data):
+    def set_update_data(self, data):
         data = data.copy()
-        my.update_data = data
+        self.update_data = data
 
 
 
 
 
-    def get_project(my):
+    def get_project(self):
         from pyasm.biz import Project
-        project_code = my.get_project_code()
+        project_code = self.get_project_code()
         return Project.get_by_code(project_code)
             
-    def get_schema(my):
+    def get_schema(self):
         '''Get the schema for this sobject'''
         from pyasm.biz import Schema
-        schema = Schema.get_by_sobject(my)
+        schema = Schema.get_by_sobject(self)
         return schema
  
 
-    def get_id_col(my):
+    def get_id_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = my.db_resource.get_database_impl()
-        search_type = my.full_search_type
-        return database_impl.get_id_col(my.db_resource, search_type)
+        database_impl = self.db_resource.get_database_impl()
+        search_type = self.full_search_type
+        return database_impl.get_id_col(self.db_resource, search_type)
 
-    def get_id(my):
+    def get_id(self):
         '''returns the id of the sobject'''
-        id_col = my.get_id_col()
-        return my.get_value(id_col, no_exception=True)
+        id_col = self.get_id_col()
+        return self.get_value(id_col, no_exception=True)
 
 
-    def get_code_col(my):
+    def get_code_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = my.db_resource.get_database_impl()
-        search_type = my.full_search_type
-        return database_impl.get_code_col(my.db_resource, search_type)
+        database_impl = self.db_resource.get_database_impl()
+        search_type = self.full_search_type
+        return database_impl.get_code_col(self.db_resource, search_type)
 
 
 
-    def get_search_type(my):
+    def get_search_type(self):
         '''returns the type of the sobject'''
-        return my.full_search_type
+        return self.full_search_type
 
-    def get_base_search_type(my):
+    def get_base_search_type(self):
         '''returns the type of the sobject'''
-        if isinstance(my, SearchType):
+        if isinstance(self, SearchType):
             return "sthpw/search_object"
         else:
-            return my.search_type_obj.get_base_key()
+            return self.search_type_obj.get_base_key()
 
     def get_base_parent_search_type(cls):
         return ""
@@ -2746,36 +2715,36 @@ class SObject(object):
 
 
 
-    def get_search_type_obj(my):
+    def get_search_type_obj(self):
         '''returns the full search type object'''
-        return my.search_type_obj
+        return self.search_type_obj
 
-    def get_search_key(my, use_id=False):
+    def get_search_key(self, use_id=False):
         '''returns a string key that uniquely identifies this sobject'''
-        #return "%s|%s" % (my.get_search_type() ,my.get_id() )
-        return SearchKey.get_by_sobject(my, use_id=use_id)
+        #return "%s|%s" % (self.get_search_type() ,self.get_id() )
+        return SearchKey.get_by_sobject(self, use_id=use_id)
 
-    def get_database(my):
+    def get_database(self):
         '''get the database that stores the sobject'''
-        #return my.search_type_obj.get_database()
-        return my.database
+        #return self.search_type_obj.get_database()
+        return self.database
 
-    def get_table(my):
+    def get_table(self):
         '''get the table which stores the sobject'''
-        return my.search_type_obj.get_table()
+        return self.search_type_obj.get_table()
 
 
-    def get_code(my):
-        if my.has_value("code"):
-            return my.get_value("code")
+    def get_code(self):
+        if self.has_value("code"):
+            return self.get_value("code")
         else:
-            return str(my.get_id())
+            return str(self.get_id())
 
 
-    def get_display_value(my, long=False):
+    def get_display_value(self, long=False):
         from pyasm.biz import Schema
         schema = Schema.get()
-        base_search_type = my.get_base_search_type()
+        base_search_type = self.get_base_search_type()
         attrs = schema.get_attrs_by_search_type(base_search_type)
 
         display = attrs.get("display")
@@ -2783,109 +2752,109 @@ class SObject(object):
             # evaluate the expression
             from pyasm.biz import ExpressionParser
             parser = ExpressionParser()
-            result = parser.eval(display, my, single=True)
+            result = parser.eval(display, self, single=True)
             return result
         else:
-            return my.get_name(long=long)
+            return self.get_name(long=long)
         
 
 
 
 
-    def get_name(my, long=False):
+    def get_name(self, long=False):
         '''get a readable name for this sobject'''
         name = ''
-        if my.has_value("name"):
-            name = my.get_value("name")
+        if self.has_value("name"):
+            name = self.get_value("name")
         if long:
-            code = my.get_code()
+            code = self.get_code()
             if name:
                 name = '%s (%s)' %(name, code)
             else:
-                code = my.get_code()
-                id = my.get_id()
+                code = self.get_code()
+                id = self.get_id()
                 if code != id:
                     name = '%s (%s)' %(code, id)
                 else:
                     name = code
         else:
             if not name:
-                name = my.get_code()
+                name = self.get_code()
         return name
 
 
-    def get_primary_key_value(my):
-        return my.get_value(my.get_primary_key())
+    def get_primary_key_value(self):
+        return self.get_value(self.get_primary_key())
 
-    def get_description(my):
-        if my.has_value('description'):
-            return my.get_value('description')
+    def get_description(self):
+        if self.has_value('description'):
+            return self.get_value('description')
         else:
-            return my.get_code()
+            return self.get_code()
 
-    def get_attr(my, name):
-        my._handle_attrs()
-        if my.attrs.has_key(name):
-            return my.attrs[name]
-        elif my.has_value(name):
+    def get_attr(self, name):
+        self._handle_attrs()
+        if self.attrs.has_key(name):
+            return self.attrs[name]
+        elif self.has_value(name):
             # by default all columns are attrs
-            return SObjectAttr( name, my )
+            return SObjectAttr( name, self )
         else:
             return None
 
-    def get_attr_value(my, name):
-        my._handle_attrs()
-        attr = my.get_attr(name)
+    def get_attr_value(self, name):
+        self._handle_attrs()
+        attr = self.get_attr(name)
         return attr.get_value()
 
-    def get_attr_names(my):
-        my._handle_attrs()
-        keys = my.attrs.keys()
+    def get_attr_names(self):
+        self._handle_attrs()
+        keys = self.attrs.keys()
         keys.sort()
         return keys
 
 
     # DEPRECATED
-    def _handle_attrs(my):
-        if my.attrs_handled:
+    def _handle_attrs(self):
+        if self.attrs_handled:
             return
 
-        my.attrs = {}
-        my.attrs_handled = True
+        self.attrs = {}
+        self.attrs_handled = True
 
 
         # create an attr for every column
-        for key,value in my.data.items():
-            attr = SObjectAttr(key,my)
-            my.attrs[key] = attr
+        for key,value in self.data.items():
+            attr = SObjectAttr(key,self)
+            self.attrs[key] = attr
 
 
         # get the config (However, SearchType can't need itself, so it
         # can't have a config file)
-        if isinstance(my,SearchType):
+        if isinstance(self,SearchType):
             return
 
-        database = my.get_database()
-        my.config = SObjectConfig.get_by_search_type(my.search_type_obj, database)
-        if my.config == None:
+        database = self.get_database()
+        self.config = SObjectConfig.get_by_search_type(self.search_type_obj, database)
+        if self.config == None:
             return
 
 
-        attr_names = my.config.get_attr_names()
+        attr_names = self.config.get_attr_names()
         for attr_name in attr_names:
             # create the attr
-            attr = my.config.create_attr(attr_name, my)
+            attr = self.config.create_attr(attr_name, self)
 
             # store a reference to the sobject in each attribute
-            attr.set_sobject(my)
+            attr.set_sobject(self)
 
-            my.attrs[attr_name] = attr
+            self.attrs[attr_name] = attr
 
 
 
-    def _get_dynamic_value(my, name, no_exceptions=False):
+    def _get_dynamic_value(self, name, no_exceptions=False):
 
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
         if search_type.startswith("sthpw/"):
             return None
 
@@ -2939,7 +2908,7 @@ class SObject(object):
             options = Container.get("%s:options" % key)
             expression = options.get("expression")
             if expression:
-                value = Search.eval(expression, my)
+                value = Search.eval(expression, self)
             else:
                 value = ""
             return value
@@ -2948,17 +2917,17 @@ class SObject(object):
             return None
 
 
-    def get(my, name, **kwargs):
-        return my.get_value(name, **kwargs)
+    def get(self, name, **kwargs):
+        return self.get_value(name, **kwargs)
 
 
-    def get_value(my, name, no_exception=False, auto_convert=True):
+    def get_value(self, name, no_exception=False, auto_convert=True):
         '''get the value of the named attribute stored as metadata in the
         sobject.  The no_exception argument determines whethere or not
         an exception is raised if the sobject does not have this attr'''
 
         # DISABLING
-        #value = my._get_dynamic_value(name, no_exception)
+        #value = self._get_dynamic_value(name, no_exception)
         #if value != None:
         #    return value
         if not name:
@@ -2975,22 +2944,22 @@ class SObject(object):
         lang = Translation.get_language()
         if lang:
             tmp_name = "%s_%s" % (name, lang)
-            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+            if not self.full_search_type.startswith("sthpw/") and SearchType.column_exists(self.full_search_type, tmp_name):
                 name = tmp_name
 
 
 
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
-        if my.has_updates and my.update_data.has_key(name):
+        if self.has_updates and self.update_data.has_key(name):
             if is_data:
-                return my.update_data.get(name).get(attr)
+                return self.update_data.get(name).get(attr)
             else:
-                return my.update_data[name]
+                return self.update_data[name]
 
         # then look at the old data
         try:
-            value = my.data[name]
+            value = self.data[name]
 
             if value and is_data:
                 value = value.get(attr)
@@ -3003,7 +2972,7 @@ class SObject(object):
                 return value
 
             if auto_convert and value == None:
-                col_type = SearchType.get_column_type(my.full_search_type, name)
+                col_type = SearchType.get_column_type(self.full_search_type, name)
                 if col_type in ['integer','float','numeric','decimal','double precision']:
                     return 0
                 else: 
@@ -3014,41 +2983,41 @@ class SObject(object):
             pass
 
 
-        if name != my.get_id_col() and my.get_id() == -1:
+        if name != self.get_id_col() and self.get_id() == -1:
             return ""
 
         if no_exception:
             return ""
 
-        raise SObjectValueException("Column [%s] does not exist in search_object type [%s]" % (name, my.get_search_type()) )
+        raise SObjectValueException("Column [%s] does not exist in search_object type [%s]" % (name, self.get_search_type()) )
 
 
 
-    def has_value(my, name):
+    def has_value(self, name):
         '''determines if the sobject contains a value with the given name'''
 
         # first look at the update data
-        if my.update_data.has_key(name):
+        if self.update_data.has_key(name):
             return True
         # then look at the old data
-        elif my.data.has_key(name):
+        elif self.data.has_key(name):
             return True
         else:
             return False
 
 
-    def get_seq_value(my, name, delimiter=","):
+    def get_seq_value(self, name, delimiter=","):
         '''returns a list that is splitted from the value with a delimiter'''
-        value = my.get_value(name)
+        value = self.get_value(name)
 
         if value == "":
             return []
         else:
             return value.split(delimiter)
 
-    def get_dict_value(my, name, delimiter=","):
+    def get_dict_value(self, name, delimiter=","):
         '''returns a dictionary of values splitted by the delimiter'''
-        values = my.get_seq_value(name,delimiter)
+        values = self.get_seq_value(name,delimiter)
 
         seq = {}
         for value in values:
@@ -3057,8 +3026,8 @@ class SObject(object):
         return seq
 
 
-    def get_datetime_value(my, name):
-        value = my.get_value(name)
+    def get_datetime_value(self, name):
+        value = self.get_value(name)
         if value:
             value = parser.parse(value)
         else:
@@ -3066,8 +3035,8 @@ class SObject(object):
         return value
 
 
-    def get_datetime_display(my, name, format):
-        value = my.get_value(name)
+    def get_datetime_display(self, name, format):
+        value = self.get_value(name)
         if value:
             value = parser.parse(value)
             value = value.strftime(format)
@@ -3078,9 +3047,9 @@ class SObject(object):
 
 
 
-    def get_json_value(my, name, default=None):
+    def get_json_value(self, name, default=None):
         '''get the value that is stored as a json data structure'''
-        value = my.get_value(name)
+        value = self.get_value(name)
         if not isinstance(value, basestring):
             return value
 
@@ -3098,9 +3067,9 @@ class SObject(object):
         return data
 
 
-    def set_json_value(my, name, value):
+    def set_json_value(self, name, value):
         if not value:
-            my.set_value(name, value)
+            self.set_value(name, value)
             return
 
         data = jsondumps(value)
@@ -3113,26 +3082,26 @@ class SObject(object):
             data = binascii.hexlify(zlib.compress(data))
             data = "zlib:%s" % data
             length_after = len(data)
-            #print "transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
-        my.set_value(name, data)
+            #print("transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
+        self.set_value(name, data)
 
     
 
-    def get_xml_root(my, name):
+    def get_xml_root(self, name):
         '''provide the ability to specify xml roots that are different
         from the name of the column'''
         return name
 
 
 
-    def get_xml_value(my, name, root=None, strip_cdata=True, remove_blank_text=True):
+    def get_xml_value(self, name, root=None, strip_cdata=True, remove_blank_text=True):
         '''convenience function to get xml data'''
 
         xml_dict = Container.get("SObject:xml_cache")
         if xml_dict == None:
             xml_dict = {}
             Container.put("SObject:xml_cache", xml_dict)
-        search_key = my.get_search_key()
+        search_key = self.get_search_key()
         key = "%s|%s" % (search_key, name)
         xml = xml_dict.get(key)
         if xml != None:
@@ -3142,10 +3111,10 @@ class SObject(object):
         # Change this from root = "snapshot" by default to it being the
         # name of the column
         if not root:
-            root = my.get_xml_root(name)
+            root = self.get_xml_root(name)
         
         # if this xml value starts with "zlib:" then decompress
-        value = my.get_value(name)
+        value = self.get_value(name)
         if value is None:
             value = ''
 
@@ -3160,12 +3129,12 @@ class SObject(object):
 
         try:
             xml.read_string(value, remove_blank_text=remove_blank_text)
-        except XmlException, e:
+        except XmlException as e:
             value = "<%s/>" % root
             xml.read_string(value)
 
             msg = "Xml read error for [%s]: %s" % \
-                (my.get_search_key(), e.__str__())
+                (self.get_search_key(), e.__str__())
 
             Environment.add_warning("Xml read error", msg )
 
@@ -3174,30 +3143,30 @@ class SObject(object):
         return xml
 
     
-    def skip_invalid_column(my):
-        my._skip_invalid_column = True
+    def skip_invalid_column(self):
+        self._skip_invalid_column = True
 
-    def set_value(my, name, value, quoted=True, temp=False):
+    def set_value(self, name, value, quoted=True, temp=False):
         '''set the value of this sobject. It is
         not commited to the database'''
 
         if name.find("->") != -1:
             parts = name.split("->")
-            return my.set_data_value(parts[0], parts[1], value)
+            return self.set_data_value(parts[0], parts[1], value)
 
         from pyasm.biz import Translation
         lang = Translation.get_language()
         if lang:
             tmp_name = "%s_%s" % (name, lang)
-            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+            if not self.full_search_type.startswith("sthpw/") and SearchType.column_exists(self.full_search_type, tmp_name):
                 name = tmp_name
         
         # skip if column does not exist
-        if my._skip_invalid_column and not SearchType.column_exists(my.full_search_type, name):
+        if self._skip_invalid_column and not SearchType.column_exists(self.full_search_type, name):
             return
 
         if temp:
-            my._set_value(name, value, quoted=quoted)
+            self._set_value(name, value, quoted=quoted)
             return
 
         # set_value removes the xml cache
@@ -3205,7 +3174,7 @@ class SObject(object):
         if xml_dict == None:
             xml_dict = {}
             Container.put("SObject:xml_cache", xml_dict)
-        search_key = my.get_search_key()
+        search_key = self.get_search_key()
         key = "%s|%s" % (search_key, name)
         if xml_dict.has_key(key):
             del xml_dict[key]
@@ -3235,8 +3204,8 @@ class SObject(object):
             value = value[0]
 
         # NOTE: this should be pretty quick, but could use some optimization
-        column_type = SearchType.get_column_type(my.full_search_type, name)
-        info = my.get_database_impl().process_value(name, value, column_type)
+        column_type = SearchType.get_column_type(self.full_search_type, name)
+        info = self.get_database_impl().process_value(name, value, column_type)
         if info:
             value = info.get("value")
             quoted = info.get("quoted")
@@ -3244,11 +3213,11 @@ class SObject(object):
 
         # handle security
         from pyasm.biz import Project
-        if isinstance(my, Project):
+        if isinstance(self, Project):
             project_code = '*'
         else:
             project_code = Project.get_project_code()
-        key = { 'search_type' : my.search_type_obj.get_base_key(),
+        key = { 'search_type' : self.search_type_obj.get_base_key(),
                 'column' : name,
                 'project': project_code}
 
@@ -3256,14 +3225,14 @@ class SObject(object):
 
         # unspecified default makes the access level edit
         if not security.check_access("sobject_column", key , "edit"):
-            raise SecurityException("Column [%s] not editable for search type [%s]" % (name,my.get_search_type()) )
+            raise SecurityException("Column [%s] not editable for search type [%s]" % (name,self.get_search_type()) )
 
-        all_column_info = SearchType.get_column_info(my.full_search_type)
+        all_column_info = SearchType.get_column_info(self.full_search_type)
         column_info = all_column_info.get(name) or {}
         if value == None or value == '':
             if not column_info:
                 # NOTE: This is legal
-                #print "WARNING: column [%s] does not exist in [%s]" % (name, my.get_base_search_type() )
+                #print("WARNING: column [%s] does not exist in [%s]" % (name, self.get_base_search_type() ))
                 pass
             elif column_info.get('data_type') in ['timestamp']:
                 value = None
@@ -3281,7 +3250,7 @@ class SObject(object):
             try:
                 value = parser.parse(value)
                 value = str(value)
-            except Exception, e:
+            except Exception as e:
                 # Keep the value as is
                 value = value
         elif column_info.get('data_type') in ['varchar','text']:
@@ -3293,49 +3262,49 @@ class SObject(object):
                 except UnicodeDecodeError, e:
                     value = value.decode('iso-8859-1', 'ignore')
 
-        my._set_value(name, value, quoted=quoted)
+        self._set_value(name, value, quoted=quoted)
 
 
 
-    def _set_value(my, name, value, quoted=True):
+    def _set_value(self, name, value, quoted=True):
         '''called by set_value()'''
 
-        if my.update_data.has_key(name) or not my.data.has_key(name) or value != my.data[name]:
+        if self.update_data.has_key(name) or not self.data.has_key(name) or value != self.data[name]:
 
             # FIXME: this may be necessary with MySQL
             #if isinstance(value, basestring):
             #    value = value.replace("\\", "\\\\")
 
-            my.update_data[name] = value
-            my.quoted_flag[name] = quoted
+            self.update_data[name] = value
+            self.quoted_flag[name] = quoted
 
-        my.has_updates = True
+        self.has_updates = True
 
 
 
-    def set_data_value(my, column, name, value, quoted=True):
-        data = my.get_value(column) or {}
+    def set_data_value(self, column, name, value, quoted=True):
+        data = self.get_value(column) or {}
         data = data.copy()
 
         data[name] = value
 
-        my.set_value(column, data)
+        self.set_value(column, data)
 
 
 
-    def set_expr_value(my, name, value, quoted=1):
+    def set_expr_value(self, name, value, quoted=1):
         value = Search.eval(value)
-        return my.set_value(name, value, quoted)
+        return self.set_value(name, value, quoted)
 
 
 
-    def set_now(my, column="timestamp"):
-        sql = DbContainer.get(my.db_resource)
-        my.set_value(column, sql.get_default_timestamp_now(), quoted=False)
+    def set_now(self, column="timestamp"):
+        sql = DbContainer.get(self.db_resource)
+        self.set_value(column, sql.get_default_timestamp_now(), quoted=False)
 
 
-    def get_column_type(my, name):
-        col_type = SearchType.get_column_type(my.full_search_type, name)
+    def get_column_type(self, name):
+        col_type = SearchType.get_column_type(self.full_search_type, name)
         return col_type
 
 
@@ -3344,16 +3313,16 @@ class SObject(object):
     # Support for expressions
     #
     # DEPRECATED: use eval
-    def eval_expression(my, expression):
+    def eval_expression(self, expression):
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
-        result = parser.eval(expression, my)
+        result = parser.eval(expression, self)
         return result
 
-    def eval(my, expression):
+    def eval(self, expression):
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
-        result = parser.eval(expression, my)
+        result = parser.eval(expression, self)
         return result
 
 
@@ -3365,50 +3334,50 @@ class SObject(object):
     #   create a whole new column
     #
     # NOTE: metadata is no longer stored as XML, it is stored as JSON
-    def get_metadata_xml(my):
+    def get_metadata_xml(self):
         metadata_mode = "json"
-        if not my.metadata:
+        if not self.metadata:
             if metadata_mode == 'json':
-                my.metadata = my.get_json_value("metadata")
-                if not my.metadata:
-                    my.metadata = {}
+                self.metadata = self.get_json_value("metadata")
+                if not self.metadata:
+                    self.metadata = {}
             else:
-                my.metadata = my.get_xml_value("metadata", root="metadata")
+                self.metadata = self.get_xml_value("metadata", root="metadata")
 
-        return my.metadata
-
-
-
-    def get_metadata(my):
-        my.metadata = my.get_json_value("metadata")
-        if not my.metadata:
-            my.metadata = {}
-        return my.metadata
+        return self.metadata
 
 
 
-    def get_metadata_value(my, name):
+    def get_metadata(self):
+        self.metadata = self.get_json_value("metadata")
+        if not self.metadata:
+            self.metadata = {}
+        return self.metadata
+
+
+
+    def get_metadata_value(self, name):
         ''' this method is not used much. get_metadata_dict is the main one'''
         metadata_mode = "json"
         if metadata_mode == 'json':
-            value = my.metadata.get(name)
+            value = self.metadata.get(name)
             if value == None:
                 value = ''
             return value
         else:
-            metadata = my.get_metadata_xml()
+            metadata = self.get_metadata_xml()
             return metadata.get_value("metadata/%s" % name)
 
 
-    def get_metadata_dict(my):
+    def get_metadata_dict(self):
         '''returns a dictionary of all of the metadata'''
         metadata_mode = "json"
         if metadata_mode == 'json':
-            return my.get_metadata_xml()
+            return self.get_metadata_xml()
 
         else:
-            metadata = my.get_metadata_xml()
-            my.get_metadata_xml()
+            metadata = self.get_metadata_xml()
+            self.get_metadata_xml()
             nodes = metadata.get_nodes("metadata/*")
             data = {}
             for node in nodes:
@@ -3418,21 +3387,21 @@ class SObject(object):
 
 
 
-    def set_metadata_value(my, name, value):
+    def set_metadata_value(self, name, value):
         # ensure that the value is a string
         metadata_mode = "json"
         if metadata_mode == "json":
-            metadata = my.get_metadata_xml()
+            metadata = self.get_metadata_xml()
             # to overwrite old xml data with new json data
             if isinstance(metadata, basestring):
                 metadata = {}
             metadata[name] = value
-            my.set_json_value("metadata", metadata)
+            self.set_json_value("metadata", metadata)
         else:
 
             value = str(value)
 
-            metadata = my.get_metadata_xml()
+            metadata = self.get_metadata_xml()
             node = metadata.get_node("metadata/%s" % name)
             if node is not None:
                 current_value = Xml.get_attribute(node, name)
@@ -3448,72 +3417,72 @@ class SObject(object):
                 root_node = metadata.get_root_node()
                 metadata.append_child(root_node, new_node)
 
-            my.set_value("metadata", metadata)
+            self.set_value("metadata", metadata)
 
 
 
-    def add_metadata(my, data, replace=False):
+    def add_metadata(self, data, replace=False):
         '''takes a whole dictionary of values and sets them'''
         metadata_mode = "json"
 
         if metadata_mode == 'json':
             if replace:
-                my.metadata = data
-                my.set_json_value("metadata", data)
+                self.metadata = data
+                self.set_json_value("metadata", data)
             else:
                 for name, value in data.items():
-                    my.set_metadata_value(name, value)
+                    self.set_metadata_value(name, value)
 
         else:
             if replace:
-                my.set_value("metadata", "<metadata/>")
-                my.metadata = None
+                self.set_value("metadata", "<metadata/>")
+                self.metadata = None
 
             for name, value in data.items():
-                my.set_metadata_value(name, value)
+                self.set_metadata_value(name, value)
 
 
 
 
     # General setting of attributes values
 
-    def set_id(my, value):
+    def set_id(self, value):
         '''handles the changing of the id.  This has to be a special function
         because, since this is the unique identifier, the "where id='##'"
         will update the incorrect in the database.'''
-        my.new_id = int(value)
+        self.new_id = int(value)
 
-    def set_auto_code(my):
+    def set_auto_code(self):
         '''set a unique code automatically for certain internal sTypes'''
         unique_id = uuid.uuid1()
-        unique_code = '%s_%s'%(my.get_code_key(), unique_id)
-        my.set_value('code', unique_code)
+        unique_code = '%s_%s'%(self.get_code_key(), unique_id)
+        self.set_value('code', unique_code)
 
-    def set_user(my, user=None):
+    def set_user(self, user=None):
         if user == None:
             user = Environment.get_user_name()
-        my.set_value("login", user)
+        self.set_value("login", user)
 
-    def set_project(my, project_code=None):
+    def set_project(self, project_code=None):
         if not project_code:
             project_code = Project.get_project_code()
-        my.set_value("project_code", project_code)
+        self.set_value("project_code", project_code)
 
 
 
-    def set_sobject_value(my, sobject, type=None):
+    def set_sobject_value(self, sobject, type=None):
         # makes a relation to this input sobject
         from pyasm.biz import Schema
 
         schema = Schema.get()
         attrs = schema.get_relationship_attrs(
-            my.get_base_search_type(),
+            self.get_base_search_type(),
             sobject.get_base_search_type(),
         )
 
         attrs = schema.resolve_relationship_attrs(
             attrs,
-            my.get_search_type(),
+            self.get_search_type(),
             sobject.get_search_type()
         )
 
@@ -3522,47 +3491,47 @@ class SObject(object):
         relationship = attrs.get("relationship")
         if relationship in ['search_type', 'search_code', 'search_id']:
 
-            my.set_value("search_type", sobject.get_search_type() )
+            self.set_value("search_type", sobject.get_search_type() )
             # fill in search_id only if it is an integer: this may not be the
             # case, such as in MongoDb, where the id is an object
-            if SearchType.column_exists(my.full_search_type, "search_id"):
+            if SearchType.column_exists(self.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
             
                 if isinstance(sobj_id, int) or isinstance(sobj_id, long):
-                    my.set_value("search_id", sobj_id )
+                    self.set_value("search_id", sobj_id )
                 else:
-                    my.set_value("search_code", sobj_id )
+                    self.set_value("search_code", sobj_id )
 
-            if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
+            if SearchType.column_exists(self.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
 
                 if sobject.get_database_type() == "MongoDb":
-                    my.set_value("search_code", sobject.get_id() )
+                    self.set_value("search_code", sobject.get_id() )
                 else:
-                    my.set_value("search_code", sobject.get_value("code") )
+                    self.set_value("search_code", sobject.get_value("code") )
 
         elif relationship in ['code']:
 
-            search_type = my.get_base_search_type()
+            search_type = self.get_base_search_type()
             is_from = attrs.get("to") == search_type
             to_col = attrs.get("to_col")
             from_col = attrs.get("from_col")
 
             if is_from:
-                my.set_value( to_col, sobject.get_value(from_col) )
+                self.set_value( to_col, sobject.get_value(from_col) )
             else:
-                my.set_value( from_col, sobject.get_value(to_col) )
+                self.set_value( from_col, sobject.get_value(to_col) )
  
         elif relationship in ['general']:
-            print 'WARNING: relationship [%s] not supported' % relationship
+            print('WARNING: relationship [%s] not supported' % relationship)
 
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
 
 
-    def set_parent(my, sobject, relationship=None):
-        schema = my.get_schema()
+    def set_parent(self, sobject, relationship=None):
+        schema = self.get_schema()
 
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
 
         if type(sobject) in types.StringTypes:
             tmp_sobject = SearchKey.get_by_search_key(sobject)
@@ -3574,55 +3543,55 @@ class SObject(object):
         search_type2 = sobject.get_base_search_type()
 
         if not relationship:
-            full_search_type = my.full_search_type
+            full_search_type = self.full_search_type
             full_search_type2 = sobject.get_search_type()
             relationship = schema.get_relationship(full_search_type, full_search_type2)
             #relationship = schema.get_relationship(search_type, search_type2)
 
 
         if relationship in ["search_type", "search_code", "search_id"]:
-            my.set_sobject_value(sobject, type="hierarchy")
+            self.set_sobject_value(sobject, type="hierarchy")
         elif relationship in ["foreign_key", "code", "id"]:
             #foreign_key = sobject.get_foreign_key()
             #code = sobject.get_code()
-            #my.set_value(foreign_key, code)
+            #self.set_value(foreign_key, code)
             attrs = schema.get_relationship_attrs(search_type, search_type2, path=None)
             is_from = attrs.get("to") == search_type
             to_col = attrs.get("to_col")
             from_col = attrs.get("from_col")
 
             if is_from:
-                my.set_value( to_col, sobject.get_value(from_col) )
+                self.set_value( to_col, sobject.get_value(from_col) )
             else:
-                my.set_value( from_col, sobject.get_value(to_col) )
+                self.set_value( from_col, sobject.get_value(to_col) )
         elif relationship == "parent_code":
             code = sobject.get_code()
-            my.set_value("parent_code", code)
+            self.set_value("parent_code", code)
         elif relationship == "search_key":
             search_key = SearchKey.build_by_sobject(sobject)
-            my.set_value("search_key", search_key)
+            self.set_value("search_key", search_key)
 
 
-    def add_relationship(my, sobject, relationship=None):
+    def add_relationship(self, sobject, relationship=None):
         '''add this sobject as a relationship in the predefined manner'''
-        return my.set_parent(sobject, relationship=relationship) 
+        return self.set_parent(sobject, relationship=relationship) 
 
 
-    def add_related_connection(my, src_sobject, dst_sobject, src_path=None):
+    def add_related_connection(self, src_sobject, dst_sobject, src_path=None):
         '''adding the related sobject code to this e.g. (many-to-many) relationbship sobject''' 
-        my.add_related_sobject(src_sobject, src_path=src_path)
-        my.add_related_sobject(dst_sobject)
+        self.add_related_sobject(src_sobject, src_path=src_path)
+        self.add_related_sobject(dst_sobject)
 
-    def add_related_sobject(my, sobject, src_path=None):
+    def add_related_sobject(self, sobject, src_path=None):
         '''add a related sobject.  This uses the style relationships'''
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
 
         if type(sobject) in types.StringTypes:
             sobject = SearchKey.get_by_search_key(sobject)
 
         search_type2 = sobject.get_base_search_type()
 
-        schema = my.get_schema()
+        schema = self.get_schema()
         #relationship = schema.get_relationship(search_type, search_type2)
         attrs = schema.get_relationship_attrs(search_type, search_type2, path=src_path)
 
@@ -3636,23 +3605,23 @@ class SObject(object):
         
 
         if relationship == "search_code": 
-            my.set_value("search_type", sobject.get_search_type() )
-            my.set_value("search_code", sobject.get_code() )
+            self.set_value("search_type", sobject.get_search_type() )
+            self.set_value("search_code", sobject.get_code() )
             # maintain some backwards compatibility
-            my.set_value("search_id", sobject.get_id() )
+            self.set_value("search_id", sobject.get_id() )
         elif relationship == "search_id":
-            my.set_value("search_type", sobject.get_search_type() )
-            my.set_value("search_id", sobject.get_id() )
+            self.set_value("search_type", sobject.get_search_type() )
+            self.set_value("search_id", sobject.get_id() )
 
         elif is_from:
-            my.set_value( to_col, sobject.get_value(from_col) )
+            self.set_value( to_col, sobject.get_value(from_col) )
         else:
-            my.set_value( from_col, sobject.get_value(to_col) )
+            self.set_value( from_col, sobject.get_value(to_col) )
 
 
 
 
-    def connect(my, sobjects=[], context="reference"):
+    def connect(self, sobjects=[], context="reference"):
         if not isinstance(sobjects, list):
             sobjects = [sobjects]
             
@@ -3660,63 +3629,63 @@ class SObject(object):
         for sobject in sobjects:
             if isinstance(sobject, basestring):
                 sobject = Search.get_by_search_key(sobject)
-            SObjectConnection.create(my, sobject, context=context)
+            SObjectConnection.create(self, sobject, context=context)
 
 
-    def get_connections(my, context="reference"):
+    def get_connections(self, context="reference"):
         from pyasm.biz import SObjectConnection
-        connections, sobjects = SObjectConnection.get_connected_sobjects(my, context=context)
+        connections, sobjects = SObjectConnection.get_connected_sobjects(self, context=context)
         return sobjects
 
 
 
 
 
-    def is_retired(my):
+    def is_retired(self):
         '''check if it is retired '''
-        retired_col = my.search_type_obj.get_retire_col()
-        if not my.has_value(retired_col):
+        retired_col = self.search_type_obj.get_retire_col()
+        if not self.has_value(retired_col):
             return False
-        return my.get_value(retired_col) == 'retired' 
+        return self.get_value(retired_col) == 'retired' 
 
-    def is_insert(my):
-        search_id = my.get_id()
+    def is_insert(self):
+        search_id = self.get_id()
         if search_id == -1:
             return True
-        elif my.get_id() in ['-1','']:
+        elif self.get_id() in ['-1','']:
             return True
         return False
 
 
-    def validate(my):
+    def validate(self):
         '''validate entries into this sobject'''
         return True
 
 
-    def on_insert(my):
+    def on_insert(self):
         '''executed when an item is inserted'''
         pass
 
 
-    def on_update(my):
+    def on_update(self):
         '''executed when an item is updated'''
         pass
 
 
-    def on_delete(my):
+    def on_delete(self):
         '''executed when an item is deleted'''
         pass
 
 
 
-    def handle_commit_security(my):
+    def handle_commit_security(self):
 
         # certain tables can only be written by admin
         security = Environment.get_security()
         if security.is_admin():
             return True
 
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
 
         login = Environment.get_user_name()
 
@@ -3731,28 +3700,72 @@ class SObject(object):
         return True
 
 
-    def commit(my, triggers=True, log_transaction=True, cache=True):
+    def store_version(self):
+        # versioning
+        versioning = True
+        if versioning and self.get_base_search_type() in ["spme/wop","spme/shot"]:
+            # find the last version
+            last_search = Search("spme/version")
+            last_search.add_column("version")
+            last_search.add_filter("search_type", self.get_search_type())
+            last_search.add_filter("search_code", self.get_code())
+            last_search.add_order_by("version desc")
+            last = last_search.get_sobject()
+            if not last:
+                version = 1
+            else:
+                version = last.get("version")
+            version += 1
+
+            new_version = SearchType.create("spme/version")
+            new_version.set_value("version", version)
+            new_version.set_value("search_type", self.get_search_type())
+            new_version.set_value("search_code", self.get_code())
+            new_version.set_user()
+
+            # get and copy the data
+            data = self.get_data()
+            data = data.copy()
+
+            # scrub the data
+            new_data = {}
+            for name, value in data.items():
+                if value is None:
+                    continue
+                new_data[name] = value
+
+            new_version.set_value("data", new_data)
+            new_version.commit()
+
+
+
+
+    def commit(self, triggers=True, log_transaction=True, cache=True):
         '''commit all of the changes to the database'''
 
         is_insert = False 
-        id = my.get_id()
-        if my.force_insert or id == -1:
+        id = self.get_id()
+        if self.force_insert or id == -1:
             is_insert = True
         if id in ['-1', '']:
-            my.set_id(-1)
+            self.set_id(-1)
             is_insert = True
 
 
-        if not my.handle_commit_security():
+        if not self.handle_commit_security():
             raise SecurityException("Security: Action not permitted")
 
 
-        impl = my.get_database_impl()
+        impl = self.get_database_impl()
         # before we make the final statement, we allow the sobject to set
         # a minimal set of defaults so that the sql statement will always
         # work
         if is_insert:
-            my.set_defaults()
+            self.set_defaults()
+
+
+        if not is_insert:
+            self.store_version()
 
 
         # remap triggers kwarg
@@ -3766,7 +3779,7 @@ class SObject(object):
         # to allow for the convenience of a SearchType to be used as an
         # SObject, the database and table must be hard coded in order to
         # avoid a circular loop
-        is_search_type = isinstance(my,SearchType)
+        is_search_type = isinstance(self,SearchType)
 
         # create the update statement
         update = None
@@ -3782,17 +3795,17 @@ class SObject(object):
             database = SearchType.DATABASE
             table = SearchType.TABLE
         else:
-            database = my.get_database()
-            table = my.get_table()
+            database = self.get_database()
+            table = self.get_table()
 
-        db_resource = my.get_db_resource()
+        db_resource = self.get_db_resource()
         update.set_database(db_resource)
         # set the table to update
         update.set_table(table)
 
         if not is_insert:
-            update.add_filter(my.get_id_col(), my.get_id() )
-            #where = '"%s" = %s' % (my.get_id_col(), my.get_id())
+            update.add_filter(self.get_id_col(), self.get_id() )
+            #where = '"%s" = %s' % (self.get_id_col(), self.get_id())
             #update.add_where(where)
 
 
@@ -3800,11 +3813,11 @@ class SObject(object):
         # it is now safe to add the override id to the update data and update
         # object, since the "where" is already added to the update object
         id_override = False
-        if my.new_id != -1:
-            my.set_value("id", my.new_id)
+        if self.new_id != -1:
+            self.set_value("id", self.new_id)
             # set the id and clear the new_id
-            id = my.new_id
-            my.new_id = -1
+            id = self.new_id
+            self.new_id = -1
             id_override = True
 
 
@@ -3812,26 +3825,26 @@ class SObject(object):
         # generate a code value for this sobject when triggers are set to "ingest".
         # This is a special condition
         if is_insert and triggers == "ingest":
-            if not my.update_data or not my.update_data.get("code"):
-                if SearchType.column_exists(my.full_search_type, "code"):
+            if not self.update_data or not self.update_data.get("code"):
+                if SearchType.column_exists(self.full_search_type, "code"):
                     temp_search_code = Common.generate_random_key()
-                    my.set_value("code", temp_search_code)
+                    self.set_value("code", temp_search_code)
 
         # if no update data is specified
-        if is_insert and not my.update_data:
+        if is_insert and not self.update_data:
             # if there is no update data, an error will result, so give
             # it a try with code as a random key ...
             # this will work for most search types
-            if SearchType.column_exists(my.full_search_type, "code"):
-                my.set_value("code", "NULL", quoted=False)
+            if SearchType.column_exists(self.full_search_type, "code"):
+                self.set_value("code", "NULL", quoted=False)
 
         # validate should raise an exception if data is not valid
-        my.validate()
+        self.validate()
 
         sql = DbContainer.get(db_resource)
 
-        column_types = SearchType.get_column_types(my.full_search_type)
-        column_info = SearchType.get_column_info(my.full_search_type)
+        column_types = SearchType.get_column_types(self.full_search_type)
+        column_info = SearchType.get_column_info(self.full_search_type)
 
         # fill in the updated values
         is_postgres = impl.get_database_type() == 'PostgreSQL'
@@ -3839,8 +3852,8 @@ class SObject(object):
         
         #is_mysql = impl.get_database_type() == 'MySQL'
 
-        for key, value in my.update_data.items():
-            quoted = my.quoted_flag.get(key)
+        for key, value in self.update_data.items():
+            quoted = self.quoted_flag.get(key)
             escape_quoted = False
             changed = False
 
@@ -3879,7 +3892,7 @@ class SObject(object):
                 changed = True
 
             if changed:
-                my.update_data[key] = value
+                self.update_data[key] = value
             #impl.process_value(database, table, key, value)
 
             # For SQLServer, do not set the value for the ID column
@@ -3894,7 +3907,7 @@ class SObject(object):
         if vendor == "MongoDb":
             update.execute(sql)
             #statement = update.get_statement()
-            #print "statement: ", statement
+            #print("statement: ", statement)
             statement = "MongoDB!!!"
 
         else:
@@ -3912,7 +3925,7 @@ class SObject(object):
                 if id_statement:
                     sql.do_update(id_statement)
 
-            #print "statement: ", statement
+            #print("statement: ", statement)
             sql.do_update(statement)
 
 
@@ -3940,13 +3953,13 @@ class SObject(object):
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
+                sequence = impl.get_sequence_name(SearchType.get(self.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
 
 
         if triggers == "ingest":
-            my.set_id(id)
+            self.set_id(id)
             return
 
 
@@ -3954,39 +3967,39 @@ class SObject(object):
         # auto updated values in the database
         sobject = None
         if not is_search_type:
-            search = Search(my.full_search_type)
+            search = Search(self.full_search_type)
             search.set_show_retired_flag(True)
             # trick the search to believe that security filter has been applied
             search.set_security_filter()
             search.add_id_filter(id)
             sobject = search.get_sobject()
             if sobject == None:
-                raise SObjectException("Insert/Update of [%s] failed. The entry with id [%s] cannot be found.\n%s" % (my.get_search_type(), id, statement))
+                raise SObjectException("Insert/Update of [%s] failed. The entry with id [%s] cannot be found.\n%s" % (self.get_search_type(), id, statement))
 
             # need to update the update data with new values if
             # they are autogenerated
-            for key, value in my.update_data.items():
-                if not my.quoted_flag.get(key):
-                    my.update_data[key] = sobject.get_value(key)
+            for key, value in self.update_data.items():
+                if not self.quoted_flag.get(key):
+                    self.update_data[key] = sobject.get_value(key)
 
         else:
-            sobject = my
-            #sobject.data = my.update_data.copy()
-            for key, value in my.update_data.items():
-                my.data[key] = my.update_data[key]
+            sobject = self
+            #sobject.data = self.update_data.copy()
+            for key, value in self.update_data.items():
+                self.data[key] = self.update_data[key]
 
 
         # if the code has changed, then update dependencies automatically
         prev_code = None
-        if not is_insert and my.update_data.get("code") and my.data.get("code") and my.update_data.get("code") != my.data.get("code"):
-            prev_code = my.data.get("code")
+        if not is_insert and self.update_data.get("code") and self.data.get("code") and self.update_data.get("code") != self.data.get("code"):
+            prev_code = self.data.get("code")
 
 
         # auto generate the new code
         search_code = None
         if sobject and column_info.get("code") != None:
             if not sobject.get_value("code", no_exception=True):
-                search_code = my.generate_code(id)
+                search_code = self.generate_code(id)
             else:
                 search_code = sobject.get_value("code")
 
@@ -3996,7 +4009,7 @@ class SObject(object):
         from pyasm.security import Site
         # Note: if this site is not explicitly the first one, then logging the change
         # timestamp is not supported (at the moment)
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
         if search_type not in [
                 "sthpw/change_timestamp",
                 "sthpw/transaction_log",
@@ -4033,7 +4046,7 @@ class SObject(object):
 
                 if not is_insert:
                     login = Environment.get_user_name()
-                    for name, value in my.update_data.items():
+                    for name, value in self.update_data.items():
                         changed_on[name] = "CHANGED"
                         changed_by[name] = login
                     log.set_json_value("changed_on", changed_on)
@@ -4043,37 +4056,37 @@ class SObject(object):
         # store the undo information.  The transaction_log needs to
         # store both the old code and the new code
         if log_transaction:
-            SObjectUndo.log_undo(my, search_code, id, is_insert, prev_code=prev_code)
+            SObjectUndo.log_undo(self, search_code, id, is_insert, prev_code=prev_code)
 
         # store data for triggers    
-        trigger_update_data = my.update_data.copy()
+        trigger_update_data = self.update_data.copy()
 
         trigger_prev_data = {}
         for key in trigger_update_data.keys():
-            trigger_prev_data[key] = my.data.get(key)
+            trigger_prev_data[key] = self.data.get(key)
 
 
         # remember the old data
-        my.prev_data = my.data
-        my.prev_update_data = my.update_data
+        self.prev_data = self.data
+        self.prev_update_data = self.update_data
 
         # replace the updated data
         if not is_search_type:
-            my.data = sobject.data
+            self.data = sobject.data
 
         # reset the update data
-        my.update_data = {}
-        my.has_updates = False
+        self.update_data = {}
+        self.has_updates = False
 
         # set the description of the commit
-        my.update_description = my.build_update_description(is_insert)
+        self.update_description = self.build_update_description(is_insert)
 
 
         # use the autogenerated code if none was explicitly specified
         if sobject and column_info.get("code") and not sobject.get_value("code", no_exception=True):
             sobject.set_value("code", search_code )
             sobject.commit(triggers="none", log_transaction=False)
-            my.data['code'] = search_code
+            self.data['code'] = search_code
 
 
 
@@ -4091,7 +4104,7 @@ class SObject(object):
             # call a trigger
             # Certain search types are ignored because these are required in
             # an insert and will cause an infinite loop
-            base_search_type = my.get_base_search_type()
+            base_search_type = self.get_base_search_type()
             if base_search_type not in [
                     'sthpw/transaction_log',
                     'sthpw/ticket',
@@ -4110,7 +4123,7 @@ class SObject(object):
                     'sthpw/sobject_log'
             ]:
 
-                process = my.get_value("process", no_exception=True)
+                process = self.get_value("process", no_exception=True)
 
 
                 from pyasm.command import Trigger
@@ -4120,13 +4133,13 @@ class SObject(object):
                     output["mode"] = "insert"
                 else:
                     output["mode"] = "update"
-                output["id"] = my.get_id()
-                output["search_code"] = my.get_value("code", no_exception=True)
-                output["search_type"] = my.get_search_type()
-                output["search_key"] = SearchKey.build_by_sobject(my)
+                output["id"] = self.get_id()
+                output["search_code"] = self.get_value("code", no_exception=True)
+                output["search_type"] = self.get_search_type()
+                output["search_key"] = SearchKey.build_by_sobject(self)
                 output["update_data"] = trigger_update_data
                 output["prev_data"] = trigger_prev_data
-                output["sobject"] = my.get_sobject_dict()
+                output["sobject"] = self.get_sobject_dict()
 
 
                 # call all of the triggers
@@ -4136,40 +4149,40 @@ class SObject(object):
                     mode = "update"
                 # special condition for some base types
                 if base_search_type in ["sthpw/note", "sthpw/task", "sthpw/work_hour", "sthpw/snapshot"]:
-                    parent_type = my.get_value("search_type")
+                    parent_type = self.get_value("search_type")
                     parts = parent_type.split("?")
                     parent_type = parts[0]
                 else:
-                    parent_type = my.get_base_search_type()
-                my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
+                    parent_type = self.get_base_search_type()
+                self._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
             
                 # add message only if triggers is true
                 if triggers:
-                    my._add_message(sobject, output, mode)
+                    self._add_message(sobject, output, mode)
 
 
             # cache this sobject, by code and id
             if cache:
-                search_type = my.get_search_type()
-                key = SearchKey.build_search_key(search_type, id, column='id', project_code=my.get_project_code())
-                my.cache_sobject(key, my)
-                code = my.get_code()
+                search_type = self.get_search_type()
+                key = SearchKey.build_search_key(search_type, id, column='id', project_code=self.get_project_code())
+                self.cache_sobject(key, self)
+                code = self.get_code()
                 if code:
-                    key = SearchKey.build_search_key(search_type, code, column='code', project_code=my.get_project_code())
-                    my.cache_sobject(key, my)
+                    key = SearchKey.build_search_key(search_type, code, column='code', project_code=self.get_project_code())
+                    self.cache_sobject(key, self)
 
 
 
         if prev_code and triggers == "all":
-            my._update_code_dependencies(prev_code)
+            self._update_code_dependencies(prev_code)
 
 
 
         if is_insert:
-            my.on_insert()
+            self.on_insert()
         else:
-           my.on_update()
+           self.on_update()
 
 
 
@@ -4177,8 +4190,8 @@ class SObject(object):
 
 
 
-    def generate_code(my, id):
-        search_type = my.get_base_search_type()
+    def generate_code(self, id):
+        search_type = self.get_base_search_type()
 
 
         # Generate more readable key
@@ -4189,7 +4202,7 @@ class SObject(object):
         if server:
             parts.append(server)
 
-        log_key = my.get_code_key()
+        log_key = self.get_code_key()
         parts.append( log_key )
 
 
@@ -4197,14 +4210,14 @@ class SObject(object):
         from pyasm.biz import ProjectSetting
         if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
-            log_key = my.get_code_key()
+            log_key = self.get_code_key()
             random_code = Common.generate_random_key(digits=10)
             parts.append( random_code )
 
         else:
 
             try:
-                search_type = my.get_base_search_type()
+                search_type = self.get_base_search_type()
                 if search_type in [
                         'sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log',
                         'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log'
@@ -4231,7 +4244,7 @@ class SObject(object):
 
 
 
-    def _add_message(my, sobject, data, mode):
+    def _add_message(self, sobject, data, mode):
 
         # message types are "insert,update,change"
         search_type_obj = sobject.get_search_type_obj()
@@ -4319,7 +4332,7 @@ class SObject(object):
         
 
 
-    def _call_triggers(my, trigger_update_data, mode, output, process, parent_type, triggers):
+    def _call_triggers(self, trigger_update_data, mode, output, process, parent_type, triggers):
 
         is_undo = Container.get("is_undo")
         if triggers == "integral" or is_undo == True:
@@ -4330,7 +4343,7 @@ class SObject(object):
 
         from pyasm.command import Trigger
 
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
 
         # build up a list of events and call the trigger
         events = [
@@ -4355,37 +4368,37 @@ class SObject(object):
 
             # first key
             key = {'event': event}
-            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+            Trigger.call_by_key(key, self, output, integral_only=integral_only, project_code=project_code)
 
             if parent_type:
                 key = {'event': event}
                 key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+                Trigger.call_by_key(key, self, output, integral_only=integral_only, project_code=project_code)
 
 
 
             if process:
                 key = {'event': event}
                 key['process'] = process
-                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+                Trigger.call_by_key(key, self, output, integral_only=integral_only, project_code=project_code)
 
 
             if process and parent_type:
                 key = {'event': event}
                 key['process'] = process
                 key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+                Trigger.call_by_key(key, self, output, integral_only=integral_only, project_code=project_code)
 
 
             # process can be either the process name or the process code
-            if process and my.get_base_search_type() in [
+            if process and self.get_base_search_type() in [
                     'sthpw/task',
                     'sthpw/note',
                     'sthpw/snapshot',
                     'sthpw/work_hour'
             ]:
                 # need to to get the parent
-                parent = my.get_parent()
+                parent = self.get_parent()
                 pipeline_code = None
                 if parent:
                     pipeline_code = parent.get_value("pipeline_code", no_exception=True)
@@ -4400,13 +4413,13 @@ class SObject(object):
 
                         key = {'event': event}
                         key['process'] = process_code
-                        Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+                        Trigger.call_by_key(key, self, output, integral_only=integral_only, project_code=project_code)
 
                         if parent_type:
                             key = {'event': event}
                             key['process'] = process_code
                             key['search_type'] = parent_type
-                            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
+                            Trigger.call_by_key(key, self, output, integral_only=integral_only, project_code=project_code)
 
 
 
@@ -4415,39 +4428,39 @@ class SObject(object):
 
 
 
-    def update(my):
+    def update(self):
         '''update the current sobject's data if the db has been changed since its creation'''
-        #search = Search(my.search_type_obj)
-        search = Search(my.full_search_type)
+        #search = Search(self.search_type_obj)
+        search = Search(self.full_search_type)
         search.set_show_retired_flag(True)
         # trick the search to believe that security filter has been applied
         search.set_security_filter()
-        search.add_id_filter(my.get_id())
+        search.add_id_filter(self.get_id())
         sobject = search.get_sobject()
         if sobject == None:
             raise SObjectException("Failed to recache data")
-        my.data = sobject.data
+        self.data = sobject.data
 
 
 
-    def _update_code_dependencies(my, old_code):
+    def _update_code_dependencies(self, old_code):
 
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
 
         # set the data to the old code to get the dependencies
-        new_code = my.data['code']
-        my.data['code'] = old_code
+        new_code = self.data['code']
+        self.data['code'] = old_code
 
         related_types = ['sthpw/snapshot', 'sthpw/note', 'sthpw/task']
         if search_type in related_types:
             return
 
         for related_type in related_types:
-            related_sobjects = my.get_related_sobjects(related_type)
+            related_sobjects = self.get_related_sobjects(related_type)
             if related_sobjects:
-                print "Updating dependent search_type [%s]" % related_type
+                print("Updating dependent search_type [%s]" % related_type)
             for related_sobject in related_sobjects:
-                print "... ", related_sobject.get_code()
+                print("... ", related_sobject.get_code())
                 related_sobject.set_value("search_code", new_code)
                 related_sobject.commit()
 
@@ -4459,7 +4472,7 @@ class SObject(object):
             if related_type == "*":
                 continue
 
-            print "Preparing to update [%s]" % related_type
+            print("Preparing to update [%s]" % related_type)
             attrs = schema.get_relationship_attrs(search_type, related_type)
             relationship = attrs.get('relationship')
 
@@ -4478,26 +4491,26 @@ class SObject(object):
                     
 
 
-            related_sobjects = my.get_related_sobjects(related_type)
+            related_sobjects = self.get_related_sobjects(related_type)
             for related_sobject in related_sobjects:
-                print "... related: ", related_sobject.get_code()
+                print("... related: ", related_sobject.get_code())
 
             if related_sobjects:
                 raise TacticException("There are related items in [%s].  Please change these first" % related_type)
 
-        my.data['code'] = new_code
+        self.data['code'] = new_code
 
 
 
-    def build_update_description(my, is_insert=True):
+    def build_update_description(self, is_insert=True):
         '''This is asked for by the edit widget and possibly other commands'''
         if is_insert:
             action = "Inserted"
         else:
             action = "Updated"
-        title = my.get_search_type_obj().get_value("title", no_exception=True)
-        code = my.get_code()
-        name = my.get_name()
+        title = self.get_search_type_obj().get_value("title", no_exception=True)
+        code = self.get_code()
+        name = self.get_name()
         if code == name:
             description = "%s %s: %s" % (action, title, code)
         else:
@@ -4507,27 +4520,27 @@ class SObject(object):
 
 
 
-    def get_update_description(my):
+    def get_update_description(self):
         # if all of this is successful, add a description to the update.
-        return my.update_description
+        return self.update_description
 
 
-    def get_prev_value(my, name):
-        return my.prev_data.get(name)
+    def get_prev_value(self, name):
+        return self.prev_data.get(name)
 
-    def get_prev_update_data(my):
-        return my.prev_update_data
+    def get_prev_update_data(self):
+        return self.prev_update_data
    
-    def get_defaults(my):
+    def get_defaults(self):
         '''returns a dictionary of default name value pairs to be filled in
         whenver there is a commit'''
         defaults = {}
         from pyasm.biz import ProjectSetting
         if ProjectSetting.get_value_by_key('autofill_pipeline_code') != 'false':
-            base_search_type = my.get_base_search_type() 
+            base_search_type = self.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
-            full_search_type = my.get_search_type()
+            full_search_type = self.get_search_type()
             has_pipeline = SearchType.column_exists(full_search_type, "pipeline_code")
             if has_pipeline:
                 from pyasm.biz import Pipeline
@@ -4537,9 +4550,9 @@ class SObject(object):
 
 
 
-        base_search_type = my.get_base_search_type() 
+        base_search_type = self.get_base_search_type() 
         if base_search_type != "sthpw/file":
-            if my.column_exists("relative_dir"):
+            if self.column_exists("relative_dir"):
                 parts = base_search_type.split("/")
                 project_code = Project.get_project_code()
                 defaults['relative_dir'] = '%s/%s' % (project_code, parts[1])
@@ -4549,22 +4562,22 @@ class SObject(object):
 
 
 
-    def set_defaults(my):
+    def set_defaults(self):
         try:
-            defaults = my.get_defaults()
+            defaults = self.get_defaults()
             for key,value in defaults.items():
-                if not my.has_value(key) or my.get_value(key) == None:
-                    my.set_value(key, value)
-        except Exception, e:
-            print "Error: ", e.__str__()
+                if not self.has_value(key) or self.get_value(key) == None:
+                    self.set_value(key, value)
+        except Exception as e:
+            print("Error: ", e.__str__())
 
 
 
         # all timestamps must be set at least to now()
-        if SearchType.column_exists(my.full_search_type, "timestamp") and not my.get_value("timestamp", no_exception=True):
-            db_resource = my.get_db_resource()
+        if SearchType.column_exists(self.full_search_type, "timestamp") and not self.get_value("timestamp", no_exception=True):
+            db_resource = self.get_db_resource()
             sql = DbContainer.get(db_resource)
-            my.set_value("timestamp", sql.get_timestamp_now(), quoted=False)
+            self.set_value("timestamp", sql.get_timestamp_now(), quoted=False)
 
         return
 
@@ -4572,67 +4585,67 @@ class SObject(object):
 
     # retiring and deleting
 
-    def retire(my):
+    def retire(self):
         '''retires the asset.  This is prefered to deleting because
         deletion is a loss of work and is permanently removed from ever
         existing'''
-        retire_col = my.search_type_obj.get_retire_col()
-        my.set_value(retire_col,"retired")
-        my.commit()
+        retire_col = self.search_type_obj.get_retire_col()
+        self.set_value(retire_col,"retired")
+        self.commit()
 
         from sobject_log import RetireLog
-        RetireLog.create(my.get_search_type(), search_code=my.get_code() )
+        RetireLog.create(self.get_search_type(), search_code=self.get_code() )
 
         # remember the data
-        data = my.data.copy()
+        data = self.data.copy()
 
         # call a retire event
         from pyasm.command import Trigger
         output = {}
         output["is_retire"] = True
         output["mode"] = "retire"
-        output["search_key"] = SearchKey.build_by_sobject(my)
-        output["id"] = my.get_id()
-        output["search_type"] = my.get_search_type()
+        output["search_key"] = SearchKey.build_by_sobject(self)
+        output["id"] = self.get_id()
+        output["search_type"] = self.get_search_type()
         output["data"] = data
-        output["sobject"] = my.get_sobject_dict()
+        output["sobject"] = self.get_sobject_dict()
 
         from pyasm.biz import Project
         project_code = Project.get_project_code()
-        Trigger.call(my, "retire", output, project_code=project_code)
-        Trigger.call(my, "retire|%s" % my.get_base_search_type(), output, project_code=project_code)
-        Trigger.call(my, "change", output, project_code=project_code)
-        Trigger.call(my, "change|%s" % my.get_base_search_type(), output, project_code=project_code)
+        Trigger.call(self, "retire", output, project_code=project_code)
+        Trigger.call(self, "retire|%s" % self.get_base_search_type(), output, project_code=project_code)
+        Trigger.call(self, "change", output, project_code=project_code)
+        Trigger.call(self, "change|%s" % self.get_base_search_type(), output, project_code=project_code)
 
         # add message
-        my._add_message(my, output, 'retire')
+        self._add_message(self, output, 'retire')
 
-    def reactivate(my):
+    def reactivate(self):
         '''reactivate a retired asset'''
-        retire_col = my.search_type_obj.get_retire_col()
-        my.set_value(retire_col, "NULL", quoted=0)
-        my.commit()
+        retire_col = self.search_type_obj.get_retire_col()
+        self.set_value(retire_col, "NULL", quoted=0)
+        self.commit()
 
 
 
-    def delete(my, log=True, triggers=True):
+    def delete(self, log=True, triggers=True):
         '''delete the sobject (only the database)
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
         '''
         security = Environment.get_security()
-        base_search_type = my.get_base_search_type()
+        base_search_type = self.get_base_search_type()
 
-        id = my.get_id()
+        id = self.get_id()
         if id == -1:
             return
 
 
-        current_project_code = my.get_project_code()
+        current_project_code = self.get_project_code()
         
         # special conditions of task, note and work_hour
         if base_search_type in ['sthpw/task', 'sthpw/note','sthpw/snapshot','sthpw/file','sthpw/work_hour']:
-            sobject_project_code = my.get_value('project_code')
+            sobject_project_code = self.get_value('project_code')
             key = { "code": base_search_type }
             key2 = { "code": base_search_type, "project": sobject_project_code }
             key3 = { "code": "*" }
@@ -4651,27 +4664,27 @@ class SObject(object):
             keys = [key, key2, key3, key4]
             default = "deny"
             if not security.check_access("search_type", keys, "delete", default=default):
-                print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_user_name(), base_search_type)
+                print("WARNING: User [%s] security failed for search type [%s]" % (Environment.get_user_name(), base_search_type))
                 raise SObjectException('[%s] is not allowed to delete item in [%s]. You may need to adjust the access rules for the group.' % (Environment.get_user_name(), base_search_type))
 
         # remember the data
-        data = my.data.copy()
+        data = self.data.copy()
 
-        database_impl = my.get_database_impl()
+        database_impl = self.get_database_impl()
         database_type = database_impl.get_database_type()
 
-        db_resource = my.get_db_resource()
+        db_resource = self.get_db_resource()
         sql = DbContainer.get(db_resource)
 
 
         # make sure we have the right table for search types
-        is_search_type = isinstance(my,SearchType)
+        is_search_type = isinstance(self,SearchType)
         if is_search_type:
             database = SearchType.DATABASE
             table = SearchType.TABLE
         else:
-            database = my.get_database()
-            table = my.search_type_obj.get_table()
+            database = self.get_database()
+            table = self.search_type_obj.get_table()
 
         if database_type == 'MongoDb':
 
@@ -4679,7 +4692,7 @@ class SObject(object):
 
 
         else:
-            where = '"%s" = %s' % (my.get_id_col(),id)
+            where = '"%s" = %s' % (self.get_id_col(),id)
 
             if database_type == 'Oracle':
                 # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
@@ -4694,7 +4707,7 @@ class SObject(object):
 
         # record the delete unless specifically not requested (for undo)
         if log:
-            SObjectUndo.log_undo_for_delete(my)
+            SObjectUndo.log_undo_for_delete(self)
 
         if triggers:
             # call a delete event
@@ -4704,38 +4717,38 @@ class SObject(object):
             output = {}
             output["is_delete"] = True
             output["mode"] = "delete"
-            output["search_key"] = SearchKey.build_by_sobject(my)
+            output["search_key"] = SearchKey.build_by_sobject(self)
             output["id"] = id
-            output["search_type"] = my.get_search_type()
+            output["search_type"] = self.get_search_type()
             output["data"] = data
-            output["sobject"] = my.get_sobject_dict()
-            Trigger.call(my, "delete", output)
-            Trigger.call(my, "delete|%s" % base_search_type, output, project_code=project_code)
-            Trigger.call(my, "change", output)
-            Trigger.call(my, "change|%s" % base_search_type, output, project_code=project_code)
+            output["sobject"] = self.get_sobject_dict()
+            Trigger.call(self, "delete", output)
+            Trigger.call(self, "delete|%s" % base_search_type, output, project_code=project_code)
+            Trigger.call(self, "change", output)
+            Trigger.call(self, "change|%s" % base_search_type, output, project_code=project_code)
 
         # delete the sobject_list entry
         if base_search_type not in ['sthpw/sobject_list']:
             search = Search("sthpw/sobject_list")
             search.add_filter("search_type", base_search_type)
-            search.add_filter("search_code", my.get_code() )
+            search.add_filter("search_code", self.get_code() )
             sobject = search.get_sobject()
             if sobject:
                 sobject.delete(log=log)
 
-        my.on_delete()
+        self.on_delete()
 
        
 
 
 
-    def clone(my, recursive=True, related_types=[], parent=None, extra_data={}):
+    def clone(self, recursive=True, related_types=[], parent=None, extra_data={}):
         '''copy an sobject'''
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
         clone = SearchType.create(search_type)
-        #clone.update_data = my.data.copy()
+        #clone.update_data = self.data.copy()
 
-        for name, value in my.data.items():
+        for name, value in self.data.items():
             if value == None or name == 'code':
                 continue
             clone.set_value(name, value)
@@ -4758,9 +4771,9 @@ class SObject(object):
                 if related_type == search_type:
                     continue
 
-                related_sobjects = my.get_related_sobjects(related_type)
+                related_sobjects = self.get_related_sobjects(related_type)
 
-                #print "found: ", related_type, len(related_sobjects)
+                #print("found: ", related_type, len(related_sobjects))
                 for related_sobject in related_sobjects:
                     related_sobject.clone(parent=clone)
 
@@ -4771,95 +4784,95 @@ class SObject(object):
 
 
     # Directory structure functions
-    def get_repo_handler(my, snapshot):
+    def get_repo_handler(self, snapshot):
         '''Projects can define which repo handler is used.
         This gives the ability to use different styles and or 3rd party
         repositories such as Perforce or Subversion'''
         from pyasm.biz import Project
         repo_handler = Project.get_project_repo_handler()
         repo_handler.set_snapshot(snapshot)
-        repo_handler.set_sobject(my)
+        repo_handler.set_sobject(self)
         return repo_handler
 
-    def get_repo(my, snapshot):
+    def get_repo(self, snapshot):
         '''get the repo for this specific snapshot'''
-        repo_handler = my.get_repo_handler(snapshot)
+        repo_handler = self.get_repo_handler(snapshot)
         return repo_handler.get_repo()
 
 
-    def get_web_dir(my,snapshot=None,file_type=None, file_object=None):
+    def get_web_dir(self,snapshot=None,file_type=None, file_object=None):
         '''The http sobject directory from the client point of view.
         The details are handled by the project class'''
         from pyasm.biz import Project
-        dir = Project.get_project_web_dir(my,snapshot,file_type,file_object=file_object)
+        dir = Project.get_project_web_dir(self,snapshot,file_type,file_object=file_object)
         return dir
 
-    def get_lib_dir(my,snapshot=None,file_type=None, create=False, file_object=None, dir_naming=None):
+    def get_lib_dir(self,snapshot=None,file_type=None, create=False, file_object=None, dir_naming=None):
         '''The nfs sobject directory from the server point of view.
         The details are handled by the project class'''
         from pyasm.biz import Project
-        dir = Project.get_project_lib_dir(my,snapshot,file_type, create=create, file_object=file_object, dir_naming=dir_naming)
+        dir = Project.get_project_lib_dir(self,snapshot,file_type, create=create, file_object=file_object, dir_naming=dir_naming)
         return dir
 
-    def get_env_dir(my,snapshot=None,file_type=None):
+    def get_env_dir(self,snapshot=None,file_type=None):
         '''This retrieves the unexpanded directory:
         $TACTIC_ASSET_DIR/bar/shot/...
         '''
         from pyasm.biz import Project
-        dir = Project.get_project_env_dir(my,snapshot,file_type)
+        dir = Project.get_project_env_dir(self,snapshot,file_type)
         return dir
 
 
 
-    def get_remote_web_dir(my, snapshot=None, file_type=None):
+    def get_remote_web_dir(self, snapshot=None, file_type=None):
         '''get_web_dir with the full http link.
         All web directories are, by default, relative links.  This function
         will force a full link, including the http://<server> part'''
         from pyasm.biz import Project
-        dir = Project.get_project_remote_web_dir(my,snapshot,file_type)
+        dir = Project.get_project_remote_web_dir(self,snapshot,file_type)
         return dir
 
 
-    def get_client_lib_dir(my, snapshot=None, file_type=None, create=False, file_object=None, dir_naming=None):
+    def get_client_lib_dir(self, snapshot=None, file_type=None, create=False, file_object=None, dir_naming=None):
         '''The asset directory from the client point of view.  This is only
         valid if this directory is visible to the client'''
         # for now assume the same directory as the server
         from pyasm.biz import Project
-        dir = Project.get_project_client_lib_dir(my,snapshot,file_type,\
+        dir = Project.get_project_client_lib_dir(self,snapshot,file_type,\
                 create=create, file_object=file_object, dir_naming=dir_naming)
         return dir
 
 
-    def get_local_dir(my, snapshot=None):
+    def get_local_dir(self, snapshot=None):
         '''finds the local directory on the client to download files to'''
         base_dir = Config.get_value("checkin","win32_local_base_dir")
         return "%s/download" % (base_dir)
 
 
 
-    def get_local_repo_dir(my, snapshot=None, file_type=None, file_object=None):
+    def get_local_repo_dir(self, snapshot=None, file_type=None, file_object=None):
         '''the local sync of the Tactic repository'''
         from pyasm.biz import Project
-        dir = Project.get_project_local_repo_dir(my,snapshot,file_type, file_object=file_object)
+        dir = Project.get_project_local_repo_dir(self,snapshot,file_type, file_object=file_object)
         return dir
 
 
-    def get_sandbox_dir(my, snapshot=None, file_type=None):
+    def get_sandbox_dir(self, snapshot=None, file_type=None):
         '''the local sandbox(work area) designated by Tactic'''
         from pyasm.biz import Project
-        dir = Project.get_project_sandbox_dir(my,snapshot,file_type)
+        dir = Project.get_project_sandbox_dir(self,snapshot,file_type)
         return dir
 
-    def get_relative_dir(my, snapshot=None, file_type=None, create=False, file_object=None, dir_naming=None):
+    def get_relative_dir(self, snapshot=None, file_type=None, create=False, file_object=None, dir_naming=None):
         '''the relative direcory without any base'''
         from pyasm.biz import Project
-        dir = Project.get_project_relative_dir(my,snapshot,file_type, create=create, file_object=file_object, dir_naming=dir_naming)
+        dir = Project.get_project_relative_dir(self,snapshot,file_type, create=create, file_object=file_object, dir_naming=dir_naming)
         return dir
 
 
 
-    def get_column_info(my, column=None):
-        column_info = SearchType.get_column_info(my.get_search_type())
+    def get_column_info(self, column=None):
+        column_info = SearchType.get_column_info(self.get_search_type())
         if not column:
             return column_info
         else:
@@ -4928,7 +4941,7 @@ class SObject(object):
 
     
 
-    def get_primary_key(my):
+    def get_primary_key(self):
         '''TODO: incorporate this into a column in SearchType
            This is the column name of the primary key of this sobject.
            This column should be referenced by the column returned 
@@ -4939,25 +4952,25 @@ class SObject(object):
     # Searchs for relates sobjects.  This is designed to be a more generalized
     # solution than the parent/child relationships below.  This makes heavy
     # use of schema to find relationships between search types
-    def get_related_sobject(my, related_type, filters=[], show_retired=False):
-        search_type = my.get_base_search_type()
+    def get_related_sobject(self, related_type, filters=[], show_retired=False):
+        search_type = self.get_base_search_type()
         search = Search(related_type)
         if show_retired:
             search.set_show_retired(True)
         if filters:
             search.add_op_filters(filters)
 
-        search.add_relationship_filter(my)
+        search.add_relationship_filter(self)
         return search.get_sobject()
 
-    def get_related_sobjects(my, related_type, filters=[], path=None, show_retired=False):
+    def get_related_sobjects(self, related_type, filters=[], path=None, show_retired=False):
 
         # if we have an instance relationship, then we have to do a pre
         # search to the instance table
-        search_type = my.get_base_search_type()
+        search_type = self.get_base_search_type()
 
         from pyasm.biz import Schema
-        schema = Schema.get(project_code=my.get_project_code())
+        schema = Schema.get(project_code=self.get_project_code())
         attrs = schema.get_relationship_attrs(search_type, related_type)
         relationship = attrs.get('relationship')
         if relationship == 'many_to_many':
@@ -4988,7 +5001,7 @@ class SObject(object):
             to_path = attrs.get('to_path')
 
             search = Search(link_type)
-            search.add_relationship_filter(my)
+            search.add_relationship_filter(self)
             link_sobjects = search.get_sobjects()
 
             sobjects_dict = Search.get_related_by_sobjects(link_sobjects, related_type, filters=filters, show_retired=show_retired, path=to_path)
@@ -4999,7 +5012,7 @@ class SObject(object):
 
             return sobjects
         else:
-            search_type = my.get_base_search_type()
+            search_type = self.get_base_search_type()
 
             search = Search(related_type)
             if show_retired:
@@ -5007,7 +5020,7 @@ class SObject(object):
 
             if filters:
                 search.add_op_filters(filters)
-            search.add_relationship_filter(my, path=path)
+            search.add_relationship_filter(self, path=path)
             sobjects = search.get_sobjects()
 
 
@@ -5016,8 +5029,8 @@ class SObject(object):
 
 
     # Instance relationships
-    def add_instance(my, sobject):
-        search_type1 = my.get_base_search_type()
+    def add_instance(self, sobject):
+        search_type1 = self.get_base_search_type()
         search_type2 = sobject.get_base_search_type()
 
         from pyasm.biz import Schema
@@ -5030,7 +5043,7 @@ class SObject(object):
         instance_type = attrs.get("instance_type")
 
         instance = SearchType.create(instance_type)
-        instance.add_related_sobject(my)
+        instance.add_related_sobject(self)
         instance.add_related_sobject(sobject)
         instance.commit()
 
@@ -5039,9 +5052,9 @@ class SObject(object):
 
 
 
-    def get_instances(my, search_type2):
+    def get_instances(self, search_type2):
 
-        search_type1 = my.get_base_search_type()
+        search_type1 = self.get_base_search_type()
 
         from pyasm.biz import Schema
         attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
@@ -5053,14 +5066,14 @@ class SObject(object):
         instance_type = attrs.get("instance_type")
 
         expression = "@SOBJECT(%s)" % (instance_type)
-        instances = Search.eval(expression, my)
+        instances = Search.eval(expression, self)
 
         return instances
 
 
 
-    def remove_instance(my, sobject):
-        search_type1 = my.get_base_search_type()
+    def remove_instance(self, sobject):
+        search_type1 = self.get_base_search_type()
         search_type2 = sobject.get_base_search_type()
 
         from pyasm.biz import Schema
@@ -5072,7 +5085,7 @@ class SObject(object):
         instance_type = attrs.get("instance_type")
 
         expression = "@SOBJECT(%s)" % (instance_type)
-        from_instances = Search.eval(expression, my)
+        from_instances = Search.eval(expression, self)
 
         to_instances = Search.eval(expression, sobject)
 
@@ -5094,63 +5107,63 @@ class SObject(object):
 
 
     # Parent/Child Relationships
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         '''This is the foreign key that other sobjects will use to refer
         to this sobject type.'''
-        return SearchType.get_foreign_key(my.search_type_obj.get_base_key())
+        return SearchType.get_foreign_key(self.search_type_obj.get_base_key())
 
 
 
-    def get_all_children_search(my, child_type):
+    def get_all_children_search(self, child_type):
         '''gets the search object for searching children, without doing the
         search.  This provides the opportunity to add further filters to the
         search object'''
         search = Search(child_type)
-        my.children_alter_search(search, child_type)
+        self.children_alter_search(search, child_type)
         return search
 
 
-    def children_alter_search(my, search, child_type):
+    def children_alter_search(self, search, child_type):
         # look at the schema for the type of relationship
-        schema = my.get_schema()
+        schema = self.get_schema()
         if schema:
-            relationship = schema.get_relationship( my.get_base_search_type(), child_type )
+            relationship = schema.get_relationship( self.get_base_search_type(), child_type )
             # the filters are based on the type of relationship
            
 
             if relationship == "search_type":
-                search.add_filter("search_type", my.get_search_type() )
-                search.add_filter("search_id", my.get_id() )
+                search.add_filter("search_type", self.get_search_type() )
+                search.add_filter("search_id", self.get_id() )
 
             elif relationship == "search_code":
-                search.add_filter("search_type", my.get_search_type() )
-                search.add_filter("search_code", my.get_code() )
+                search.add_filter("search_type", self.get_search_type() )
+                search.add_filter("search_code", self.get_code() )
 
             elif relationship == "search_key":
-                search.add_filter("search_key", my.get_search_key() )
+                search.add_filter("search_key", self.get_search_key() )
             elif relationship == "parent_code":
-                code = my.get_code()
+                code = self.get_code()
                 search.add_filter( "parent_code", code )
             elif relationship == "id":
-                relationship_attrs = schema.get_relationship_attrs( child_type, my.get_base_search_type() )
-                code = my.get_id()
+                relationship_attrs = schema.get_relationship_attrs( child_type, self.get_base_search_type() )
+                code = self.get_id()
                 col = relationship_attrs.get('from_col')
                 if not col:
-                    col = my.get_foreign_key()
+                    col = self.get_foreign_key()
                 search.add_filter(col, code)
             elif relationship == "code":
                 
-                relationship_attrs = schema.get_relationship_attrs(child_type, my.get_base_search_type() )
+                relationship_attrs = schema.get_relationship_attrs(child_type, self.get_base_search_type() )
             
 
                 is_from = relationship_attrs['from'] in [ child_type, '*']
-                code = my.get_code()
+                code = self.get_code()
                 if is_from:
                     col = relationship_attrs.get('from_col')
                 else:
                     col = relationship_attrs.get('to_col')
                 if not col:
-                    col = my.get_foreign_key()
+                    col = self.get_foreign_key()
                 search.add_filter(col, code)
             elif relationship == "general":
                 # if connected through connection table,just return
@@ -5161,28 +5174,28 @@ class SObject(object):
             else:
                 # FIXME: hard coding
                 # use foreign code
-                key = my.get_foreign_key()
+                key = self.get_foreign_key()
                 if key == 'asset_library_code':
                     key = 'asset_library'
-                code = my.get_code()
+                code = self.get_code()
                 search.add_filter(key,code)
         else:
-            key = my.get_foreign_key()
-            code = my.get_code()
+            key = self.get_foreign_key()
+            code = self.get_code()
             search.add_filter(key,code)
 
         return search
 
 
-    def get_all_children(my, child_type):
+    def get_all_children(self, child_type):
         '''The parent/child relationship for sobjects is defined the schema'''
-        search = my.get_all_children_search(child_type)
+        search = self.get_all_children_search(child_type)
         return search.get_sobjects()
 
 
-    def get_child(my, child_type):
+    def get_child(self, child_type):
         '''convenience function to return a single child'''
-        sobjects = my.get_all_children(child_type)
+        sobjects = self.get_all_children(child_type)
         if not sobjects:
             return None
         else:
@@ -5191,31 +5204,31 @@ class SObject(object):
 
     
 
-    def get_parent_search_key(my):
+    def get_parent_search_key(self):
         '''Without trying to get the parent sobject, just build the search key. 
         it conforms to the SearchKey.get_by_sobject() format, can be used by Task, Snapshot, Note'''
-        search_type = my.get_value("search_type")
-        search_code = my.get_value("search_code", no_exception=True)
+        search_type = self.get_value("search_type")
+        search_code = self.get_value("search_code", no_exception=True)
         if search_code:
             search_key = SearchKey.build_search_key(search_type, search_code, column='code', project_code=None)
         else:
-            search_id = my.get_value("search_id")
+            search_id = self.get_value("search_id")
             search_key = SearchKey.build_search_key(search_type, search_id, column='id', project_code=None)
 
         return search_key
 
 
-    def get_parent(my, parent_type=None, columns=[], show_retired=False):
+    def get_parent(self, parent_type=None, columns=[], show_retired=False):
         # columns arg is DEPRECATED
 
         if not parent_type:
-            schema = my.get_schema()
-            parent_type = schema.get_parent_type(my.get_base_search_type() )
+            schema = self.get_schema()
+            parent_type = schema.get_parent_type(self.get_base_search_type() )
 
 
         if parent_type == '*':
 
-            attrs = schema.get_relationship_attrs("*", my.get_base_search_type(), path=None)
+            attrs = schema.get_relationship_attrs("*", self.get_base_search_type(), path=None)
 
 
             prefix = attrs.get("prefix")
@@ -5224,36 +5237,36 @@ class SObject(object):
             else:
                 prefix = ""
 
-            search_type = my.get_value("%ssearch_type" % prefix, no_exception=True)
+            search_type = self.get_value("%ssearch_type" % prefix, no_exception=True)
             # it could be an insert mode sobject
             if not search_type:
                 return None
 
 
-            attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), search_type) 
+            attrs = schema.resolve_relationship_attrs(attrs, self.get_search_type(), search_type) 
             relationship = attrs.get('relationship')
             #if relationship == "search_type":
-            #    relationship = schema.resolve_search_type_relationship(attrs, my.get_base_search_type(), search_type)
+            #    relationship = schema.resolve_search_type_relationship(attrs, self.get_base_search_type(), search_type)
 
             if relationship == "search_code":
-                search_type = my.get_value("%ssearch_type" % prefix)
-                search_code = my.get_value("%ssearch_code" % prefix)
+                search_type = self.get_value("%ssearch_type" % prefix)
+                search_code = self.get_value("%ssearch_code" % prefix)
                 return Search.get_by_code(search_type,search_code)
 
             elif relationship == "search_id":
-                search_type = my.get_value("%ssearch_type" % prefix)
-                search_id = my.get_value("%ssearch_id" % prefix)
+                search_type = self.get_value("%ssearch_type" % prefix)
+                search_id = self.get_value("%ssearch_id" % prefix)
                 return Search.get_by_id(search_type,search_id)
             else:
                 return None
 
         if parent_type:
-            return my.get_related_sobject(parent_type, show_retired=show_retired)
+            return self.get_related_sobject(parent_type, show_retired=show_retired)
             
 
 
-    def get_reference(my, search_type):
-        return my.get_parent(search_type)
+    def get_reference(self, search_type):
+        return self.get_parent(search_type)
   
     
 
@@ -5269,7 +5282,7 @@ class SObject(object):
     get_icon_context = classmethod(get_icon_context)
    
 
-    def has_auto_current(my):
+    def has_auto_current(self):
         '''determines whether new snapshots for this sobject are automatically
         set as the current.  This is true for most sobjects, however, some
         have the current explicitly set'''
@@ -5485,20 +5498,20 @@ class SObject(object):
 
 
 
-    def get_sobject_dict(my, columns=None, use_id=False, language='python'):
+    def get_sobject_dict(self, columns=None, use_id=False, language='python'):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
-        if my.get_base_search_type() == "sthpw/virtual":
-            columns = my.data.keys()
+        if self.get_base_search_type() == "sthpw/virtual":
+            columns = self.data.keys()
         elif not columns:
-            columns = SearchType.get_columns(my.get_search_type())
+            columns = SearchType.get_columns(self.get_search_type())
 
         result = {}
         for column in columns:
             if column == 'metadata':
-                value = my.get_metadata_dict()
+                value = self.get_metadata_dict()
             else:
-                value = my.get_value(column, no_exception=True)
+                value = self.get_value(column, no_exception=True)
                 if language == 'c#':
                     if value == '':
                         value = None
@@ -5510,7 +5523,7 @@ class SObject(object):
 
 
             result[column] = value
-        result['__search_key__'] = SearchKey.build_by_sobject(my, use_id=use_id)
+        result['__search_key__'] = SearchKey.build_by_sobject(self, use_id=use_id)
         return result
 
 
@@ -5526,7 +5539,7 @@ class SearchType(SObject):
     DATABASE = "sthpw"
     TABLE = "search_object"
 
-    def __init__(my, search_type, columns=None, result=None, fast_data=None):
+    def __init__(self, search_type, columns=None, result=None, fast_data=None):
         ''' do not use this constructor, use the get method '''
         # bake the current template
         if search_type == None:
@@ -5536,16 +5549,16 @@ class SearchType(SObject):
             search_type = search_type.SEARCH_TYPE
 
 
-        super(SearchType,my).__init__(search_type,columns,result, fast_data=fast_data)
+        super(SearchType,self).__init__(search_type,columns,result, fast_data=fast_data)
 
         # cache this value as it gets called a lot
-        my.base_key = my.get_value("search_type")
-        if not my.base_key:
+        self.base_key = self.get_value("search_type")
+        if not self.base_key:
             # ??? not sure why this is empty on "sthpw/search_object" on 
             # dynamically created sobjects??
-            my.base_key = "sthpw/search_object"
+            self.base_key = "sthpw/search_object"
 
-        my.database = None
+        self.database = None
 
 
     #
@@ -5568,8 +5581,8 @@ class SearchType(SObject):
 
 
 
-    def get_defaults(my):
-        search_type = my.get_value("search_type")
+    def get_defaults(self):
+        search_type = self.get_value("search_type")
         return {
             'code': search_type
         }
@@ -5577,12 +5590,12 @@ class SearchType(SObject):
 
 
 
-    def get_search_type(my):
+    def get_search_type(self):
         return SearchType.SEARCH_TYPE
 
 
-    def get_table(my):
-        table = my.get_value("table_name")
+    def get_table(self):
+        table = self.get_value("table_name")
         table = table.replace("{public}.", "")
         table = table.replace("public.", "")
         return table
@@ -5648,10 +5661,10 @@ class SearchType(SObject):
 
 
 
-    def get_database(my, use_cache=True):
+    def get_database(self, use_cache=True):
         # use_cache is deprecated
 
-        #if use_cache and not my.database:
+        #if use_cache and not self.database:
         #    check = True
         #elif not use_cache:
         #    check = True
@@ -5660,21 +5673,21 @@ class SearchType(SObject):
 
         check = True
         if check:
-            database = my.get_value("database")
+            database = self.get_value("database")
             if database == "{project}":
                 from pyasm.biz import Project
-                my.database = Project.get().get_database_name()
+                self.database = Project.get().get_database_name()
             elif database.startswith("{") and database.endswith("}"):
                 # TEST
                 var = database[1:-1]
                 settings = {
                     'database': "portal"
                 }
-                my.database = settings.get("database")
+                self.database = settings.get("database")
             else:
-                my.database = database
+                self.database = database
 
-        return my.database
+        return self.database
 
 
     #
@@ -5897,8 +5910,8 @@ class SearchType(SObject):
 
 
 
-    def get_class(my):
-        class_name = my.get_value("class_name")
+    def get_class(self):
+        class_name = self.get_value("class_name")
         # FIXME: why is class_name an integer at some point??
         assert isinstance(class_name, basestring)
 
@@ -5908,21 +5921,21 @@ class SearchType(SObject):
             assert class_name.strip() == class_name
             return class_name
 
-    def get_description(my):
-        return my.get_value("description")
+    def get_description(self):
+        return self.get_value("description")
 
-    def get_label(my):
-        label = '%s (%s)' %(my.get_base_key(), my.get_title())
+    def get_label(self):
+        label = '%s (%s)' %(self.get_base_key(), self.get_title())
         return label
 
-    def get_title(my):
-        title = my.get_value("title")
+    def get_title(self):
+        title = self.get_value("title")
         if title == "":
             # take off the schema
-            title = my.get_base_key()
+            title = self.get_base_key()
             parts = title.split("/")
             if len(parts) < 2:
-                title = my.get_table()
+                title = self.get_table()
             else:
                 title = parts[1]
             title = Common.get_display_title(title)
@@ -5930,16 +5943,16 @@ class SearchType(SObject):
         return title
 
 
-    def get_search_type_id_col(my):
-        id_col = my.data.get("id_column")
+    def get_search_type_id_col(self):
+        id_col = self.data.get("id_column")
         if not id_col:
             return "id"
         else:
             return id_col
 
 
-    def get_search_type_code_col(my):
-        id_col = my.data.get("code_column")
+    def get_search_type_code_col(self):
+        id_col = self.data.get("code_column")
         if not code_col:
             return "code"
         else:
@@ -5948,19 +5961,19 @@ class SearchType(SObject):
 
 
 
-    def get_retire_col(my):
+    def get_retire_col(self):
         return "s_status"
 
 
 
-    def get_base_key(my):
-        return my.base_key
+    def get_base_key(self):
+        return self.base_key
 
 
 
-    def get_project_code(my):
+    def get_project_code(self):
         # first look at how the search type points to the database
-        database = my.get_value("database")
+        database = self.get_value("database")
         if database == "{project}":
             # if it is variable, then get the project
             project_code = Project.get_project_code()
@@ -5990,8 +6003,8 @@ class SearchType(SObject):
         
 
  
-    def get_icon_context(my, context=None):
-        class_name = my.get_class()
+    def get_icon_context(self, context=None):
+        class_name = self.get_class()
         if not class_name:
             class_name = 'pyasm.search.SObject'
         try:
@@ -6064,7 +6077,7 @@ class SearchType(SObject):
             base = key
             try:
                 search_type = cls._get_data(base)
-            except SearchException, e:
+            except SearchException as e:
                 if not no_exception:
                     raise
 
@@ -6156,7 +6169,7 @@ class SearchType(SObject):
             return Project.set_global_project_code(impl)
             #return cls.set_project(impl)
 
-        print "DEPRECATED: set_global_template: ", var, impl
+        print("DEPRECATED: set_global_template: ", var, impl)
     set_global_template = classmethod(set_global_template)
 
     def get_global_template(cls, var):
@@ -6164,7 +6177,7 @@ class SearchType(SObject):
             return Project.get_global_project_code()
             #return cls.get_project()
 
-        print "DEPRECATED: get_global_template: "
+        print("DEPRECATED: get_global_template: ")
         return SObjectFactory.get_template(var)
     get_global_template = classmethod(get_global_template)
 
@@ -6249,21 +6262,21 @@ class SearchType(SObject):
 
         try:
             object = getattr(module, class_name)(search_type, columns, result, fast_data=fast_data)
-        except Exception, e:
+        except Exception as e:
             #if class_name == "SearchType":
             if True:
                 import traceback
-                print "Error: ", e
+                print("Error: ", e)
                 # print the stacktrace
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
 
-            print "WARNING: class [%s] does not accept fast_data" % class_name
+            print("WARNING: class [%s] does not accept fast_data" % class_name)
             object = getattr(module, class_name)(search_type, columns, result)
 
         return object
@@ -6338,8 +6351,8 @@ class SearchType(SObject):
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
             #from pyasm.security import Site
-            #print "Site: ", Site.get_site()
-            #print "sql: ", select.get_statement()
+            #print("Site: ", Site.get_site())
+            #print("sql: ", select.get_statement())
 
             # for now just throw an exception
             raise SearchException("Search type [%s] not registered" % search_type )
@@ -6703,7 +6716,7 @@ class SObjectUndo:
                     try:
                         search_id = int(search_id.strip("'"))
                     except ValueError, e:
-                        print "ERROR: undo error: ", e.__str__()
+                        print("ERROR: undo error: ", e.__str__())
                         return
 
         # get the sobject
@@ -6726,7 +6739,7 @@ class SObjectUndo:
         if action == "delete":
             # if the sobject still exists, we have an inconsistency
             if sobject:
-                print "WARNING: deleted sobject still exists [%s, %s]" % (search_type, search_code)
+                print("WARNING: deleted sobject still exists [%s, %s]" % (search_type, search_code))
 
             # recreate the sobject
             sobject = SearchType.create(search_type)
@@ -6840,7 +6853,7 @@ class SObjectUndo:
                 if not SearchType.column_exists(search_type, name):
                     msg = "Column [%s] does not exist in search_type [%s]" % (name, sobject.get_search_type() )
                     if no_exception:
-                        print "WARNING: %s" % msg
+                        print("WARNING: %s" % msg)
                         continue
                     else:
                         raise MissingException(msg)
@@ -6868,7 +6881,7 @@ class SObjectUndo:
                         else:
                             value = SPTDate.convert(value)
                     except:
-                        print "WARNING: could not parse timestamp [%s]" % value
+                        print("WARNING: could not parse timestamp [%s]" % value)
 
                 elif column_type == 'boolean':
                     if value == 'true':
@@ -6896,7 +6909,7 @@ class SObjectUndo:
             if not sobject:
                 msg = "sobject [%s, code=%s] does not exist when trying to update in redo" % (search_type, search_code)
                 if no_exception:
-                    print "WARNING: %s" % msg
+                    print("WARNING: %s" % msg)
                     return
                 else:
                     raise MissingException(msg)
@@ -6917,17 +6930,17 @@ class SObjectUndo:
                     try:
                         col_changed = parser.parse(col_changed)
                         if col_changed > transaction_time:
-                            print "Column [%s] was changed after this transaction ... skipping" % name
-                            print "Transaction time: ", transaction_time
-                            print "Column modification time: ", col_changed
+                            print("Column [%s] was changed after this transaction ... skipping" % name)
+                            print("Transaction time: ", transaction_time)
+                            print("Column modification time: ", col_changed)
                             continue
                     except:
-                        print "WARNING: modification date mangled for column [%s]... skipping" % name
+                        print("WARNING: modification date mangled for column [%s]... skipping" % name)
 
                 if not SearchType.column_exists(search_type, name):
                     msg = "WARNING: Column [%s] does not exist in search_type [%s]" % (name, sobject.get_search_type() )
                     if no_exception:
-                        print "WARNING: %s" % msg
+                        print("WARNING: %s" % msg)
                         continue
                     else:
                         raise MissingException(msg)
@@ -6966,7 +6979,7 @@ class SObjectUndo:
             if sobject == None:
                 error = "Error trying to delete sobject [%s, %s] that does not exist." % (search_type, search_code)
                 if no_exception:
-                    print "WARNING: %s" % error
+                    print("WARNING: %s" % error)
                 else:
                     raise MissingException(error)
             else:

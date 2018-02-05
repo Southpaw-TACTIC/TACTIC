@@ -19,7 +19,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 class TextBtnWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'label': 'Button label text.',
             'tip': 'Hover tool-tip text (not implemented yet).',
@@ -32,65 +32,65 @@ class TextBtnWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
-        my.show_option = False
-        my.label = my.kwargs.get('label')
-        my.tip = my.kwargs.get('tip')
-        my.size = my.kwargs.get('size')
-        my.width = my.kwargs.get('width')
-        my.side_padding = my.kwargs.get('side_padding')
+    def init(self):
+        self.show_option = False
+        self.label = self.kwargs.get('label')
+        self.tip = self.kwargs.get('tip')
+        self.size = self.kwargs.get('size')
+        self.width = self.kwargs.get('width')
+        self.side_padding = self.kwargs.get('side_padding')
         
-        if my.side_padding:
-            my.side_padding = int(my.side_padding)
+        if self.side_padding:
+            self.side_padding = int(self.side_padding)
         else:
-            my.side_padding = 0
+            self.side_padding = 0
 
-        # my.top_el = SpanWdg()
-        my.top_el = DivWdg()
-        my.top_el.add_styles( "cursor: pointer; white-space: nowrap;" )
-        my.top_el.add_class( "SPT_TextBtnWdg_TOP" )
+        # self.top_el = SpanWdg()
+        self.top_el = DivWdg()
+        self.top_el.add_styles( "cursor: pointer; white-space: nowrap;" )
+        self.top_el.add_class( "SPT_TextBtnWdg_TOP" )
 
         # Add tool tip if provided ...
-        if my.tip:
+        if self.tip:
             # not sure why the tool-tip only shows up if you provide the text in the 'title' (2nd) argument and not
             # the 'message' (first) argument ...
-            my.top_el.add_tip( "", my.tip )
+            self.top_el.add_tip( "", self.tip )
 
-        my.horiz_align = my.kwargs.get('horiz_align')
-        if not my.horiz_align:
-            my.horiz_align = 'none'  # default to no alignment
+        self.horiz_align = self.kwargs.get('horiz_align')
+        if not self.horiz_align:
+            self.horiz_align = 'none'  # default to no alignment
 
-        my.horiz_offset = my.kwargs.get('horiz_offset')
-        if type(my.horiz_offset) == int:
-            my.horiz_offset = "%spx" % my.horiz_offset
-        if not my.horiz_offset:
-            my.horiz_offset = "0px"
+        self.horiz_offset = self.kwargs.get('horiz_offset')
+        if type(self.horiz_offset) == int:
+            self.horiz_offset = "%spx" % self.horiz_offset
+        if not self.horiz_offset:
+            self.horiz_offset = "0px"
 
-        my.vert_offset = my.kwargs.get('vert_offset')
-        if type(my.vert_offset) == int:
-            my.vert_offset = "%spx" % my.vert_offset
-        if not my.vert_offset:
-            my.vert_offset = "0px"
+        self.vert_offset = self.kwargs.get('vert_offset')
+        if type(self.vert_offset) == int:
+            self.vert_offset = "%spx" % self.vert_offset
+        if not self.vert_offset:
+            self.vert_offset = "0px"
 
 
-        my.div_right = DivWdg()
+        self.div_right = DivWdg()
         
 
-    def get_label(my):
-        return my.label
+    def get_label(self):
+        return self.label
 
 
-    def get_top_el(my):
-        return my.top_el
+    def get_top_el(self):
+        return self.top_el
 
 
-    def add_behavior(my, bvr):
-        my.top_el.add_behavior( bvr )
+    def add_behavior(self, bvr):
+        self.top_el.add_behavior( bvr )
 
-    def add(my, widget):
-        my.top_el.add( widget )
+    def add(self, widget):
+        self.top_el.add( widget )
 
-    def get_display(my): 
+    def get_display(self): 
 
         web = WebContainer.get_web()
         skin = web.get_skin()
@@ -99,16 +99,16 @@ class TextBtnWdg(BaseRefreshWdg):
         h = 16
         fnt_sz = 11
 
-        if my.size == 'medium':
+        if self.size == 'medium':
             h = 18
             fnt_sz = 13
-        elif my.size == 'large':
+        elif self.size == 'large':
             h = 20
             fnt_sz = 15
 
         w = (h / 2) - 1
 
-        my.top_el.add_styles( "height: %spx;" % (h) )
+        self.top_el.add_styles( "height: %spx;" % (h) )
 
         t_styles = "color: #c2c2c2; border: 0px; border-collapse: collapse; padding: 0px"
         bgi_open = "background-image: url(/context/themes/%(skin)s/images/text_btn/%(skin)s_btn_h%(h)s_" % \
@@ -135,7 +135,7 @@ class TextBtnWdg(BaseRefreshWdg):
 
         div_mid.add_styles( "font-family: Arial, Helvetica, sans-serif; font-size: %spx;" % fnt_sz )
         div_mid.add( spacer )
-        span = SpanWdg(my.label)
+        span = SpanWdg(self.label)
 
         # this is better fixed. Bold fonts don't look good 
         span.add_style('font-weight: 100')
@@ -144,50 +144,50 @@ class TextBtnWdg(BaseRefreshWdg):
         div_mid.add( span )
         div_mid.add( spacer )
 
-        if my.show_option:
+        if self.show_option:
             bgi_close = '_options.png)'
             w += 10
         
-        my.div_right.add_styles( "%(bgi_open)s%(pos)s%(bgi_close)s;" %
+        self.div_right.add_styles( "%(bgi_open)s%(pos)s%(bgi_close)s;" %
                                     {'bgi_open': bgi_open, 'pos': 'right', 'bgi_close': bgi_close} )
-        my.div_right.add_styles("float: left; height: %spx; width: %spx;" % (h, w) )
-        my.top_el.add( div_left )
-        my.top_el.add( div_mid )
-        my.top_el.add( my.div_right )
+        self.div_right.add_styles("float: left; height: %spx; width: %spx;" % (h, w) )
+        self.top_el.add( div_left )
+        self.top_el.add( div_mid )
+        self.top_el.add( self.div_right )
 
-        my.top_el.add_styles("overflow: hidden;")
-        if my.horiz_align == 'center':
-            my.top_el.add_styles("margin: auto;")   # margin: auto -- used for centering in non-IE brwsrs
-        elif my.horiz_align == 'left':
-            my.top_el.add_styles("margin-left: %s;" % my.horiz_offset)
+        self.top_el.add_styles("overflow: hidden;")
+        if self.horiz_align == 'center':
+            self.top_el.add_styles("margin: auto;")   # margin: auto -- used for centering in non-IE brwsrs
+        elif self.horiz_align == 'left':
+            self.top_el.add_styles("margin-left: %s;" % self.horiz_offset)
 
-        if my.vert_offset:
-            my.top_el.add_styles("margin-top: %s;" % my.vert_offset)
+        if self.vert_offset:
+            self.top_el.add_styles("margin-top: %s;" % self.vert_offset)
 
-        if my.width:
-            if type(my.width) == str:
-                my.width.replace("px","")
-            my.top_el.add_styles("width: %spx" % my.width)
+        if self.width:
+            if type(self.width) == str:
+                self.width.replace("px","")
+            self.top_el.add_styles("width: %spx" % self.width)
         else:
-            my.top_el.add_behavior({'type': 'load', 'cbjs_action': 'spt.widget.btn_wdg.set_btn_width( bvr.src_el );' })
+            self.top_el.add_behavior({'type': 'load', 'cbjs_action': 'spt.widget.btn_wdg.set_btn_width( bvr.src_el );' })
 
-        return my.top_el
+        return self.top_el
 
 class TextOptionBtnWdg(TextBtnWdg):
     '''This comes with a small arrow on the side which can be used to attach to 
        a smart menu for instance'''
 
-    def init(my):
-        super(TextOptionBtnWdg, my).init()
-        my.show_option = True
+    def init(self):
+        super(TextOptionBtnWdg, self).init()
+        self.show_option = True
         
 
-    def get_option_widget(my):
-        return my.div_right
+    def get_option_widget(self):
+        return self.div_right
 
 class TextBtnSetWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'float': 'Choice of "right" (float right), "left" (float left), or not defined',
             'align': 'Margin alignment of button set ... choice of "left", "right" or "center" ... if not defined ' \
@@ -200,25 +200,25 @@ class TextBtnSetWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
-        my.float = my.kwargs.get("float")
-        my.align = my.kwargs.get("align")
-        my.buttons = my.kwargs.get("buttons")
-        my.spacing = my.kwargs.get("spacing")
-        my.size = my.kwargs.get("size")
-        my.side_padding = my.kwargs.get("side_padding")
+    def init(self):
+        self.float = self.kwargs.get("float")
+        self.align = self.kwargs.get("align")
+        self.buttons = self.kwargs.get("buttons")
+        self.spacing = self.kwargs.get("spacing")
+        self.size = self.kwargs.get("size")
+        self.side_padding = self.kwargs.get("side_padding")
 
-        my.button_widgets = []
+        self.button_widgets = []
 
-        for btn_map in my.buttons:
+        for btn_map in self.buttons:
             width = 0
             if btn_map.has_key("width"):
                 width = btn_map.get("width")
             txt_btn = TextBtnWdg( label = btn_map.get("label"),
                                   tip = btn_map.get("tip"),
-                                  size = my.size,
+                                  size = self.size,
                                   width = width,
-                                  side_padding = my.side_padding )
+                                  side_padding = self.side_padding )
             if btn_map.has_key("bvr"):
                 bvr = {}
                 if not bvr.has_key("type"):
@@ -226,46 +226,46 @@ class TextBtnSetWdg(BaseRefreshWdg):
                 bvr.update( btn_map.get("bvr") )
                 txt_btn.add_behavior( bvr )
 
-            my.button_widgets.append( txt_btn )
+            self.button_widgets.append( txt_btn )
 
 
-    def get_btn_by_label(my, label):
+    def get_btn_by_label(self, label):
 
-        for btn_wdg in my.button_widgets:
+        for btn_wdg in self.button_widgets:
             if btn_wdg.get_label() == label:
                 return btn_wdg
         return None
 
 
-    def get_btn_top_el_by_label(my, label):
+    def get_btn_top_el_by_label(self, label):
 
-        for btn_wdg in my.button_widgets:
+        for btn_wdg in self.button_widgets:
             if btn_wdg.get_label() == label:
                 return btn_wdg.get_top_el()
         return None
 
 
-    def get_display(my):
+    def get_display(self):
         
         table = Table()
         table.add_row()
 
         count = 0
-        for btn_wdg in my.button_widgets:
+        for btn_wdg in self.button_widgets:
             td = table.add_cell()
-            if my.spacing and count:
-                td.add_styles( "padding-left: %spx;" % my.spacing )
+            if self.spacing and count:
+                td.add_styles( "padding-left: %spx;" % self.spacing )
             count += 1
             td.add( btn_wdg )
 
-        if my.float:
-            table.add_styles("float: %s;" % my.float)
-        if my.align:
-            if my.align == "left":
+        if self.float:
+            table.add_styles("float: %s;" % self.float)
+        if self.align:
+            if self.align == "left":
                 table.push_left()
-            elif my.align == "right":
+            elif self.align == "right":
                 table.push_right()
-            elif my.align == "center":
+            elif self.align == "center":
                 table.center()
 
         return table

@@ -27,10 +27,10 @@ class AccessRule(SObject):
     '''Treat security rules as a separate handler'''
     SEARCH_TYPE = "sthpw/access_rule"
 
-    def get_primary_key(my):
+    def get_primary_key(self):
         return "code"
 
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         return "access_rule_code"
 
     def get_by_groups(groups):
@@ -73,20 +73,20 @@ class AccessRuleInGroup(SObject):
 
 
 class AccessRuleBuilder(object):
-    def __init__(my, xml=None):
+    def __init__(self, xml=None):
         if not xml:
-            my.xml = Xml()
-            my.xml.create_doc("rules")
+            self.xml = Xml()
+            self.xml.create_doc("rules")
         else:
             if type(xml) in [types.StringType]:
-                my.xml = Xml()
-                my.xml.read_string(xml)
+                self.xml = Xml()
+                self.xml.read_string(xml)
             else:
-                my.xml = xml
-        my.root_node = my.xml.get_root_node()
+                self.xml = xml
+        self.root_node = self.xml.get_root_node()
 
 
-    def add_rule(my, group, key, access, unique=True):
+    def add_rule(self, group, key, access, unique=True):
 
         node = None
         if isinstance(key, dict):
@@ -97,9 +97,9 @@ class AccessRuleBuilder(object):
 
             
         if unique:
-            node = my.xml.get_node( xpath )
+            node = self.xml.get_node( xpath )
         if node is None:
-            node = my.xml.create_element("rule")
+            node = self.xml.create_element("rule")
 
         Xml.set_attribute(node, "group", group)
         if isinstance(key, dict):
@@ -109,25 +109,25 @@ class AccessRuleBuilder(object):
             Xml.set_attribute(node, "key", key)
         Xml.set_attribute(node, "access", access)
 
-        #my.root_node.appendChild(node)
-        Xml.append_child(my.root_node, node)
+        #self.root_node.appendChild(node)
+        Xml.append_child(self.root_node, node)
 
-    def add_default_rule(my, group, access):
+    def add_default_rule(self, group, access):
         '''add default rule'''
         node = None
 
-        node = my.xml.get_node("rules/rule[@group='%s' and @default]" % group )
+        node = self.xml.get_node("rules/rule[@group='%s' and @default]" % group )
         if node == None:
-            node = my.xml.create_element("rule")
+            node = self.xml.create_element("rule")
 
         Xml.set_attribute(node, "group", group)
         Xml.set_attribute(node, "default", access)
 
-        #my.root_node.appendChild(node)
-        Xml.append_child(my.root_node, node)
+        #self.root_node.appendChild(node)
+        Xml.append_child(self.root_node, node)
 
 
-    def remove_rule(my, group, key):
+    def remove_rule(self, group, key):
 
         node = None
         if isinstance(key, dict):
@@ -137,34 +137,34 @@ class AccessRuleBuilder(object):
             xpath = "rules/rule[@group='%s' and @key='%s']" % (group, key)
 
         # in case there are multiple manually inserted nodes
-        nodes = my.xml.get_nodes(xpath)
-        parent_node = my.xml.get_node("rules")
+        nodes = self.xml.get_nodes(xpath)
+        parent_node = self.xml.get_node("rules")
         for node in nodes:
             if node is not None:
-                my.xml.remove_child(parent_node, node)
+                self.xml.remove_child(parent_node, node)
 
-    def update_rule(my, xpath, update_dict):
+    def update_rule(self, xpath, update_dict):
         '''update the rule with the update_dict'''
         
         # in case there are multiple manually inserted nodes
-        nodes = my.xml.get_nodes(xpath)
-        parent_node = my.xml.get_node("rules")
+        nodes = self.xml.get_nodes(xpath)
+        parent_node = self.xml.get_node("rules")
         for node in nodes:
             if node is not None:
                 for name, value in update_dict.items():
                     Xml.set_attribute(node, name, value)
 
 
-    def get_default(my, group):
+    def get_default(self, group):
         '''get the default attribute'''
-        node = my.xml.get_node("rules/rule[@default and @group='%s']" %group)
+        node = self.xml.get_node("rules/rule[@default and @group='%s']" %group)
         if node is not None:
-            return my.xml.get_attribute(node, 'default')
+            return self.xml.get_attribute(node, 'default')
         else:
             return ''
 
 
-    def to_string(my):
-        return my.xml.to_string()
+    def to_string(self):
+        return self.xml.to_string()
 
 

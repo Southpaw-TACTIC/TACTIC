@@ -36,22 +36,22 @@ from tactic.ui.container import DynamicListWdg, ResizableTableWdg, TabWdg
 
 class IngestionToolWdg2(BaseRefreshWdg):
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
         value = web.get_form_value(name)
         if not value:
-            value = my.kwargs.get(name)
+            value = self.kwargs.get(name)
 
         return value
         
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_ingestion_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
@@ -59,35 +59,35 @@ class IngestionToolWdg2(BaseRefreshWdg):
         inner.add_border()
         inner.add_style("padding: 10px")
 
-        my.session_code = my.get_value("session_code")
-        if my.session_code:
-            my.session = Search.get_by_code("config/ingest_session", my.session_code)
+        self.session_code = self.get_value("session_code")
+        if self.session_code:
+            self.session = Search.get_by_code("config/ingest_session", self.session_code)
 
         else:
 
-            my.session_code = "session101"
+            self.session_code = "session101"
 
-            my.session = SearchType.create("config/ingest_session")
-            my.session.set_value("code", my.session_code)
+            self.session = SearchType.create("config/ingest_session")
+            self.session.set_value("code", self.session_code)
 
-            base_dir = my.get_value("base_dir")
+            base_dir = self.get_value("base_dir")
             if base_dir:
-                my.session.set_value("base_dir", base_dir)
+                self.session.set_value("base_dir", base_dir)
 
-            location = my.get_value("location")
+            location = self.get_value("location")
             if location:
-                my.session.set_value("location", location)
+                self.session.set_value("location", location)
             else:
-                my.session.set_value("location", "local")
-            my.session.commit()
+                self.session.set_value("location", "local")
+            self.session.commit()
 
 
-        my.paths = my.get_value("paths")
+        self.paths = self.get_value("paths")
  
 
         nav_div = DivWdg()
         inner.add(nav_div)
-        nav_div.add( my.get_nav_wdg() )
+        nav_div.add( self.get_nav_wdg() )
         inner.add("<hr/>")
 
         table = ResizableTableWdg()
@@ -97,7 +97,7 @@ class IngestionToolWdg2(BaseRefreshWdg):
         left = table.add_cell()
         left_div = DivWdg()
         left.add(left_div)
-        left_div.add(my.get_session_wdg())
+        left_div.add(self.get_session_wdg())
         left_div.add_style("padding: 10px")
         left_div.add_style("height: 100%")
         left_div.add_style("min-height: 500px")
@@ -106,20 +106,20 @@ class IngestionToolWdg2(BaseRefreshWdg):
         left_div.add_class("SPT_RESIZABLE")
 
         right = table.add_cell()
-        right.add(my.get_content_wdg())
+        right.add(self.get_content_wdg())
         return top
 
 
-    def get_nav_wdg(my):
+    def get_nav_wdg(self):
 
-        #base_dir = my.kwargs.get("base_dir")
-        #location = my.kwargs.get("location")
-        base_dir = my.session.get_value("base_dir")
-        location = my.session.get_value("location")
+        #base_dir = self.kwargs.get("base_dir")
+        #location = self.kwargs.get("location")
+        base_dir = self.session.get_value("base_dir")
+        location = self.session.get_value("location")
 
         nav_wdg = DivWdg()
 
-        nav_wdg.add("<b>Session 101 - Clean up my Crap</b><hr/>")
+        nav_wdg.add("<b>Session 101 - Clean up self Crap</b><hr/>")
     
 
         nav_wdg.add_style("margin-bottom: 10px")
@@ -229,7 +229,7 @@ class IngestionToolWdg2(BaseRefreshWdg):
 
 
 
-    def get_session_wdg(my):
+    def get_session_wdg(self):
 
         div = DivWdg()
         div.add_style("width: 150px")
@@ -242,7 +242,7 @@ class IngestionToolWdg2(BaseRefreshWdg):
         add.add_style("margin-top: -6px")
         add.add_behavior( {
         'type': 'click_up',
-        'session_code': my.session.get_code(),
+        'session_code': self.session.get_code(),
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_ingestion_top");
         spt.tab.set_tab_top(top);
@@ -291,7 +291,7 @@ class IngestionToolWdg2(BaseRefreshWdg):
             rule_div.add_behavior( {
             'type': 'click_up',
             'rule_code': rule_code,
-            'session_code': my.session_code,
+            'session_code': self.session_code,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_ingestion_top");
             spt.tab.set_tab_top(top);
@@ -312,11 +312,11 @@ class IngestionToolWdg2(BaseRefreshWdg):
 
 
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
-        base_dir = my.session.get_value("base_dir")
-        location = my.session.get_value("location")
-        session_code = my.session.get_code()
+        base_dir = self.session.get_value("base_dir")
+        location = self.session.get_value("location")
+        session_code = self.session.get_code()
 
         div = DivWdg()
         #repo_dir = "/home/apache/inhance_repo"
@@ -356,7 +356,7 @@ class IngestionToolWdg2(BaseRefreshWdg):
             <cache_key>repo_paths</cache_key>
           </display>
         </element>
-        ''' % ( repo_dir, repo_location, my.session_code ) )
+        ''' % ( repo_dir, repo_location, self.session_code ) )
 
         config_xml.append('''
         <element name='tools'>
@@ -382,9 +382,9 @@ class IngestionToolWdg2(BaseRefreshWdg):
 
 class IngestionToolDirListWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        session_code = my.kwargs.get("session_code")
+        session_code = self.kwargs.get("session_code")
         session_code = 'session101'
 
         session = Search.get_by_code("config/ingest_session", session_code)
@@ -393,18 +393,18 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
         if data == None:
             data = {}
 
-        top = my.top
+        top = self.top
         top.add_class("spt_ingest_dir_list_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
         inner.add_style("padding: 10px")
         inner.add_color("background", "background")
 
-        base_dir = my.kwargs.get("base_dir")
-        location = my.kwargs.get("location")
-        rescan = my.kwargs.get("rescan")
+        base_dir = self.kwargs.get("base_dir")
+        location = self.kwargs.get("location")
+        rescan = self.kwargs.get("rescan")
         if rescan in [True, 'true']:
             rescan = True
         else:
@@ -440,7 +440,7 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
 
 
 
-        show_handled = my.kwargs.get("show_handled")
+        show_handled = self.kwargs.get("show_handled")
         show_handled = False
         if show_handled in [False, 'false']:
             try:
@@ -449,7 +449,7 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
                 f = codecs.open(scan_path, 'r', 'utf-8')
                 ignore = jsonloads( f.read() )
                 f.close()
-            except Exception, e:
+            except Exception as e:
                 print("Error: ", e.message)
                 ignore = None
         else:
@@ -457,7 +457,7 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
 
 
         # check for rescan
-        cache_key = my.kwargs.get("cache_key")
+        cache_key = self.kwargs.get("cache_key")
         rescan = True
         if rescan == True:
             paths = []
@@ -487,13 +487,13 @@ class IngestionToolDirListWdg(BaseRefreshWdg):
 
 class IngestionToolShelfWdg(BaseRefreshWdg):
     '''These are the tools withing the Ingestion tool widget'''
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_color("background", "background")
         top.add_class("spt_ingestion_shelf_top")
 
-        #base_dir = my.kwargs.get("base_dir")
-        #location = my.kwargs.get("location")
+        #base_dir = self.kwargs.get("base_dir")
+        #location = self.kwargs.get("location")
         base_dir = "/home/apache/Structures"
         location = "server"
 
@@ -575,25 +575,25 @@ class IngestionToolShelfWdg(BaseRefreshWdg):
 
 class IngestionToolWdg(BaseRefreshWdg):
 
-    def get_value(my, name):
-        value = my.kwargs.get(name)
+    def get_value(self, name):
+        value = self.kwargs.get(name)
         if not value:
             web = WebContainer.get_web()
             value = web.get_form_value(name)
-        if my.data and not value:
-            value = my.data.get(name)
+        if self.data and not value:
+            value = self.data.get(name)
 
         return value
         
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_ingestion_top")
         top.add_color("background", "background", -5)
 
-        my.data = {}
+        self.data = {}
 
         rules_div = DivWdg()
         top.add(rules_div)
@@ -602,7 +602,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         rules_div.add("Rules: ")
 
         rules_select = SelectWdg("rule_code")
-        rule_code = my.get_value('rule_code')
+        rule_code = self.get_value('rule_code')
         if rule_code:
             rules_select.set_value(rule_code)
         rules_select.set_option("query", "config/ingest_rule|code|title")
@@ -628,11 +628,11 @@ class IngestionToolWdg(BaseRefreshWdg):
         else:
             sobject = None
         if sobject:
-            my.data = sobject.get_value("data")
-            if my.data:
-                my.data = jsonloads(my.data)
+            self.data = sobject.get_value("data")
+            if self.data:
+                self.data = jsonloads(self.data)
 
-        session_code = my.kwargs.get("session_code")
+        session_code = self.kwargs.get("session_code")
         if session_code:
             session = Search.get_by_code("config/ingest_session", session_code)
         else:
@@ -666,7 +666,7 @@ class IngestionToolWdg(BaseRefreshWdg):
             base_dir = ''
 
         #else:
-        #    base_dir = my.get_value("base_dir")
+        #    base_dir = self.get_value("base_dir")
         #if not base_dir:
         #    base_dir = ''
 
@@ -681,10 +681,10 @@ class IngestionToolWdg(BaseRefreshWdg):
             code = ''
 
 
-        file_list = my.get_value("file_list")
-        scan_type = my.get_value("scan_type")
-        action_type = my.get_value("action_type")
-        rule = my.get_value("rule")
+        file_list = self.get_value("file_list")
+        scan_type = self.get_value("scan_type")
+        action_type = self.get_value("action_type")
+        rule = self.get_value("rule")
         if not rule:
             rule = base_dir
 
@@ -753,7 +753,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         select.add_class("spt_scan_type")
         td = table.add_cell()
         td.add(select)
-        select.set_value( my.get_value("action") )
+        select.set_value( self.get_value("action") )
         labels = ['Simple List', 'Rule', 'Script']
         values = ['list', 'rule', 'script']
         select.set_option("values", values)
@@ -863,7 +863,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         td = table.add_cell()
         text = TextWdg("filter")
         td.add(text)
-        text.set_value( my.get_value("filter") )
+        text.set_value( self.get_value("filter") )
         text.add_style("width: 400px")
         text.add_style("padding: 2px")
         text.add_style("-moz-border-radius: 5px")
@@ -877,7 +877,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         td = table.add_cell()
         text = TextWdg("ignore")
         td.add(text)
-        text.set_value( my.get_value("ignore") )
+        text.set_value( self.get_value("ignore") )
         text.set_value(ignore)
         text.add_style("width: 400px")
         text.add_style("padding: 2px")
@@ -891,7 +891,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         td.add_style("padding-top: 5px")
         td = table.add_cell()
         text = TextInputWdg(name="validation_script")
-        text.set_value( my.get_value("validation_script") )
+        text.set_value( self.get_value("validation_script") )
         text.add_style("width: 400px")
         td.add(text)
 
@@ -1015,7 +1015,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         select = SelectWdg("action")
         td = table.add_cell()
         td.add(select)
-        select.set_value( my.get_value("action") )
+        select.set_value( self.get_value("action") )
         labels = ['File Checkin', 'Directory Checkin', 'Sequence Checkin']
         values = ['file', 'directory', 'sequence', 'ignore']
         select.set_option("values", values)
@@ -1052,7 +1052,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         values = [x.get_value("search_type") for x in search_types]
         select.set_option("values", values)
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         if search_type:
             select.set_value(search_type)
 
@@ -1137,7 +1137,7 @@ class IngestionToolWdg(BaseRefreshWdg):
         text = TextWdg("process_script")
         text.add_style("width: 300px")
         td.add(text)
-        text.set_value( my.get_value("process_script") )
+        text.set_value( self.get_value("process_script") )
 
 
         icon = IconButtonWdg(title='Edit Process Script', icon=IconWdg.EDIT)
@@ -1317,12 +1317,12 @@ class IngestionToolWdg(BaseRefreshWdg):
         })
 
 
-        top.add( my.get_info_wdg() )
+        top.add( self.get_info_wdg() )
 
         return top
 
 
-    def get_info_wdg(my):
+    def get_info_wdg(self):
 
         div = DivWdg()
         div.add_class("spt_info")
@@ -1334,13 +1334,13 @@ class IngestionToolWdg(BaseRefreshWdg):
 
 class IngestionProcessWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
         top.add_style("padding: 10px")
 
         from tactic.command import IngestionCmd
-        cmd = IngestionCmd(**my.kwargs)
+        cmd = IngestionCmd(**self.kwargs)
         Command.execute_cmd(cmd)
         info = cmd.get_info()
 
@@ -1352,38 +1352,38 @@ class IngestionProcessWdg(BaseRefreshWdg):
         tags = info.get("tags")
 
         top.add("<br/>")
-        #category_div = my.get_category_wdg(paths_matched, "Matched Paths", tags)
-        #category_div = my.get_category_preview_wdg(paths_matched, "Matched Paths", tags)
+        #category_div = self.get_category_wdg(paths_matched, "Matched Paths", tags)
+        #category_div = self.get_category_preview_wdg(paths_matched, "Matched Paths", tags)
         #top.add(category_div)
 
-        category_div = my.get_category_wdg2(paths_matched, "Matched Paths", tags)
+        category_div = self.get_category_wdg2(paths_matched, "Matched Paths", tags)
         top.add(category_div)
 
 
         top.add("<br/>")
-        category_div = my.get_category_wdg2(paths_invalid, "Invalid Paths")
+        category_div = self.get_category_wdg2(paths_invalid, "Invalid Paths")
         top.add(category_div)
 
         top.add("<br/>")
-        category_div = my.get_category_wdg2(paths_irregular, "Irregular Paths")
+        category_div = self.get_category_wdg2(paths_irregular, "Irregular Paths")
         top.add(category_div)
  
 
         top.add("<br/>")
-        category_div = my.get_category_wdg2(paths_not_matched, "Unmatched Paths")
+        category_div = self.get_category_wdg2(paths_not_matched, "Unmatched Paths")
         top.add(category_div)
 
 
         return top
 
 
-    def get_category_wdg(my, paths, title=None, tags={}):
+    def get_category_wdg(self, paths, title=None, tags={}):
         div = DivWdg()
 
         if not paths:
             paths = []
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
 
         if not title:
             title = "Paths"
@@ -1413,7 +1413,7 @@ class IngestionProcessWdg(BaseRefreshWdg):
         return div
 
 
-    def get_category_preview_wdg(my, paths, title=None, tags={}):
+    def get_category_preview_wdg(self, paths, title=None, tags={}):
 
         div = DivWdg()
 
@@ -1453,7 +1453,7 @@ class IngestionProcessWdg(BaseRefreshWdg):
 
 
 
-    def get_category_wdg2(my, paths, title=None, tags={}):
+    def get_category_wdg2(self, paths, title=None, tags={}):
 
         if not paths:
             paths = []
@@ -1470,7 +1470,7 @@ class IngestionProcessWdg(BaseRefreshWdg):
         div.add(table)
         table.add_color("color", "color")
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
 
         sobjects = []
         tags_keys = set()
@@ -1511,7 +1511,7 @@ class IngestionProcessWdg(BaseRefreshWdg):
         #    element_names.remove('metadata')
 
 
-        config_xml = my.get_config_xml(list(tags_keys))
+        config_xml = self.get_config_xml(list(tags_keys))
 
         layout = TableLayoutWdg(search_type='sthpw/virtual', view='report', config_xml=config_xml, element_names=element_names, mode='simple')
         # FIXME: just show first 200 results
@@ -1522,7 +1522,7 @@ class IngestionProcessWdg(BaseRefreshWdg):
         return div
 
 
-    def get_config_xml(my, tags_keys):
+    def get_config_xml(self, tags_keys):
         xml = []
         xml.append("<config>")
         xml.append("<report>")
@@ -1557,9 +1557,9 @@ class IngestionProcessWdg(BaseRefreshWdg):
 __all__.append('IngestionToolScanWdg')
 class IngestionToolScanWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         scan_path = "/tmp/scan"
         if not os.path.exists(scan_path):
@@ -1609,7 +1609,7 @@ class IngestionToolScanWdg(BaseRefreshWdg):
             for root, dirs, files in os.walk(base_dir):
                 for file in files:
                     path = "%s/%s" % (root, file)
-                    if not my.check_irregular(path):
+                    if not self.check_irregular(path):
                         continue
 
                     count +=1
@@ -1706,7 +1706,7 @@ class IngestionToolScanWdg(BaseRefreshWdg):
         #    element_names.remove('metadata')
 
 
-        #config_xml = my.get_config_xml(list(tags_keys))
+        #config_xml = self.get_config_xml(list(tags_keys))
 
         #layout = TableLayoutWdg(search_type='sthpw/virtual', view='report', element_names=element_names, mode='simple')
         #layout.set_sobjects(sobjects)
@@ -1744,7 +1744,7 @@ class IngestionToolScanWdg(BaseRefreshWdg):
 
 
 
-    def check_irregular(my, path):
+    def check_irregular(self, path):
         p = re.compile("[\!\@\$\%\^\&\*\(\)\{\}\[\]\:]")
         if p.search(path):
             return True

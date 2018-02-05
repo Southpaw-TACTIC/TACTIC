@@ -19,44 +19,44 @@ class ScmException(Exception):
 
 class ScmImpl(object):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.user = kwargs.get('user')
-        my.password = kwargs.get('password')
+        self.user = kwargs.get('user')
+        self.password = kwargs.get('password')
 
-        my.tag = kwargs.get('tab')
-        my.branch = kwargs.get('branch')
-        my.trunk = kwargs.get('trunk')
+        self.tag = kwargs.get('tab')
+        self.branch = kwargs.get('branch')
+        self.trunk = kwargs.get('trunk')
 
-        my.root = kwargs.get('root')
-        my.sync_dir = kwargs.get("sync_dir")
+        self.root = kwargs.get('root')
+        self.sync_dir = kwargs.get("sync_dir")
 
-        my.log = []
+        self.log = []
 
 
-    def set_root(my, root):
+    def set_root(self, root):
         '''set the root of the server depot.  Each scm will specify it's
         own root.  ie: SVN uses URLs'''
 
 
-    def set_branch(my, branch):
+    def set_branch(self, branch):
         '''set the current branch that is being worked on'''
-        my.branch = branch
+        self.branch = branch
 
 
-    def set_sync_dir(my, sync_dir):
+    def set_sync_dir(self, sync_dir):
         '''set the absolute base directory of the sync (or workspace or
         sandbox)'''
-        my.sync_dir = sync_dir
+        self.sync_dir = sync_dir
 
 
-    def get_log(my):
-        return my.log
+    def get_log(self):
+        return self.log
 
 
 
-    def checkout(my, repo_dir, sync_dir, depth=None):
+    def checkout(self, repo_dir, sync_dir, depth=None):
         '''Method to check out some root from the repository to a destination
         directory
 
@@ -69,7 +69,7 @@ class ScmImpl(object):
 
 
 
-    def commit(my, sync_path):
+    def commit(self, sync_path):
         '''Method to check-in a list of files
 
         @params:
@@ -82,17 +82,17 @@ class ScmImpl(object):
     # Higher level functions
     #
 
-    def deliver_file(my, src_path, repo_path):
+    def deliver_file(self, src_path, repo_path):
 
         repo_dir = os.path.dirname(repo_path)
 
-        sync_path = "%s/%s" % (my.sync_dir, repo_path)
+        sync_path = "%s/%s" % (self.sync_dir, repo_path)
         sync_dir = os.path.dirname(sync_path)
 
         # Trick to checkout a single file.  Not sure if this works
-        my.checkout(repo_dir, sync_dir, depth="empty")
+        self.checkout(repo_dir, sync_dir, depth="empty")
         try:
-            my.export(repo_path, sync_path)
+            self.export(repo_path, sync_path)
         except Exception, e:
             print "WARNING: ", e
             exists = False
@@ -108,12 +108,12 @@ class ScmImpl(object):
         # if it doesn't exist, add it
         if not exists:
             print "--> add"
-            my.add(sync_path)
+            self.add(sync_path)
         else:
             print "--> update"
-            my.update(sync_path)
+            self.update(sync_path)
 
-        my.commit(sync_path, "this is a test")
+        self.commit(sync_path, "this is a test")
 
 
 

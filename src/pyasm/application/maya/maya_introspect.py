@@ -19,31 +19,31 @@ from pyasm.application.common import BaseAppInfo, NodeData
 
 class MayaIntrospect:
 
-    def __init__(my):
-        my.info = BaseAppInfo.get()
-        my.app = my.info.get_app()
-        my.impl = my.info.get_app_implementation()
-        my.mode = "all"
+    def __init__(self):
+        self.info = BaseAppInfo.get()
+        self.app = self.info.get_app()
+        self.impl = self.info.get_app_implementation()
+        self.mode = "all"
 
-        my.session_xml = None
+        self.session_xml = None
 
-    def get_session_xml(my):
-        return my.session_xml
+    def get_session_xml(self):
+        return self.session_xml
         
 
 
-    def set_mode(my, mode):
-        my.mode = mode
+    def set_mode(self, mode):
+        self.mode = mode
 
-    def execute(my):
+    def execute(self):
 
         node_names = []
 
         # find out which nodes are of interest
-        if my.mode == "select":
-            top_nodes = my.app.get_selected_top_nodes()
+        if self.mode == "select":
+            top_nodes = self.app.get_selected_top_nodes()
         else:
-            top_nodes = my.app.get_top_nodes()
+            top_nodes = self.app.get_top_nodes()
 
 
         # go through each top level node
@@ -53,13 +53,13 @@ class MayaIntrospect:
             node_names.append(top_node)
 
 
-        node_names.extend( my.app.get_sets() )
+        node_names.extend( self.app.get_sets() )
 
 
         # sort the node_names
         node_names.sort()
 
-        user = my.info.get_user()
+        user = self.info.get_user()
 
 
         # get the pid of this process
@@ -73,18 +73,18 @@ class MayaIntrospect:
         for node_name in node_names:
             xml_node = doc.createElement("node")
 
-            node_naming = my.app.get_node_naming(node_name)
+            node_naming = self.app.get_node_naming(node_name)
 
             Xml.set_attribute(xml_node, "instance", node_naming.get_instance() )
             Xml.set_attribute(xml_node, "asset_code", node_naming.get_asset_code() )
             Xml.set_attribute(xml_node, "name", node_name)
 
             for snapshot_type in ("asset", "anim", "set", "shot"):
-                snapshot_code = my.impl.get_snapshot_code(node_name, \
+                snapshot_code = self.impl.get_snapshot_code(node_name, \
                     snapshot_type)
-                snapshot_version = my.impl.get_snapshot_attr(node_name, \
+                snapshot_version = self.impl.get_snapshot_attr(node_name, \
                     snapshot_type, "version")
-                snapshot_context = my.impl.get_snapshot_attr(node_name, \
+                snapshot_context = self.impl.get_snapshot_attr(node_name, \
                     snapshot_type, "context")
 
 
@@ -103,7 +103,7 @@ class MayaIntrospect:
             #Xml.set_attribute(xml_node, "version", str(version) )
 
             # find out if this is a reference
-            is_reference = my.app.is_reference(node_name)
+            is_reference = self.app.is_reference(node_name)
             if is_reference:
                 Xml.set_attribute(xml_node, "reference", "true")
             else:
@@ -111,7 +111,7 @@ class MayaIntrospect:
 
             root.appendChild(xml_node)
 
-        my.session_xml = root.toprettyxml()
+        self.session_xml = root.toprettyxml()
 
 
 

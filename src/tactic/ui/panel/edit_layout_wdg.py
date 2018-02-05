@@ -64,27 +64,27 @@ class EditLayoutWdg(TableLayoutWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
 
         # NOTE: need to add this to fit as a table layout
-        my.chunk_size = 10000
-        my.edit_permission = True
-        my.view_editable = True
+        self.chunk_size = 10000
+        self.edit_permission = True
+        self.view_editable = True
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
-            my.sobjects = [sobject]
+            self.sobjects = [sobject]
 
-        elif my.kwargs.get("do_search") != "false":
-            my.handle_search()
+        elif self.kwargs.get("do_search") != "false":
+            self.handle_search()
 
 
         top = DivWdg()
-        my.top = top
-        my.set_as_panel(top)
+        self.top = top
+        self.set_as_panel(top)
         top.add_class("spt_sobject_top")
 
         inner = DivWdg()
@@ -98,24 +98,24 @@ class EditLayoutWdg(TableLayoutWdg):
 
 
         # set the sobjects to all the widgets then preprocess
-        for widget in my.widgets:
-            widget.set_sobjects(my.sobjects)
-            widget.set_parent_wdg(my)
+        for widget in self.widgets:
+            widget.set_sobjects(self.sobjects)
+            widget.set_parent_wdg(self)
             # preprocess the elements
             widget.preprocess()
 
 
 
-        #is_refresh = my.kwargs.get("is_refresh")
-        #if my.kwargs.get("show_shelf") not in ['false', False]:
-        #    action = my.get_action_wdg()
+        #is_refresh = self.kwargs.get("is_refresh")
+        #if self.kwargs.get("show_shelf") not in ['false', False]:
+        #    action = self.get_action_wdg()
         #    inner.add(action)
 
 
         # get all the edit widgets
         """
-        if my.view_editable and my.edit_permission:
-            edit_wdgs = my.get_edit_wdgs()
+        if self.view_editable and self.edit_permission:
+            edit_wdgs = self.get_edit_wdgs()
             edit_div = DivWdg()
             edit_div.add_class("spt_edit_top")
             edit_div.add_style("display: none")
@@ -137,7 +137,7 @@ class EditLayoutWdg(TableLayoutWdg):
         inner.add_smart_style("spt_cell_edit", "padding", "5px")
         inner.add_smart_style("spt_cell_edit", "min-width", "200px")
 
-        for i, sobject in enumerate(my.sobjects):
+        for i, sobject in enumerate(self.sobjects):
 
             table = Table()
             table.add_color("color", "color")
@@ -145,7 +145,7 @@ class EditLayoutWdg(TableLayoutWdg):
             #table.add_style("margin-bottom: 10px")
             table.add_style("width: 100%")
             inner.add(table)
-            for j, widget in enumerate(my.widgets):
+            for j, widget in enumerate(self.widgets):
 
                 name = widget.get_name()
                 if name == 'preview':
@@ -178,14 +178,14 @@ class EditLayoutWdg(TableLayoutWdg):
 
         # extra stuff to make it work with ViewPanelWdg
         top.add_class("spt_table_top");
-        class_name = Common.get_full_class_name(my)
+        class_name = Common.get_full_class_name(self)
         top.add_attr("spt_class_name", class_name)
 
         inner.add_class("spt_table_content");
-        inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
-        inner.add_attr("spt_view", my.kwargs.get('view'))
+        inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
+        inner.add_attr("spt_view", self.kwargs.get('view'))
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
