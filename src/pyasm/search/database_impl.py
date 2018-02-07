@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DatabaseImplException', 'DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl']
+__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl', 'DatabaseImplException']
 
 import os, sys, types, re
 import subprocess

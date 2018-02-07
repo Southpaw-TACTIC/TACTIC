@@ -2990,7 +2990,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         access_keys = self._get_access_keys("retire_delete",  project_code)
-        if security.check_access("builtin", access_keys, "allow"):
+        if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
         
             spec_list.extend( [{ "type": "separator" },
                 

@@ -137,6 +137,9 @@ class SubprocessTrigger(Handler):
 class QueueTrigger(Command):
     '''Simple command which is executed from a queue'''
     def execute(self):
+        # start workflow engine
+        from pyasm.command import Workflow
+        Workflow().init()
 
         input_data = self.kwargs.get("input_data")
         data = self.kwargs.get("data")
@@ -146,6 +149,12 @@ class QueueTrigger(Command):
         trigger.set_data(data)
 
         trigger.execute()
+
+        info = trigger.get_info()
+        result = info.get("result")
+        if result in "error":
+            message = info.get("message")
+            raise Exception(message)
 
 
 
@@ -214,14 +223,14 @@ class ScriptTrigger(Handler):
                     result = 'revise'
 
                 self.set_pipeline_status(result)
+                self.info['result'] = result
             else:
                 self.set_pipeline_status("complete")
+                self.info['result'] = "complete"
 
 
         except Exception as e:
             #self.set_pipeline_status("error", {"error": str(e)})
-
-
             self.set_pipeline_status("revise", {"error": str(e)})
 
             import sys,traceback
@@ -235,6 +244,9 @@ class ScriptTrigger(Handler):
             print(stacktrace_str)
             print(str(e))
             print("-"*50)
+
+            self.info['result'] = "error"
+            self.info['message'] = str(e)
 
  
 
@@ -251,6 +263,7 @@ class ScriptTrigger(Handler):
             return
 
         server = TacticServerStub.get()
+        print "set_pipeline_event: ", search_key, process, status
         server.call_pipeline_event(search_key, process, status, data )
 
 
